@@ -42,7 +42,7 @@ export const Home = () => {
       {/* Welcome Section */}
       <div className="text-center space-y-3">
         <h1
-          className="text-4xl font-bold bg-gradient-to-r from-white 
+          className="text-4xl font-bold bg-linear-to-r from-white 
           via-zinc-200 to-zinc-400 bg-clip-text text-transparent"
         >
           Hola, {usuario?.nombre || "Usuario"}
@@ -63,14 +63,14 @@ export const Home = () => {
           >
             {/* Gradient overlay on hover */}
             <div
-              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${l.gradient} 
+              className={`absolute inset-0 rounded-2xl bg-linear-to-br ${l.gradient} 
               opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
             ></div>
 
             {/* Icon */}
             <div className="relative">
               <div
-                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${l.iconBg} flex 
+                className={`w-14 h-14 rounded-xl bg-linear-to-br ${l.iconBg} flex 
                 items-center justify-center shadow-lg group-hover:scale-110 
                 transition-transform duration-300`}
               >
