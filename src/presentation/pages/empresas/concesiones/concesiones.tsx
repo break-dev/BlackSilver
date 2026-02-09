@@ -5,7 +5,6 @@ import {
     Modal,
     Group,
     TextInput,
-    Text,
     Badge,
     ActionIcon,
     Tooltip,
@@ -236,23 +235,27 @@ export const EmpresasConcesiones = () => {
                 opened={opened}
                 onClose={close}
                 title={
-                    <Text fw={700} c="white">
-                        {concesionEditar ? "Editar Concesión" : "Nueva Concesión"}
-                    </Text>
+                    <div className="flex items-center gap-3">
+                        <div className="w-1 h-6 bg-gradient-to-b from-[#ffc933] to-[#b8920a] rounded-full shadow-[0_0_10px_#d4a50a]"></div>
+                        <span className="text-xl font-bold bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent tracking-tight">
+                            {concesionEditar ? "Editar Concesión" : "Nueva Concesión"}
+                        </span>
+                    </div>
                 }
                 centered
                 overlayProps={{
                     backgroundOpacity: 0.55,
                     blur: 3,
                 }}
-                radius="lg"
+                radius="xl"
                 classNames={{
-                    content: "bg-[#0f1014] border border-zinc-800 shadow-2xl shadow-black/50",
-                    header: "bg-[#0f1014] text-white pb-3 pt-2 border-b border-zinc-800/50",
-                    body: "bg-[#0f1014] pt-6",
-                    close: "text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors",
+                    content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
+                    header: "bg-zinc-950 text-white pt-5 pb-1 px-6",
+                    body: "bg-zinc-950 px-6 pt-6 pb-6",
+                    close: "text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 rounded-full w-8 h-8 flex items-center justify-center",
+                    title: "text-xl font-bold text-white",
                 }}
-                transitionProps={{ transition: "pop", duration: 200 }}
+                transitionProps={{ transition: "pop", duration: 250 }}
             >
                 <FormularioConcesion
                     concesion={concesionEditar}

@@ -41,7 +41,6 @@ export const FormularioConcesion = ({
             id_empresa: concesion?.id_empresa ? String(concesion.id_empresa) : "",
             nombre: concesion?.nombre || "",
         },
-        // SOLUCIÓN AL ERROR DE TIPO: Forzamos el tipado para que acepte el schema de Zod moderno
         validate: zodResolver(schema as any),
     });
 
@@ -95,7 +94,7 @@ export const FormularioConcesion = ({
     }));
 
     return (
-        <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-6 mt-4">
+        <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-6">
             <Select
                 label="Empresa"
                 placeholder="Seleccione empresa"
@@ -108,9 +107,10 @@ export const FormularioConcesion = ({
                 radius="lg"
                 size="sm"
                 classNames={{
-                    input: "focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 data-[focused]:border-zinc-300 data-[focused]:ring-zinc-300",
+                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
                     dropdown: "bg-zinc-900 border-zinc-800",
-                    option: "hover:bg-zinc-800 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900",
+                    option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                    label: "text-zinc-300 mb-1 font-medium"
                 }}
                 {...form.getInputProps("id_empresa")}
             />
@@ -122,17 +122,19 @@ export const FormularioConcesion = ({
                 radius="lg"
                 size="sm"
                 classNames={{
-                    input: "focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300",
+                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                    label: "text-zinc-300 mb-1 font-medium"
                 }}
                 {...form.getInputProps("nombre")}
             />
 
-            <Group justify="flex-end" mt="xl">
+            <Group justify="flex-end" gap="md" mt="xl">
                 <Button
                     variant="subtle"
                     onClick={onCancel}
                     disabled={loading}
                     radius="lg"
+                    size="sm"
                     className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
                 >
                     Cancelar
