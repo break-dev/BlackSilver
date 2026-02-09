@@ -41,7 +41,10 @@ export const Home = () => {
     <div className="max-w-3xl mx-auto space-y-10 py-4">
       {/* Welcome Section */}
       <div className="text-center space-y-3">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+        <h1
+          className="text-4xl font-bold bg-gradient-to-r from-white 
+          via-zinc-200 to-zinc-400 bg-clip-text text-transparent"
+        >
           Hola, {usuario?.nombre || "Usuario"}
         </h1>
         <p className="text-zinc-400 text-lg">¿Qué deseas hacer hoy?</p>
@@ -53,17 +56,23 @@ export const Home = () => {
           <button
             key={l.title}
             onClick={() => navigate(l.url)}
-            className="group relative flex items-center gap-5 p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 backdrop-blur-sm text-left hover:border-zinc-700 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20"
+            className="group relative flex items-center gap-5 p-6 rounded-2xl 
+            bg-zinc-900/50 border border-zinc-800/50 backdrop-blur-sm text-left 
+            hover:border-zinc-700 transition-all duration-300 hover:scale-[1.02] 
+            hover:shadow-xl hover:shadow-black/20"
           >
             {/* Gradient overlay on hover */}
             <div
-              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${l.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${l.gradient} 
+              opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
             ></div>
 
             {/* Icon */}
             <div className="relative">
               <div
-                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${l.iconBg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${l.iconBg} flex 
+                items-center justify-center shadow-lg group-hover:scale-110 
+                transition-transform duration-300`}
               >
                 <l.icon className="w-7 h-7 text-white" />
               </div>
@@ -71,7 +80,10 @@ export const Home = () => {
 
             {/* Content */}
             <div className="relative flex-1">
-              <p className="font-semibold text-white text-lg mb-1 group-hover:text-white transition-colors">
+              <p
+                className="font-semibold text-white text-lg mb-1 group-hover:text-white 
+                transition-colors"
+              >
                 {l.title}
               </p>
               <p className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
@@ -82,7 +94,8 @@ export const Home = () => {
             {/* Arrow indicator */}
             <div className="relative">
               <svg
-                className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-1 transition-all duration-300"
+                className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-1 
+                transition-all duration-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

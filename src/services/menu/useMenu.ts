@@ -5,8 +5,8 @@ import type { IModulo } from "./dtos/menu.dto";
 import { MenuStore } from "../../stores/menu.store";
 
 export const useMenu = ({ setIsLoading, setError }: IUseHook) => {
-  // setear menu de navegacion
-  const setMenuNavegacion = async () => {
+  // obtener y setear menu de navegacion
+  const getMenuNavegacion = async () => {
     setIsLoading(true);
     setError(""); // Clear any previous error
     try {
@@ -28,6 +28,6 @@ export const useMenu = ({ setIsLoading, setError }: IUseHook) => {
   };
 
   return {
-    setMenuNavegacion,
+    getMenuNavegacion,
   };
 };
