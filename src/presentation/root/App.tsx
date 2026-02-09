@@ -9,6 +9,7 @@ import { Login } from "../pages/public/login";
 import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
+import { EmpresasLabores } from "../pages/empresas/labores/labores";
 
 
 export const App = () => {
@@ -55,7 +56,7 @@ export const App = () => {
         />
         <Route
           path="/configuracion/empresas/labores"
-          element={<PlaceholderPage titulo="Labores" />}
+          element={<EmpresasLabores />}
         />
 
         {/* Configuracion > Personal */}

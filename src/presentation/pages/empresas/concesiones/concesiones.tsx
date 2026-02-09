@@ -15,6 +15,7 @@ import {
     PencilSquareIcon,
     TrashIcon,
     MagnifyingGlassIcon,
+    ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
 // Services
@@ -37,12 +38,14 @@ export const EmpresasConcesiones = () => {
     const [concesionEditar, setConcesionEditar] = useState<RES_Concesion | null>(
         null
     );
+    const [concesionToDelete, setConcesionToDelete] = useState<number | null>(null);
 
     // Control de Modal
     const [opened, { open, close }] = useDisclosure(false);
+    const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
 
     // Hooks de Servicio
-    const { listar: listarConcesiones } = useConcesion({
+    const { listar: listarConcesiones, eliminar: eliminarConcesion } = useConcesion({
         setIsLoading: setLoading,
         setError: setErrorStr,
     });
@@ -86,6 +89,20 @@ export const EmpresasConcesiones = () => {
     const handleOpenEditar = (concesion: RES_Concesion) => {
         setConcesionEditar(concesion);
         open();
+    };
+
+    const handleEliminar = (id: number) => {
+        setConcesionToDelete(id);
+        openDeleteModal();
+    };
+
+    const confirmEliminar = async () => {
+        if (concesionToDelete) {
+            const exito = await eliminarConcesion(concesionToDelete);
+            if (exito) cargarDatos();
+            closeDeleteModal();
+            setConcesionToDelete(null);
+        }
     };
 
     const handleSuccess = () => {
@@ -156,17 +173,17 @@ export const EmpresasConcesiones = () => {
                     <Table.Tbody>
                         {concesionesFiltradas.length > 0 ? (
                             concesionesFiltradas.map((c, index) => {
-                                const emp = empresas.find((e) => e.id === c.id_empresa);
+                                const empresa = empresas.find((e) => e.id === c.id_empresa);
                                 return (
-                                    <Table.Tr key={c.id}>
+                                    <Table.Tr key={c.id_concesion}>
                                         <Table.Td
                                             className="text-zinc-500 font-medium text-xs w-16 text-center"
                                             style={{ textAlign: "center" }}
                                         >
                                             {index + 1}
                                         </Table.Td>
-                                        <Table.Td className="text-zinc-300 font-medium">
-                                            {emp ? emp.nombre_comercial : "Desconocida"}
+                                        <Table.Td className="text-zinc-400 font-medium text-sm">
+                                            {empresa ? empresa.nombre_comercial : "Desconocida"}
                                         </Table.Td>
                                         <Table.Td className="text-indigo-200 font-semibold">
                                             {c.nombre}
@@ -176,6 +193,7 @@ export const EmpresasConcesiones = () => {
                                                 color={c.estado === EstadoBase.Activo ? "green" : "red"}
                                                 variant="light"
                                                 radius="sm"
+                                                size="sm"
                                             >
                                                 {c.estado}
                                             </Badge>
@@ -201,10 +219,7 @@ export const EmpresasConcesiones = () => {
                                                         size="lg"
                                                         radius="md"
                                                         aria-label="Eliminar"
-                                                        onClick={() => {
-                                                            // TODO: Implementar eliminar
-                                                            console.log("Eliminar", c);
-                                                        }}
+                                                        onClick={() => handleEliminar(c.id_concesion)}
                                                     >
                                                         <TrashIcon className="w-5 h-5" />
                                                     </ActionIcon>
@@ -263,6 +278,51 @@ export const EmpresasConcesiones = () => {
                     onSuccess={handleSuccess}
                     onCancel={close}
                 />
+            </Modal>
+
+            {/* Modal Confirmar Eliminación */}
+            <Modal
+                opened={deleteModalOpened}
+                onClose={closeDeleteModal}
+                centered
+                radius="xl"
+                withCloseButton={false}
+                classNames={{
+                    content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
+                    body: "bg-zinc-950 p-6",
+                }}
+                transitionProps={{ transition: "pop", duration: 250 }}
+            >
+                <div className="flex flex-col items-center text-center gap-4">
+                    <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center">
+                        <ExclamationTriangleIcon className="w-6 h-6 text-amber-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-white mb-2">Eliminar Concesión</h3>
+                        <p className="text-zinc-400 text-sm">
+                            ¿Estás seguro que deseas eliminar esta concesión? Esta acción no se puede deshacer.
+                        </p>
+                    </div>
+                    <Group justify="center" gap="md" className="w-full mt-2">
+                        <Button
+                            variant="subtle"
+                            onClick={closeDeleteModal}
+                            radius="lg"
+                            size="sm"
+                            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors flex-1"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={confirmEliminar}
+                            radius="lg"
+                            size="sm"
+                            className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 flex-1"
+                        >
+                            Eliminar
+                        </Button>
+                    </Group>
+                </div>
             </Modal>
         </div>
     );

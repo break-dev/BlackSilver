@@ -5,7 +5,10 @@ import { notifications } from "@mantine/notifications";
 import { z } from "zod";
 import { useConcesion } from "../../../../../services/empresa/concesiones/useConcesion";
 import { EstadoBase } from "../../../../../shared/enums";
-import type { RES_Concesion } from "../../../../../services/empresa/concesiones/dtos/concesion.dto";
+import type {
+    RES_Concesion,
+    DTO_EditarConcesion,
+} from "../../../../../services/empresa/concesiones/dtos/concesion.dto";
 import type { RES_Empresa } from "../../../../../services/empresa/dtos/empresa.dto";
 
 // 1. Definimos el schema
@@ -30,14 +33,14 @@ export const FormularioConcesion = ({
     const [loading, setLoading] = useState(false);
     const [errorStr, setErrorStr] = useState("");
 
-    const { crear: crearConcesion } = useConcesion({
+    const { crear: crearConcesion, editar: editarConcesion } = useConcesion({
         setIsLoading: setLoading,
         setError: setErrorStr,
     });
 
     const form = useForm({
         initialValues: {
-            id: concesion?.id || 0,
+            id: concesion?.id_concesion || 0,
             id_empresa: concesion?.id_empresa ? String(concesion.id_empresa) : "",
             nombre: concesion?.nombre || "",
         },
@@ -47,7 +50,7 @@ export const FormularioConcesion = ({
     useEffect(() => {
         if (concesion) {
             form.setValues({
-                id: concesion.id,
+                id: concesion.id_concesion,
                 id_empresa: String(concesion.id_empresa),
                 nombre: concesion.nombre,
             });
@@ -65,8 +68,12 @@ export const FormularioConcesion = ({
 
         let exito;
         if (concesion) {
-            console.log("Editando...", payload);
-            exito = false;
+            const dto: DTO_EditarConcesion = {
+                ...payload,
+                id_concesion: concesion.id_concesion,
+            };
+            const resultado = await editarConcesion(dto);
+            exito = !!resultado;
         } else {
             const nuevaConcesion = await crearConcesion(payload);
             exito = !!nuevaConcesion;

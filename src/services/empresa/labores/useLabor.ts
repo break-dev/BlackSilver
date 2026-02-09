@@ -1,23 +1,22 @@
+
 import { api } from "../../api";
 import type { IRespuesta } from "../../../shared/response";
 import type { IUseHook } from "../../hook.interface";
 import type {
-    DTO_CrearConcesion,
-    DTO_EditarConcesion,
-    RES_Concesion,
-} from "./dtos/concesion.dto";
+    DTO_CrearLabor,
+    DTO_EditarLabor,
+    RES_Labor,
+} from "./dtos/labor.dto";
 
-export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
-    const path = "/api/concesiones";
+export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
+    const path = "/api/labores";
 
-    // Listar concesiones (opcional: filtrar por id_empresa)
-    const listar = async (id_empresa?: number) => {
+    const listar = async (id_concesion?: number) => {
         setIsLoading(true);
         setError("");
         try {
-            // Si el back soporta filtro por query param: /api/concesiones?id_empresa=1
-            const url = id_empresa ? `${path}?id_empresa=${id_empresa}` : path;
-            const response = await api.get<IRespuesta<RES_Concesion[]>>(url);
+            const url = id_concesion ? `${path}?id_concesion=${id_concesion}` : path;
+            const response = await api.get<IRespuesta<RES_Labor[]>>(url);
             const result = response.data;
 
             if (result.success) {
@@ -34,12 +33,11 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
         }
     };
 
-    // Crear concesion
-    const crear = async (dto: DTO_CrearConcesion) => {
+    const crear = async (dto: DTO_CrearLabor) => {
         setIsLoading(true);
         setError("");
         try {
-            const response = await api.post<IRespuesta<RES_Concesion>>(path, dto);
+            const response = await api.post<IRespuesta<RES_Labor>>(path, dto);
             const result = response.data;
 
             if (result.success) {
@@ -56,13 +54,12 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
         }
     };
 
-    // Editar concesion (preparado para futuro)
-    const editar = async (dto: DTO_EditarConcesion) => {
+    const editar = async (dto: DTO_EditarLabor) => {
         setIsLoading(true);
         setError("");
         try {
-            const response = await api.put<IRespuesta<RES_Concesion>>(
-                `${path}/${dto.id_concesion}`,
+            const response = await api.put<IRespuesta<RES_Labor>>(
+                `${path}/${dto.id_labor}`,
                 dto,
             );
             const result = response.data;
@@ -81,7 +78,6 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
         }
     };
 
-    // Eliminar concesion (preparado para futuro)
     const eliminar = async (id: number) => {
         setIsLoading(true);
         setError("");
