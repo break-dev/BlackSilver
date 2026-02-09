@@ -42,12 +42,12 @@ export const Home = () => {
       {/* Welcome Section */}
       <div className="text-center space-y-3">
         <h1
-          className="text-4xl font-bold bg-linear-to-r from-white 
+          className="text-2xl font-bold bg-linear-to-r from-white 
           via-zinc-200 to-zinc-400 bg-clip-text text-transparent"
         >
           Hola, {usuario?.nombre || "Usuario"}
         </h1>
-        <p className="text-zinc-400 text-lg">¿Qué deseas hacer hoy?</p>
+        <p className="text-zinc-400 text-sm">¿Qué deseas hacer hoy?</p>
       </div>
 
       {/* Quick Actions Grid */}
@@ -81,7 +81,7 @@ export const Home = () => {
             {/* Content */}
             <div className="relative flex-1">
               <p
-                className="font-semibold text-white text-lg mb-1 group-hover:text-white 
+                className="font-semibold text-white text-base mb-1 group-hover:text-white 
                 transition-colors"
               >
                 {l.title}

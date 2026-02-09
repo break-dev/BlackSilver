@@ -9,6 +9,7 @@
   --text: #fafafa;
   --text-muted: #71717a;
   --accent: #a1a1aa;
+  --text-base: 14px;
 
   /* Dimensiones y spacing*/
   width: 100dvw;

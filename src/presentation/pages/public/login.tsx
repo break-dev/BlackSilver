@@ -43,21 +43,23 @@ export const Login = () => {
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center p-4 
-      relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 
+      relative overflow-hidden bg-linear-to-br from-zinc-950 via-zinc-900 
       to-zinc-950"
     >
       {/* Login Card */}
-      <div className="relative w-full max-w-md mb-16">
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-zinc-800/50 backdrop-blur-2xl">
+      <div className="relative w-full max-w-md mb-20">
+        <div 
+          className="glass rounded-3xl p-8 shadow-2xl border border-zinc-800/50 
+          backdrop-blur-2xl py-16">
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div
-              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-300 
+              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-zinc-100 to-zinc-300 
               flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform"
             >
-              <span className="text-2xl font-bold text-zinc-900">BS</span>
+              <span className="text-xl font-bold text-zinc-900">BS</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-1">Black Silver</h1>
+            <h1 className="text-xl font-bold text-white mb-1">Black Silver</h1>
             <p className="text-sm text-zinc-400">Sistema de Gestión Minera</p>
           </div>
 
@@ -67,7 +69,7 @@ export const Login = () => {
               className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 backdrop-blur-sm 
               animate-slideDown"
             >
-              <p className="text-sm text-red-400 text-center">{error}</p>
+              <p className="text-xs text-red-400 text-center">{error}</p>
             </div>
           )}
 
@@ -78,7 +80,7 @@ export const Login = () => {
                 label="Usuario"
                 placeholder="Ingresa tu usuario"
                 radius="lg"
-                size="md"
+                size="sm"
                 {...form.getInputProps("usuario")}
               />
             </div>
@@ -88,7 +90,7 @@ export const Login = () => {
                 label="Contraseña"
                 placeholder="Ingresa tu contraseña"
                 radius="lg"
-                size="md"
+                size="sm"
                 {...form.getInputProps("password")}
               />
             </div>
@@ -97,10 +99,10 @@ export const Login = () => {
               type="submit"
               fullWidth
               radius="lg"
-              size="md"
+              size="sm"
               loading={isLoading}
-              className="!mt-7 !bg-gradient-to-r !from-zinc-100 !to-zinc-300 !text-zinc-900 
-              !font-semibold hover:!from-white hover:!to-zinc-200 !shadow-lg"
+              className="mt-7! bg-linear-to-r! from-zinc-100! to-zinc-300! text-zinc-900! 
+              font-semibold! hover:from-white! hover:to-zinc-200! shadow-lg!"
             >
               Iniciar Sesión
             </Button>

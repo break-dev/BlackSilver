@@ -25,13 +25,13 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
       {/* Logo/Brand */}
       <div className="flex items-center gap-2">
         <div
-          className="w-7 h-7 rounded-lg bg-gradient-to-br from-zinc-100 
+          className="w-7 h-7 rounded-lg bg-linear-to-br from-zinc-100 
           to-zinc-300 flex items-center justify-center shadow-sm"
         >
-          <span className="text-xs font-bold text-zinc-900">BS</span>
+          <span className="text-[10px] font-bold text-zinc-900">BS</span>
         </div>
         <span
-          className="text-sm font-semibold text-white tracking-wide 
+          className="text-base font-semibold text-white tracking-wide 
           hidden sm:block"
         >
           Black Silver

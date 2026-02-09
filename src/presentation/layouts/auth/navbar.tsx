@@ -70,7 +70,7 @@ export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
           <button
             onClick={() => go("/home")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl 
-            text-sm font-medium transition-all ${
+            text-xs font-medium transition-all ${
               location.pathname === "/home"
                 ? "bg-white/10 text-white shadow-sm"
                 : "text-zinc-400 hover:text-white hover:bg-white/5"
@@ -90,7 +90,7 @@ export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
                     setExpanded(expanded === mod.nombre ? null : mod.nombre)
                   }
                   className="w-full flex items-center justify-between px-3 py-2.5 
-                  rounded-xl text-sm font-medium text-zinc-400 hover:text-white 
+                  rounded-xl text-xs font-medium text-zinc-400 hover:text-white 
                   hover:bg-white/5 transition-all"
                 >
                   <span>{mod.nombre || "Sin nombre"}</span>
@@ -111,7 +111,7 @@ export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
                       <div key={sub.id_submodulo || sub.nombre}>
                         {/* Submodule header */}
                         <div
-                          className="text-xs font-semibold text-zinc-500 
+                          className="text-[10px] font-semibold text-zinc-500 
                           uppercase tracking-wider px-3 py-2"
                         >
                           {sub.nombre || "Sin nombre"}
@@ -123,7 +123,7 @@ export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
                             <button
                               key={sec.id_seccion || sec.nombre}
                               onClick={() => go(sec.url || "#")}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
                                 location.pathname === sec.url
                                   ? "text-white bg-white/10 font-medium"
                                   : "text-zinc-400 hover:text-zinc-300 hover:bg-white/5"

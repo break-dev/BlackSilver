@@ -2,7 +2,7 @@ import { WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
 export const PlaceholderPage = ({ titulo }: { titulo: string }) => (
   <div className="max-w-xl mx-auto">
-    <h1 className="text-xl font-semibold text-white mb-6">{titulo}</h1>
+    <h1 className="text-lg font-semibold text-white mb-6">{titulo}</h1>
     <div
       className="flex flex-col items-center py-16 rounded-xl 
       bg-zinc-900 border border-dashed border-zinc-700"
