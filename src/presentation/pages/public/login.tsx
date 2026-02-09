@@ -1,40 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Card,
-  TextInput,
-  PasswordInput,
-  Button,
-  Stack,
-  Title,
-  Text,
-  Alert,
-  Box,
-} from "@mantine/core";
+import { TextInput, PasswordInput, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconAlertCircle } from "@tabler/icons-react";
 import { useUsuario } from "../../../services/usuarios/useUsuario";
 import { useMenu } from "../../../services/menu/useMenu";
-import type { ErrorResponse } from "../../../shared/response";
 import { AuthStore } from "../../../stores/auth.store";
+import { MenuStore } from "../../../stores/menu.store";
 
-// Pagina de inicio de sesion
 export const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ErrorResponse>({});
+  const [error, setError] = useState<string>("");
 
   const { login } = useUsuario({ setIsLoading, setError });
   const { setMenuNavegacion } = useMenu({ setIsLoading, setError });
 
   const form = useForm({
-    initialValues: {
-      usuario: "",
-      password: "",
-    },
+    initialValues: { usuario: "", password: "" },
     validate: {
-      usuario: (value) => (value.length < 1 ? "Usuario requerido" : null),
-      password: (value) => (value.length < 1 ? "Contraseña requerida" : null),
+      usuario: (v) => (v ? null : "Requerido"),
+      password: (v) => (v ? null : "Requerido"),
     },
   });
 
@@ -42,115 +27,97 @@ export const Login = () => {
     usuario: string;
     password: string;
   }) => {
-    await login(values);
+    try {
+      // 1. First, login
+      await login(values);
 
-    // Verificar si el login fue exitoso
-    const isAuthenticated = AuthStore.getState().isAuthenticated;
-    if (isAuthenticated) {
-      await setMenuNavegacion();
-      navigate("/home");
+      // 2. Check if login was successful
+      if (AuthStore.getState().isAuthenticated) {
+        // 3. Load menu navigation and wait
+        await setMenuNavegacion();
+
+        // 4. Navigate to home
+        navigate("/home");
+      }
+    } catch (error) {
+      console.error("❌ Error en login:", error);
     }
   };
 
-  const errorMessage =
-    typeof error === "string"
-      ? error
-      : typeof error === "object" && error !== null && "message" in error
-        ? String((error as { message: string }).message)
-        : null;
-
   return (
-    <Card
-      shadow="xl"
-      padding="xl"
-      radius="lg"
-      w={400}
-      style={{
-        background: "rgba(30, 30, 30, 0.9)",
-        border: "1px solid rgba(212, 165, 10, 0.3)",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <Stack gap="lg">
-        {/* Logo y titulo */}
-        <Box ta="center">
-          <Title
-            order={2}
-            style={{
-              background: "linear-gradient(135deg, #ffd666 0%, #d4a50a 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-            }}
-          >
-            BLACK SILVER
-          </Title>
-          <Text c="dimmed" size="sm" mt="xs">
-            Sistema de Gestión Minera
-          </Text>
-        </Box>
+    <div className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
+      {/* Animated background orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-zinc-800/30 rounded-full blur-3xl animate-float"></div>
+        <div
+          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-zinc-700/20 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="absolute top-3/4 left-1/3 w-64 h-64 bg-zinc-600/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "4s" }}
+        ></div>
+      </div>
 
-        {/* Mensaje de error */}
-        {errorMessage && (
-          <Alert
-            icon={<IconAlertCircle size={16} />}
-            title="Error"
-            color="red"
-            variant="light"
-          >
-            {errorMessage}
-          </Alert>
-        )}
+      {/* Login Card */}
+      <div className="relative w-full max-w-md">
+        <div className="glass rounded-3xl p-8 shadow-2xl border border-zinc-800/50 backdrop-blur-2xl">
+          {/* Logo and Title */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-300 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+              <span className="text-2xl font-bold text-zinc-900">BS</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-1">Black Silver</h1>
+            <p className="text-sm text-zinc-400">Sistema de Gestión Minera</p>
+          </div>
 
-        {/* Formulario */}
-        <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack gap="md">
-            <TextInput
-              label="Usuario"
-              placeholder="Ingresa tu usuario"
-              {...form.getInputProps("usuario")}
-              styles={{
-                input: {
-                  background: "rgba(17, 17, 17, 0.8)",
-                  border: "1px solid rgba(212, 165, 10, 0.2)",
-                  "&:focus": {
-                    borderColor: "#d4a50a",
-                  },
-                },
-              }}
-            />
+          {/* Error Message */}
+          {error && typeof error === "string" && error.length > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 backdrop-blur-sm animate-slideDown">
+              <p className="text-sm text-red-400 text-center">{error}</p>
+            </div>
+          )}
 
-            <PasswordInput
-              label="Contraseña"
-              placeholder="Ingresa tu contraseña"
-              {...form.getInputProps("password")}
-              styles={{
-                input: {
-                  background: "rgba(17, 17, 17, 0.8)",
-                  border: "1px solid rgba(212, 165, 10, 0.2)",
-                  "&:focus": {
-                    borderColor: "#d4a50a",
-                  },
-                },
-              }}
-            />
+          {/* Form */}
+          <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-5">
+            <div>
+              <TextInput
+                label="Usuario"
+                placeholder="Ingresa tu usuario"
+                radius="lg"
+                size="md"
+                {...form.getInputProps("usuario")}
+              />
+            </div>
+
+            <div>
+              <PasswordInput
+                label="Contraseña"
+                placeholder="Ingresa tu contraseña"
+                radius="lg"
+                size="md"
+                {...form.getInputProps("password")}
+              />
+            </div>
 
             <Button
               type="submit"
               fullWidth
+              radius="lg"
+              size="md"
               loading={isLoading}
-              mt="md"
-              style={{
-                background: "linear-gradient(135deg, #d4a50a 0%, #b8920a 100%)",
-                border: "none",
-              }}
+              className="!mt-7 !bg-gradient-to-r !from-zinc-100 !to-zinc-300 !text-zinc-900 !font-semibold hover:!from-white hover:!to-zinc-200 !shadow-lg"
             >
               Iniciar Sesión
             </Button>
-          </Stack>
-        </form>
-      </Stack>
-    </Card>
+          </form>
+
+          {/* Footer */}
+          <p className="text-center text-xs text-zinc-500 mt-6">
+            &copy; 2026 Black Silver. Todos los derechos reservados.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };

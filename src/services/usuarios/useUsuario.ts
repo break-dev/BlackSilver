@@ -1,14 +1,14 @@
 import { api } from "../api";
-import type { ErrorResponse, IRespuesta } from "../../shared/response";
+import type { IRespuesta } from "../../shared/response";
 import type { DTO_Login, RES_Login } from "./dtos/usuario.dto";
 import { AuthStore } from "../../stores/auth.store";
 import type { IUseHook } from "../hook.interface";
 
 export const useUsuario = ({ setIsLoading, setError }: IUseHook) => {
-  // inicio de seion
+  // inicio de sesion
   const login = async (dto: DTO_Login) => {
     setIsLoading(true);
-    setError({} as ErrorResponse);
+    setError(""); // Clear previous errors
     try {
       const response = await api.post<IRespuesta<RES_Login>>("/api/login", dto);
       const result = response.data;
@@ -19,7 +19,7 @@ export const useUsuario = ({ setIsLoading, setError }: IUseHook) => {
         setError(result.error);
       }
     } catch (error) {
-      setError(error as ErrorResponse);
+      setError(String(error));
     } finally {
       setIsLoading(false);
     }

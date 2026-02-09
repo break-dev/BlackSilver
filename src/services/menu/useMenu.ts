@@ -1,5 +1,5 @@
 import { api } from "../api";
-import type { ErrorResponse, IRespuesta } from "../../shared/response";
+import type { IRespuesta } from "../../shared/response";
 import type { IUseHook } from "../hook.interface";
 import type { IModulo } from "./dtos/menu.dto";
 import { MenuStore } from "../../stores/menu.store";
@@ -8,7 +8,7 @@ export const useMenu = ({ setIsLoading, setError }: IUseHook) => {
   // setear menu de navegacion
   const setMenuNavegacion = async () => {
     setIsLoading(true);
-    setError({} as ErrorResponse);
+    setError(""); // Clear any previous error
     try {
       const response = await api.get<IRespuesta<IModulo[]>>(
         "/api/menu_navegacion",
@@ -21,7 +21,7 @@ export const useMenu = ({ setIsLoading, setError }: IUseHook) => {
         setError(result.error);
       }
     } catch (error) {
-      setError(error as ErrorResponse);
+      setError(String(error));
     } finally {
       setIsLoading(false);
     }

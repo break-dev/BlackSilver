@@ -1,97 +1,103 @@
+import { useNavigate } from "react-router-dom";
 import {
-  Card,
-  Title,
-  Text,
-  SimpleGrid,
-  Box,
-  Stack,
-  Group,
-} from "@mantine/core";
-import { IconBuilding, IconUsers, IconSettings } from "@tabler/icons-react";
+  BuildingOffice2Icon,
+  UsersIcon,
+  Cog6ToothIcon,
+} from "@heroicons/react/24/outline";
 import { AuthStore } from "../../stores/auth.store";
 
-// Pagina de inicio despues del login
 export const Home = () => {
-  const usuario = AuthStore((state) => state.usuario);
+  const navigate = useNavigate();
+  const usuario = AuthStore((s) => s.usuario);
 
-  const quickLinks = [
+  const links = [
     {
       title: "Empresas",
-      description: "Gestionar empresas, áreas y concesiones",
-      icon: IconBuilding,
-      color: "#d4a50a",
+      desc: "Gestionar empresas y concesiones",
+      icon: BuildingOffice2Icon,
+      url: "/configuracion/empresas/empresas",
+      gradient: "from-blue-500/20 to-cyan-500/20",
+      iconBg: "from-blue-500 to-cyan-500",
     },
     {
       title: "Personal",
-      description: "Administrar cargos y trabajadores",
-      icon: IconUsers,
-      color: "#ffd666",
+      desc: "Administrar trabajadores",
+      icon: UsersIcon,
+      url: "/configuracion/personal/trabajadores",
+      gradient: "from-purple-500/20 to-pink-500/20",
+      iconBg: "from-purple-500 to-pink-500",
     },
     {
       title: "Configuración",
-      description: "Roles y cuentas de usuario",
-      icon: IconSettings,
-      color: "#b8920a",
+      desc: "Roles y cuentas",
+      icon: Cog6ToothIcon,
+      url: "/configuracion/usuarios/roles",
+      gradient: "from-amber-500/20 to-orange-500/20",
+      iconBg: "from-amber-500 to-orange-500",
     },
   ];
 
   return (
-    <Stack gap="xl">
-      {/* Bienvenida */}
-      <Box>
-        <Title order={2} c="white">
-          Bienvenido, {usuario?.nombre || "Usuario"}
-        </Title>
-        <Text c="dimmed" mt="xs">
-          Sistema de Gestión Minera - Black Silver
-        </Text>
-      </Box>
+    <div className="max-w-3xl mx-auto space-y-10 py-4">
+      {/* Welcome Section */}
+      <div className="text-center space-y-3">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+          Hola, {usuario?.nombre || "Usuario"}
+        </h1>
+        <p className="text-zinc-400 text-lg">¿Qué deseas hacer hoy?</p>
+      </div>
 
-      {/* Accesos rapidos */}
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
-        {quickLinks.map((link) => (
-          <Card
-            key={link.title}
-            shadow="md"
-            padding="lg"
-            radius="md"
-            style={{
-              background: "rgba(30, 30, 30, 0.8)",
-              border: "1px solid rgba(212, 165, 10, 0.2)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212, 165, 10, 0.5)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212, 165, 10, 0.2)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
+      {/* Quick Actions Grid */}
+      <div className="grid gap-4 md:gap-5">
+        {links.map((l) => (
+          <button
+            key={l.title}
+            onClick={() => navigate(l.url)}
+            className="group relative flex items-center gap-5 p-6 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 backdrop-blur-sm text-left hover:border-zinc-700 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20"
           >
-            <Group>
-              <Box
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  background: `rgba(212, 165, 10, 0.1)`,
-                }}
+            {/* Gradient overlay on hover */}
+            <div
+              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${l.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+            ></div>
+
+            {/* Icon */}
+            <div className="relative">
+              <div
+                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${l.iconBg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}
               >
-                <link.icon size={24} color={link.color} />
-              </Box>
-              <Box>
-                <Text fw={600} c="white">
-                  {link.title}
-                </Text>
-                <Text size="sm" c="dimmed">
-                  {link.description}
-                </Text>
-              </Box>
-            </Group>
-          </Card>
+                <l.icon className="w-7 h-7 text-white" />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="relative flex-1">
+              <p className="font-semibold text-white text-lg mb-1 group-hover:text-white transition-colors">
+                {l.title}
+              </p>
+              <p className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                {l.desc}
+              </p>
+            </div>
+
+            {/* Arrow indicator */}
+            <div className="relative">
+              <svg
+                className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-1 transition-all duration-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
+          </button>
         ))}
-      </SimpleGrid>
-    </Stack>
+      </div>
+    </div>
   );
 };

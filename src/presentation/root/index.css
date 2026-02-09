@@ -1,16 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
-  /* 
-  Variables
-  */
-  /* Colores */
-  --color-white: #fbfbfb;
-  --color-black: #111;
-  /* Tipografía */
-  --font-primary: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --font-secondary: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Negro profundo y plateados */
+  --bg: #09090b;
+  --surface: #18181b;
+  --border: #27272a;
+  --text: #fafafa;
+  --text-muted: #71717a;
+  --accent: #a1a1aa;
 
   /* Dimensiones y spacing*/
   width: 100dvw;
@@ -18,26 +16,9 @@
   margin: 0;
   padding: 0;
 
-  /* Tipografia */
-  font-family: var(--font-primary);
-  font-size: var(--text-base); /* 1rem - 16px aprox. */
-  line-height: var(--tw-leading, var(--text-sm--line-height));
-  font-weight: 400; /* normal */
-
-  background-color: var(--color-black); /* color de fondo */
-  color-scheme: dark; /* modo oscuro */
-  color: var(--color-white); /* color de texto */
-
-  /* optimizar la renderización de la fuente */
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* Eliminar los estilos por defecto de los elementos */
-  -moz-appearance: none; /* Firefox */
-  -webkit-appearance: none; /* Safari and Chrome */
-  appearance: none;
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 body,
@@ -46,4 +27,133 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(24, 24, 27, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mantine overrides */
+.mantine-TextInput-input,
+.mantine-PasswordInput-input,
+.mantine-PasswordInput-innerInput {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  transition: all 0.2s ease !important;
+}
+
+.mantine-TextInput-input:focus,
+.mantine-PasswordInput-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(161, 161, 170, 0.1) !important;
+}
+
+.mantine-InputWrapper-label {
+  color: var(--text-muted) !important;
+  font-weight: 500 !important;
+  margin-bottom: 8px !important;
+}
+
+.mantine-Button-root {
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.mantine-Button-root:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

@@ -1,37 +1,14 @@
-import { Title, Text, Stack, Box } from "@mantine/core";
+import { WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 
-interface PlaceholderPageProps {
-  titulo: string;
-  descripcion?: string;
-}
-
-// Componente placeholder para secciones en desarrollo
-export const PlaceholderPage = ({
-  titulo,
-  descripcion = "Esta sección está en desarrollo",
-}: PlaceholderPageProps) => {
-  return (
-    <Stack gap="md">
-      <Box>
-        <Title order={3} c="white">
-          {titulo}
-        </Title>
-        <Text c="dimmed" mt="xs">
-          {descripcion}
-        </Text>
-      </Box>
-
-      <Box
-        style={{
-          padding: "40px",
-          borderRadius: "8px",
-          background: "rgba(30, 30, 30, 0.5)",
-          border: "1px dashed rgba(212, 165, 10, 0.3)",
-          textAlign: "center",
-        }}
-      >
-        <Text c="dimmed">Contenido próximamente...</Text>
-      </Box>
-    </Stack>
-  );
-};
+export const PlaceholderPage = ({ titulo }: { titulo: string }) => (
+  <div className="max-w-xl mx-auto">
+    <h1 className="text-xl font-semibold text-white mb-6">{titulo}</h1>
+    <div
+      className="flex flex-col items-center py-16 rounded-xl 
+      bg-zinc-900 border border-dashed border-zinc-700"
+    >
+      <WrenchScrewdriverIcon className="w-10 h-10 text-zinc-600 mb-4" />
+      <p className="text-zinc-400">En construcción</p>
+    </div>
+  </div>
+);
