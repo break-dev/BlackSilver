@@ -8,6 +8,8 @@ import { PublicRoute } from "./publicRoute";
 import { Login } from "../pages/public/login";
 import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
+import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
+
 
 export const App = () => {
   return (
@@ -49,7 +51,7 @@ export const App = () => {
         />
         <Route
           path="/configuracion/empresas/concesiones"
-          element={<PlaceholderPage titulo="Concesiones" />}
+          element={<EmpresasConcesiones />}
         />
         <Route
           path="/configuracion/empresas/labores"
