@@ -1,19 +1,18 @@
+// Estructura del menu de navegacion segun API
 export interface ISeccion {
+  id_seccion: number;
   nombre: string;
   url: string;
 }
 
 export interface ISubmodulo {
+  id_submodulo: number;
   nombre: string;
   secciones: ISeccion[];
 }
 
 export interface IModulo {
+  id_modulo: number;
   nombre: string;
-  submodulo: ISubmodulo[];
-}
-
-export interface IMenuStore {
-  menu: IModulo[];
-  updateMenu: (menu: IModulo[]) => void;
+  submodulos: ISubmodulo[];
 }

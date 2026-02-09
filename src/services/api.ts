@@ -1,4 +1,5 @@
 import axios from "axios";
+import { AuthStore } from "../stores/auth.store";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -9,8 +10,13 @@ const api = axios.create({
   },
 });
 
+// Interceptor para agregar token de autenticacion
 api.interceptors.request.use(
   (request) => {
+    const token = AuthStore.getState().token;
+    if (token) {
+      request.headers.Authorization = `Bearer ${token}`;
+    }
     console.log(
       `[API] Solicitud - ${request.method} a: ${request.url}`,
       request.data,
