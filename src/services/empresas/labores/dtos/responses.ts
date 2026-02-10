@@ -6,6 +6,7 @@ import type {
 
 export interface RES_Labor {
   id_labor: number;
+  id_concesion: number;
   concesion: string;
   nombre: string;
   descripcion: string;

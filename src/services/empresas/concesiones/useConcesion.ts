@@ -97,10 +97,34 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
     }
   };
 
+  // Listar concesiones por empresa
+  const get_by_empresa = async (id_empresa: number) => {
+    // setIsLoading(true); // Opcional: manejar loading independiente si se desea
+    try {
+      // Nota: El usuario indicó: GET /api/concesiones/by-empresa?id_empresa=X
+      // Ajustamos el path y parámetos según esa indicación.
+      const response = await api.get<IRespuesta<RES_Concesion[]>>(`${path}/by-empresa`, {
+        params: { id_empresa },
+      });
+      const result = response.data;
+
+      if (result.success) {
+        return result.data;
+      } else {
+        console.error(result.error);
+        return [];
+      }
+    } catch (error) {
+      console.error(String(error));
+      return [];
+    }
+  };
+
   return {
     listar,
     crear_concesion,
     editar,
     eliminar,
+    get_by_empresa,
   };
 };

@@ -1,282 +1,283 @@
-import { useEffect, useState, useMemo } from "react";
-import {
-  Table,
-  Button,
-  Modal,
-  Group,
-  TextInput,
-  Badge,
-  ActionIcon,
-  Tooltip,
-} from "@mantine/core";
+import { useState, useMemo, useEffect } from "react";
+import { Button, Modal, Group, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import {
-  PlusIcon,
-  PencilSquareIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  ExclamationTriangleIcon,
-} from "@heroicons/react/24/outline";
-
-// Services
+import { DataTable, type DataTableColumn } from "mantine-datatable";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useCategoria } from "../../../../services/inventario/categorias/useCategoria";
 import type { RES_Categoria } from "../../../../services/inventario/categorias/dtos/responses";
 import { EstadoBase, TipoRequerimiento } from "../../../../shared/enums";
+import { RegistroCategoria } from "./components/registro-categoria";
 
-// Components
-import { FormularioCategoria } from "./components/FormularioCategoria";
+const PAGE_SIZE = 25;
 
 export const InventarioCategorias = () => {
-  // Estados Locales
+  // Estado local
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [_, setErrorStr] = useState("");
-  const [filtro, setFiltro] = useState("");
-  const [categoriaEditar, setCategoriaEditar] = useState<RES_Categoria | null>(
-    null,
-  );
-  const [categoriaToDelete, setCategoriaToDelete] = useState<number | null>(
-    null,
-  );
+  const [loading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
-  // Control de Modal de Mantine UI
-  const [modalOpened, { open: openModal, close: closeModal }] =
-    useDisclosure(false);
-  const [
-    deleteModalOpened,
-    { open: openDeleteModal, close: closeDeleteModal },
-  ] = useDisclosure(false);
+  // Filtros
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
 
-  // Hooks de Servicio
-  const { listar: listarCategorias, eliminar: eliminarCategoria } =
-    useCategoria({
-      setIsLoading: setLoading,
-      setError: setErrorStr,
-    });
+  // Modal
+  const [opened, { open, close }] = useDisclosure(false);
 
-  // Cargar datos al montar
+  // Servicio
+  const { listar } = useCategoria({ setIsLoading, setError });
+
+  // Carga inicial
   useEffect(() => {
-    cargarDatos();
+    let cancelled = false;
+    listar().then((data) => {
+      if (!cancelled) setCategorias(data || []);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const cargarDatos = async () => {
-    const datos = await listarCategorias();
-    console.log("Categorias cargadas:", datos);
-    setCategorias(datos || []);
-  };
+  // Opciones de filtros
+  const tiposUnicos = useMemo(() => {
+    const set = new Set(categorias.map((c) => c.tipo_requerimiento));
+    return Array.from(set)
+      .filter(Boolean)
+      .sort()
+      .map((t) => ({ value: String(t), label: String(t) }));
+  }, [categorias]);
 
-  // Filtrado de datos (Cliente)
+  const estadosUnicos = useMemo(() => {
+    const set = new Set(categorias.map((c) => c.estado));
+    return Array.from(set)
+      .filter(Boolean)
+      .sort()
+      .map((e) => ({ value: String(e), label: String(e) }));
+  }, [categorias]);
+
+  // Datos filtrados
   const categoriasFiltradas = useMemo(() => {
     return categorias.filter((c) => {
-      const nombreMatch = c.nombre.toLowerCase().includes(filtro.toLowerCase());
-      const descMatch = c.descripcion
-        ?.toLowerCase()
-        .includes(filtro.toLowerCase());
-      const tipoMatch = c.tipo_requerimiento
-        .toLowerCase()
-        .includes(filtro.toLowerCase());
-      const estadoMatch = c.estado.toLowerCase().includes(filtro.toLowerCase());
+      const matchBusqueda =
+        !busqueda ||
+        c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+        c.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
 
-      return nombreMatch || descMatch || tipoMatch || estadoMatch;
+      const matchTipo = !filtroTipo || c.tipo_requerimiento === filtroTipo;
+      const matchEstado = !filtroEstado || c.estado === filtroEstado;
+
+      return matchBusqueda && matchTipo && matchEstado;
     });
-  }, [categorias, filtro]);
+  }, [categorias, busqueda, filtroTipo, filtroEstado]);
 
-  // Manejadores
-  const handleOpenCrear = () => {
-    setCategoriaEditar(null);
-    openModal();
+  // Paginación
+  const registrosPaginados = useMemo(() => {
+    const inicio = (page - 1) * PAGE_SIZE;
+    return categoriasFiltradas.slice(inicio, inicio + PAGE_SIZE);
+  }, [categoriasFiltradas, page]);
+
+  // Callback registro exitoso
+  const handleRegistroExitoso = (categoria: RES_Categoria) => {
+    close();
+    setCategorias([...categorias, categoria]);
   };
 
-  const handleOpenEditar = (cat: RES_Categoria) => {
-    setCategoriaEditar(cat);
-    openModal();
-  };
-
-  const handleEliminar = (id: number) => {
-    setCategoriaToDelete(id);
-    openDeleteModal();
-  };
-
-  const confirmEliminar = async () => {
-    if (categoriaToDelete) {
-      const exito = await eliminarCategoria(categoriaToDelete);
-      if (exito) cargarDatos();
-      closeDeleteModal();
-      setCategoriaToDelete(null);
-    }
-  };
-
-  const handleSuccess = () => {
-    closeModal();
-    cargarDatos();
-  };
+  const columns: DataTableColumn<RES_Categoria>[] = [
+    {
+      accessor: "index",
+      title: "#",
+      textAlign: "center",
+      width: 60,
+      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+    },
+    {
+      accessor: "nombre",
+      title: "Categoría",
+      render: (record) => (
+        <span className="text-indigo-200 font-semibold">{record.nombre}</span>
+      ),
+    },
+    {
+      accessor: "tipo_requerimiento",
+      title: "Tipo",
+      render: (record) => (
+        <Badge
+          color={
+            record.tipo_requerimiento === TipoRequerimiento.Bien
+              ? "blue"
+              : "cyan"
+          }
+          variant="light"
+          size="sm"
+          radius="sm"
+        >
+          {record.tipo_requerimiento}
+        </Badge>
+      ),
+    },
+    {
+      accessor: "descripcion",
+      title: "Descripción",
+      width: "40%",
+      render: (record) => (
+        <span className="text-zinc-400 text-sm truncate block" title={record.descripcion || ""}>
+          {record.descripcion || "-"}
+        </span>
+      ),
+    },
+    {
+      accessor: "estado",
+      title: "Estado",
+      textAlign: "center",
+      render: (record) => (
+        <Badge
+          color={record.estado === EstadoBase.Activo ? "green" : "red"}
+          variant="light"
+          radius="sm"
+          size="sm"
+        >
+          {record.estado}
+        </Badge>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
+      {/* Encabezado */}
       <Group justify="space-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Categorías</h2>
           <p className="text-zinc-400 text-sm">
-            Gestiona las categorías de inventario y define si son Bienes o
-            Servicios.
+            Gestiona las categorías de inventario y define si son Bienes o Servicios.
           </p>
         </div>
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={handleOpenCrear}
+          onClick={open}
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
+          font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
         >
           Nueva Categoría
         </Button>
       </Group>
 
       {/* Filtros */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-4">
         <TextInput
-          placeholder="Buscar por nombre, descripción o tipo..."
+          placeholder="Buscar por nombre o descripción..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
           }
-          value={filtro}
-          onChange={(e) => setFiltro(e.currentTarget.value)}
-          className="w-full max-w-md"
+          value={busqueda}
+          onChange={(e) => {
+            setBusqueda(e.currentTarget.value);
+            setPage(1);
+          }}
+          className="flex-1 min-w-50"
           radius="lg"
           size="sm"
           classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+          }}
+        />
+        <Select
+          placeholder="Tipo"
+          data={tiposUnicos}
+          value={filtroTipo}
+          onChange={(val) => {
+            setFiltroTipo(val);
+            setPage(1);
+          }}
+          clearable
+          radius="lg"
+          size="sm"
+          className="min-w-30"
+          classNames={{
+            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+            dropdown: "bg-zinc-900 border-zinc-800",
+            option: "text-zinc-300 hover:bg-zinc-800",
+          }}
+        />
+        <Select
+          placeholder="Estado"
+          data={estadosUnicos}
+          value={filtroEstado}
+          onChange={(val) => {
+            setFiltroEstado(val);
+            setPage(1);
+          }}
+          clearable
+          radius="lg"
+          size="sm"
+          className="min-w-30"
+          classNames={{
+            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+            dropdown: "bg-zinc-900 border-zinc-800",
+            option: "text-zinc-300 hover:bg-zinc-800",
           }}
         />
       </div>
 
-      {/* Tabla */}
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden backdrop-blur-sm">
-        <Table highlightOnHover verticalSpacing="sm">
-          <Table.Thead>
-            <Table.Tr className="bg-zinc-900/80">
-              <Table.Th
-                className="text-zinc-400 font-normal w-16 text-center"
-                style={{ textAlign: "center" }}
-              >
-                #
-              </Table.Th>
-              <Table.Th className="text-zinc-300">Categoría</Table.Th>
-              <Table.Th className="text-zinc-300">Tipo Requerimiento</Table.Th>
-              <Table.Th className="text-zinc-300">Descripción</Table.Th>
-              <Table.Th
-                className="text-zinc-300 text-center"
-                style={{ textAlign: "center" }}
-              >
-                Estado
-              </Table.Th>
-              <Table.Th
-                className="text-zinc-300 text-center"
-                style={{ textAlign: "center" }}
-              >
-                Acciones
-              </Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {categoriasFiltradas.length > 0 ? (
-              categoriasFiltradas.map((c, index) => (
-                <Table.Tr key={c.id}>
-                  <Table.Td
-                    className="text-zinc-500 font-medium text-xs w-16 text-center"
-                    style={{ textAlign: "center" }}
-                  >
-                    {index + 1}
-                  </Table.Td>
-                  <Table.Td className="text-indigo-200 font-semibold">
-                    {c.nombre}
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge
-                      color={
-                        c.tipo_requerimiento === TipoRequerimiento.Bien
-                          ? "blue"
-                          : "cyan"
-                      }
-                      variant="light"
-                      size="sm"
-                      radius="sm"
-                    >
-                      {c.tipo_requerimiento}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td
-                    className="text-zinc-400 text-sm max-w-xs truncate"
-                    title={c.descripcion || ""}
-                  >
-                    {c.descripcion || "-"}
-                  </Table.Td>
-                  <Table.Td className="text-center">
-                    <Badge
-                      color={c.estado === EstadoBase.Activo ? "green" : "red"}
-                      variant="light"
-                      radius="sm"
-                      size="sm"
-                    >
-                      {c.estado}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Group gap="sm" justify="center">
-                      <Tooltip label="Editar">
-                        <ActionIcon
-                          variant="light"
-                          color="pink"
-                          size="lg"
-                          radius="md"
-                          aria-label="Editar"
-                          onClick={() => handleOpenEditar(c)}
-                        >
-                          <PencilSquareIcon className="w-5 h-5" />
-                        </ActionIcon>
-                      </Tooltip>
-                      <Tooltip label="Eliminar">
-                        <ActionIcon
-                          variant="light"
-                          color="grape"
-                          size="lg"
-                          radius="md"
-                          aria-label="Eliminar"
-                          onClick={() => handleEliminar(c.id)}
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </ActionIcon>
-                      </Tooltip>
-                    </Group>
-                  </Table.Td>
-                </Table.Tr>
-              ))
-            ) : (
-              <Table.Tr>
-                <Table.Td
-                  colSpan={6}
-                  className="text-center py-8 text-zinc-500"
-                >
-                  {loading
-                    ? "Cargando..."
-                    : "No hay categorías que coincidan con la búsqueda"}
-                </Table.Td>
-              </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
+      {/* DataTable */}
+      <div
+        className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden 
+        backdrop-blur-sm"
+      >
+        <DataTable
+          columns={columns}
+          records={registrosPaginados}
+          totalRecords={categoriasFiltradas.length}
+          recordsPerPage={PAGE_SIZE}
+          page={page}
+          onPageChange={setPage}
+          highlightOnHover
+          fetching={loading}
+          idAccessor="id"
+          noRecordsText="No se encontraron categorías"
+          loadingText="Cargando..."
+          minHeight={300}
+          paginationText={({ from, to, totalRecords }) =>
+            `${from} - ${to} de ${totalRecords}`
+          }
+          classNames={{
+            root: "bg-transparent",
+            table: "bg-transparent",
+            header: "bg-zinc-900/80",
+            pagination: "bg-zinc-900/50 border-t border-zinc-800",
+          }}
+          styles={{
+            header: {
+              "--mantine-color-text": "var(--mantine-color-zinc-3, #d4d4d8)",
+            },
+          }}
+        />
       </div>
 
-      {/* Modal Crear/Editar */}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
+      {/* Modal de Registro */}
       <Modal
-        opened={modalOpened}
-        onClose={closeModal}
+        opened={opened}
+        onClose={close}
         title={
           <div className="flex items-center gap-3">
-            <div className="w-1 h-6 bg-gradient-to-b from-[#ffc933] to-[#b8920a] rounded-full shadow-[0_0_10px_#d4a50a]"></div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent tracking-tight">
-              {categoriaEditar ? "Editar Categoría" : "Nueva Categoría"}
+            <div
+              className="w-1 h-6 bg-linear-to-b from-[#ffc933] to-[#b8920a] 
+              rounded-full shadow-[0_0_10px_#d4a50a]"
+            />
+            <span
+              className="text-xl font-bold bg-linear-to-r from-white via-zinc-100 
+              to-zinc-400 bg-clip-text text-transparent tracking-tight"
+            >
+              Nueva Categoría
             </span>
           </div>
         }
@@ -290,73 +291,13 @@ export const InventarioCategorias = () => {
           content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
           header: "bg-zinc-950 text-white pt-5 pb-1 px-6",
           body: "bg-zinc-950 px-6 pt-6 pb-6",
-          close:
-            "text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 rounded-full w-8 h-8 flex items-center justify-center",
+          close: `text-zinc-400 hover:text-white hover:bg-white/10 transition-all 
+          duration-200 rounded-full w-8 h-8 flex items-center justify-center`,
           title: "text-xl font-bold text-white",
         }}
         transitionProps={{ transition: "pop", duration: 250 }}
       >
-        <FormularioCategoria
-          categoria={categoriaEditar}
-          onSuccess={handleSuccess}
-          onCancel={closeModal}
-        />
-      </Modal>
-
-      {/* Modal Confirmar Eliminación */}
-      <Modal
-        opened={deleteModalOpened}
-        onClose={closeDeleteModal}
-        centered
-        radius="xl"
-        withCloseButton={false}
-        classNames={{
-          content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
-          body: "bg-zinc-950 p-6",
-        }}
-        transitionProps={{ transition: "pop", duration: 250 }}
-      >
-        <div className="flex flex-col items-center text-center gap-4">
-          <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center">
-            <ExclamationTriangleIcon className="w-6 h-6 text-amber-500" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white mb-2">
-              Eliminar Categoría
-            </h3>
-            <p className="text-zinc-400 text-sm">
-              ¿Estás seguro que deseas eliminar la categoría
-              <span className="text-white font-semibold">
-                {categoriaToDelete &&
-                categorias.find((c) => c.id === categoriaToDelete)?.nombre
-                  ? ` "${categorias.find((c) => c.id === categoriaToDelete)?.nombre}"`
-                  : ""}
-              </span>
-              ?
-              <br />
-              Esta acción no se puede deshacer.
-            </p>
-          </div>
-          <Group justify="center" gap="md" className="w-full mt-2">
-            <Button
-              variant="subtle"
-              onClick={closeDeleteModal}
-              radius="lg"
-              size="sm"
-              className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={confirmEliminar}
-              radius="lg"
-              size="sm"
-              className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 flex-1"
-            >
-              Eliminar
-            </Button>
-          </Group>
-        </div>
+        <RegistroCategoria onSuccess={handleRegistroExitoso} onCancel={close} />
       </Modal>
     </div>
   );

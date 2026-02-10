@@ -17,8 +17,8 @@ export enum TipoSostenimiento {
 }
 
 export enum TipoRequerimiento {
-  Bien = "BIEN",
-  Servicio = "SERVICIO",
+  Bien = "Bien",
+  Servicio = "Servicio",
 }
 
 export enum TipoBien {

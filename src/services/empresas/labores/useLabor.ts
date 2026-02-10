@@ -7,13 +7,11 @@ import type { RES_Labor } from "./dtos/responses";
 export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
   const path = "/api/labores";
 
-  const listar = async (id_concesion?: number) => {
+  const listar = async () => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await api.get<IRespuesta<RES_Labor[]>>(path, {
-        data: { id_concesion },
-      });
+      const response = await api.get<IRespuesta<RES_Labor[]>>(path);
       const result = response.data;
 
       if (result.success) {
@@ -30,7 +28,7 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
     }
   };
 
-  const crear = async (dto: DTO_CrearLabor) => {
+  const crear_labor = async (dto: DTO_CrearLabor) => {
     setIsLoading(true);
     setError("");
     try {
@@ -97,7 +95,7 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
 
   return {
     listar,
-    crear,
+    crear_labor,
     editar,
     eliminar,
   };

@@ -28,7 +28,7 @@ export const useCategoria = ({ setIsLoading, setError }: IUseHook) => {
     }
   };
 
-  const crear = async (dto: DTO_CrearCategoria) => {
+  const crear_categoria = async (dto: DTO_CrearCategoria) => {
     setIsLoading(true);
     setError("");
     try {
@@ -38,7 +38,8 @@ export const useCategoria = ({ setIsLoading, setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        // Prefer 'message' for user-friendly errors from new backend
+        setError(result.message || result.error);
         return null;
       }
     } catch (error) {
@@ -95,7 +96,7 @@ export const useCategoria = ({ setIsLoading, setError }: IUseHook) => {
 
   return {
     listar,
-    crear,
+    crear_categoria,
     editar,
     eliminar,
   };
