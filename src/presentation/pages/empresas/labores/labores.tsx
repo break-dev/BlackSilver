@@ -19,10 +19,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 // Services
-import { useLabor } from "../../../../services/configuracion/labores/useLabor";
-import type { RES_Labor } from "../../../../services/configuracion/labores/dtos/requests";
-import { useConcesion } from "../../../../services/configuracion/concesiones/useConcesion";
-import type { RES_Concesion } from "../../../../services/configuracion/concesiones/dtos/responses";
+import { useLabor } from "../../../../services/empresas/labores/useLabor";
+import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
+import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
+import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 
 // Components

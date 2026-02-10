@@ -8,7 +8,7 @@ import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
 import { EmpresasLabores } from "../pages/empresas/labores/labores";
-import { InventarioCategorias } from "../pages/logistica/inventario/categorias/categorias";
+import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
 
 export const App = () => {
   return (

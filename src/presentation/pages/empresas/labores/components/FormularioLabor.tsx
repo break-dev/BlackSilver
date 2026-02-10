@@ -3,14 +3,14 @@ import { Button, Group, TextInput, Select, Textarea } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { z } from "zod";
-import { useLabor } from "../../../../../services/configuracion/labores/useLabor";
+import { useLabor } from "../../../../../services/empresas/labores/useLabor";
 import {
   EstadoBase,
-  TipoLabor,
+  TipoLabor,  
   TipoSostenimiento,
 } from "../../../../../shared/enums";
-import type { RES_Labor } from "../../../../../services/configuracion/labores/dtos/requests";
-import type { RES_Concesion } from "../../../../../services/configuracion/concesiones/dtos/responses";
+import type { RES_Labor } from "../../../../../services/empresas/labores/dtos/responses";
+import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
 
 // 1. Definimos el schema
 const schema = z.object({
