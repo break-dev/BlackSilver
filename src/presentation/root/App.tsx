@@ -3,15 +3,12 @@ import { PublicLayout } from "../layouts/public";
 import { AuthLayout } from "../layouts/auth/auth";
 import { ProtectedRoute } from "./protectedRoute";
 import { PublicRoute } from "./publicRoute";
-
-// Paginas
 import { Login } from "../pages/public/login";
 import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
 import { EmpresasLabores } from "../pages/empresas/labores/labores";
 import { InventarioCategorias } from "../pages/logistica/inventario/categorias/categorias";
-
 
 export const App = () => {
   return (
@@ -25,6 +22,8 @@ export const App = () => {
         }
       >
         <Route path="/login" element={<Login />} />
+        {/* Redireccion a login si intenta acceder a una ruta que no existe */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Route>
 
       {/* Rutas protegidas */}
@@ -35,10 +34,18 @@ export const App = () => {
           </ProtectedRoute>
         }
       >
+        {/* Inicio */}
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
-
-        {/* Configuracion > Empresas */}
+        {/* Perfil */}
+        <Route
+          path="/perfil"
+          element={<PlaceholderPage titulo="Mi Perfil" />}
+        />
+        {/* Redireccion a home si intenta acceder a una ruta que no existe */}
+        <Route path="*" element={<Navigate to="/home" replace />} />
+        //#region Configuracion
+        {/* Empresas */}
         <Route
           path="/configuracion/empresas/empresas"
           element={<PlaceholderPage titulo="Empresas" />}
@@ -59,8 +66,28 @@ export const App = () => {
           path="/configuracion/empresas/labores"
           element={<EmpresasLabores />}
         />
-
-        {/* Logistica > Inventario */}
+        {/* Personal */}
+        <Route
+          path="/configuracion/personal/cargos"
+          element={<PlaceholderPage titulo="Cargos" />}
+        />
+        <Route
+          path="/configuracion/personal/trabajadores"
+          element={<PlaceholderPage titulo="Trabajadores" />}
+        />
+        {/* Usuarios */}
+        <Route
+          path="/configuracion/usuarios/roles"
+          element={<PlaceholderPage titulo="Roles" />}
+        />
+        <Route
+          path="/configuracion/usuarios/cuentas"
+          element={<PlaceholderPage titulo="Cuentas" />}
+        />
+        //#endregion
+        {/*  */}
+        //#region Logistica
+        {/* Inventario */}
         <Route
           path="/logistica/inventario/categorias"
           element={<InventarioCategorias />}
@@ -81,8 +108,7 @@ export const App = () => {
           path="/logistica/inventario/kardex"
           element={<PlaceholderPage titulo="Kardex" />}
         />
-
-        {/* Logistica > Almacen */}
+        {/* Solicitudes de Almacen */}
         <Route
           path="/logistica/almacen/solicitudes"
           element={<PlaceholderPage titulo="Solicitudes" />}
@@ -95,36 +121,8 @@ export const App = () => {
           path="/logistica/almacen/entregas"
           element={<PlaceholderPage titulo="Entregas" />}
         />
-
-        {/* Configuracion > Personal */}
-        <Route
-          path="/configuracion/personal/cargos"
-          element={<PlaceholderPage titulo="Cargos" />}
-        />
-        <Route
-          path="/configuracion/personal/trabajadores"
-          element={<PlaceholderPage titulo="Trabajadores" />}
-        />
-
-        {/* Configuracion > Usuarios */}
-        <Route
-          path="/configuracion/usuarios/roles"
-          element={<PlaceholderPage titulo="Roles" />}
-        />
-        <Route
-          path="/configuracion/usuarios/cuentas"
-          element={<PlaceholderPage titulo="Cuentas" />}
-        />
-
-        {/* Perfil */}
-        <Route
-          path="/perfil"
-          element={<PlaceholderPage titulo="Mi Perfil" />}
-        />
+        //#endregion
       </Route>
-
-      {/* Ruta por defecto */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };

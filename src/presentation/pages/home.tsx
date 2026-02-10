@@ -3,6 +3,7 @@ import {
   BuildingOffice2Icon,
   UsersIcon,
   Cog6ToothIcon,
+  ArrowUpRightIcon,
 } from "@heroicons/react/24/outline";
 import { AuthStore } from "../../stores/auth.store";
 
@@ -10,6 +11,7 @@ export const Home = () => {
   const navigate = useNavigate();
   const usuario = AuthStore((s) => s.usuario);
 
+  // Accesos rapidos
   const links = [
     {
       title: "Empresas",
@@ -39,7 +41,7 @@ export const Home = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-10 py-4">
-      {/* Welcome Section */}
+      {/* Seccion de bienvenida */}
       <div className="text-center space-y-3">
         <h1
           className="text-2xl font-bold bg-linear-to-r from-white 
@@ -50,7 +52,7 @@ export const Home = () => {
         <p className="text-zinc-400 text-sm">¿Qué deseas hacer hoy?</p>
       </div>
 
-      {/* Quick Actions Grid */}
+      {/* acciones rapidas*/}
       <div className="grid gap-4 md:gap-5">
         {links.map((l) => (
           <button
@@ -61,13 +63,13 @@ export const Home = () => {
             hover:border-zinc-700 transition-all duration-300 hover:scale-[1.02] 
             hover:shadow-xl hover:shadow-black/20"
           >
-            {/* Gradient overlay on hover */}
+            {/* gradiente */}
             <div
               className={`absolute inset-0 rounded-2xl bg-linear-to-br ${l.gradient} 
               opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
             ></div>
 
-            {/* Icon */}
+            {/* icono */}
             <div className="relative">
               <div
                 className={`w-14 h-14 rounded-xl bg-linear-to-br ${l.iconBg} flex 
@@ -78,7 +80,7 @@ export const Home = () => {
               </div>
             </div>
 
-            {/* Content */}
+            {/* contenido */}
             <div className="relative flex-1">
               <p
                 className="font-semibold text-white text-base mb-1 group-hover:text-white 
@@ -91,22 +93,13 @@ export const Home = () => {
               </p>
             </div>
 
-            {/* Arrow indicator */}
+            {/* indicador de flecha */}
             <div className="relative">
-              <svg
+              {/* flecha de heroicons */}
+              <ArrowUpRightIcon
                 className="w-5 h-5 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-1 
                 transition-all duration-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              />
             </div>
           </button>
         ))}

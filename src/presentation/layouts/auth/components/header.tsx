@@ -1,5 +1,5 @@
 import { Bars3Icon } from "@heroicons/react/24/outline";
-import { UserMenu } from "../../components/UserMenu";
+import { UserMenu } from "./user-menu";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -8,11 +8,11 @@ interface HeaderProps {
 export const Header = ({ onMenuToggle }: HeaderProps) => {
   return (
     <header
-      className="fixed top-4 left-4 right-4 z-50 flex items-center 
+      className="fixed top-4 left-4 right-4 flex items-center 
       justify-between px-5 h-14 bg-zinc-900/80 backdrop-blur-xl 
       rounded-2xl border border-zinc-800/50 shadow-lg"
     >
-      {/* Menu Toggle */}
+      {/* Icono de menu de navegacion */}
       <button
         onClick={onMenuToggle}
         className="p-2 text-zinc-400 hover:text-white transition-colors 
@@ -38,7 +38,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
         </span>
       </div>
 
-      {/* User Menu */}
+      {/* Menu de usuario */}
       <UserMenu />
     </header>
   );

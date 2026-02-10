@@ -5,21 +5,20 @@ import {
   ChevronRightIcon,
   HomeIcon,
 } from "@heroicons/react/24/outline";
-import { MenuStore } from "../../../stores/menu.store";
-import type { IModulo } from "../../../services/menu/dtos/menu.dto";
+import { MenuStore } from "../../../../stores/menu.store";
+import type { IModulo } from "../../../../services/menu/dtos/menu.dto";
 
-interface FloatingNavbarProps {
+interface NavbarProps {
   onClose: () => void;
 }
 
-export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
+export const Navbar = ({ onClose }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState<string | null>(null);
-
   const [menu, setMenu] = useState<IModulo[]>(() => MenuStore.getState().menu);
 
-  // Subscribe to store changes
+  // Suscrubirse a los cambios del store
   useEffect(() => {
     const unsubscribe = MenuStore.subscribe((state) => {
       setMenu(state.menu);
@@ -35,7 +34,7 @@ export const FloatingNavbar = ({ onClose }: FloatingNavbarProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm 
+      className="fixed inset-0 z-10 bg-black/70 backdrop-blur-sm 
       animate-fadeIn"
       onClick={onClose}
     >
