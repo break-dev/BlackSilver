@@ -10,6 +10,7 @@ import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
 import { EmpresasLabores } from "../pages/empresas/labores/labores";
+import { InventarioCategorias } from "../pages/logistica/inventario/categorias/categorias";
 
 
 export const App = () => {
@@ -57,6 +58,42 @@ export const App = () => {
         <Route
           path="/configuracion/empresas/labores"
           element={<EmpresasLabores />}
+        />
+
+        {/* Logistica > Inventario */}
+        <Route
+          path="/logistica/inventario/categorias"
+          element={<InventarioCategorias />}
+        />
+        <Route
+          path="/logistica/inventario/familias"
+          element={<PlaceholderPage titulo="Familias" />}
+        />
+        <Route
+          path="/logistica/inventario/productos"
+          element={<PlaceholderPage titulo="Productos" />}
+        />
+        <Route
+          path="/logistica/inventario/lotes"
+          element={<PlaceholderPage titulo="Lotes" />}
+        />
+        <Route
+          path="/logistica/inventario/kardex"
+          element={<PlaceholderPage titulo="Kardex" />}
+        />
+
+        {/* Logistica > Almacen */}
+        <Route
+          path="/logistica/almacen/solicitudes"
+          element={<PlaceholderPage titulo="Solicitudes" />}
+        />
+        <Route
+          path="/logistica/almacen/atenciones"
+          element={<PlaceholderPage titulo="Atenciones" />}
+        />
+        <Route
+          path="/logistica/almacen/entregas"
+          element={<PlaceholderPage titulo="Entregas" />}
         />
 
         {/* Configuracion > Personal */}
