@@ -3,7 +3,7 @@ import { PublicLayout } from "../layouts/public";
 import { AuthLayout } from "../layouts/auth/auth";
 import { ProtectedRoute } from "./protectedRoute";
 import { PublicRoute } from "./publicRoute";
-import { Login } from "../pages/public/login";
+import { Login } from "../pages/login";
 import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";

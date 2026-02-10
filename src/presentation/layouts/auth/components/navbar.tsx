@@ -6,7 +6,7 @@ import {
   HomeIcon,
 } from "@heroicons/react/24/outline";
 import { MenuStore } from "../../../../stores/menu.store";
-import type { IModulo } from "../../../../services/menu/dtos/menu.dto";
+import type { IModulo } from "../../../../services/menu/dtos/responses";
 
 interface NavbarProps {
   onClose: () => void;

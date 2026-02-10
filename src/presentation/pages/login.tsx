@@ -1,33 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextInput, PasswordInput, Button } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useUsuario } from "../../../services/usuarios/useUsuario";
-import { useMenu } from "../../../services/menu/useMenu";
+import { useUsuario } from "../../services/usuarios/useUsuario";
+import { useMenu } from "../../services/menu/useMenu";
+import { Schema_Login } from "../../services/usuarios/dtos/requests";
 
 export const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [usuario, setUsuario] = useState("");
+  const [password, setPassword] = useState("");
 
   const { login } = useUsuario({ setIsLoading, setError });
   const { getMenuNavegacion } = useMenu({ setIsLoading, setError });
 
-  const form = useForm({
-    initialValues: { usuario: "", password: "" },
-    validate: {
-      usuario: (v) => (v ? null : "Requerido"),
-      password: (v) => (v ? null : "Requerido"),
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleSubmit = async (values: {
-    usuario: string;
-    password: string;
-  }) => {
+    const validation = Schema_Login.safeParse({ usuario, password });
+
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
+      return;
+    }
+
     try {
       // inicia sesion
-      const success = await login(values);
+      const success = await login(validation.data);
 
       if (success) {
         // Cargar menu de navegacion
@@ -48,9 +48,10 @@ export const Login = () => {
     >
       {/* Login Card */}
       <div className="relative w-full max-w-md mb-20">
-        <div 
+        <div
           className="glass rounded-3xl p-8 shadow-2xl border border-zinc-800/50 
-          backdrop-blur-2xl py-16">
+          backdrop-blur-2xl py-16"
+        >
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div
@@ -74,14 +75,15 @@ export const Login = () => {
           )}
 
           {/* Form */}
-          <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-5">
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-5">
             <div>
               <TextInput
                 label="Usuario"
                 placeholder="Ingresa tu usuario"
                 radius="lg"
                 size="sm"
-                {...form.getInputProps("usuario")}
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
               />
             </div>
 
@@ -91,7 +93,8 @@ export const Login = () => {
                 placeholder="Ingresa tu contraseña"
                 radius="lg"
                 size="sm"
-                {...form.getInputProps("password")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 

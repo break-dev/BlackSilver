@@ -1,6 +1,8 @@
 export interface RES_Empresa {
-    id: number;
-    nombre_comercial: string;
+    id_empresa: number;
     ruc: string;
+    razon_social: string;
+    nombre_comercial: string;
+    abreviatura: string;
     path_logo?: string;
 }

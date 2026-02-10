@@ -18,15 +18,14 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
-// Services
-import { useConcesion } from "../../../../services/configuracion/concesiones/useConcesion";
-import type { RES_Concesion } from "../../../../services/configuracion/concesiones/dtos/responses";
-import { useEmpresa } from "../../../../services/configuracion/useEmpresa";
-import type { RES_Empresa } from "../../../../services/configuracion/empresa/dtos/requests";
+import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
+import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
+import { useEmpresas } from "../../../../services/empresas/empresas/useEmpresas";
+import type { RES_Empresa } from "../../../../services/empresas/empresas/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 
 // Components
-import { FormularioConcesion } from "./components/FormularioConcesion";
+import { FormularioConcesion } from "./components/registro-concesion";
 
 export const EmpresasConcesiones = () => {
   // Estados Locales

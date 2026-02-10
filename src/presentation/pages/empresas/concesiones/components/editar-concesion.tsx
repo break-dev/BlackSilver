@@ -1,25 +1,12 @@
 import { useEffect, useState } from "react";
 import { Button, Group, TextInput, Select } from "@mantine/core";
-import { useForm, zodResolver } from "@mantine/form"; // Asegúrate de tener instalado @mantine/form
+import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { z } from "zod";
-import { useConcesion } from "../../../../../services/configuracion/concesiones/useConcesion";
-import { EstadoBase } from "../../../../../shared/enums";
-import type {
-  RES_Concesion,
-  DTO_EditarConcesion,
-} from "../../../../../services/configuracion/concesiones/dtos/responses";
-import type { RES_Empresa } from "../../../../../services/configuracion/empresa/dtos/requests";
+import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
 
-// 1. Definimos el schema
-const schema = z.object({
-  id_empresa: z.string().min(1, "Seleccione una empresa"),
-  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
-});
-
+// Formulario para registrar o editar una concesión
 interface FormularioConcesionProps {
   concesion?: RES_Concesion | null;
-  empresas: RES_Empresa[];
   onSuccess: () => void;
   onCancel: () => void;
 }
