@@ -1,7 +1,7 @@
 import { api } from "../api";
 import type { IRespuesta } from "../../shared/response";
 import type { IUseHook } from "../hook.interface";
-import type { IModulo } from "./dtos/menu.dto";
+import type { IModulo } from "./dtos/responses";
 import { MenuStore } from "../../stores/menu.store";
 
 export const useMenu = ({ setIsLoading, setError }: IUseHook) => {

@@ -1,12 +1,3 @@
-import { z } from "zod";
-
-export const DTO_LoginSchema = z.object({
-  usuario: z.string(),
-  password: z.string(),
-});
-
-export type DTO_Login = z.infer<typeof DTO_LoginSchema>;
-
 // Usuario dentro de la respuesta de login
 export interface RES_LoginUsuario {
   id_usuario: number;
@@ -16,7 +7,7 @@ export interface RES_LoginUsuario {
   estado: string;
 }
 
-// Respuesta del endpoint /api/login
+// Respuesta del endpoint
 export interface RES_Login {
   token: string;
   usuario: RES_LoginUsuario;

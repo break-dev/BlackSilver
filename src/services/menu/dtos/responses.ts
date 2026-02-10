@@ -1,4 +1,3 @@
-// Estructura del menu de navegacion segun API
 export interface ISeccion {
   id_seccion: number;
   nombre: string;
