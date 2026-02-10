@@ -22,6 +22,7 @@ export const SelectEmpresas = ({
     get_empresas_by_session().then((data) => {
       if (data) setEmpresas(data);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -13,7 +13,7 @@ const PAGE_SIZE = 25;
 export const EmpresasConcesiones = () => {
   // Estado local
   const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
 
@@ -26,7 +26,7 @@ export const EmpresasConcesiones = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
   // Servicio
-  const { listar } = useConcesion({ setIsLoading: setLoading, setError });
+  const { listar } = useConcesion({ setIsLoading, setError });
 
   // Carga inicial
   useEffect(() => {

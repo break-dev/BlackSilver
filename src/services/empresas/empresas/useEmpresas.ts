@@ -8,7 +8,7 @@ export const useEmpresas = ({ setIsLoading, setError }: IUseHook) => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await api.post<IRespuesta<RES_Empresa[]>>(
+      const response = await api.get<IRespuesta<RES_Empresa[]>>(
         "/api/empresas/by-session",
       );
       const result = response.data;

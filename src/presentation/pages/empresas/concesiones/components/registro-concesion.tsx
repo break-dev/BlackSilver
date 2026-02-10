@@ -24,8 +24,8 @@ export const RegistroConcesion = ({
     e.preventDefault();
     try {
       const validation = Schema_CrearConcesion.safeParse({
-        id_empresa,
-        nombre,
+        id_empresa: parseInt(id_empresa || "0"),
+        nombre: nombre,
       });
       if (!validation.success) {
         console.error(validation.error);
