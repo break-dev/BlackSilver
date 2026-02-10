@@ -1,27 +1,26 @@
-import { Select } from "@mantine/core";
-import { useEmpresas } from "../../services/empresas/empresas/useEmpresas";
+import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { RES_Empresa } from "../../services/empresas/empresas/dtos/responses";
+import { useEmpresas } from "../../services/empresas/empresas/useEmpresas";
 
-interface SelectEmpresasProps {
+interface SelectEmpresasProps extends Omit<SelectProps, "data"> {
   value?: string | null;
   onChange?: (value: string | null) => void;
-  error?: React.ReactNode;
 }
 
 export const SelectEmpresas = ({
   value,
   onChange,
-  error: propError,
+  ...props
 }: SelectEmpresasProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const { get_empresas_by_session } = useEmpresas({ setIsLoading, setError });
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
 
   useEffect(() => {
     get_empresas_by_session().then((data) => {
-      setEmpresas(data);
+      if (data) setEmpresas(data);
     });
   }, []);
 
@@ -35,15 +34,10 @@ export const SelectEmpresas = ({
       }))}
       value={value}
       onChange={onChange}
-      error={propError || error}
-      disabled={isLoading}
+      disabled={isLoading || props.disabled}
       searchable
       nothingFoundMessage="No se encontraron empresas"
-      required
       withCheckIcon={false}
-      comboboxProps={{
-        transitionProps: { transition: "pop", duration: 200 },
-      }}
       radius="lg"
       size="sm"
       classNames={{
@@ -54,6 +48,7 @@ export const SelectEmpresas = ({
         data-[selected]:text-zinc-900 rounded-md my-1`,
         label: "text-zinc-300 mb-1 font-medium",
       }}
+      {...props}
     />
   );
 };

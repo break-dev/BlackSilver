@@ -30,7 +30,7 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
   };
 
   // Crear concesion
-  const crear = async (dto: DTO_CrearConcesion) => {
+  const crear_concesion = async (dto: DTO_CrearConcesion) => {
     setIsLoading(true);
     setError("");
     try {
@@ -99,7 +99,7 @@ export const useConcesion = ({ setIsLoading, setError }: IUseHook) => {
 
   return {
     listar,
-    crear,
+    crear_concesion,
     editar,
     eliminar,
   };
