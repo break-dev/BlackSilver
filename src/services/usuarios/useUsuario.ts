@@ -5,10 +5,9 @@ import type { RES_Login } from "./dtos/responses";
 import { AuthStore } from "../../stores/auth.store";
 import type { IUseHook } from "../hook.interface";
 
-export const useUsuario = ({ setIsLoading, setError }: IUseHook) => {
+export const useUsuario = ({ setError }: IUseHook) => {
   // inicio de sesion
   const login = async (dto: DTO_Login) => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Login>>("/api/login", dto);
@@ -24,8 +23,6 @@ export const useUsuario = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 

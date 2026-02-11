@@ -12,8 +12,8 @@ export const Login = () => {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
 
-  const { login } = useUsuario({ setIsLoading, setError });
-  const { getMenuNavegacion } = useMenu({ setIsLoading, setError });
+  const { login } = useUsuario({ setError });
+  const { getMenuNavegacion } = useMenu({ setError });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,6 +27,7 @@ export const Login = () => {
 
     try {
       // inicia sesion
+      setIsLoading(true);
       const success = await login(validation.data);
 
       if (success) {
@@ -37,14 +38,15 @@ export const Login = () => {
       }
     } catch (error) {
       console.error("Error en login:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center p-4 
-      relative overflow-hidden bg-linear-to-br from-zinc-950 via-zinc-900 
-      to-zinc-950"
+      relative overflow-hidden "
     >
       {/* Login Card */}
       <div className="relative w-full max-w-md mb-20">

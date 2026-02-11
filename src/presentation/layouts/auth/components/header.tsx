@@ -1,5 +1,6 @@
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { UserMenu } from "./user-menu";
+import { UIStore } from "../../../../stores/ui.store";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -34,7 +35,9 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
           className="text-base font-semibold text-white tracking-wide 
           hidden sm:block"
         >
-          Black Silver
+          {UIStore((state) =>
+            state.title ? `Black Silver - ${state.title}` : "Black Silver",
+          )}
         </span>
       </div>
 

@@ -7,7 +7,7 @@ export const AuthLayout = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="h-full w-full bg-zinc-950">
+    <div className="h-full w-full bg-slate-950">
       <Header onMenuToggle={() => setOpen(true)} />
       {open && <Navbar onClose={() => setOpen(false)} />}
 

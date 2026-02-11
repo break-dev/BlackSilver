@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, Modal, Group, TextInput, Badge, Select } from "@mantine/core";
+import { Button, Modal, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
@@ -7,6 +7,7 @@ import { useConcesion } from "../../../../services/empresas/concesiones/useConce
 import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 import { RegistroConcesion } from "./components/registro-concesion";
+import { UIStore } from "../../../../stores/ui.store";
 
 const PAGE_SIZE = 25;
 
@@ -43,6 +44,11 @@ export const EmpresasConcesiones = () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Title
+  useEffect(() => {
+    UIStore.getState().setTitle("Concesiones");
   }, []);
 
   // Opciones de filtros derivados de los datos
@@ -125,84 +131,78 @@ export const EmpresasConcesiones = () => {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <Group justify="space-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Concesiones</h2>
-          <p className="text-zinc-400 text-sm">
-            Gestiona las concesiones mineras registradas.
-          </p>
+      {/* Encabezado y Filtros */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-4 flex-1">
+          <TextInput
+            placeholder="Buscar por nombre o empresa..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            }
+            value={busqueda}
+            onChange={(e) => {
+              setBusqueda(e.currentTarget.value);
+              setPage(1);
+            }}
+            className="flex-1 min-w-50"
+            radius="lg"
+            size="sm"
+            classNames={{
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+            }}
+          />
+          <Select
+            placeholder="Empresa"
+            data={empresasUnicas}
+            value={filtroEmpresa}
+            onChange={(val) => {
+              setFiltroEmpresa(val);
+              setPage(1);
+            }}
+            clearable
+            radius="lg"
+            size="sm"
+            className="min-w-45"
+            classNames={{
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
+          <Select
+            placeholder="Estado"
+            data={estadosUnicos}
+            value={filtroEstado}
+            onChange={(val) => {
+              setFiltroEstado(val);
+              setPage(1);
+            }}
+            clearable
+            radius="lg"
+            size="sm"
+            className="min-w-35"
+            classNames={{
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
         </div>
+        {/* End of filters wrapper */}
+
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={open}
           radius="lg"
           size="sm"
           className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-          font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+        font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 shrink-0"
         >
           Nueva Concesión
         </Button>
-      </Group>
-
-      {/* Filtros */}
-      <div className="flex flex-wrap gap-4">
-        <TextInput
-          placeholder="Buscar por nombre o empresa..."
-          leftSection={
-            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-          }
-          value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.currentTarget.value);
-            setPage(1);
-          }}
-          className="flex-1 min-w-50"
-          radius="lg"
-          size="sm"
-          classNames={{
-            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-          }}
-        />
-        <Select
-          placeholder="Empresa"
-          data={empresasUnicas}
-          value={filtroEmpresa}
-          onChange={(val) => {
-            setFiltroEmpresa(val);
-            setPage(1);
-          }}
-          clearable
-          radius="lg"
-          size="sm"
-          className="min-w-45"
-          classNames={{
-            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            dropdown: "bg-zinc-900 border-zinc-800",
-            option: "text-zinc-300 hover:bg-zinc-800",
-          }}
-        />
-        <Select
-          placeholder="Estado"
-          data={estadosUnicos}
-          value={filtroEstado}
-          onChange={(val) => {
-            setFiltroEstado(val);
-            setPage(1);
-          }}
-          clearable
-          radius="lg"
-          size="sm"
-          className="min-w-35"
-          classNames={{
-            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            dropdown: "bg-zinc-900 border-zinc-800",
-            option: "text-zinc-300 hover:bg-zinc-800",
-          }}
-        />
       </div>
 
       {/* DataTable */}
@@ -216,8 +216,9 @@ export const EmpresasConcesiones = () => {
           totalRecords={concesionesFiltradas.length}
           recordsPerPage={PAGE_SIZE}
           page={page}
+          striped={true}
           onPageChange={setPage}
-          highlightOnHover
+          highlightOnHover={true}
           fetching={loading}
           idAccessor="id_concesion"
           noRecordsText="No se encontraron concesiones"
