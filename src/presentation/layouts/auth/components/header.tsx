@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { UserMenu } from "./user-menu";
 import { UIStore } from "../../../../stores/ui.store";
@@ -7,6 +8,15 @@ interface HeaderProps {
 }
 
 export const Header = ({ onMenuToggle }: HeaderProps) => {
+  const [title, setTitle] = useState(UIStore.getState().title);
+
+  useEffect(() => {
+    const unsubscribe = UIStore.subscribe((state) => {
+      setTitle(state.title);
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <header
       className="fixed top-4 left-4 right-4 flex items-center 
@@ -35,9 +45,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
           className="text-base font-semibold text-white tracking-wide 
           hidden sm:block"
         >
-          {UIStore((state) =>
-            state.title ? `Black Silver - ${state.title}` : "Black Silver",
-          )}
+          {title ? `Black Silver - ${title}` : "Black Silver"}
         </span>
       </div>
 

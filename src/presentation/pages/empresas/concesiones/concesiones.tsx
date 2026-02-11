@@ -9,9 +9,10 @@ import { EstadoBase } from "../../../../shared/enums";
 import { RegistroConcesion } from "./components/registro-concesion";
 import { UIStore } from "../../../../stores/ui.store";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 35;
 
 export const EmpresasConcesiones = () => {
+  const setTitle = UIStore((state) => state.setTitle);
   // Estado local
   const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -32,7 +33,7 @@ export const EmpresasConcesiones = () => {
   // Carga inicial
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
+    // setIsLoading(true); // Redundant as it's true by default and causes warning
     listar()
       .then((data) => {
         if (!cancelled) setConcesiones(data || []);
@@ -47,9 +48,12 @@ export const EmpresasConcesiones = () => {
   }, []);
 
   // Title
+  // Title
   useEffect(() => {
-    UIStore.getState().setTitle("Concesiones");
-  }, []);
+    setTimeout(() => {
+      setTitle("Concesiones");
+    }, 0);
+  }, [setTitle]);
 
   // Opciones de filtros derivados de los datos
   const empresasUnicas = useMemo(() => {

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import {
   BuildingOffice2Icon,
   UsersIcon,
@@ -7,9 +8,19 @@ import {
 } from "@heroicons/react/24/outline";
 import { AuthStore } from "../../stores/auth.store";
 
+import { UIStore } from "../../stores/ui.store";
+
 export const Home = () => {
   const navigate = useNavigate();
   const usuario = AuthStore((s) => s.usuario);
+
+  const setTitle = UIStore((state) => state.setTitle);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setTitle("Inicio");
+    }, 0);
+  }, [setTitle]);
 
   // Accesos rapidos
   const links = [

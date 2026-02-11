@@ -9,9 +9,10 @@ import { EstadoBase } from "../../../../shared/enums";
 import { RegistroLabor } from "./components/registro-labor";
 import { UIStore } from "../../../../stores/ui.store";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 35;
 
 export const EmpresasLabores = () => {
+  const setTitle = UIStore((state) => state.setTitle);
   // Estado local
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -33,7 +34,7 @@ export const EmpresasLabores = () => {
   // Carga inicial
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
+    // setIsLoading(true);
     listarLabores()
       .then((data) => {
         if (!cancelled) setLabores(data || []);
@@ -49,8 +50,10 @@ export const EmpresasLabores = () => {
 
   // Title
   useEffect(() => {
-    UIStore.getState().setTitle("Labores");
-  }, []);
+    setTimeout(() => {
+      setTitle("Labores");
+    }, 0);
+  }, [setTitle]);
 
   // Opciones de filtros
   const concesionesUnicas = useMemo(() => {

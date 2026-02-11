@@ -9,9 +9,10 @@ import { EstadoBase, TipoRequerimiento } from "../../../../shared/enums";
 import { RegistroCategoria } from "./components/registro-categoria";
 import { UIStore } from "../../../../stores/ui.store";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 35;
 
 export const InventarioCategorias = () => {
+  const setTitle = UIStore((state) => state.setTitle);
   // Estado local
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -31,7 +32,7 @@ export const InventarioCategorias = () => {
 
   // Carga inicial
   useEffect(() => {
-    setIsLoading(true);
+    // setIsLoading(true);
     let cancelled = false;
     listar().then((data) => {
       if (!cancelled) {
@@ -47,8 +48,10 @@ export const InventarioCategorias = () => {
 
   // Title
   useEffect(() => {
-    UIStore.getState().setTitle("Categorías");
-  }, []);
+    setTimeout(() => {
+      setTitle("Categorías");
+    }, 0);
+  }, [setTitle]);
 
   // Opciones de filtros
   const tiposUnicos = useMemo(() => {
