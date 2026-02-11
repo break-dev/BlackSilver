@@ -32,14 +32,16 @@ export const InventarioCategorias = () => {
 
   // Carga inicial
   useEffect(() => {
-    // setIsLoading(true);
     let cancelled = false;
-    listar().then((data) => {
-      if (!cancelled) {
-        setCategorias(data || []);
+    listar()
+      .then((data) => {
+        if (!cancelled) {
+          setCategorias(data || []);
+        }
+      })
+      .finally(() => {
         setIsLoading(false);
-      }
-    });
+      });
     return () => {
       cancelled = true;
     };
@@ -247,10 +249,11 @@ export const InventarioCategorias = () => {
           totalRecords={categoriasFiltradas.length}
           recordsPerPage={PAGE_SIZE}
           page={page}
+          striped={true}
           onPageChange={setPage}
-          highlightOnHover
+          highlightOnHover={true}
           fetching={loading}
-          idAccessor="id"
+          idAccessor="id_categorias"
           noRecordsText="No se encontraron categorías"
           loadingText="Cargando..."
           minHeight={300}

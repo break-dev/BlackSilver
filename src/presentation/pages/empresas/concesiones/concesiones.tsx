@@ -33,7 +33,6 @@ export const EmpresasConcesiones = () => {
   // Carga inicial
   useEffect(() => {
     let cancelled = false;
-    // setIsLoading(true); // Redundant as it's true by default and causes warning
     listar()
       .then((data) => {
         if (!cancelled) setConcesiones(data || []);
