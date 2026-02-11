@@ -6,128 +6,134 @@ import { useCategoria } from "../../../../../services/inventario/categorias/useC
 import { EstadoBase, TipoRequerimiento } from "../../../../../shared/enums";
 
 interface RegistroCategoriaProps {
-    onSuccess?: (categoria: RES_Categoria) => void;
-    onCancel?: () => void;
+  onSuccess?: (categoria: RES_Categoria) => void;
+  onCancel?: () => void;
 }
 
 export const RegistroCategoria = ({
-    onSuccess,
-    onCancel,
+  onSuccess,
+  onCancel,
 }: RegistroCategoriaProps) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    // Form State
-    const [nombre, setNombre] = useState("");
-    const [descripcion, setDescripcion] = useState("");
-    const [tipo_requerimiento, setTipoRequerimiento] = useState<string | null>(null);
+  // Form State
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [tipo_requerimiento, setTipoRequerimiento] = useState<string | null>(
+    null,
+  );
 
-    // Service
-    const { crear_categoria } = useCategoria({ setIsLoading, setError });
+  // Service
+  const { crear_categoria } = useCategoria({ setError });
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        try {
-            const validation = Schema_CrearCategoria.safeParse({
-                nombre,
-                descripcion,
-                tipo_requerimiento,
-                estado: EstadoBase.Activo
-            });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const validation = Schema_CrearCategoria.safeParse({
+        nombre,
+        descripcion,
+        tipo_requerimiento,
+        estado: EstadoBase.Activo,
+      });
 
-            if (!validation.success) {
-                setError("Por favor complete todos los campos requeridos correctamente.");
-                console.error(validation.error);
-                return;
-            }
+      if (!validation.success) {
+        setError(
+          "Por favor complete todos los campos requeridos correctamente.",
+        );
+        console.error(validation.error);
+        return;
+      }
+      setIsLoading(true);
+      const response = await crear_categoria(validation.data);
+      if (response) {
+        onSuccess?.(response);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            const response = await crear_categoria(validation.data);
-            if (response) {
-                onSuccess?.(response);
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <TextInput
-                label="Nombre de Categoría"
-                placeholder="Ej. Materiales de Construcción"
-                required
-                radius="lg"
-                size="sm"
-                classNames={{
-                    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <TextInput
+        label="Nombre de Categoría"
+        placeholder="Ej. Materiales de Construcción"
+        required
+        radius="lg"
+        size="sm"
+        classNames={{
+          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
           focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-                    label: "text-zinc-300 mb-1 font-medium",
-                }}
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-            />
+          label: "text-zinc-300 mb-1 font-medium",
+        }}
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+      />
 
-            <Select
-                label="Tipo de Requerimiento"
-                placeholder="Seleccione tipo (Bien/Servicio)"
-                data={Object.values(TipoRequerimiento)}
-                value={tipo_requerimiento}
-                onChange={setTipoRequerimiento}
-                required
-                radius="lg"
-                size="sm"
-                classNames={{
-                    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+      <Select
+        label="Tipo de Requerimiento"
+        placeholder="Seleccione tipo (Bien/Servicio)"
+        data={Object.values(TipoRequerimiento)}
+        value={tipo_requerimiento}
+        onChange={setTipoRequerimiento}
+        required
+        radius="lg"
+        size="sm"
+        classNames={{
+          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
           focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-                    dropdown: "bg-zinc-900 border-zinc-800",
-                    option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
+          dropdown: "bg-zinc-900 border-zinc-800",
+          option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
           data-[selected]:text-zinc-900 rounded-md my-1`,
-                    label: "text-zinc-300 mb-1 font-medium",
-                }}
-            />
+          label: "text-zinc-300 mb-1 font-medium",
+        }}
+      />
 
-            <Textarea
-                label="Descripción"
-                placeholder="Breve descripción..."
-                radius="lg"
-                size="sm"
-                minRows={3}
-                classNames={{
-                    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+      <Textarea
+        label="Descripción"
+        placeholder="Breve descripción..."
+        radius="lg"
+        size="sm"
+        minRows={3}
+        classNames={{
+          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
           focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-                    label: "text-zinc-300 mb-1 font-medium",
-                }}
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-            />
+          label: "text-zinc-300 mb-1 font-medium",
+        }}
+        value={descripcion}
+        onChange={(e) => setDescripcion(e.target.value)}
+      />
 
-            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
 
-            <Group justify="flex-end" gap="md" mt="xl">
-                {onCancel && (
-                    <Button
-                        variant="subtle"
-                        onClick={onCancel}
-                        disabled={isLoading}
-                        radius="lg"
-                        size="sm"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 
+      <Group justify="flex-end" gap="md" mt="xl">
+        {onCancel && (
+          <Button
+            variant="subtle"
+            onClick={onCancel}
+            disabled={isLoading}
+            radius="lg"
+            size="sm"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 
             transition-colors"
-                    >
-                        Cancelar
-                    </Button>
-                )}
-                <Button
-                    type="submit"
-                    loading={isLoading}
-                    radius="lg"
-                    size="sm"
-                    className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
+          >
+            Cancelar
+          </Button>
+        )}
+        <Button
+          type="submit"
+          loading={isLoading}
+          radius="lg"
+          size="sm"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
           font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
-                >
-                    Guardar
-                </Button>
-            </Group>
-        </form>
-    );
+        >
+          Guardar
+        </Button>
+      </Group>
+    </form>
+  );
 };

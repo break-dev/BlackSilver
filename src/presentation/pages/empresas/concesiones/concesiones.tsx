@@ -1,13 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, Modal, TextInput, Badge, Select } from "@mantine/core";
+import { Button, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { DataTable, type DataTableColumn } from "mantine-datatable";
+import { type DataTableColumn } from "mantine-datatable";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
 import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 import { RegistroConcesion } from "./components/registro-concesion";
 import { UIStore } from "../../../../stores/ui.store";
+import { DataTableClassic } from "../../../utils/datatable-classic";
+import { ModalRegistro } from "../../../utils/modal-registro";
 
 const PAGE_SIZE = 35;
 
@@ -46,7 +48,6 @@ export const EmpresasConcesiones = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Title
   // Title
   useEffect(() => {
     setTimeout(() => {
@@ -209,80 +210,22 @@ export const EmpresasConcesiones = () => {
       </div>
 
       {/* DataTable */}
-      <div
-        className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden 
-        backdrop-blur-sm"
-      >
-        <DataTable
-          columns={columns}
-          records={registrosPaginados}
-          totalRecords={concesionesFiltradas.length}
-          recordsPerPage={PAGE_SIZE}
-          page={page}
-          striped={true}
-          onPageChange={setPage}
-          highlightOnHover={true}
-          fetching={loading}
-          idAccessor="id_concesion"
-          noRecordsText="No se encontraron concesiones"
-          loadingText="Cargando..."
-          minHeight={300}
-          paginationText={({ from, to, totalRecords }) =>
-            `${from} - ${to} de ${totalRecords}`
-          }
-          classNames={{
-            root: "bg-transparent",
-            table: "bg-transparent",
-            header: "bg-zinc-900/80",
-            pagination: "bg-zinc-900/50 border-t border-zinc-800",
-          }}
-          styles={{
-            header: {
-              "--mantine-color-text": "var(--mantine-color-zinc-3, #d4d4d8)",
-            },
-          }}
-        />
-      </div>
+      <DataTableClassic
+        idAccessor="id_concesiones"
+        columns={columns}
+        records={registrosPaginados}
+        totalRecords={concesionesFiltradas.length}
+        page={page}
+        onPageChange={setPage}
+        loading={loading}
+      />
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {/* Modal de Registro */}
-      <Modal
-        opened={opened}
-        onClose={close}
-        title={
-          <div className="flex items-center gap-3">
-            <div
-              className="w-1 h-6 bg-linear-to-b from-[#ffc933] to-[#b8920a] 
-              rounded-full shadow-[0_0_10px_#d4a50a]"
-            />
-            <span
-              className="text-xl font-bold bg-linear-to-r from-white via-zinc-100 
-              to-zinc-400 bg-clip-text text-transparent tracking-tight"
-            >
-              Nueva Concesión
-            </span>
-          </div>
-        }
-        centered
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-        radius="xl"
-        classNames={{
-          content:
-            "bg-zinc-950 border border-white/10 shadow-2xl shadow-black mb-[10dvh]",
-          header: "bg-zinc-950 text-white pt-5 pb-1 px-6",
-          body: "bg-zinc-950 px-6 pt-6 pb-6",
-          close: `text-zinc-400 hover:text-white hover:bg-white/10 transition-all 
-          duration-200 rounded-full w-8 h-8 flex items-center justify-center`,
-          title: "text-xl font-bold text-white",
-        }}
-        transitionProps={{ transition: "pop", duration: 250 }}
-      >
+      <ModalRegistro opened={opened} close={close} title="Nueva Concesión">
         <RegistroConcesion onSuccess={handleRegistroExitoso} onCancel={close} />
-      </Modal>
+      </ModalRegistro>
     </div>
   );
 };
