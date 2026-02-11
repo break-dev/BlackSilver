@@ -35,11 +35,11 @@ export const RegistroLabor = ({ onSuccess, onCancel }: RegistroLaborProps) => {
 
   // Cargar concesiones cuando cambia empresa
   useEffect(() => {
-    setIsLoading(true);
     setIdConcesion(null);
     setConcesiones([]);
 
     if (id_empresa) {
+      setIsLoading(true);
       get_by_empresa(parseInt(id_empresa))
         .then((data) => {
           if (data) setConcesiones(data);
@@ -60,12 +60,14 @@ export const RegistroLabor = ({ onSuccess, onCancel }: RegistroLaborProps) => {
       });
 
       if (!validation.success) {
-        // Simple error handling for now via console/alert, or improve later
         console.error(validation.error);
         return;
       }
 
+      setIsLoading(true);
       const response = await crear_labor(validation.data);
+      setIsLoading(false);
+
       if (response) {
         onSuccess?.(response);
       }

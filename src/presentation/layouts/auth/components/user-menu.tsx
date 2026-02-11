@@ -52,7 +52,7 @@ export const UserMenu = () => {
       {/* Menu de usuario */}
       {isOpen && (
         <div
-          className="absolute right-0 top-12 w-48 bg-zinc-900/95 backdrop-blur-xl 
+          className="absolute right-0 top-12 w-48 bg-slate-950/95 backdrop-blur-xl 
           border border-zinc-800 rounded-xl shadow-xl overflow-hidden 
           animate-slideDown"
         >

@@ -316,7 +316,7 @@ export const EmpresasLabores = () => {
         }}
         radius="xl"
         classNames={{
-          content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
+          content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black mb-[10dvh]",
           header: "bg-zinc-950 text-white pt-5 pb-1 px-6",
           body: "bg-zinc-950 px-6 pt-6 pb-6",
           close: `text-zinc-400 hover:text-white hover:bg-white/10 transition-all 
