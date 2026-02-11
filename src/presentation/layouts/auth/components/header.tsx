@@ -10,7 +10,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
     <header
       className="fixed top-4 left-4 right-4 flex items-center 
       justify-between px-5 h-14 bg-zinc-900/80 backdrop-blur-xl 
-      rounded-2xl border border-zinc-800/50 shadow-lg"
+      rounded-2xl border border-zinc-800/50 shadow-lg z-10"
     >
       {/* Icono de menu de navegacion */}
       <button

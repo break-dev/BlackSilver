@@ -4,9 +4,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useLabor } from "../../../../services/empresas/labores/useLabor";
-import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
 import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
-import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 import { RegistroLabor } from "./components/registro-labor";
 
@@ -15,7 +13,6 @@ const PAGE_SIZE = 25;
 export const EmpresasLabores = () => {
   // Estado local
   const [labores, setLabores] = useState<RES_Labor[]>([]);
-  const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
@@ -31,55 +28,33 @@ export const EmpresasLabores = () => {
 
   // Servicios
   const { listar: listarLabores } = useLabor({ setError });
-  const { listar: listarConcesiones } = useConcesion({
-    setError: () => {},
-  });
 
   // Carga inicial
   useEffect(() => {
     let cancelled = false;
-
-    const cargarDatos = async () => {
-      setIsLoading(true);
-      const [dataLabores, dataConcesiones] = await Promise.all([
-        listarLabores(),
-        listarConcesiones(),
-      ]);
-
-      if (!cancelled) {
-        setLabores(dataLabores || []);
-        setConcesiones(dataConcesiones || []);
-      }
-      setIsLoading(false);
-    };
-
-    cargarDatos();
-
+    setIsLoading(true);
+    listarLabores()
+      .then((data) => {
+        if (!cancelled) setLabores(data || []);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
     return () => {
       cancelled = true;
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Opciones de filtros
   const concesionesUnicas = useMemo(() => {
-    // Si tenemos la lista de concesiones cargada, la usamos para el filtro
-    if (concesiones.length > 0) {
-      return concesiones
-        .filter((c) => c.nombre) // Filtrar concesiones sin nombre
-        .sort((a, b) => a.nombre.localeCompare(b.nombre))
-        .map((c) => ({
-          value: String(c.nombre), // Asegurar string
-          label: String(c.nombre),
-        }));
-    }
-    // Fallback a los nombres en labores si no cargó concesiones (aunque se intenta cargar ambas)
     const set = new Set(labores.map((l) => l.concesion || ""));
     return Array.from(set)
-      .filter(Boolean) // Filtrar strings vacíos y nulos
+      .filter(Boolean)
       .sort()
       .map((c) => ({ value: String(c), label: String(c) }));
-  }, [concesiones, labores]);
+  }, [labores]);
 
   const tiposUnicos = useMemo(() => {
     const set = new Set(labores.map((l) => l.tipo_labor));
@@ -100,32 +75,19 @@ export const EmpresasLabores = () => {
   // Datos filtrados
   const laboresFiltradas = useMemo(() => {
     return labores.filter((l) => {
-      // Mapeo seguro del nombre de concesión
-      const concesionNombre =
-        concesiones.find((c) => c.id_concesion === l.id_concesion)?.nombre ||
-        l.concesion ||
-        "";
-
       const matchBusqueda =
         !busqueda ||
         l.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        concesionNombre.toLowerCase().includes(busqueda.toLowerCase());
+        (l.concesion || "").toLowerCase().includes(busqueda.toLowerCase());
 
       const matchConcesion =
-        !filtroConcesion || concesionNombre === filtroConcesion;
+        !filtroConcesion || l.concesion === filtroConcesion;
       const matchTipo = !filtroTipo || l.tipo_labor === filtroTipo;
       const matchEstado = !filtroEstado || l.estado === filtroEstado;
 
       return matchBusqueda && matchConcesion && matchTipo && matchEstado;
     });
-  }, [
-    labores,
-    concesiones,
-    busqueda,
-    filtroConcesion,
-    filtroTipo,
-    filtroEstado,
-  ]);
+  }, [labores, busqueda, filtroConcesion, filtroTipo, filtroEstado]);
 
   // Paginación
   const registrosPaginados = useMemo(() => {
@@ -150,12 +112,6 @@ export const EmpresasLabores = () => {
     {
       accessor: "concesion",
       title: "Concesión",
-      render: (record) => {
-        const cons = concesiones.find(
-          (c) => c.id_concesion === record.id_concesion,
-        );
-        return cons ? cons.nombre : record.concesion || "-";
-      },
     },
     {
       accessor: "nombre",
