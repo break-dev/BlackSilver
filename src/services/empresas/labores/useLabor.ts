@@ -4,11 +4,10 @@ import type { IUseHook } from "../../hook.interface";
 import type { DTO_CrearLabor, DTO_EditarLabor } from "./dtos/requests";
 import type { RES_Labor } from "./dtos/responses";
 
-export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
+export const useLabor = ({ setError }: IUseHook) => {
   const path = "/api/labores";
 
   const listar = async () => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_Labor[]>>(path);
@@ -23,13 +22,10 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return [];
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const crear_labor = async (dto: DTO_CrearLabor) => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Labor>>(path, dto);
@@ -44,13 +40,10 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return null;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const editar = async (dto: DTO_EditarLabor) => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.put<IRespuesta<RES_Labor>>(path, dto);
@@ -65,13 +58,10 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return null;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const eliminar = async (id: number) => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.delete<IRespuesta<boolean>>(path, {
@@ -88,8 +78,6 @@ export const useLabor = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 

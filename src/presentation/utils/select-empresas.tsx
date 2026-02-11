@@ -15,14 +15,17 @@ export const SelectEmpresas = ({
 }: SelectEmpresasProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [, setError] = useState("");
-  const { get_empresas_by_session } = useEmpresas({ setIsLoading, setError });
+  const { get_empresas_by_session } = useEmpresas({ setError });
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
 
   useEffect(() => {
-    get_empresas_by_session().then((data) => {
-      if (data) setEmpresas(data);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsLoading(true);
+    get_empresas_by_session()
+      .then((data) => {
+        if (data) setEmpresas(data);
+      })
+      .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

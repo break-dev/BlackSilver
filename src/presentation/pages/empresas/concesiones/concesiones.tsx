@@ -26,14 +26,19 @@ export const EmpresasConcesiones = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
   // Servicio
-  const { listar } = useConcesion({ setIsLoading, setError });
+  const { listar } = useConcesion({ setError });
 
   // Carga inicial
   useEffect(() => {
     let cancelled = false;
-    listar().then((data) => {
-      if (!cancelled) setConcesiones(data || []);
-    });
+    setIsLoading(true);
+    listar()
+      .then((data) => {
+        if (!cancelled) setConcesiones(data || []);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
     return () => {
       cancelled = true;
     };

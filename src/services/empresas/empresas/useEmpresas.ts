@@ -3,9 +3,8 @@ import type { IRespuesta } from "../../../shared/response";
 import type { IUseHook } from "../../hook.interface";
 import type { RES_Empresa } from "./dtos/responses";
 
-export const useEmpresas = ({ setIsLoading, setError }: IUseHook) => {
+export const useEmpresas = ({ setError }: IUseHook) => {
   const get_empresas_by_session = async (): Promise<RES_Empresa[]> => {
-    setIsLoading(true);
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_Empresa[]>>(
@@ -17,8 +16,6 @@ export const useEmpresas = ({ setIsLoading, setError }: IUseHook) => {
     } catch (error) {
       setError(String(error));
       return [];
-    } finally {
-      setIsLoading(false);
     }
   };
 

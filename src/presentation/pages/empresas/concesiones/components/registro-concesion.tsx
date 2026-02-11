@@ -18,7 +18,7 @@ export const RegistroConcesion = ({
   const [error, setError] = useState("");
   const [id_empresa, setIdEmpresa] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
-  const { crear_concesion } = useConcesion({ setIsLoading, setError });
+  const { crear_concesion } = useConcesion({ setError });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,13 +31,15 @@ export const RegistroConcesion = ({
         console.error(validation.error);
         return;
       }
-
+      setIsLoading(true);
       const response = await crear_concesion(validation.data);
       if (response) {
         onSuccess?.(response);
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -30,10 +30,9 @@ export const EmpresasLabores = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
   // Servicios
-  const { listar: listarLabores } = useLabor({ setIsLoading, setError });
+  const { listar: listarLabores } = useLabor({ setError });
   const { listar: listarConcesiones } = useConcesion({
-    setIsLoading: () => { },
-    setError: () => { }
+    setError: () => {},
   });
 
   // Carga inicial
@@ -42,21 +41,16 @@ export const EmpresasLabores = () => {
 
     const cargarDatos = async () => {
       setIsLoading(true);
-      try {
-        const [dataLabores, dataConcesiones] = await Promise.all([
-          listarLabores(),
-          listarConcesiones()
-        ]);
+      const [dataLabores, dataConcesiones] = await Promise.all([
+        listarLabores(),
+        listarConcesiones(),
+      ]);
 
-        if (!cancelled) {
-          setLabores(dataLabores || []);
-          setConcesiones(dataConcesiones || []);
-        }
-      } catch (e) {
-        if (!cancelled) setError(String(e));
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      if (!cancelled) {
+        setLabores(dataLabores || []);
+        setConcesiones(dataConcesiones || []);
       }
+      setIsLoading(false);
     };
 
     cargarDatos();
@@ -75,8 +69,8 @@ export const EmpresasLabores = () => {
         .filter((c) => c.nombre) // Filtrar concesiones sin nombre
         .sort((a, b) => a.nombre.localeCompare(b.nombre))
         .map((c) => ({
-          value: String(c.nombre), // Asegurar string 
-          label: String(c.nombre)
+          value: String(c.nombre), // Asegurar string
+          label: String(c.nombre),
         }));
     }
     // Fallback a los nombres en labores si no cargó concesiones (aunque se intenta cargar ambas)
@@ -108,7 +102,7 @@ export const EmpresasLabores = () => {
     return labores.filter((l) => {
       // Mapeo seguro del nombre de concesión
       const concesionNombre =
-        concesiones.find(c => c.id_concesion === l.id_concesion)?.nombre ||
+        concesiones.find((c) => c.id_concesion === l.id_concesion)?.nombre ||
         l.concesion ||
         "";
 
@@ -117,13 +111,21 @@ export const EmpresasLabores = () => {
         l.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         concesionNombre.toLowerCase().includes(busqueda.toLowerCase());
 
-      const matchConcesion = !filtroConcesion || concesionNombre === filtroConcesion;
+      const matchConcesion =
+        !filtroConcesion || concesionNombre === filtroConcesion;
       const matchTipo = !filtroTipo || l.tipo_labor === filtroTipo;
       const matchEstado = !filtroEstado || l.estado === filtroEstado;
 
       return matchBusqueda && matchConcesion && matchTipo && matchEstado;
     });
-  }, [labores, concesiones, busqueda, filtroConcesion, filtroTipo, filtroEstado]);
+  }, [
+    labores,
+    concesiones,
+    busqueda,
+    filtroConcesion,
+    filtroTipo,
+    filtroEstado,
+  ]);
 
   // Paginación
   const registrosPaginados = useMemo(() => {
@@ -149,9 +151,11 @@ export const EmpresasLabores = () => {
       accessor: "concesion",
       title: "Concesión",
       render: (record) => {
-        const cons = concesiones.find(c => c.id_concesion === record.id_concesion);
+        const cons = concesiones.find(
+          (c) => c.id_concesion === record.id_concesion,
+        );
         return cons ? cons.nombre : record.concesion || "-";
-      }
+      },
     },
     {
       accessor: "nombre",
