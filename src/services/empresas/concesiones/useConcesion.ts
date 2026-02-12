@@ -1,8 +1,12 @@
 import { api } from "../../api";
 import type { IRespuesta } from "../../../shared/response";
 import type { IUseHook } from "../../hook.interface";
-import type { RES_Concesion } from "./dtos/responses";
-import type { DTO_CrearConcesion, DTO_EditarConcesion } from "./dtos/requests";
+import type { RES_Concesion, RES_Asignacion } from "./dtos/responses";
+import type {
+  DTO_CrearConcesion,
+  DTO_EditarConcesion,
+  DTO_AsignarEmpresa,
+} from "./dtos/requests";
 
 export const useConcesion = ({ setError }: IUseHook) => {
   const path = "/api/concesiones";
@@ -85,12 +89,14 @@ export const useConcesion = ({ setError }: IUseHook) => {
     }
   };
 
-  // Listar concesiones por empresa
-  const get_by_empresa = async (id_empresa: number) => {
+  // --- Asignaciones ---
+
+  // Listar asignaciones
+  const listar_asignaciones = async (id_concesion: number) => {
     try {
-      const response = await api.post<IRespuesta<RES_Concesion[]>>(
-        `${path}/by-empresa`,
-        { id_empresa: id_empresa },
+      const response = await api.post<IRespuesta<RES_Asignacion[]>>(
+        `${path}/asignaciones`,
+        { id_concesion }
       );
       const result = response.data;
 
@@ -106,11 +112,57 @@ export const useConcesion = ({ setError }: IUseHook) => {
     }
   };
 
+  // Asignar empresa
+  const asignar_empresa = async (dto: DTO_AsignarEmpresa) => {
+    setError("");
+    try {
+      const response = await api.post<IRespuesta<boolean>>(
+        `${path}/asignar`,
+        dto
+      );
+      const result = response.data;
+
+      if (result.success) {
+        return true;
+      } else {
+        setError(result.error);
+        return false;
+      }
+    } catch (error) {
+      setError(String(error));
+      return false;
+    }
+  };
+
+  // Desasignar empresa
+  const desasignar_empresa = async (id_asignacion: number) => {
+    setError("");
+    try {
+      const response = await api.post<IRespuesta<boolean>>(
+        `${path}/desasignar`,
+        { id_asignacion }
+      );
+      const result = response.data;
+
+      if (result.success) {
+        return true;
+      } else {
+        setError(result.error);
+        return false;
+      }
+    } catch (error) {
+      setError(String(error));
+      return false;
+    }
+  };
+
   return {
     listar,
     crear_concesion,
     editar,
     eliminar,
-    get_by_empresa,
+    listar_asignaciones,
+    asignar_empresa,
+    desasignar_empresa,
   };
 };

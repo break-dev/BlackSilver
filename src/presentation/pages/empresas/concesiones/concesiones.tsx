@@ -2,7 +2,12 @@ import { useState, useMemo, useEffect } from "react";
 import { Button, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
-import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  BuildingOffice2Icon,
+} from "@heroicons/react/24/outline";
 import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
 import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
@@ -10,6 +15,7 @@ import { RegistroConcesion } from "./components/registro-concesion";
 import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
+import { SelectTipoMineral } from "../../../utils/select-tipo-mineral";
 
 const PAGE_SIZE = 35;
 
@@ -23,8 +29,8 @@ export const EmpresasConcesiones = () => {
 
   // Filtros
   const [busqueda, setBusqueda] = useState("");
-  const [filtroEmpresa, setFiltroEmpresa] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
+  const [filtroMineral, setFiltroMineral] = useState<string | null>(null);
 
   // Modal
   const [opened, { open, close }] = useDisclosure(false);
@@ -56,13 +62,6 @@ export const EmpresasConcesiones = () => {
   }, [setTitle]);
 
   // Opciones de filtros derivados de los datos
-  const empresasUnicas = useMemo(() => {
-    const set = new Set(concesiones.map((c) => c.empresa));
-    return Array.from(set)
-      .sort()
-      .map((e) => ({ value: e, label: e }));
-  }, [concesiones]);
-
   const estadosUnicos = useMemo(() => {
     const set = new Set(concesiones.map((c) => c.estado));
     return Array.from(set)
@@ -76,14 +75,15 @@ export const EmpresasConcesiones = () => {
       const matchBusqueda =
         !busqueda ||
         c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.empresa.toLowerCase().includes(busqueda.toLowerCase());
+        c.codigo_concesion?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        c.codigo_reinfo?.toLowerCase().includes(busqueda.toLowerCase());
 
-      const matchEmpresa = !filtroEmpresa || c.empresa === filtroEmpresa;
       const matchEstado = !filtroEstado || c.estado === filtroEstado;
+      const matchMineral = !filtroMineral || c.tipo_mineral === filtroMineral;
 
-      return matchBusqueda && matchEmpresa && matchEstado;
+      return matchBusqueda && matchEstado && matchMineral;
     });
-  }, [concesiones, busqueda, filtroEmpresa, filtroEstado]);
+  }, [concesiones, busqueda, filtroEstado, filtroMineral]);
 
   // Paginación
   const registrosPaginados = useMemo(() => {
@@ -102,24 +102,96 @@ export const EmpresasConcesiones = () => {
       accessor: "index",
       title: "#",
       textAlign: "center",
-      width: 60,
+      width: 50,
       render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
-      accessor: "empresa",
-      title: "Empresa",
+      accessor: "nombre",
+      title: "Nombre Concesión",
+      width: 200,
+      render: (record) => (
+        <span className="text-zinc-200 font-semibold">{record.nombre}</span>
+      ),
     },
     {
-      accessor: "nombre",
-      title: "Concesión",
+      accessor: "codigo_concesion",
+      title: "Cod. Concesión",
+      width: 140,
+      render: (record) =>
+        record.codigo_concesion ? (
+          <Badge
+            variant="light"
+            color="violet"
+            radius="sm"
+            className="font-mono"
+          >
+            {record.codigo_concesion}
+          </Badge>
+        ) : (
+          <span className="text-zinc-600">-</span>
+        ),
+    },
+    {
+      accessor: "codigo_reinfo",
+      title: "Cod. REINFO",
+      width: 140,
+      render: (record) =>
+        record.codigo_reinfo ? (
+          <Badge variant="light" color="pink" radius="sm" className="font-mono">
+            {record.codigo_reinfo}
+          </Badge>
+        ) : (
+          <span className="text-zinc-600">-</span>
+        ),
+    },
+    {
+      accessor: "tipo_mineral",
+      title: "Tipo De Mineral",
+      width: 130,
+      render: (record) =>
+        record.tipo_mineral ? (
+          <span className="text-zinc-300 font-medium">
+            {record.tipo_mineral}
+          </span>
+        ) : (
+          <span className="text-zinc-500">-</span>
+        ),
+    },
+    {
+      accessor: "ubigeo",
+      title: "Ubicación",
+      width: 150,
+      render: (record) =>
+        record.ubigeo ? (
+          <div className="flex items-center gap-1 text-zinc-400 text-sm">
+            <MapPinIcon className="w-4 h-4 text-emerald-500" />
+            <span className="truncate max-w-[140px]">{record.ubigeo}</span>
+          </div>
+        ) : (
+          "-"
+        ),
+    },
+    {
+      accessor: "empresas_asignadas",
+      title: "Empresas",
+      textAlign: "center",
+      width: 110,
       render: (record) => (
-        <span className="text-indigo-200 font-semibold">{record.nombre}</span>
+        <Badge
+          leftSection={<BuildingOffice2Icon className="w-3 h-3" />}
+          color={record.empresas_asignadas > 0 ? "indigo" : "zinc"}
+          variant="light"
+          radius="sm"
+        >
+          {record.empresas_asignadas} Asign.
+        </Badge>
       ),
     },
     {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
+      width: 100,
       render: (record) => (
         <Badge
           color={record.estado === EstadoBase.Activo ? "green" : "red"}
@@ -139,7 +211,7 @@ export const EmpresasConcesiones = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-wrap gap-4 flex-1">
           <TextInput
-            placeholder="Buscar por nombre o empresa..."
+            placeholder="Buscar por nombre, código o REINFO..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
@@ -148,7 +220,7 @@ export const EmpresasConcesiones = () => {
               setBusqueda(e.currentTarget.value);
               setPage(1);
             }}
-            className="flex-1 min-w-50"
+            className="flex-1 min-w-64"
             radius="lg"
             size="sm"
             classNames={{
@@ -156,25 +228,19 @@ export const EmpresasConcesiones = () => {
             focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
             }}
           />
-          <Select
-            placeholder="Empresa"
-            data={empresasUnicas}
-            value={filtroEmpresa}
+
+          <SelectTipoMineral
+            label=""
+            placeholder="Mineral"
+            value={filtroMineral}
             onChange={(val) => {
-              setFiltroEmpresa(val);
+              setFiltroMineral(val);
               setPage(1);
             }}
             clearable
-            radius="lg"
-            size="sm"
-            className="min-w-45"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
+            className="min-w-36"
           />
+
           <Select
             placeholder="Estado"
             data={estadosUnicos}
@@ -186,7 +252,7 @@ export const EmpresasConcesiones = () => {
             clearable
             radius="lg"
             size="sm"
-            className="min-w-35"
+            className="min-w-36"
             classNames={{
               input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
             focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
@@ -195,7 +261,6 @@ export const EmpresasConcesiones = () => {
             }}
           />
         </div>
-        {/* End of filters wrapper */}
 
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
@@ -211,7 +276,7 @@ export const EmpresasConcesiones = () => {
 
       {/* DataTable */}
       <DataTableClassic
-        idAccessor="id_concesiones"
+        idAccessor="id_concesion"
         columns={columns}
         records={registrosPaginados}
         totalRecords={concesionesFiltradas.length}
