@@ -1,173 +1,171 @@
-import { Button, Group, TextInput, Select } from "@mantine/core";
-import { useState, useEffect } from "react";
+import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
+import { useState } from "react";
 import { Schema_CrearLabor } from "../../../../../services/empresas/labores/dtos/requests";
 import type { RES_Labor } from "../../../../../services/empresas/labores/dtos/responses";
-import { useLabor } from "../../../../../services/empresas/labores/useLabor";
-import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
-import { useConcesion } from "../../../../../services/empresas/concesiones/useConcesion";
+import { useLabores } from "../../../../../services/empresas/labores/useLabores";
 import { SelectEmpresas } from "../../../../utils/select-empresas";
-import { TipoLabor, TipoSostenimiento } from "../../../../../shared/enums";
+import { SelectConcesionAsignada } from "../../../../utils/select-concesion-asignada";
+import { TIPOS_LABOR_OPTIONS, TIPOS_SOSTENIMIENTO_OPTIONS } from "../../../../../services/empresas/labores/constants";
 
 interface RegistroLaborProps {
   onSuccess?: (labor: RES_Labor) => void;
   onCancel?: () => void;
 }
 
-export const RegistroLabor = ({ onSuccess, onCancel }: RegistroLaborProps) => {
+export const RegistroLabor = ({
+  onSuccess,
+  onCancel,
+}: RegistroLaborProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Form State
-  const [id_empresa, setIdEmpresa] = useState<string | null>(null);
-  const [id_concesion, setIdConcesion] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [tipo_labor, setTipoLabor] = useState<string | null>(null);
-  const [tipo_sostenimiento, setTipoSostenimiento] = useState<string | null>(
-    null,
-  );
-  const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
+  const [tipo_sostenimiento, setTipoSostenimiento] = useState<string | null>(null);
 
-  // Services
-  const { crear_labor } = useLabor({ setError });
-  const { get_by_empresa } = useConcesion({
-    setError: () => {},
-  });
+  // New Flow Logic: Empresa -> Concesion(id_asignacion)
+  const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
+  const [idAsignacion, setIdAsignacion] = useState<string | null>(null); // This is id_empresa_concesion
 
-  // Cargar concesiones cuando cambia empresa
-  useEffect(() => {
-    setIdConcesion(null);
-    setConcesiones([]);
+  // Service
+  const { crear_labor } = useLabores({ setError });
 
-    if (id_empresa) {
-      setIsLoading(true);
-      get_by_empresa(parseInt(id_empresa))
-        .then((data) => {
-          if (data) setConcesiones(data);
-        })
-        .finally(() => setIsLoading(false));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id_empresa]);
+  const inputClasses = {
+    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+    focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+    label: "text-zinc-300 mb-1 font-medium",
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+
     try {
       const validation = Schema_CrearLabor.safeParse({
-        id_concesion: parseInt(id_concesion || "0"),
-        nombre: nombre,
-        tipo_labor: tipo_labor,
-        tipo_sostenimiento: tipo_sostenimiento,
+        id_empresa_concesion: Number(idAsignacion),
+        nombre,
+        descripcion,
+        tipo_labor,
+        tipo_sostenimiento,
       });
 
       if (!validation.success) {
-        console.error(validation.error);
+        const firstError = validation.error.issues[0]?.message;
+        setError(firstError || "Complete todos los campos requeridos.");
         return;
       }
 
       setIsLoading(true);
       const response = await crear_labor(validation.data);
-      setIsLoading(false);
 
       if (response) {
         onSuccess?.(response);
       }
     } catch (e) {
       console.error(e);
+      setError("Error al guardar.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <SelectEmpresas
-        required
-        value={id_empresa}
-        onChange={(value) => setIdEmpresa(value)}
-      />
+    <form onSubmit={handleSubmit} className="space-y-5">
 
-      <Select
-        label="Concesión"
-        placeholder={
-          id_empresa ? "Seleccione concesión" : "Primero seleccione una empresa"
-        }
-        data={concesiones.map((c) => ({
-          value: c.id_concesion.toString(),
-          label: c.nombre,
-        }))}
-        value={id_concesion}
-        onChange={setIdConcesion}
-        disabled={!id_empresa}
-        searchable
-        nothingFoundMessage="No se encontraron concesiones"
-        withCheckIcon={false}
-        required
-        radius="lg"
-        size="sm"
-        classNames={{
-          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-          focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-          dropdown: "bg-zinc-900 border-zinc-800",
-          option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
-          data-[selected]:text-zinc-900 rounded-md my-1`,
-          label: "text-zinc-300 mb-1 font-medium",
-        }}
-      />
-
+      {/* 1. Nombre Labor */}
       <TextInput
-        label="Nombre de Labor"
-        placeholder="Ej. Nivel 340"
+        label="Nombre Labor"
+        placeholder="Ej. Galería Esperanza Nivel 1"
+        withAsterisk
         required
         radius="lg"
         size="sm"
-        classNames={{
-          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-          focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-          label: "text-zinc-300 mb-1 font-medium",
-        }}
+        classNames={inputClasses}
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* 2. Tipos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
-          label="Tipo Labor"
-          placeholder="Seleccione tipo"
-          data={Object.values(TipoLabor)}
+          label="Tipo de Labor"
+          placeholder="Seleccionar"
+          data={TIPOS_LABOR_OPTIONS}
           value={tipo_labor}
           onChange={setTipoLabor}
           required
           radius="lg"
           size="sm"
           classNames={{
-            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+            ...inputClasses,
             dropdown: "bg-zinc-900 border-zinc-800",
-            option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
-            data-[selected]:text-zinc-900 rounded-md my-1`,
-            label: "text-zinc-300 mb-1 font-medium",
+            option: "hover:bg-zinc-800 text-zinc-300",
           }}
         />
 
         <Select
-          label="Sostenimiento"
-          placeholder="Seleccione tipo"
-          data={Object.values(TipoSostenimiento)}
+          label="Tipo Sostenimiento"
+          placeholder="Seleccionar"
+          data={TIPOS_SOSTENIMIENTO_OPTIONS}
           value={tipo_sostenimiento}
           onChange={setTipoSostenimiento}
           required
           radius="lg"
           size="sm"
           classNames={{
-            input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+            ...inputClasses,
             dropdown: "bg-zinc-900 border-zinc-800",
-            option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
-            data-[selected]:text-zinc-900 rounded-md my-1`,
-            label: "text-zinc-300 mb-1 font-medium",
+            option: "hover:bg-zinc-800 text-zinc-300",
           }}
         />
       </div>
 
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+      {/* 3. Asignación Operativa (Empresa/Concesión) */}
+      {/* 3. Asignación Operativa (Empresa/Concesión) */}
+      <div className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60 mt-2 space-y-3">
+        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+          Asignación Operativa
+        </p>
+
+        <div className="grid grid-cols-1 gap-3 mobile:gap-2">
+          <SelectEmpresas
+            label="Empresa"
+            required
+            withAsterisk
+            placeholder="Seleccione Empresa"
+            value={idEmpresa}
+            onChange={(val) => {
+              setIdEmpresa(val);
+              setIdAsignacion(null);
+            }}
+          />
+
+          <SelectConcesionAsignada
+            required
+            withAsterisk
+            label="Concesión"
+            idEmpresa={idEmpresa ? Number(idEmpresa) : null}
+            value={idAsignacion}
+            onChange={setIdAsignacion}
+          />
+        </div>
+      </div>
+
+      {/* 4. Descripción */}
+      <Textarea
+        label="Descripción / Ubicación"
+        placeholder="Detalles adicionales..."
+        radius="lg"
+        size="sm"
+        minRows={3}
+        classNames={inputClasses}
+        value={descripcion}
+        onChange={(e) => setDescripcion(e.target.value)}
+      />
+
+      {error && <div className="text-red-500 text-sm mt-2 font-medium">{error}</div>}
 
       <Group justify="flex-end" gap="md" mt="xl">
         {onCancel && (
@@ -177,8 +175,7 @@ export const RegistroLabor = ({ onSuccess, onCancel }: RegistroLaborProps) => {
             disabled={isLoading}
             radius="lg"
             size="sm"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 
-            transition-colors"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
           >
             Cancelar
           </Button>
@@ -188,10 +185,9 @@ export const RegistroLabor = ({ onSuccess, onCancel }: RegistroLaborProps) => {
           loading={isLoading}
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-          font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
         >
-          Guardar
+          Guardar Labor
         </Button>
       </Group>
     </form>

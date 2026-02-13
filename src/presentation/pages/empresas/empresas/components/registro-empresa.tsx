@@ -99,7 +99,7 @@ export const RegistroEmpresa = ({
 
             <TextInput
                 label="Nombre Comercial"
-                placeholder="Ej. Empresa S.A.C."
+                placeholder="Ej. Santa Rosa"
                 withAsterisk
                 required
                 radius="lg"

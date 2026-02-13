@@ -30,6 +30,28 @@ export const useConcesion = ({ setError }: IUseHook) => {
     }
   };
 
+  // Listar concesiones por empresa (para obtener id_asignacion)
+  const listar_por_empresa = async (id_empresa: number) => {
+    setError("");
+    try {
+      const response = await api.post<IRespuesta<RES_Concesion[]>>(
+        `${path}/by-empresa`,
+        { id_empresa }
+      );
+      const result = response.data;
+
+      if (result.success) {
+        return result.data;
+      } else {
+        // setError(result.error); // Optional: silent fail for selects
+        return [];
+      }
+    } catch (error) {
+      console.error(String(error));
+      return [];
+    }
+  };
+
   // Crear concesion
   const crear_concesion = async (dto: DTO_CrearConcesion) => {
     setError("");
@@ -158,6 +180,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
 
   return {
     listar,
+    listar_por_empresa,
     crear_concesion,
     editar,
     eliminar,

@@ -2,19 +2,26 @@ import { useState, useMemo, useEffect } from "react";
 import { Button, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
-import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useLabor } from "../../../../services/empresas/labores/useLabor";
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  BriefcaseIcon,
+} from "@heroicons/react/24/outline";
+import { useLabores } from "../../../../services/empresas/labores/useLabores";
 import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
-import { EstadoBase } from "../../../../shared/enums";
 import { RegistroLabor } from "./components/registro-labor";
+import { AsignarResponsable } from "./components/asignar-responsable";
 import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 
 const PAGE_SIZE = 35;
+const TIPOS_LABOR = ["Bypass", "Crucero", "Tajo", "Rampa", "Chimenea"];
+const TIPOS_SOSTENIMIENTO = ["Convencional", "Mecanizada"];
 
 export const EmpresasLabores = () => {
   const setTitle = UIStore((state) => state.setTitle);
+
   // Estado local
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -23,81 +30,58 @@ export const EmpresasLabores = () => {
 
   // Filtros
   const [busqueda, setBusqueda] = useState("");
-  const [filtroConcesion, setFiltroConcesion] = useState<string | null>(null);
-  const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
-  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
+  const [filtroTipoLabor, setFiltroTipoLabor] = useState<string | null>(null);
+  const [filtroSostenimiento, setFiltroSostenimiento] = useState<string | null>(null);
 
-  // Modal
+  // Modal Registro
   const [opened, { open, close }] = useDisclosure(false);
 
-  // Servicios
-  const { listar: listarLabores } = useLabor({ setError });
+  // Modal Asignar
+  const [openedAssign, { open: openAssign, close: closeAssign }] = useDisclosure(false);
+  const [selectedLabor, setSelectedLabor] = useState<RES_Labor | null>(null);
+
+  // Servicio
+  const { listar } = useLabores({ setError });
+
+  // Methods
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await listar();
+      setLabores(data || []);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Carga inicial
   useEffect(() => {
-    let cancelled = false;
-    // setIsLoading(true);
-    listarLabores()
-      .then((data) => {
-        if (!cancelled) setLabores(data || []);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Title
   useEffect(() => {
     setTimeout(() => {
-      setTitle("Labores");
+      setTitle("Labores Mineras");
     }, 0);
   }, [setTitle]);
-
-  // Opciones de filtros
-  const concesionesUnicas = useMemo(() => {
-    const set = new Set(labores.map((l) => l.concesion || ""));
-    return Array.from(set)
-      .filter(Boolean)
-      .sort()
-      .map((c) => ({ value: String(c), label: String(c) }));
-  }, [labores]);
-
-  const tiposUnicos = useMemo(() => {
-    const set = new Set(labores.map((l) => l.tipo_labor));
-    return Array.from(set)
-      .filter(Boolean)
-      .sort()
-      .map((t) => ({ value: String(t), label: String(t) }));
-  }, [labores]);
-
-  const estadosUnicos = useMemo(() => {
-    const set = new Set(labores.map((l) => l.estado));
-    return Array.from(set)
-      .filter(Boolean)
-      .sort()
-      .map((e) => ({ value: String(e), label: String(e) }));
-  }, [labores]);
 
   // Datos filtrados
   const laboresFiltradas = useMemo(() => {
     return labores.filter((l) => {
+      const term = busqueda.toLowerCase();
+
+      const matchTipo = !filtroTipoLabor || l.tipo_labor === filtroTipoLabor;
+      const matchSostenimiento = !filtroSostenimiento || l.tipo_sostenimiento === filtroSostenimiento;
+
       const matchBusqueda =
         !busqueda ||
-        l.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        (l.concesion || "").toLowerCase().includes(busqueda.toLowerCase());
+        l.nombre.toLowerCase().includes(term);
 
-      const matchConcesion =
-        !filtroConcesion || l.concesion === filtroConcesion;
-      const matchTipo = !filtroTipo || l.tipo_labor === filtroTipo;
-      const matchEstado = !filtroEstado || l.estado === filtroEstado;
-
-      return matchBusqueda && matchConcesion && matchTipo && matchEstado;
+      return matchBusqueda && matchTipo && matchSostenimiento;
     });
-  }, [labores, busqueda, filtroConcesion, filtroTipo, filtroEstado]);
+  }, [labores, busqueda, filtroTipoLabor, filtroSostenimiento]);
 
   // Paginación
   const registrosPaginados = useMemo(() => {
@@ -105,10 +89,10 @@ export const EmpresasLabores = () => {
     return laboresFiltradas.slice(inicio, inicio + PAGE_SIZE);
   }, [laboresFiltradas, page]);
 
-  // Callback registro exitoso
-  const handleRegistroExitoso = (labor: RES_Labor) => {
+  // Callback al registrar exitosamente
+  const handleRegistroExitoso = () => {
     close();
-    setLabores([...labores, labor]);
+    fetchData();
   };
 
   const columns: DataTableColumn<RES_Labor>[] = [
@@ -116,48 +100,65 @@ export const EmpresasLabores = () => {
       accessor: "index",
       title: "#",
       textAlign: "center",
-      width: 60,
+      width: 50,
       render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
-      accessor: "concesion",
-      title: "Concesión",
-    },
-    {
       accessor: "nombre",
-      title: "Labor",
+      title: "Nombre Labor",
+      width: 250,
       render: (record) => (
-        <span className="text-indigo-200 font-semibold">{record.nombre}</span>
+        <div className="flex flex-col">
+          <span className="text-zinc-200 font-semibold">{record.nombre}</span>
+          <span className="text-zinc-500 text-xs">{record.descripcion}</span>
+        </div>
       ),
     },
     {
       accessor: "tipo_labor",
       title: "Tipo",
+      width: 120,
       render: (record) => (
-        <Badge color="blue" variant="light" size="sm" radius="sm">
-          {record.tipo_labor}
+        <Badge
+          variant="light"
+          color="cyan"
+          radius="sm"
+          className="font-bold tracking-wider"
+        >
+          {record.tipo_labor.toUpperCase()}
         </Badge>
       ),
     },
     {
       accessor: "tipo_sostenimiento",
       title: "Sostenimiento",
-    },
-    {
-      accessor: "estado",
-      title: "Estado",
-      textAlign: "center",
+      width: 150,
       render: (record) => (
-        <Badge
-          color={record.estado === EstadoBase.Activo ? "green" : "red"}
-          variant="light"
-          radius="sm"
-          size="sm"
-        >
-          {record.estado}
-        </Badge>
+        <span className="text-zinc-400 text-sm italic">{record.tipo_sostenimiento}</span>
       ),
     },
+    {
+      accessor: "responsable", // Custom logic for button
+      title: "Responsable",
+      textAlign: "center",
+      width: 140,
+      render: (record) => (
+        <Button
+          variant="light"
+          size="xs"
+          color="grape"
+          className="hover:bg-grape-900/30 transition-colors duration-200"
+          leftSection={<BriefcaseIcon className="w-3 h-3" />}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedLabor(record);
+            openAssign();
+          }}
+        >
+          Asignar
+        </Button>
+      )
+    }
   ];
 
   return (
@@ -166,7 +167,7 @@ export const EmpresasLabores = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex flex-wrap gap-4 flex-1">
           <TextInput
-            placeholder="Buscar por nombre o concesión..."
+            placeholder="Buscar labor..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
@@ -175,7 +176,7 @@ export const EmpresasLabores = () => {
               setBusqueda(e.currentTarget.value);
               setPage(1);
             }}
-            className="flex-1 min-w-50"
+            className="flex-1 min-w-64"
             radius="lg"
             size="sm"
             classNames={{
@@ -183,66 +184,45 @@ export const EmpresasLabores = () => {
             focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
             }}
           />
+
           <Select
-            placeholder="Concesión"
-            data={concesionesUnicas}
-            value={filtroConcesion}
+            placeholder="Tipo Labor"
+            data={TIPOS_LABOR}
+            value={filtroTipoLabor}
             onChange={(val) => {
-              setFiltroConcesion(val);
+              setFiltroTipoLabor(val);
               setPage(1);
             }}
             clearable
-            radius="lg"
-            size="sm"
-            className="min-w-45"
             searchable
             classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500 min-w-32`,
               dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
+              option: "hover:bg-zinc-800 text-zinc-300",
             }}
+            radius="lg"
+            size="sm"
           />
+
           <Select
-            placeholder="Tipo"
-            data={tiposUnicos}
-            value={filtroTipo}
+            placeholder="Sostenimiento"
+            data={TIPOS_SOSTENIMIENTO}
+            value={filtroSostenimiento}
             onChange={(val) => {
-              setFiltroTipo(val);
+              setFiltroSostenimiento(val);
               setPage(1);
             }}
             clearable
+            searchable
+            classNames={{
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500 min-w-32`,
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "hover:bg-zinc-800 text-zinc-300",
+            }}
             radius="lg"
             size="sm"
-            className="min-w-30"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-          <Select
-            placeholder="Estado"
-            data={estadosUnicos}
-            value={filtroEstado}
-            onChange={(val) => {
-              setFiltroEstado(val);
-              setPage(1);
-            }}
-            clearable
-            radius="lg"
-            size="sm"
-            className="min-w-30"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
           />
         </div>
-        {/* End of filters wrapper */}
 
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
@@ -258,7 +238,7 @@ export const EmpresasLabores = () => {
 
       {/* DataTable */}
       <DataTableClassic
-        idAccessor="id_labores"
+        idAccessor="id"
         columns={columns}
         records={registrosPaginados}
         totalRecords={laboresFiltradas.length}
@@ -272,6 +252,21 @@ export const EmpresasLabores = () => {
       {/* Modal de Registro */}
       <ModalRegistro opened={opened} close={close} title="Nueva Labor">
         <RegistroLabor onSuccess={handleRegistroExitoso} onCancel={close} />
+      </ModalRegistro>
+
+      {/* Modal Asignar Responsable */}
+      <ModalRegistro opened={openedAssign} close={closeAssign} title="Gestión de Responsables">
+        {selectedLabor && (
+          <AsignarResponsable
+            idLabor={selectedLabor.id}
+            nombreLabor={selectedLabor.nombre}
+            onSuccess={() => {
+              closeAssign();
+              fetchData();
+            }}
+            onCancel={closeAssign}
+          />
+        )}
       </ModalRegistro>
     </div>
   );

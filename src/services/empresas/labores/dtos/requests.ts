@@ -1,26 +1,25 @@
 import { z } from "zod";
-import {
-  EstadoBase,
-  TipoLabor,
-  TipoSostenimiento,
-} from "../../../../shared/enums";
 
+// Schema for creating a Labor
 export const Schema_CrearLabor = z.object({
-  id_concesion: z.number().min(1, "La concesión es obligatoria"),
-  nombre: z.string().min(1, "El nombre es obligatorio"),
-  descripcion: z.string().optional().or(z.literal("")),
-  tipo_labor: z.enum(TipoLabor, "Tipo de labor inválido"),
-  tipo_sostenimiento: z.enum(
-    TipoSostenimiento,
-    "Tipo de sostenimiento inválido",
-  ),
-  estado: z.enum(EstadoBase, "Estado inválido").optional(),
+  id_empresa_concesion: z.number().min(1, "Debe seleccionar una empresa valida en la concesion"),
+  nombre: z
+    .string()
+    .min(1, "El nombre es requerido")
+    .max(128, "El nombre no puede exceder 128 caracteres"),
+  descripcion: z.string().optional(),
+  tipo_labor: z.string().min(1, "El tipo de labor es requerido"),
+  tipo_sostenimiento: z.string().min(1, "El tipo de sostenimiento es requerido"),
 });
 
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;
 
-export const Schema_EditarLabor = Schema_CrearLabor.partial().extend({
-  id_labor: z.number().min(1, "El ID de labor es obligatorio"),
+// Schema for assigning a Responsable
+export const Schema_AsignarResponsable = z.object({
+  id_labor: z.number().min(1, "Labor invalida"),
+  id_usuario_empresa: z.number().min(1, "Debe seleccionar un responsable"),
+  fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"), // ISO Date string YYYY-MM-DD
+  observacion: z.string().optional(),
 });
 
-export type DTO_EditarLabor = z.infer<typeof Schema_EditarLabor>;
+export type DTO_AsignarResponsable = z.infer<typeof Schema_AsignarResponsable>;
