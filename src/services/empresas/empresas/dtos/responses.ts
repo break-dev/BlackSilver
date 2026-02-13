@@ -4,5 +4,5 @@ export interface RES_Empresa {
     razon_social: string;
     nombre_comercial: string;
     abreviatura: string;
-    path_logo?: string;
+    path_logo: string;
 }

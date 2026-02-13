@@ -8,6 +8,7 @@ import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
 import { EmpresasLabores } from "../pages/empresas/labores/labores";
+import { EmpresasPage } from "../pages/empresas/empresas/empresas";
 import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
 
 export const App = () => {
@@ -48,7 +49,7 @@ export const App = () => {
         {/* Empresas */}
         <Route
           path="/configuracion/empresas/empresas"
-          element={<PlaceholderPage titulo="Empresas" />}
+          element={<EmpresasPage />}
         />
         <Route
           path="/configuracion/empresas/almacenes"

@@ -56,6 +56,12 @@ export const RegistroCategoria = ({
     }
   };
 
+  const inputClasses = {
+    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+    focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <TextInput
@@ -64,11 +70,7 @@ export const RegistroCategoria = ({
         required
         radius="lg"
         size="sm"
-        classNames={{
-          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-          focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-          label: "text-zinc-300 mb-1 font-medium",
-        }}
+        classNames={inputClasses}
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
       />
@@ -83,12 +85,10 @@ export const RegistroCategoria = ({
         radius="lg"
         size="sm"
         classNames={{
-          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-          focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+          ...inputClasses,
           dropdown: "bg-zinc-900 border-zinc-800",
           option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
           data-[selected]:text-zinc-900 rounded-md my-1`,
-          label: "text-zinc-300 mb-1 font-medium",
         }}
       />
 
@@ -98,11 +98,7 @@ export const RegistroCategoria = ({
         radius="lg"
         size="sm"
         minRows={3}
-        classNames={{
-          input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-          focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-          label: "text-zinc-300 mb-1 font-medium",
-        }}
+        classNames={inputClasses}
         value={descripcion}
         onChange={(e) => setDescripcion(e.target.value)}
       />
