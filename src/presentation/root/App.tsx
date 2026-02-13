@@ -51,10 +51,6 @@ export const App = () => {
           element={<PlaceholderPage titulo="Empresas" />}
         />
         <Route
-          path="/configuracion/empresas/areas"
-          element={<PlaceholderPage titulo="Áreas" />}
-        />
-        <Route
           path="/configuracion/empresas/almacenes"
           element={<PlaceholderPage titulo="Almacenes" />}
         />
@@ -67,6 +63,10 @@ export const App = () => {
           element={<EmpresasLabores />}
         />
         {/* Personal */}
+        <Route
+          path="/configuracion/personal/areas"
+          element={<PlaceholderPage titulo="Áreas" />}
+        />
         <Route
           path="/configuracion/personal/cargos"
           element={<PlaceholderPage titulo="Cargos" />}

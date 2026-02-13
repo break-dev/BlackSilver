@@ -72,7 +72,7 @@ export const RegistroConcesion = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <TextInput
-        label="Nombre de Concesión"
+        label="Nombre"
         placeholder="Ej. Mina Santa Rosa"
         withAsterisk
         required // HTML5 required
@@ -85,7 +85,7 @@ export const RegistroConcesion = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <TextInput
-          label="Código Concesión"
+          label="Código"
           placeholder="Ej. COD-12345"
           withAsterisk
           required
@@ -97,7 +97,7 @@ export const RegistroConcesion = ({
         />
 
         <TextInput
-          label="Código REINFO"
+          label="Cod. REINFO"
           placeholder="Ej. REINFO-999"
           withAsterisk
           required

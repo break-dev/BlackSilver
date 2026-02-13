@@ -46,7 +46,7 @@ export const ModalRegistro = ({
       }}
       transitionProps={{ transition: "pop", duration: 250 }}
     >
-      {children}
+      <div className="pt-3">{children}</div>
     </Modal>
   );
 };

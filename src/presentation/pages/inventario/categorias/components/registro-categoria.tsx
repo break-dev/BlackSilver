@@ -59,7 +59,7 @@ export const RegistroCategoria = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <TextInput
-        label="Nombre de Categoría"
+        label="Nombre"
         placeholder="Ej. Materiales de Construcción"
         required
         radius="lg"

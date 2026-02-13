@@ -4,7 +4,9 @@ import {
   XMarkIcon,
   ChevronRightIcon,
   HomeIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
+import { iconos_menu_navegacion } from "../../../../shared/variables";
 import { MenuStore } from "../../../../stores/menu.store";
 import type { IModulo } from "../../../../services/menu/dtos/responses";
 
@@ -81,62 +83,84 @@ export const Navbar = ({ onClose }: NavbarProps) => {
 
           {/* Renderizar menu de navegacion */}
           {Array.isArray(menu) &&
-            menu.map((mod) => (
-              // Modulo
-              <div key={mod.id_modulo || mod.nombre}>
-                <button
-                  onClick={() =>
-                    setExpanded(expanded === mod.nombre ? null : mod.nombre)
-                  }
-                  className="w-full flex items-center justify-between px-3 py-2.5 
-                  rounded-xl text-xs font-medium text-zinc-400 hover:text-white 
-                  hover:bg-white/5 transition-all"
-                >
-                  <span>{mod.nombre || "Sin nombre"}</span>
-                  <ChevronRightIcon
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      expanded === mod.nombre ? "rotate-90" : ""
-                    }`}
-                  />
-                </button>
+            menu.map((mod) => {
+              const modIconData = iconos_menu_navegacion.find(
+                (i) => i.modulo_path === mod.path,
+              );
+              const ModIcon = modIconData?.icono || CubeIcon;
 
-                {/* Submodulos */}
-                {expanded === mod.nombre && Array.isArray(mod.submodulos) && (
-                  <div
-                    className="ml-4 mt-1 space-y-1 border-l-2 border-zinc-800 pl-3 
-                    animate-slideDown"
+              return (
+                // Modulo
+                <div key={mod.id_modulo || mod.nombre}>
+                  <button
+                    onClick={() =>
+                      setExpanded(expanded === mod.nombre ? null : mod.nombre)
+                    }
+                    className="w-full flex items-center justify-between px-3 py-2.5 
+                    rounded-xl text-xs font-medium text-zinc-400 hover:text-white
+                    hover:bg-white/5 transition-all"
                   >
-                    {mod.submodulos.map((sub) => (
-                      <div key={sub.id_submodulo || sub.nombre}>
-                        {/* Submodule header */}
-                        <div
-                          className="text-[10px] font-semibold text-zinc-500 
-                          uppercase tracking-wider px-3 py-2"
-                        >
-                          {sub.nombre || "Sin nombre"}
-                        </div>
+                    <div className="flex items-center gap-3">
+                      <ModIcon className="w-4 h-4" />
+                      <span>{mod.nombre || "Sin nombre"}</span>
+                    </div>
+                    <ChevronRightIcon
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        expanded === mod.nombre ? "rotate-90" : ""
+                      }`}
+                    />
+                  </button>
 
-                        {/* Secciones */}
-                        {Array.isArray(sub.secciones) &&
-                          sub.secciones.map((sec) => (
-                            <button
-                              key={sec.id_seccion || sec.nombre}
-                              onClick={() => go(sec.url || "#")}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
-                                location.pathname === sec.url
-                                  ? "text-white bg-white/10 font-medium"
-                                  : "text-zinc-400 hover:text-zinc-300 hover:bg-white/5"
-                              }`}
+                  {/* Submodulos */}
+                  {expanded === mod.nombre && Array.isArray(mod.submodulos) && (
+                    <div
+                      className="ml-4 mt-1 space-y-1 border-l-2 border-zinc-800 pl-3 
+                    animate-slideDown"
+                    >
+                      {mod.submodulos.map((sub) => {
+                        const subIconData = Array.isArray(
+                          modIconData?.submodulos,
+                        )
+                          ? modIconData?.submodulos.find(
+                              (s) => s.submodulo_path === sub.path,
+                            )
+                          : null;
+                        const SubIcon = subIconData?.icono || CubeIcon;
+
+                        return (
+                          <div key={sub.id_submodulo || sub.nombre}>
+                            {/* Submodule header */}
+                            <div
+                              className="flex items-center gap-2 text-[11px] font-semibold text-slate-500 
+                              uppercase tracking-wider px-3 py-2"
                             >
-                              {sec.nombre || "Sin nombre"}
-                            </button>
-                          ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+                              <SubIcon className="w-3.5 h-3.5" />
+                              {sub.nombre || "Sin nombre"}
+                            </div>
+
+                            {/* Secciones */}
+                            {Array.isArray(sub.secciones) &&
+                              sub.secciones.map((sec) => (
+                                <button
+                                  key={sec.id_seccion || sec.nombre}
+                                  onClick={() => go(sec.url || "#")}
+                                  className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
+                                    location.pathname === sec.url
+                                      ? "text-white bg-white/10 font-medium"
+                                      : "text-zinc-400 hover:text-zinc-300 hover:bg-white/5"
+                                  }`}
+                                >
+                                  {sec.nombre || "Sin nombre"}
+                                </button>
+                              ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </nav>
     </div>
