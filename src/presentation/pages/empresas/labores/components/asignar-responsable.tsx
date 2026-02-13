@@ -1,6 +1,6 @@
 import { Button, Group, Textarea } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
 import { useState } from "react";
+import { CustomDatePicker } from "../../../../utils/date-picker-input";
 import { Schema_AsignarResponsable } from "../../../../../services/empresas/labores/dtos/requests";
 import { useLabores } from "../../../../../services/empresas/labores/useLabores";
 import { SelectUsuarioEmpresa } from "../../../../utils/select-usuario-empresa";
@@ -42,12 +42,13 @@ export const AsignarResponsable = ({
         setError("");
 
         try {
-            const validation = Schema_AsignarResponsable.safeParse({
+            const payload = {
                 id_labor: idLabor,
                 id_usuario_empresa: Number(idUsuario),
-                fecha_inicio: fechaInicio?.toISOString().split('T')[0], // YYYY-MM-DD
+                fecha_inicio: fechaInicio ? new Date(fechaInicio).toISOString().split('T')[0] : "",
                 observacion,
-            });
+            };
+            const validation = Schema_AsignarResponsable.safeParse(payload);
 
             if (!validation.success) {
                 const firstError = validation.error.issues[0]?.message;
@@ -71,8 +72,8 @@ export const AsignarResponsable = ({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-blue-900/20 p-3 rounded-md border border-blue-800/50 mb-4">
-                <p className="text-blue-200 text-sm font-medium">Asignando responsable a:</p>
+            <div className="bg-yellow-900/20 p-3 rounded-md border border-yellow-700/50 mb-4">
+                <p className="text-yellow-200 text-sm font-medium">Asignando responsable a:</p>
                 <p className="text-white font-bold text-lg">{nombreLabor}</p>
             </div>
 
@@ -84,21 +85,13 @@ export const AsignarResponsable = ({
                 onChange={setIdUsuario}
             />
 
-            <DatePickerInput
+            <CustomDatePicker
                 label="Fecha de Inicio"
                 placeholder="Seleccione fecha"
                 withAsterisk
                 required
                 value={fechaInicio}
-                onChange={setFechaInicio}
-                radius="lg"
-                size="sm"
-                popoverProps={{ withinPortal: true }}
-                classNames={{
-                    ...inputClasses,
-                    calendarHeader: "text-white",
-                    calendarBody: "text-zinc-300",
-                }}
+                onChange={(val: any) => setFechaInicio(val)}
             />
 
             <Textarea
@@ -132,8 +125,7 @@ export const AsignarResponsable = ({
                     loading={isLoading}
                     radius="lg"
                     size="sm"
-                    color="indigo"
-                    className="bg-indigo-600 hover:bg-indigo-500 shadow-lg border-0"
+                    className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
                 >
                     Asignar Responsable
                 </Button>

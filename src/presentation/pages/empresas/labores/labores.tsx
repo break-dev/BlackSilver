@@ -104,9 +104,25 @@ export const EmpresasLabores = () => {
       render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
+      accessor: "concesion",
+      title: "Concesión",
+      width: 150,
+      render: (record) => (
+        <span className="text-zinc-300 font-semibold">{record.concesion}</span>
+      ),
+    },
+    {
+      accessor: "empresa",
+      title: "Empresa",
+      width: 150,
+      render: (record) => (
+        <span className="text-zinc-400 text-sm">{record.empresa}</span>
+      ),
+    },
+    {
       accessor: "nombre",
       title: "Nombre Labor",
-      width: 250,
+      width: 200,
       render: (record) => (
         <div className="flex flex-col">
           <span className="text-zinc-200 font-semibold">{record.nombre}</span>
@@ -238,7 +254,7 @@ export const EmpresasLabores = () => {
 
       {/* DataTable */}
       <DataTableClassic
-        idAccessor="id"
+        idAccessor="id_labor"
         columns={columns}
         records={registrosPaginados}
         totalRecords={laboresFiltradas.length}
@@ -258,8 +274,9 @@ export const EmpresasLabores = () => {
       <ModalRegistro opened={openedAssign} close={closeAssign} title="Gestión de Responsables">
         {selectedLabor && (
           <AsignarResponsable
-            idLabor={selectedLabor.id}
+            idLabor={selectedLabor.id_labor}
             nombreLabor={selectedLabor.nombre}
+            idEmpresa={selectedLabor.id_empresa}
             onSuccess={() => {
               closeAssign();
               fetchData();

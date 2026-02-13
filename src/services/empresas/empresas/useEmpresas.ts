@@ -2,6 +2,7 @@ import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
 import type { RES_Empresa } from "./dtos/responses";
+import type { RES_UsuarioEmpresa } from "../labores/dtos/responses";
 import type { DTO_CrearEmpresa } from "./dtos/requests";
 
 export const useEmpresas = ({ setError }: IUseHook) => {
@@ -61,9 +62,29 @@ export const useEmpresas = ({ setError }: IUseHook) => {
     }
   };
 
+  // Get users by company
+  const get_usuarios_empresa = async (id_empresa: number): Promise<RES_UsuarioEmpresa[]> => {
+    setError("");
+    try {
+      const response = await api.get<IRespuesta<RES_UsuarioEmpresa[]>>(
+        "/api/empresas/usuarios",
+        { params: { id_empresa } }
+      );
+      const result = response.data;
+      if (result.success) {
+        return result.data || [];
+      }
+      return [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
+
   return {
     listar,
     crear_empresa,
     get_empresas_by_session,
+    get_usuarios_empresa,
   };
 };

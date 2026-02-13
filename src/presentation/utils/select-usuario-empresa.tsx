@@ -1,17 +1,12 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
+import { useEmpresas } from "../../services/empresas/empresas/useEmpresas";
+import type { RES_UsuarioEmpresa } from "../../services/empresas/labores/dtos/responses";
 
 interface SelectUsuarioEmpresaProps extends Omit<SelectProps, "data"> {
     idEmpresa?: number | null;
     value?: string | null;
     onChange?: (value: string | null) => void;
-}
-
-// Temporary Interface until Service is finalized
-interface RES_UsuarioEmpresa {
-    id_usuario_empresa: number;
-    nombre_completo: string;
-    dni?: string;
 }
 
 export const SelectUsuarioEmpresa = ({
@@ -21,27 +16,38 @@ export const SelectUsuarioEmpresa = ({
     ...props
 }: SelectUsuarioEmpresaProps) => {
     const [data, setData] = useState<RES_UsuarioEmpresa[]>([]);
-    const [isLoading] = useState(false); // mock loading
+    const [isLoading, setIsLoading] = useState(false);
+    const [, setError] = useState("");
+
+    const { get_usuarios_empresa } = useEmpresas({ setError });
 
     useEffect(() => {
-        // MOCK DATA for now so UI works
-        setData([
-            { id_usuario_empresa: 45, nombre_completo: "Juan Pérez (Jefe Guardia)", dni: "45879632" },
-            { id_usuario_empresa: 46, nombre_completo: "Carlos Gomez (Supervisor)", dni: "12345678" }
-        ]);
+        if (!idEmpresa) {
+            setData([]);
+            return;
+        }
+
+        setIsLoading(true);
+        get_usuarios_empresa(idEmpresa)
+            .then((res) => {
+                if (res) setData(res);
+            })
+            .finally(() => setIsLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idEmpresa]);
 
     return (
         <Select
             label="Responsable / Jefe"
-            placeholder="Seleccione empleado"
+            placeholder={idEmpresa ? "Seleccione empleado" : "Labor sin empresa asignada"}
             data={data.map((u) => ({
                 value: u.id_usuario_empresa.toString(),
-                label: u.nombre_completo,
+                label: `${u.nombres} ${u.apellidos}`, // Format: Names Surnames
+                // description: u.cargo // Optional subtitle support in Mantine Select? Or use renderOption
             }))}
             value={value}
             onChange={onChange}
-            disabled={isLoading || props.disabled}
+            disabled={isLoading || !idEmpresa || props.disabled}
             searchable
             nothingFoundMessage="No se encontraron empleados"
             withCheckIcon={false}
