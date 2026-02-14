@@ -10,6 +10,7 @@ import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
 import { EmpresasLabores } from "../pages/empresas/labores/labores";
 import { EmpresasPage } from "../pages/empresas/empresas/empresas";
 import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
+import { EmpleadosPage } from "../pages/personal/empleados/empleados";
 
 export const App = () => {
   return (
@@ -74,7 +75,7 @@ export const App = () => {
         />
         <Route
           path="/configuracion/personal/trabajadores"
-          element={<PlaceholderPage titulo="Trabajadores" />}
+          element={<EmpleadosPage />}
         />
         {/* Usuarios */}
         <Route
