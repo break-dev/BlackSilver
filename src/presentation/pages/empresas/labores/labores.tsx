@@ -1,16 +1,17 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select } from "@mantine/core";
+import { Button, TextInput, Badge, Select, Tooltip, ActionIcon } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import {
   PlusIcon,
+  EyeIcon,
   MagnifyingGlassIcon,
-  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useLabores } from "../../../../services/empresas/labores/useLabores";
 import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
 import { RegistroLabor } from "./components/registro-labor";
-import { AsignarResponsable } from "./components/asignar-responsable";
+// import { AsignarResponsable } from "./components/asignar-responsable";
+import { HistorialResponsables } from "./components/historial-responsables";
 import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
@@ -159,20 +160,37 @@ export const EmpresasLabores = () => {
       textAlign: "center",
       width: 140,
       render: (record) => (
-        <Button
-          variant="light"
-          size="xs"
-          color="grape"
-          className="hover:bg-grape-900/30 transition-colors duration-200"
-          leftSection={<BriefcaseIcon className="w-3 h-3" />}
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedLabor(record);
-            openAssign();
-          }}
-        >
-          Asignar
-        </Button>
+        <div className="flex items-center gap-2 justify-center w-full">
+          {record.responsable_actual ? (
+            <Badge
+              variant="dot"
+              color="green"
+              size="md"
+              className="pl-0 pr-3"
+            >
+              {record.responsable_actual}
+            </Badge>
+          ) : (
+            <Badge variant="outline" color="gray" size="sm">
+              Sin Asignar
+            </Badge>
+          )}
+
+          <Tooltip label="Gestionar Responsable" withArrow position="top">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedLabor(record);
+                openAssign();
+              }}
+            >
+              <EyeIcon className="w-4 h-4" />
+            </ActionIcon>
+          </Tooltip>
+        </div>
       )
     }
   ];
@@ -273,15 +291,12 @@ export const EmpresasLabores = () => {
       {/* Modal Asignar Responsable */}
       <ModalRegistro opened={openedAssign} close={closeAssign} title="Gestión de Responsables">
         {selectedLabor && (
-          <AsignarResponsable
-            idLabor={selectedLabor.id_labor}
-            nombreLabor={selectedLabor.nombre}
-            idEmpresa={selectedLabor.id_empresa}
-            onSuccess={() => {
+          <HistorialResponsables
+            labor={selectedLabor}
+            onClose={() => {
               closeAssign();
               fetchData();
             }}
-            onCancel={closeAssign}
           />
         )}
       </ModalRegistro>

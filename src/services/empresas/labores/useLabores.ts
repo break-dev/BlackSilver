@@ -1,7 +1,7 @@
 import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
-import type { RES_Labor, RES_ResponsableLabor } from "./dtos/responses";
+import type { RES_Labor, RES_HistorialResponsable } from "./dtos/responses";
 import type { DTO_CrearLabor, DTO_AsignarResponsable } from "./dtos/requests";
 
 export const useLabores = ({ setError }: IUseHook) => {
@@ -70,13 +70,18 @@ export const useLabores = ({ setError }: IUseHook) => {
     };
 
     // Historial Responsables
-    const historial_responsables = async (id_labor: number) => {
+    const historial_responsables = async (id_labor: number, id_empresa?: number) => {
         setError("");
         try {
             // POST based on user spec: Body: { "id_labor": 10 }
-            const response = await api.post<IRespuesta<RES_ResponsableLabor[]>>(
+            // Trying with FormData as backend might expect multipart/form-data
+            const formData = new FormData();
+            formData.append("id_labor", String(id_labor));
+            if (id_empresa) formData.append("id_empresa", String(id_empresa));
+
+            const response = await api.post<IRespuesta<RES_HistorialResponsable[]>>(
                 `/api/labor/responsables`,
-                { id_labor }
+                formData
             );
             const result = response.data;
 

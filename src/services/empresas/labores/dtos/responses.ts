@@ -14,7 +14,8 @@ export interface RES_Labor {
   tipo_sostenimiento: string;
 
   // Optional: relations if returned by backend
-  responsable_actual_nombre?: string;
+  responsable_actual_nombre?: string; // Legacy? Keep for safety
+  responsable_actual?: string; // New field from backend
 }
 
 export interface RES_UsuarioEmpresa {
@@ -24,13 +25,13 @@ export interface RES_UsuarioEmpresa {
   cargo?: string;
 }
 
-export interface RES_ResponsableLabor {
-  id: number;
-  id_labor: number;
+export interface RES_HistorialResponsable {
+  id_asignacion: number;
   id_usuario_empresa: number;
-  nombre_responsable: string;
+  nombres: string;
+  apellidos: string;
   fecha_inicio: string;
   fecha_fin: string | null;
-  estado: string;
+  estado: string; // "Activo" | "Inactivo"
   observacion?: string;
 }
