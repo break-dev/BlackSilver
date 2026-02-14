@@ -13,9 +13,17 @@ export interface RES_Concesion {
 }
 
 export interface RES_Asignacion {
-  id: number; // id_asignacion (pk of empresa_concesion table)
+  id: number; // id_asignacion
+  id_asignacion?: number; // Backend alias compatibility
   id_concesion: number;
-  id_empresa_concesion: number; // Alias for id_asignacion in some contexts
+  id_empresa: number;
+  // Campos de empresa
   razon_social: string;
+  nombre_comercial?: string;
   ruc: string;
+  path_logo?: string;
+  // Campos de asignación
+  fecha_inicio: string;
+  fecha_fin?: string | null;
+  estado: string; // "Activo" | "Inactivo"
 }

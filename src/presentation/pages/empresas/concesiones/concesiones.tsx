@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select } from "@mantine/core";
+import { Button, TextInput, Badge, Select, Tooltip, ActionIcon, Group } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import {
@@ -7,7 +7,9 @@ import {
   MagnifyingGlassIcon,
   MapPinIcon,
   BuildingOffice2Icon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
+import { GestionEmpresas } from "./components/gestion-empresas";
 import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
 import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
@@ -32,8 +34,12 @@ export const EmpresasConcesiones = () => {
   const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
   const [filtroMineral, setFiltroMineral] = useState<string | null>(null);
 
-  // Modal
+  // Modal registro
   const [opened, { open, close }] = useDisclosure(false);
+
+  // Modal Gestión Empresas
+  const [gestionOpened, { open: openGestion, close: closeGestion }] = useDisclosure(false);
+  const [selectedConcesion, setSelectedConcesion] = useState<RES_Concesion | null>(null);
 
   // Servicio
   const { listar } = useConcesion({ setError });
@@ -177,14 +183,30 @@ export const EmpresasConcesiones = () => {
       textAlign: "center",
       width: 110,
       render: (record) => (
-        <Badge
-          leftSection={<BuildingOffice2Icon className="w-3 h-3" />}
-          color={record.empresas_asignadas > 0 ? "indigo" : "zinc"}
-          variant="light"
-          radius="sm"
-        >
-          {record.empresas_asignadas} Asign.
-        </Badge>
+        <Group gap="xs" justify="center">
+          <Badge
+            leftSection={<BuildingOffice2Icon className="w-3 h-3" />}
+            color={record.empresas_asignadas > 0 ? "indigo" : "zinc"}
+            variant="light"
+            radius="sm"
+          >
+            {record.empresas_asignadas} Asign.
+          </Badge>
+
+          <Tooltip label="Gestionar Empresas" withArrow>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={() => {
+                setSelectedConcesion(record);
+                openGestion();
+              }}
+            >
+              <EyeIcon className="w-4 h-4" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       ),
     },
     {
@@ -290,6 +312,17 @@ export const EmpresasConcesiones = () => {
       {/* Modal de Registro */}
       <ModalRegistro opened={opened} close={close} title="Nueva Concesión">
         <RegistroConcesion onSuccess={handleRegistroExitoso} onCancel={close} />
+      </ModalRegistro>
+
+      {/* Modal de Gestión de Empresas */}
+      <ModalRegistro
+        opened={gestionOpened}
+        close={closeGestion}
+        title="Gestión de Empresas"
+      >
+        {selectedConcesion && (
+          <GestionEmpresas concesion={selectedConcesion} onClose={closeGestion} />
+        )}
       </ModalRegistro>
     </div>
   );
