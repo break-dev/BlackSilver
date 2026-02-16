@@ -12,6 +12,7 @@ import { EmpresasPage } from "../pages/empresas/empresas/empresas";
 import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
 import { EmpleadosPage } from "../pages/personal/empleados/empleados";
 import { AlmacenesPage } from "../pages/empresas/almacenes/almacenes";
+import { InventarioProductos } from "../pages/inventario/productos/productos";
 
 export const App = () => {
   return (
@@ -101,7 +102,7 @@ export const App = () => {
         />
         <Route
           path="/logistica/inventario/productos"
-          element={<PlaceholderPage titulo="Productos" />}
+          element={<InventarioProductos />}
         />
         <Route
           path="/logistica/inventario/lotes"
