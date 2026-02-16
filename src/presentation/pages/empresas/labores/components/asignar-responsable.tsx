@@ -1,14 +1,14 @@
-import { Button, Group, Textarea } from "@mantine/core";
+import { Button, Group, Textarea, Text } from "@mantine/core";
 import { useState } from "react";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
-import { Schema_AsignarResponsable } from "../../../../../services/empresas/labores/dtos/requests";
 import { useLabores } from "../../../../../services/empresas/labores/useLabores";
 import { SelectUsuarioEmpresa } from "../../../../utils/select-usuario-empresa";
+import dayjs from "dayjs";
 
 interface AsignarResponsableProps {
     idLabor: number;
     nombreLabor: string;
-    idEmpresa?: number; // Optional: used to filter users if available
+    idEmpresa?: number;
     onSuccess?: () => void;
     onCancel?: () => void;
 }
@@ -31,105 +31,90 @@ export const AsignarResponsable = ({
     // Service
     const { asignar_responsable } = useLabores({ setError });
 
-    const inputClasses = {
-        input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-    focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-        label: "text-zinc-300 mb-1 font-medium",
-    };
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setError("");
 
+        if (!idUsuario || !fechaInicio) {
+            setError("Complete todos los campos obligatorios.");
+            return;
+        }
+
+        setIsLoading(true);
         try {
-            const payload = {
+            const success = await asignar_responsable({
                 id_labor: idLabor,
                 id_usuario_empresa: Number(idUsuario),
-                fecha_inicio: fechaInicio ? new Date(fechaInicio).toISOString().split('T')[0] : "",
+                fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
                 observacion,
-            };
-            const validation = Schema_AsignarResponsable.safeParse(payload);
-
-            if (!validation.success) {
-                const firstError = validation.error.issues[0]?.message;
-                setError(firstError || "Complete todos los campos.");
-                return;
-            }
-
-            setIsLoading(true);
-            const success = await asignar_responsable(validation.data);
+            });
 
             if (success) {
                 onSuccess?.();
+            } else {
+                setError("Error al asignar responsable.");
             }
         } catch (e) {
             console.error(e);
-            setError("Error al asignar.");
+            setError("Ocurrió un error inesperado.");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-yellow-900/20 p-3 rounded-md border border-yellow-700/50 mb-4">
-                <p className="text-yellow-200 text-sm font-medium">Asignando responsable a:</p>
-                <p className="text-white font-bold text-lg">{nombreLabor}</p>
+        <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
+            <h3 className="text-white font-bold mb-4">Nueva Asignación</h3>
+
+            <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
+                <Text size="xs" className="text-indigo-300 font-medium uppercase tracking-wide">Asignando responsable a:</Text>
+                <Text size="md" fw={700} className="text-white mt-1">{nombreLabor}</Text>
             </div>
 
-            <SelectUsuarioEmpresa
-                required
-                withAsterisk
-                idEmpresa={idEmpresa}
-                value={idUsuario}
-                onChange={setIdUsuario}
-            />
+            <div className="space-y-4">
+                <SelectUsuarioEmpresa
+                    label="Responsable / Jefe"
+                    idEmpresa={idEmpresa}
+                    value={idUsuario}
+                    onChange={setIdUsuario}
+                    withAsterisk
+                    error={error && !idUsuario ? "Requerido" : undefined}
+                />
 
-            <CustomDatePicker
-                label="Fecha de Inicio"
-                placeholder="Seleccione fecha"
-                withAsterisk
-                required
-                value={fechaInicio}
-                onChange={(val: any) => setFechaInicio(val)}
-            />
+                <CustomDatePicker
+                    label="Fecha de Inicio"
+                    value={fechaInicio}
+                    onChange={(val: any) => setFechaInicio(val)}
+                    withAsterisk
+                    error={error && !fechaInicio ? "Requerido" : undefined}
+                />
 
-            <Textarea
-                label="Observación / Nota"
-                placeholder="Opcional..."
-                radius="lg"
-                size="sm"
-                minRows={2}
-                classNames={inputClasses}
-                value={observacion}
-                onChange={(e) => setObservacion(e.target.value)}
-            />
-
-            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-            <Group justify="flex-end" gap="md" mt="xl">
-                {onCancel && (
-                    <Button
-                        variant="subtle"
-                        onClick={onCancel}
-                        disabled={isLoading}
-                        radius="lg"
-                        size="sm"
-                        className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
-                    >
-                        Cancelar
-                    </Button>
-                )}
-                <Button
-                    type="submit"
-                    loading={isLoading}
+                <Textarea
+                    label="Observación / Nota"
+                    placeholder="Opcional..."
+                    value={observacion}
+                    onChange={(e) => setObservacion(e.currentTarget.value)}
+                    autosize
+                    minRows={2}
                     radius="lg"
-                    size="sm"
-                    className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
-                >
-                    Asignar Responsable
-                </Button>
-            </Group>
-        </form>
+                    classNames={{
+                        input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                        label: "text-zinc-300 mb-1 font-medium"
+                    }}
+                />
+
+                {error && <Text size="xs" c="red">{error}</Text>}
+
+                <div className="flex justify-end gap-2 mt-6">
+                    {onCancel && (
+                        <Button variant="default" onClick={onCancel} disabled={isLoading}>
+                            Cancelar
+                        </Button>
+                    )}
+                    <Button variant="filled" color="indigo" onClick={handleSubmit} loading={isLoading}>
+                        Guardar Asignación
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 };

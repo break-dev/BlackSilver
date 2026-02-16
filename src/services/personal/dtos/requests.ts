@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const Schema_CrearEmpleado = z.object({
-    id_cargo: z.coerce.number({ required_error: "Seleccione un cargo" }).min(1, "Seleccione un cargo"),
-    id_empresa: z.coerce.number({ required_error: "Seleccione una empresa" }).min(1, "Seleccione una empresa"),
+    id_cargo: z.number().min(1, "Seleccione un cargo"),
+    id_empresa: z.number().min(1, "Seleccione una empresa"),
     nombre: z.string().min(1, "Campo obligatorio").max(100),
     apellido: z.string().min(1, "Campo obligatorio").max(100),
     dni: z.string().length(8, "El DNI debe tener 8 dígitos").regex(/^\d+$/, "Solo números").optional().or(z.literal("")),

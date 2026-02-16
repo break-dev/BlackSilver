@@ -1,5 +1,4 @@
 import { Button, Select, TextInput, Group, Stack, LoadingOverlay } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import { useEffect, useState, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
@@ -7,7 +6,7 @@ import dayjs from "dayjs";
 // Services
 import { useEmpleados } from "../../../../../services/personal/useEmpleados";
 import { useCargos } from "../../../../../services/personal/useCargos";
-import { Schema_CrearEmpleado, type DTO_CrearEmpleado } from "../../../../../services/personal/dtos/requests";
+import { Schema_CrearEmpleado } from "../../../../../services/personal/dtos/requests";
 import type { RES_Cargo } from "../../../../../services/personal/dtos/responses";
 
 // Components
@@ -23,6 +22,18 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
     const [loading, setLoading] = useState(false);
     const [cargos, setCargos] = useState<RES_Cargo[]>([]);
     const [error, setError] = useState("");
+
+    // Form State (Manual - Consistente con otros módulos)
+    const [nombre, setNombre] = useState("");
+    const [apellido, setApellido] = useState("");
+    const [dni, setDni] = useState("");
+    const [ruc, setRuc] = useState("");
+    const [carnetExtranjeria, setCarnetExtranjeria] = useState("");
+    const [pasaporte, setPasaporte] = useState("");
+    const [idCargo, setIdCargo] = useState<string | null>(null);
+    const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
+    const [fechaNacimiento, setFechaNacimiento] = useState<Date | null>(null);
+    const [pathFoto, setPathFoto] = useState("");
 
     // Hooks
     const { crear } = useEmpleados({ setError });
@@ -44,52 +55,44 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const form = useForm({
-        initialValues: {
-            nombre: "",
-            apellido: "",
-            dni: "",
-            ruc: "",
-            carnet_extranjeria: "",
-            pasaporte: "",
-            id_cargo: "", // String para Select
-            id_empresa: "", // String para Select
-            fecha_nacimiento: "",
-            path_foto: "",
-            telefono: "",
-            email: "",
-            direccion: ""
-        },
-    });
-
-    const handleSubmit = async (values: typeof form.values) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         setLoading(true);
-        setError(""); // Limpiar error global
+        setError("");
 
-        // 1. Validación Manual con Zod
-        // coerce.number convertirá "" a 0, y min(1) fallará si no se seleccionó nada.
-        const validation = Schema_CrearEmpleado.safeParse(values);
+        // Construir objeto para validación manual
+        const dataToValidate = {
+            id_cargo: Number(idCargo),
+            id_empresa: Number(idEmpresa),
+            nombre,
+            apellido,
+            dni,
+            ruc: ruc || undefined,
+            carnet_extranjeria: carnetExtranjeria || undefined,
+            pasaporte: pasaporte || undefined,
+            fecha_nacimiento: fechaNacimiento ? dayjs(fechaNacimiento).format("YYYY-MM-DD") : undefined,
+            path_foto: pathFoto || undefined
+        };
+
+        // Zod Safe Parse
+        const validation = Schema_CrearEmpleado.safeParse(dataToValidate);
 
         if (!validation.success) {
-            // Mapear errores de Zod a Mantine Form
-            const outputErrors: Record<string, string> = {};
-            validation.error.issues.forEach((issue) => {
-                const path = String(issue.path[0]); // Convert to string for keys
-                outputErrors[path] = issue.message;
-            });
-            form.setErrors(outputErrors);
+            const firstError = validation.error.issues[0]?.message;
+            setError(firstError || "Por favor complete todos los campos requeridos correctamente.");
 
             notifications.show({
                 title: "Error de validación",
-                message: "Por favor complete los campos requeridos correctamente.",
+                message: firstError || "Revise los campos requeridos.",
                 color: "red"
             });
             setLoading(false);
             return;
         }
 
-        // 2. Enviar datos validados (validation.data ya tiene los números convertidos)
-        const empleado = await crear(validation.data as DTO_CrearEmpleado);
+        // Enviar datos
+        // @ts-ignore
+        const empleado = await crear(validation.data);
 
         if (empleado) {
             notifications.show({
@@ -99,7 +102,6 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
             });
             onSuccess();
         } else {
-            // El error del hook ya se setea en 'setError', lo mostramos aquí si existe
             if (error) {
                 notifications.show({
                     title: "Error al registrar",
@@ -117,7 +119,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
     }, [cargos]);
 
     return (
-        <form onSubmit={form.onSubmit(handleSubmit)} className="relative space-y-5">
+        <form onSubmit={handleSubmit} className="relative space-y-5">
             <LoadingOverlay visible={loading} overlayProps={{ radius: "sm", blur: 2 }} />
 
             <Stack gap="md">
@@ -129,7 +131,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         radius="lg"
                         withAsterisk
                         classNames={inputClasses}
-                        {...form.getInputProps("nombre")}
+                        value={nombre}
+                        onChange={(e) => setNombre(e.currentTarget.value)}
                     />
                     <TextInput
                         label="Apellidos"
@@ -137,7 +140,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         radius="lg"
                         withAsterisk
                         classNames={inputClasses}
-                        {...form.getInputProps("apellido")}
+                        value={apellido}
+                        onChange={(e) => setApellido(e.currentTarget.value)}
                     />
                 </Group>
 
@@ -148,7 +152,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         maxLength={8}
                         radius="lg"
                         classNames={inputClasses}
-                        {...form.getInputProps("dni")}
+                        value={dni}
+                        onChange={(e) => setDni(e.currentTarget.value)}
                     />
                     <TextInput
                         label="RUC (Opcional)"
@@ -156,7 +161,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         maxLength={11}
                         radius="lg"
                         classNames={inputClasses}
-                        {...form.getInputProps("ruc")}
+                        value={ruc}
+                        onChange={(e) => setRuc(e.currentTarget.value)}
                     />
                 </Group>
 
@@ -167,7 +173,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         maxLength={64}
                         radius="lg"
                         classNames={inputClasses}
-                        {...form.getInputProps("carnet_extranjeria")}
+                        value={carnetExtranjeria}
+                        onChange={(e) => setCarnetExtranjeria(e.currentTarget.value)}
                     />
                     <TextInput
                         label="Pasaporte (Opcional)"
@@ -175,7 +182,8 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         maxLength={64}
                         radius="lg"
                         classNames={inputClasses}
-                        {...form.getInputProps("pasaporte")}
+                        value={pasaporte}
+                        onChange={(e) => setPasaporte(e.currentTarget.value)}
                     />
                 </Group>
 
@@ -189,18 +197,16 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         radius="lg"
                         withAsterisk
                         classNames={inputClasses}
-                        {...form.getInputProps("id_cargo")}
-                        // Asegurar que recibimos string
-                        onChange={(val) => form.setFieldValue("id_cargo", val || "")}
+                        value={idCargo}
+                        onChange={setIdCargo}
                     />
                     <SelectEmpresas
                         label="Empresa"
                         radius="lg"
                         withAsterisk
                         classNames={inputClasses}
-                        {...form.getInputProps("id_empresa")}
-                        // Asegurar que recibimos string
-                        onChange={(val) => form.setFieldValue("id_empresa", val || "")}
+                        value={idEmpresa}
+                        onChange={setIdEmpresa}
                     />
                 </Group>
 
@@ -209,19 +215,20 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         label="Fecha de Nacimiento"
                         placeholder="Seleccione fecha"
                         radius="lg"
-                        // Handle date manually with dayjs
-                        onChange={(date: any) => form.setFieldValue("fecha_nacimiento", date ? dayjs(date).format("YYYY-MM-DD") : "")}
-                        value={form.values.fecha_nacimiento ? dayjs(form.values.fecha_nacimiento).toDate() : null}
-                        error={form.errors.fecha_nacimiento as string}
+                        value={fechaNacimiento}
+                        onChange={(val: any) => setFechaNacimiento(val)}
                     />
                     <TextInput
                         label="Foto (URL)"
                         placeholder="Pegar enlace de imagen"
                         radius="lg"
                         classNames={inputClasses}
-                        {...form.getInputProps("path_foto")}
+                        value={pathFoto}
+                        onChange={(e) => setPathFoto(e.currentTarget.value)}
                     />
                 </Group>
+
+                {error && <div className="text-red-500 text-sm font-medium px-1">{error}</div>}
 
                 <Group justify="flex-end" gap="md" mt="xl">
                     <Button

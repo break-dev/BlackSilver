@@ -1,11 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select, Tooltip, ActionIcon } from "@mantine/core";
+import { Button, TextInput, Badge, Select, ActionIcon, Group, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import {
   PlusIcon,
-  EyeIcon,
+
   MagnifyingGlassIcon,
+  UserCircleIcon,
+  PencilSquareIcon
 } from "@heroicons/react/24/outline";
 import { useLabores } from "../../../../services/empresas/labores/useLabores";
 import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
@@ -155,42 +157,36 @@ export const EmpresasLabores = () => {
       ),
     },
     {
-      accessor: "responsable", // Custom logic for button
+      accessor: "responsable",
       title: "Responsable",
-      textAlign: "center",
-      width: 140,
+      width: 200,
       render: (record) => (
-        <div className="flex items-center gap-2 justify-center w-full">
+        <Group gap="xs">
           {record.responsable_actual ? (
-            <Badge
-              variant="dot"
-              color="green"
-              size="md"
-              className="pl-0 pr-3"
-            >
-              {record.responsable_actual}
-            </Badge>
+            <>
+              <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+              <Text size="sm" className="text-zinc-200 truncate">{record.responsable_actual}</Text>
+            </>
           ) : (
             <Badge variant="outline" color="gray" size="sm">
               Sin Asignar
             </Badge>
           )}
 
-          <Tooltip label="Gestionar Responsable" withArrow position="top">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedLabor(record);
-                openAssign();
-              }}
-            >
-              <EyeIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </div>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedLabor(record);
+              openAssign();
+            }}
+            title="Gestionar Responsable"
+          >
+            <PencilSquareIcon className="w-4 h-4" />
+          </ActionIcon>
+        </Group>
       )
     }
   ];
