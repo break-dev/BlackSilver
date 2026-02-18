@@ -15,14 +15,14 @@ export interface RES_Lote {
 }
 
 export interface RES_ProductoDisponible {
-    id: number;
+    id_producto: number;
     nombre: string;
     categoria: string;
     es_perecible: number | boolean;
 }
 
 export interface RES_UnidadMedida {
-    id: number;
+    id_unidad_medida: number;
     nombre: string;
     abreviatura: string;
     estado: string;

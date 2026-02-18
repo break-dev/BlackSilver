@@ -1,5 +1,5 @@
 export interface RES_MovimientoKardex {
-    id: number;
+    id_kardex: number;
     id_lote_producto: number;
     codigo_movimiento: string;
     tipo_movimiento: string;

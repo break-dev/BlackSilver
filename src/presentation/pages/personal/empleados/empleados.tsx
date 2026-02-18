@@ -76,7 +76,7 @@ export const EmpleadosPage = () => {
 
             return matchSearch && matchEmpresa && matchCargo;
         });
-    }, [empleados, busqueda, filtroEmpresa]);
+    }, [empleados, busqueda, filtroEmpresa, filtroCargo]);
 
     const paginatedRecords = useMemo(() => {
         const from = (page - 1) * PAGE_SIZE;
@@ -102,7 +102,7 @@ export const EmpleadosPage = () => {
     // Columns
     const columns: DataTableColumn<RES_Empleado>[] = [
         {
-            accessor: "id",
+            accessor: "id_empleado",
             title: "#",
             width: 60,
             textAlign: "center",
@@ -172,7 +172,7 @@ export const EmpleadosPage = () => {
                                 leftSection={<TrashIcon className="w-4 h-4" />}
                                 color="red"
                                 className="hover:bg-red-900/20"
-                                onClick={() => handleDelete(record.id, record.nombre)}
+                                onClick={() => handleDelete(record.id_empleado, record.nombre)}
                             >
                                 Eliminar
                             </Menu.Item>
@@ -243,7 +243,7 @@ export const EmpleadosPage = () => {
                     page={page}
                     onPageChange={setPage}
                     loading={loading}
-                    idAccessor="id"
+                    idAccessor="id_empleado"
                 />
             </div>
 

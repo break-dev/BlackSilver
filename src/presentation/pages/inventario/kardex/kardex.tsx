@@ -214,7 +214,7 @@ export const KardexPage = () => {
             ) : (
                 <div className="bg-zinc-900/30 rounded-xl border border-zinc-800/50 overflow-hidden">
                     <DataTableClassic
-                        idAccessor="id"
+                        idAccessor="id_kardex"
                         columns={columns}
                         records={paginatedRecords}
                         totalRecords={movimientos.length}

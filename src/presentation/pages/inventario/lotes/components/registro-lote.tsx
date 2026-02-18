@@ -72,7 +72,8 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
     // Detectar si el producto seleccionado es perecible
     const esPerecible = (() => {
         if (!form.values.id_producto) return false;
-        const p = productos.find(x => String(x.id) === form.values.id_producto);
+        // UPDATE: Changed x.id to x.id_producto
+        const p = productos.find(x => String(x.id_producto) === form.values.id_producto);
         return p ? Boolean(p.es_perecible) : false;
     })();
 
@@ -159,7 +160,8 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     label="Producto"
                     placeholder="Buscar producto..."
                     data={(productos || []).map(p => ({
-                        value: String(p.id),
+                        // UPDATE: Changed p.id to p.id_producto
+                        value: String(p.id_producto),
                         label: p.nombre
                     }))}
                     searchable
@@ -176,7 +178,8 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     label="Unidad de Medida"
                     placeholder="Seleccione unidad"
                     data={(unidades || []).map(u => ({
-                        value: String(u.id),
+                        // UPDATE: Changed u.id to u.id_unidad_medida
+                        value: String(u.id_unidad_medida),
                         label: `${u.nombre} (${u.abreviatura})`
                     }))}
                     searchable

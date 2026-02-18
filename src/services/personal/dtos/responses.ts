@@ -1,11 +1,11 @@
 export interface RES_Cargo {
-    id: number;
+    id_cargo: number; // OLD: id
     nombre: string;
     descripcion?: string;
 }
 
 export interface RES_Empleado {
-    id: number;
+    id_empleado: number; // OLD: id
     nombre: string;
     apellido: string;
     dni: string;

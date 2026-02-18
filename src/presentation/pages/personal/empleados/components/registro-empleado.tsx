@@ -115,7 +115,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
 
     // Opciones de cargos para Select
     const cargosOptions = useMemo(() => {
-        return cargos.map(c => ({ value: String(c.id), label: c.nombre }));
+        return cargos.map(c => ({ value: String(c.id_cargo), label: c.nombre }));
     }, [cargos]);
 
     return (
