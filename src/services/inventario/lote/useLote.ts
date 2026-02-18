@@ -40,17 +40,17 @@ export const useLote = ({ setError }: IUseHook) => {
                     : null
             };
 
-            const response = await api.post<IRespuesta<any>>(`/api/lotes`, payload);
+            const response = await api.post<IRespuesta<RES_Lote>>(`/api/lotes`, payload);
             const result = response.data;
             if (result.success) {
-                return true;
+                return result.data;
             } else {
                 setError(result.error || result.message || "");
-                return false;
+                return null;
             }
         } catch (error) {
             setError(String(error));
-            return false;
+            return null;
         }
     };
 

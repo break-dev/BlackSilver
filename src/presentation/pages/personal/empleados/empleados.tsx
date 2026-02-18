@@ -84,9 +84,9 @@ export const EmpleadosPage = () => {
     }, [filteredRecords, page]);
 
     // Handlers
-    const handleSuccess = () => {
+    const handleSuccess = (nuevoEmpleado: RES_Empleado) => {
         close();
-        fetchData(); // Reload list
+        setEmpleados((prev) => [nuevoEmpleado, ...prev]);
     };
 
     const handleDelete = async (id: number, nombre: string) => {

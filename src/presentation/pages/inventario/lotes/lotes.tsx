@@ -281,11 +281,11 @@ export const LotesPage = () => {
             >
                 <RegistroLote
                     initialAlmacenId={idAlmacen ? Number(idAlmacen) : null}
-                    onSuccess={() => {
+                    onSuccess={(nuevoLote) => {
                         closeCreate();
-                        // Reload current list if warehouse matches
-                        if (idAlmacen) {
-                            listarPorAlmacen(Number(idAlmacen)).then(data => data && setLotes(data));
+                        // Add to list only if matches current warehouse
+                        if (idAlmacen && String(nuevoLote.id_almacen) === String(idAlmacen)) {
+                            setLotes(prev => [nuevoLote, ...prev]);
                         }
                     }}
                     onCancel={closeCreate}

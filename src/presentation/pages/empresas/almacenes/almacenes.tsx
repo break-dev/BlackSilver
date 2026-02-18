@@ -100,9 +100,11 @@ export const AlmacenesPage = () => {
     }, [filteredRecords, page]);
 
     // Handlers
-    const handleSuccess = () => {
+    const handleSuccess = (nuevoAlmacen: RES_Almacen) => {
         closeCreate();
-        cargarDatos();
+        if (!filtroEmpresa || String(nuevoAlmacen.id_empresa) === filtroEmpresa) {
+            setAlmacenes((prev) => [nuevoAlmacen, ...prev]);
+        }
     };
 
     const handleOpenResponsables = (record: RES_Almacen) => {

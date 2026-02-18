@@ -80,7 +80,7 @@ export const EmpresasPage = () => {
     // Callback al registrar exitosamente
     const handleRegistroExitoso = (empresa: RES_Empresa) => {
         close();
-        setEmpresas([...empresas, empresa]);
+        setEmpresas((prev) => [empresa, ...prev]);
     };
 
     const columns: DataTableColumn<RES_Empresa>[] = [

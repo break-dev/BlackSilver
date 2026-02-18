@@ -10,9 +10,10 @@ import { Schema_CrearProducto } from "../../../../../services/inventario/product
 import { useCategoria } from "../../../../../services/inventario/categorias/useCategoria";
 import { ModalRegistro } from "../../../../utils/modal-registro";
 import { RegistroCategoria } from "../../categorias/components/registro-categoria";
+import type { RES_Producto } from "../../../../../services/inventario/productos/dtos/responses";
 
 interface RegistroProductoProps {
-    onSuccess: () => void;
+    onSuccess: (producto: RES_Producto) => void;
     onCancel: () => void;
 }
 
@@ -62,7 +63,7 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
                 message: "Producto registrado correctamente.",
                 color: "green",
             });
-            onSuccess();
+            onSuccess(result);
         } else {
             console.error(error);
         }

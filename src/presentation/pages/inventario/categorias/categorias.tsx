@@ -98,7 +98,7 @@ export const InventarioCategorias = () => {
   // Callback registro exitoso
   const handleRegistroExitoso = (categoria: RES_Categoria) => {
     close();
-    setCategorias([...categorias, categoria]);
+    setCategorias((prev) => [categoria, ...prev]);
   };
 
   const columns: DataTableColumn<RES_Categoria>[] = [
@@ -242,7 +242,7 @@ export const InventarioCategorias = () => {
 
       {/* DataTable */}
       <DataTableClassic
-        idAccessor="id_categorias"
+        idAccessor="id_categoria"
         columns={columns}
         records={registrosPaginados}
         totalRecords={categoriasFiltradas.length}

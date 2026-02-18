@@ -1,16 +1,16 @@
-import { Button, Group, NumberInput, Select, Text, TextInput, LoadingOverlay } from "@mantine/core";
+import { Button, Group, NumberInput, Select, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { z } from "zod";
 
 import { useLote } from "../../../../../services/inventario/lote/useLote";
-import type { RES_ProductoDisponible, RES_UnidadMedida } from "../../../../../services/inventario/lote/dtos/responses";
+import type { RES_Lote, RES_ProductoDisponible, RES_UnidadMedida } from "../../../../../services/inventario/lote/dtos/responses";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
 import { SelectAlmacen } from "../../../../utils/select-almacen";
 
 interface RegistroLoteProps {
-    onSuccess: () => void;
+    onSuccess: (lote: RES_Lote) => void;
     onCancel: () => void;
     initialAlmacenId?: number | null;
 }
@@ -38,11 +38,9 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
     // Data State
     const [productos, setProductos] = useState<RES_ProductoDisponible[]>([]);
     const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
-    // Removed duplicate almacenes state
 
     // Hooks
     const { crear, listarProductosDisponibles, listarUnidadesMedida } = useLote({ setError });
-    // Removed redundant useAlmacenes hook
 
     const form = useForm({
         initialValues: {
@@ -72,7 +70,6 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
     // Detectar si el producto seleccionado es perecible
     const esPerecible = (() => {
         if (!form.values.id_producto) return false;
-        // UPDATE: Changed x.id to x.id_producto
         const p = productos.find(x => String(x.id_producto) === form.values.id_producto);
         return p ? Boolean(p.es_perecible) : false;
     })();
@@ -121,14 +118,14 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
             stock_inicial: Number(values.stock_inicial),
         };
 
-        const success = await crear(dto);
-        if (success) {
+        const nuevoLote = await crear(dto);
+        if (nuevoLote) {
             notifications.show({
                 title: "Éxito",
                 message: "Lote registrado correctamente.",
                 color: "green",
             });
-            onSuccess();
+            onSuccess(nuevoLote);
         }
         setSubmitting(false);
     };
@@ -142,7 +139,6 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
 
     return (
         <form onSubmit={form.onSubmit(handleSubmit)} className="relative space-y-4 min-h-[300px]">
-            <LoadingOverlay visible={loading} zIndex={10} overlayProps={{ radius: "sm", blur: 2 }} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Almacén (Reusable Component) */}
@@ -150,6 +146,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     // label="Almacén de Destino" // Default is "Almacén", user didn't ask to change
                     placeholder="Seleccione almacén"
                     withAsterisk
+                    disabled={loading}
                     className="md:col-span-2" // Apply grid span to wrapper
                     {...form.getInputProps("id_almacen")}
                     classNames={inputClasses} // Override styles to match form
@@ -160,12 +157,12 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     label="Producto"
                     placeholder="Buscar producto..."
                     data={(productos || []).map(p => ({
-                        // UPDATE: Changed p.id to p.id_producto
                         value: String(p.id_producto),
                         label: p.nombre
                     }))}
                     searchable
                     withAsterisk
+                    disabled={loading}
                     radius="lg"
                     size="sm"
                     className="md:col-span-2"
@@ -178,12 +175,12 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     label="Unidad de Medida"
                     placeholder="Seleccione unidad"
                     data={(unidades || []).map(u => ({
-                        // UPDATE: Changed u.id to u.id_unidad_medida
                         value: String(u.id_unidad_medida),
                         label: `${u.nombre} (${u.abreviatura})`
                     }))}
                     searchable
                     withAsterisk
+                    disabled={loading}
                     radius="lg"
                     size="sm"
                     {...form.getInputProps("id_unidad_medida")}

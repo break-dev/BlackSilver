@@ -93,9 +93,9 @@ export const EmpresasLabores = () => {
   }, [laboresFiltradas, page]);
 
   // Callback al registrar exitosamente
-  const handleRegistroExitoso = () => {
+  const handleRegistroExitoso = (nuevaLabor: RES_Labor) => {
     close();
-    fetchData();
+    setLabores((prev) => [nuevaLabor, ...prev]);
   };
 
   const columns: DataTableColumn<RES_Labor>[] = [

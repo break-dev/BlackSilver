@@ -1,4 +1,4 @@
-import { Button, Group, TextInput, Textarea, Switch, Stack, LoadingOverlay } from "@mantine/core";
+import { Button, Group, TextInput, Textarea, Switch, Stack } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 
@@ -67,7 +67,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
         if (result) {
             notifications.show({
                 title: "Almacén Creado",
-                message: `El almacén ${result.nombre} ha sido registrado. Cod: ${result.correlativo}`,
+                message: `El almacén ${result.nombre} ha sido registrado.`,
                 color: "green"
             });
             onSuccess(result);
@@ -77,7 +77,6 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
 
     return (
         <form onSubmit={handleSubmit} className="relative space-y-5">
-            <LoadingOverlay visible={loading} overlayProps={{ radius: "sm", blur: 2 }} />
 
             <Stack gap="md">
                 <SelectEmpresas
@@ -85,6 +84,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                     placeholder="Seleccione Empresa"
                     required
                     withAsterisk
+                    disabled={loading}
                     radius="lg"
                     classNames={inputClasses}
                     value={idEmpresa}
@@ -96,6 +96,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                     placeholder="Ej. Almacén Central - Mina A"
                     required
                     withAsterisk
+                    disabled={loading}
                     radius="lg"
                     classNames={inputClasses}
                     value={nombre}
@@ -107,6 +108,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                     placeholder="Detalles adicionales..."
                     radius="lg"
                     minRows={3}
+                    disabled={loading}
                     classNames={inputClasses}
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.currentTarget.value)}
@@ -116,6 +118,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                     label="¿Es Almacén Principal?"
                     description="Si lo activa, será el punto de recepción principal."
                     checked={esPrincipal}
+                    disabled={loading}
                     onChange={(e) => setEsPrincipal(e.currentTarget.checked)}
                     color="green"
                     size="md"

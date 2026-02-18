@@ -41,25 +41,24 @@ export const InventarioProductos = () => {
     const { listar: listarCategorias } = useCategoria({ setError });
 
     // Load Data
-    const cargarDatos = async () => {
+    const cargarProductos = async () => {
         setLoading(true);
-        const [dataProductos, dataCategorias] = await Promise.all([
-            listar(),
-            listarCategorias()
-        ]);
-
-        if (dataProductos) {
-            setProductos(dataProductos);
-        }
-        if (dataCategorias) {
-            setCategorias(dataCategorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })));
-        }
+        const data = await listar();
+        if (data) setProductos(data);
         setLoading(false);
+    };
+
+    const cargarCategorias = async () => {
+        const data = await listarCategorias();
+        if (data) {
+            setCategorias(data.map(c => ({ value: String(c.id_categoria), label: c.nombre })));
+        }
     };
 
     useEffect(() => {
         setTitle("Catálogo de Productos");
-        cargarDatos();
+        // Initial load: fetch both in parallel
+        Promise.all([cargarProductos(), cargarCategorias()]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -254,9 +253,10 @@ export const InventarioProductos = () => {
                 title="Nuevo Producto"
             >
                 <RegistroProducto
-                    onSuccess={() => {
+                    onSuccess={(nuevoProducto) => {
                         close();
-                        cargarDatos();
+                        setProductos(prev => [nuevoProducto, ...prev]);
+                        // Optional: show notification or scroll to top
                     }}
                     onCancel={close}
                 />

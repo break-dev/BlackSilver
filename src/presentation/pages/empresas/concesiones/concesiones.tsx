@@ -100,7 +100,7 @@ export const EmpresasConcesiones = () => {
   // Callback al registrar exitosamente
   const handleRegistroExitoso = (concesion: RES_Concesion) => {
     close();
-    setConcesiones([...concesiones, concesion]);
+    setConcesiones((prev) => [concesion, ...prev]);
   };
 
   const columns: DataTableColumn<RES_Concesion>[] = [

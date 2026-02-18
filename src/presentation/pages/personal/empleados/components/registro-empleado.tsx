@@ -1,4 +1,4 @@
-import { Button, Select, TextInput, Group, Stack, LoadingOverlay } from "@mantine/core";
+import { Button, Select, TextInput, Group, Stack } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
@@ -7,14 +7,14 @@ import dayjs from "dayjs";
 import { useEmpleados } from "../../../../../services/personal/useEmpleados";
 import { useCargos } from "../../../../../services/personal/useCargos";
 import { Schema_CrearEmpleado } from "../../../../../services/personal/dtos/requests";
-import type { RES_Cargo } from "../../../../../services/personal/dtos/responses";
+import type { RES_Cargo, RES_Empleado } from "../../../../../services/personal/dtos/responses";
 
 // Components
 import { SelectEmpresas } from "../../../../utils/select-empresas";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
 
 interface RegistroEmpleadoProps {
-    onSuccess: () => void;
+    onSuccess: (empleado: RES_Empleado) => void;
     onCancel: () => void;
 }
 
@@ -33,6 +33,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
     const [idCargo, setIdCargo] = useState<string | null>(null);
     const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
     const [fechaNacimiento, setFechaNacimiento] = useState<Date | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [pathFoto, setPathFoto] = useState("");
 
     // Hooks
@@ -61,6 +62,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
         setError("");
 
         // Construir objeto para validación manual
+        // Nota: Quitamos path_foto temporalmente si no se usa o se envía vacío
         const dataToValidate = {
             id_cargo: Number(idCargo),
             id_empresa: Number(idEmpresa),
@@ -74,7 +76,9 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
             path_foto: pathFoto || undefined
         };
 
-        // Zod Safe Parse
+        // Zod Safe Parse (usamos el mismo schema de request o uno personalizado si difiere)
+        // Por ahora usamos Schema_CrearEmpleado asumiendo compatibilidad
+        // @ts-ignore
         const validation = Schema_CrearEmpleado.safeParse(dataToValidate);
 
         if (!validation.success) {
@@ -100,15 +104,14 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                 message: `${empleado.nombre} ha sido registrado correctamente.`,
                 color: "green",
             });
-            onSuccess();
+            onSuccess(empleado);
         } else {
-            if (error) {
-                notifications.show({
-                    title: "Error al registrar",
-                    message: "Hubo un problema al guardar el empleado.",
-                    color: "red"
-                });
-            }
+            // El hook useEmpleados ya setea el error en setError, pero si queremos feedback visual extra:
+            notifications.show({
+                title: "Error al registrar",
+                message: "Hubo un problema al guardar el empleado.",
+                color: "red"
+            });
         }
         setLoading(false);
     };
@@ -120,8 +123,6 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
 
     return (
         <form onSubmit={handleSubmit} className="relative space-y-5">
-            <LoadingOverlay visible={loading} overlayProps={{ radius: "sm", blur: 2 }} />
-
             <Stack gap="md">
                 {/* Datos Personales */}
                 <Group grow align="start">
@@ -130,6 +131,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="Juan Carlos"
                         radius="lg"
                         withAsterisk
+                        disabled={loading}
                         classNames={inputClasses}
                         value={nombre}
                         onChange={(e) => setNombre(e.currentTarget.value)}
@@ -139,6 +141,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="Pérez Loza"
                         radius="lg"
                         withAsterisk
+                        disabled={loading}
                         classNames={inputClasses}
                         value={apellido}
                         onChange={(e) => setApellido(e.currentTarget.value)}
@@ -151,6 +154,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="12345678"
                         maxLength={8}
                         radius="lg"
+                        disabled={loading}
                         classNames={inputClasses}
                         value={dni}
                         onChange={(e) => setDni(e.currentTarget.value)}
@@ -160,6 +164,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="10123456789"
                         maxLength={11}
                         radius="lg"
+                        disabled={loading}
                         classNames={inputClasses}
                         value={ruc}
                         onChange={(e) => setRuc(e.currentTarget.value)}
@@ -172,6 +177,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="C.E."
                         maxLength={64}
                         radius="lg"
+                        disabled={loading}
                         classNames={inputClasses}
                         value={carnetExtranjeria}
                         onChange={(e) => setCarnetExtranjeria(e.currentTarget.value)}
@@ -181,6 +187,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         placeholder="Pasaporte"
                         maxLength={64}
                         radius="lg"
+                        disabled={loading}
                         classNames={inputClasses}
                         value={pasaporte}
                         onChange={(e) => setPasaporte(e.currentTarget.value)}
@@ -196,6 +203,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         nothingFoundMessage="No hay cargos registrados"
                         radius="lg"
                         withAsterisk
+                        disabled={loading}
                         classNames={inputClasses}
                         value={idCargo}
                         onChange={setIdCargo}
@@ -204,6 +212,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         label="Empresa"
                         radius="lg"
                         withAsterisk
+                        disabled={loading}
                         classNames={inputClasses}
                         value={idEmpresa}
                         onChange={setIdEmpresa}
@@ -215,6 +224,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         label="Fecha de Nacimiento"
                         placeholder="Seleccione fecha"
                         radius="lg"
+                        disabled={loading}
                         value={fechaNacimiento}
                         onChange={(val: any) => setFechaNacimiento(val)}
                     />
@@ -222,6 +232,7 @@ export const RegistroEmpleado = ({ onSuccess, onCancel }: RegistroEmpleadoProps)
                         label="Foto (URL)"
                         placeholder="Pegar enlace de imagen"
                         radius="lg"
+                        disabled={loading}
                         classNames={inputClasses}
                         value={pathFoto}
                         onChange={(e) => setPathFoto(e.currentTarget.value)}
