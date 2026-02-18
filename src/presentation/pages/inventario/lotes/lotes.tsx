@@ -1,7 +1,7 @@
-import { Badge, Button, Group, Text } from "@mantine/core";
+import { Badge, Button, Group, Text, TextInput, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
-import { PlusIcon, CubeIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState, useMemo } from "react";
+import { PlusIcon, CubeIcon, ClockIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import dayjs from "dayjs";
 
@@ -26,6 +26,9 @@ export const LotesPage = () => {
 
     // Filters
     const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
+    const [busqueda, setBusqueda] = useState("");
+    const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
+    const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
 
     // Modals
     const [openedCreate, { open: openCreate, close: closeCreate }] = useDisclosure(false);
@@ -42,10 +45,14 @@ export const LotesPage = () => {
     // Load Lotes when Almacen changes
     useEffect(() => {
         const loadLotes = async () => {
-            if (!idAlmacen) {
-                setLotes([]);
-                return;
-            }
+            setLotes([]);
+            setPage(1);
+            setBusqueda("");
+            setFiltroCategoria(null);
+            setFiltroProducto(null);
+
+            if (!idAlmacen) return;
+
             setLoading(true);
             const data = await listarPorAlmacen(Number(idAlmacen));
             if (data) setLotes(data);
@@ -54,6 +61,41 @@ export const LotesPage = () => {
         loadLotes();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idAlmacen]);
+
+
+    // Derived Filters
+    const categoriasUnicas = useMemo(() => {
+        const unique = new Set(lotes.map(l => l.categoria).filter(Boolean));
+        return Array.from(unique).sort().map(c => ({ value: String(c), label: String(c) }));
+    }, [lotes]);
+
+    const productosUnicos = useMemo(() => {
+        const source = filtroCategoria
+            ? lotes.filter(l => l.categoria === filtroCategoria)
+            : lotes;
+        const unique = new Set(source.map(l => l.producto).filter(Boolean));
+        return Array.from(unique).sort().map(p => ({ value: String(p), label: String(p) }));
+    }, [lotes, filtroCategoria]);
+
+    const filteredRecords = useMemo(() => {
+        return lotes.filter(l => {
+            const matchCategoria = !filtroCategoria || l.categoria === filtroCategoria;
+            const matchProducto = !filtroProducto || l.producto === filtroProducto;
+
+            const q = busqueda.toLowerCase();
+            const matchBusqueda = !busqueda ||
+                l.producto.toLowerCase().includes(q) ||
+                l.codigo_lote.toLowerCase().includes(q) ||
+                (l.categoria || "").toLowerCase().includes(q);
+
+            return matchCategoria && matchProducto && matchBusqueda;
+        });
+    }, [lotes, busqueda, filtroCategoria, filtroProducto]);
+
+    const paginatedRecords = useMemo(() => {
+        const from = (page - 1) * PAGE_SIZE;
+        return filteredRecords.slice(from, from + PAGE_SIZE);
+    }, [filteredRecords, page]);
 
 
     // Columns
@@ -120,21 +162,85 @@ export const LotesPage = () => {
         },
     ];
 
-    const paginatedRecords = lotes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-in">
             {/* Header & Filter */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <div className="flex-1 min-w-[300px]">
-                    <SelectAlmacen
-                        placeholder="Seleccione un Almacén..."
-                        value={idAlmacen}
-                        onChange={(val) => {
-                            setIdAlmacen(val);
+            <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between">
+
+                <div className="flex flex-wrap gap-4 w-full xl:w-auto flex-1">
+                    {/* 1. Almacén */}
+                    <div className="w-full sm:w-64">
+                        <SelectAlmacen
+                            label={null}
+                            placeholder="Almacén"
+                            value={idAlmacen}
+                            onChange={(val) => {
+                                setIdAlmacen(val);
+                            }}
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* 2. Buscador */}
+                    <TextInput
+                        placeholder="Buscar lote, producto..."
+                        leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
+                        value={busqueda}
+                        onChange={(e) => {
+                            setBusqueda(e.currentTarget.value);
                             setPage(1);
                         }}
+                        disabled={!idAlmacen}
+                        className="flex-1 min-w-[200px]"
+                        radius="lg"
+                        classNames={{
+                            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500"
+                        }}
                     />
+
+                    {/* 3. Filtros Dinámicos */}
+                    {lotes.length > 0 && (
+                        <>
+                            <Select
+                                placeholder="Categoría"
+                                data={categoriasUnicas}
+                                value={filtroCategoria}
+                                onChange={(val) => {
+                                    setFiltroCategoria(val);
+                                    setFiltroProducto(null);
+                                    setPage(1);
+                                }}
+                                searchable
+                                clearable
+                                className="w-full sm:w-40"
+                                radius="lg"
+                                classNames={{
+                                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                                    dropdown: "bg-zinc-900 border-zinc-800",
+                                    option: "text-zinc-300 hover:bg-zinc-800"
+                                }}
+                            />
+                            <Select
+                                placeholder="Producto"
+                                data={productosUnicos}
+                                value={filtroProducto}
+                                onChange={(val) => {
+                                    setFiltroProducto(val);
+                                    setPage(1);
+                                }}
+                                searchable
+                                clearable
+                                disabled={!filtroCategoria && productosUnicos.length > 50}
+                                className="w-full sm:w-48"
+                                radius="lg"
+                                classNames={{
+                                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                                    dropdown: "bg-zinc-900 border-zinc-800",
+                                    option: "text-zinc-300 hover:bg-zinc-800"
+                                }}
+                            />
+                        </>
+                    )}
                 </div>
 
                 <Button
@@ -143,7 +249,7 @@ export const LotesPage = () => {
                     disabled={!idAlmacen}
                     radius="lg"
                     size="sm"
-                    className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 border-0 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                     Nuevo Lote
                 </Button>
@@ -160,7 +266,7 @@ export const LotesPage = () => {
                     idAccessor="id_lote"
                     columns={columns}
                     records={paginatedRecords}
-                    totalRecords={lotes.length}
+                    totalRecords={filteredRecords.length}
                     page={page}
                     onPageChange={setPage}
                     loading={loading}

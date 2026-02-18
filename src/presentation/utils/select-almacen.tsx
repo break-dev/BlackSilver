@@ -38,7 +38,8 @@ export const SelectAlmacen = ({
     return (
         <Select
             label="Almacén"
-            placeholder="Seleccione almacén"
+            {...props}
+            placeholder={props.placeholder || "Seleccione almacén"}
             leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
             data={almacenes.map(a => ({
                 value: String(a.id_almacen),

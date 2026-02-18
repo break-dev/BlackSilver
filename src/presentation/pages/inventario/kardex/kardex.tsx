@@ -1,13 +1,11 @@
-import { Badge, Select, Text, LoadingOverlay } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Badge, Text, TextInput, Select } from "@mantine/core";
+import { useEffect, useState, useMemo } from "react";
 import dayjs from "dayjs";
-import { ArrowDownIcon, ArrowUpIcon, ListBulletIcon } from "@heroicons/react/24/outline";
+import { ArrowDownIcon, ArrowUpIcon, CubeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useKardex } from "../../../../services/inventario/kardex/useKardex";
-import { useLote } from "../../../../services/inventario/lote/useLote";
 import type { RES_MovimientoKardex } from "../../../../services/inventario/kardex/dtos/responses";
-import type { RES_Lote } from "../../../../services/inventario/lote/dtos/responses";
 
 import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
@@ -18,62 +16,87 @@ const PAGE_SIZE = 20;
 export const KardexPage = () => {
     const setTitle = UIStore((state) => state.setTitle);
 
-    // Filter State
+    // Main Filter State
     const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
-    const [idLote, setIdLote] = useState<string | null>(null);
+
+    // Local Filter States
+    const [busqueda, setBusqueda] = useState("");
+    const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
+    const [filtroLote, setFiltroLote] = useState<string | null>(null);
 
     // Data State
-    const [lotes, setLotes] = useState<RES_Lote[]>([]);
     const [movimientos, setMovimientos] = useState<RES_MovimientoKardex[]>([]);
 
     // UI State
     const [loading, setLoading] = useState(false);
-    const [loadingLotes, setLoadingLotes] = useState(false);
     const [page, setPage] = useState(1);
 
     // Hooks
-    const { listarPorAlmacen } = useLote({ setError: () => { } });
-    const { listarPorLote } = useKardex({ setError: () => { } });
+    const { listarPorAlmacen } = useKardex({ setError: () => { } });
 
     // Title
     useEffect(() => {
-        setTitle("Kardex Físico y Valorado");
+        setTitle("Kardex");
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // 2. Cargar Lotes
-    useEffect(() => {
-        const loadLotes = async () => {
-            setLotes([]);
-            setIdLote(null);
-            setMovimientos([]);
-
-            if (!idAlmacen) return;
-
-            setLoadingLotes(true);
-            const data = await listarPorAlmacen(Number(idAlmacen));
-            if (data) setLotes(data);
-            setLoadingLotes(false);
-        };
-        loadLotes();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [idAlmacen]);
-
-    // 3. Cargar Movimientos
+    // Cargar Movimientos al cambiar Almacén
     useEffect(() => {
         const loadMovimientos = async () => {
             setMovimientos([]);
-            if (!idLote) return;
+            setPage(1);
+            setFiltroProducto(null);
+            setFiltroLote(null);
+            setBusqueda("");
+
+            if (!idAlmacen) return;
 
             setLoading(true);
-            const data = await listarPorLote(Number(idLote));
+            const data = await listarPorAlmacen(Number(idAlmacen));
             if (data) setMovimientos(data);
             setLoading(false);
         };
         loadMovimientos();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [idLote]);
+    }, [idAlmacen]);
 
+    // Derived State (Unique Filter Options)
+    const productosUnicos = useMemo(() => {
+        const unique = new Set(movimientos.map(m => m.producto).filter(Boolean));
+        return Array.from(unique).sort().map(p => ({ value: String(p), label: String(p) }));
+    }, [movimientos]);
+
+    const lotesUnicos = useMemo(() => {
+        // Filter based on selected product if any, otherwise all
+        const source = filtroProducto
+            ? movimientos.filter(m => m.producto === filtroProducto)
+            : movimientos;
+
+        const unique = new Set(source.map(m => m.codigo_lote).filter(Boolean));
+        return Array.from(unique).sort().map(l => ({ value: String(l), label: String(l) }));
+    }, [movimientos, filtroProducto]);
+
+    // Filtros Locales
+    const filteredRecords = useMemo(() => {
+        return movimientos.filter((m) => {
+            const matchProducto = !filtroProducto || m.producto === filtroProducto;
+            const matchLote = !filtroLote || m.codigo_lote === filtroLote;
+
+            const q = busqueda.toLowerCase();
+            const matchBusqueda = !busqueda ||
+                m.codigo_movimiento.toLowerCase().includes(q) ||
+                (m.glosa || "").toLowerCase().includes(q) ||
+                (m.producto || "").toLowerCase().includes(q) || // Include product/batch in global search too
+                (m.codigo_lote || "").toLowerCase().includes(q);
+
+            return matchProducto && matchLote && matchBusqueda;
+        });
+    }, [movimientos, busqueda, filtroProducto, filtroLote]);
+
+    const paginatedRecords = useMemo(() => {
+        const from = (page - 1) * PAGE_SIZE;
+        return filteredRecords.slice(from, from + PAGE_SIZE);
+    }, [filteredRecords, page]);
 
     // Columns
     const columns: DataTableColumn<RES_MovimientoKardex>[] = [
@@ -92,6 +115,17 @@ export const KardexPage = () => {
                 <Text size="sm" className="text-zinc-300">
                     {dayjs(record.created_at).format("DD/MM/YYYY HH:mm")}
                 </Text>
+            )
+        },
+        {
+            accessor: "producto",
+            title: "Producto",
+            width: 200,
+            render: (record) => (
+                <div className="flex flex-col">
+                    <Text size="sm" fw={600} className="text-white">{record.producto || "-"}</Text>
+                    {record.codigo_lote && <Text size="xs" c="dimmed" className="font-mono">{record.codigo_lote}</Text>}
+                </div>
             )
         },
         {
@@ -137,7 +171,7 @@ export const KardexPage = () => {
         },
         {
             accessor: "cantidad_resultante",
-            title: "Saldo Final",
+            title: "Saldo",
             textAlign: "right",
             width: 120,
             render: (record) => (
@@ -146,7 +180,8 @@ export const KardexPage = () => {
         },
         {
             accessor: "glosa",
-            title: "Referencia",
+            title: "Ref.",
+            width: 150,
             render: (record) => (
                 <Text size="xs" className="text-zinc-400 italic truncate" title={record.glosa}>
                     {record.glosa || "-"}
@@ -155,68 +190,104 @@ export const KardexPage = () => {
         }
     ];
 
-    const paginatedRecords = movimientos.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
     return (
-        <div className="space-y-6">
-            {/* Header Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                {/* 1. Almacén */}
-                <div className="flex-1 min-w-[250px]">
-                    <SelectAlmacen
-                        label="1. Almacén"
-                        placeholder="Seleccione Almacén..."
-                        value={idAlmacen}
-                        onChange={(val) => {
-                            setIdAlmacen(val);
-                            setPage(1);
-                        }}
-                    />
-                </div>
+        <div className="space-y-6 animate-fade-in">
+            {/* Header Filters & Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div className="flex flex-wrap gap-4 w-full">
 
-                {/* 2. Lote */}
-                <div className="flex-[2] min-w-[300px] relative">
-                    <LoadingOverlay visible={loadingLotes} zIndex={10} overlayProps={{ radius: "lg", blur: 1 }} loaderProps={{ size: 'xs' }} />
-                    <Select
-                        label="2. Producto / Lote"
-                        placeholder={!idAlmacen ? "Primero seleccione almacén" : "Escriba para buscar producto..."}
-                        disabled={!idAlmacen}
-                        data={lotes.map(l => ({
-                            value: String(l.id_lote),
-                            label: `${l.producto} | ${l.codigo_lote} (Saldo: ${l.stock_actual})`
-                        }))}
-                        value={idLote}
-                        onChange={(val) => {
-                            setIdLote(val);
+                    {/* 1. Almacén (Filtro Principal) */}
+                    <div className="w-full sm:w-64">
+                        <SelectAlmacen
+                            label={null}
+                            placeholder="Almacén"
+                            value={idAlmacen}
+                            onChange={(val) => {
+                                setIdAlmacen(val);
+                                setFiltroProducto(null);
+                                setFiltroLote(null);
+                                setBusqueda("");
+                            }}
+                            className="w-full"
+                        />
+                    </div>
+
+                    {/* 2. Buscador Textual (Siempre visible) */}
+                    <TextInput
+                        placeholder="Buscar movimiento, glosa..."
+                        leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
+                        value={busqueda}
+                        onChange={(e) => {
+                            setBusqueda(e.currentTarget.value);
                             setPage(1);
                         }}
-                        searchable
-                        clearable
+                        disabled={!idAlmacen}
+                        className="flex-1 min-w-[200px]"
                         radius="lg"
-                        size="sm"
                         classNames={{
-                            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-                            dropdown: "bg-zinc-900 border-zinc-800",
-                            option: "text-zinc-300 hover:bg-zinc-800",
+                            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500"
                         }}
-                        leftSection={<ListBulletIcon className="w-4 h-4 text-zinc-400" />}
                     />
+
+                    {/* 3. Filtros Dinámicos (Producto y Lote) */}
+                    {movimientos.length > 0 && (
+                        <>
+                            <Select
+                                placeholder="Producto"
+                                data={productosUnicos}
+                                value={filtroProducto}
+                                onChange={(val) => {
+                                    setFiltroProducto(val);
+                                    setFiltroLote(null);
+                                    setPage(1);
+                                }}
+                                searchable
+                                clearable
+                                className="w-full sm:w-48"
+                                radius="lg"
+                                classNames={{
+                                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                                    dropdown: "bg-zinc-900 border-zinc-800",
+                                    option: "text-zinc-300 hover:bg-zinc-800"
+                                }}
+                            />
+                            <Select
+                                placeholder="Lote"
+                                data={lotesUnicos}
+                                value={filtroLote}
+                                onChange={(val) => {
+                                    setFiltroLote(val);
+                                    setPage(1);
+                                }}
+                                searchable
+                                clearable
+                                disabled={!filtroProducto && lotesUnicos.length > 50}
+                                className="w-full sm:w-40"
+                                radius="lg"
+                                classNames={{
+                                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                                    dropdown: "bg-zinc-900 border-zinc-800",
+                                    option: "text-zinc-300 hover:bg-zinc-800"
+                                }}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
 
             {/* Empty State or Table */}
-            {!idLote ? (
+            {!idAlmacen ? (
                 <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
-                    <ListBulletIcon className="w-16 h-16 text-zinc-700 mb-4" />
-                    <Text className="text-zinc-500 font-medium text-lg">Seleccione un Lote para ver su Kardex</Text>
-                    <Text className="text-zinc-600 text-sm">El historial de movimientos aparecerá aquí.</Text>
+                    <CubeIcon className="w-16 h-16 text-zinc-700 mb-4" />
+                    <Text className="text-zinc-500 font-medium text-lg">Seleccione un Almacén</Text>
+                    <Text className="text-zinc-600 text-sm">Se mostrará la bitácora completa de movimientos.</Text>
                 </div>
             ) : (
                 <DataTableClassic
                     idAccessor="id_kardex"
                     columns={columns}
                     records={paginatedRecords}
-                    totalRecords={movimientos.length}
+                    totalRecords={filteredRecords.length}
                     page={page}
                     onPageChange={setPage}
                     loading={loading}
