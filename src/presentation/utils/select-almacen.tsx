@@ -1,11 +1,10 @@
-import { Select, type SelectProps, LoadingOverlay } from "@mantine/core";
+import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { CubeIcon } from "@heroicons/react/24/outline";
 
 import { useAlmacenes } from "../../services/empresas/almacenes/useAlmacenes";
 import type { RES_Almacen } from "../../services/empresas/almacenes/dtos/responses";
 
-// Omit 'data' because we provide it internally
 interface SelectAlmacenProps extends Omit<SelectProps, "data"> {
     value?: string | null;
     onChange?: (value: string | null) => void;
@@ -37,33 +36,31 @@ export const SelectAlmacen = ({
     }, [autoLoad]);
 
     return (
-        <div className={`relative w-full ${className || ''}`}>
-            <LoadingOverlay visible={loading} zIndex={10} overlayProps={{ radius: "sm", blur: 1 }} loaderProps={{ size: 'xs' }} />
-            <Select
-                label="Almacén"
-                placeholder="Seleccione almacén"
-                leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
-                data={almacenes.map(a => ({
-                    value: String(a.id_almacen),
-                    label: a.nombre
-                }))}
-                value={value}
-                onChange={onChange}
-                searchable
-                clearable
-                nothingFoundMessage="No se encontraron almacenes"
-                radius="lg"
-                size="sm"
-                maxDropdownHeight={300}
-                disabled={loading || props.disabled}
-                classNames={{
-                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-                    dropdown: "bg-zinc-900 border-zinc-800",
-                    option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-                    label: "text-zinc-300 mb-1 font-medium"
-                }}
-                {...props}
-            />
-        </div>
+        <Select
+            label="Almacén"
+            placeholder="Seleccione almacén"
+            leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
+            data={almacenes.map(a => ({
+                value: String(a.id_almacen),
+                label: a.nombre
+            }))}
+            value={value}
+            onChange={onChange}
+            searchable
+            clearable
+            nothingFoundMessage="No se encontraron almacenes"
+            radius="lg"
+            size="sm"
+            maxDropdownHeight={300}
+            disabled={loading || props.disabled}
+            className={className}
+            classNames={{
+                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                label: "text-zinc-300 mb-1 font-medium"
+            }}
+            {...props}
+        />
     );
 };
