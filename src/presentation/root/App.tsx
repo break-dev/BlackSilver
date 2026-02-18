@@ -13,6 +13,8 @@ import { InventarioCategorias } from "../pages/inventario/categorias/categorias"
 import { EmpleadosPage } from "../pages/personal/empleados/empleados";
 import { AlmacenesPage } from "../pages/empresas/almacenes/almacenes";
 import { InventarioProductos } from "../pages/inventario/productos/productos";
+import { LotesPage } from "../pages/inventario/lotes/lotes";
+import { KardexPage } from "../pages/inventario/kardex/kardex";
 
 export const App = () => {
   return (
@@ -106,11 +108,11 @@ export const App = () => {
         />
         <Route
           path="/logistica/inventario/lotes"
-          element={<PlaceholderPage titulo="Lotes" />}
+          element={<LotesPage />}
         />
         <Route
           path="/logistica/inventario/kardex"
-          element={<PlaceholderPage titulo="Kardex" />}
+          element={<KardexPage />}
         />
         {/* Solicitudes de Almacen */}
         <Route
