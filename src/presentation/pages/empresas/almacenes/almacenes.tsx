@@ -282,17 +282,15 @@ export const AlmacenesPage = () => {
             </div>
 
             {/* Table (Estilo Empleados Wrapper) */}
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl overflow-hidden p-1">
-                <DataTableClassic
-                    idAccessor="id_almacen"
-                    columns={columns}
-                    records={paginatedRecords}
-                    totalRecords={filteredRecords.length}
-                    page={page}
-                    onPageChange={setPage}
-                    loading={loading}
-                />
-            </div>
+            <DataTableClassic
+                idAccessor="id_almacen"
+                columns={columns}
+                records={paginatedRecords}
+                totalRecords={filteredRecords.length}
+                page={page}
+                onPageChange={setPage}
+                loading={loading}
+            />
 
             {/* Modal: Crear Almacén */}
             <ModalRegistro opened={openedCreate} close={closeCreate} title="Nuevo Almacén">

@@ -212,17 +212,15 @@ export const KardexPage = () => {
                     <Text className="text-zinc-600 text-sm">El historial de movimientos aparecerá aquí.</Text>
                 </div>
             ) : (
-                <div className="bg-zinc-900/30 rounded-xl border border-zinc-800/50 overflow-hidden">
-                    <DataTableClassic
-                        idAccessor="id_kardex"
-                        columns={columns}
-                        records={paginatedRecords}
-                        totalRecords={movimientos.length}
-                        page={page}
-                        onPageChange={setPage}
-                        loading={loading}
-                    />
-                </div>
+                <DataTableClassic
+                    idAccessor="id_kardex"
+                    columns={columns}
+                    records={paginatedRecords}
+                    totalRecords={movimientos.length}
+                    page={page}
+                    onPageChange={setPage}
+                    loading={loading}
+                />
             )}
         </div>
     );

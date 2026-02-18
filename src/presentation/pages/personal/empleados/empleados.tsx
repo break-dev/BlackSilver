@@ -235,17 +235,15 @@ export const EmpleadosPage = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl overflow-hidden p-1">
-                <DataTableClassic
-                    columns={columns}
-                    records={paginatedRecords}
-                    totalRecords={filteredRecords.length}
-                    page={page}
-                    onPageChange={setPage}
-                    loading={loading}
-                    idAccessor="id_empleado"
-                />
-            </div>
+            <DataTableClassic
+                columns={columns}
+                records={paginatedRecords}
+                totalRecords={filteredRecords.length}
+                page={page}
+                onPageChange={setPage}
+                loading={loading}
+                idAccessor="id_empleado"
+            />
 
             {/* Modal Registro */}
             <ModalRegistro opened={opened} close={close} title="Nuevo Empleado">
