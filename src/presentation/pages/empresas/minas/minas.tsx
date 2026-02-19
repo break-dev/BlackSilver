@@ -115,28 +115,33 @@ export const MinasPage = () => {
         {
             accessor: "nombre",
             title: "Unidad Minera",
-            width: 250,
+            width: 200,
             render: (record) => (
-                <div className="flex flex-col">
-                    <Text size="sm" fw={600} className="text-white">
-                        {record.nombre}
-                    </Text>
-                    <div className="flex items-center gap-1 text-zinc-500 text-xs mt-0.5">
-                        <MapPinIcon className="w-3 h-3" />
-                        <span>{record.concesion || "Sin Concesión"}</span>
-                    </div>
+                <Text size="sm" fw={600} className="text-white">
+                    {record.nombre}
+                </Text>
+            )
+        },
+        {
+            accessor: "concesion",
+            title: "Concesión",
+            width: 200,
+            render: (record) => (
+                <div className="flex items-center gap-1.5 text-zinc-300 text-sm">
+                    <MapPinIcon className="w-4 h-4 text-zinc-500" />
+                    <span>{record.concesion || "Sin Concesión"}</span>
                 </div>
             )
         },
         {
             accessor: "labores_count",
             title: "Labores",
-            width: 120,
+            width: 130,
             textAlign: "center",
             render: (record) => (
-                <Group gap={4} justify="center">
+                <Group gap={6} justify="center">
                     <Badge variant="light" color="cyan" size="sm" radius="sm">
-                        {record.labores_count || 0}
+                        {record.labores_count || 0} Asign.
                     </Badge>
                     <Tooltip label="Ver Labores">
                         <ActionIcon
@@ -154,12 +159,12 @@ export const MinasPage = () => {
         {
             accessor: "empresas_count",
             title: "Empresas",
-            width: 120,
+            width: 130,
             textAlign: "center",
             render: (record) => (
-                <Group gap={4} justify="center">
+                <Group gap={6} justify="center">
                     <Badge variant="light" color="indigo" size="sm" radius="sm">
-                        {record.empresas_count || 0}
+                        {record.empresas_count || 0} Asign.
                     </Badge>
                     <Tooltip label="Gestionar Empresas">
                         <ActionIcon
@@ -273,7 +278,7 @@ export const MinasPage = () => {
             <ModalRegistro
                 opened={openedLabores}
                 close={closeLabores}
-                title={`Labores: ${selectedMina ? selectedMina.nombre : ''}`}
+                title="Gestión de Labores"
                 size="xl"
             >
                 {selectedMina ? (
@@ -288,7 +293,7 @@ export const MinasPage = () => {
             <ModalRegistro
                 opened={openedEmpresas}
                 close={closeEmpresas}
-                title={`Empresas: ${selectedMina ? selectedMina.nombre : ''}`}
+                title="Gestión de Empresas"
             >
                 {selectedMina ? (
                     <GestionEmpresasMina

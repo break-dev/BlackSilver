@@ -187,7 +187,7 @@ export const RegistroLabor = ({
           size="sm"
           className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
         >
-          Guardar Labor
+          Guardar
         </Button>
       </Group>
     </form>

@@ -259,7 +259,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     radius="lg"
                     className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
                 >
-                    Guardar Lote
+                    Guardar
                 </Button>
             </Group>
         </form>

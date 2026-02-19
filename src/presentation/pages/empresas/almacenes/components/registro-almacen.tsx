@@ -139,7 +139,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                         size="sm"
                         className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
                     >
-                        Registrar Almacén
+                        Guardar
                     </Button>
                 </Group>
             </Stack>

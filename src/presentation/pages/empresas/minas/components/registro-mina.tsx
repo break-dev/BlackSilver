@@ -27,14 +27,19 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
     const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
 
     // Hooks
+    const [loadingConcesiones, setLoadingConcesiones] = useState(true);
     const { crear } = useMinas({ setError });
     const { listar: listarConcesiones } = useConcesion({ setError });
 
     // Cargar Concesiones
     useEffect(() => {
+        let mounted = true;
+        setLoadingConcesiones(true);
         listarConcesiones().then(data => {
-            if (data) setConcesiones(data);
+            if (mounted && data) setConcesiones(data);
+            if (mounted) setLoadingConcesiones(false);
         });
+        return () => { mounted = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -86,11 +91,9 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
 
     return (
         <form onSubmit={handleSubmit} className="relative space-y-5">
-            {/* Sin Loading Overlay Bloqueante, usamos inputs disabled */}
-
             <Select
                 label="Concesión Asociada"
-                placeholder="Seleccione Concesión"
+                placeholder={loadingConcesiones ? "Cargando concesiones..." : "Seleccione Concesión"}
                 data={concesiones.map(c => ({ value: String(c.id_concesion), label: c.nombre }))}
                 value={idConcesion}
                 onChange={setIdConcesion}
@@ -98,7 +101,7 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
                 nothingFoundMessage="No hay concesiones registradas"
                 required
                 withAsterisk
-                disabled={loading}
+                disabled={loading || loadingConcesiones}
                 radius="lg"
                 classNames={inputClasses}
             />
@@ -146,7 +149,7 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
                     size="sm"
                     className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
                 >
-                    Registrar Mina
+                    Guardar
                 </Button>
             </Group>
         </form>

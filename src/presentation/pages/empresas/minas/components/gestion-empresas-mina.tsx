@@ -1,6 +1,6 @@
 import { Badge, Button, Select, Loader, Text } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeftIcon, PlusIcon, BriefcaseIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusIcon, BriefcaseIcon, IdentificationIcon } from "@heroicons/react/24/outline";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 
@@ -100,35 +100,54 @@ export const GestionEmpresasMina = ({ idMina, idConcesion, nombreMina }: Gestion
     }, [empresasContrato, empresasAsignadas]);
 
     // UI
-    if (loading) return <div className="flex justify-center p-10"><Loader size="sm" color="gray" /></div>;
-
     if (showForm) {
         return (
             <div className="space-y-4 animate-fade-in">
-                <Button variant="subtle" size="xs" onClick={() => setShowForm(false)} leftSection={<ArrowLeftIcon className="w-3 h-3" />} className="text-zinc-400 hover:text-white">
-                    Volver
+                <Button
+                    variant="subtle"
+                    color="gray"
+                    size="xs"
+                    onClick={() => setShowForm(false)}
+                    leftSection={<ArrowLeftIcon className="w-3 h-3" />}
+                    className="hover:text-white text-zinc-400 mb-4"
+                >
+                    Volver al listado
                 </Button>
 
                 <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-                    <h3 className="text-white font-bold mb-2">Vincular Empresa Contratista</h3>
+                    <h3 className="text-white font-bold mb-2">Asignar Empresa Contratista</h3>
                     <p className="text-xs text-zinc-500 mb-4">Solo se muestran empresas con contrato VIGENTE en la concesión de esta mina.</p>
 
                     <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
                         <Select
+                            label="Empresa"
                             placeholder="Buscar empresa..."
                             data={selectOptions}
                             searchable
                             nothingFoundMessage={selectOptions.length === 0 ? "No hay empresas elegibles" : "No encontrado"}
+                            leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-400" />}
                             {...form.getInputProps("id_empresa")}
-                            radius="md"
+                            radius="lg"
+                            size="sm"
                             classNames={{
-                                input: "bg-zinc-800 border-zinc-700 text-white",
-                                dropdown: "bg-zinc-800 border-zinc-700"
+                                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                                dropdown: "bg-zinc-900 border-zinc-800",
+                                option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                                label: "text-zinc-300 mb-1 font-medium"
                             }}
                         />
-                        <div className="flex justify-end gap-2">
-                            <Button size="sm" variant="default" onClick={() => setShowForm(false)}>Cancelar</Button>
-                            <Button size="sm" type="submit" loading={saving}>Vincular</Button>
+                        <div className="flex justify-end gap-2 mt-6">
+                            <Button size="sm" variant="default" onClick={() => setShowForm(false)} className="bg-transparent border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                                Cancelar
+                            </Button>
+                            <Button
+                                size="sm"
+                                type="submit"
+                                loading={saving}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
+                            >
+                                Asignar
+                            </Button>
                         </div>
                     </form>
                 </div>
@@ -137,32 +156,53 @@ export const GestionEmpresasMina = ({ idMina, idConcesion, nombreMina }: Gestion
     }
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
+        <div className="space-y-6">
+            <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h3 className="text-lg font-bold text-white">Empresas Ejecutoras</h3>
+                    <h3 className="text-lg font-bold text-white leading-tight">Empresas Ejecutoras</h3>
                     <p className="text-zinc-500 text-sm">{nombreMina}</p>
                 </div>
-                <Button size="xs" leftSection={<PlusIcon className="w-4 h-4" />} onClick={() => setShowForm(true)}>
-                    Vincular Empresa
+                <Button
+                    size="xs"
+                    variant="light"
+                    color="indigo"
+                    leftSection={<PlusIcon className="w-4 h-4" />}
+                    onClick={() => setShowForm(true)}
+                    className="hover:bg-indigo-900/30 transition-colors"
+                >
+                    Asignar
                 </Button>
             </div>
 
-            {empresasAsignadas.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl">
-                    <BriefcaseIcon className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-                    <p className="text-zinc-500 text-sm">No hay empresas asignadas a esta mina.</p>
+            {loading ? (
+                <div className="flex justify-center py-10"><Loader size="sm" color="gray" /></div>
+            ) : empresasAsignadas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
+                    <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-3">
+                        <BriefcaseIcon className="w-6 h-6 text-zinc-600" />
+                    </div>
+                    <Text size="sm" className="text-zinc-500 font-medium">No hay empresas asignadas</Text>
+                    <Text size="xs" className="text-zinc-600 mt-1">Asigne una empresa para comenzar.</Text>
                 </div>
             ) : (
-                <div className="grid gap-3">
+                <div className="space-y-3 animate-fade-in">
                     {empresasAsignadas.map(emp => (
-                        <div key={emp.id_empresa} className="flex items-center gap-3 p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg">
-                            <div className="w-10 h-10 rounded-full bg-indigo-900/20 text-indigo-500 flex items-center justify-center border border-indigo-900/30">
-                                <BriefcaseIcon className="w-5 h-5" />
+                        <div key={emp.id_empresa} className="relative p-4 rounded-xl border flex items-start gap-4 transition-all border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60">
+                            <div className="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0">
+                                <BriefcaseIcon className="w-6 h-6" />
                             </div>
-                            <div>
-                                <Text fw={600} className="text-zinc-200">{emp.nombre_comercial || emp.razon_social}</Text>
-                                <Text size="xs" c="dimmed">RUC: {emp.ruc}</Text>
+
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                                    <Text className="text-base font-bold text-white truncate">
+                                        {emp.nombre_comercial || emp.razon_social}
+                                    </Text>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 text-sm text-zinc-500">
+                                    <IdentificationIcon className="w-4 h-4 shrink-0" />
+                                    <span>RUC: {emp.ruc}</span>
+                                </div>
                             </div>
                         </div>
                     ))}

@@ -1,13 +1,15 @@
-import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
-import { useState, useEffect, useMemo } from "react";
+import { Button, Group, TextInput, Textarea } from "@mantine/core";
+import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 
 // Services
 import { Schema_CrearLabor } from "../../../../../services/empresas/labores/dtos/requests";
-import type { RES_Labor, RES_TipoLabor } from "../../../../../services/empresas/labores/dtos/responses";
+import type { RES_Labor } from "../../../../../services/empresas/labores/dtos/responses";
 import { useLabores } from "../../../../../services/empresas/labores/useLabores";
-import { useMinas } from "../../../../../services/empresas/minas/useMinas";
-import type { RES_Empresa } from "../../../../../services/empresas/empresas/dtos/responses";
+
+// Utils
+import { SelectTipoLabor } from "../../../../utils/select-tipo-labor";
+import { SelectEmpresaMina } from "../../../../utils/select-empresa-mina";
 
 interface RegistroLaborMinaProps {
     idMina: number;
@@ -16,10 +18,10 @@ interface RegistroLaborMinaProps {
 }
 
 export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLaborMinaProps) => {
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
-    // Form State
+    // Form Fields
     const [nombre, setNombre] = useState("");
     const [codigoCorrelativo, setCodigoCorrelativo] = useState("");
     const [descripcion, setDescripcion] = useState("");
@@ -27,63 +29,17 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
     const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
     const [tipoSostenimiento, setTipoSostenimiento] = useState("");
 
-    // Data Selects
-    const [tiposLabor, setTiposLabor] = useState<RES_TipoLabor[]>([]);
-    const [empresasAsignadas, setEmpresasAsignadas] = useState<RES_Empresa[]>([]);
-
-    // Hooks
-    const { crear_labor, listarTipos } = useLabores({ setError });
-    // @ts-ignore
-    const { listarEmpresasAsignadas } = useMinas({ setError }); // Now we fetch companies assigned to THIS mine
-
-    // Load Data
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            try {
-                const [tipos, emps] = await Promise.all([
-                    listarTipos(),
-                    listarEmpresasAsignadas ? listarEmpresasAsignadas(idMina) : Promise.resolve([])
-                ]);
-
-                if (tipos) setTiposLabor(tipos);
-                if (emps) setEmpresasAsignadas(emps);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [idMina]);
+    const { crear_labor } = useLabores({ setError });
 
     // Styles
     const inputClasses = {
         input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-        label: "text-zinc-300 mb-1 font-medium",
-        dropdown: "bg-zinc-900 border-zinc-800",
-        option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1"
+        label: "text-zinc-300 mb-1 font-medium"
     };
-
-    // Render Option for Type
-    const tiposOptions = useMemo(() => {
-        return tiposLabor.map(t => ({
-            value: String(t.id_tipo_labor),
-            label: `${t.nombre} (${t.codigo})`
-        }));
-    }, [tiposLabor]);
-
-    const empresasOptions = useMemo(() => {
-        return empresasAsignadas.map(e => ({
-            value: String(e.id_empresa),
-            label: e.nombre_comercial || e.razon_social
-        }));
-    }, [empresasAsignadas]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitting(true);
         setError("");
 
         // Build Payload
@@ -104,7 +60,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
             const msg = validation.error.issues[0]?.message || "Complete los campos requeridos.";
             setError(msg);
             notifications.show({ title: "Error", message: msg, color: "red" });
-            setLoading(false);
+            setSubmitting(false);
             return;
         }
 
@@ -120,24 +76,19 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
             });
             onSuccess(result);
         }
-        setLoading(false);
+        setSubmitting(false);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                    label="Tipo de Labor"
-                    placeholder="Seleccione..."
-                    data={tiposOptions}
+                <SelectTipoLabor
                     value={idTipoLabor}
                     onChange={setIdTipoLabor}
                     required
                     withAsterisk
-                    disabled={loading}
-                    radius="lg"
-                    classNames={inputClasses}
+                    disabled={submitting}
                 />
 
                 <TextInput
@@ -145,7 +96,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                     placeholder="Ej. TJ-001"
                     required
                     withAsterisk
-                    disabled={loading}
+                    disabled={submitting}
                     radius="lg"
                     classNames={inputClasses}
                     value={codigoCorrelativo}
@@ -153,19 +104,13 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 />
             </div>
 
-            <Select
-                label="Empresa Ejecutora"
-                description={empresasAsignadas.length === 0 ? "⚠️ No hay empresas asignadas a esta mina" : null}
-                placeholder={empresasAsignadas.length === 0 ? "Debe asignar empresas (pestaña Empresas)" : "Seleccione Empresa"}
-                data={empresasOptions}
+            <SelectEmpresaMina
+                idMina={idMina}
                 value={idEmpresa}
                 onChange={setIdEmpresa}
-                searchable
                 required
                 withAsterisk
-                disabled={loading || empresasAsignadas.length === 0}
-                radius="lg"
-                classNames={inputClasses}
+                disabled={submitting}
             />
 
             <TextInput
@@ -173,7 +118,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 placeholder="Ej. Tajo Esperanza Nivel 1"
                 required
                 withAsterisk
-                disabled={loading}
+                disabled={submitting}
                 radius="lg"
                 classNames={inputClasses}
                 value={nombre}
@@ -186,7 +131,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                     placeholder="Ej. Pernos, Malla, Madera"
                     required
                     withAsterisk
-                    disabled={loading}
+                    disabled={submitting}
                     radius="lg"
                     classNames={inputClasses}
                     value={tipoSostenimiento}
@@ -199,8 +144,11 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 placeholder="Ubicación exacta, referencias..."
                 radius="lg"
                 minRows={2}
-                disabled={loading}
-                classNames={inputClasses}
+                disabled={submitting}
+                classNames={{
+                    input: inputClasses.input,
+                    label: inputClasses.label
+                }}
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.currentTarget.value)}
             />
@@ -211,7 +159,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 <Button
                     variant="subtle"
                     onClick={onCancel}
-                    disabled={loading}
+                    disabled={submitting}
                     radius="lg"
                     size="sm"
                     className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
@@ -220,13 +168,12 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 </Button>
                 <Button
                     type="submit"
-                    loading={loading}
+                    loading={submitting}
                     radius="lg"
                     size="sm"
                     className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
-                    disabled={empresasAsignadas.length === 0}
                 >
-                    Guardar Labor
+                    Guardar
                 </Button>
             </Group>
         </form>

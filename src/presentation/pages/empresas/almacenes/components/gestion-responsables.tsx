@@ -138,7 +138,7 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
                                 Cancelar
                             </Button>
                             <Button variant="filled" color="indigo" onClick={handleAsignar} loading={submitting}>
-                                Guardar Asignación
+                                Guardar
                             </Button>
                         </div>
                     </div>

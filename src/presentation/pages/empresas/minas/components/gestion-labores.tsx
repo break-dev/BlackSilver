@@ -1,15 +1,14 @@
-import { ActionIcon, Badge, Button, Group, Menu, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Text, Tooltip, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { PlusIcon, PencilSquareIcon, TrashIcon, EllipsisVerticalIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, PencilSquareIcon, UserCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
 
 // Components
-import { UIStore } from "../../../../../stores/ui.store";
 import { DataTableClassic } from "../../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../../utils/modal-registro";
 import { RegistroLaborMina } from "./registro-labor-mina";
-import { AsignarResponsableLabor } from "./asignar-responsable-labor";
+import { AsignarResponsableLabor } from "./asignar-responsable-labor"; // Ajuste path si necesario
 
 // Services
 import { useLabores } from "../../../../../services/empresas/labores/useLabores";
@@ -28,6 +27,7 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
     const [loading, setLoading] = useState(true);
     const [, setError] = useState("");
     const [page, setPage] = useState(1);
+    const [busqueda, setBusqueda] = useState("");
 
     // Selected Labor for assigning responsible
     const [selectedLabor, setSelectedLabor] = useState<RES_Labor | null>(null);
@@ -54,6 +54,23 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idMina]);
 
+    // Filters
+    const filteredRecords = useMemo(() => {
+        const term = busqueda.toLowerCase().trim();
+        if (!term) return labores;
+        return labores.filter(l =>
+            l.nombre.toLowerCase().includes(term) ||
+            l.codigo_correlativo?.toLowerCase().includes(term) ||
+            l.empresa?.toLowerCase().includes(term) ||
+            l.responsable_actual?.toLowerCase().includes(term)
+        );
+    }, [labores, busqueda]);
+
+    const paginatedRecords = useMemo(() => {
+        const from = (page - 1) * PAGE_SIZE;
+        return filteredRecords.slice(from, from + PAGE_SIZE);
+    }, [filteredRecords, page]);
+
     // Handlers
     const handleSuccessCreate = (nuevaLabor: RES_Labor) => {
         closeCreate();
@@ -66,8 +83,8 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
     };
 
     const handleSuccessAssignment = () => {
-        // Reload list to update responsible column (could be optimized)
         cargarLabores();
+        closeResponsable();
     };
 
     // Columns
@@ -110,17 +127,7 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
             width: 180,
             render: (record) => (
                 <Text size="sm" className="text-zinc-400">
-                    {record.empresa}
-                </Text>
-            )
-        },
-        {
-            accessor: "tipo_sostenimiento",
-            title: "Sostenimiento",
-            width: 120,
-            render: (record) => (
-                <Text size="xs" className="text-zinc-500 italic">
-                    {record.tipo_sostenimiento}
+                    {record.empresa || "Sin asignar"}
                 </Text>
             )
         },
@@ -131,16 +138,15 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
             render: (record) => (
                 <Group gap={4} wrap="nowrap">
                     {record.responsable_actual ? (
-                        <>
+                        <div className="flex items-center gap-1.5">
                             <UserCircleIcon className="w-4 h-4 text-emerald-500 shrink-0" />
                             <Text size="xs" className="text-zinc-300 truncate max-w-[100px]" title={record.responsable_actual}>
                                 {record.responsable_actual}
                             </Text>
-                        </>
+                        </div>
                     ) : (
                         <span className="text-zinc-600 text-xs italic">Sin asignar</span>
                     )}
-
                     <Tooltip label="Gestionar Responsables">
                         <ActionIcon variant="subtle" size="xs" color="indigo" onClick={() => handleOpenResponsable(record)}>
                             <PencilSquareIcon className="w-3.5 h-3.5" />
@@ -152,31 +158,53 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
     ];
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <Text className="text-zinc-400 text-sm">
-                    Listado de labores para <span className="text-zinc-200 font-semibold">{nombreMina}</span>
-                </Text>
-                <Button
-                    size="xs"
-                    leftSection={<PlusIcon className="w-4 h-4" />}
-                    onClick={openCreate}
-                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
-                >
-                    Nueva Labor
-                </Button>
+        <div className="space-y-5">
+            {/* Header Moderno con Badges */}
+            <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mb-4 border-b border-zinc-800 pb-4">
+                <div>
+                    <h3 className="text-lg font-bold text-white leading-tight">Labores Asignadas</h3>
+                    <p className="text-zinc-500 text-sm">{nombreMina}</p>
+                </div>
+
+                <div className="flex w-full sm:w-auto items-center gap-3">
+                    <TextInput
+                        placeholder="Buscar labor..."
+                        leftSection={<MagnifyingGlassIcon className="w-3.5 h-3.5 text-zinc-500" />}
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.currentTarget.value)}
+                        className="flex-1 sm:w-64"
+                        radius="md"
+                        size="sm"
+                        classNames={{
+                            input: "bg-zinc-900 border-zinc-800 focus:border-indigo-500/50 text-white placeholder:text-zinc-600"
+                        }}
+                    />
+                    <Button
+                        size="sm"
+                        variant="light"
+                        color="indigo"
+                        leftSection={<PlusIcon className="w-4 h-4" />}
+                        onClick={openCreate}
+                        radius="md"
+                        className="hover:bg-indigo-900/30 transition-colors shrink-0"
+                    >
+                        Nueva Labor
+                    </Button>
+                </div>
             </div>
 
-            <DataTableClassic
-                idAccessor="id_labor"
-                columns={columns}
-                records={labores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)}
-                totalRecords={labores.length}
-                page={page}
-                onPageChange={setPage}
-                loading={loading}
-                minHeight={300}
-            />
+            {/* Tabla */}
+            <div className="bg-zinc-900/30 rounded-xl border border-zinc-800/50 overflow-hidden">
+                <DataTableClassic
+                    idAccessor="id_labor"
+                    columns={columns}
+                    records={paginatedRecords}
+                    totalRecords={filteredRecords.length}
+                    page={page}
+                    onPageChange={setPage}
+                    loading={loading}
+                />
+            </div>
 
             {/* Modal Registro Labor */}
             <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Labor">

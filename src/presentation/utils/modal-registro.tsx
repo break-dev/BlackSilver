@@ -4,17 +4,20 @@ interface ModalRegistroProps {
   close: () => void;
   title: string;
   children: React.ReactNode;
+  size?: string | number;
 }
 export const ModalRegistro = ({
   opened,
   close,
   title,
   children,
+  size
 }: ModalRegistroProps) => {
   return (
     <Modal
       opened={opened}
       onClose={close}
+      size={size || "md"}
       title={
         <div className="flex items-center gap-3">
           <div

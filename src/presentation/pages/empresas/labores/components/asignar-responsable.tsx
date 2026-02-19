@@ -1,4 +1,4 @@
-import { Button, Group, Textarea, Text } from "@mantine/core";
+import { Button, Textarea, Text } from "@mantine/core";
 import { useState } from "react";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
 import { useLabores } from "../../../../../services/empresas/labores/useLabores";
@@ -111,7 +111,7 @@ export const AsignarResponsable = ({
                         </Button>
                     )}
                     <Button variant="filled" color="indigo" onClick={handleSubmit} loading={isLoading}>
-                        Guardar Asignación
+                        Guardar
                     </Button>
                 </div>
             </div>
