@@ -1,4 +1,4 @@
-import { Badge, Button, Loader, Text, Select } from "@mantine/core";
+import { Badge, Button, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { ArrowLeftIcon, PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
@@ -9,11 +9,10 @@ import 'dayjs/locale/es';
 import { useAlmacenes } from "../../../../../services/empresas/almacenes/useAlmacenes";
 import type { RES_ResponsableAlmacen } from "../../../../../services/empresas/almacenes/dtos/responses";
 import { Schema_AsignarResponsableAlmacen } from "../../../../../services/empresas/almacenes/dtos/requests";
-import { useEmpleados } from "../../../../../services/personal/useEmpleados";
-import type { RES_Empleado } from "../../../../../services/personal/dtos/responses";
 
 // Utils
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
+import { SelectEmpleado } from "../../../../utils/select-empleado";
 
 interface GestionResponsablesProps {
     idAlmacen: number;
@@ -24,7 +23,6 @@ interface GestionResponsablesProps {
 export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionResponsablesProps) => {
     // Data State
     const [responsables, setResponsables] = useState<RES_ResponsableAlmacen[]>([]);
-    const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -38,7 +36,7 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
     const [submitting, setSubmitting] = useState(false);
 
     const { listarResponsables, asignarResponsable } = useAlmacenes({ setError });
-    const { listar: listarEmpleados } = useEmpleados({ setError });
+
 
     // Cargar historial
     const cargarHistorial = async () => {
@@ -51,18 +49,9 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
         setLoading(false);
     };
 
-    // Cargar Empleados (se carga una vez al abrir form)
-    const cargarEmpleados = async () => {
-        // @ts-ignore
-        const data = await listarEmpleados();
-        if (data) setEmpleados(data);
-    };
-
     useEffect(() => {
         if (!showForm) {
             cargarHistorial();
-        } else {
-            cargarEmpleados();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idAlmacen, showForm]);
@@ -125,26 +114,13 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
                     </div>
 
                     <div className="space-y-4">
-                        <Select
+                        <SelectEmpleado
                             label="Responsable / Jefe"
                             placeholder="Buscar empleado..."
-                            data={empleados.map(e => ({
-                                value: String(e.id_empleado),
-                                label: `${e.nombre} ${e.apellido}`,
-                                description: e.cargo // Optional description if specific cargo is needed
-                            }))}
                             value={nuevoResponsable}
-                            onChange={setNuevoResponsable}
-                            searchable
-                            nothingFoundMessage="No se encontraron empleados"
+                            onChange={(val) => setNuevoResponsable(val)}
                             withAsterisk
                             error={assignError && !nuevoResponsable ? "Requerido" : undefined}
-                            classNames={{
-                                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-                                dropdown: "bg-zinc-900 border-zinc-800",
-                                option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-                                label: "text-zinc-300 mb-1 font-medium"
-                            }}
                         />
 
                         <CustomDatePicker
@@ -206,7 +182,7 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
                         const isActive = item.estado === 'Activo';
                         return (
                             <div
-                                key={item.id || idx}
+                                key={item.id_asignacion || idx}
                                 className={`
                                     relative p-4 rounded-xl border flex items-start gap-4 transition-all
                                     border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
@@ -227,7 +203,7 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
                                         <Text className="text-base font-bold text-white truncate">
-                                            {item.nombre_responsable}
+                                            {item.nombres} {item.apellidos}
                                         </Text>
                                         {isActive ? (
                                             <Badge color="indigo" size="sm" variant="light" className="tracking-wide">

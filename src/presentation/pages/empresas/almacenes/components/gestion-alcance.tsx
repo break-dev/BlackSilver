@@ -116,20 +116,25 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
                 </Button>
 
                 <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-                    <h3 className="text-white font-bold mb-4">Vincular Labor Minera</h3>
+                    <h3 className="text-white font-bold mb-4">Asignar Labor Minera</h3>
 
                     <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
                         <Select
+                            label="Labor Minera"
                             placeholder="Buscar labor..."
                             data={selectOptions}
                             searchable
                             nothingFoundMessage="No hay labores disponibles"
+                            leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
                             {...form.getInputProps("id_labor")}
-                            radius="md"
+                            radius="lg"
+                            size="sm"
                             classNames={{
-                                input: "bg-zinc-800 border-zinc-700 text-white",
-                                dropdown: "bg-zinc-800 border-zinc-700",
-                                groupLabel: "text-zinc-400 font-bold text-xs uppercase"
+                                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                                dropdown: "bg-zinc-900 border-zinc-800",
+                                option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                                label: "text-zinc-300 mb-1 font-medium",
+                                groupLabel: "text-zinc-500 font-bold text-xs uppercase mt-2 mb-1 pl-2"
                             }}
                         />
                         <div className="flex justify-end gap-2">

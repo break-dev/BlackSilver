@@ -1,4 +1,4 @@
-import { Button, Group, TextInput, Textarea, Switch, Stack } from "@mantine/core";
+import { Button, Group, TextInput, Textarea, Switch, Stack, Text } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 
@@ -89,7 +89,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                 />
 
                 <Textarea
-                    label="Descripción / Ubicación"
+                    label="Descripción"
                     placeholder="Detalles adicionales..."
                     radius="lg"
                     minRows={3}
@@ -99,19 +99,25 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
                     onChange={(e) => setDescripcion(e.currentTarget.value)}
                 />
 
-                <Switch
-                    label="¿Es Almacén Principal?"
-                    description="Si lo activa, será el punto de recepción principal."
-                    checked={esPrincipal}
-                    disabled={loading}
-                    onChange={(e) => setEsPrincipal(e.currentTarget.checked)}
-                    color="green"
-                    size="md"
-                    classNames={{
-                        label: "text-zinc-300 font-medium",
-                        description: "text-zinc-500 text-xs"
-                    }}
-                />
+                <div className="p-3 bg-pink-500/10 border border-pink-500/20 rounded-lg flex items-center justify-between">
+                    <div className="flex flex-col gap-1 pr-4">
+                        <Text size="sm" fw={600} className="text-pink-200">¿Es Almacén Principal?</Text>
+                        <Text size="xs" className="text-pink-100/70 leading-snug">
+                            Si lo activa, será el punto de recepción principal.
+                        </Text>
+                    </div>
+                    <Switch
+                        checked={esPrincipal}
+                        disabled={loading}
+                        onChange={(e) => setEsPrincipal(e.currentTarget.checked)}
+                        color="pink"
+                        size="md"
+                        classNames={{
+                            track: "cursor-pointer",
+                            thumb: "cursor-pointer"
+                        }}
+                    />
+                </div>
 
                 {error && <div className="text-red-500 text-sm font-medium px-1">{error}</div>}
 

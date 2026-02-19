@@ -9,9 +9,10 @@ export interface RES_Almacen {
 }
 
 export interface RES_ResponsableAlmacen {
-    id: number;
+    id_asignacion: number;
     id_usuario: number;
-    nombre_responsable: string;
+    nombres: string;
+    apellidos: string;
     fecha_inicio: string;
     fecha_fin: string | null;
     estado: string;
