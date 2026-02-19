@@ -1,36 +1,25 @@
 export interface RES_Almacen {
-    id_almacen: number;         // Antes id
-    id_empresa: number;
-    empresa: string;
-
-    // Identificación
-    codigo: string;             // Antes correlativo. Ej: ALM-001
+    id_almacen: number;
     nombre: string;
     descripcion?: string;
-
-    // Estado y Config
-    es_principal: number | boolean; // 1 | 0
+    es_principal: boolean | number;
     estado: string;
-
-    // Contadores y Relaciones
-    labores_count: number;
-    responsable_actual: string | null; // Nombre completo o null
+    responsable_actual?: string;
+    labores_count?: number; // Opcional, si el back lo manda
 }
 
 export interface RES_ResponsableAlmacen {
-    id_asignacion: number;      // Antes id
-    // id_usuario_empresa no viene en el listado, viene nombres/apellidos
-    nombres: string;
-    apellidos: string;
+    id: number;
+    id_usuario: number;
+    nombre_responsable: string;
     fecha_inicio: string;
     fecha_fin: string | null;
-    estado: "Activo" | "Inactivo";
+    estado: string;
 }
 
 export interface RES_LaborAsignada {
-    id: number; // ID de la relación o ID de la labor (según backend)
-    // id_labor no viene explícito en el ejemplo, asumimos que 'id' es el identificador único
-    labor: string;      // Antes nombre_labor
+    id: number; // ID de la relación o de la labor? Asumiré ID de la labor o relación.
+    labor: string;
     tipo_labor: string;
-    concesion?: string;
+    mina: string;
 }

@@ -7,9 +7,6 @@ import { Schema_CrearAlmacen } from "../../../../../services/empresas/almacenes/
 import type { RES_Almacen } from "../../../../../services/empresas/almacenes/dtos/responses";
 import { useAlmacenes } from "../../../../../services/empresas/almacenes/useAlmacenes";
 
-// Components
-import { SelectEmpresas } from "../../../../utils/select-empresas";
-
 interface RegistroAlmacenProps {
     onSuccess: (almacen: RES_Almacen) => void;
     onCancel: () => void;
@@ -19,11 +16,12 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Form State (Manual)
+    // Form State
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
+
+    // es_principal (boolean, default false en schema)
     const [esPrincipal, setEsPrincipal] = useState(false);
-    const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
 
     // Hooks
     const { crear } = useAlmacenes({ setError });
@@ -43,7 +41,6 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
 
         // Build Payload
         const payload = {
-            id_empresa: Number(idEmpresa),
             nombre,
             descripcion,
             es_principal: esPrincipal
@@ -77,19 +74,7 @@ export const RegistroAlmacen = ({ onSuccess, onCancel }: RegistroAlmacenProps) =
 
     return (
         <form onSubmit={handleSubmit} className="relative space-y-5">
-
             <Stack gap="md">
-                <SelectEmpresas
-                    label="Empresa Propietaria"
-                    placeholder="Seleccione Empresa"
-                    required
-                    withAsterisk
-                    disabled={loading}
-                    radius="lg"
-                    classNames={inputClasses}
-                    value={idEmpresa}
-                    onChange={setIdEmpresa}
-                />
 
                 <TextInput
                     label="Nombre del Almacén"

@@ -1,4 +1,4 @@
-import { Badge, Button, Loader, Text, Group } from "@mantine/core";
+import { Badge, Button, Loader, Text, Select } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { ArrowLeftIcon, PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
@@ -9,20 +9,22 @@ import 'dayjs/locale/es';
 import { useAlmacenes } from "../../../../../services/empresas/almacenes/useAlmacenes";
 import type { RES_ResponsableAlmacen } from "../../../../../services/empresas/almacenes/dtos/responses";
 import { Schema_AsignarResponsableAlmacen } from "../../../../../services/empresas/almacenes/dtos/requests";
+import { useEmpleados } from "../../../../../services/personal/useEmpleados";
+import type { RES_Empleado } from "../../../../../services/personal/dtos/responses";
 
 // Utils
-import { SelectUsuarioEmpresa } from "../../../../utils/select-usuario-empresa";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
 
 interface GestionResponsablesProps {
     idAlmacen: number;
-    idEmpresa: number;
     nombreAlmacen?: string;
+    // idEmpresa removed as it is no longer relevant for warehouse responsibility
 }
 
-export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: GestionResponsablesProps) => {
+export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionResponsablesProps) => {
     // Data State
     const [responsables, setResponsables] = useState<RES_ResponsableAlmacen[]>([]);
+    const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -36,6 +38,7 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
     const [submitting, setSubmitting] = useState(false);
 
     const { listarResponsables, asignarResponsable } = useAlmacenes({ setError });
+    const { listar: listarEmpleados } = useEmpleados({ setError });
 
     // Cargar historial
     const cargarHistorial = async () => {
@@ -48,9 +51,18 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
         setLoading(false);
     };
 
+    // Cargar Empleados (se carga una vez al abrir form)
+    const cargarEmpleados = async () => {
+        // @ts-ignore
+        const data = await listarEmpleados();
+        if (data) setEmpleados(data);
+    };
+
     useEffect(() => {
         if (!showForm) {
             cargarHistorial();
+        } else {
+            cargarEmpleados();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idAlmacen, showForm]);
@@ -66,9 +78,8 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
         // Validate DTO
         const payload = {
             id_almacen: idAlmacen,
-            id_usuario_empresa: Number(nuevoResponsable),
+            id_usuario: Number(nuevoResponsable), // Use id_usuario from form (mapped to id_empleado)
             fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD")
-            // observacion: observacion // Backend not ready yet
         };
 
         const validation = Schema_AsignarResponsableAlmacen.safeParse(payload);
@@ -114,14 +125,26 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
                     </div>
 
                     <div className="space-y-4">
-                        <SelectUsuarioEmpresa
+                        <Select
                             label="Responsable / Jefe"
-                            idEmpresa={idEmpresa}
+                            placeholder="Buscar empleado..."
+                            data={empleados.map(e => ({
+                                value: String(e.id_empleado),
+                                label: `${e.nombre} ${e.apellido}`,
+                                description: e.cargo // Optional description if specific cargo is needed
+                            }))}
                             value={nuevoResponsable}
                             onChange={setNuevoResponsable}
+                            searchable
+                            nothingFoundMessage="No se encontraron empleados"
                             withAsterisk
                             error={assignError && !nuevoResponsable ? "Requerido" : undefined}
-                        // Styling via component internal logic or if it accepts className
+                            classNames={{
+                                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                                dropdown: "bg-zinc-900 border-zinc-800",
+                                option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                                label: "text-zinc-300 mb-1 font-medium"
+                            }}
                         />
 
                         <CustomDatePicker
@@ -131,8 +154,6 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
                             error={assignError && !fechaInicio ? "Requerido" : undefined}
                             withAsterisk
                         />
-
-
 
                         {assignError && <Text size="xs" c="red">{assignError}</Text>}
 
@@ -181,13 +202,11 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {responsables.map((item) => {
+                    {responsables.map((item, idx) => {
                         const isActive = item.estado === 'Activo';
-                        // Note: Backend returns 'Activo' | 'Inactivo'. Sometimes fecha_fin is null for active.
-
                         return (
                             <div
-                                key={item.id_asignacion}
+                                key={item.id || idx}
                                 className={`
                                     relative p-4 rounded-xl border flex items-start gap-4 transition-all
                                     border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
@@ -208,7 +227,7 @@ export const GestionResponsables = ({ idAlmacen, idEmpresa, nombreAlmacen }: Ges
                                 <div className="flex-1 min-w-0">
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
                                         <Text className="text-base font-bold text-white truncate">
-                                            {item.nombres} {item.apellidos}
+                                            {item.nombre_responsable}
                                         </Text>
                                         {isActive ? (
                                             <Badge color="indigo" size="sm" variant="light" className="tracking-wide">

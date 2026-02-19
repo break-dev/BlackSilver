@@ -1,4 +1,4 @@
-import { Badge, Button, Loader, Text, Select } from "@mantine/core";
+import { Badge, Button, Select, Loader, Text } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import { ArrowLeftIcon, PlusIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { useForm } from "@mantine/form";
@@ -12,36 +12,40 @@ import type { RES_Labor } from "../../../../../services/empresas/labores/dtos/re
 
 interface GestionAlcanceProps {
     idAlmacen: number;
-    nombreAlmacen?: string; // Optional, mostly controlled by parent modal
+    nombreAlmacen?: string;
 }
 
 export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps) => {
-    // Hooks
+
+    // States
     const [loading, setLoading] = useState(true);
-    const [laboresAsignadas, setLaboresAsignadas] = useState<RES_LaborAsignada[]>([]);
-    const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
-    const [, setError] = useState("");
-    const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [showForm, setShowForm] = useState(false);
+
+    // Data List
+    const [laboresAsignadas, setLaboresAsignadas] = useState<RES_LaborAsignada[]>([]);
+
+    // Data Options
+    const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
+
+    const [, setError] = useState("");
 
     // Services
     const { listarLabores, asignarLabor } = useAlmacenes({ setError });
     const { listar: listarTodasLabores } = useLabores({ setError });
 
     // Load Data
-    const fetchData = async () => {
+    const cargarDatos = async () => {
         setLoading(true);
         try {
-            const [dataAsignadas, dataDisponibles] = await Promise.all([
+            const [misLabores, poolLabores] = await Promise.all([
                 listarLabores(idAlmacen),
-                listarTodasLabores()
+                // @ts-ignore
+                listarTodasLabores() // Trae todas las labores del sistema (filtros vacios)
             ]);
 
-            if (dataAsignadas) {
-                console.log("🔍 Labores asignadas (API):", dataAsignadas);
-                setLaboresAsignadas(dataAsignadas);
-            }
-            if (dataDisponibles) setLaboresDisponibles(dataDisponibles);
+            if (misLabores) setLaboresAsignadas(misLabores);
+            if (poolLabores) setLaboresDisponibles(poolLabores);
 
         } catch (err) {
             console.error(err);
@@ -51,114 +55,86 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
     };
 
     useEffect(() => {
-        if (!showForm) {
-            fetchData();
-        }
+        cargarDatos();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [idAlmacen, showForm]);
+    }, [idAlmacen]);
 
-    // Form
+    // Form Handler
     const form = useForm({
-        initialValues: {
-            id_labor: "",
-        },
-        validate: {
-            id_labor: (value) => !value ? "Seleccione una labor" : null,
-        }
+        initialValues: { id_labor: "" },
+        validate: { id_labor: (val) => !val ? "Seleccione una labor" : null }
     });
 
-    // Handlers
     const handleSubmit = async (values: typeof form.values) => {
         setSaving(true);
         const success = await asignarLabor({
             id_almacen: idAlmacen,
             id_labor: Number(values.id_labor)
         });
-
         if (success) {
-            notifications.show({
-                title: "Labor Asignada",
-                message: "La labor se ha vinculado correctamente al almacén.",
-                color: "green"
-            });
+            notifications.show({ title: "Asignación Exitosa", message: "Labor vinculada al almacén", color: "green" });
             setShowForm(false);
             form.reset();
+            cargarDatos();
         }
         setSaving(false);
     };
 
-    // Note: Assuming there is a desasignarLabor endpoint or we need to add it.
-    // Based on previous files, I didn't see explicit desasignarLabor in useAlmacenes, 
-    // but typically it should exist. If not, I will hide the trash icon for now 
-    // or assume it exists in the updated hook.
-    // Checking useAlmacenes content from memory/context... 
-    // It had "listarLabores" and "asignarLabor". 
-    // I will simulate it if missing or comment it out until backend supports it.
+    // Options Logic (Filtrar las ya asignadas)
+    const selectOptions = useMemo(() => {
+        // Asumiendo que 'id' en RES_LaborAsignada es el id_labor o id de relacion...
+        // Si el backend devuelve 'id' como PK de la relacion, no puedo filtrar por ID exacto facilmente sin saber id_labor original.
+        // Pero RES_LaborAsignada tiene 'labor' (nombre). Puedo filtrar por nombre + mina si es unico, o asumir que ids coinciden.
+        // Mejor filtro por nombre para estar seguro visualmente.
 
-    /* 
-    const handleDesasignar = async (id: number, nombre: string) => {
-         if (!confirm(`¿Desvincular labor ${nombre}?`)) return;
-         // Implementation pending backend support
-    };
-    */
-
-    // Filter Options
-    const laboresOptions = useMemo(() => {
-        // Exclude already assigned (matching by name since ID might be unclear)
-        const assignedNames = laboresAsignadas.map(l => l.labor);
+        const assignedNames = new Set(laboresAsignadas.map(a => `${a.labor}-${a.mina}`));
 
         return laboresDisponibles
-            .filter(l => !assignedNames.includes(l.nombre))
+            .filter(l => !assignedNames.has(`${l.nombre}-${l.mina}`))
             .map(l => ({
                 value: String(l.id_labor),
-                label: `${l.nombre} (${l.tipo_labor})`
+                label: `${l.nombre} (${l.mina})`, // Mostrar Labor + Mina
+                group: l.mina // Agrupar visualmente por Mina en el Select
             }));
     }, [laboresDisponibles, laboresAsignadas]);
 
-    // VIEW: FORM
+    // Renders
+    if (loading) return <div className="flex justify-center p-10"><Loader size="sm" color="gray" /></div>;
+
     if (showForm) {
         return (
-            <div className="animate-fade-in space-y-4">
+            <div className="space-y-4 animate-fade-in">
                 <Button
                     variant="subtle"
                     color="gray"
                     size="xs"
-                    leftSection={<ArrowLeftIcon className="w-3 h-3" />}
                     onClick={() => setShowForm(false)}
+                    leftSection={<ArrowLeftIcon className="w-3 h-3" />}
                     className="hover:text-white text-zinc-400"
                 >
-                    Volver a la lista
+                    Volver
                 </Button>
 
-                <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
-                    <h3 className="text-white font-bold mb-4">Nueva Asignación</h3>
+                <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
+                    <h3 className="text-white font-bold mb-4">Vincular Labor Minera</h3>
+
                     <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
                         <Select
-                            label="Labor Minera"
                             placeholder="Buscar labor..."
-                            data={laboresOptions}
+                            data={selectOptions}
                             searchable
                             nothingFoundMessage="No hay labores disponibles"
-                            radius="lg"
-                            size="sm"
-                            classNames={{
-                                input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
-                                focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-                                dropdown: "bg-zinc-900 border-zinc-800",
-                                option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
-                                data-[selected]:text-zinc-900 rounded-md my-1`,
-                                label: "text-zinc-300 mb-1 font-medium",
-                            }}
                             {...form.getInputProps("id_labor")}
+                            radius="md"
+                            classNames={{
+                                input: "bg-zinc-800 border-zinc-700 text-white",
+                                dropdown: "bg-zinc-800 border-zinc-700",
+                                groupLabel: "text-zinc-400 font-bold text-xs uppercase"
+                            }}
                         />
-
-                        <div className="flex justify-end gap-2 mt-6">
-                            <Button variant="default" onClick={() => setShowForm(false)} disabled={saving}>
-                                Cancelar
-                            </Button>
-                            <Button type="submit" color="indigo" loading={saving}>
-                                Asignar Labor
-                            </Button>
+                        <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="default" onClick={() => setShowForm(false)}>Cancelar</Button>
+                            <Button size="sm" type="submit" loading={saving}>Vincular</Button>
                         </div>
                     </form>
                 </div>
@@ -166,14 +142,12 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
         );
     }
 
-    // VIEW: LIST
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center mb-2">
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
                 <div>
-                    {/* Title is handled by Modal Header mainly, but we keep structure */}
-                    <h3 className="text-lg font-bold text-white leading-tight">Asignación de Labores</h3>
-                    <p className="text-zinc-500 text-sm">{nombreAlmacen || "Labores atendidas"}</p>
+                    <h3 className="text-lg font-bold text-white">Labores asignadas</h3>
+                    <p className="text-zinc-500 text-sm">{nombreAlmacen}</p>
                 </div>
                 <Button
                     size="xs"
@@ -187,63 +161,27 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
                 </Button>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center py-10">
-                    <Loader size="sm" color="gray" />
-                </div>
-            ) : laboresAsignadas.length === 0 ? (
-                <div className="text-center py-10 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/30">
-                    <CubeIcon className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
-                    <p className="text-zinc-500 text-sm">Este almacén no tiene labores asignadas.</p>
+            {laboresAsignadas.length === 0 ? (
+                <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl">
+                    <CubeIcon className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+                    <p className="text-zinc-500 text-sm">Este almacén no atiende ninguna labor.</p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {laboresAsignadas.map((item) => (
-                        <div
-                            key={item.id}
-                            className={`
-                                relative p-4 rounded-xl border flex items-center gap-4 transition-all
-                                border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
-                            `}
-                        >
-                            {/* Icon */}
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border overflow-hidden bg-zinc-800/50 text-zinc-400 border-zinc-700/50">
-                                <CubeIcon className="w-6 h-6" />
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-2 mb-1">
-                                    <Text className="text-base font-bold text-white truncate">
-                                        {item.labor}
-                                    </Text>
-                                    <Badge color="cyan" size="sm" variant="light" className="tracking-wide">
-                                        {item.tipo_labor.toUpperCase()}
-                                    </Badge>
+                <div className="grid gap-3">
+                    {laboresAsignadas.map((item, idx) => (
+                        <div key={item.id || idx} className="flex items-center justify-between p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-cyan-900/20 text-cyan-500 flex items-center justify-center border border-cyan-900/30">
+                                    <CubeIcon className="w-5 h-5" />
                                 </div>
-
-                                {item.concesion && (
-                                    <Text size="xs" c="dimmed" className="flex items-center gap-1">
-                                        <span className="opacity-70">Concesión:</span>
-                                        <span className="text-zinc-300 font-medium">{item.concesion}</span>
-                                    </Text>
-                                )}
+                                <div>
+                                    <Text fw={600} className="text-zinc-200">{item.labor}</Text>
+                                    <div className="flex items-center gap-2">
+                                        <Badge size="xs" variant="dot" color="gray">{item.mina}</Badge>
+                                        <Text size="xs" c="dimmed">({item.tipo_labor})</Text>
+                                    </div>
+                                </div>
                             </div>
-
-                            {/* Actions (Delete) - Pending backend support? 
-                                If backend doesn't support desasignarLabor yet, hiddden for now.
-                            */}
-                            {/* 
-                            <Tooltip label="Desvincular" withArrow>
-                                <ActionIcon 
-                                    color="red" 
-                                    variant="subtle"
-                                    onClick={() => console.log("Desvincular implementation pending")}
-                                >
-                                    <TrashIcon className="w-4 h-4" />
-                                </ActionIcon>
-                            </Tooltip>
-                            */}
                         </div>
                     ))}
                 </div>

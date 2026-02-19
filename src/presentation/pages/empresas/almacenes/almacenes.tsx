@@ -9,7 +9,8 @@ import {
     BuildingStorefrontIcon,
     UserCircleIcon,
     EyeIcon,
-    ArchiveBoxIcon
+    ArchiveBoxIcon,
+    MapPinIcon
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
@@ -19,7 +20,6 @@ import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 import { RegistroAlmacen } from "./components/registro-almacen";
-import { SelectEmpresas } from "../../../utils/select-empresas";
 import { GestionResponsables } from "./components/gestion-responsables";
 import { GestionAlcance } from "./components/gestion-alcance";
 
@@ -46,7 +46,7 @@ export const AlmacenesPage = () => {
 
     // Filter States
     const [busqueda, setBusqueda] = useState("");
-    const [filtroEmpresa, setFiltroEmpresa] = useState<string | null>(null);
+    // Removed filtroEmpresa since new logic does not filter by initial company strongly here, but we can keep search.
 
     // Hooks
     const { listar } = useAlmacenes({ setError });
@@ -56,11 +56,8 @@ export const AlmacenesPage = () => {
         setLoading(true);
         setError("");
 
-        // Backend now supports optional filter. If null, returns all.
-        const filters = filtroEmpresa ? { id_empresa: Number(filtroEmpresa) } : undefined;
-
         // @ts-ignore
-        const data = await listar(filters);
+        const data = await listar(); // Listar all
 
         if (data) setAlmacenes(data);
         else setAlmacenes([]);
@@ -75,19 +72,11 @@ export const AlmacenesPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Reload when filter changes
-    useEffect(() => {
-        cargarDatos();
-        setPage(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filtroEmpresa]);
-
     // Derived Filters (Local Search)
     const filteredRecords = useMemo(() => {
         return almacenes.filter((alm) => {
             const matchSearch = !busqueda ||
                 alm.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                (alm.codigo || "").toLowerCase().includes(busqueda.toLowerCase()) ||
                 (alm.responsable_actual || "").toLowerCase().includes(busqueda.toLowerCase());
 
             return matchSearch;
@@ -102,9 +91,7 @@ export const AlmacenesPage = () => {
     // Handlers
     const handleSuccess = (nuevoAlmacen: RES_Almacen) => {
         closeCreate();
-        if (!filtroEmpresa || String(nuevoAlmacen.id_empresa) === filtroEmpresa) {
-            setAlmacenes((prev) => [nuevoAlmacen, ...prev]);
-        }
+        setAlmacenes((prev) => [nuevoAlmacen, ...prev]);
     };
 
     const handleOpenResponsables = (record: RES_Almacen) => {
@@ -128,16 +115,7 @@ export const AlmacenesPage = () => {
             width: 50,
             render: (_, index) => ((page - 1) * PAGE_SIZE) + index + 1
         },
-        {
-            accessor: "codigo",
-            title: "Código",
-            width: 100,
-            render: (record) => (
-                <Badge variant="light" color="violet" radius="sm" className="font-mono">
-                    {record.codigo || "-"}
-                </Badge>
-            )
-        },
+        // Removed Code Column
         {
             accessor: "nombre",
             title: "Almacén",
@@ -150,7 +128,7 @@ export const AlmacenesPage = () => {
                             {record.nombre}
                         </Text>
                         {isPrincipal(record.es_principal) && (
-                            <Badge size="xs" variant="gradient" gradient={{ from: 'indigo', to: 'cyan' }}>Principal</Badge>
+                            <Badge size="xs" variant="light" color="pink">Principal</Badge>
                         )}
                     </div>
                 </Group>
@@ -165,11 +143,11 @@ export const AlmacenesPage = () => {
                 <Group gap="xs" justify="center">
                     <Badge
                         leftSection={<ArchiveBoxIcon className="w-3 h-3" />}
-                        color={record.labores_count > 0 ? "indigo" : "zinc"}
+                        color={record.labores_count && record.labores_count > 0 ? "indigo" : "zinc"}
                         variant="light"
                         radius="sm"
                     >
-                        {record.labores_count} Asign.
+                        {record.labores_count || 0} Asign.
                     </Badge>
 
                     <ActionIcon
@@ -177,7 +155,7 @@ export const AlmacenesPage = () => {
                         color="gray"
                         size="sm"
                         onClick={() => handleOpenAlcance(record)}
-                        title="Ver Alcance"
+                        title="Gestionar Labores"
                     >
                         <EyeIcon className="w-4 h-4" />
                     </ActionIcon>
@@ -189,7 +167,7 @@ export const AlmacenesPage = () => {
             title: "Responsable",
             width: 200,
             render: (record) => (
-                <Group gap="xs"> {/* Reduced gap and removed justify-between/ml-auto */}
+                <Group gap="xs">
                     {record.responsable_actual ? (
                         <>
                             <UserCircleIcon className="w-5 h-5 text-emerald-500" />
@@ -211,6 +189,21 @@ export const AlmacenesPage = () => {
                         <PencilSquareIcon className="w-4 h-4" />
                     </ActionIcon>
                 </Group>
+            )
+        },
+        {
+            accessor: "estado",
+            title: "Estado",
+            textAlign: "center",
+            width: 100,
+            render: (record) => (
+                <Badge
+                    color={record.estado === "Activo" ? "green" : "red"}
+                    variant="light"
+                    size="sm"
+                >
+                    {record.estado}
+                </Badge>
             )
         },
         {
@@ -248,11 +241,11 @@ export const AlmacenesPage = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Header / Filters (Estilo Empleados) */}
+            {/* Header / Filters */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 items-end sm:items-center">
                 <div className="flex gap-4 flex-1 w-full sm:w-auto">
                     <TextInput
-                        placeholder="Buscar por nombre o código..."
+                        placeholder="Buscar por nombre o responsable..."
                         leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.currentTarget.value)}
@@ -261,15 +254,6 @@ export const AlmacenesPage = () => {
                         classNames={{
                             input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500"
                         }}
-                    />
-
-                    <SelectEmpresas
-                        label={null}
-                        placeholder="Filtrar por Empresa"
-                        value={filtroEmpresa}
-                        onChange={setFiltroEmpresa}
-                        clearable
-                        className="w-full sm:w-64"
                     />
                 </div>
 
@@ -283,7 +267,7 @@ export const AlmacenesPage = () => {
                 </Button>
             </div>
 
-            {/* Table (Estilo Empleados Wrapper) */}
+            {/* Table */}
             <DataTableClassic
                 idAccessor="id_almacen"
                 columns={columns}
@@ -311,7 +295,6 @@ export const AlmacenesPage = () => {
                 {selectedAlmacen && (
                     <GestionResponsables
                         idAlmacen={selectedAlmacen.id_almacen}
-                        idEmpresa={selectedAlmacen.id_empresa}
                         nombreAlmacen={selectedAlmacen.nombre}
                     />
                 )}

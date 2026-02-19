@@ -1,24 +1,24 @@
 import { z } from "zod";
 
-// Schema for creating a Labor
 export const Schema_CrearLabor = z.object({
-  id_empresa_concesion: z.number().min(1, "Debe seleccionar una empresa valida en la concesion"),
-  nombre: z
-    .string()
-    .min(1, "El nombre es requerido")
-    .max(128, "El nombre no puede exceder 128 caracteres"),
+  id_mina: z.number().int().positive({ message: "La mina es obligatoria" }),
+  id_empresa: z.number().int().positive({ message: "La empresa es obligatoria" }),
+  id_tipo_labor: z.number().int().positive({ message: "El tipo de labor es obligatorio" }),
+
+  codigo_correlativo: z.string().min(1, "El código correlativo es requerido"),
+  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   descripcion: z.string().optional(),
-  tipo_labor: z.string().min(1, "El tipo de labor es requerido"),
+
+  // Sostenimiento puede ser enum o string libre, por ahora string libre según requerimiento
   tipo_sostenimiento: z.string().min(1, "El tipo de sostenimiento es requerido"),
 });
 
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;
 
-// Schema for assigning a Responsable
 export const Schema_AsignarResponsable = z.object({
-  id_labor: z.number().min(1, "Labor invalida"),
-  id_usuario_empresa: z.number().min(1, "Debe seleccionar un responsable"),
-  fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"), // ISO Date string YYYY-MM-DD
+  id_labor: z.number().int().positive(),
+  id_usuario: z.number().int().positive({ message: "Debe seleccionar un usuario responsable" }),
+  fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"), // YYYY-MM-DD
   observacion: z.string().optional(),
 });
 

@@ -2,13 +2,17 @@ import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
 import type { RES_Almacen, RES_ResponsableAlmacen, RES_LaborAsignada } from "./dtos/responses";
-import type { DTO_CrearAlmacen, DTO_AsignarResponsableAlmacen, DTO_AsignarLaborAlmacen } from "./dtos/requests";
+import type {
+    DTO_CrearAlmacen,
+    DTO_AsignarResponsableAlmacen,
+    DTO_AsignarLaborAlmacen
+} from "./dtos/requests";
 
 export const useAlmacenes = ({ setError }: IUseHook) => {
     const path = "/api/almacenes";
 
-    // 1. Listar Almacenes (GET /api/almacenes?id_empresa=X)
-    const listar = async (filters?: { id_empresa?: number }) => {
+    // 1. Listar Almacenes (GET /api/almacenes?id_empresa=X <- Si es relevante, o general)
+    const listar = async (filters?: any) => {
         setError("");
         try {
             const response = await api.get<IRespuesta<RES_Almacen[]>>(path, {
@@ -24,7 +28,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 2. Crear Almacen (POST /api/almacenes)
+    // 2. Crear Almacen
     const crear = async (dto: DTO_CrearAlmacen) => {
         setError("");
         try {
@@ -39,7 +43,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 3. Asignar Responsable (POST /api/almacenes/asignar-responsable)
+    // 3. Asignar Responsable
     const asignarResponsable = async (dto: DTO_AsignarResponsableAlmacen) => {
         setError("");
         try {
@@ -54,7 +58,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 4. Listar Historial de Responsables (GET /api/almacenes/responsables?id_almacen=X)
+    // 4. Listar Historial de Responsables
     const listarResponsables = async (id_almacen: number) => {
         setError("");
         try {
@@ -70,7 +74,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 5. Asignar Labor (POST /api/almacenes/asignar-labor)
+    // 5. Asignar Labor (Vincular Almacén a Operación)
     const asignarLabor = async (dto: DTO_AsignarLaborAlmacen) => {
         setError("");
         try {
@@ -85,7 +89,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 6. Listar Labores Asignadas (Alcance) (GET /api/almacenes/labores?id_almacen=X)
+    // 6. Listar Labores Asignadas (GET /api/almacenes/labores?id_almacen=X)
     const listarLabores = async (id_almacen: number) => {
         setError("");
         try {

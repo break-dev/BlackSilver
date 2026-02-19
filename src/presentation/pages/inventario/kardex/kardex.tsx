@@ -16,22 +16,23 @@ const PAGE_SIZE = 20;
 export const KardexPage = () => {
     const setTitle = UIStore((state) => state.setTitle);
 
-    // Main Filter State
+    // Estado del Filtro Principal
     const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
 
-    // Local Filter States
+    // Estados de Filtros Locales
     const [busqueda, setBusqueda] = useState("");
     const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
     const [filtroLote, setFiltroLote] = useState<string | null>(null);
 
-    // Data State
+    // Estado de Datos
     const [movimientos, setMovimientos] = useState<RES_MovimientoKardex[]>([]);
 
-    // UI State
+    // Estado de UI
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
 
     // Hooks
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     const { listarPorAlmacen } = useKardex({ setError: () => { } });
 
     // Title
@@ -57,17 +58,16 @@ export const KardexPage = () => {
             setLoading(false);
         };
         loadMovimientos();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idAlmacen]);
 
-    // Derived State (Unique Filter Options)
+    // Opciones de Filtros Dinámicos
     const productosUnicos = useMemo(() => {
         const unique = new Set(movimientos.map(m => m.producto).filter(Boolean));
         return Array.from(unique).sort().map(p => ({ value: String(p), label: String(p) }));
     }, [movimientos]);
 
     const lotesUnicos = useMemo(() => {
-        // Filter based on selected product if any, otherwise all
+        // Filtrar lote según producto seleccionado
         const source = filtroProducto
             ? movimientos.filter(m => m.producto === filtroProducto)
             : movimientos;
@@ -86,7 +86,7 @@ export const KardexPage = () => {
             const matchBusqueda = !busqueda ||
                 m.codigo_movimiento.toLowerCase().includes(q) ||
                 (m.glosa || "").toLowerCase().includes(q) ||
-                (m.producto || "").toLowerCase().includes(q) || // Include product/batch in global search too
+                (m.producto || "").toLowerCase().includes(q) ||
                 (m.codigo_lote || "").toLowerCase().includes(q);
 
             return matchProducto && matchLote && matchBusqueda;
@@ -192,7 +192,7 @@ export const KardexPage = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Header Filters & Actions */}
+            {/* Filtros y Acciones */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <div className="flex flex-wrap gap-4 w-full">
 
@@ -275,7 +275,7 @@ export const KardexPage = () => {
                 </div>
             </div>
 
-            {/* Empty State or Table */}
+            {/* Tabla o Estado Vacío */}
             {!idAlmacen ? (
                 <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
                     <CubeIcon className="w-16 h-16 text-zinc-700 mb-4" />

@@ -1,28 +1,29 @@
 import { z } from "zod";
 
-// 1. Crear Almacén
 export const Schema_CrearAlmacen = z.object({
-    id_empresa: z.number().min(1, "Seleccione una empresa"),
-    nombre: z.string().min(1, "El nombre es obligatorio").max(128),
+    nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
     descripcion: z.string().optional(),
-    es_principal: z.boolean().optional().default(false),
+    es_principal: z.boolean().default(false),
+    // id_empresa ya no se envía
 });
 
 export type DTO_CrearAlmacen = z.infer<typeof Schema_CrearAlmacen>;
 
-// 2. Asignar Responsable
 export const Schema_AsignarResponsableAlmacen = z.object({
-    id_almacen: z.number().min(1),
-    id_usuario_empresa: z.number().min(1, "Seleccione un usuario"),
-    fecha_inicio: z.string().min(1, "Fecha de inicio requerida"), // YYYY-MM-DD
+    id_almacen: z.number().int().positive(),
+    id_usuario: z.number().int().positive({ message: "Debe seleccionar un usuario" }),
+    fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"),
+    fecha_fin: z.string().nullable().optional()
 });
 
-export type DTO_AsignarResponsableAlmacen = z.infer<typeof Schema_AsignarResponsableAlmacen>;
+export interface DTO_AsignarResponsableAlmacen {
+    id_almacen: number;
+    id_usuario: number;
+    fecha_inicio: string;
+    fecha_fin?: string | null;
+}
 
-// 3. Asignar Labor (Alcance Operativo)
-export const Schema_AsignarLaborAlmacen = z.object({
-    id_almacen: z.number().min(1),
-    id_labor: z.number().min(1, "Seleccione una labor"),
-});
-
-export type DTO_AsignarLaborAlmacen = z.infer<typeof Schema_AsignarLaborAlmacen>;
+export interface DTO_AsignarLaborAlmacen {
+    id_almacen: number;
+    id_labor: number;
+}

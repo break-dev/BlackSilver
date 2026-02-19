@@ -7,7 +7,7 @@ import { Login } from "../pages/login";
 import { Home } from "../pages/home";
 import { PlaceholderPage } from "../pages/placeholder";
 import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
-import { EmpresasLabores } from "../pages/empresas/labores/labores";
+import { MinasPage } from "../pages/empresas/minas/minas";
 import { EmpresasPage } from "../pages/empresas/empresas/empresas";
 import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
 import { EmpleadosPage } from "../pages/personal/empleados/empleados";
@@ -64,9 +64,11 @@ export const App = () => {
           path="/configuracion/empresas/concesiones"
           element={<EmpresasConcesiones />}
         />
+        {/* Redirect ruta antigua para compatibilidad mientras se actualiza BD */}
+
         <Route
-          path="/configuracion/empresas/labores"
-          element={<EmpresasLabores />}
+          path="/configuracion/empresas/minas"
+          element={<MinasPage />}
         />
         {/* Personal */}
         <Route

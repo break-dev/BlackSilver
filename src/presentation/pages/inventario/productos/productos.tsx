@@ -18,19 +18,19 @@ const PAGE_SIZE = 20;
 export const InventarioProductos = () => {
     const setTitle = UIStore((state) => state.setTitle);
 
-    // Data State
+    // Estado de Datos
     const [productos, setProductos] = useState<RES_Producto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [page, setPage] = useState(1);
 
-    // Filter State
+    // Estado de Filtros
     const [busqueda, setBusqueda] = useState("");
     const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
     const [verFiscalizados, setVerFiscalizados] = useState(false);
     const [verPerecibles, setVerPerecibles] = useState(false);
 
-    // Context Data
+    // Datos de Contexto
     const [categorias, setCategorias] = useState<{ value: string; label: string }[]>([]);
 
     // Modal
@@ -40,7 +40,7 @@ export const InventarioProductos = () => {
     const { listar } = useProductos({ setError });
     const { listar: listarCategorias } = useCategoria({ setError });
 
-    // Load Data
+    // Cargar Datos
     const cargarProductos = async () => {
         setLoading(true);
         const data = await listar();
@@ -57,12 +57,10 @@ export const InventarioProductos = () => {
 
     useEffect(() => {
         setTitle("Catálogo de Productos");
-        // Initial load: fetch both in parallel
         Promise.all([cargarProductos(), cargarCategorias()]);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Filters Logic
     const filteredRecords = useMemo(() => {
         return productos.filter((prod) => {
             const term = busqueda.toLowerCase();
@@ -78,21 +76,21 @@ export const InventarioProductos = () => {
         });
     }, [productos, busqueda, filtroCategoria, verFiscalizados, verPerecibles]);
 
-    // Pagination
+    // Paginación
     const paginatedRecords = useMemo(() => {
         const from = (page - 1) * PAGE_SIZE;
         const to = from + PAGE_SIZE;
         return filteredRecords.slice(from, to);
     }, [filteredRecords, page]);
 
-    // Columns
+    // Columnas
     const columns: DataTableColumn<RES_Producto>[] = [
         {
             accessor: "index",
             title: "#",
             textAlign: "center",
             width: 60,
-            render: (_, index) => ((page - 1) * PAGE_SIZE) + index + 1
+            render: (_record, index) => ((page - 1) * PAGE_SIZE) + index + 1
         },
         {
             accessor: "nombre",
@@ -167,7 +165,7 @@ export const InventarioProductos = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header & Filters */}
+            {/* Cabecera y Filtros */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="flex flex-wrap gap-4 flex-1">
                     <TextInput
@@ -233,7 +231,7 @@ export const InventarioProductos = () => {
                 </Button>
             </div>
 
-            {/* Table */}
+            {/* Tabla */}
             <DataTableClassic
                 idAccessor="id"
                 columns={columns}
@@ -246,7 +244,7 @@ export const InventarioProductos = () => {
 
             {error && <Text c="red" size="sm">{error}</Text>}
 
-            {/* Modal Create */}
+            {/* Modal de Registro */}
             <ModalRegistro
                 opened={opened}
                 close={close}
@@ -256,7 +254,6 @@ export const InventarioProductos = () => {
                     onSuccess={(nuevoProducto) => {
                         close();
                         setProductos(prev => [nuevoProducto, ...prev]);
-                        // Optional: show notification or scroll to top
                     }}
                     onCancel={close}
                 />
