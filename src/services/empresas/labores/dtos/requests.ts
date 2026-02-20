@@ -5,7 +5,6 @@ export const Schema_CrearLabor = z.object({
   id_empresa: z.number().int().positive({ message: "La empresa es obligatoria" }),
   id_tipo_labor: z.number().int().positive({ message: "El tipo de labor es obligatorio" }),
 
-  codigo_correlativo: z.string().min(1, "El código correlativo es requerido"),
   nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   descripcion: z.string().optional(),
 

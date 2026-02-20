@@ -34,8 +34,8 @@ export const SelectEmpresaMina = ({ idMina, value, onChange, className, ...props
     return (
         <Select
             label="Empresa Ejecutora"
-            placeholder={noEmpresas ? "Debe asignar empresas primero" : "Seleccione Empresa"}
-            description={noEmpresas ? "⚠️ No hay empresas asignadas a esta mina" : props.description}
+            placeholder={props.placeholder || "Seleccione Empresa"}
+            description={noEmpresas ? "No hay empresas asignadas a esta mina" : props.description}
             leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-400" />}
             data={empresas.map(e => ({
                 value: String(e.id_empresa),
@@ -43,12 +43,13 @@ export const SelectEmpresaMina = ({ idMina, value, onChange, className, ...props
             }))}
             value={value}
             onChange={onChange}
-            disabled={loading || props.disabled || noEmpresas}
             searchable
             clearable
             nothingFoundMessage="No se encontraron empresas asignadas"
             radius="lg"
             size="sm"
+            maxDropdownHeight={300}
+            disabled={loading || props.disabled || noEmpresas}
             className={className}
             classNames={{
                 input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",

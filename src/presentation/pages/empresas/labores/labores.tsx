@@ -1,301 +1,256 @@
-import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select, ActionIcon, Group, Text } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { PlusIcon, PencilSquareIcon, UserCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import {
-  PlusIcon,
+import { useEffect, useState, useMemo } from "react";
 
-  MagnifyingGlassIcon,
-  UserCircleIcon,
-  PencilSquareIcon
-} from "@heroicons/react/24/outline";
-import { useLabores } from "../../../../services/empresas/labores/useLabores";
-import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
-import { RegistroLabor } from "./components/registro-labor";
-// import { AsignarResponsable } from "./components/asignar-responsable";
-import { HistorialResponsables } from "./components/historial-responsables";
-import { UIStore } from "../../../../stores/ui.store";
+// Components
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
+import { RegistroLaborMina } from "./components/registro-labor-mina";
+import { AsignarResponsableLabor } from "./components/asignar-responsable-labor"; // Ajuste path si necesario
 
-const PAGE_SIZE = 35;
-const TIPOS_LABOR = ["Bypass", "Crucero", "Tajo", "Rampa", "Chimenea"];
-const TIPOS_SOSTENIMIENTO = ["Convencional", "Mecanizada"];
+// Services
+import { useLabores } from "../../../../services/empresas/labores/useLabores";
+import type { RES_Labor } from "../../../../services/empresas/labores/dtos/responses";
 
-export const EmpresasLabores = () => {
-  const setTitle = UIStore((state) => state.setTitle);
+interface GestionLaboresProps {
+    idMina: number;
+    nombreMina: string;
+}
 
-  // Estado local
-  const [labores, setLabores] = useState<RES_Labor[]>([]);
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
+const PAGE_SIZE = 10;
 
-  // Filtros
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroTipoLabor, setFiltroTipoLabor] = useState<string | null>(null);
-  const [filtroSostenimiento, setFiltroSostenimiento] = useState<string | null>(null);
+export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
+    // Data
+    const [labores, setLabores] = useState<RES_Labor[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [, setError] = useState("");
+    const [page, setPage] = useState(1);
+    const [busqueda, setBusqueda] = useState("");
 
-  // Modal Registro
-  const [opened, { open, close }] = useDisclosure(false);
+    // Selected Labor for assigning responsible
+    const [selectedLabor, setSelectedLabor] = useState<RES_Labor | null>(null);
 
-  // Modal Asignar
-  const [openedAssign, { open: openAssign, close: closeAssign }] = useDisclosure(false);
-  const [selectedLabor, setSelectedLabor] = useState<RES_Labor | null>(null);
+    // Modals
+    const [openedCreate, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+    const [openedResponsable, { open: openResponsable, close: closeResponsable }] = useDisclosure(false);
 
-  // Servicio
-  const { listar } = useLabores({ setError });
+    // Hooks
+    const { listar } = useLabores({ setError });
 
-  // Methods
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const data = await listar();
-      setLabores(data || []);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Load Data
+    const cargarLabores = async () => {
+        setLoading(true);
+        // @ts-ignore
+        const data = await listar({ id_mina: idMina });
+        if (data) setLabores(data);
+        else setLabores([]);
+        setLoading(false);
+    };
 
-  // Carga inicial
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    useEffect(() => {
+        cargarLabores();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [idMina]);
 
-  // Title
-  useEffect(() => {
-    setTimeout(() => {
-      setTitle("Labores Mineras");
-    }, 0);
-  }, [setTitle]);
+    // Filters
+    const filteredRecords = useMemo(() => {
+        const term = busqueda.toLowerCase().trim();
+        if (!term) return labores;
+        return labores.filter(l =>
+            l.nombre.toLowerCase().includes(term) ||
+            l.codigo_correlativo?.toLowerCase().includes(term) ||
+            l.empresa?.toLowerCase().includes(term) ||
+            l.responsable_actual?.toLowerCase().includes(term)
+        );
+    }, [labores, busqueda]);
 
-  // Datos filtrados
-  const laboresFiltradas = useMemo(() => {
-    return labores.filter((l) => {
-      const term = busqueda.toLowerCase();
+    const paginatedRecords = useMemo(() => {
+        const from = (page - 1) * PAGE_SIZE;
+        return filteredRecords.slice(from, from + PAGE_SIZE);
+    }, [filteredRecords, page]);
 
-      const matchTipo = !filtroTipoLabor || l.tipo_labor === filtroTipoLabor;
-      const matchSostenimiento = !filtroSostenimiento || l.tipo_sostenimiento === filtroSostenimiento;
+    // Handlers
+    const handleSuccessCreate = (nuevaLabor: RES_Labor) => {
+        closeCreate();
+        setLabores((prev) => [nuevaLabor, ...prev]);
+    };
 
-      const matchBusqueda =
-        !busqueda ||
-        l.nombre.toLowerCase().includes(term);
+    const handleOpenResponsable = (labor: RES_Labor) => {
+        setSelectedLabor(labor);
+        openResponsable();
+    };
 
-      return matchBusqueda && matchTipo && matchSostenimiento;
-    });
-  }, [labores, busqueda, filtroTipoLabor, filtroSostenimiento]);
+    const handleSuccessAssignment = () => {
+        cargarLabores();
+        closeResponsable();
+    };
 
-  // Paginación
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return laboresFiltradas.slice(inicio, inicio + PAGE_SIZE);
-  }, [laboresFiltradas, page]);
+    // Columns
+    const columns: DataTableColumn<RES_Labor>[] = [
+        {
+            accessor: "index",
+            title: "#",
+            textAlign: "center",
+            width: 50,
+            render: (_record, index) => ((page - 1) * PAGE_SIZE) + index + 1
+        },
+        {
+            accessor: "nombre",
+            title: "Labor",
+            width: 200,
+            render: (record) => (
+                <div className="flex flex-col">
+                    <Text size="sm" fw={600} className="text-zinc-200">
+                        {record.nombre}
+                    </Text>
+                    <Text size="xs" c="dimmed" className="font-mono">
+                        {record.codigo_correlativo}
+                    </Text>
+                </div>
+            )
+        },
+        {
+            accessor: "tipo_labor_nombre",
+            title: "Tipo",
+            width: 160,
+            render: (record) => (
+                <div className="flex items-center gap-2">
+                    <Badge variant="outline" color="cyan" size="sm">
+                        {record.tipo_labor_nombre}
+                    </Badge>
+                    {(record.is_produccion === 1 || record.is_produccion === true) && (
+                        <Badge color="pink" size="xs" variant="light" title="Labor de Producción">
+                            Producción
+                        </Badge>
+                    )}
+                </div>
+            )
+        },
+        {
+            accessor: "empresa",
+            title: "Empresa Ejecutora",
+            width: 180,
+            render: (record) => (
+                <Text size="sm" className="text-zinc-400">
+                    {record.empresa || "Sin asignar"}
+                </Text>
+            )
+        },
+        {
+            accessor: "responsable_actual",
+            title: "Responsable",
+            width: 200,
+            render: (record) => (
+                <Group gap="xs">
+                    {record.responsable_actual ? (
+                        <>
+                            <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+                            <Text size="sm" className="text-zinc-200">{record.responsable_actual}</Text>
+                        </>
+                    ) : (
+                        <Badge variant="outline" color="gray" size="sm">
+                            Sin Asignar
+                        </Badge>
+                    )}
 
-  // Callback al registrar exitosamente
-  const handleRegistroExitoso = (nuevaLabor: RES_Labor) => {
-    close();
-    setLabores((prev) => [nuevaLabor, ...prev]);
-  };
+                    <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        size="sm"
+                        onClick={() => handleOpenResponsable(record)}
+                        title="Gestionar Responsable"
+                    >
+                        <PencilSquareIcon className="w-4 h-4" />
+                    </ActionIcon>
+                </Group>
+            )
+        },
+        {
+            accessor: "estado",
+            title: "Estado",
+            textAlign: "center",
+            width: 100,
+            render: (record) => (
+                <Badge
+                    color={record.estado === "Activo" ? "green" : "red"}
+                    variant="light"
+                    size="sm"
+                >
+                    {record.estado}
+                </Badge>
+            )
+        }
+    ];
 
-  const columns: DataTableColumn<RES_Labor>[] = [
-    {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
-    },
-    {
-      accessor: "concesion",
-      title: "Concesión",
-      width: 150,
-      render: (record) => (
-        <span className="text-zinc-300 font-semibold">{record.concesion}</span>
-      ),
-    },
-    {
-      accessor: "empresa",
-      title: "Empresa",
-      width: 150,
-      render: (record) => (
-        <span className="text-zinc-400 text-sm">{record.empresa}</span>
-      ),
-    },
-    {
-      accessor: "nombre",
-      title: "Nombre Labor",
-      width: 200,
-      render: (record) => (
-        <div className="flex flex-col">
-          <span className="text-zinc-200 font-semibold">{record.nombre}</span>
-          <span className="text-zinc-500 text-xs">{record.descripcion}</span>
+    return (
+        <div className="space-y-5">
+            {/* Header Moderno con Badges */}
+            <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mb-4 border-b border-zinc-800 pb-4">
+                <div>
+                    <h3 className="text-lg font-bold text-white leading-tight">Labores Asignadas</h3>
+                    <p className="text-zinc-500 text-sm">{nombreMina}</p>
+                </div>
+
+                <div className="flex w-full sm:w-auto items-center gap-3">
+                    <TextInput
+                        placeholder="Buscar labor..."
+                        leftSection={<MagnifyingGlassIcon className="w-3.5 h-3.5 text-zinc-500" />}
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.currentTarget.value)}
+                        className="flex-1 sm:w-64"
+                        radius="md"
+                        size="sm"
+                        classNames={{
+                            input: "bg-zinc-900 border-zinc-800 focus:border-indigo-500/50 text-white placeholder:text-zinc-600"
+                        }}
+                    />
+                    <Button
+                        size="sm"
+                        variant="light"
+                        color="indigo"
+                        leftSection={<PlusIcon className="w-4 h-4" />}
+                        onClick={openCreate}
+                        radius="md"
+                        className="hover:bg-indigo-900/30 transition-colors shrink-0"
+                    >
+                        Nueva Labor
+                    </Button>
+                </div>
+            </div>
+
+            {/* Tabla */}
+            <DataTableClassic
+                idAccessor="id_labor"
+                columns={columns}
+                records={paginatedRecords}
+                totalRecords={filteredRecords.length}
+                page={page}
+                onPageChange={setPage}
+                loading={loading}
+            />
+
+            {/* Modal Registro Labor */}
+            <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Labor">
+                <RegistroLaborMina
+                    idMina={idMina}
+                    onSuccess={handleSuccessCreate}
+                    onCancel={closeCreate}
+                />
+            </ModalRegistro>
+
+            {/* Modal Asignar Responsable */}
+            <ModalRegistro opened={openedResponsable} close={closeResponsable} title="Gestión de Responsables">
+                {selectedLabor && (
+                    <AsignarResponsableLabor
+                        idLabor={selectedLabor.id_labor}
+                        idEmpresa={selectedLabor.id_empresa}
+                        nombreLabor={selectedLabor.nombre}
+                        onSuccess={handleSuccessAssignment}
+                    />
+                )}
+            </ModalRegistro>
         </div>
-      ),
-    },
-    {
-      accessor: "tipo_labor",
-      title: "Tipo",
-      width: 120,
-      render: (record) => (
-        <Badge
-          variant="light"
-          color="cyan"
-          radius="sm"
-          className="font-bold tracking-wider"
-        >
-          {record.tipo_labor.toUpperCase()}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "tipo_sostenimiento",
-      title: "Sostenimiento",
-      width: 150,
-      render: (record) => (
-        <span className="text-zinc-400 text-sm italic">{record.tipo_sostenimiento}</span>
-      ),
-    },
-    {
-      accessor: "responsable",
-      title: "Responsable",
-      width: 200,
-      render: (record) => (
-        <Group gap="xs">
-          {record.responsable_actual ? (
-            <>
-              <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-              <Text size="sm" className="text-zinc-200 truncate">{record.responsable_actual}</Text>
-            </>
-          ) : (
-            <Badge variant="outline" color="gray" size="sm">
-              Sin Asignar
-            </Badge>
-          )}
-
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedLabor(record);
-              openAssign();
-            }}
-            title="Gestionar Responsable"
-          >
-            <PencilSquareIcon className="w-4 h-4" />
-          </ActionIcon>
-        </Group>
-      )
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
-      {/* Encabezado y Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-4 flex-1">
-          <TextInput
-            placeholder="Buscar labor..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-              setPage(1);
-            }}
-            className="flex-1 min-w-64"
-            radius="lg"
-            size="sm"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            }}
-          />
-
-          <Select
-            placeholder="Tipo Labor"
-            data={TIPOS_LABOR}
-            value={filtroTipoLabor}
-            onChange={(val) => {
-              setFiltroTipoLabor(val);
-              setPage(1);
-            }}
-            clearable
-            searchable
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500 min-w-32`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "hover:bg-zinc-800 text-zinc-300",
-            }}
-            radius="lg"
-            size="sm"
-          />
-
-          <Select
-            placeholder="Sostenimiento"
-            data={TIPOS_SOSTENIMIENTO}
-            value={filtroSostenimiento}
-            onChange={(val) => {
-              setFiltroSostenimiento(val);
-              setPage(1);
-            }}
-            clearable
-            searchable
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500 min-w-32`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "hover:bg-zinc-800 text-zinc-300",
-            }}
-            radius="lg"
-            size="sm"
-          />
-        </div>
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={open}
-          radius="lg"
-          size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-        font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 shrink-0"
-        >
-          Nueva Labor
-        </Button>
-      </div>
-
-      {/* DataTable */}
-      <DataTableClassic
-        idAccessor="id_labor"
-        columns={columns}
-        records={registrosPaginados}
-        totalRecords={laboresFiltradas.length}
-        page={page}
-        onPageChange={setPage}
-        loading={loading}
-      />
-
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-
-      {/* Modal de Registro */}
-      <ModalRegistro opened={opened} close={close} title="Nueva Labor">
-        <RegistroLabor onSuccess={handleRegistroExitoso} onCancel={close} />
-      </ModalRegistro>
-
-      {/* Modal Asignar Responsable */}
-      <ModalRegistro opened={openedAssign} close={closeAssign} title="Gestión de Responsables">
-        {selectedLabor && (
-          <HistorialResponsables
-            labor={selectedLabor}
-            onClose={() => {
-              closeAssign();
-              fetchData();
-            }}
-          />
-        )}
-      </ModalRegistro>
-    </div>
-  );
+    );
 };

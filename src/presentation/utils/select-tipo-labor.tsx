@@ -25,7 +25,7 @@ export const SelectTipoLabor = ({ value, onChange, className, ...props }: Select
     return (
         <Select
             label="Tipo de Labor"
-            placeholder="Seleccione..."
+            placeholder={props.placeholder || "Seleccione..."}
             leftSection={<TagIcon className="w-4 h-4 text-zinc-400" />}
             data={tipos.map(t => ({
                 value: String(t.id_tipo_labor),
@@ -33,12 +33,13 @@ export const SelectTipoLabor = ({ value, onChange, className, ...props }: Select
             }))}
             value={value}
             onChange={onChange}
-            disabled={loading || props.disabled}
             searchable
             clearable
             nothingFoundMessage="No se encontraron tipos"
             radius="lg"
             size="sm"
+            maxDropdownHeight={300}
+            disabled={loading || props.disabled}
             className={className}
             classNames={{
                 input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",

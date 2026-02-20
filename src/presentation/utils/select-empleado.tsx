@@ -11,12 +11,14 @@ interface SelectEmpleadoProps extends Omit<SelectProps, "data"> {
     onChange?: (value: string | null) => void;
     /** If true, triggers data loading on mount autonomously. Default: true */
     autoLoad?: boolean;
+    idEmpresa?: number;
 }
 
 export const SelectEmpleado = ({
     value,
     onChange,
     autoLoad = true,
+    idEmpresa,
     className,
     ...props
 }: SelectEmpleadoProps) => {
@@ -29,7 +31,7 @@ export const SelectEmpleado = ({
         if (autoLoad) {
             setLoading(true);
             // @ts-ignore
-            listar()
+            listar(idEmpresa ? { id_empresa: idEmpresa } : undefined)
                 .then((data) => {
                     if (mounted && data) setEmpleados(data);
                 })
@@ -39,18 +41,25 @@ export const SelectEmpleado = ({
         }
         return () => { mounted = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoLoad]);
+    }, [autoLoad, idEmpresa]);
 
     return (
         <Select
             label="Empleado / Responsable"
             placeholder={props.placeholder || "Seleccione un empleado"}
             leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
-            data={empleados.map(e => ({
-                value: String(e.id_empleado),
-                label: `${e.nombre} ${e.apellido}`,
-                description: e.cargo || e.empresa || undefined // Mostrar cargo o empresa como subtitulo si existe
-            }))}
+            data={empleados.map(e => {
+                // Soportar tanto la estructura de /api/empleados como /api/empresas/usuarios
+                const id = e.id_empleado || (e as any).id_usuario_empresa || (e as any).id_usuario || (e as any).id;
+                const nombreStr = e.nombre || (e as any).nombres || "";
+                const apellidoStr = e.apellido || (e as any).apellidos || "";
+
+                return {
+                    value: String(id),
+                    label: `${apellidoStr} ${nombreStr}`.trim() || 'Desconocido',
+                    description: e.cargo || e.empresa || undefined
+                };
+            })}
             value={value}
             onChange={onChange}
             searchable

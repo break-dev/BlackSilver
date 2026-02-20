@@ -14,6 +14,7 @@ export interface RES_Labor {
   estado: string;
 
   // Campos opcionales / calculados
+  is_produccion?: number | boolean;
   responsable_actual?: string;
 }
 
@@ -30,6 +31,8 @@ export interface RES_HistorialResponsableLabor {
   id_labor: number;
   id_usuario: number;
   usuario_nombre: string; // Nombre completo del usuario
+  nombres?: string;
+  apellidos?: string;
   fecha_inicio: string;
   fecha_fin: string | null;
   estado: string;

@@ -5,6 +5,7 @@ import type { RES_Labor, RES_TipoLabor, RES_HistorialResponsableLabor } from "./
 import type { DTO_CrearLabor, DTO_AsignarResponsable } from "./dtos/requests";
 
 export const useLabores = ({ setError }: IUseHook) => {
+    // Regresamos temporalmente a /api/labores hasta que actualices tu backend local
     const path = "/api/labores";
 
     // 1. Listar Labores por Mina
@@ -32,7 +33,7 @@ export const useLabores = ({ setError }: IUseHook) => {
     const listarTipos = async () => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_TipoLabor[]>>(`${path}/tipos`);
+            const response = await api.get<IRespuesta<RES_TipoLabor[]>>(`/api/labores/tipos`);
             const result = response.data;
 
             if (result.success) return result.data;

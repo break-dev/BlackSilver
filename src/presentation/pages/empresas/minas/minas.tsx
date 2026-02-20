@@ -18,7 +18,7 @@ import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 import { RegistroMina } from "./components/registro-mina";
-import { GestionLabores } from "./components/gestion-labores";
+import { GestionLabores } from "../labores/labores";
 import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
 
 // Services
@@ -279,7 +279,7 @@ export const MinasPage = () => {
                 opened={openedLabores}
                 close={closeLabores}
                 title="Gestión de Labores"
-                size="xl"
+                size="80%"
             >
                 {selectedMina ? (
                     <GestionLabores

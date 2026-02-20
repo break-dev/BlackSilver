@@ -1,6 +1,7 @@
-import { Button, Group, TextInput, Textarea } from "@mantine/core";
+import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
+import { TipoSostenimiento } from "../../../../../shared/enums";
 
 // Services
 import { Schema_CrearLabor } from "../../../../../services/empresas/labores/dtos/requests";
@@ -23,7 +24,6 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
 
     // Form Fields
     const [nombre, setNombre] = useState("");
-    const [codigoCorrelativo, setCodigoCorrelativo] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [idTipoLabor, setIdTipoLabor] = useState<string | null>(null);
     const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
@@ -47,7 +47,6 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
             id_mina: Number(idMina),
             id_empresa: Number(idEmpresa),
             id_tipo_labor: Number(idTipoLabor),
-            codigo_correlativo: codigoCorrelativo,
             nombre,
             descripcion,
             tipo_sostenimiento: tipoSostenimiento
@@ -82,25 +81,13 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
     return (
         <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="mb-4">
                 <SelectTipoLabor
                     value={idTipoLabor}
                     onChange={setIdTipoLabor}
                     required
                     withAsterisk
                     disabled={submitting}
-                />
-
-                <TextInput
-                    label="Código Correlativo"
-                    placeholder="Ej. TJ-001"
-                    required
-                    withAsterisk
-                    disabled={submitting}
-                    radius="lg"
-                    classNames={inputClasses}
-                    value={codigoCorrelativo}
-                    onChange={(e) => setCodigoCorrelativo(e.currentTarget.value)}
                 />
             </div>
 
@@ -125,19 +112,27 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                 onChange={(e) => setNombre(e.currentTarget.value)}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <TextInput
-                    label="Tipo Sostenimiento"
-                    placeholder="Ej. Pernos, Malla, Madera"
-                    required
-                    withAsterisk
-                    disabled={submitting}
-                    radius="lg"
-                    classNames={inputClasses}
-                    value={tipoSostenimiento}
-                    onChange={(e) => setTipoSostenimiento(e.currentTarget.value)}
-                />
-            </div>
+            <Select
+                label="Tipo Sostenimiento"
+                placeholder="Seleccione..."
+                required
+                withAsterisk
+                disabled={submitting}
+                radius="lg"
+                size="sm"
+                data={[
+                    { value: TipoSostenimiento.Convencional, label: 'Convencional' },
+                    { value: TipoSostenimiento.Mecanizada, label: 'Mecanizada' }
+                ]}
+                classNames={{
+                    input: inputClasses.input,
+                    label: inputClasses.label,
+                    dropdown: "bg-zinc-900 border-zinc-800",
+                    option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1"
+                }}
+                value={tipoSostenimiento}
+                onChange={(val) => setTipoSostenimiento(val || "")}
+            />
 
             <Textarea
                 label="Descripción / Detalles"

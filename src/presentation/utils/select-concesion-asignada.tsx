@@ -40,7 +40,7 @@ export const SelectConcesionAsignada = ({
     return (
         <Select
             label="Concesión"
-            placeholder={idEmpresa ? "Seleccione concesión" : "Primero seleccione una empresa"}
+            placeholder={isLoading ? "Cargando concesiones..." : (idEmpresa ? "Seleccione concesión" : "Primero seleccione una empresa")}
             data={data.map((c) => ({
                 // We use id_asignacion if available as the value, OR fallback to id_concesion if that's what we want to track
                 // BUT Backend Guide says: "Valor a guardar: id_asignacion".
