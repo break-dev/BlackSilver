@@ -58,12 +58,12 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 4. Listar Historial de Responsables
+    // 4. Listar Historial de Responsables (Cambiado a POST)
     const listarResponsables = async (id_almacen: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_ResponsableAlmacen[]>>(`${path}/responsables`, {
-                params: { id_almacen }
+            const response = await api.post<IRespuesta<RES_ResponsableAlmacen[]>>(`${path}/responsables`, {
+                id_almacen
             });
             const result = response.data;
             if (result.success) return result.data;
@@ -89,12 +89,12 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 6. Listar Labores Asignadas (GET /api/almacenes/labores?id_almacen=X)
+    // 6. Listar Labores Asignadas (Cambiado a POST)
     const listarLabores = async (id_almacen: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_LaborAsignada[]>>(`${path}/labores`, {
-                params: { id_almacen }
+            const response = await api.post<IRespuesta<RES_LaborAsignada[]>>(`${path}/labores`, {
+                id_almacen
             });
             const result = response.data;
             if (result.success) return result.data;

@@ -33,7 +33,7 @@ export const SelectEmpresaMina = ({ idMina, value, onChange, className, ...props
 
     return (
         <Select
-            label="Empresa Ejecutora"
+            label="Empres"
             placeholder={props.placeholder || "Seleccione Empresa"}
             description={noEmpresas ? "No hay empresas asignadas a esta mina" : props.description}
             leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-400" />}

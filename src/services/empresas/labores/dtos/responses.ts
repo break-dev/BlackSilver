@@ -27,7 +27,7 @@ export interface RES_TipoLabor {
 
 // Historial Responsable Labor (Tabla responsable_labor)
 export interface RES_HistorialResponsableLabor {
-  id_responsable_labor: number;
+  id_asignacion: number;
   id_labor: number;
   id_usuario: number;
   usuario_nombre: string; // Nombre completo del usuario

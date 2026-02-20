@@ -43,7 +43,7 @@ export const AsignarResponsableLabor = ({ idLabor, idEmpresa, nombreLabor, onSuc
                 const sorted = [...hist].sort((a, b) => {
                     const dateDiff = new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime();
                     if (dateDiff !== 0) return dateDiff;
-                    return b.id_responsable_labor - a.id_responsable_labor;
+                    return b.id_asignacion - a.id_asignacion;
                 });
                 setHistorial(sorted);
             }
@@ -185,7 +185,7 @@ export const AsignarResponsableLabor = ({ idLabor, idEmpresa, nombreLabor, onSuc
 
                         return (
                             <div
-                                key={item.id_responsable_labor || idx}
+                                key={item.id_asignacion || idx}
                                 className={`
                                     relative p-4 rounded-xl border flex items-start gap-4 transition-all
                                     border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60

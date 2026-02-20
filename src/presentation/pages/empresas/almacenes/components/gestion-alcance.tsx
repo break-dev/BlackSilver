@@ -80,22 +80,35 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
         setSaving(false);
     };
 
-    // Options Logic (Filtrar las ya asignadas)
+    // Options Logic (Estructurar para Mantine v7: { group, items })
     const selectOptions = useMemo(() => {
-        // Asumiendo que 'id' en RES_LaborAsignada es el id_labor o id de relacion...
-        // Si el backend devuelve 'id' como PK de la relacion, no puedo filtrar por ID exacto facilmente sin saber id_labor original.
-        // Pero RES_LaborAsignada tiene 'labor' (nombre). Puedo filtrar por nombre + mina si es unico, o asumir que ids coinciden.
-        // Mejor filtro por nombre para estar seguro visualmente.
+        if (!laboresDisponibles || !Array.isArray(laboresDisponibles)) return [];
 
-        const assignedNames = new Set(laboresAsignadas.map(a => `${a.labor}-${a.mina}`));
+        const assignedNames = new Set(
+            (laboresAsignadas || []).map(a => `${a.labor}-${a.mina}`)
+        );
 
-        return laboresDisponibles
+        // 1. Filtramos y preparamos items planos
+        const filtered = laboresDisponibles
             .filter(l => !assignedNames.has(`${l.nombre}-${l.mina}`))
             .map(l => ({
                 value: String(l.id_labor),
-                label: `${l.nombre} (${l.mina})`, // Mostrar Labor + Mina
-                group: l.mina // Agrupar visualmente por Mina en el Select
+                label: l.nombre,
+                mina: l.mina || "Sin Mina"
             }));
+
+        // 2. Agrupamos por mina
+        const groups: Record<string, any[]> = {};
+        filtered.forEach(item => {
+            if (!groups[item.mina]) groups[item.mina] = [];
+            groups[item.mina].push({ value: item.value, label: item.label });
+        });
+
+        // 3. Convertimos al formato [{ group, items }, ...]
+        return Object.entries(groups).map(([mina, items]) => ({
+            group: mina,
+            items
+        }));
     }, [laboresDisponibles, laboresAsignadas]);
 
     // Renders

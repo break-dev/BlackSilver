@@ -6,8 +6,7 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   MapPinIcon,
-  BuildingOffice2Icon,
-  EyeIcon,
+  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { GestionEmpresas } from "./components/gestion-empresas";
 import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
@@ -181,29 +180,24 @@ export const EmpresasConcesiones = () => {
       accessor: "empresas_asignadas",
       title: "Empresas",
       textAlign: "center",
-      width: 110,
+      width: 130,
       render: (record) => (
-        <Group gap="xs" justify="center">
-          <Badge
-            leftSection={<BuildingOffice2Icon className="w-3 h-3" />}
-            color={record.empresas_asignadas > 0 ? "indigo" : "zinc"}
-            variant="light"
-            radius="sm"
-          >
-            {record.empresas_asignadas} Asign.
+        <Group gap={6} justify="center">
+          <Badge variant="light" color="indigo" size="sm" radius="sm">
+            {record.empresas_asignadas || 0} Asign.
           </Badge>
 
-          <Tooltip label="Gestionar Empresas" withArrow>
+          <Tooltip label="Gestionar Empresas">
             <ActionIcon
-              variant="subtle"
-              color="gray"
               size="sm"
+              variant="subtle"
+              color="indigo"
               onClick={() => {
                 setSelectedConcesion(record);
                 openGestion();
               }}
             >
-              <EyeIcon className="w-4 h-4" />
+              <BriefcaseIcon className="w-4 h-4" />
             </ActionIcon>
           </Tooltip>
         </Group>

@@ -89,9 +89,9 @@ export const useLabores = ({ setError }: IUseHook) => {
     const historial_responsables = async (id_labor: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_HistorialResponsableLabor[]>>(
+            const response = await api.post<IRespuesta<RES_HistorialResponsableLabor[]>>(
                 `/api/labor/responsables`,
-                { params: { id_labor } } // GET query param
+                { id_labor } // POST body
             );
             const result = response.data;
 

@@ -81,7 +81,7 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
         if (result) {
             notifications.show({
                 title: "Mina Creada",
-                message: `La unidad minera ${result.nombre} ha sido registrada.`,
+                message: `La mina ${result.nombre} ha sido registrada.`,
                 color: "green"
             });
             onSuccess(result);

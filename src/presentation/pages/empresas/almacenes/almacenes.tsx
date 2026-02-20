@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, Menu, TextInput, Text } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Menu, TextInput, Text, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
     MagnifyingGlassIcon,
@@ -8,9 +8,7 @@ import {
     EllipsisVerticalIcon,
     BuildingStorefrontIcon,
     UserCircleIcon,
-    EyeIcon,
-    ArchiveBoxIcon,
-    MapPinIcon
+    RectangleStackIcon
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
@@ -137,28 +135,24 @@ export const AlmacenesPage = () => {
         {
             accessor: "labores_count",
             title: "Labores",
-            width: 140,
+            width: 130,
             textAlign: 'center',
             render: (record) => (
-                <Group gap="xs" justify="center">
-                    <Badge
-                        leftSection={<ArchiveBoxIcon className="w-3 h-3" />}
-                        color={record.labores_count && record.labores_count > 0 ? "indigo" : "zinc"}
-                        variant="light"
-                        radius="sm"
-                    >
+                <Group gap={6} justify="center">
+                    <Badge variant="light" color="cyan" size="sm" radius="sm">
                         {record.labores_count || 0} Asign.
                     </Badge>
 
-                    <ActionIcon
-                        variant="subtle"
-                        color="gray"
-                        size="sm"
-                        onClick={() => handleOpenAlcance(record)}
-                        title="Gestionar Labores"
-                    >
-                        <EyeIcon className="w-4 h-4" />
-                    </ActionIcon>
+                    <Tooltip label="Ver Labores">
+                        <ActionIcon
+                            variant="subtle"
+                            color="cyan"
+                            size="sm"
+                            onClick={() => handleOpenAlcance(record)}
+                        >
+                            <RectangleStackIcon className="w-4 h-4" />
+                        </ActionIcon>
+                    </Tooltip>
                 </Group>
             )
         },
@@ -211,7 +205,7 @@ export const AlmacenesPage = () => {
             title: "",
             width: 80,
             textAlign: "right",
-            render: (record) => (
+            render: () => (
                 <Menu shadow="md" width={150} position="left">
                     <Menu.Target>
                         <ActionIcon variant="subtle" color="gray">

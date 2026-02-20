@@ -130,7 +130,7 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
         },
         {
             accessor: "empresa",
-            title: "Empresa Ejecutora",
+            title: "Empresa",
             width: 180,
             render: (record) => (
                 <Text size="sm" className="text-zinc-400">

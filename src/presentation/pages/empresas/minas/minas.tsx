@@ -64,7 +64,7 @@ export const MinasPage = () => {
 
     // Initial Load
     useEffect(() => {
-        setTitle("Gestión de Unidades Mineras");
+        setTitle("Minas y Labores");
         cargarDatos();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -114,7 +114,7 @@ export const MinasPage = () => {
         },
         {
             accessor: "nombre",
-            title: "Unidad Minera",
+            title: "Mina",
             width: 200,
             render: (record) => (
                 <Text size="sm" fw={600} className="text-white">
@@ -267,7 +267,7 @@ export const MinasPage = () => {
             />
 
             {/* Modal: Crear Mina */}
-            <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Unidad Minera">
+            <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Mina">
                 <RegistroMina
                     onSuccess={handleSuccessCreate}
                     onCancel={closeCreate}
