@@ -1,21 +1,23 @@
 export interface RES_Labor {
   id_labor: number;
   id_empresa: number;
-  empresa: string;
   id_mina: number;
-  mina: string;
   id_tipo_labor: number;
+  mina: string;
+  empresa: string;
   tipo_labor_nombre: string;
-
+  is_produccion: number | boolean;
   codigo_correlativo: string;
   nombre: string;
-  descripcion?: string;
+  descripcion: string | null;
   tipo_sostenimiento: string;
+  veta: string | null;
+  ancho: number;
+  alto: number;
+  nivel: string | null;
+  fecha_fin: string | null;
+  created_at: string;
   estado: string;
-
-  // Campos opcionales / calculados
-  is_produccion?: number | boolean;
-  responsable_actual?: string;
 }
 
 export interface RES_TipoLabor {
@@ -23,17 +25,4 @@ export interface RES_TipoLabor {
   codigo: string;
   nombre: string;
   is_produccion: number | boolean;
-}
-
-// Historial Responsable Labor (Tabla responsable_labor)
-export interface RES_HistorialResponsableLabor {
-  id_asignacion: number;
-  id_labor: number;
-  id_usuario: number;
-  usuario_nombre: string; // Nombre completo del usuario
-  nombres?: string;
-  apellidos?: string;
-  fecha_inicio: string;
-  fecha_fin: string | null;
-  estado: string;
 }

@@ -16,3 +16,9 @@ export interface DTO_AsignarEmpresaMina {
     id_mina: number;
     id_empresa: number;
 }
+
+export interface DTO_AsignarResponsableMina {
+    id_mina: number;
+    id_usuario_empresa: number;
+    fecha_inicio: string;
+}

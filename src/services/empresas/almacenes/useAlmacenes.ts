@@ -1,17 +1,17 @@
 import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
-import type { RES_Almacen, RES_ResponsableAlmacen, RES_LaborAsignada } from "./dtos/responses";
+import type { RES_Almacen, RES_ResponsableAlmacen, RES_MinaAsignada } from "./dtos/responses";
 import type {
     DTO_CrearAlmacen,
     DTO_AsignarResponsableAlmacen,
-    DTO_AsignarLaborAlmacen
+    DTO_AsignarMinaAlmacen
 } from "./dtos/requests";
 
 export const useAlmacenes = ({ setError }: IUseHook) => {
     const path = "/api/almacenes";
 
-    // 1. Listar Almacenes (GET /api/almacenes?id_empresa=X <- Si es relevante, o general)
+    // 1. Listar Almacenes
     const listar = async (filters?: any) => {
         setError("");
         try {
@@ -58,7 +58,7 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 4. Listar Historial de Responsables (Cambiado a POST)
+    // 4. Listar Historial de Responsables
     const listarResponsables = async (id_almacen: number) => {
         setError("");
         try {
@@ -74,11 +74,11 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 5. Asignar Labor (Vincular Almacén a Operación)
-    const asignarLabor = async (dto: DTO_AsignarLaborAlmacen) => {
+    // 5. Asignar Mina (Vincular Almacén a Mina)
+    const asignarMina = async (dto: DTO_AsignarMinaAlmacen) => {
         setError("");
         try {
-            const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-labor`, dto);
+            const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-mina`, dto);
             const result = response.data;
             if (result.success) return true;
             setError(result.message || result.error);
@@ -89,11 +89,11 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
-    // 6. Listar Labores Asignadas (Cambiado a POST)
-    const listarLabores = async (id_almacen: number) => {
+    // 6. Listar Minas Asignadas
+    const listarMinas = async (id_almacen: number) => {
         setError("");
         try {
-            const response = await api.post<IRespuesta<RES_LaborAsignada[]>>(`${path}/labores`, {
+            const response = await api.post<IRespuesta<RES_MinaAsignada[]>>(`${path}/minas`, {
                 id_almacen
             });
             const result = response.data;
@@ -105,12 +105,30 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
         }
     };
 
+    // 7. Desvincular Mina
+    const desasignarMina = async (id_asignacion: number) => {
+        setError("");
+        try {
+            const response = await api.post<IRespuesta<boolean>>(`${path}/desasignar-mina`, {
+                id_asignacion
+            });
+            const result = response.data;
+            if (result.success) return true;
+            setError(result.message || result.error);
+            return false;
+        } catch (error) {
+            setError(String(error));
+            return false;
+        }
+    }
+
     return {
         listar,
         crear,
         asignarResponsable,
         listarResponsables,
-        asignarLabor,
-        listarLabores
+        asignarMina,
+        listarMinas,
+        desasignarMina
     };
 };

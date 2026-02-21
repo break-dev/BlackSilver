@@ -1,8 +1,8 @@
 import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
-import type { RES_Labor, RES_TipoLabor, RES_HistorialResponsableLabor } from "./dtos/responses";
-import type { DTO_CrearLabor, DTO_AsignarResponsable } from "./dtos/requests";
+import type { RES_Labor, RES_TipoLabor } from "./dtos/responses";
+import type { DTO_CrearLabor } from "./dtos/requests";
 
 export const useLabores = ({ setError }: IUseHook) => {
     // Regresamos temporalmente a /api/labores hasta que actualices tu backend local
@@ -63,54 +63,9 @@ export const useLabores = ({ setError }: IUseHook) => {
         }
     };
 
-    // 4. Asignar Responsable
-    const asignar_responsable = async (dto: DTO_AsignarResponsable) => {
-        setError("");
-        try {
-            const response = await api.post<IRespuesta<boolean>>(
-                `/api/labor/asignar-responsable`, // Verificar endpoint exacto con backend, asumo singular 'labor' como en doc
-                dto
-            );
-            const result = response.data;
-
-            if (result.success) {
-                return true;
-            } else {
-                setError(result.message || result.error);
-                return false;
-            }
-        } catch (error) {
-            setError(String(error));
-            return false;
-        }
-    };
-
-    // 5. Historial Responsables
-    const historial_responsables = async (id_labor: number) => {
-        setError("");
-        try {
-            const response = await api.post<IRespuesta<RES_HistorialResponsableLabor[]>>(
-                `/api/labor/responsables`,
-                { id_labor } // POST body
-            );
-            const result = response.data;
-
-            if (result.success) {
-                return result.data;
-            } else {
-                return [];
-            }
-        } catch (error) {
-            setError(String(error));
-            return [];
-        }
-    };
-
     return {
         listar,
         listarTipos,
         crear_labor,
-        asignar_responsable,
-        historial_responsables,
     };
 };

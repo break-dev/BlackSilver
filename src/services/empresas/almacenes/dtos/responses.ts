@@ -5,7 +5,7 @@ export interface RES_Almacen {
     es_principal: boolean | number;
     estado: string;
     responsable_actual?: string;
-    labores_count?: number; // Opcional, si el back lo manda
+    minas_count?: number; // Opcional, si el back lo manda
 }
 
 export interface RES_ResponsableAlmacen {
@@ -18,9 +18,8 @@ export interface RES_ResponsableAlmacen {
     estado: string;
 }
 
-export interface RES_LaborAsignada {
-    id: number; // ID de la relación o de la labor? Asumiré ID de la labor o relación.
-    labor: string;
-    tipo_labor: string;
+export interface RES_MinaAsignada {
+    id: number; // id_asignacion para desvincular
     mina: string;
+    concesion: string;
 }

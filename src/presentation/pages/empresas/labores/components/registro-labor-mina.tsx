@@ -2,6 +2,7 @@ import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { TipoSostenimiento } from "../../../../../shared/enums";
+import dayjs from "dayjs";
 
 // Services
 import { Schema_CrearLabor } from "../../../../../services/empresas/labores/dtos/requests";
@@ -11,6 +12,7 @@ import { useLabores } from "../../../../../services/empresas/labores/useLabores"
 // Utils
 import { SelectTipoLabor } from "../../../../utils/select-tipo-labor";
 import { SelectEmpresaMina } from "../../../../utils/select-empresa-mina";
+import { CustomDatePicker } from "../../../../utils/date-picker-input";
 
 interface RegistroLaborMinaProps {
     idMina: number;
@@ -28,6 +30,12 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
     const [idTipoLabor, setIdTipoLabor] = useState<string | null>(null);
     const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
     const [tipoSostenimiento, setTipoSostenimiento] = useState("");
+    const [veta, setVeta] = useState("");
+    const [ancho, setAncho] = useState("");
+    const [alto, setAlto] = useState("");
+    const [nivel, setNivel] = useState("");
+    const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
+    const [fechaFin, setFechaFin] = useState<Date | null>(null);
 
     const { crear_labor } = useLabores({ setError });
 
@@ -49,7 +57,13 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
             id_tipo_labor: Number(idTipoLabor),
             nombre,
             descripcion,
-            tipo_sostenimiento: tipoSostenimiento
+            tipo_sostenimiento: tipoSostenimiento,
+            veta,
+            ancho: ancho ? Number(ancho) : null,
+            alto: alto ? Number(alto) : null,
+            nivel,
+            fecha_inicio: fechaInicio ? dayjs(fechaInicio).format("YYYY-MM-DD") : null,
+            fecha_fin: fechaFin ? dayjs(fechaFin).format("YYYY-MM-DD") : null
         };
 
         // Validate
@@ -64,7 +78,6 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
         }
 
         // Send
-        // @ts-ignore
         const result = await crear_labor(validation.data);
 
         if (result) {
@@ -81,7 +94,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
     return (
         <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
 
-            <div className="mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SelectTipoLabor
                     value={idTipoLabor}
                     onChange={setIdTipoLabor}
@@ -89,50 +102,109 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
                     withAsterisk
                     disabled={submitting}
                 />
+
+                <SelectEmpresaMina
+                    idMina={idMina}
+                    value={idEmpresa}
+                    onChange={setIdEmpresa}
+                    required
+                    withAsterisk
+                    disabled={submitting}
+                />
             </div>
 
-            <SelectEmpresaMina
-                idMina={idMina}
-                value={idEmpresa}
-                onChange={setIdEmpresa}
-                required
-                withAsterisk
-                disabled={submitting}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TextInput
+                    label="Nombre de la Labor"
+                    placeholder="Ej. Tajo Esperanza Nivel 1"
+                    required
+                    withAsterisk
+                    disabled={submitting}
+                    radius="lg"
+                    classNames={inputClasses}
+                    value={nombre}
+                    onChange={(e) => setNombre(e.currentTarget.value)}
+                />
 
-            <TextInput
-                label="Nombre de la Labor"
-                placeholder="Ej. Tajo Esperanza Nivel 1"
-                required
-                withAsterisk
-                disabled={submitting}
-                radius="lg"
-                classNames={inputClasses}
-                value={nombre}
-                onChange={(e) => setNombre(e.currentTarget.value)}
-            />
+                <Select
+                    label="Tipo Sostenimiento"
+                    placeholder="Seleccione..."
+                    required
+                    withAsterisk
+                    disabled={submitting}
+                    radius="lg"
+                    size="sm"
+                    data={[
+                        { value: TipoSostenimiento.Convencional, label: 'Convencional' },
+                        { value: TipoSostenimiento.Mecanizada, label: 'Mecanizada' }
+                    ]}
+                    classNames={{
+                        input: inputClasses.input,
+                        label: inputClasses.label,
+                        dropdown: "bg-zinc-900 border-zinc-800",
+                        option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1"
+                    }}
+                    value={tipoSostenimiento}
+                    onChange={(val) => setTipoSostenimiento(val || "")}
+                />
+            </div>
 
-            <Select
-                label="Tipo Sostenimiento"
-                placeholder="Seleccione..."
-                required
-                withAsterisk
-                disabled={submitting}
-                radius="lg"
-                size="sm"
-                data={[
-                    { value: TipoSostenimiento.Convencional, label: 'Convencional' },
-                    { value: TipoSostenimiento.Mecanizada, label: 'Mecanizada' }
-                ]}
-                classNames={{
-                    input: inputClasses.input,
-                    label: inputClasses.label,
-                    dropdown: "bg-zinc-900 border-zinc-800",
-                    option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1"
-                }}
-                value={tipoSostenimiento}
-                onChange={(val) => setTipoSostenimiento(val || "")}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-800/10 pt-2">
+                <CustomDatePicker
+                    label="Fecha Inicio de Labor"
+                    placeholder="Seleccione fecha"
+                    value={fechaInicio}
+                    onChange={(val: any) => setFechaInicio(val)}
+                    radius="lg"
+                />
+                <CustomDatePicker
+                    label="Fecha Término"
+                    placeholder="Estimación de cierre"
+                    value={fechaFin}
+                    onChange={(val: any) => setFechaFin(val)}
+                    clearable
+                    radius="lg"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-800/10 pt-2">
+                <TextInput
+                    label="Veta"
+                    placeholder="Veta..."
+                    radius="lg"
+                    classNames={inputClasses}
+                    value={veta}
+                    onChange={(e) => setVeta(e.currentTarget.value)}
+                />
+                <TextInput
+                    label="Nivel"
+                    placeholder="Nivel..."
+                    radius="lg"
+                    classNames={inputClasses}
+                    value={nivel}
+                    onChange={(e) => setNivel(e.currentTarget.value)}
+                />
+                <TextInput
+                    label="Ancho (m)"
+                    placeholder="0.00"
+                    type="number"
+                    step="0.01"
+                    radius="lg"
+                    classNames={inputClasses}
+                    value={ancho}
+                    onChange={(e) => setAncho(e.currentTarget.value)}
+                />
+                <TextInput
+                    label="Alto (m)"
+                    placeholder="0.00"
+                    type="number"
+                    step="0.01"
+                    radius="lg"
+                    classNames={inputClasses}
+                    value={alto}
+                    onChange={(e) => setAlto(e.currentTarget.value)}
+                />
+            </div>
 
             <Textarea
                 label="Descripción / Detalles"

@@ -8,6 +8,8 @@ export interface RES_Mina {
     // Campos opcionales para conteos en listados
     labores_count?: number;
     empresas_count?: number;
+    responsables_count?: number;
+    responsable_actual?: string;
 }
 
 export interface RES_EmpresaMina {
@@ -16,5 +18,15 @@ export interface RES_EmpresaMina {
     ruc: string;
     razon_social: string;
     nombre_comercial: string;
+    estado: string;
+}
+
+export interface RES_ResponsableMina {
+    id_asignacion: number;
+    id_usuario: number;
+    nombres: string;
+    apellidos: string;
+    fecha_inicio: string;
+    fecha_fin: string | null;
     estado: string;
 }

@@ -1,6 +1,6 @@
-import { ActionIcon, Badge, Button, Group, Text, TextInput } from "@mantine/core";
+import { Badge, Button, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { PlusIcon, PencilSquareIcon, UserCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
 
@@ -8,7 +8,6 @@ import { useEffect, useState, useMemo } from "react";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 import { RegistroLaborMina } from "./components/registro-labor-mina";
-import { AsignarResponsableLabor } from "./components/asignar-responsable-labor"; // Ajuste path si necesario
 
 // Services
 import { useLabores } from "../../../../services/empresas/labores/useLabores";
@@ -29,12 +28,8 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
     const [page, setPage] = useState(1);
     const [busqueda, setBusqueda] = useState("");
 
-    // Selected Labor for assigning responsible
-    const [selectedLabor, setSelectedLabor] = useState<RES_Labor | null>(null);
-
     // Modals
     const [openedCreate, { open: openCreate, close: closeCreate }] = useDisclosure(false);
-    const [openedResponsable, { open: openResponsable, close: closeResponsable }] = useDisclosure(false);
 
     // Hooks
     const { listar } = useLabores({ setError });
@@ -42,7 +37,6 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
     // Load Data
     const cargarLabores = async () => {
         setLoading(true);
-        // @ts-ignore
         const data = await listar({ id_mina: idMina });
         if (data) setLabores(data);
         else setLabores([]);
@@ -62,7 +56,8 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
             l.nombre.toLowerCase().includes(term) ||
             l.codigo_correlativo?.toLowerCase().includes(term) ||
             l.empresa?.toLowerCase().includes(term) ||
-            l.responsable_actual?.toLowerCase().includes(term)
+            l.veta?.toLowerCase().includes(term) ||
+            l.nivel?.toLowerCase().includes(term)
         );
     }, [labores, busqueda]);
 
@@ -77,16 +72,6 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
         setLabores((prev) => [nuevaLabor, ...prev]);
     };
 
-    const handleOpenResponsable = (labor: RES_Labor) => {
-        setSelectedLabor(labor);
-        openResponsable();
-    };
-
-    const handleSuccessAssignment = () => {
-        cargarLabores();
-        closeResponsable();
-    };
-
     // Columns
     const columns: DataTableColumn<RES_Labor>[] = [
         {
@@ -99,7 +84,7 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
         {
             accessor: "nombre",
             title: "Labor",
-            width: 200,
+            width: 220,
             render: (record) => (
                 <div className="flex flex-col">
                     <Text size="sm" fw={600} className="text-zinc-200">
@@ -108,79 +93,70 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
                     <Text size="xs" c="dimmed" className="font-mono">
                         {record.codigo_correlativo}
                     </Text>
-                </div>
-            )
-        },
-        {
-            accessor: "tipo_labor_nombre",
-            title: "Tipo",
-            width: 160,
-            render: (record) => (
-                <div className="flex items-center gap-2">
-                    <Badge variant="outline" color="cyan" size="sm">
-                        {record.tipo_labor_nombre}
-                    </Badge>
-                    {(record.is_produccion === 1 || record.is_produccion === true) && (
-                        <Badge color="pink" size="xs" variant="light" title="Labor de Producción">
-                            Producción
+                    <div className="flex gap-2 mt-1">
+                        <Badge variant="outline" color="cyan" size="xs">
+                            {record.tipo_labor_nombre}
                         </Badge>
-                    )}
+                        {(record.is_produccion === 1 || record.is_produccion === true) && (
+                            <Badge color="pink" size="xs" variant="light">
+                                Producción
+                            </Badge>
+                        )}
+                    </div>
                 </div>
             )
         },
         {
             accessor: "empresa",
             title: "Empresa",
-            width: 180,
+            width: 250,
             render: (record) => (
-                <Text size="sm" className="text-zinc-400">
-                    {record.empresa || "Sin asignar"}
+                record.empresa ? (
+                    <Badge variant="light" color="indigo" size="sm" radius="sm">
+                        {record.empresa}
+                    </Badge>
+                ) : (
+                    <Text size="xs" c="dimmed">Sin asignar</Text>
+                )
+            )
+        },
+        {
+            accessor: "created_at",
+            title: "Inicio",
+            width: 120,
+            render: (record) => (
+                <Text size="xs" className="text-zinc-500">
+                    {record.created_at ? new Date(record.created_at).toLocaleDateString() : '-'}
                 </Text>
             )
         },
         {
-            accessor: "responsable_actual",
-            title: "Responsable",
-            width: 200,
+            accessor: "fecha_fin",
+            title: "Término",
+            width: 120,
             render: (record) => (
-                <Group gap="xs">
-                    {record.responsable_actual ? (
-                        <>
-                            <UserCircleIcon className="w-5 h-5 text-emerald-500" />
-                            <Text size="sm" className="text-zinc-200">{record.responsable_actual}</Text>
-                        </>
-                    ) : (
-                        <Badge variant="outline" color="gray" size="sm">
-                            Sin Asignar
-                        </Badge>
-                    )}
-
-                    <ActionIcon
-                        variant="subtle"
-                        color="gray"
-                        size="sm"
-                        onClick={() => handleOpenResponsable(record)}
-                        title="Gestionar Responsable"
-                    >
-                        <PencilSquareIcon className="w-4 h-4" />
-                    </ActionIcon>
-                </Group>
+                <Text size="xs" className="text-zinc-500">
+                    {record.fecha_fin ? new Date(record.fecha_fin).toLocaleDateString() : '-'}
+                </Text>
             )
         },
         {
             accessor: "estado",
             title: "Estado",
             textAlign: "center",
-            width: 100,
-            render: (record) => (
-                <Badge
-                    color={record.estado === "Activo" ? "green" : "red"}
-                    variant="light"
-                    size="sm"
-                >
-                    {record.estado}
-                </Badge>
-            )
+            width: 150,
+            render: (record) => {
+                const isActivo = record.estado === "Activo";
+                return (
+                    <Badge
+                        color={isActivo ? "green" : "gray"}
+                        variant="light"
+                        size="sm"
+                    >
+                        {isActivo ? "Activa" : "Terminada"}
+                    </Badge>
+                );
+            }
         }
     ];
 
@@ -189,13 +165,13 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
             {/* Header Moderno con Badges */}
             <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mb-4 border-b border-zinc-800 pb-4">
                 <div>
-                    <h3 className="text-lg font-bold text-white leading-tight">Labores Asignadas</h3>
+                    <h3 className="text-lg font-bold text-white leading-tight">Labores Operativas</h3>
                     <p className="text-zinc-500 text-sm">{nombreMina}</p>
                 </div>
 
                 <div className="flex w-full sm:w-auto items-center gap-3">
                     <TextInput
-                        placeholder="Buscar labor..."
+                        placeholder="Buscar por nombre, veta o nivel..."
                         leftSection={<MagnifyingGlassIcon className="w-3.5 h-3.5 text-zinc-500" />}
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.currentTarget.value)}
@@ -232,24 +208,12 @@ export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
             />
 
             {/* Modal Registro Labor */}
-            <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Labor">
+            <ModalRegistro opened={openedCreate} close={closeCreate} title="Nueva Labor" size="lg">
                 <RegistroLaborMina
                     idMina={idMina}
                     onSuccess={handleSuccessCreate}
                     onCancel={closeCreate}
                 />
-            </ModalRegistro>
-
-            {/* Modal Asignar Responsable */}
-            <ModalRegistro opened={openedResponsable} close={closeResponsable} title="Gestión de Responsables">
-                {selectedLabor && (
-                    <AsignarResponsableLabor
-                        idLabor={selectedLabor.id_labor}
-                        idEmpresa={selectedLabor.id_empresa}
-                        nombreLabor={selectedLabor.nombre}
-                        onSuccess={handleSuccessAssignment}
-                    />
-                )}
             </ModalRegistro>
         </div>
     );

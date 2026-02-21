@@ -1,14 +1,14 @@
-import { Badge, Button, Select, Loader, Text } from "@mantine/core";
+import { Badge, Button, Select, Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
-import { ArrowLeftIcon, PlusIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, PlusIcon, CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 
 // Services
 import { useAlmacenes } from "../../../../../services/empresas/almacenes/useAlmacenes";
-import { useLabores } from "../../../../../services/empresas/labores/useLabores";
-import type { RES_LaborAsignada } from "../../../../../services/empresas/almacenes/dtos/responses";
-import type { RES_Labor } from "../../../../../services/empresas/labores/dtos/responses";
+import { useMinas } from "../../../../../services/empresas/minas/useMinas";
+import type { RES_MinaAsignada } from "../../../../../services/empresas/almacenes/dtos/responses";
+import type { RES_Mina } from "../../../../../services/empresas/minas/dtos/responses";
 
 interface GestionAlcanceProps {
     idAlmacen: number;
@@ -23,29 +23,28 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
     const [showForm, setShowForm] = useState(false);
 
     // Data List
-    const [laboresAsignadas, setLaboresAsignadas] = useState<RES_LaborAsignada[]>([]);
+    const [minasAsignadas, setMinasAsignadas] = useState<RES_MinaAsignada[]>([]);
 
     // Data Options
-    const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
+    const [minasDisponibles, setMinasDisponibles] = useState<RES_Mina[]>([]);
 
     const [, setError] = useState("");
 
     // Services
-    const { listarLabores, asignarLabor } = useAlmacenes({ setError });
-    const { listar: listarTodasLabores } = useLabores({ setError });
+    const { listarMinas, asignarMina, desasignarMina } = useAlmacenes({ setError });
+    const { listar: listarTodasMinas } = useMinas({ setError });
 
     // Load Data
     const cargarDatos = async () => {
         setLoading(true);
         try {
-            const [misLabores, poolLabores] = await Promise.all([
-                listarLabores(idAlmacen),
-                // @ts-ignore
-                listarTodasLabores() // Trae todas las labores del sistema (filtros vacios)
+            const [misMinas, poolMinas] = await Promise.all([
+                listarMinas(idAlmacen),
+                listarTodasMinas()
             ]);
 
-            if (misLabores) setLaboresAsignadas(misLabores);
-            if (poolLabores) setLaboresDisponibles(poolLabores);
+            if (misMinas) setMinasAsignadas(misMinas);
+            if (poolMinas) setMinasDisponibles(poolMinas);
 
         } catch (err) {
             console.error(err);
@@ -61,18 +60,18 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
 
     // Form Handler
     const form = useForm({
-        initialValues: { id_labor: "" },
-        validate: { id_labor: (val) => !val ? "Seleccione una labor" : null }
+        initialValues: { id_mina: "" },
+        validate: { id_mina: (val) => !val ? "Seleccione una mina" : null }
     });
 
     const handleSubmit = async (values: typeof form.values) => {
         setSaving(true);
-        const success = await asignarLabor({
+        const success = await asignarMina({
             id_almacen: idAlmacen,
-            id_labor: Number(values.id_labor)
+            id_mina: Number(values.id_mina)
         });
         if (success) {
-            notifications.show({ title: "Asignación Exitosa", message: "Labor vinculada al almacén", color: "green" });
+            notifications.show({ title: "Asignación Exitosa", message: "Mina vinculada al almacén", color: "green" });
             setShowForm(false);
             form.reset();
             cargarDatos();
@@ -80,36 +79,46 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
         setSaving(false);
     };
 
-    // Options Logic (Estructurar para Mantine v7: { group, items })
+    const handleDesvincular = async (idAsignacion: number) => {
+        if (!confirm("¿Está seguro de desvincular esta mina del almacén?")) return;
+
+        const success = await desasignarMina(idAsignacion);
+        if (success) {
+            notifications.show({ title: "Mina Desvinculada", message: "La mina ha sido retirada del almacén", color: "blue" });
+            cargarDatos();
+        }
+    };
+
+    // Options Logic
     const selectOptions = useMemo(() => {
-        if (!laboresDisponibles || !Array.isArray(laboresDisponibles)) return [];
+        if (!minasDisponibles || !Array.isArray(minasDisponibles)) return [];
 
         const assignedNames = new Set(
-            (laboresAsignadas || []).map(a => `${a.labor}-${a.mina}`)
+            (minasAsignadas || []).map(a => a.mina)
         );
 
         // 1. Filtramos y preparamos items planos
-        const filtered = laboresDisponibles
-            .filter(l => !assignedNames.has(`${l.nombre}-${l.mina}`))
-            .map(l => ({
-                value: String(l.id_labor),
-                label: l.nombre,
-                mina: l.mina || "Sin Mina"
+        const filtered = minasDisponibles
+            .filter(m => !assignedNames.has(m.nombre))
+            .map(m => ({
+                value: String(m.id_mina),
+                label: m.nombre,
+                concesion: m.concesion || "Sin Concesión"
             }));
 
-        // 2. Agrupamos por mina
+        // 2. Agrupamos por concesión
         const groups: Record<string, any[]> = {};
         filtered.forEach(item => {
-            if (!groups[item.mina]) groups[item.mina] = [];
-            groups[item.mina].push({ value: item.value, label: item.label });
+            if (!groups[item.concesion]) groups[item.concesion] = [];
+            groups[item.concesion].push({ value: item.value, label: item.label });
         });
 
         // 3. Convertimos al formato [{ group, items }, ...]
-        return Object.entries(groups).map(([mina, items]) => ({
-            group: mina,
+        return Object.entries(groups).map(([concesion, items]) => ({
+            group: concesion,
             items
         }));
-    }, [laboresDisponibles, laboresAsignadas]);
+    }, [minasDisponibles, minasAsignadas]);
 
     // Renders
     if (loading) return <div className="flex justify-center p-10"><Loader size="sm" color="gray" /></div>;
@@ -129,17 +138,17 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
                 </Button>
 
                 <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-                    <h3 className="text-white font-bold mb-4">Asignar Labor Minera</h3>
+                    <h3 className="text-white font-bold mb-4">Vincular Mina</h3>
 
                     <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
                         <Select
-                            label="Labor Minera"
-                            placeholder="Buscar labor..."
+                            label="Mina"
+                            placeholder="Buscar mina..."
                             data={selectOptions}
                             searchable
-                            nothingFoundMessage="No hay labores disponibles"
+                            nothingFoundMessage="No hay minas disponibles"
                             leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
-                            {...form.getInputProps("id_labor")}
+                            {...form.getInputProps("id_mina")}
                             radius="lg"
                             size="sm"
                             classNames={{
@@ -164,7 +173,7 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-bold text-white">Labores asignadas</h3>
+                    <h3 className="text-lg font-bold text-white">Minas asignadas</h3>
                     <p className="text-zinc-500 text-sm">{nombreAlmacen}</p>
                 </div>
                 <Button
@@ -175,31 +184,38 @@ export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps
                     onClick={() => setShowForm(true)}
                     className="hover:bg-indigo-900/30 transition-colors"
                 >
-                    Asignar Labor
+                    Asignar Mina
                 </Button>
             </div>
 
-            {laboresAsignadas.length === 0 ? (
+            {minasAsignadas.length === 0 ? (
                 <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl">
                     <CubeIcon className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-                    <p className="text-zinc-500 text-sm">Este almacén no atiende ninguna labor.</p>
+                    <p className="text-zinc-500 text-sm">Este almacén no atiende ninguna mina.</p>
                 </div>
             ) : (
                 <div className="grid gap-3">
-                    {laboresAsignadas.map((item, idx) => (
+                    {minasAsignadas.map((item, idx) => (
                         <div key={item.id || idx} className="flex items-center justify-between p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-cyan-900/20 text-cyan-500 flex items-center justify-center border border-cyan-900/30">
+                                <div className="w-10 h-10 rounded-full bg-indigo-900/20 text-indigo-500 flex items-center justify-center border border-indigo-900/30">
                                     <CubeIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <Text fw={600} className="text-zinc-200">{item.labor}</Text>
-                                    <div className="flex items-center gap-2">
-                                        <Badge size="xs" variant="dot" color="gray">{item.mina}</Badge>
-                                        <Text size="xs" c="dimmed">({item.tipo_labor})</Text>
-                                    </div>
+                                    <Text fw={600} className="text-zinc-200">{item.mina}</Text>
+                                    <Badge size="xs" variant="dot" color="gray">{item.concesion}</Badge>
                                 </div>
                             </div>
+                            <Tooltip label="Desvincular Mina">
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="red"
+                                    size="sm"
+                                    onClick={() => handleDesvincular(item.id)}
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </ActionIcon>
+                            </Tooltip>
                         </div>
                     ))}
                 </div>

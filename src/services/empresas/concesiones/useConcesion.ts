@@ -178,6 +178,21 @@ export const useConcesion = ({ setError }: IUseHook) => {
     }
   };
 
+  // Listar tipos de mineral
+  const listar_tipos_mineral = async () => {
+    try {
+      const response = await api.get<IRespuesta<string[]>>(
+        `${path}/tipos-mineral`
+      );
+      const result = response.data;
+      if (result.success) return result.data;
+      return [];
+    } catch (error) {
+      console.error(String(error));
+      return [];
+    }
+  };
+
   return {
     listar,
     listar_por_empresa,
@@ -187,5 +202,6 @@ export const useConcesion = ({ setError }: IUseHook) => {
     listar_asignaciones,
     asignar_empresa,
     desasignar_empresa,
+    listar_tipos_mineral,
   };
 };

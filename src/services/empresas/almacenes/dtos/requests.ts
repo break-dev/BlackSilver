@@ -23,7 +23,7 @@ export interface DTO_AsignarResponsableAlmacen {
     fecha_fin?: string | null;
 }
 
-export interface DTO_AsignarLaborAlmacen {
+export interface DTO_AsignarMinaAlmacen {
     id_almacen: number;
-    id_labor: number;
+    id_mina: number;
 }

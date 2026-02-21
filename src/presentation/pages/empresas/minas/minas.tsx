@@ -8,7 +8,8 @@ import {
     EllipsisVerticalIcon,
     MapPinIcon,
     BriefcaseIcon,
-    RectangleStackIcon
+    RectangleStackIcon,
+    UserCircleIcon
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
@@ -20,6 +21,7 @@ import { ModalRegistro } from "../../../utils/modal-registro";
 import { RegistroMina } from "./components/registro-mina";
 import { GestionLabores } from "../labores/labores";
 import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
+import { GestionResponsablesMina } from "./components/gestion-responsables-mina";
 
 // Services
 import { useMinas } from "../../../../services/empresas/minas/useMinas";
@@ -38,6 +40,9 @@ export const MinasPage = () => {
 
     // Gestión Empresas Modal
     const [openedEmpresas, { open: openEmpresas, close: closeEmpresas }] = useDisclosure(false);
+
+    // Gestión Responsables Modal
+    const [openedResponsables, { open: openResponsables, close: closeResponsables }] = useDisclosure(false);
 
     const [selectedMina, setSelectedMina] = useState<RES_Mina | null>(null);
 
@@ -103,6 +108,11 @@ export const MinasPage = () => {
         openEmpresas();
     };
 
+    const handleOpenResponsables = (mina: RES_Mina) => {
+        setSelectedMina(mina);
+        openResponsables();
+    };
+
     // Columns
     const columns: DataTableColumn<RES_Mina>[] = [
         {
@@ -151,6 +161,36 @@ export const MinasPage = () => {
                             onClick={() => handleOpenLabores(record)}
                         >
                             <RectangleStackIcon className="w-4 h-4" />
+                        </ActionIcon>
+                    </Tooltip>
+                </Group>
+            )
+        },
+        {
+            accessor: "responsable",
+            title: "Responsable",
+            width: 200,
+            render: (record) => (
+                <Group gap="xs">
+                    {record.responsable_actual ? (
+                        <>
+                            <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+                            <Text size="sm" className="text-zinc-200">{record.responsable_actual}</Text>
+                        </>
+                    ) : (
+                        <Badge variant="outline" color="gray" size="sm">
+                            Sin Asignar
+                        </Badge>
+                    )}
+
+                    <Tooltip label="Gestionar Responsable">
+                        <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            size="sm"
+                            onClick={() => handleOpenResponsables(record)}
+                        >
+                            <PencilSquareIcon className="w-4 h-4" />
                         </ActionIcon>
                     </Tooltip>
                 </Group>
@@ -299,6 +339,20 @@ export const MinasPage = () => {
                     <GestionEmpresasMina
                         idMina={selectedMina.id_mina}
                         idConcesion={selectedMina.id_concesion} // Required for filtering valid contracts
+                        nombreMina={selectedMina.nombre}
+                    />
+                ) : null}
+            </ModalRegistro>
+
+            {/* Modal: Gestión de Responsables */}
+            <ModalRegistro
+                opened={openedResponsables}
+                close={closeResponsables}
+                title="Responsables de Mina"
+            >
+                {selectedMina ? (
+                    <GestionResponsablesMina
+                        idMina={selectedMina.id_mina}
                         nombreMina={selectedMina.nombre}
                     />
                 ) : null}

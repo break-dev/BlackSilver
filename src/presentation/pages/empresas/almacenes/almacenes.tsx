@@ -65,7 +65,7 @@ export const AlmacenesPage = () => {
 
     // Initial Load & Create Title
     useEffect(() => {
-        setTitle("Gestión de Almacenes");
+        setTitle("Almacenes de Abastecimiento");
         cargarDatos();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -133,17 +133,17 @@ export const AlmacenesPage = () => {
             )
         },
         {
-            accessor: "labores_count",
-            title: "Labores",
+            accessor: "minas_count",
+            title: "Minas",
             width: 130,
             textAlign: 'center',
             render: (record) => (
                 <Group gap={6} justify="center">
                     <Badge variant="light" color="cyan" size="sm" radius="sm">
-                        {record.labores_count || 0} Asign.
+                        {record.minas_count || 0} Minas
                     </Badge>
 
-                    <Tooltip label="Ver Labores">
+                    <Tooltip label="Ver Minas">
                         <ActionIcon
                             variant="subtle"
                             color="cyan"
@@ -298,7 +298,7 @@ export const AlmacenesPage = () => {
             <ModalRegistro
                 opened={openedAlcance}
                 close={closeAlcance}
-                title="Gestión de Labores"
+                title="Gestión de Minas"
             >
                 {selectedAlmacen && (
                     <GestionAlcance

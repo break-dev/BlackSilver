@@ -1,14 +1,31 @@
-import { Select, type SelectProps } from "@mantine/core";
+import { Select, type SelectProps, Loader } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { useConcesion } from "../../services/empresas/concesiones/useConcesion";
 
 export const SelectTipoMineral = (props: SelectProps) => {
+    const [tipos, setTipos] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+    const { listar_tipos_mineral } = useConcesion({ setError: () => { } });
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            const data = await listar_tipos_mineral();
+            if (data) setTipos(data);
+            setLoading(false);
+        };
+        load();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const data = tipos.map(t => ({ value: t, label: t }));
+
     return (
         <Select
             label="Tipo de Mineral"
             placeholder="Seleccionar"
-            data={[
-                { value: "Polimetalico", label: "Polimetálico" },
-                { value: "Carbon", label: "Carbón" },
-            ]}
+            data={data}
+            rightSection={loading ? <Loader size={14} color="gray" /> : null}
             radius="lg"
             size="sm"
             searchable

@@ -103,7 +103,6 @@ export const InventarioProductos = () => {
                     </div>
                     <div>
                         <Text size="sm" fw={600} className="text-white">{record.nombre}</Text>
-                        <Text size="xs" c="dimmed">{record.categoria}</Text>
                     </div>
                 </Group>
             )
