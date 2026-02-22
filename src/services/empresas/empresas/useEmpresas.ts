@@ -6,7 +6,7 @@ import type { RES_UsuarioEmpresa } from "../labores/dtos/responses";
 import type { DTO_CrearEmpresa } from "./dtos/requests";
 
 export const useEmpresas = ({ setError }: IUseHook) => {
-  const path = "/api/empresas";
+  const path = "/empresas";
 
   // Listar empresas
   const listar = async () => {
@@ -52,7 +52,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_Empresa[]>>(
-        "/api/empresas/by-session"
+        "/empresas/by-session"
       );
       const result = response.data;
       return result.data || [];
@@ -67,7 +67,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_UsuarioEmpresa[]>>(
-        "/api/empresas/usuarios",
+        "/empresas/usuarios",
         { params: { id_empresa } }
       );
       const result = response.data;

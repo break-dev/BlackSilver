@@ -5,7 +5,7 @@ import type { DTO_CrearCategoria, DTO_EditarCategoria } from "./dtos/requests";
 import type { RES_Categoria } from "./dtos/responses";
 
 export const useCategoria = ({ setError }: IUseHook) => {
-  const path = "/api/categorias";
+  const path = "/categorias";
 
   const listar = async () => {
     setError("");

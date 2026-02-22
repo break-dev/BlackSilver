@@ -5,7 +5,7 @@ import type { DTO_CrearLabor, DTO_EditarLabor } from "./dtos/requests";
 import type { RES_Labor } from "./dtos/responses";
 
 export const useLabor = ({ setError }: IUseHook) => {
-  const path = "/api/labores";
+  const path = "/labores";
 
   const listar = async () => {
     setError("");

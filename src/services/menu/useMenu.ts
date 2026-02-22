@@ -7,10 +7,10 @@ import { MenuStore } from "../../stores/menu.store";
 export const useMenu = ({ setError }: IUseHook) => {
   // obtener y setear menu de navegacion
   const getMenuNavegacion = async () => {
-    setError(""); // Clear any previous error
+    setError(""); // limpiar errores previos
     try {
       const response = await api.get<IRespuesta<IModulo[]>>(
-        "/api/menu_navegacion",
+        "/menu_navegacion",
       );
       const result = response.data;
 

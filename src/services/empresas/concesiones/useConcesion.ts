@@ -9,7 +9,7 @@ import type {
 } from "./dtos/requests";
 
 export const useConcesion = ({ setError }: IUseHook) => {
-  const path = "/api/concesiones";
+  const path = "/concesiones";
 
   // Listar concesiones
   const listar = async () => {

@@ -9,7 +9,7 @@ export const useKardex = ({ setError }: IUseHook) => {
     const listarPorLote = async (idLote: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(`/api/kardex`, {
+            const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(`/kardex`, {
                 params: { id_lote: idLote }
             });
             const result = response.data;
@@ -29,7 +29,7 @@ export const useKardex = ({ setError }: IUseHook) => {
     const listarPorAlmacen = async (idAlmacen: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(`/api/kardex`, {
+            const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(`/kardex`, {
                 params: { id_almacen: idAlmacen }
             });
             const result = response.data;

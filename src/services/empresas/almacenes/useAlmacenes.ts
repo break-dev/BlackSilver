@@ -9,7 +9,7 @@ import type {
 } from "./dtos/requests";
 
 export const useAlmacenes = ({ setError }: IUseHook) => {
-    const path = "/api/almacenes";
+    const path = "/almacenes";
 
     // 1. Listar Almacenes
     const listar = async (filters?: any) => {

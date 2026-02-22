@@ -5,7 +5,7 @@ import type { DTO_CrearProducto } from "./dtos/requests";
 import type { RES_Producto } from "./dtos/responses";
 
 export const useProductos = ({ setError }: IUseHook) => {
-    const path = "/api/productos";
+    const path = "/productos";
 
     const listar = async () => {
         setError("");

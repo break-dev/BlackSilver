@@ -4,7 +4,7 @@ import type { IUseHook } from "../hook.interface";
 import type { RES_Cargo } from "./dtos/responses";
 
 export const useCargos = ({ setError }: IUseHook) => {
-    const path = "/api/cargos";
+    const path = "/cargos";
 
     // Listar cargos
     const listar = async () => {

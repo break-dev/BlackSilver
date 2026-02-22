@@ -10,7 +10,7 @@ export const useUsuario = ({ setError }: IUseHook) => {
   const login = async (dto: DTO_Login) => {
     setError("");
     try {
-      const response = await api.post<IRespuesta<RES_Login>>("/api/login", dto);
+      const response = await api.post<IRespuesta<RES_Login>>("/login", dto);
       const result = response.data;
 
       if (result.success) {

@@ -5,13 +5,13 @@ import type { RES_Empleado } from "./dtos/responses";
 import type { DTO_CrearEmpleado } from "./dtos/requests";
 
 export const useEmpleados = ({ setError }: IUseHook) => {
-    const path = "/api/empleados";
+    const path = "/empleados";
 
     // Listar todos los empleados o por empresa
     const listar = async (filters?: { id_empresa?: number }) => {
         setError("");
         try {
-            const endpoint = filters?.id_empresa ? "/api/empresas/usuarios" : path;
+            const endpoint = filters?.id_empresa ? "/empresas/usuarios" : path;
             const response = await api.get<IRespuesta<RES_Empleado[]>>(endpoint, {
                 params: filters
             });

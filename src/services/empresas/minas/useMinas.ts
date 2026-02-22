@@ -6,7 +6,7 @@ import type { RES_Mina, RES_ResponsableMina } from "./dtos/responses";
 import type { RES_Empresa } from "../empresas/dtos/responses";
 
 export const useMinas = ({ setError }: IUseHook) => {
-    const path = "/api/minas";
+    const path = "/minas";
 
     // 1. Listar Minas
     const listar = async (filters?: { id_concesion?: number }) => {

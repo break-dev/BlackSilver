@@ -11,7 +11,7 @@ export const useLote = ({ setError }: IUseHook) => {
     const listarPorAlmacen = async (idAlmacen: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_Lote[]>>(`/api/lotes-almacen`, {
+            const response = await api.get<IRespuesta<RES_Lote[]>>(`/lotes-almacen`, {
                 params: { id_almacen: idAlmacen }
             });
             const result = response.data;
@@ -40,7 +40,7 @@ export const useLote = ({ setError }: IUseHook) => {
                     : null
             };
 
-            const response = await api.post<IRespuesta<RES_Lote>>(`/api/lotes`, payload);
+            const response = await api.post<IRespuesta<RES_Lote>>(`/lotes`, payload);
             const result = response.data;
             if (result.success) {
                 return result.data;
@@ -58,7 +58,7 @@ export const useLote = ({ setError }: IUseHook) => {
     const listarProductosDisponibles = async () => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_ProductoDisponible[]>>(`/api/lotes/productos-disponibles`);
+            const response = await api.get<IRespuesta<RES_ProductoDisponible[]>>(`/lotes/productos-disponibles`);
             const result = response.data;
             if (result.success) {
                 return result.data;
@@ -76,7 +76,7 @@ export const useLote = ({ setError }: IUseHook) => {
     const listarUnidadesMedida = async () => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(`/api/unidades-medida`);
+            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(`/unidades-medida`);
             const result = response.data;
             if (result.success) {
                 return result.data;
