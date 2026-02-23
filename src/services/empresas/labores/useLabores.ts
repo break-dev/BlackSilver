@@ -19,7 +19,7 @@ export const useLabores = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.message || result.error);
+                setError(result.message);
                 return [];
             }
         } catch (error) {
@@ -36,6 +36,7 @@ export const useLabores = ({ setError }: IUseHook) => {
             const result = response.data;
 
             if (result.success) return result.data;
+            setError(result.message);
             return [];
         } catch (error) {
             setError(String(error));
@@ -44,7 +45,7 @@ export const useLabores = ({ setError }: IUseHook) => {
     };
 
     // 3. Crear Labor
-    const crear_labor = async (dto: DTO_CrearLabor) => {
+    const crearLabor = async (dto: DTO_CrearLabor) => {
         setError("");
         try {
             const response = await api.post<IRespuesta<RES_Labor>>(path, dto);
@@ -53,7 +54,7 @@ export const useLabores = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.message || result.error);
+                setError(result.message);
                 return null;
             }
         } catch (error) {
@@ -65,6 +66,6 @@ export const useLabores = ({ setError }: IUseHook) => {
     return {
         listar,
         listarTipos,
-        crear_labor,
+        crearLabor,
     };
 };

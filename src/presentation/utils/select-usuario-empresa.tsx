@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useEmpresas } from "../../services/empresas/empresas/useEmpresas";
-import type { RES_UsuarioEmpresa } from "../../services/empresas/labores/dtos/responses";
+import type { RES_UsuarioEmpresa } from "../../services/empresas/empresas/dtos/responses";
 
 interface SelectUsuarioEmpresaProps extends Omit<SelectProps, "data"> {
     idEmpresa?: number | null;
@@ -19,7 +19,7 @@ export const SelectUsuarioEmpresa = ({
     const [isLoading, setIsLoading] = useState(false);
     const [, setError] = useState("");
 
-    const { get_usuarios_empresa } = useEmpresas({ setError });
+    const { getUsuariosEmpresa } = useEmpresas({ setError });
 
     useEffect(() => {
         if (!idEmpresa) {
@@ -28,7 +28,7 @@ export const SelectUsuarioEmpresa = ({
         }
 
         setIsLoading(true);
-        get_usuarios_empresa(idEmpresa)
+        getUsuariosEmpresa(idEmpresa)
             .then((res) => {
                 if (res) setData(res);
             })

@@ -16,7 +16,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        setError(result.message || result.error || "Error");
         return null;
       }
     } catch (error) {
@@ -25,7 +25,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
     }
   };
 
-  const crear_categoria = async (dto: DTO_CrearCategoria) => {
+  const crearCategoria = async (dto: DTO_CrearCategoria) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Categoria>>(path, dto);
@@ -34,8 +34,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        // Prefer 'message' for user-friendly errors from new backend
-        setError(result.message || result.error);
+        setError(result.message);
         return null;
       }
     } catch (error) {
@@ -53,7 +52,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        setError(result.message);
         return null;
       }
     } catch (error) {
@@ -73,7 +72,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
       if (result.success) {
         return true;
       } else {
-        setError(result.error);
+        setError(result.message || result.error || "Error");
         return false;
       }
     } catch (error) {
@@ -84,7 +83,7 @@ export const useCategoria = ({ setError }: IUseHook) => {
 
   return {
     listar,
-    crear_categoria,
+    crearCategoria,
     editar,
     eliminar,
   };

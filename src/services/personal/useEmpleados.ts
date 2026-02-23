@@ -20,7 +20,7 @@ export const useEmpleados = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error || "Error al listar empleados");
+                setError(result.message);
                 return [];
             }
         } catch (error) {
@@ -40,7 +40,7 @@ export const useEmpleados = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error); // Mensajes como 'DNI duplicado' vendrán acá
+                setError(result.message); // Mensajes como 'DNI duplicado' vendrán acá
                 return null;
             }
         } catch (error) {
@@ -55,7 +55,7 @@ export const useEmpleados = ({ setError }: IUseHook) => {
         try {
             const response = await api.delete<IRespuesta<boolean>>(`${path}/${id}`);
             if (response.data.success) return true;
-            setError(response.data.error);
+            setError(response.data.message);
             return false;
         } catch (err) {
             setError(String(err));

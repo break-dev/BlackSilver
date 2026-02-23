@@ -9,7 +9,7 @@ import {
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { GestionEmpresas } from "./components/gestion-empresas";
-import { useConcesion } from "../../../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../../../services/empresas/concesiones/useConcesiones";
 import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 import { RegistroConcesion } from "./components/registro-concesion";
@@ -41,7 +41,7 @@ export const EmpresasConcesiones = () => {
   const [selectedConcesion, setSelectedConcesion] = useState<RES_Concesion | null>(null);
 
   // Servicio
-  const { listar } = useConcesion({ setError });
+  const { listar } = useConcesiones({ setError });
 
   // Carga inicial
   useEffect(() => {

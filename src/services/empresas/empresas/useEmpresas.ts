@@ -1,8 +1,7 @@
 import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
-import type { RES_Empresa } from "./dtos/responses";
-import type { RES_UsuarioEmpresa } from "../labores/dtos/responses";
+import type { RES_Empresa, RES_UsuarioEmpresa } from "./dtos/responses";
 import type { DTO_CrearEmpresa } from "./dtos/requests";
 
 export const useEmpresas = ({ setError }: IUseHook) => {
@@ -19,7 +18,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
         return result.data;
       } else {
         // Prefer 'message' for user-friendly errors, aligned with Categories/Concesiones style
-        setError(result.message || result.error);
+        setError(result.message);
         return [];
       }
     } catch (error) {
@@ -29,7 +28,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
   };
 
   // Crear empresa
-  const crear_empresa = async (dto: DTO_CrearEmpresa) => {
+  const crearEmpresa = async (dto: DTO_CrearEmpresa) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Empresa>>(path, dto);
@@ -38,7 +37,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.message || result.error);
+        setError(result.message || result.error || "Error");
         return null;
       }
     } catch (error) {
@@ -48,7 +47,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
   };
 
   // (Mantener compatibilidad) Listar empresas por sesión (usado en SelectEmpresas)
-  const get_empresas_by_session = async (): Promise<RES_Empresa[]> => {
+  const getEmpresasBySession = async (): Promise<RES_Empresa[]> => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_Empresa[]>>(
@@ -63,7 +62,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
   };
 
   // Get users by company
-  const get_usuarios_empresa = async (id_empresa: number): Promise<RES_UsuarioEmpresa[]> => {
+  const getUsuariosEmpresa = async (id_empresa: number): Promise<RES_UsuarioEmpresa[]> => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_UsuarioEmpresa[]>>(
@@ -83,8 +82,8 @@ export const useEmpresas = ({ setError }: IUseHook) => {
 
   return {
     listar,
-    crear_empresa,
-    get_empresas_by_session,
-    get_usuarios_empresa,
+    crearEmpresa,
+    getEmpresasBySession,
+    getUsuariosEmpresa,
   };
 };

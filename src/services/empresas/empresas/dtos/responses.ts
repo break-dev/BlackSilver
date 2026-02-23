@@ -6,3 +6,11 @@ export interface RES_Empresa {
     abreviatura: string;
     path_logo: string;
 }
+
+export interface RES_UsuarioEmpresa {
+    id_usuario_empresa: number;
+    id_usuario: number;
+    nombres: string;
+    apellidos: string;
+    cargo: string;
+}

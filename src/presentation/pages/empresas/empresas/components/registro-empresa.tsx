@@ -25,7 +25,7 @@ export const RegistroEmpresa = ({
 
     // Service
     // Note: useEmpresas might need to return created object or promise
-    const { crear_empresa } = useEmpresas({ setError });
+    const { crearEmpresa } = useEmpresas({ setError });
 
     const inputClasses = {
         input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
@@ -54,7 +54,7 @@ export const RegistroEmpresa = ({
             }
 
             setIsLoading(true);
-            const response = await crear_empresa(validation.data);
+            const response = await crearEmpresa(validation.data);
 
             if (response) {
                 onSuccess?.(response);

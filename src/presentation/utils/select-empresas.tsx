@@ -15,12 +15,12 @@ export const SelectEmpresas = ({
 }: SelectEmpresasProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [, setError] = useState("");
-  const { get_empresas_by_session } = useEmpresas({ setError });
+  const { getEmpresasBySession } = useEmpresas({ setError });
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
 
   useEffect(() => {
     setIsLoading(true);
-    get_empresas_by_session()
+    getEmpresasBySession()
       .then((data) => {
         if (data) setEmpresas(data);
       })

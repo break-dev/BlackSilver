@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { RES_Concesion } from "../../services/empresas/concesiones/dtos/responses";
-import { useConcesion } from "../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../services/empresas/concesiones/useConcesiones";
 
 interface SelectConcesionAsignadaProps extends Omit<SelectProps, "data"> {
     idEmpresa?: number | null; // Dependent on Company
@@ -19,7 +19,7 @@ export const SelectConcesionAsignada = ({
 }: SelectConcesionAsignadaProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [, setError] = useState("");
-    const { listar_por_empresa } = useConcesion({ setError });
+    const { listarPorEmpresa } = useConcesiones({ setError });
     const [data, setData] = useState<RES_Concesion[]>([]);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export const SelectConcesionAsignada = ({
         }
 
         setIsLoading(true);
-        listar_por_empresa(idEmpresa)
+        listarPorEmpresa(idEmpresa)
             .then((res) => {
                 if (res) setData(res);
             })

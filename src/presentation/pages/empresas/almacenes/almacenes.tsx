@@ -19,7 +19,7 @@ import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 import { RegistroAlmacen } from "./components/registro-almacen";
 import { GestionResponsables } from "./components/gestion-responsables";
-import { GestionAlcance } from "./components/gestion-alcance";
+import { AsignarMinaAlmacen } from "./components/asignar-mina-almacen";
 
 // Services
 import { useAlmacenes } from "../../../../services/empresas/almacenes/useAlmacenes";
@@ -301,7 +301,7 @@ export const AlmacenesPage = () => {
                 title="Gestión de Minas"
             >
                 {selectedAlmacen && (
-                    <GestionAlcance
+                    <AsignarMinaAlmacen
                         idAlmacen={selectedAlmacen.id_almacen}
                         nombreAlmacen={selectedAlmacen.nombre}
                     />

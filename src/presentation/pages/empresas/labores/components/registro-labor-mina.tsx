@@ -37,7 +37,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
     const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
     const [fechaFin, setFechaFin] = useState<Date | null>(null);
 
-    const { crear_labor } = useLabores({ setError });
+    const { crearLabor } = useLabores({ setError });
 
     // Styles
     const inputClasses = {
@@ -78,7 +78,7 @@ export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: RegistroLabor
         }
 
         // Send
-        const result = await crear_labor(validation.data);
+        const result = await crearLabor(validation.data);
 
         if (result) {
             notifications.show({

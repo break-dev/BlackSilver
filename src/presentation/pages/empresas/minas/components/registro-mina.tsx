@@ -6,7 +6,7 @@ import { notifications } from "@mantine/notifications";
 import { Schema_CrearMina } from "../../../../../services/empresas/minas/dtos/requests";
 import type { RES_Mina } from "../../../../../services/empresas/minas/dtos/responses";
 import { useMinas } from "../../../../../services/empresas/minas/useMinas";
-import { useConcesion } from "../../../../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../../../../services/empresas/concesiones/useConcesiones";
 import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
 
 interface RegistroMinaProps {
@@ -29,7 +29,7 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
     // Hooks
     const [loadingConcesiones, setLoadingConcesiones] = useState(true);
     const { crear } = useMinas({ setError });
-    const { listar: listarConcesiones } = useConcesion({ setError });
+    const { listar: listarConcesiones } = useConcesiones({ setError });
 
     // Cargar Concesiones
     useEffect(() => {

@@ -8,7 +8,7 @@ import type {
   DTO_AsignarEmpresa,
 } from "./dtos/requests";
 
-export const useConcesion = ({ setError }: IUseHook) => {
+export const useConcesiones = ({ setError }: IUseHook) => {
   const path = "/concesiones";
 
   // Listar concesiones
@@ -21,7 +21,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        setError(result.message);
         return [];
       }
     } catch (error) {
@@ -31,7 +31,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   };
 
   // Listar concesiones por empresa (para obtener id_asignacion)
-  const listar_por_empresa = async (id_empresa: number) => {
+  const listarPorEmpresa = async (id_empresa: number) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Concesion[]>>(
@@ -53,7 +53,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   };
 
   // Crear concesion
-  const crear_concesion = async (dto: DTO_CrearConcesion) => {
+  const crearConcesion = async (dto: DTO_CrearConcesion) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<RES_Concesion>>(path, dto);
@@ -62,7 +62,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        setError(result.message);
         return null;
       }
     } catch (error) {
@@ -81,7 +81,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        setError(result.error);
+        setError(result.message);
         return null;
       }
     } catch (error) {
@@ -102,7 +102,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return true;
       } else {
-        setError(result.error);
+        setError(result.message);
         return false;
       }
     } catch (error) {
@@ -114,7 +114,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   // --- Asignaciones ---
 
   // Listar asignaciones
-  const listar_asignaciones = async (id_concesion: number) => {
+  const listarAsignaciones = async (id_concesion: number) => {
     try {
       const response = await api.post<IRespuesta<RES_Asignacion[]>>(
         `${path}/asignaciones`,
@@ -125,7 +125,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return result.data;
       } else {
-        console.error(result.error);
+        console.error(result.message);
         return [];
       }
     } catch (error) {
@@ -135,7 +135,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   };
 
   // Asignar empresa
-  const asignar_empresa = async (dto: DTO_AsignarEmpresa) => {
+  const asignarEmpresa = async (dto: DTO_AsignarEmpresa) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<boolean>>(
@@ -147,7 +147,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return true;
       } else {
-        setError(result.error);
+        setError(result.message);
         return false;
       }
     } catch (error) {
@@ -157,7 +157,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   };
 
   // Desasignar empresa
-  const desasignar_empresa = async (id_asignacion: number) => {
+  const desasignarEmpresa = async (id_asignacion: number) => {
     setError("");
     try {
       const response = await api.post<IRespuesta<boolean>>(
@@ -169,7 +169,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
       if (result.success) {
         return true;
       } else {
-        setError(result.error);
+        setError(result.message);
         return false;
       }
     } catch (error) {
@@ -179,7 +179,7 @@ export const useConcesion = ({ setError }: IUseHook) => {
   };
 
   // Listar tipos de mineral
-  const listar_tipos_mineral = async () => {
+  const listarTiposMineral = async () => {
     try {
       const response = await api.get<IRespuesta<string[]>>(
         `${path}/tipos-mineral`
@@ -195,13 +195,13 @@ export const useConcesion = ({ setError }: IUseHook) => {
 
   return {
     listar,
-    listar_por_empresa,
-    crear_concesion,
+    listarPorEmpresa,
+    crearConcesion,
     editar,
     eliminar,
-    listar_asignaciones,
-    asignar_empresa,
-    desasignar_empresa,
-    listar_tipos_mineral,
+    listarAsignaciones,
+    asignarEmpresa,
+    desasignarEmpresa,
+    listarTiposMineral,
   };
 };

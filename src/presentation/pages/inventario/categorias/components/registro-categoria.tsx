@@ -25,7 +25,7 @@ export const RegistroCategoria = ({
   );
 
   // Service
-  const { crear_categoria } = useCategoria({ setError });
+  const { crearCategoria } = useCategoria({ setError });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,19 +38,19 @@ export const RegistroCategoria = ({
       });
 
       if (!validation.success) {
-        setError(
-          "Por favor complete todos los campos requeridos correctamente.",
-        );
-        console.error(validation.error);
+        const msg = validation.error.issues[0]?.message || "Por favor complete todos los campos requeridos correctamente.";
+        setError(msg);
         return;
       }
+
       setIsLoading(true);
-      const response = await crear_categoria(validation.data);
+      const response = await crearCategoria(validation.data);
       if (response) {
         onSuccess?.(response);
       }
     } catch (e) {
       console.error(e);
+      setError("Ocurrió un error al intentar guardar.");
     } finally {
       setIsLoading(false);
     }

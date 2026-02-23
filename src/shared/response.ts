@@ -1,6 +1,6 @@
 export interface IRespuesta<T> {
   success: boolean;
   data: T | null;
-  error: string;
-  message?: string;
+  message: string; // Nuevo estándar
+  error?: string; // Por eliminar
 }

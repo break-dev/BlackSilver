@@ -1,16 +1,16 @@
 import { Select, type SelectProps, Loader } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { useConcesion } from "../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../services/empresas/concesiones/useConcesiones";
 
 export const SelectTipoMineral = (props: SelectProps) => {
     const [tipos, setTipos] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
-    const { listar_tipos_mineral } = useConcesion({ setError: () => { } });
+    const { listarTiposMineral } = useConcesiones({ setError: () => { } });
 
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            const data = await listar_tipos_mineral();
+            const data = await listarTiposMineral();
             if (data) setTipos(data);
             setLoading(false);
         };

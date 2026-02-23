@@ -4,7 +4,7 @@ import {
   Schema_CrearConcesion,
 } from "../../../../../services/empresas/concesiones/dtos/requests";
 import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
-import { useConcesion } from "../../../../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../../../../services/empresas/concesiones/useConcesiones";
 import { SelectTipoMineral } from "../../../../utils/select-tipo-mineral";
 
 interface RegistroConcesionProps {
@@ -27,7 +27,7 @@ export const RegistroConcesion = ({
   const [tipo_mineral, setTipoMineral] = useState<"Polimetalico" | "Carbon" | undefined>(undefined);
 
   // Service
-  const { crear_concesion } = useConcesion({ setError });
+  const { crearConcesion } = useConcesiones({ setError });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ export const RegistroConcesion = ({
       }
 
       setIsLoading(true);
-      const response = await crear_concesion(validation.data);
+      const response = await crearConcesion(validation.data);
       if (response) {
         onSuccess?.(response);
       }
@@ -64,8 +64,8 @@ export const RegistroConcesion = ({
   };
 
   const inputClasses = {
-    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-    focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
+    input: `bg - zinc - 900 / 50 border - zinc - 800 focus: border - zinc - 300 focus: ring - 1
+focus: ring - zinc - 300 text - white placeholder: text - zinc - 500`,
     label: "text-zinc-300 mb-1 font-medium",
   };
 

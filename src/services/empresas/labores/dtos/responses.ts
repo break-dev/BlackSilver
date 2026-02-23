@@ -12,8 +12,8 @@ export interface RES_Labor {
   descripcion: string | null;
   tipo_sostenimiento: string;
   veta: string | null;
-  ancho: number;
-  alto: number;
+  ancho: number | null;
+  alto: number | null;
   nivel: string | null;
   fecha_fin: string | null;
   created_at: string;

@@ -32,7 +32,6 @@ export const SelectAlmacen = ({
                 })
                 .finally(() => setLoading(false));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [autoLoad]);
 
     return (

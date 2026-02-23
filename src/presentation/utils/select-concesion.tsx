@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import type { RES_Concesion } from "../../services/empresas/concesiones/dtos/responses";
-import { useConcesion } from "../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../services/empresas/concesiones/useConcesiones";
 
 interface SelectConcesionProps extends Omit<SelectProps, "data"> {
     value?: string | null;
@@ -15,7 +15,7 @@ export const SelectConcesion = ({
 }: SelectConcesionProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [, setError] = useState("");
-    const { listar } = useConcesion({ setError });
+    const { listar } = useConcesiones({ setError });
     const [data, setData] = useState<RES_Concesion[]>([]);
 
     useEffect(() => {

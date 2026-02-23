@@ -17,7 +17,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             });
             const result = response.data;
             if (result.success) return result.data;
-            setError(result.message || result.error);
+            setError(result.message);
             return [];
         } catch (error) {
             setError(String(error));
@@ -32,7 +32,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             const response = await api.post<IRespuesta<RES_Mina>>(path, dto);
             const result = response.data;
             if (result.success) return result.data;
-            setError(result.message || result.error);
+            setError(result.message);
             return null;
         } catch (error) {
             setError(String(error));
@@ -47,7 +47,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-empresa`, dto);
             const result = response.data;
             if (result.success) return true;
-            setError(result.message || result.error);
+            setError(result.message);
             return false;
         } catch (error) {
             setError(String(error));
@@ -64,6 +64,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             });
             const result = response.data;
             if (result.success) return result.data;
+            setError(result.message);
             return [];
         } catch (error) {
             setError(String(error));
@@ -78,7 +79,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-responsable`, dto);
             const result = response.data;
             if (result.success) return true;
-            setError(result.message || result.error);
+            setError(result.message);
             return false;
         } catch (error) {
             setError(String(error));
@@ -95,6 +96,7 @@ export const useMinas = ({ setError }: IUseHook) => {
             });
             const result = response.data;
             if (result.success) return result.data;
+            setError(result.message);
             return [];
         } catch (error) {
             setError(String(error));

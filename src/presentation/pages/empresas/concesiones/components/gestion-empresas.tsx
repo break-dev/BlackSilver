@@ -1,7 +1,7 @@
 import { Badge, Button, Loader, Text, Select, ActionIcon, Tooltip } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import { ArrowLeftIcon, PlusIcon, BuildingOfficeIcon, CalendarIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useConcesion } from "../../../../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../../../../services/empresas/concesiones/useConcesiones";
 import { useEmpresas } from "../../../../../services/empresas/empresas/useEmpresas";
 import type { RES_Concesion, RES_Asignacion } from "../../../../../services/empresas/concesiones/dtos/responses";
 import type { RES_Empresa } from "../../../../../services/empresas/empresas/dtos/responses";
@@ -24,7 +24,7 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
     const [saving, setSaving] = useState(false);
 
     // Services
-    const { listar_asignaciones, asignar_empresa, desasignar_empresa } = useConcesion({ setError });
+    const { listarAsignaciones, asignarEmpresa, desasignarEmpresa } = useConcesiones({ setError });
     const { listar: listarEmpresas } = useEmpresas({ setError });
 
     // Load Data
@@ -33,7 +33,7 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
         try {
             // Parallel fetch
             const [dataAsignaciones, dataEmpresas] = await Promise.all([
-                listar_asignaciones(concesion.id_concesion),
+                listarAsignaciones(concesion.id_concesion),
                 listarEmpresas()
             ]);
 
@@ -77,7 +77,7 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
     // Handlers
     const handleSubmit = async (values: typeof form.values) => {
         setSaving(true);
-        const success = await asignar_empresa({
+        const success = await asignarEmpresa({
             id_concesion: concesion.id_concesion,
             id_empresa: Number(values.id_empresa),
             fecha_inicio: values.fecha_inicio ? values.fecha_inicio.toISOString().split('T')[0] : "",
@@ -100,7 +100,7 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
         if (!confirm(`¿Estás seguro de finalizar la asignación de ${nombre}?`)) return;
 
         setLoading(true);
-        const success = await desasignar_empresa(id_asignacion);
+        const success = await desasignarEmpresa(id_asignacion);
         if (success) {
             notifications.show({
                 title: "Asignación Finalizada",

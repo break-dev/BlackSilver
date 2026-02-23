@@ -1,4 +1,4 @@
-import { Badge, Button, Select, Loader, Text } from "@mantine/core";
+import { Button, Select, Loader, Text } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import { ArrowLeftIcon, PlusIcon, BriefcaseIcon, IdentificationIcon } from "@heroicons/react/24/outline";
 import { useForm } from "@mantine/form";
@@ -6,7 +6,7 @@ import { notifications } from "@mantine/notifications";
 
 // Services
 import { useMinas } from "../../../../../services/empresas/minas/useMinas";
-import { useConcesion } from "../../../../../services/empresas/concesiones/useConcesion";
+import { useConcesiones } from "../../../../../services/empresas/concesiones/useConcesiones";
 import type { RES_Empresa } from "../../../../../services/empresas/empresas/dtos/responses";
 import type { RES_Asignacion } from "../../../../../services/empresas/concesiones/dtos/responses";
 
@@ -31,10 +31,8 @@ export const GestionEmpresasMina = ({ idMina, idConcesion, nombreMina }: Gestion
 
     // Services
     // Note: listarEmpresasAsignadas is assumed to be added to useMinas (I will add it next if I missed it, but I planned it)
-    const { asignarEmpresa } = useMinas({ setError });
-    // @ts-ignore
-    const { listarEmpresasAsignadas } = useMinas({ setError });
-    const { listar_asignaciones } = useConcesion({ setError });
+    const { asignarEmpresa, listarEmpresasAsignadas } = useMinas({ setError });
+    const { listarAsignaciones } = useConcesiones({ setError });
 
     // Load Data
     const cargarDatos = async () => {
@@ -44,7 +42,7 @@ export const GestionEmpresasMina = ({ idMina, idConcesion, nombreMina }: Gestion
             // 2. Get valid companies (contracts) in the concession
             const [misEmpresas, validEmpresas] = await Promise.all([
                 listarEmpresasAsignadas ? listarEmpresasAsignadas(idMina) : Promise.resolve([]),
-                listar_asignaciones(idConcesion)
+                listarAsignaciones(idConcesion)
             ]);
 
             if (misEmpresas) setEmpresasAsignadas(misEmpresas);

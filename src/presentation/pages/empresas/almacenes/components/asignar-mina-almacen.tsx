@@ -10,12 +10,12 @@ import { useMinas } from "../../../../../services/empresas/minas/useMinas";
 import type { RES_MinaAsignada } from "../../../../../services/empresas/almacenes/dtos/responses";
 import type { RES_Mina } from "../../../../../services/empresas/minas/dtos/responses";
 
-interface GestionAlcanceProps {
+interface AsignarMinaAlmacenProps {
     idAlmacen: number;
     nombreAlmacen?: string;
 }
 
-export const GestionAlcance = ({ idAlmacen, nombreAlmacen }: GestionAlcanceProps) => {
+export const AsignarMinaAlmacen = ({ idAlmacen, nombreAlmacen }: AsignarMinaAlmacenProps) => {
 
     // States
     const [loading, setLoading] = useState(true);
