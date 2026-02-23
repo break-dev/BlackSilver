@@ -78,12 +78,12 @@ export const useMinas = ({ setError }: IUseHook) => {
         try {
             const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-responsable`, dto);
             const result = response.data;
-            if (result.success) return true;
-            setError(result.message);
-            return false;
+            if (!result.success) setError(result.message);
+            return result;
         } catch (error) {
-            setError(String(error));
-            return false;
+            const msg = String(error);
+            setError(msg);
+            return { success: false, message: msg, data: false };
         }
     };
 

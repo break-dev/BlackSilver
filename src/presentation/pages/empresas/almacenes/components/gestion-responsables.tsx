@@ -24,7 +24,7 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
     // Data State
     const [responsables, setResponsables] = useState<RES_ResponsableAlmacen[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [, setError] = useState("");
 
     // UI State
     const [showForm, setShowForm] = useState(false);
@@ -84,14 +84,14 @@ export const GestionResponsables = ({ idAlmacen, nombreAlmacen }: GestionRespons
         }
 
         setSubmitting(true);
-        const ok = await asignarResponsable(validation.data);
-        if (ok) {
+        const result = await asignarResponsable(validation.data);
+        if (result.success) {
             notifications.show({ title: "Asignado", message: "Nuevo responsable registrado.", color: "green" });
             setShowForm(false);
             setNuevoResponsable(null);
             setFechaInicio(new Date());
         } else {
-            setAssignError(error || "Error al asignar.");
+            setAssignError(result.message || "Error al asignar.");
         }
         setSubmitting(false);
     };

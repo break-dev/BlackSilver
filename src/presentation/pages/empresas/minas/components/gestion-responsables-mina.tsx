@@ -22,7 +22,7 @@ export const GestionResponsablesMina = ({ idMina, nombreMina }: GestionResponsab
     // Data State
     const [responsables, setResponsables] = useState<RES_ResponsableMina[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [, setError] = useState("");
 
     // UI State
     const [showForm, setShowForm] = useState(false);
@@ -67,19 +67,19 @@ export const GestionResponsablesMina = ({ idMina, nombreMina }: GestionResponsab
         }
 
         setSubmitting(true);
-        const ok = await asignarResponsable({
+        const result = await asignarResponsable({
             id_mina: idMina,
             id_usuario_empresa: Number(nuevoResponsable),
             fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD")
         });
 
-        if (ok) {
+        if (result.success) {
             notifications.show({ title: "Asignado", message: "Nuevo responsable de mina registrado.", color: "green" });
             setShowForm(false);
             setNuevoResponsable(null);
             setFechaInicio(new Date());
         } else {
-            setAssignError(error || "Error al asignar.");
+            setAssignError(result.message || "Error al asignar.");
         }
         setSubmitting(false);
     };

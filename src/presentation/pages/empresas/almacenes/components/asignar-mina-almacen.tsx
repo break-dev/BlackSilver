@@ -1,4 +1,4 @@
-import { Badge, Button, Select, Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
+import { Button, Select, Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import { ArrowLeftIcon, PlusIcon, CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useForm } from "@mantine/form";
@@ -203,7 +203,9 @@ export const AsignarMinaAlmacen = ({ idAlmacen, nombreAlmacen }: AsignarMinaAlma
                                 </div>
                                 <div>
                                     <Text fw={600} className="text-zinc-200">{item.mina}</Text>
-                                    <Badge size="xs" variant="dot" color="gray">{item.concesion}</Badge>
+                                    <Text size="xs" className="text-zinc-500 font-medium mt-0.5">
+                                        Concesión: <span className="text-zinc-400 font-normal">{item.concesion}</span>
+                                    </Text>
                                 </div>
                             </div>
                             <Tooltip label="Desvincular Mina">
