@@ -118,15 +118,15 @@ export const App = () => {
         />
         {/* Solicitudes de Almacen */}
         <Route
-          path="/logistica/almacen/solicitudes"
-          element={<PlaceholderPage titulo="Solicitudes" />}
+          path="/logistica/requerimientos_almacen/requerimientos"
+          element={<PlaceholderPage titulo="Requerimientos" />}
         />
         <Route
-          path="/logistica/almacen/atenciones"
+          path="/logistica/requerimientos_almacen/atencion"
           element={<PlaceholderPage titulo="Atenciones" />}
         />
         <Route
-          path="/logistica/almacen/entregas"
+          path="/logistica/requerimientos_almacen/entregas"
           element={<PlaceholderPage titulo="Entregas" />}
         />
         //#endregion

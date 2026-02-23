@@ -25,7 +25,7 @@ export const iconos_menu_navegacion = [
     icono: TruckIcon,
     submodulos: [
       { submodulo_path: "inventario", icono: ClipboardDocumentListIcon },
-      { submodulo_path: "solicitudes_almacen", icono: DocumentTextIcon },
+      { submodulo_path: "requerimientos_almacen", icono: DocumentTextIcon },
     ],
   },
 ];
