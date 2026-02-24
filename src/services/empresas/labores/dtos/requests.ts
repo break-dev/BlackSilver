@@ -19,3 +19,9 @@ export const Schema_CrearLabor = z.object({
 });
 
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;
+
+export interface DTO_AsignarResponsableLabor {
+  id_labor: number;
+  id_usuario: number;
+  fecha_inicio: string;
+}

@@ -26,3 +26,14 @@ export interface RES_TipoLabor {
   nombre: string;
   is_produccion: number | boolean;
 }
+
+export interface RES_HistorialResponsableLabor {
+  id_asignacion: number;
+  id_usuario: number;
+  nombres: string;
+  apellidos: string;
+  usuario_nombre: string;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  estado: string;
+}

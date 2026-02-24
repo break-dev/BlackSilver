@@ -17,7 +17,7 @@ export const useMenu = ({ setError }: IUseHook) => {
       if (result.success) {
         MenuStore.getState().updateMenu(result.data as IModulo[]);
       } else {
-        setError(result.error);
+        setError(result.message);
       }
     } catch (error) {
       setError(String(error));

@@ -17,7 +17,7 @@ export const useUsuario = ({ setError }: IUseHook) => {
         AuthStore.getState().updateAuth(result.data as RES_Login);
         return true; // Login successful
       } else {
-        setError(result.error);
+        setError(result.message);
         return false;
       }
     } catch (error) {

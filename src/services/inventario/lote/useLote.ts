@@ -18,7 +18,7 @@ export const useLote = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error);
+                setError(result.message);
                 return null;
             }
         } catch (error) {
@@ -45,7 +45,7 @@ export const useLote = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error || result.message || "");
+                setError(result.message);
                 return null;
             }
         } catch (error) {
@@ -63,7 +63,7 @@ export const useLote = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error);
+                setError(result.message);
                 return null;
             }
         } catch (error) {
@@ -81,7 +81,7 @@ export const useLote = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error);
+                setError(result.message);
                 return null;
             }
         } catch (error) {

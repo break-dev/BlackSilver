@@ -1,8 +1,8 @@
 import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { IRespuesta } from "../../../shared/response";
-import type { RES_Labor, RES_TipoLabor } from "./dtos/responses";
-import type { DTO_CrearLabor } from "./dtos/requests";
+import type { RES_Labor, RES_TipoLabor, RES_HistorialResponsableLabor } from "./dtos/responses";
+import type { DTO_CrearLabor, DTO_AsignarResponsableLabor } from "./dtos/requests";
 
 export const useLabores = ({ setError }: IUseHook) => {
     const path = "/labores";
@@ -63,9 +63,41 @@ export const useLabores = ({ setError }: IUseHook) => {
         }
     };
 
+    // 4. Historial de Responsables
+    const historial_responsables = async (idLabor: number) => {
+        setError("");
+        try {
+            const response = await api.get<IRespuesta<RES_HistorialResponsableLabor[]>>(`${path}/historial-responsables/${idLabor}`);
+            const result = response.data;
+            if (result.success) return result.data;
+            setError(result.message);
+            return [];
+        } catch (error) {
+            setError(String(error));
+            return [];
+        }
+    };
+
+    // 5. Asignar Responsable
+    const asignar_responsable = async (dto: DTO_AsignarResponsableLabor) => {
+        setError("");
+        try {
+            const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-responsable`, dto);
+            const result = response.data;
+            if (result.success) return true;
+            setError(result.message);
+            return false;
+        } catch (error) {
+            setError(String(error));
+            return false;
+        }
+    };
+
     return {
         listar,
         listarTipos,
         crearLabor,
+        historial_responsables,
+        asignar_responsable
     };
 };

@@ -1,4 +1,4 @@
-import { Button, Group, NumberInput, Select, Text, TextInput, Table, ActionIcon, Stack, Paper, Badge, Loader } from "@mantine/core";
+import { Button, Group, NumberInput, Select, Text, TextInput, Table, ActionIcon, Stack, Paper, Badge } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";

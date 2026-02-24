@@ -16,7 +16,7 @@ export const useKardex = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error);
+                setError(result.message || "Error al obtener movimientos");
                 return null;
             }
         } catch (error) {
@@ -36,7 +36,7 @@ export const useKardex = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error);
+                setError(result.message || "Error al obtener movimientos");
                 return null;
             }
         } catch (error) {
