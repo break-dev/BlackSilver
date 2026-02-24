@@ -18,7 +18,7 @@ export interface RES_ProductoDisponible {
     id_producto: number;
     nombre: string;
     categoria: string;
-    es_perecible: number | boolean;
+    es_perecible: 0 | 1;
 }
 
 export interface RES_UnidadMedida {

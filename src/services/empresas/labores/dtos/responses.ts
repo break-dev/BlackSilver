@@ -6,7 +6,7 @@ export interface RES_Labor {
   mina: string;
   empresa: string;
   tipo_labor_nombre: string;
-  is_produccion: number | boolean;
+  is_produccion: 0 | 1;
   codigo_correlativo: string;
   nombre: string;
   descripcion: string | null;
@@ -24,7 +24,7 @@ export interface RES_TipoLabor {
   id_tipo_labor: number;
   codigo: string;
   nombre: string;
-  is_produccion: number | boolean;
+  is_produccion: 0 | 1;
 }
 
 export interface RES_HistorialResponsableLabor {
