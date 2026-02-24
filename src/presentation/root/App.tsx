@@ -15,6 +15,7 @@ import { AlmacenesPage } from "../pages/empresas/almacenes/almacenes";
 import { InventarioProductos } from "../pages/inventario/productos/productos";
 import { LotesPage } from "../pages/inventario/lotes/lotes";
 import { KardexPage } from "../pages/inventario/kardex/kardex";
+import { RequerimientosPage } from "../pages/requerimientos_almacen/requerimientos/requerimientos";
 
 export const App = () => {
   return (
@@ -119,7 +120,7 @@ export const App = () => {
         {/* Solicitudes de Almacen */}
         <Route
           path="/logistica/requerimientos_almacen/requerimientos"
-          element={<PlaceholderPage titulo="Requerimientos" />}
+          element={<RequerimientosPage />}
         />
         <Route
           path="/logistica/requerimientos_almacen/atencion"

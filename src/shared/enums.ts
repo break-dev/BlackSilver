@@ -26,3 +26,18 @@ export enum TipoBien {
   Materiales = "Materiales",
   ActivoFijo = "Activo Fijo",
 }
+
+export enum Premura {
+  Normal = "Normal",
+  Urgente = "Urgente",
+  Emergencia = "Emergencia",
+}
+
+export enum EstadoRequerimiento {
+  Generada = "Generada",
+  Pendiente = "Pendiente",
+  Aprobado = "Aprobado",
+  Atendido = "Atendido",
+  Rechazado = "Rechazado",
+  Anulado = "Anulado",
+}
