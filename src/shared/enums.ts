@@ -35,9 +35,16 @@ export enum Premura {
 
 export enum EstadoRequerimiento {
   Generada = "Generada",
+  Cerrada = "Cerrada",
+  Anulada = "Anulada",
+}
+
+export enum EstadoDetalleRequerimiento {
   Pendiente = "Pendiente",
-  Aprobado = "Aprobado",
-  Atendido = "Atendido",
-  Rechazado = "Rechazado",
-  Anulado = "Anulado",
+  AprobacionLogistica = "Aprobación - Logística",
+  DespachoIniciado = "Despacho iniciado",
+  NuevaEntrega = "Nueva entrega",
+  RechazadoLogistica = "Rechazado - Logística",
+  Completado = "Completado",
+  Cerrado = "Cerrado",
 }

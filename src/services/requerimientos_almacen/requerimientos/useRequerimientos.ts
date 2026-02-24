@@ -1,7 +1,7 @@
 import { api } from "../../api";
 import type { IRespuesta } from "../../../shared/response";
 import type { IUseHook } from "../../hook.interface";
-import type { RES_RequerimientoAlmacen } from "./dtos/responses";
+import type { RES_RequerimientoAlmacen, RES_RequerimientoDetalleCompleto, RES_TrazabilidadEvento } from "./dtos/responses";
 import type { DTO_CrearRequerimiento } from "./dtos/requests";
 import type { RES_Almacen } from "../../empresas/almacenes/dtos/responses";
 
@@ -26,8 +26,6 @@ export const useRequerimientos = ({ setError }: IUseHook) => {
             setError(result.message);
             return [];
         } catch (error: any) {
-            // Si es 404 No Encontrado, no es realmente un error para el usuario,
-            // sino que simplemente no hay registros para esa mina.
             if (error?.response?.status !== 404) {
                 setError(String(error));
             }
@@ -50,11 +48,13 @@ export const useRequerimientos = ({ setError }: IUseHook) => {
         }
     };
 
-    // 3. Obtener Detalle
+    // 3. Obtener Detalle Completo (El "Ojito")
     const obtenerDetalle = async (id: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_RequerimientoAlmacen>>(`${path}/${id}`);
+            const response = await api.post<IRespuesta<RES_RequerimientoDetalleCompleto>>(`${path}/obtener-por-id`, {
+                id_requerimiento: id
+            });
             const result = response.data;
             if (result.success) return result.data;
             setError(result.message);
@@ -65,7 +65,24 @@ export const useRequerimientos = ({ setError }: IUseHook) => {
         }
     };
 
-    // 4. Listar Almacenes por Mina
+    // 4. Trazabilidad del Item (El "Relojito")
+    const obtenerTrazabilidad = async (idDetalle: number) => {
+        setError("");
+        try {
+            const response = await api.post<IRespuesta<RES_TrazabilidadEvento[]>>(`${path}/detalle/trazabilidad`, {
+                id_requerimiento_almacen_detalle: idDetalle
+            });
+            const result = response.data;
+            if (result.success) return result.data;
+            setError(result.message);
+            return [];
+        } catch (error) {
+            setError(String(error));
+            return [];
+        }
+    };
+
+    // 5. Listar Almacenes por Mina
     const listarAlmacenesPorMina = async (idMina: number) => {
         setError("");
         try {
@@ -88,6 +105,7 @@ export const useRequerimientos = ({ setError }: IUseHook) => {
         listar,
         crear,
         obtenerDetalle,
+        obtenerTrazabilidad,
         listarAlmacenesPorMina,
     };
 };

@@ -3,10 +3,10 @@ import { Premura } from "../../../../shared/enums";
 
 export interface DTO_CrearRequerimiento {
     id_mina: number;
-    id_labor?: number | null;
+    id_labores?: number[] | null;
     id_almacen_destino: number;
     premura: Premura;
-    fecha_entrega_requerida: string;
+    fecha_entrega_requerida?: string | null;
     detalles: DTO_CrearRequerimientoDetalle[];
 }
 
@@ -27,9 +27,9 @@ export const Schema_CrearRequerimientoDetalle = z.object({
 
 export const Schema_CrearRequerimiento = z.object({
     id_mina: z.number().min(1, "Seleccione una mina"),
-    id_labor: z.number().nullable().optional(),
+    id_labores: z.array(z.number()).nullable().optional(),
     id_almacen_destino: z.number().min(1, "Seleccione un almacén de destino"),
     premura: z.nativeEnum(Premura),
-    fecha_entrega_requerida: z.string().min(1, "Seleccione una fecha de entrega"),
+    fecha_entrega_requerida: z.string().nullable().optional(),
     detalles: z.array(Schema_CrearRequerimientoDetalle).min(1, "Debe agregar al menos un producto"),
 });

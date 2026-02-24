@@ -1,7 +1,7 @@
-import { Badge, Button, Stack, Text, TextInput, Group } from "@mantine/core";
+import { Badge, Button, Stack, Text, TextInput, Group, ActionIcon } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, useMemo } from "react";
-import { PlusIcon, MagnifyingGlassIcon, CubeIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, BuildingStorefrontIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, CubeIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, BuildingStorefrontIcon, EyeIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -13,14 +13,14 @@ import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
 import { SelectMina } from "../../../utils/select-mina";
 import { RegistroRequerimiento } from "./components/registro-requerimiento";
+import { DetalleRequerimiento } from "./components/detalle-requerimiento";
+import { TrazabilidadRequerimiento } from "./components/trazabilidad-requerimiento";
 
 const PAGE_SIZE = 35;
 
 export const RequerimientosPage = () => {
-    // 1. Store Hook (Siempre primero si el módulo lo usa)
     const setTitle = UIStore((state) => state.setTitle);
 
-    // 2. State Hooks
     const [data, setData] = useState<RES_RequerimientoAlmacen[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -28,19 +28,22 @@ export const RequerimientosPage = () => {
     const [idMina, setIdMina] = useState<string | null>(null);
     const [busqueda, setBusqueda] = useState("");
 
-    // 3. UI Hooks
+    // UI Hooks
     const [opened, { open, close }] = useDisclosure(false);
+    const [openedDetalle, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
+    const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
 
-    // 4. Servicio Hook
+    // Selected Data
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+    const [selectedItemName, setSelectedItemName] = useState("");
+
     const { listar } = useRequerimientos({ setError });
 
-    // 5. Título (Efecto independiente)
     useEffect(() => {
         setTitle("Requerimientos de Almacén");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // 6. Carga de datos (Siguiendo el flujo de Lotes/Categorías)
     useEffect(() => {
         let isCancelled = false;
 
@@ -67,10 +70,8 @@ export const RequerimientosPage = () => {
         return () => {
             isCancelled = true;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idMina]);
 
-    // 7. Filtrado Difererido
     const filteredRecords = useMemo(() => {
         const q = busqueda.toLowerCase().trim();
         const source = Array.isArray(data) ? data : [];
@@ -87,7 +88,6 @@ export const RequerimientosPage = () => {
         return filteredRecords.slice(from, from + PAGE_SIZE);
     }, [filteredRecords, page]);
 
-    // 8. Columnas
     const columns: DataTableColumn<RES_RequerimientoAlmacen>[] = useMemo(() => [
         {
             accessor: "index",
@@ -135,25 +135,18 @@ export const RequerimientosPage = () => {
         },
         {
             accessor: "mina",
-            title: "Origen",
+            title: "Origen / Mina",
             width: 180,
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
                     <MapPinIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-                    <Stack gap={0}>
-                        <Text size="sm" fw={500} className="text-zinc-100">{item.mina}</Text>
-                        {item.labor && (
-                            <Text size="xs" className="text-zinc-500 italic">
-                                {item.labor}
-                            </Text>
-                        )}
-                    </Stack>
+                    <Text size="sm" fw={500} className="text-zinc-100">{item.mina}</Text>
                 </Group>
             ),
         },
         {
             accessor: "almacen_destino",
-            title: "Destino",
+            title: "Almacén",
             width: 180,
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
@@ -173,7 +166,9 @@ export const RequerimientosPage = () => {
                     <CalendarDaysIcon className="w-5 h-5 text-zinc-500 shrink-0" />
                     <Stack gap={0}>
                         <Text size="sm" fw={600} className="text-zinc-200">
-                            {dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")}
+                            {item.fecha_entrega_requerida
+                                ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+                                : "Fecha de entrega: no especificada"}
                         </Text>
                         <Text size="xs" className="text-zinc-500">
                             Solicitado el {item.created_at ? dayjs(item.created_at).format("DD/MM/YYYY") : '-'}
@@ -189,17 +184,32 @@ export const RequerimientosPage = () => {
             render: (item) => {
                 const colors = {
                     [EstadoRequerimiento.Generada]: "green",
-                    [EstadoRequerimiento.Pendiente]: "blue",
-                    [EstadoRequerimiento.Aprobado]: "green",
-                    [EstadoRequerimiento.Atendido]: "violet",
-                    [EstadoRequerimiento.Rechazado]: "red",
-                    [EstadoRequerimiento.Anulado]: "dark",
+                    [EstadoRequerimiento.Cerrada]: "gray",
+                    [EstadoRequerimiento.Anulada]: "red",
                 };
-                const color = (item.estado && colors[item.estado]) ? colors[item.estado] : "gray";
+                const color = (item.estado && (colors as any)[item.estado]) ? (colors as any)[item.estado] : "gray";
                 return <Badge color={color} variant="light" radius="sm" size="sm" className="font-semibold uppercase tracking-wider">{item.estado}</Badge>;
             },
         },
-    ], []);
+        {
+            accessor: "acciones",
+            title: "Acciones",
+            textAlign: "center",
+            width: 80,
+            render: (item) => (
+                <ActionIcon
+                    variant="subtle"
+                    color="violet"
+                    onClick={() => {
+                        setSelectedId(item.id_requerimiento);
+                        openDetalle();
+                    }}
+                >
+                    <EyeIcon className="w-5 h-5" />
+                </ActionIcon>
+            ),
+        },
+    ], [page]);
 
     return (
         <div className="space-y-6 animate-fade-in text-zinc-100">
@@ -284,7 +294,42 @@ export const RequerimientosPage = () => {
                 />
             </ModalRegistro>
 
+            {/* Modal Detalle (Ojito) */}
+            <ModalRegistro
+                opened={openedDetalle}
+                close={closeDetalle}
+                title="Detalle del Requerimiento"
+                size="85%"
+            >
+                {selectedId && (
+                    <DetalleRequerimiento
+                        idRequerimiento={selectedId}
+                        onOpenTrazabilidad={(idDet, prodName) => {
+                            setSelectedItemId(idDet);
+                            setSelectedItemName(prodName);
+                            openTrace();
+                        }}
+                    />
+                )}
+            </ModalRegistro>
+
+            {/* Modal Trazabilidad (Relojito) */}
+            <ModalRegistro
+                opened={openedTrace}
+                close={closeTrace}
+                title="Seguimiento de tu requerimiento"
+                size="md"
+            >
+                {selectedItemId && (
+                    <TrazabilidadRequerimiento
+                        idDetalle={selectedItemId}
+                        productoNombre={selectedItemName}
+                    />
+                )}
+            </ModalRegistro>
+
             {error && <Text c="red" size="sm" mt="md">{error}</Text>}
         </div>
     );
 };
+
