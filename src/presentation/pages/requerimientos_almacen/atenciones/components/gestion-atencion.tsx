@@ -10,6 +10,7 @@ import {
     MapPinIcon,
     BuildingStorefrontIcon,
     CalendarDaysIcon,
+    CheckBadgeIcon,
     ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
@@ -114,50 +115,111 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
 
     return (
         <Stack gap="xl" className="pb-10">
-            {/* Cabecera Estructurada */}
+            {/* Header: Datos Principales (Diseño Integrado) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
-                        <UserIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Solicitante</Text>
-                        <Text size="md" fw={900} className="text-white">{detalle.solicitante}</Text>
-                    </div>
+                <Paper p="md" radius="lg" className="bg-indigo-500/[0.06] border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/[0.1] transition-all">
+                    <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <UserIcon className="w-4 h-4 text-indigo-400" />
+                            <Text size="xs" c="indigo.3" fw={800} className="uppercase tracking-widest">Solicitante</Text>
+                        </Group>
+                        <Text size="md" fw={900} className="text-white tracking-tight leading-tight">{detalle.solicitante}</Text>
+                    </Stack>
                 </Paper>
 
-                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
-                        <BuildingStorefrontIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Cód. Requerimiento</Text>
-                        <Text size="md" fw={900} className="text-white">{detalle.codigo_requerimiento}</Text>
-                    </div>
+                <Paper p="md" radius="lg" className="bg-violet-500/[0.06] border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/[0.1] transition-all">
+                    <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <CheckBadgeIcon className="w-4 h-4 text-violet-400" />
+                            <Text size="xs" c="violet.3" fw={800} className="uppercase tracking-widest">Cód. Requerimiento</Text>
+                        </Group>
+                        <Text size="md" fw={900} className="text-zinc-100 tracking-tight leading-tight">{detalle.codigo_requerimiento}</Text>
+                    </Stack>
                 </Paper>
 
-                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400">
-                        <MapPinIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Mina</Text>
-                        <Text size="sm" fw={600} className="text-zinc-100">{detalle.mina}</Text>
-                    </div>
+                <Paper p="md" radius="lg" className="bg-amber-500/[0.06] border border-amber-500/20 relative overflow-hidden group hover:bg-amber-500/[0.1] transition-all">
+                    <MapPinIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-amber-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <MapPinIcon className="w-4 h-4 text-amber-500" />
+                            <Text size="xs" c="amber.5" fw={800} className="uppercase tracking-widest">Mina</Text>
+                        </Group>
+                        <Text size="md" fw={800} className="text-zinc-100 tracking-tight leading-tight">{detalle.mina}</Text>
+                    </Stack>
                 </Paper>
 
-                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400">
-                        <CalendarDaysIcon className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Fecha Requerida</Text>
-                        <Text size="sm" fw={600} className="text-zinc-100">
-                            {detalle.fecha_entrega_requerida ? dayjs(detalle.fecha_entrega_requerida).format("DD/MM/YYYY") : "No especificada"}
-                        </Text>
-                    </div>
+                <Paper p="md" radius="lg" className="bg-emerald-500/[0.06] border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/[0.1] transition-all">
+                    <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-emerald-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <BuildingStorefrontIcon className="w-4 h-4 text-emerald-500" />
+                            <Text size="xs" c="emerald.5" fw={800} className="uppercase tracking-widest">Almacén Destino</Text>
+                        </Group>
+                        <Text size="md" fw={800} className="text-zinc-100 tracking-tight leading-tight italic">{detalle.almacen_destino}</Text>
+                    </Stack>
                 </Paper>
             </div>
+
+            {/* Sub-header: Estados, Fechas y Labores */}
+            <Paper p="md" radius="lg" bg="transparent" className="border border-zinc-800/50 mx-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {/* Prioridad */}
+                    <Stack gap={4}>
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Prioridad</Text>
+                        <Badge color="orange" variant="light" size="sm" radius="sm" className="border border-orange-900/30 font-bold">
+                            {detalle.premura}
+                        </Badge>
+                    </Stack>
+
+                    {/* Estado */}
+                    <Stack gap={4}>
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Estado</Text>
+                        <Badge color="green" variant="light" size="sm" radius="sm" className="border border-green-900/30 font-bold">
+                            {detalle.estado}
+                        </Badge>
+                    </Stack>
+
+                    {/* Labores */}
+                    <Stack gap={4} className="lg:col-span-1">
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Labores Asignadas</Text>
+                        <Group gap={4}>
+                            {detalle.labores && detalle.labores.length > 0 ? (
+                                detalle.labores.map(l => (
+                                    <Badge key={l.id} variant="outline" color="indigo" size="xs" className="text-[10px]">
+                                        {l.nombre}
+                                    </Badge>
+                                ))
+                            ) : (
+                                <Text size="xs" c="zinc.6" fs="italic">Sin labores asignadas</Text>
+                            )}
+                        </Group>
+                    </Stack>
+
+                    {/* Fecha Requerida */}
+                    <Stack gap={4}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                            <CalendarDaysIcon className="w-3.5 h-3.5 text-rose-500" />
+                            <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Fecha Requerida</Text>
+                        </div>
+                        <Text size="sm" fw={800} className="text-zinc-100 italic">
+                            {detalle.fecha_entrega_requerida ? dayjs(detalle.fecha_entrega_requerida).format("DD/MM/YYYY") : "No especificada"}
+                        </Text>
+                    </Stack>
+
+                    {/* Fecha Registro */}
+                    <Stack gap={4}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                            <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
+                            <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Fecha de Registro</Text>
+                        </div>
+                        <Text size="sm" fw={400} className="text-zinc-400 font-mono">
+                            {dayjs(detalle.created_at).format("DD/MM/YYYY HH:mm")}
+                        </Text>
+                    </Stack>
+                </div>
+            </Paper>
 
             {/* Barra de Progreso */}
             <Paper p="md" radius="xl" bg="zinc.9/50" className="border border-zinc-800">

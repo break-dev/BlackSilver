@@ -1,6 +1,6 @@
 import { Badge, Group, Loader, Paper, Stack, Table, Text, ActionIcon, Tooltip } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { ClockIcon, CubeIcon, ShieldCheckIcon, ListBulletIcon, UserIcon, MapPinIcon, BuildingStorefrontIcon, CalendarDaysIcon, CheckBadgeIcon, BoltIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, CubeIcon, ListBulletIcon, UserIcon, MapPinIcon, BuildingStorefrontIcon, CalendarDaysIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
 import { useRequerimientos } from "../../../../../services/requerimientos_almacen/requerimientos/useRequerimientos";
@@ -46,110 +46,109 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
 
     return (
         <Stack gap="xl" className="animate-fade-in">
-            {/* Cabecera Informativa Multisección */}
-            <Paper p="lg" radius="xl" bg="zinc.9" className="border border-zinc-800 shadow-2xl relative overflow-hidden">
-                {/* Branding sutil de fondo */}
-                <div className="absolute top-0 right-0 p-6 opacity-[0.03] pointer-events-none">
-                    <ShieldCheckIcon className="w-48 h-48 text-white rotate-12" />
-                </div>
+            {/* Header: Datos Principales (Diseño Integrado) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                <Paper p="md" radius="lg" className="bg-indigo-500/[0.06] border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/[0.1] transition-all">
+                    <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <UserIcon className="w-4 h-4 text-indigo-400" />
+                            <Text size="xs" c="indigo.3" fw={800} className="uppercase tracking-widest">Solicitante</Text>
+                        </Group>
+                        <Text size="md" fw={900} className="text-white tracking-tight leading-tight">{detalle.solicitante}</Text>
+                    </Stack>
+                </Paper>
 
-                <div className="space-y-6 relative z-10">
-                    {/* Fila 1: Datos Principales */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pb-6 border-b border-zinc-800/50">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <UserIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Solicitante</Text>
-                            </div>
-                            <Text size="lg" fw={900} className="text-white tracking-tighter leading-tight">
-                                {detalle.solicitante}
-                            </Text>
-                        </div>
+                <Paper p="md" radius="lg" className="bg-violet-500/[0.06] border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/[0.1] transition-all">
+                    <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <CheckBadgeIcon className="w-4 h-4 text-violet-400" />
+                            <Text size="xs" c="violet.3" fw={800} className="uppercase tracking-widest">Correlativo</Text>
+                        </Group>
+                        <Text size="md" fw={900} className="text-zinc-100 tracking-tight leading-tight">{detalle.codigo_requerimiento}</Text>
+                    </Stack>
+                </Paper>
 
-                        <div className="space-y-1">
-                            <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider mb-1">Correlativo</Text>
-                            <Text size="lg" fw={900} className="text-indigo-500 tracking-tighter leading-tight">
-                                {detalle.codigo_requerimiento}
-                            </Text>
-                        </div>
+                <Paper p="md" radius="lg" className="bg-amber-500/[0.06] border border-amber-500/20 relative overflow-hidden group hover:bg-amber-500/[0.1] transition-all">
+                    <MapPinIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-amber-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <MapPinIcon className="w-4 h-4 text-amber-500" />
+                            <Text size="xs" c="amber.5" fw={800} className="uppercase tracking-widest">Origen / Mina</Text>
+                        </Group>
+                        <Text size="md" fw={800} className="text-zinc-100 tracking-tight leading-tight">{detalle.mina}</Text>
+                    </Stack>
+                </Paper>
 
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <MapPinIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Origen / Mina</Text>
-                            </div>
-                            <Text size="sm" fw={700} className="text-white">{detalle.mina}</Text>
-                        </div>
+                <Paper p="md" radius="lg" className="bg-emerald-500/[0.06] border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/[0.1] transition-all">
+                    <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-emerald-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+                    <Stack gap={2} className="relative z-10">
+                        <Group gap={6}>
+                            <BuildingStorefrontIcon className="w-4 h-4 text-emerald-500" />
+                            <Text size="xs" c="emerald.5" fw={800} className="uppercase tracking-widest">Almacén Destino</Text>
+                        </Group>
+                        <Text size="md" fw={800} className="text-zinc-100 tracking-tight leading-tight italic">{detalle.almacen_destino}</Text>
+                    </Stack>
+                </Paper>
+            </div>
 
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <BuildingStorefrontIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Almacén Destino</Text>
-                            </div>
-                            <Text size="sm" fw={700} className="text-zinc-200 italic">{detalle.almacen_destino}</Text>
-                        </div>
-                    </div>
+            {/* Sub-header: Estados, Fechas y Labores */}
+            <Paper p="md" radius="lg" bg="transparent" className="border border-zinc-800/50 mx-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {/* Prioridad */}
+                    <Stack gap={4}>
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Prioridad</Text>
+                        <Badge color="orange" variant="light" size="sm" radius="sm" className="border border-orange-900/30 font-bold">
+                            {detalle.premura}
+                        </Badge>
+                    </Stack>
 
-                    {/* Fila 2: Fechas y Estados */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2 pb-2">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Fecha Requerida</Text>
-                            </div>
-                            <Text size="sm" fw={600} className="text-zinc-100">
-                                {detalle.fecha_entrega_requerida ? dayjs(detalle.fecha_entrega_requerida).format("DD/MM/YYYY") : "No especificada"}
-                            </Text>
-                        </div>
+                    {/* Estado */}
+                    <Stack gap={4}>
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Estado</Text>
+                        <Badge color="green" variant="light" size="sm" radius="sm" className="border border-green-900/30 font-bold">
+                            {detalle.estado}
+                        </Badge>
+                    </Stack>
 
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-400" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Fecha Registro</Text>
-                            </div>
-                            <Text size="sm" fw={500} className="text-zinc-400 font-mono">
-                                {dayjs(detalle.created_at).format("DD/MM/YYYY HH:mm")}
-                            </Text>
-                        </div>
+                    {/* Labores */}
+                    <Stack gap={4} className="lg:col-span-1">
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Labores Destino Asignadas</Text>
+                        <Group gap={4}>
+                            {detalle.labores && detalle.labores.length > 0 ? (
+                                detalle.labores.map(l => (
+                                    <Badge key={l.id} variant="outline" color="indigo" size="xs" className="text-[10px]">
+                                        {l.nombre}
+                                    </Badge>
+                                ))
+                            ) : (
+                                <Text size="xs" c="zinc.6" fs="italic">Sin labores asignadas</Text>
+                            )}
+                        </Group>
+                    </Stack>
 
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <CheckBadgeIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Estado Actual</Text>
-                            </div>
-                            <Badge color="green" variant="light" radius="sm" size="sm" className="font-bold border border-green-900/40">
-                                {detalle.estado}
-                            </Badge>
+                    {/* Fecha Requerida */}
+                    <Stack gap={4}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                            <CalendarDaysIcon className="w-3.5 h-3.5 text-rose-500" />
+                            <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Fecha Requerida</Text>
                         </div>
+                        <Text size="sm" fw={800} className="text-zinc-100 italic">
+                            {detalle.fecha_entrega_requerida ? dayjs(detalle.fecha_entrega_requerida).format("DD/MM/YYYY") : "No especificada"}
+                        </Text>
+                    </Stack>
 
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <BoltIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Prioridad</Text>
-                            </div>
-                            <Badge color="orange" variant="light" radius="sm" size="sm" className="font-bold border border-orange-900/40">
-                                {detalle.premura}
-                            </Badge>
+                    {/* Fecha Registro */}
+                    <Stack gap={4}>
+                        <div className="flex items-center gap-1.5 font-bold">
+                            <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
+                            <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Fecha de Registro</Text>
                         </div>
-                    </div>
-
-                    {/* Fila 3: Labores */}
-                    <div className="pt-6 border-t border-zinc-800/50">
-                        <div className="space-y-2">
-                            <Text size="xs" c="dimmed" fw={700} className="uppercase tracking-wider">Labores Destino Asignadas</Text>
-                            <Group gap={6}>
-                                {detalle.labores.length > 0 ? (
-                                    detalle.labores.map(l => (
-                                        <Badge key={l.id} variant="light" color="indigo" size="xs" radius="md" className="py-2.5 px-3">
-                                            {l.nombre}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <Text size="xs" c="zinc.5" fs="italic">Sin asignar</Text>
-                                )}
-                            </Group>
-                        </div>
-                    </div>
+                        <Text size="sm" fw={400} className="text-zinc-400 font-mono">
+                            {dayjs(detalle.created_at).format("DD/MM/YYYY HH:mm")}
+                        </Text>
+                    </Stack>
                 </div>
             </Paper>
 
