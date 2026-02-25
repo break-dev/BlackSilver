@@ -42,12 +42,14 @@ export interface RES_RequerimientoDetalleCompleto {
     labores: { id: number; nombre: string }[];
     detalles: {
         id_requerimiento_detalle: number;
+        id_producto: number;
         producto: string;
         es_fiscalizado: boolean | number;
         es_perecible: boolean | number;
         unidad_medida: string;
         cantidad_solicitada: number;
         cantidad_atendida: number;
+        stock_disponible?: number; // Stock total REAL en este almacén
         comentario: string | null;
         estado: string;
     }[];

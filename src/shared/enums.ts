@@ -33,12 +33,14 @@ export enum Premura {
   Emergencia = "Emergencia",
 }
 
+// Sincronizado con PHP: EstadoRequerimiento
 export enum EstadoRequerimiento {
   Generada = "Generada",
   Cerrada = "Cerrada",
   Anulada = "Anulada",
 }
 
+// Sincronizado con PHP: EstadoDetalleRequerimiento
 export enum EstadoDetalleRequerimiento {
   Pendiente = "Pendiente",
   AprobacionLogistica = "Aprobación - Logística",

@@ -16,6 +16,7 @@ import { InventarioProductos } from "../pages/inventario/productos/productos";
 import { LotesPage } from "../pages/inventario/lotes/lotes";
 import { KardexPage } from "../pages/inventario/kardex/kardex";
 import { RequerimientosPage } from "../pages/requerimientos_almacen/requerimientos/requerimientos";
+import { AtencionesPage } from "../pages/requerimientos_almacen/atenciones/atenciones";
 
 export const App = () => {
   return (
@@ -124,7 +125,7 @@ export const App = () => {
         />
         <Route
           path="/logistica/requerimientos_almacen/atencion"
-          element={<PlaceholderPage titulo="Atenciones" />}
+          element={<AtencionesPage />}
         />
         <Route
           path="/logistica/requerimientos_almacen/entregas"

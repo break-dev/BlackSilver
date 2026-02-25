@@ -1,0 +1,410 @@
+import { Badge, Group, Loader, Paper, Stack, Table, Text, ActionIcon, Tooltip, Button, Textarea, Modal } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { useEffect, useState } from "react";
+import {
+    ClockIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    TruckIcon,
+    UserIcon,
+    MapPinIcon,
+    BuildingStorefrontIcon,
+    CalendarDaysIcon,
+    ExclamationTriangleIcon
+} from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
+
+import { useRequerimientos } from "../../../../../services/requerimientos_almacen/requerimientos/useRequerimientos";
+import { useEntregas } from "../../../../../services/requerimientos_almacen/atenciones/useEntregas";
+import type { RES_RequerimientoDetalleCompleto } from "../../../../../services/requerimientos_almacen/requerimientos/dtos/responses";
+import { EstadoDetalleRequerimiento } from "../../../../../shared/enums";
+import { TrazabilidadRequerimiento } from "../../requerimientos/components/trazabilidad-requerimiento";
+import { ModalRegistro } from "../../../../utils/modal-registro";
+import { RegistrarEntrega } from "./registrar-entrega.tsx";
+
+interface GestionAtencionProps {
+    idRequerimiento: number;
+    idAlmacen: number;
+    onSuccess: () => void;
+}
+
+export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: GestionAtencionProps) => {
+    const [loading, setLoading] = useState(true);
+    const [detalle, setDetalle] = useState<RES_RequerimientoDetalleCompleto | null>(null);
+    const [, setError] = useState("");
+
+    // Modal Control
+    const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
+    const [openedEntrega, { open: openEntrega, close: closeEntrega }] = useDisclosure(false);
+    const [openedRechazo, { open: openRechazo, close: closeRechazo }] = useDisclosure(false);
+
+    // Selected Data
+    const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+    const [selectedIdProducto, setSelectedIdProducto] = useState<number | null>(null);
+    const [selectedItemName, setSelectedItemName] = useState("");
+    const [rechazoMotivo, setRechazoMotivo] = useState("");
+
+    const { obtenerDetalle } = useRequerimientos({ setError });
+    const { cambiarEstadoDetalle } = useEntregas({ setError });
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const res = await obtenerDetalle(idRequerimiento);
+            if (res) setDetalle(res);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, [idRequerimiento]);
+
+    const handleAprobar = async (idDetalle: number) => {
+        const ok = await cambiarEstadoDetalle({
+            id_requerimiento_almacen_detalle: idDetalle,
+            nuevo_estado: EstadoDetalleRequerimiento.AprobacionLogistica
+        });
+        if (ok) {
+            loadData();
+            onSuccess();
+        }
+    };
+
+    const handleRechazar = async () => {
+        if (!selectedItemId) return;
+        const ok = await cambiarEstadoDetalle({
+            id_requerimiento_almacen_detalle: selectedItemId,
+            nuevo_estado: EstadoDetalleRequerimiento.RechazadoLogistica,
+            comentario_rechazo: rechazoMotivo
+        });
+        if (ok) {
+            closeRechazo();
+            setRechazoMotivo("");
+            loadData();
+            onSuccess();
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case EstadoDetalleRequerimiento.Pendiente: return "blue";
+            case EstadoDetalleRequerimiento.AprobacionLogistica: return "violet";
+            case EstadoDetalleRequerimiento.DespachoIniciado: return "orange";
+            case EstadoDetalleRequerimiento.Completado: return "teal";
+            case EstadoDetalleRequerimiento.RechazadoLogistica: return "red";
+            default: return "zinc";
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-20">
+                <Loader color="indigo" size="lg" />
+            </div>
+        );
+    }
+
+    if (!detalle) return null;
+
+    const progresoGeneral = detalle.detalles.length > 0
+        ? Math.round((detalle.detalles.filter(d => d.estado === EstadoDetalleRequerimiento.Completado).length / detalle.detalles.length) * 100)
+        : 0;
+
+    return (
+        <Stack gap="xl" className="pb-10">
+            {/* Cabecera Estructurada */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
+                        <UserIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Solicitante</Text>
+                        <Text size="md" fw={900} className="text-white">{detalle.solicitante}</Text>
+                    </div>
+                </Paper>
+
+                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400">
+                        <BuildingStorefrontIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Cód. Requerimiento</Text>
+                        <Text size="md" fw={900} className="text-white">{detalle.codigo_requerimiento}</Text>
+                    </div>
+                </Paper>
+
+                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400">
+                        <MapPinIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Mina</Text>
+                        <Text size="sm" fw={600} className="text-zinc-100">{detalle.mina}</Text>
+                    </div>
+                </Paper>
+
+                <Paper p="md" radius="lg" bg="zinc.9/20" className="border border-zinc-800 flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400">
+                        <CalendarDaysIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <Text size="xs" c="zinc.5" fw={700} className="uppercase tracking-wider">Fecha Requerida</Text>
+                        <Text size="sm" fw={600} className="text-zinc-100">
+                            {detalle.fecha_entrega_requerida ? dayjs(detalle.fecha_entrega_requerida).format("DD/MM/YYYY") : "No especificada"}
+                        </Text>
+                    </div>
+                </Paper>
+            </div>
+
+            {/* Barra de Progreso */}
+            <Paper p="md" radius="xl" bg="zinc.9/50" className="border border-zinc-800">
+                <Group justify="space-between" mb={8} px={4}>
+                    <Text size="xs" fw={800} className="text-zinc-400 tracking-tighter uppercase">Progreso General de Atención</Text>
+                    <Text size="sm" fw={900} c="indigo.4">{progresoGeneral}%</Text>
+                </Group>
+                <div className="relative h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
+                        style={{ width: `${progresoGeneral}%` }}
+                    />
+                </div>
+            </Paper>
+
+            <div className="space-y-4">
+                <Group justify="space-between" align="center" px={4}>
+                    <Group gap="xs">
+                        <div className="p-1.5 bg-indigo-500/10 rounded-lg">
+                            <TruckIcon className="w-5 h-5 text-indigo-400" />
+                        </div>
+                        <Text fw={800} className="text-zinc-100 italic tracking-tight text-lg">Items Solicitados</Text>
+                    </Group>
+                    <Badge variant="light" color="indigo" radius="md">
+                        {detalle.detalles.length} {detalle.detalles.length === 1 ? 'Producto' : 'Productos'}
+                    </Badge>
+                </Group>
+
+                <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
+                    <Table verticalSpacing="md" horizontalSpacing="xl">
+                        <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
+                            <tr>
+                                <th className="px-6 py-4 text-center w-12">#</th>
+                                <th className="px-6 py-4 text-left">Producto</th>
+                                <th className="px-6 py-4 text-center">Indicadores</th>
+                                <th className="px-6 py-4 text-right">Cant. Solic.</th>
+                                <th className="px-6 py-4 text-right">Stock Disp.</th>
+                                <th className="px-6 py-4 text-center">Unidad</th>
+                                <th className="px-6 py-4 text-center">Estado</th>
+                                <th className="px-6 py-4 text-center w-36">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800/50">
+                            {detalle.detalles.map((item, idx) => (
+                                <tr key={item.id_requerimiento_detalle} className="hover:bg-zinc-900/40 transition-colors group">
+                                    <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">{idx + 1}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <Text size="sm" fw={700} className="text-zinc-100 group-hover:text-indigo-400 transition-colors">
+                                                {item.producto}
+                                            </Text>
+                                            {item.comentario && (
+                                                <Text size="xs" c="zinc.5" className="italic mt-0.5">"{item.comentario}"</Text>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <Group gap={6} justify="center">
+                                            {!!item.es_fiscalizado && (
+                                                <Tooltip label="Fiscalizado" position="top">
+                                                    <Badge size="xs" variant="light" color="red">F</Badge>
+                                                </Tooltip>
+                                            )}
+                                            {!!item.es_perecible && (
+                                                <Tooltip label="Perecible" position="top">
+                                                    <Badge size="xs" variant="light" color="orange">P</Badge>
+                                                </Tooltip>
+                                            )}
+                                            {!item.es_fiscalizado && !item.es_perecible && <Text size="xs" c="zinc.6">-</Text>}
+                                        </Group>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <Text size="sm" fw={800} className="text-white">{Number(item.cantidad_solicitada || 0).toFixed(2)}</Text>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <Text size="sm" fw={800} c={Number(item.stock_disponible || 0) < Number(item.cantidad_solicitada || 0) ? "red.4" : "emerald.4"}>
+                                            {Number(item.stock_disponible || 0).toFixed(2)}
+                                        </Text>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <Text size="xs" fw={600} c="zinc.4" className="uppercase">{item.unidad_medida}</Text>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <Badge
+                                            variant="light"
+                                            color={getStatusColor(item.estado)}
+                                            radius="sm"
+                                            size="sm"
+                                            className="font-bold tracking-tight"
+                                        >
+                                            {item.estado}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <Group gap={8} justify="center" wrap="nowrap">
+                                            {/* Acción: Trazabilidad */}
+                                            <Tooltip label="Ver Seguimiento" position="top" withArrow>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    color="zinc"
+                                                    onClick={() => {
+                                                        setSelectedItemId(item.id_requerimiento_detalle);
+                                                        setSelectedIdProducto(item.id_producto);
+                                                        setSelectedItemName(item.producto);
+                                                        openTrace();
+                                                    }}
+                                                >
+                                                    <ClockIcon className="w-4 h-4" />
+                                                </ActionIcon>
+                                            </Tooltip>
+
+                                            {item.estado === EstadoDetalleRequerimiento.Pendiente && (
+                                                <>
+                                                    <Tooltip label="Aprobar" position="top" withArrow>
+                                                        <ActionIcon
+                                                            variant="light"
+                                                            color="teal"
+                                                            onClick={() => handleAprobar(item.id_requerimiento_detalle)}
+                                                        >
+                                                            <CheckCircleIcon className="w-4 h-4" />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                    <Tooltip label="Rechazar" position="top" withArrow>
+                                                        <ActionIcon
+                                                            variant="light"
+                                                            color="red"
+                                                            onClick={() => {
+                                                                setSelectedItemId(item.id_requerimiento_detalle);
+                                                                openRechazo();
+                                                            }}
+                                                        >
+                                                            <XCircleIcon className="w-4 h-4" />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </>
+                                            )}
+
+                                            {(item.estado === EstadoDetalleRequerimiento.AprobacionLogistica || item.estado === EstadoDetalleRequerimiento.DespachoIniciado) && (
+                                                <Tooltip label="Registrar Entrega" position="top" withArrow>
+                                                    <ActionIcon
+                                                        variant="filled"
+                                                        color="indigo"
+                                                        onClick={() => {
+                                                            setSelectedItemId(item.id_requerimiento_detalle);
+                                                            setSelectedIdProducto(item.id_producto);
+                                                            setSelectedItemName(item.producto);
+                                                            openEntrega();
+                                                        }}
+                                                        className="shadow-lg shadow-indigo-900/20"
+                                                    >
+                                                        <TruckIcon className="w-4 h-4 text-white" />
+                                                    </ActionIcon>
+                                                </Tooltip>
+                                            )}
+                                        </Group>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </div>
+            </div>
+
+            {/* Modal de Trazabilidad */}
+            <ModalRegistro
+                opened={openedTrace}
+                close={closeTrace}
+                title="Seguimiento de tu requerimiento"
+                size="md"
+            >
+                {selectedItemId && (
+                    <TrazabilidadRequerimiento
+                        idDetalle={selectedItemId}
+                        productoNombre={selectedItemName}
+                    />
+                )}
+            </ModalRegistro>
+
+            {/* Modal de Rechazo */}
+            <Modal
+                opened={openedRechazo}
+                onClose={closeRechazo}
+                title="Rechazar ítem del requerimiento"
+                centered
+                radius="lg"
+                classNames={{
+                    content: "bg-zinc-950 border border-zinc-800",
+                    header: "bg-zinc-950 border-b border-zinc-800 text-white",
+                    title: "font-bold text-lg"
+                }}
+            >
+                <Stack gap="md">
+                    <div className="p-4 bg-red-500/10 border border-red-900/50 rounded-xl flex items-start gap-4">
+                        <ExclamationTriangleIcon className="w-8 h-8 text-red-400 mt-1" />
+                        <Text size="sm" className="text-red-100 italic">
+                            Esta acción marcará el producto como rechazado y no podrá ser entregado.
+                        </Text>
+                    </div>
+                    <Textarea
+                        label="Motivo del rechazo"
+                        placeholder="Escriba aquí el motivo detallado..."
+                        minRows={4}
+                        value={rechazoMotivo}
+                        onChange={(e) => setRechazoMotivo(e.currentTarget.value)}
+                        radius="md"
+                        classNames={{
+                            input: "bg-zinc-900 border-zinc-800 focus:border-red-500 transition-colors text-white",
+                            label: "text-zinc-500 font-bold mb-1"
+                        }}
+                    />
+                    <Group justify="end" mt="lg">
+                        <Button variant="subtle" color="zinc" onClick={closeRechazo}>Cancelar</Button>
+                        <Button
+                            color="red"
+                            radius="md"
+                            disabled={!rechazoMotivo.trim()}
+                            onClick={handleRechazar}
+                        >
+                            Confirmar Rechazo
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* Modal de Entrega */}
+            <ModalRegistro
+                opened={openedEntrega}
+                close={closeEntrega}
+                title="Gestionar entrega de Producto"
+                size="70%"
+            >
+                {selectedItemId && (
+                    <RegistrarEntrega
+                        idRequerimiento={idRequerimiento}
+                        idRequerimientoDetalle={selectedItemId}
+                        idProducto={selectedIdProducto || 0}
+                        idAlmacen={idAlmacen}
+                        productoNombre={selectedItemName}
+                        onSuccess={() => {
+                            closeEntrega();
+                            loadData();
+                            onSuccess();
+                        }}
+                        onCancel={closeEntrega}
+                    />
+                )}
+            </ModalRegistro>
+        </Stack>
+    );
+};
