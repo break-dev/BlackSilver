@@ -112,38 +112,49 @@ export const AtencionesPage = () => {
         },
         {
             accessor: "solicitante",
-            title: "Solicitante / Mina",
-            width: 220,
+            title: "Solicitante",
+            width: 180,
             render: (item) => (
-                <Stack gap={2}>
-                    <Group gap={6} wrap="nowrap">
-                        <UserCircleIcon className="w-4 h-4 text-zinc-500" />
-                        <Text size="sm" fw={600} className="text-zinc-100 italic">{item.solicitante}</Text>
-                    </Group>
-                    <Group gap={6} wrap="nowrap">
-                        <MapPinIcon className="w-4 h-4 text-zinc-500" />
-                        <Text size="xs" c="zinc.4">{item.mina}</Text>
-                    </Group>
-                </Stack>
+                <Group gap="xs" wrap="nowrap">
+                    <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+                    <Text size="sm" className="text-zinc-200">{item.solicitante}</Text>
+                </Group>
+            ),
+        },
+        {
+            accessor: "mina",
+            title: "Origen / Mina",
+            width: 180,
+            render: (item) => (
+                <Group gap="xs" wrap="nowrap">
+                    <MapPinIcon className="w-5 h-5 text-zinc-500 shrink-0" />
+                    <Text size="sm" className="text-zinc-200">{item.mina}</Text>
+                </Group>
             ),
         },
         {
             accessor: "fechas",
-            title: "Fechas",
+            title: "Programación",
             width: 180,
-            render: (item) => (
-                <Stack gap={2}>
-                    <Group gap={6}>
-                        <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-                        <Text size="xs" fw={600} className="text-zinc-200">
-                            Req: {dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")}
+            render: (item) => {
+                const fechaReq = item.fecha_entrega_requerida && dayjs(item.fecha_entrega_requerida).isValid()
+                    ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+                    : "No especificada";
+
+                return (
+                    <Stack gap={2}>
+                        <Group gap={6}>
+                            <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+                            <Text size="xs" fw={600} className="text-zinc-200">
+                                Entrega: {fechaReq}
+                            </Text>
+                        </Group>
+                        <Text size="10px" c="zinc.5" ml={22}>
+                            Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
                         </Text>
-                    </Group>
-                    <Text size="10px" c="zinc.5" ml={22}>
-                        Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
-                    </Text>
-                </Stack>
-            ),
+                    </Stack>
+                );
+            },
         },
         {
             accessor: "premura",

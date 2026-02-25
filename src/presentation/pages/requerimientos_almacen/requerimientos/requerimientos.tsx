@@ -1,4 +1,4 @@
-import { Badge, Button, Stack, Text, TextInput, Group, ActionIcon } from "@mantine/core";
+import { Badge, Button, Stack, Text, TextInput, Group, ActionIcon, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, useMemo } from "react";
 import { PlusIcon, MagnifyingGlassIcon, CubeIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, BuildingStorefrontIcon, EyeIcon } from "@heroicons/react/24/outline";
@@ -126,8 +126,8 @@ export const RequerimientosPage = () => {
             width: 200,
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
-                    <UserCircleIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-                    <Text size="sm" fw={500} className="text-zinc-100 truncate">
+                    <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
+                    <Text size="sm" className="text-zinc-200 truncate">
                         {item.solicitante}
                     </Text>
                 </Group>
@@ -140,7 +140,7 @@ export const RequerimientosPage = () => {
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
                     <MapPinIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-                    <Text size="sm" fw={500} className="text-zinc-100">{item.mina}</Text>
+                    <Text size="sm" className="text-zinc-200">{item.mina}</Text>
                 </Group>
             ),
         },
@@ -151,7 +151,7 @@ export const RequerimientosPage = () => {
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
                     <BuildingStorefrontIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-                    <Text size="sm" fw={500} className="text-zinc-100 italic">
+                    <Text size="sm" className="text-zinc-200 italic">
                         {item.almacen_destino}
                     </Text>
                 </Group>
@@ -161,21 +161,25 @@ export const RequerimientosPage = () => {
             accessor: "fecha_entrega_requerida",
             title: "Programación",
             width: 180,
-            render: (item) => (
-                <Group gap="xs" wrap="nowrap">
-                    <CalendarDaysIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-                    <Stack gap={0}>
-                        <Text size="sm" fw={600} className="text-zinc-200">
-                            {item.fecha_entrega_requerida
-                                ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
-                                : "Fecha de entrega: no especificada"}
-                        </Text>
-                        <Text size="xs" className="text-zinc-500">
-                            Solicitado el {item.created_at ? dayjs(item.created_at).format("DD/MM/YYYY") : '-'}
+            render: (item) => {
+                const fechaReq = item.fecha_entrega_requerida && dayjs(item.fecha_entrega_requerida).isValid()
+                    ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+                    : "No especificada";
+
+                return (
+                    <Stack gap={2}>
+                        <Group gap={6}>
+                            <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+                            <Text size="xs" fw={600} className="text-zinc-200">
+                                Entrega: {fechaReq}
+                            </Text>
+                        </Group>
+                        <Text size="10px" c="zinc.5" ml={22}>
+                            Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
                         </Text>
                     </Stack>
-                </Group>
-            ),
+                );
+            },
         },
         {
             accessor: "estado",
@@ -197,16 +201,20 @@ export const RequerimientosPage = () => {
             textAlign: "center",
             width: 80,
             render: (item) => (
-                <ActionIcon
-                    variant="subtle"
-                    color="violet"
-                    onClick={() => {
-                        setSelectedId(item.id_requerimiento);
-                        openDetalle();
-                    }}
-                >
-                    <EyeIcon className="w-5 h-5" />
-                </ActionIcon>
+                <Tooltip label="Ver Detalle" position="top" withArrow>
+                    <ActionIcon
+                        variant="filled"
+                        color="violet"
+                        radius="md"
+                        onClick={() => {
+                            setSelectedId(item.id_requerimiento);
+                            openDetalle();
+                        }}
+                        className="shadow-md hover:scale-105 transition-transform"
+                    >
+                        <EyeIcon className="w-5 h-5 text-white" />
+                    </ActionIcon>
+                </Tooltip>
             ),
         },
     ], [page]);
