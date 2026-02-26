@@ -1,7 +1,7 @@
 import { Badge, Group, Stack, Text, TextInput, ActionIcon, Progress, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, useMemo } from "react";
-import { MagnifyingGlassIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, PlayCircleIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, PlayCircleIcon, CheckBadgeIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -29,7 +29,7 @@ export const AtencionesPage = () => {
     const [openedGestion, { open: openGestion, close: closeGestion }] = useDisclosure(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
-    const { obtenerAtencionesPendientes } = useEntregas({ setError });
+    const { obtenerAtencionesPendientes, anularRequerimiento } = useEntregas({ setError });
 
     useEffect(() => {
         setTitle("Atención de Requerimientos");
@@ -123,7 +123,7 @@ export const AtencionesPage = () => {
         },
         {
             accessor: "mina",
-            title: "Origen / Mina",
+            title: "Mina Destino",
             width: 180,
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">
@@ -174,23 +174,50 @@ export const AtencionesPage = () => {
             accessor: "acciones",
             title: "Acciones",
             textAlign: "center",
-            width: 80,
-            render: (item) => (
-                <Tooltip label="Gestionar Atención" position="top" withArrow>
-                    <ActionIcon
-                        variant="filled"
-                        color="indigo"
-                        radius="md"
-                        onClick={() => {
-                            setSelectedId(item.id_requerimiento);
-                            openGestion();
-                        }}
-                        className="shadow-md hover:scale-105 transition-transform"
-                    >
-                        <PlayCircleIcon className="w-5 h-5 text-white" />
-                    </ActionIcon>
-                </Tooltip>
-            ),
+            width: 120,
+            render: (item) => {
+                const isPendiente = item.items_pendientes === item.total_items;
+
+                return (
+                    <Group gap="xs" justify="center" wrap="nowrap">
+                        <Tooltip label="Gestionar Atención" position="top" withArrow>
+                            <ActionIcon
+                                variant="filled"
+                                color="indigo"
+                                radius="md"
+                                onClick={() => {
+                                    setSelectedId(item.id_requerimiento);
+                                    openGestion();
+                                }}
+                                className="shadow-md hover:scale-105 transition-transform"
+                            >
+                                <PlayCircleIcon className="w-5 h-5 text-white" />
+                            </ActionIcon>
+                        </Tooltip>
+
+                        {isPendiente && (
+                            <Tooltip label="Anular Pedido" position="top" withArrow>
+                                <ActionIcon
+                                    variant="subtle"
+                                    color="red"
+                                    radius="md"
+                                    onClick={async () => {
+                                        if (confirm("¿Estás seguro de anular este pedido? Esta acción no se puede deshacer.")) {
+                                            const ok = await anularRequerimiento({ id_requerimiento: item.id_requerimiento });
+                                            if (ok) {
+                                                loadData();
+                                            }
+                                        }
+                                    }}
+                                    className="hover:scale-105 transition-transform"
+                                >
+                                    <XCircleIcon className="w-5 h-5" />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                    </Group>
+                );
+            }
         },
     ], [page]);
 

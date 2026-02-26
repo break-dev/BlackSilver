@@ -16,7 +16,7 @@ export const useProductos = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error || result.message || "Error al listar productos");
+                setError(result.message || "Error al listar productos");
                 return null;
             }
         } catch (error) {
@@ -35,7 +35,7 @@ export const useProductos = ({ setError }: IUseHook) => {
             if (result.success) {
                 return result.data;
             } else {
-                setError(result.error || result.message || "Error al crear producto");
+                setError(result.message || "Error al crear producto");
                 return null;
             }
         } catch (error) {

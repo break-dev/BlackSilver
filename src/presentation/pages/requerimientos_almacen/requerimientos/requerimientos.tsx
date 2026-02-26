@@ -135,7 +135,7 @@ export const RequerimientosPage = () => {
         },
         {
             accessor: "mina",
-            title: "Origen / Mina",
+            title: "Mina Origen",
             width: 180,
             render: (item) => (
                 <Group gap="xs" wrap="nowrap">

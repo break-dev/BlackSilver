@@ -75,7 +75,7 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                     <Stack gap={2} className="relative z-10">
                         <Group gap={6}>
                             <MapPinIcon className="w-4 h-4 text-amber-500" />
-                            <Text size="xs" c="amber.5" fw={800} className="uppercase tracking-widest">Origen / Mina</Text>
+                            <Text size="xs" c="amber.5" fw={800} className="uppercase tracking-widest">Mina</Text>
                         </Group>
                         <Text size="md" fw={800} className="text-zinc-100 tracking-tight leading-tight">{detalle.mina}</Text>
                     </Stack>
@@ -114,7 +114,7 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
 
                     {/* Labores */}
                     <Stack gap={4} className="lg:col-span-1">
-                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Labores Destino Asignadas</Text>
+                        <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Labores Destino</Text>
                         <Group gap={4}>
                             {detalle.labores && detalle.labores.length > 0 ? (
                                 detalle.labores.map(l => (
@@ -152,117 +152,127 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                 </div>
             </Paper>
 
-            {/* Tabla de Items Solicitados */}
-            <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <ListBulletIcon className="w-5 h-5 text-indigo-500" />
-                        <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">Items solicitados</Text>
-                    </div>
-                    <Badge variant="light" color="pink" size="xs" radius="sm" className="font-bold py-2.5 px-3 uppercase tracking-wider">
-                        {detalle.detalles.length} {detalle.detalles.length === 1 ? 'Item' : 'Items'}
+            {/* Tabla de Items Solicitados (Diseño Refinado) */}
+            <div className="space-y-4">
+                <Group justify="space-between" align="center" px={4}>
+                    <Group gap="xs">
+                        <div className="p-1.5 bg-indigo-500/10 rounded-lg shadow-sm border border-indigo-500/10">
+                            <ListBulletIcon className="w-5 h-5 text-indigo-400" />
+                        </div>
+                        <Text fw={800} className="text-zinc-100 italic tracking-tight text-lg">Items Solicitados</Text>
+                    </Group>
+                    <Badge variant="light" color="indigo" radius="md" size="sm" className="font-bold py-3 px-4 uppercase tracking-widest">
+                        {detalle.detalles.length} {detalle.detalles.length === 1 ? 'Producto' : 'Productos'}
                     </Badge>
-                </div>
+                </Group>
 
-                <div className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-900/40">
-                    <Table variant="unstyled" verticalSpacing="md" className="w-full">
-                        <thead className="bg-zinc-900 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
+                <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
+                    <Table verticalSpacing="md" horizontalSpacing="xl">
+                        <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
                             <tr>
-                                <th className="px-6 py-4 text-center w-12 text-[10px]">#</th>
+                                <th className="px-6 py-4 text-center w-12">#</th>
                                 <th className="px-6 py-4 text-left">Producto</th>
                                 <th className="px-6 py-4 text-center">Indicadores</th>
                                 <th className="px-6 py-4 text-right">Cant. Solic.</th>
-                                <th className="px-6 py-4 text-right">Cant. Atend.</th>
+                                <th className="px-6 py-4 text-center w-40">Progreso</th>
                                 <th className="px-6 py-4 text-center">Unidad</th>
                                 <th className="px-6 py-4 text-left">Comentario</th>
                                 <th className="px-6 py-4 text-center">Estado</th>
                                 <th className="px-6 py-4 text-center w-20">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-800 bg-zinc-900/20">
-                            {detalle.detalles.map((item, index) => (
-                                <tr key={item.id_requerimiento_detalle} className="hover:bg-indigo-500/5 transition-colors group">
-                                    <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">{String(index + 1).padStart(2, '0')}</td>
-                                    <td className="px-6 py-4">
-                                        <Group gap="sm">
-                                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center border border-zinc-700 shadow-sm group-hover:border-indigo-500/50 transition-colors">
-                                                <CubeIcon className="w-4 h-4 text-zinc-400 group-hover:text-indigo-400" />
+                        <tbody className="divide-y divide-zinc-800/50">
+                            {detalle.detalles.map((item, index) => {
+                                const progresoItem = Math.min(100, Math.round(((item.cantidad_atendida || 0) / (item.cantidad_solicitada || 1)) * 100));
+
+                                return (
+                                    <tr key={item.id_requerimiento_detalle} className="hover:bg-zinc-900/40 transition-colors group">
+                                        <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">{String(index + 1).padStart(2, '0')}</td>
+                                        <td className="px-6 py-4">
+                                            <Group gap="sm">
+                                                <div className="w-9 h-9 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800 shadow-sm group-hover:border-indigo-500/50 group-hover:bg-indigo-500/5 transition-all duration-300">
+                                                    <CubeIcon className="w-4.5 h-4.5 text-zinc-400 group-hover:text-indigo-400 group-hover:scale-110 transition-transform" />
+                                                </div>
+                                                <Text size="sm" fw={800} className="text-zinc-100 group-hover:text-white transition-colors tracking-tight">
+                                                    {item.producto}
+                                                </Text>
+                                            </Group>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <Group gap={6} justify="center">
+                                                {!!item.es_fiscalizado && (
+                                                    <Badge size="sm" variant="light" color="red" radius="md" className="font-bold px-3 py-2.5 border border-red-900/20">
+                                                        FISCALIZADO
+                                                    </Badge>
+                                                )}
+                                                {!!item.es_perecible && (
+                                                    <Badge size="sm" variant="light" color="orange" radius="md" className="font-bold px-3 py-2.5 border border-orange-900/20">
+                                                        PERECIBLE
+                                                    </Badge>
+                                                )}
+                                                {!item.es_fiscalizado && !item.es_perecible && (
+                                                    <Text size="xs" c="zinc.6">-</Text>
+                                                )}
+                                            </Group>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Text size="sm" fw={800} className="text-white font-mono">{Number(item.cantidad_solicitada || 0).toFixed(2)}</Text>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex flex-col gap-1.5 w-full">
+                                                <div className="flex justify-between items-center px-1">
+                                                    <Text size="10px" fw={800} c="zinc-5">Atendido: {Number(item.cantidad_atendida || 0).toFixed(2)}</Text>
+                                                    <Text size="10px" fw={900} c="indigo.4">{progresoItem}%</Text>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/30">
+                                                    <div
+                                                        className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all duration-700"
+                                                        style={{ width: `${progresoItem}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <Text size="sm" fw={700} c="white" className="tracking-tight">{item.producto}</Text>
-                                        </Group>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <Group gap={6} justify="center">
-                                            {!!item.es_fiscalizado && (
-                                                <Badge
-                                                    size="xs"
-                                                    variant="light"
-                                                    color="red"
-                                                    radius="sm"
-                                                    className="font-bold tracking-wider"
-                                                >
-                                                    FISCALIZADO
-                                                </Badge>
-                                            )}
-                                            {!!item.es_perecible && (
-                                                <Badge
-                                                    size="xs"
-                                                    variant="light"
-                                                    color="orange"
-                                                    radius="sm"
-                                                    className="font-bold tracking-wider"
-                                                >
-                                                    PERECIBLE
-                                                </Badge>
-                                            )}
-                                            {!item.es_fiscalizado && !item.es_perecible && (
-                                                <Text size="xs" c="zinc.6">-</Text>
-                                            )}
-                                        </Group>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Text size="sm" fw={800} className="text-white font-mono">{item.cantidad_solicitada.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Text size="sm" fw={800} className="text-cyan-500 font-mono">{item.cantidad_atendida.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <Badge variant="outline" color="zinc.5" size="xs" className="font-bold">{item.unidad_medida}</Badge>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <Text size="xs" c="zinc.4" className="max-w-[200px] italic">
-                                            {item.comentario || <span className="text-zinc-700">Sin comentario</span>}
-                                        </Text>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <Badge
-                                            color={getStatusColor(item.estado)}
-                                            variant="light"
-                                            size="sm"
-                                            radius="sm"
-                                        >
-                                            {item.estado}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <Tooltip label="Ver seguimiento" position="top" withArrow radius="md">
-                                            <ActionIcon
-                                                variant="filled"
-                                                color="indigo"
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <Badge variant="outline" color="zinc.5" size="xs" className="font-bold border-zinc-700">
+                                                {item.unidad_medida}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <Text size="xs" c="zinc.5" className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors">
+                                                {item.comentario || <span className="text-zinc-800/50">Sin observaciones</span>}
+                                            </Text>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <Badge
+                                                color={getStatusColor(item.estado)}
+                                                variant="light"
+                                                size="sm"
                                                 radius="md"
-                                                onClick={() => onOpenTrazabilidad(item.id_requerimiento_detalle, item.producto)}
-                                                className="shadow-md hover:scale-105 transition-transform"
+                                                className="font-bold px-3 py-2.5"
                                             >
-                                                <ClockIcon className="w-4 h-4 text-white" />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </td>
-                                </tr>
-                            ))}
+                                                {item.estado}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <Tooltip label="Ver seguimiento" position="top" withArrow radius="md">
+                                                <ActionIcon
+                                                    variant="filled"
+                                                    color="indigo"
+                                                    radius="md"
+                                                    onClick={() => onOpenTrazabilidad(item.id_requerimiento_detalle, item.producto)}
+                                                    className="shadow-md hover:scale-105 transition-transform"
+                                                >
+                                                    <ClockIcon className="w-4 h-4 text-white" />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </Table>
                 </div>
-            </section>
+            </div>
         </Stack>
     );
 };

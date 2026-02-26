@@ -62,3 +62,12 @@ export interface RES_TrazabilidadEvento {
     created_at: string;
     usuario: string;
 }
+
+export interface RES_HistorialEntrega {
+    id_entrega: number;
+    codigo_entrega: string;
+    fecha_entrega: string;
+    entregado_a?: string;
+    cantidad: number | string;
+    usuario_entrega: string;
+}
