@@ -43,6 +43,7 @@ export const RegistrarEntrega = ({
     const [entregaCantidades, setEntregaCantidades] = useState<Record<number, number>>({});
     const [observacion, setObservacion] = useState("");
     const [error, setError] = useState("");
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const { obtenerLotesDisponibles, registrarEntrega, obtenerHistorialEntregas } = useEntregas({ setError });
 
@@ -85,14 +86,19 @@ export const RegistrarEntrega = ({
 
         if (detalles.length === 0) return;
 
-        const ok = await registrarEntrega({
-            id_requerimiento: idRequerimiento,
-            fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-            observacion,
-            detalles
-        });
+        setIsProcessing(true);
+        try {
+            const ok = await registrarEntrega({
+                id_requerimiento: idRequerimiento,
+                fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                observacion,
+                detalles
+            });
 
-        if (ok) onSuccess();
+            if (ok) onSuccess();
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     if (loading) {
@@ -234,6 +240,9 @@ export const RegistrarEntrega = ({
                             </tbody>
                         </Table>
                     </div>
+                    <Text size="11px" c="zinc.5" mt={4} ta="right" fs="italic">
+                        * Los días restantes solo se resaltan si el lote vence en menos de 7 días.
+                    </Text>
                 </div>
 
                 {/* Historial de Entregas */}
@@ -314,7 +323,8 @@ export const RegistrarEntrega = ({
                             radius="xl"
                             color="indigo"
                             leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
-                            disabled={totalEntrega <= 0 || totalEntrega > pendiente}
+                            disabled={totalEntrega <= 0 || totalEntrega > pendiente || isProcessing}
+                            loading={isProcessing}
                             onClick={handleConfirmar}
                             className="px-8 shadow-xl shadow-indigo-900/30"
                         >

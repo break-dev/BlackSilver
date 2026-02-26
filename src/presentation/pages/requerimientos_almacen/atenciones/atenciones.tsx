@@ -7,7 +7,7 @@ import { type DataTableColumn } from "mantine-datatable";
 
 import { useEntregas } from "../../../../services/requerimientos_almacen/atenciones/useEntregas";
 import type { RES_RequerimientoAtencionPendiente } from "../../../../services/requerimientos_almacen/atenciones/dtos/responses";
-import { Premura } from "../../../../shared/enums";
+import { Premura, EstadoRequerimiento } from "../../../../shared/enums";
 import { UIStore } from "../../../../stores/ui.store";
 import { DataTableClassic } from "../../../utils/datatable-classic";
 import { ModalRegistro } from "../../../utils/modal-registro";
@@ -144,6 +144,20 @@ export const AtencionesPage = () => {
             },
         },
         {
+            accessor: "estado",
+            title: "Estado",
+            width: 130,
+            render: (item) => {
+                const colors = {
+                    [EstadoRequerimiento.Generada]: "green",
+                    [EstadoRequerimiento.Cerrada]: "gray",
+                    [EstadoRequerimiento.Anulada]: "red",
+                };
+                const color = (item.estado && (colors as any)[item.estado]) ? (colors as any)[item.estado] : "gray";
+                return <Badge color={color} variant="light" radius="sm" size="sm" className="font-semibold uppercase tracking-wider">{item.estado}</Badge>;
+            },
+        },
+        {
             accessor: "acciones",
             title: "Acciones",
             textAlign: "center",
@@ -231,7 +245,6 @@ export const AtencionesPage = () => {
                         idRequerimiento={selectedId}
                         idAlmacen={Number(idAlmacen)}
                         onSuccess={() => {
-                            closeGestion();
                             loadData();
                         }}
                     />

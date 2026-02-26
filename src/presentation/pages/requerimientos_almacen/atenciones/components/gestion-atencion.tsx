@@ -1,4 +1,4 @@
-import { Badge, Group, Loader, Paper, Stack, Table, Text, ActionIcon, Tooltip, Button, Textarea, Modal } from "@mantine/core";
+import { Badge, Group, Loader, Paper, Stack, Table, Text, ActionIcon, Tooltip, Button, Textarea } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import {
@@ -46,6 +46,7 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
     const [selectedItemSolicitado, setSelectedItemSolicitado] = useState(0);
     const [selectedItemAtendido, setSelectedItemAtendido] = useState(0);
     const [rechazoMotivo, setRechazoMotivo] = useState("");
+    const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
     const { obtenerDetalle } = useRequerimientos({ setError });
     const { cambiarEstadoDetalle } = useEntregas({ setError });
@@ -65,13 +66,18 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
     }, [idRequerimiento]);
 
     const handleAprobar = async (idDetalle: number) => {
-        const ok = await cambiarEstadoDetalle({
-            id_requerimiento_almacen_detalle: idDetalle,
-            nuevo_estado: EstadoDetalleRequerimiento.AprobacionLogistica
-        });
-        if (ok) {
-            loadData();
-            onSuccess();
+        setIsProcessing(idDetalle);
+        try {
+            const ok = await cambiarEstadoDetalle({
+                id_requerimiento_almacen_detalle: idDetalle,
+                nuevo_estado: EstadoDetalleRequerimiento.AprobacionLogistica
+            });
+            if (ok) {
+                await loadData();
+                onSuccess();
+            }
+        } finally {
+            setIsProcessing(null);
         }
     };
 
@@ -113,7 +119,14 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
     if (!detalle) return null;
 
     const progresoGeneral = detalle.detalles.length > 0
-        ? Math.round((detalle.detalles.filter(d => d.estado === EstadoDetalleRequerimiento.Completado).length / detalle.detalles.length) * 100)
+        ? Math.round(
+            detalle.detalles.reduce((acc, item) => {
+                const solicitada = Number(item.cantidad_solicitada) || 0;
+                const atendida = Number(item.cantidad_atendida) || 0;
+                const progresoItem = solicitada > 0 ? (atendida / solicitada) * 100 : 0;
+                return acc + Math.min(progresoItem, 100);
+            }, 0) / detalle.detalles.length
+        )
         : 0;
 
     return (
@@ -361,23 +374,26 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
                                                     <>
                                                         <Tooltip label="Aprobar" position="top" withArrow>
                                                             <ActionIcon
-                                                                variant="light"
-                                                                color="teal"
+                                                                variant="filled"
+                                                                color="green"
                                                                 onClick={() => handleAprobar(item.id_requerimiento_detalle)}
+                                                                loading={isProcessing === item.id_requerimiento_detalle}
+                                                                disabled={isProcessing !== null && isProcessing !== item.id_requerimiento_detalle}
                                                             >
-                                                                <CheckCircleIcon className="w-4 h-4" />
+                                                                <CheckCircleIcon className="w-5 h-5 text-white" />
                                                             </ActionIcon>
                                                         </Tooltip>
                                                         <Tooltip label="Rechazar" position="top" withArrow>
                                                             <ActionIcon
-                                                                variant="light"
+                                                                variant="filled"
                                                                 color="red"
                                                                 onClick={() => {
                                                                     setSelectedItemId(item.id_requerimiento_detalle);
                                                                     openRechazo();
                                                                 }}
+                                                                disabled={isProcessing !== null}
                                                             >
-                                                                <XCircleIcon className="w-4 h-4" />
+                                                                <XCircleIcon className="w-5 h-5 text-white" />
                                                             </ActionIcon>
                                                         </Tooltip>
                                                     </>
@@ -433,17 +449,11 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
             </ModalRegistro>
 
             {/* Modal de Rechazo */}
-            <Modal
+            <ModalRegistro
                 opened={openedRechazo}
-                onClose={closeRechazo}
+                close={closeRechazo}
                 title="Rechazar ítem del requerimiento"
-                centered
-                radius="lg"
-                classNames={{
-                    content: "bg-zinc-950 border border-zinc-800",
-                    header: "bg-zinc-950 border-b border-zinc-800 text-white",
-                    title: "font-bold text-lg"
-                }}
+                size="md"
             >
                 <Stack gap="md">
                     <div className="p-4 bg-red-500/10 border border-red-900/50 rounded-xl flex items-start gap-4">
@@ -476,7 +486,7 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
                         </Button>
                     </Group>
                 </Stack>
-            </Modal>
+            </ModalRegistro>
 
             {/* Modal de Entrega */}
             <ModalRegistro
