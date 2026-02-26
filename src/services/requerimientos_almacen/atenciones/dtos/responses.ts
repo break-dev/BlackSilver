@@ -8,7 +8,6 @@ export interface RES_RequerimientoAtencionPendiente {
     estado: string;
     created_at: string;
     total_items: number;
-    items_pendientes: number;
 }
 
 export interface RES_LoteDisponible {

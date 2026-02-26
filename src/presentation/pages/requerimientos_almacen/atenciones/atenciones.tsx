@@ -1,7 +1,7 @@
-import { Badge, Group, Stack, Text, TextInput, ActionIcon, Progress, Tooltip } from "@mantine/core";
+import { Badge, Group, Stack, Text, TextInput, ActionIcon, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, useMemo } from "react";
-import { MagnifyingGlassIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, PlayCircleIcon, CheckBadgeIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, UserCircleIcon, MapPinIcon, CalendarDaysIcon, PlayCircleIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -29,7 +29,7 @@ export const AtencionesPage = () => {
     const [openedGestion, { open: openGestion, close: closeGestion }] = useDisclosure(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
-    const { obtenerAtencionesPendientes, anularRequerimiento } = useEntregas({ setError });
+    const { obtenerAtencionesPendientes } = useEntregas({ setError });
 
     useEffect(() => {
         setTitle("Atención de Requerimientos");
@@ -82,33 +82,6 @@ export const AtencionesPage = () => {
                     {item.codigo_requerimiento}
                 </Badge>
             ),
-        },
-        {
-            accessor: "progreso",
-            title: "Progreso de Atención",
-            width: 180,
-            render: (item) => {
-                const total = Number(item.total_items || 0);
-                const pendientes = Number(item.items_pendientes || 0);
-                const porcentaje = total > 0
-                    ? Math.round(((total - pendientes) / total) * 100)
-                    : 0;
-                return (
-                    <Stack gap={4}>
-                        <Group justify="space-between" align="center">
-                            <Text size="xs" fw={700} c="zinc.4">{porcentaje}%</Text>
-                            <Text size="10px" c="zinc.5">{item.total_items - item.items_pendientes}/{item.total_items} Items</Text>
-                        </Group>
-                        <Progress
-                            value={porcentaje}
-                            size="sm"
-                            radius="xl"
-                            color={porcentaje === 100 ? "teal" : "indigo"}
-                            className="bg-zinc-800"
-                        />
-                    </Stack>
-                );
-            }
         },
         {
             accessor: "solicitante",
@@ -174,50 +147,23 @@ export const AtencionesPage = () => {
             accessor: "acciones",
             title: "Acciones",
             textAlign: "center",
-            width: 120,
-            render: (item) => {
-                const isPendiente = item.items_pendientes === item.total_items;
-
-                return (
-                    <Group gap="xs" justify="center" wrap="nowrap">
-                        <Tooltip label="Gestionar Atención" position="top" withArrow>
-                            <ActionIcon
-                                variant="filled"
-                                color="indigo"
-                                radius="md"
-                                onClick={() => {
-                                    setSelectedId(item.id_requerimiento);
-                                    openGestion();
-                                }}
-                                className="shadow-md hover:scale-105 transition-transform"
-                            >
-                                <PlayCircleIcon className="w-5 h-5 text-white" />
-                            </ActionIcon>
-                        </Tooltip>
-
-                        {isPendiente && (
-                            <Tooltip label="Anular Pedido" position="top" withArrow>
-                                <ActionIcon
-                                    variant="subtle"
-                                    color="red"
-                                    radius="md"
-                                    onClick={async () => {
-                                        if (confirm("¿Estás seguro de anular este pedido? Esta acción no se puede deshacer.")) {
-                                            const ok = await anularRequerimiento({ id_requerimiento: item.id_requerimiento });
-                                            if (ok) {
-                                                loadData();
-                                            }
-                                        }
-                                    }}
-                                    className="hover:scale-105 transition-transform"
-                                >
-                                    <XCircleIcon className="w-5 h-5" />
-                                </ActionIcon>
-                            </Tooltip>
-                        )}
-                    </Group>
-                );
-            }
+            width: 80,
+            render: (item) => (
+                <Tooltip label="Gestionar Atención" position="top" withArrow>
+                    <ActionIcon
+                        variant="filled"
+                        color="indigo"
+                        radius="md"
+                        onClick={() => {
+                            setSelectedId(item.id_requerimiento);
+                            openGestion();
+                        }}
+                        className="shadow-md hover:scale-105 transition-transform"
+                    >
+                        <PlayCircleIcon className="w-5 h-5 text-white" />
+                    </ActionIcon>
+                </Tooltip>
+            ),
         },
     ], [page]);
 

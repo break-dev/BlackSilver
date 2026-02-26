@@ -48,5 +48,5 @@ export enum EstadoDetalleRequerimiento {
   NuevaEntrega = "Nueva entrega",
   RechazadoLogistica = "Rechazado - Logística",
   Completado = "Completado",
-  Cerrado = "Cerrado",
+  Cerrado = "Cerrado"
 }

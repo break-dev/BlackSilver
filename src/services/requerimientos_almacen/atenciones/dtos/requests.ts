@@ -16,11 +16,3 @@ export interface DTO_RegistrarEntregaDetalle {
     id_lote: number;
     cantidad: number;
 }
-
-export interface DTO_AnularAtencion {
-    id_requerimiento: number;
-}
-
-export interface DTO_FinalizarAtencion {
-    id_requerimiento: number;
-}

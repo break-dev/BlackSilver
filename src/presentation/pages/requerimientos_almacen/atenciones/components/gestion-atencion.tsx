@@ -11,8 +11,7 @@ import {
     BuildingStorefrontIcon,
     CalendarDaysIcon,
     CheckBadgeIcon,
-    ExclamationTriangleIcon,
-    FlagIcon
+    ExclamationTriangleIcon
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
@@ -46,11 +45,10 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
     const [selectedItemName, setSelectedItemName] = useState("");
     const [selectedItemSolicitado, setSelectedItemSolicitado] = useState(0);
     const [selectedItemAtendido, setSelectedItemAtendido] = useState(0);
-    const [selectedItemStock, setSelectedItemStock] = useState(0);
     const [rechazoMotivo, setRechazoMotivo] = useState("");
 
     const { obtenerDetalle } = useRequerimientos({ setError });
-    const { cambiarEstadoDetalle, finalizarAtencion } = useEntregas({ setError });
+    const { cambiarEstadoDetalle } = useEntregas({ setError });
 
     const loadData = async () => {
         setLoading(true);
@@ -92,12 +90,6 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
         }
     };
 
-    const handleFinalizar = async () => {
-        const ok = await finalizarAtencion({ id_requerimiento: idRequerimiento });
-        if (ok) {
-            onSuccess();
-        }
-    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -391,26 +383,29 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
                                                     </>
                                                 )}
 
-                                                {(item.estado === EstadoDetalleRequerimiento.AprobacionLogistica || item.estado === EstadoDetalleRequerimiento.DespachoIniciado) && (
-                                                    <Tooltip label="Registrar Entrega" position="top" withArrow>
-                                                        <ActionIcon
-                                                            variant="filled"
-                                                            color="indigo"
-                                                            onClick={() => {
-                                                                setSelectedItemId(item.id_requerimiento_detalle);
-                                                                setSelectedIdProducto(item.id_producto);
-                                                                setSelectedItemName(item.producto);
-                                                                setSelectedItemSolicitado(item.cantidad_solicitada || 0);
-                                                                setSelectedItemAtendido(item.cantidad_atendida || 0);
-                                                                setSelectedItemStock(item.stock_disponible || 0);
-                                                                openEntrega();
-                                                            }}
-                                                            className="shadow-lg shadow-indigo-900/20"
-                                                        >
-                                                            <TruckIcon className="w-4 h-4 text-white" />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                )}
+                                                {(item.estado === EstadoDetalleRequerimiento.AprobacionLogistica ||
+                                                    item.estado === EstadoDetalleRequerimiento.DespachoIniciado ||
+                                                    item.estado === EstadoDetalleRequerimiento.NuevaEntrega ||
+                                                    item.estado === EstadoDetalleRequerimiento.Completado ||
+                                                    item.estado === EstadoDetalleRequerimiento.Cerrado) && (
+                                                        <Tooltip label="Ver / Registrar Entrega" position="top" withArrow>
+                                                            <ActionIcon
+                                                                variant="filled"
+                                                                color="indigo"
+                                                                onClick={() => {
+                                                                    setSelectedItemId(item.id_requerimiento_detalle);
+                                                                    setSelectedIdProducto(item.id_producto);
+                                                                    setSelectedItemName(item.producto);
+                                                                    setSelectedItemSolicitado(item.cantidad_solicitada || 0);
+                                                                    setSelectedItemAtendido(item.cantidad_atendida || 0);
+                                                                    openEntrega();
+                                                                }}
+                                                                className="shadow-lg shadow-indigo-900/20"
+                                                            >
+                                                                <TruckIcon className="w-4 h-4 text-white" />
+                                                            </ActionIcon>
+                                                        </Tooltip>
+                                                    )}
                                             </Group>
                                         </td>
                                     </tr>
@@ -421,22 +416,6 @@ export const GestionAtencion = ({ idRequerimiento, idAlmacen, onSuccess }: Gesti
                 </div>
             </div>
 
-            {progresoGeneral < 100 && (
-                <Group justify="end" mt="md" px={4}>
-                    <Button
-                        variant="light"
-                        color="red"
-                        onClick={async () => {
-                            if (confirm("¿Estás seguro de que deseas forzar la finalización de esta atención? Quedarán items sin despachar.")) {
-                                handleFinalizar();
-                            }
-                        }}
-                        leftSection={<FlagIcon className="w-4 h-4" />}
-                    >
-                        Forzar Cierre de Atención
-                    </Button>
-                </Group>
-            )}
 
             {/* Modal de Trazabilidad */}
             <ModalRegistro

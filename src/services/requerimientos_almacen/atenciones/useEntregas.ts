@@ -3,7 +3,7 @@ import { api } from "../../api";
 import type { IUseHook } from "../../hook.interface";
 import type { RES_RequerimientoAtencionPendiente, RES_LoteDisponible } from "./dtos/responses";
 import type { RES_HistorialEntrega } from "../requerimientos/dtos/responses";
-import type { DTO_AtencionCambiarEstado, DTO_RegistrarEntrega, DTO_AnularAtencion, DTO_FinalizarAtencion } from "./dtos/requests";
+import type { DTO_AtencionCambiarEstado, DTO_RegistrarEntrega } from "./dtos/requests";
 import type { IRespuesta } from "../../../shared/response";
 
 export const useEntregas = ({ setError }: IUseHook) => {
@@ -87,41 +87,11 @@ export const useEntregas = ({ setError }: IUseHook) => {
         }
     };
 
-    // 6. Anular Requerimiento
-    const anularRequerimiento = async (dto: DTO_AnularAtencion) => {
-        setError("");
-        try {
-            const res = await api.post<IRespuesta<null>>(`${path}/anular`, dto);
-            if (res.data.success) return true;
-            setError(res.data.message || "Error al anular requerimiento");
-            return false;
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Error de conexión");
-            return false;
-        }
-    };
-
-    // 7. Finalizar Atención
-    const finalizarAtencion = async (dto: DTO_FinalizarAtencion) => {
-        setError("");
-        try {
-            const res = await api.post<IRespuesta<null>>(`${path}/atencion/finalizar`, dto);
-            if (res.data.success) return true;
-            setError(res.data.message || "Error al finalizar atención");
-            return false;
-        } catch (err: any) {
-            setError(err.response?.data?.message || "Error de conexión");
-            return false;
-        }
-    };
-
     return {
         obtenerAtencionesPendientes,
         cambiarEstadoDetalle,
         obtenerLotesDisponibles,
         registrarEntrega,
-        obtenerHistorialEntregas,
-        anularRequerimiento,
-        finalizarAtencion
+        obtenerHistorialEntregas
     };
 };

@@ -3,7 +3,7 @@ import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
 import { PlusIcon, TrashIcon, BoltIcon, FireIcon, HandThumbUpIcon, BuildingStorefrontIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
-
+import dayjs from "dayjs";
 // Removed DateInput import as CustomDatePicker is now used
 import { ClipboardDocumentListIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 
@@ -215,8 +215,8 @@ export const RegistroRequerimiento = ({ initialMinaId, onSuccess, onCancel }: Re
                 id_labores: form.values.id_labores.map(Number),
                 id_almacen_destino: idAlmacen,
                 premura: form.values.premura,
-                fecha_entrega_requerida: form.values.fecha_entrega_requerida instanceof Date
-                    ? form.values.fecha_entrega_requerida.toISOString().split('T')[0]
+                fecha_entrega_requerida: form.values.fecha_entrega_requerida
+                    ? dayjs(form.values.fecha_entrega_requerida).format('YYYY-MM-DD')
                     : null,
                 detalles: items.map(item => ({
                     id_producto: Number(item.id_producto),

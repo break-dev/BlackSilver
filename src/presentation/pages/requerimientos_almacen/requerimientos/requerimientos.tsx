@@ -307,7 +307,7 @@ export const RequerimientosPage = () => {
                 opened={openedDetalle}
                 close={closeDetalle}
                 title="Detalle del Requerimiento"
-                size="85%"
+                size="95%"
             >
                 {selectedId && (
                     <DetalleRequerimiento
