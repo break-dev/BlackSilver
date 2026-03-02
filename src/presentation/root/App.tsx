@@ -3,20 +3,21 @@ import { PublicLayout } from "../layouts/public";
 import { AuthLayout } from "../layouts/auth/auth";
 import { ProtectedRoute } from "./protectedRoute";
 import { PublicRoute } from "./publicRoute";
+import { PlaceholderPage } from "../pages/placeholder";
+// Vistas
 import { Login } from "../pages/login";
 import { Home } from "../pages/home";
-import { PlaceholderPage } from "../pages/placeholder";
-import { EmpresasConcesiones } from "../pages/empresas/concesiones/concesiones";
-import { MinasPage } from "../pages/empresas/minas/minas";
-import { EmpresasPage } from "../pages/empresas/empresas/empresas";
-import { InventarioCategorias } from "../pages/inventario/categorias/categorias";
-import { EmpleadosPage } from "../pages/personal/empleados/empleados";
-import { AlmacenesPage } from "../pages/empresas/almacenes/almacenes";
-import { InventarioProductos } from "../pages/inventario/productos/productos";
-import { LotesPage } from "../pages/inventario/lotes/lotes";
-import { KardexPage } from "../pages/inventario/kardex/kardex";
-import { RequerimientosPage } from "../pages/requerimientos_almacen/requerimientos/requerimientos";
-import { AtencionesPage } from "../pages/requerimientos_almacen/atenciones/atenciones";
+import { ConcesionesPage } from "../pages/concesiones/concesiones";
+import MinasPage from "../pages/minas/minas";
+import { EmpresasPage } from "../pages/empresas/empresas";
+import { CategoriasPage } from "../pages/categorias/categorias";
+import { EmpleadosPage } from "../pages/empleados/empleados";
+import AlmacenesPage from "../pages/almacenes/almacenes";
+import { ProductosPage } from "../pages/productos/productos";
+import { LotesPage } from "../pages/lotes/lotes";
+import { KardexProductosPage } from "../pages/kardex-productos/kardex-productos";
+import { RequerimientosAlmacenPage } from "../pages/requerimientos-almacen/requerimientos-almacen";
+import { RequerimientosAlmacenEntregasPage } from "../pages/requerimientos-almacen-entregas/requerimientos-almacen-entregas";
 
 export const App = () => {
   return (
@@ -64,14 +65,9 @@ export const App = () => {
         />
         <Route
           path="/configuracion/empresas/concesiones"
-          element={<EmpresasConcesiones />}
+          element={<ConcesionesPage />}
         />
-        {/* Redirect ruta antigua para compatibilidad mientras se actualiza BD */}
-
-        <Route
-          path="/configuracion/empresas/minas"
-          element={<MinasPage />}
-        />
+        <Route path="/configuracion/empresas/minas" element={<MinasPage />} />
         {/* Personal */}
         <Route
           path="/configuracion/personal/areas"
@@ -100,7 +96,7 @@ export const App = () => {
         {/* Inventario */}
         <Route
           path="/logistica/inventario/categorias"
-          element={<InventarioCategorias />}
+          element={<CategoriasPage />}
         />
         <Route
           path="/logistica/inventario/familias"
@@ -108,24 +104,21 @@ export const App = () => {
         />
         <Route
           path="/logistica/inventario/productos"
-          element={<InventarioProductos />}
+          element={<ProductosPage />}
         />
-        <Route
-          path="/logistica/inventario/lotes"
-          element={<LotesPage />}
-        />
+        <Route path="/logistica/inventario/lotes" element={<LotesPage />} />
         <Route
           path="/logistica/inventario/kardex"
-          element={<KardexPage />}
+          element={<KardexProductosPage />}
         />
         {/* Solicitudes de Almacen */}
         <Route
           path="/logistica/requerimientos_almacen/requerimientos"
-          element={<RequerimientosPage />}
+          element={<RequerimientosAlmacenPage />}
         />
         <Route
           path="/logistica/requerimientos_almacen/atencion"
-          element={<AtencionesPage />}
+          element={<RequerimientosAlmacenEntregasPage />}
         />
         <Route
           path="/logistica/requerimientos_almacen/entregas"
