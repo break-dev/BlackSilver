@@ -39,16 +39,6 @@ const PAGE_SIZE = 20;
 export const AlmacenesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
-  // Modals
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
-    useDisclosure(false);
-  const [
-    openedResponsables,
-    { open: openResponsables, close: closeResponsables },
-  ] = useDisclosure(false);
-  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
-    useDisclosure(false);
-
   // Data
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +48,15 @@ export const AlmacenesPage = () => {
     null,
   );
 
+  // Modals
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [ openedResponsables, { open: openResponsables, close: closeResponsables }] = useDisclosure(false);
+  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
+    useDisclosure(false);
+
   // Filter States
   const [busqueda, setBusqueda] = useState("");
-  // Removed filtroEmpresa since new logic does not filter by initial company strongly here, but we can keep search.
 
   // Hooks
   const { listar } = useAlmacenes({ setError });
@@ -70,7 +66,6 @@ export const AlmacenesPage = () => {
     setLoading(true);
     setError("");
 
-    // @ts-ignore
     const data = await listar(); // Listar all
 
     if (data) setAlmacenes(data);
@@ -81,7 +76,7 @@ export const AlmacenesPage = () => {
 
   // Initial Load & Create Title
   useEffect(() => {
-    setTitle("Almacenes de Abastecimiento");
+    setTitle("Almacenes");
     cargarDatos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -132,7 +127,6 @@ export const AlmacenesPage = () => {
       width: 50,
       render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
-    // Removed Code Column
     {
       accessor: "nombre",
       title: "Almacén",
