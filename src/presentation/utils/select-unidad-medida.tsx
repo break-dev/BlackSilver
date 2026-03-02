@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { useLote } from "../../services/inventario/lote/useLote";
-import type { RES_UnidadMedida } from "../../services/inventario/lote/dtos/responses";
+import { useLote } from "../../services/lote/useLote";
+import type { RES_UnidadMedida } from "../../services/lote/dtos/responses";
 
 interface SelectUnidadMedidaProps extends Omit<SelectProps, 'data'> {
 }

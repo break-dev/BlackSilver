@@ -4,18 +4,18 @@ import {
   UserIcon,
   ArrowLeftStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-import { AuthStore } from "../../../../stores/auth.store";
-import { MenuStore } from "../../../../stores/menu.store";
+import { useAuthStore } from "../../../../stores/auth.store";
+import { useMenuNavegacionStore } from "../../../../stores/menu.store";
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const usuario = AuthStore((s) => s.usuario);
+  const usuario = useAuthStore((s) => s.usuario);
 
   const logout = () => {
-    AuthStore.getState().clearAuth();
-    MenuStore.getState().clearMenu();
+    useAuthStore.getState().clearAuth();
+    useMenuNavegacionStore.getState().clearMenu();
     navigate("/login");
   };
 

@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { useLote } from "../../services/inventario/lote/useLote";
-import type { RES_ProductoDisponible } from "../../services/inventario/lote/dtos/responses";
+import { useLote } from "../../services/lote/useLote";
+import type { RES_ProductoDisponible } from "../../services/lote/dtos/responses";
 
 interface SelectProductoProps extends Omit<SelectProps, 'data'> {
     // any extra props if needed

@@ -1,5 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select, Tooltip, ActionIcon, Group } from "@mantine/core";
+import {
+  Button,
+  TextInput,
+  Badge,
+  Select,
+  Tooltip,
+  ActionIcon,
+  Group,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import {
@@ -9,19 +17,19 @@ import {
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { GestionEmpresas } from "./components/gestion-empresas";
-import { useConcesiones } from "../../../../services/empresas/concesiones/useConcesiones";
-import type { RES_Concesion } from "../../../../services/empresas/concesiones/dtos/responses";
+import { useConcesiones } from "../../../../services/concesiones/useConcesiones";
+import type { RES_Concesion } from "../../../../services/concesiones/dtos/responses";
 import { EstadoBase } from "../../../../shared/enums";
 import { RegistroConcesion } from "./components/registro-concesion";
-import { UIStore } from "../../../../stores/ui.store";
-import { DataTableClassic } from "../../../utils/datatable-classic";
-import { ModalRegistro } from "../../../utils/modal-registro";
+import { useUIStore } from "../../../../stores/ui.store";
+import { DataTableEstandar } from "../../../utils/datatable-estandar";
+import { ModalEstandar } from "../../../utils/modal-estandar";
 import { SelectTipoMineral } from "../../../utils/select-tipo-mineral";
 
 const PAGE_SIZE = 35;
 
 export const EmpresasConcesiones = () => {
-  const setTitle = UIStore((state) => state.setTitle);
+  const setTitle = useUIStore((state) => state.setTitle);
   // Estado local
   const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -37,8 +45,10 @@ export const EmpresasConcesiones = () => {
   const [opened, { open, close }] = useDisclosure(false);
 
   // Modal Gestión Empresas
-  const [gestionOpened, { open: openGestion, close: closeGestion }] = useDisclosure(false);
-  const [selectedConcesion, setSelectedConcesion] = useState<RES_Concesion | null>(null);
+  const [gestionOpened, { open: openGestion, close: closeGestion }] =
+    useDisclosure(false);
+  const [selectedConcesion, setSelectedConcesion] =
+    useState<RES_Concesion | null>(null);
 
   // Servicio
   const { listar } = useConcesiones({ setError });
@@ -291,7 +301,7 @@ export const EmpresasConcesiones = () => {
       </div>
 
       {/* DataTable */}
-      <DataTableClassic
+      <DataTableEstandar
         idAccessor="id_concesion"
         columns={columns}
         records={registrosPaginados}
@@ -304,20 +314,23 @@ export const EmpresasConcesiones = () => {
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {/* Modal de Registro */}
-      <ModalRegistro opened={opened} close={close} title="Nueva Concesión">
+      <ModalEstandar opened={opened} close={close} title="Nueva Concesión">
         <RegistroConcesion onSuccess={handleRegistroExitoso} onCancel={close} />
-      </ModalRegistro>
+      </ModalEstandar>
 
       {/* Modal de Gestión de Empresas */}
-      <ModalRegistro
+      <ModalEstandar
         opened={gestionOpened}
         close={closeGestion}
         title="Gestión de Empresas"
       >
         {selectedConcesion && (
-          <GestionEmpresas concesion={selectedConcesion} onClose={closeGestion} />
+          <GestionEmpresas
+            concesion={selectedConcesion}
+            onClose={closeGestion}
+          />
         )}
-      </ModalRegistro>
+      </ModalEstandar>
     </div>
   );
 };

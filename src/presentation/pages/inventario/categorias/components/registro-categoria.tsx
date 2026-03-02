@@ -1,8 +1,8 @@
 import { Button, Group, TextInput, Select, Textarea } from "@mantine/core";
 import { useState } from "react";
-import { Schema_CrearCategoria } from "../../../../../services/inventario/categorias/dtos/requests";
-import type { RES_Categoria } from "../../../../../services/inventario/categorias/dtos/responses";
-import { useCategoria } from "../../../../../services/inventario/categorias/useCategoria";
+import { Schema_CrearCategoria } from "../../../../../services/categorias/dtos/requests";
+import type { RES_Categoria } from "../../../../../services/categorias/dtos/responses";
+import { useCategoria } from "../../../../../services/categorias/useCategoria";
 import { EstadoBase, TipoRequerimiento } from "../../../../../shared/enums";
 
 interface RegistroCategoriaProps {

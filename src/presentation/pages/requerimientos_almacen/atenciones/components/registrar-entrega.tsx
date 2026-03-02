@@ -10,9 +10,9 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { useEntregas } from "../../../../../services/requerimientos_almacen/atenciones/useEntregas";
-import type { RES_LoteDisponible } from "../../../../../services/requerimientos_almacen/atenciones/dtos/responses";
-import type { RES_HistorialEntrega } from "../../../../../services/requerimientos_almacen/requerimientos/dtos/responses";
+import { useEntregas } from "../../../../../services/requerimientos_almacen_entregas/useEntregas";
+import type { RES_LoteDisponible } from "../../../../../services/requerimientos_almacen_entregas/dtos/responses";
+import type { RES_HistorialEntrega } from "../../../../../services/requerimientos_almacen/dtos/responses";
 
 interface RegistrarEntregaProps {
     idRequerimiento: number;

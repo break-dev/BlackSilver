@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { ClockIcon, CubeIcon, ListBulletIcon, UserIcon, MapPinIcon, BuildingStorefrontIcon, CalendarDaysIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { useRequerimientos } from "../../../../../services/requerimientos_almacen/requerimientos/useRequerimientos";
-import type { RES_RequerimientoDetalleCompleto } from "../../../../../services/requerimientos_almacen/requerimientos/dtos/responses";
+import { useRequerimientos } from "../../../../../services/requerimientos_almacen/useRequerimientos";
+import type { RES_RequerimientoDetalleCompleto } from "../../../../../services/requerimientos_almacen/dtos/responses";
 import { EstadoDetalleRequerimiento } from "../../../../../shared/enums";
 
 interface DetalleRequerimientoProps {

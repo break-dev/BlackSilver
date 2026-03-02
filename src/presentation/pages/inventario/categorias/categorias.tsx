@@ -3,18 +3,18 @@ import { Button, TextInput, Badge, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useCategoria } from "../../../../services/inventario/categorias/useCategoria";
-import type { RES_Categoria } from "../../../../services/inventario/categorias/dtos/responses";
+import { useCategoria } from "../../../../services/categorias/useCategoria";
+import type { RES_Categoria } from "../../../../services/categorias/dtos/responses";
 import { EstadoBase, TipoRequerimiento } from "../../../../shared/enums";
 import { RegistroCategoria } from "./components/registro-categoria";
-import { UIStore } from "../../../../stores/ui.store";
-import { ModalRegistro } from "../../../utils/modal-registro";
-import { DataTableClassic } from "../../../utils/datatable-classic";
+import { useUIStore } from "../../../../stores/ui.store";
+import { ModalEstandar } from "../../../utils/modal-estandar";
+import { DataTableEstandar } from "../../../utils/datatable-estandar";
 
 const PAGE_SIZE = 35;
 
 export const InventarioCategorias = () => {
-  const setTitle = UIStore((state) => state.setTitle);
+  const setTitle = useUIStore((state) => state.setTitle);
   // Estado local
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
   const [loading, setIsLoading] = useState(true);
@@ -241,7 +241,7 @@ export const InventarioCategorias = () => {
       </div>
 
       {/* DataTable */}
-      <DataTableClassic
+      <DataTableEstandar
         idAccessor="id_categoria"
         columns={columns}
         records={registrosPaginados}
@@ -254,9 +254,9 @@ export const InventarioCategorias = () => {
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {/* Modal de Registro */}
-      <ModalRegistro opened={opened} close={close} title="Nueva Categoría">
+      <ModalEstandar opened={opened} close={close} title="Nueva Categoría">
         <RegistroCategoria onSuccess={handleRegistroExitoso} onCancel={close} />
-      </ModalRegistro>
+      </ModalEstandar>
     </div>
   );
 };

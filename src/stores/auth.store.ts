@@ -14,7 +14,7 @@ export interface IAuthStore {
 }
 
 // Store para conservar la informacion de la sesion en localStorage
-export const AuthStore = create<IAuthStore>()(
+export const useAuthStore = create<IAuthStore>()(
   persist(
     (set) => ({
       token: "",

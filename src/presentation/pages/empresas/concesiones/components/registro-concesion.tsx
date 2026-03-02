@@ -1,10 +1,8 @@
 import { Button, Group, TextInput } from "@mantine/core";
 import { useState } from "react";
-import {
-  Schema_CrearConcesion,
-} from "../../../../../services/empresas/concesiones/dtos/requests";
-import type { RES_Concesion } from "../../../../../services/empresas/concesiones/dtos/responses";
-import { useConcesiones } from "../../../../../services/empresas/concesiones/useConcesiones";
+import { Schema_CrearConcesion } from "../../../../../services/concesiones/dtos/requests";
+import type { RES_Concesion } from "../../../../../services/concesiones/dtos/responses";
+import { useConcesiones } from "../../../../../services/concesiones/useConcesiones";
 import { SelectTipoMineral } from "../../../../utils/select-tipo-mineral";
 
 interface RegistroConcesionProps {
@@ -24,7 +22,9 @@ export const RegistroConcesion = ({
   const [codigo_concesion, setCodigoConcesion] = useState("");
   const [codigo_reinfo, setCodigoReinfo] = useState("");
   const [ubigeo, setUbigeo] = useState("");
-  const [tipo_mineral, setTipoMineral] = useState<"Polimetalico" | "Carbon" | undefined>(undefined);
+  const [tipo_mineral, setTipoMineral] = useState<
+    "Polimetalico" | "Carbon" | undefined
+  >(undefined);
 
   // Service
   const { crearConcesion } = useConcesiones({ setError });
@@ -44,7 +44,7 @@ export const RegistroConcesion = ({
 
       if (!validation.success) {
         setError(
-          "Por favor complete todos los campos requeridos correctamente."
+          "Por favor complete todos los campos requeridos correctamente.",
         );
         console.error(validation.error);
         return;
@@ -115,7 +115,9 @@ focus: ring - zinc - 300 text - white placeholder: text - zinc - 500`,
         withAsterisk
         required
         value={tipo_mineral}
-        onChange={(val: string | null) => setTipoMineral(val as "Polimetalico" | "Carbon" | undefined)}
+        onChange={(val: string | null) =>
+          setTipoMineral(val as "Polimetalico" | "Carbon" | undefined)
+        }
       />
 
       <TextInput

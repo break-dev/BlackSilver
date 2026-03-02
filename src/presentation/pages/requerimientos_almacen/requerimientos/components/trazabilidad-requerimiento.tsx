@@ -11,8 +11,8 @@ import {
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 
-import { useRequerimientos } from "../../../../../services/requerimientos_almacen/requerimientos/useRequerimientos";
-import type { RES_TrazabilidadEvento } from "../../../../../services/requerimientos_almacen/requerimientos/dtos/responses";
+import { useRequerimientos } from "../../../../../services/requerimientos_almacen/useRequerimientos";
+import type { RES_TrazabilidadEvento } from "../../../../../services/requerimientos_almacen/dtos/responses";
 import { EstadoDetalleRequerimiento } from "../../../../../shared/enums";
 
 interface TrazabilidadRequerimientoProps {

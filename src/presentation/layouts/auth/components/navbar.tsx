@@ -7,8 +7,8 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import { iconos_menu_navegacion } from "../../../../shared/variables";
-import { MenuStore } from "../../../../stores/menu.store";
-import type { IModulo } from "../../../../services/menu/dtos/responses";
+import { useMenuNavegacionStore } from "../../../../stores/menu.store";
+import type { IModulo } from "../../../../services/menu-navegacion/dtos/responses";
 
 interface NavbarProps {
   onClose: () => void;
@@ -18,11 +18,13 @@ export const Navbar = ({ onClose }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [menu, setMenu] = useState<IModulo[]>(() => MenuStore.getState().menu);
+  const [menu, setMenu] = useState<IModulo[]>(
+    () => useMenuNavegacionStore.getState().menu,
+  );
 
   // Suscrubirse a los cambios del store
   useEffect(() => {
-    const unsubscribe = MenuStore.subscribe((state) => {
+    const unsubscribe = useMenuNavegacionStore.subscribe((state) => {
       setMenu(state.menu);
     });
 
@@ -71,10 +73,11 @@ export const Navbar = ({ onClose }: NavbarProps) => {
           <button
             onClick={() => go("/home")}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl 
-            text-xs font-medium transition-all ${location.pathname === "/home"
+            text-xs font-medium transition-all ${
+              location.pathname === "/home"
                 ? "bg-white/10 text-white shadow-sm"
                 : "text-zinc-400 hover:text-white hover:bg-white/5"
-              }`}
+            }`}
           >
             <HomeIcon className="w-4 h-4" />
             Inicio
@@ -104,8 +107,9 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                       <span>{mod.nombre || "Sin nombre"}</span>
                     </div>
                     <ChevronRightIcon
-                      className={`w-4 h-4 transition-transform duration-200 ${expanded === mod.nombre ? "rotate-90" : ""
-                        }`}
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        expanded === mod.nombre ? "rotate-90" : ""
+                      }`}
                     />
                   </button>
 
@@ -120,8 +124,8 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                           modIconData?.submodulos,
                         )
                           ? modIconData?.submodulos.find(
-                            (s) => s.submodulo_path === sub.path,
-                          )
+                              (s) => s.submodulo_path === sub.path,
+                            )
                           : null;
                         const SubIcon = subIconData?.icono || CubeIcon;
 
@@ -142,10 +146,11 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                 <button
                                   key={sec.id_seccion || sec.nombre}
                                   onClick={() => go(sec.url || "#")}
-                                  className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${location.pathname === sec.url
+                                  className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
+                                    location.pathname === sec.url
                                       ? "text-white bg-white/10 font-medium"
                                       : "text-zinc-400 hover:text-zinc-300 hover:bg-white/5"
-                                    }`}
+                                  }`}
                                 >
                                   {sec.nombre || "Sin nombre"}
                                 </button>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextInput, PasswordInput, Button } from "@mantine/core";
 import { useUsuario } from "../../services/usuarios/useUsuario";
-import { useMenu } from "../../services/menu/useMenu";
+import { useMenuNavegacion } from "../../services/menu-navegacion/useMenuNavegacion";
 import { Schema_Login } from "../../services/usuarios/dtos/requests";
 
 export const Login = () => {
@@ -13,13 +13,11 @@ export const Login = () => {
   const [password, setPassword] = useState("");
 
   const { login } = useUsuario({ setError });
-  const { getMenuNavegacion } = useMenu({ setError });
+  const { getMenuNavegacion } = useMenuNavegacion({ setError });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const validation = Schema_Login.safeParse({ usuario, password });
-
     if (!validation.success) {
       setError(validation.error.issues[0].message);
       return;

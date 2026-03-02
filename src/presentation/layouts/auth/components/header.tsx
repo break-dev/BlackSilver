@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { UserMenu } from "./user-menu";
-import { UIStore } from "../../../../stores/ui.store";
+import { useUIStore } from "../../../../stores/ui.store";
 
 interface HeaderProps {
   onMenuToggle: () => void;
 }
 
 export const Header = ({ onMenuToggle }: HeaderProps) => {
-  const [title, setTitle] = useState(UIStore.getState().title);
+  const [title, setTitle] = useState(useUIStore.getState().title);
 
   useEffect(() => {
-    const unsubscribe = UIStore.subscribe((state) => {
+    const unsubscribe = useUIStore.subscribe((state) => {
       setTitle(state.title);
     });
     return unsubscribe;

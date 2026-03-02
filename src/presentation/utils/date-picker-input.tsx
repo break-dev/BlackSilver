@@ -15,7 +15,6 @@ export const CustomDatePicker = ({
     radius = "lg",
     size = "sm",
     placeholder,
-    className,
     ...props
 }: CustomDatePickerProps) => {
 
@@ -44,7 +43,6 @@ export const CustomDatePicker = ({
             radius={radius}
             size={size}
             leftSection={<CalendarDaysIcon className="w-5 h-5 text-zinc-500" />}
-            // Custom Icons for navigation to fix giant arrows
             previousIcon={<ChevronLeftIcon className="w-4 h-4" />}
             nextIcon={<ChevronRightIcon className="w-4 h-4" />}
 

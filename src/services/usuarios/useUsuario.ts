@@ -2,7 +2,7 @@ import { api } from "../api";
 import type { IRespuesta } from "../../shared/response";
 import type { DTO_Login } from "./dtos/requests";
 import type { RES_Login } from "./dtos/responses";
-import { AuthStore } from "../../stores/auth.store";
+import { useAuthStore } from "../../stores/auth.store";
 import type { IUseHook } from "../hook.interface";
 
 export const useUsuario = ({ setError }: IUseHook) => {
@@ -14,7 +14,7 @@ export const useUsuario = ({ setError }: IUseHook) => {
       const result = response.data;
 
       if (result.success) {
-        AuthStore.getState().updateAuth(result.data as RES_Login);
+        useAuthStore.getState().updateAuth(result.data as RES_Login);
         return true; // Login successful
       } else {
         setError(result.message);

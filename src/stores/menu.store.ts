@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { IModulo } from "../services/menu/dtos/responses";
+import type { IModulo } from "../services/menu-navegacion/dtos/responses";
 
-export interface IMenuStore {
+export interface IMenuNavegacionStore {
   menu: IModulo[];
   updateMenu: (menu: IModulo[]) => void;
   clearMenu: () => void;
 }
 
 // Store para el menu de navegacion con persistencia
-export const MenuStore = create<IMenuStore>()(
+export const useMenuNavegacionStore = create<IMenuNavegacionStore>()(
   persist(
     (set) => ({
       menu: [],

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { z } from "zod";
 
-import { useLote } from "../../../../../services/inventario/lote/useLote";
-import type { RES_Lote, RES_ProductoDisponible, RES_UnidadMedida } from "../../../../../services/inventario/lote/dtos/responses";
+import { useLote } from "../../../../../services/lote/useLote";
+import type { RES_Lote, RES_ProductoDisponible, RES_UnidadMedida } from "../../../../../services/lote/dtos/responses";
 import { CustomDatePicker } from "../../../../utils/date-picker-input";
 import { SelectAlmacen } from "../../../../utils/select-almacen";
 

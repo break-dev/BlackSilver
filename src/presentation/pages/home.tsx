@@ -6,15 +6,14 @@ import {
   Cog6ToothIcon,
   ArrowUpRightIcon,
 } from "@heroicons/react/24/outline";
-import { AuthStore } from "../../stores/auth.store";
+import { useAuthStore } from "../../stores/auth.store";
 
-import { UIStore } from "../../stores/ui.store";
+import { useUIStore } from "../../stores/ui.store";
 
 export const Home = () => {
   const navigate = useNavigate();
-  const usuario = AuthStore((s) => s.usuario);
-
-  const setTitle = UIStore((state) => state.setTitle);
+  const usuario = useAuthStore((s) => s.usuario);
+  const setTitle = useUIStore((state) => state.setTitle);
 
   useEffect(() => {
     setTimeout(() => {

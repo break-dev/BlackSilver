@@ -1,7 +1,7 @@
 import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
-import type { RES_Empresa } from "../../services/empresas/empresas/dtos/responses";
-import { useEmpresas } from "../../services/empresas/empresas/useEmpresas";
+import type { RES_Empresa } from "../../services/empresas/dtos/responses";
+import { useEmpresas } from "../../services/empresas/useEmpresas";
 
 interface SelectEmpresasProps extends Omit<SelectProps, "data"> {
   value?: string | null;

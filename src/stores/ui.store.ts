@@ -5,7 +5,7 @@ interface UIState {
   setTitle: (title: string) => void;
 }
 
-export const UIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set) => ({
   title: "",
   setTitle: (title: string) => {
     set({ title });
