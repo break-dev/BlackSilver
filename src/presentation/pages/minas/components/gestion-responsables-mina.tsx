@@ -79,7 +79,7 @@ export const GestionResponsablesMina = ({
     setSubmitting(true);
     const result = await asignarResponsable({
       id_mina: idMina,
-      id_usuario_empresa: Number(nuevoResponsable),
+      id_empleado: Number(nuevoResponsable),
       fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
     });
 

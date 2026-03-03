@@ -84,7 +84,7 @@ export const GestionResponsables = ({
     // Validate DTO
     const payload = {
       id_almacen: idAlmacen,
-      id_usuario: Number(nuevoResponsable), // Use id_usuario from form (mapped to id_empleado)
+      id_empleado: Number(nuevoResponsable),
       fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
     };
 
