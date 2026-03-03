@@ -24,7 +24,6 @@ export const RegistroEmpresa = ({
   const [path_logo, setPathLogo] = useState("");
 
   // Service
-  // Note: useEmpresas might need to return created object or promise
   const { crearEmpresa } = useEmpresas({ setError });
 
   const inputClasses = {
@@ -47,7 +46,6 @@ export const RegistroEmpresa = ({
       });
 
       if (!validation.success) {
-        // Simple error handling for validation
         const firstError = validation.error.issues[0]?.message;
         setError(
           firstError ||
@@ -122,7 +120,7 @@ export const RegistroEmpresa = ({
           size="sm"
           classNames={inputClasses}
           value={abreviatura}
-          onChange={(e) => setAbreviatura(e.target.value)}
+          onChange={(e) => setAbreviatura(e.target.value.toUpperCase())}
         />
 
         <TextInput

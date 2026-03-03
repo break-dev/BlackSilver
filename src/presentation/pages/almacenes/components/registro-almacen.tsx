@@ -9,8 +9,6 @@ import {
 } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
-
-// Services
 import { Schema_CrearAlmacen } from "../../../../services/almacenes/dtos/requests";
 import type { RES_Almacen } from "../../../../services/almacenes/dtos/responses";
 import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
@@ -30,8 +28,6 @@ export const RegistroAlmacen = ({
   // Form State
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-
-  // es_principal (boolean, default false en schema)
   const [esPrincipal, setEsPrincipal] = useState(false);
 
   // Hooks
@@ -39,12 +35,12 @@ export const RegistroAlmacen = ({
 
   // Styles
   const inputClasses = {
-    input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+    focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
     label: "text-zinc-300 mb-1 font-medium",
     dropdown: "bg-zinc-900 border-zinc-800",
-    option:
-      "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+    option: `hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 
+    data-[selected]:text-zinc-900 rounded-md my-1`,
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,9 +69,7 @@ export const RegistroAlmacen = ({
     }
 
     // Send
-    // @ts-ignore
     const result = await crear(validation.data);
-
     if (result) {
       notifications.show({
         title: "Almacén Creado",

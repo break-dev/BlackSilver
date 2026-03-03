@@ -5,11 +5,11 @@ export interface RES_Almacen {
     es_principal: boolean | number;
     estado: string;
     responsable_actual?: string;
-    minas_count?: number; // Opcional, si el back lo manda
+    minas_count?: number;
 }
 
 export interface RES_ResponsableAlmacen {
-    id_asignacion: number;
+    id_responsable_almacen: number;
     id_usuario: number;
     nombres: string;
     apellidos: string;
@@ -19,7 +19,7 @@ export interface RES_ResponsableAlmacen {
 }
 
 export interface RES_MinaAsignada {
-    id: number; // id_asignacion para desvincular
+    id_almacen_mina: number;
     mina: string;
     concesion: string;
 }

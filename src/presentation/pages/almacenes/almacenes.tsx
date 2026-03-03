@@ -1,3 +1,4 @@
+import { useState, useMemo, useEffect } from "react";
 import {
   ActionIcon,
   Badge,
@@ -20,112 +21,105 @@ import {
   RectangleStackIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { useEffect, useState, useMemo } from "react";
-
-// Components
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroAlmacen } from "./components/registro-almacen";
 import { GestionResponsables } from "./components/gestion-responsables";
 import { AsignarMinaAlmacen } from "./components/asignar-mina-almacen";
-
-// Services
 import { useAlmacenes } from "../../../services/almacenes/useAlmacenes";
 import type { RES_Almacen } from "../../../services/almacenes/dtos/responses";
-
-const PAGE_SIZE = 20;
+import { PAGE_SIZE } from "../../constants";
 
 export const AlmacenesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
-  // Data
+  // Estado local
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState("");
+  const [loading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+
+  // Filtros
+  const [busqueda, setBusqueda] = useState("");
+
+  // Modales
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [
+    openedResponsables,
+    { open: openResponsables, close: closeResponsables },
+  ] = useDisclosure(false);
+  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
+    useDisclosure(false);
+
+  // Selección
   const [selectedAlmacen, setSelectedAlmacen] = useState<RES_Almacen | null>(
     null,
   );
 
-  // Modals
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
-    useDisclosure(false);
-  const [ openedResponsables, { open: openResponsables, close: closeResponsables }] = useDisclosure(false);
-  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
-    useDisclosure(false);
-
-  // Filter States
-  const [busqueda, setBusqueda] = useState("");
-
-  // Hooks
+  // Servicio
   const { listar } = useAlmacenes({ setError });
 
-  // Load Data
-  const cargarDatos = async () => {
-    setLoading(true);
-    setError("");
-
-    const data = await listar(); // Listar all
-
-    if (data) setAlmacenes(data);
-    else setAlmacenes([]);
-
-    setLoading(false);
-  };
-
-  // Initial Load & Create Title
+  // Carga inicial
   useEffect(() => {
-    setTitle("Almacenes");
-    cargarDatos();
+    let cancelled = false;
+    listar()
+      .then((data) => {
+        if (!cancelled) setAlmacenes(data || []);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Derived Filters (Local Search)
-  const filteredRecords = useMemo(() => {
+  // Title
+  useEffect(() => {
+    setTimeout(() => {
+      setTitle("Almacenes");
+    }, 0);
+  }, [setTitle]);
+
+  // Datos filtrados
+  const almacenesFiltrados = useMemo(() => {
     return almacenes.filter((alm) => {
-      const matchSearch =
+      const matchBusqueda =
         !busqueda ||
         alm.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         (alm.responsable_actual || "")
           .toLowerCase()
           .includes(busqueda.toLowerCase());
 
-      return matchSearch;
+      return matchBusqueda;
     });
   }, [almacenes, busqueda]);
 
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    return filteredRecords.slice(from, from + PAGE_SIZE);
-  }, [filteredRecords, page]);
+  // Paginación
+  const registrosPaginados = useMemo(() => {
+    const inicio = (page - 1) * PAGE_SIZE;
+    return almacenesFiltrados.slice(inicio, inicio + PAGE_SIZE);
+  }, [almacenesFiltrados, page]);
 
-  // Handlers
-  const handleSuccess = (nuevoAlmacen: RES_Almacen) => {
+  // Callback al registrar exitosamente
+  const handleRegistroExitoso = (nuevoAlmacen: RES_Almacen) => {
     closeCreate();
     setAlmacenes((prev) => [nuevoAlmacen, ...prev]);
   };
 
-  const handleOpenResponsables = (record: RES_Almacen) => {
-    setSelectedAlmacen(record);
-    openResponsables();
-  };
-
-  const handleOpenAlcance = (record: RES_Almacen) => {
-    setSelectedAlmacen(record);
-    openAlcance();
-  };
-
   const isPrincipal = (val: boolean | number) => val === true || val === 1;
 
-  // Columns
   const columns: DataTableColumn<RES_Almacen>[] = [
     {
       accessor: "index",
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
       accessor: "nombre",
@@ -163,7 +157,10 @@ export const AlmacenesPage = () => {
               variant="subtle"
               color="cyan"
               size="sm"
-              onClick={() => handleOpenAlcance(record)}
+              onClick={() => {
+                setSelectedAlmacen(record);
+                openAlcance();
+              }}
             >
               <RectangleStackIcon className="w-4 h-4" />
             </ActionIcon>
@@ -194,7 +191,10 @@ export const AlmacenesPage = () => {
             variant="subtle"
             color="gray"
             size="sm"
-            onClick={() => handleOpenResponsables(record)}
+            onClick={() => {
+              setSelectedAlmacen(record);
+              openResponsables();
+            }}
             title="Gestionar Responsable"
           >
             <PencilSquareIcon className="w-4 h-4" />
@@ -211,6 +211,7 @@ export const AlmacenesPage = () => {
         <Badge
           color={record.estado === "Activo" ? "green" : "red"}
           variant="light"
+          radius="sm"
           size="sm"
         >
           {record.estado}
@@ -252,21 +253,25 @@ export const AlmacenesPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header / Filters */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-end sm:items-center">
-        <div className="flex gap-4 flex-1 w-full sm:w-auto">
+      {/* Encabezado y Filtros */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-wrap gap-4 flex-1">
           <TextInput
             placeholder="Buscar por nombre o responsable..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
             value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 min-w-[200px]"
+            onChange={(e) => {
+              setBusqueda(e.currentTarget.value);
+              setPage(1);
+            }}
+            className="flex-1 min-w-64"
             radius="lg"
+            size="sm"
             classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
+            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
             }}
           />
         </div>
@@ -275,22 +280,25 @@ export const AlmacenesPage = () => {
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openCreate}
           radius="lg"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
         >
           Nuevo Almacén
         </Button>
       </div>
 
-      {/* Table */}
+      {/* DataTable */}
       <DataTableEstandar
         idAccessor="id_almacen"
         columns={columns}
-        records={paginatedRecords}
-        totalRecords={filteredRecords.length}
+        records={registrosPaginados}
+        totalRecords={almacenesFiltrados.length}
         page={page}
         onPageChange={setPage}
         loading={loading}
       />
+
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
       {/* Modal: Crear Almacén */}
       <ModalEstandar
@@ -298,7 +306,10 @@ export const AlmacenesPage = () => {
         close={closeCreate}
         title="Nuevo Almacén"
       >
-        <RegistroAlmacen onSuccess={handleSuccess} onCancel={closeCreate} />
+        <RegistroAlmacen
+          onSuccess={handleRegistroExitoso}
+          onCancel={closeCreate}
+        />
       </ModalEstandar>
 
       {/* Modal: Gestionar Responsables */}

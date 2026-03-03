@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataTable, type DataTableColumn } from "mantine-datatable";
+import { PAGE_SIZE } from "../constants";
 
-const PAGE_SIZE = 35;
 interface DataTableEstandarProps {
   idAccessor: string;
   columns: DataTableColumn<any>[];

@@ -17,7 +17,7 @@ export const Home = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      setTitle("Inicio");
+      setTitle("");
     }, 0);
   }, [setTitle]);
 

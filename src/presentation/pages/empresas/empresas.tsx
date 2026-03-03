@@ -128,7 +128,7 @@ export const EmpresasPage = () => {
       title: "Logo",
       textAlign: "center",
       width: 80,
-      render: (_record) => <span className="text-xs text-zinc-600">Logo</span>,
+    render: () => <span className="text-xs text-zinc-600">Logo</span>,
     },
   ];
 

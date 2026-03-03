@@ -25,8 +25,7 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { SelectTipoMineral } from "../../utils/select-tipo-mineral";
-
-const PAGE_SIZE = 35;
+import { PAGE_SIZE } from "../../constants";
 
 export const ConcesionesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
