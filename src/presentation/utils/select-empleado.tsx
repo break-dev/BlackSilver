@@ -12,6 +12,7 @@ interface SelectEmpleadoProps extends Omit<SelectProps, "data"> {
   /** If true, triggers data loading on mount autonomously. Default: true */
   autoLoad?: boolean;
   idEmpresa?: number;
+  excludeIds?: (string | number)[];
 }
 
 export const SelectEmpleado = ({
@@ -20,6 +21,7 @@ export const SelectEmpleado = ({
   autoLoad = true,
   idEmpresa,
   className,
+  excludeIds,
   ...props
 }: SelectEmpleadoProps) => {
   const [loading, setLoading] = useState(false);
@@ -49,11 +51,18 @@ export const SelectEmpleado = ({
       label="Empleado / Responsable"
       placeholder={props.placeholder || "Seleccione un empleado"}
       leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
-      data={empleados.map((e) => ({
-        value: String(e.id_empleado),
-        label: `${e.apellido} ${e.nombre}`.trim(),
-        description: e.cargo || e.empresa || undefined,
-      }))}
+      data={empleados
+        .filter(
+          (e) =>
+            !excludeIds ||
+            (!excludeIds.includes(e.id_empleado) &&
+              !excludeIds.includes(String(e.id_empleado))),
+        )
+        .map((e) => ({
+          value: String(e.id_empleado),
+          label: `${e.apellido} ${e.nombre}`.trim(),
+          description: e.cargo || e.empresa || undefined,
+        }))}
       value={value}
       onChange={onChange}
       searchable

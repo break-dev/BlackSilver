@@ -1,38 +1,36 @@
-import { Button, Text } from "@mantine/core";
 import { useState } from "react";
-import { notifications } from "@mantine/notifications";
+import { Button, Text } from "@mantine/core";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import "dayjs/locale/es";
-import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
-import { Schema_AsignarResponsableAlmacen } from "../../../../services/almacenes/dtos/requests";
-import type { RES_ResponsableAlmacen } from "../../../../services/almacenes/dtos/responses";
+import { notifications } from "@mantine/notifications";
+
+import { useMinas } from "../../../../services/minas/useMinas";
+import type { RES_ResponsableMina } from "../../../../services/minas/dtos/responses";
 import { CustomDatePicker } from "../../../utils/date-picker-input";
 import { SelectEmpleado } from "../../../utils/select-empleado";
 
-interface FormAsignarResponsableProps {
-  idAlmacen: number;
-  nombreAlmacen?: string;
-  onSuccess: (responsable: RES_ResponsableAlmacen) => void;
+interface FormAsignarResponsableMinaProps {
+  idMina: number;
+  nombreMina?: string;
   onCancel: () => void;
+  onSuccess: (nuevoResponsable: RES_ResponsableMina) => void;
+  excludeEmpleadoId?: number | string | null;
 }
 
-export const FormAsignarResponsable = ({
-  idAlmacen,
-  nombreAlmacen,
-  onSuccess,
+export const FormAsignarResponsableMina = ({
+  idMina,
+  nombreMina,
   onCancel,
-}: FormAsignarResponsableProps) => {
-  // Form State
+  onSuccess,
+  excludeEmpleadoId,
+}: FormAsignarResponsableMinaProps) => {
   const [nuevoResponsable, setNuevoResponsable] = useState<string | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [assignError, setAssignError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [, setError] = useState("");
 
-  const { asignarResponsable } = useAlmacenes({ setError });
+  const { asignarResponsable } = useMinas({ setError: () => {} });
 
-  // Handle Assign
   const handleAsignar = async () => {
     setAssignError("");
     if (!nuevoResponsable || !fechaInicio) {
@@ -40,31 +38,20 @@ export const FormAsignarResponsable = ({
       return;
     }
 
-    // Validate DTO
-    const payload = {
-      id_almacen: idAlmacen,
+    setSubmitting(true);
+    const result = await asignarResponsable({
+      id_mina: idMina,
       id_empleado: Number(nuevoResponsable),
       fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
-    };
+    });
 
-    const validation = Schema_AsignarResponsableAlmacen.safeParse(payload);
-    if (!validation.success) {
-      setAssignError("Datos inválidos.");
-      return;
-    }
-
-    setSubmitting(true);
-    const result = await asignarResponsable(validation.data);
-    if (result.success) {
+    if (result.success && result.data) {
       notifications.show({
         title: "Asignado",
-        message: "Nuevo responsable registrado.",
+        message: "Nuevo responsable de mina registrado.",
         color: "green",
       });
-      setNuevoResponsable(null);
-      setFechaInicio(new Date());
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSuccess(result.data as any as RES_ResponsableAlmacen);
+      onSuccess(result.data);
     } else {
       setAssignError(result.message || "Error al asignar.");
     }
@@ -85,35 +72,41 @@ export const FormAsignarResponsable = ({
       </Button>
 
       <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
-        <h3 className="text-white font-bold mb-4">Nueva Asignación</h3>
+        <h3 className="text-white font-bold mb-4">
+          Nueva Asignación de Responsable
+        </h3>
 
         <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
           <Text
             size="xs"
             className="text-indigo-300 font-medium uppercase tracking-wide"
           >
-            Asignando responsable a:
+            Mina:
           </Text>
           <Text size="md" fw={700} className="text-white mt-1">
-            {nombreAlmacen}
+            {nombreMina}
           </Text>
         </div>
 
         <div className="space-y-4">
           <SelectEmpleado
-            label="Responsable / Jefe"
+            label="Responsable / Jefe de Mina"
             placeholder="Buscar empleado..."
             value={nuevoResponsable}
             onChange={(val) => setNuevoResponsable(val)}
             withAsterisk
+            excludeIds={
+              excludeEmpleadoId !== undefined && excludeEmpleadoId !== null
+                ? [excludeEmpleadoId]
+                : undefined
+            }
             error={assignError && !nuevoResponsable ? "Requerido" : undefined}
           />
 
           <CustomDatePicker
             label="Fecha de Inicio"
             value={fechaInicio}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onChange={(val: any) => setFechaInicio(val)}
+            onChange={(val: unknown) => setFechaInicio(val as Date)}
             error={assignError && !fechaInicio ? "Requerido" : undefined}
             withAsterisk
           />

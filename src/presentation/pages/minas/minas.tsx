@@ -368,6 +368,19 @@ export const MinasPage = () => {
           <GestionResponsablesMina
             idMina={selectedMina.id_mina}
             nombreMina={selectedMina.nombre}
+            onResponsableChange={(nuevo) => {
+              setMinas((prev) =>
+                prev.map((m) =>
+                  m.id_mina === selectedMina.id_mina
+                    ? {
+                        ...m,
+                        responsable_actual:
+                          `${nuevo.apellidos} ${nuevo.nombres}`.trim(),
+                      }
+                    : m,
+                ),
+              );
+            }}
           />
         ) : null}
       </ModalEstandar>

@@ -1,13 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Badge, Button, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { notifications } from "@mantine/notifications";
-import {
-  ArrowLeftIcon,
-  PlusIcon,
-  UserIcon,
-  ClockIcon,
-} from "@heroicons/react/24/outline";
+import { Badge, Button, Loader, Text } from "@mantine/core";
+import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
@@ -15,18 +8,18 @@ import "dayjs/locale/es";
 import { useMinas } from "../../../../services/minas/useMinas";
 import type { RES_ResponsableMina } from "../../../../services/minas/dtos/responses";
 
-// Utils
-import { CustomDatePicker } from "../../../utils/date-picker-input";
-import { SelectEmpleado } from "../../../utils/select-empleado";
+import { FormAsignarResponsableMina } from "./form-asignar-responsable-mina";
 
 interface GestionResponsablesMinaProps {
   idMina: number;
   nombreMina?: string;
+  onResponsableChange?: (responsable: RES_ResponsableMina) => void;
 }
 
 export const GestionResponsablesMina = ({
   idMina,
   nombreMina,
+  onResponsableChange,
 }: GestionResponsablesMinaProps) => {
   // Data State
   const [responsables, setResponsables] = useState<RES_ResponsableMina[]>([]);
@@ -36,13 +29,7 @@ export const GestionResponsablesMina = ({
   // UI State
   const [showForm, setShowForm] = useState(false);
 
-  // Form State
-  const [nuevoResponsable, setNuevoResponsable] = useState<string | null>(null);
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
-  const [assignError, setAssignError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const { listarResponsables, asignarResponsable } = useMinas({ setError });
+  const { listarResponsables } = useMinas({ setError });
 
   // Cargar historial
   const cargarHistorial = async () => {
@@ -63,118 +50,49 @@ export const GestionResponsablesMina = ({
   };
 
   useEffect(() => {
-    if (!showForm) {
-      cargarHistorial();
-    }
+    cargarHistorial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idMina, showForm]);
+  }, [idMina]);
 
-  // Handle Assign
-  const handleAsignar = async () => {
-    setAssignError("");
-    if (!nuevoResponsable || !fechaInicio) {
-      setAssignError("Seleccione responsable y fecha de inicio.");
-      return;
-    }
-
-    setSubmitting(true);
-    const result = await asignarResponsable({
-      id_mina: idMina,
-      id_empleado: Number(nuevoResponsable),
-      fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
+  // Handle Success Asignacion
+  const handleSuccessAsignacion = (nuevoResponsable: RES_ResponsableMina) => {
+    // Marcar el actual como inactivo y poner fecha fin
+    const actualizados = responsables.map((r) => {
+      if (r.estado?.toUpperCase() === "ACTIVO") {
+        return {
+          ...r,
+          estado: "Inactivo",
+          fecha_fin: nuevoResponsable.fecha_inicio,
+        };
+      }
+      return r;
     });
 
-    if (result.success) {
-      notifications.show({
-        title: "Asignado",
-        message: "Nuevo responsable de mina registrado.",
-        color: "green",
-      });
-      setShowForm(false);
-      setNuevoResponsable(null);
-      setFechaInicio(new Date());
-    } else {
-      setAssignError(result.message || "Error al asignar.");
+    // Añadir el nuevo al principio
+    setResponsables([nuevoResponsable, ...actualizados]);
+    setShowForm(false);
+
+    if (onResponsableChange) {
+      onResponsableChange(nuevoResponsable);
     }
-    setSubmitting(false);
   };
 
   // VISTA: FORMULARIO
   if (showForm) {
+    const currentResponsable = responsables.find(
+      (r) => r.estado?.toUpperCase() === "ACTIVO",
+    );
+    const currentResponsableId =
+      currentResponsable?.id_empleado || currentResponsable?.id_usuario;
+
     return (
-      <div className="animate-fade-in space-y-4">
-        <Button
-          variant="subtle"
-          color="gray"
-          size="xs"
-          leftSection={<ArrowLeftIcon className="w-3 h-3" />}
-          onClick={() => setShowForm(false)}
-          className="hover:text-white text-zinc-400"
-        >
-          Volver al historial
-        </Button>
-
-        <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
-          <h3 className="text-white font-bold mb-4">
-            Nueva Asignación de Responsable
-          </h3>
-
-          <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-            <Text
-              size="xs"
-              className="text-indigo-300 font-medium uppercase tracking-wide"
-            >
-              Mina:
-            </Text>
-            <Text size="md" fw={700} className="text-white mt-1">
-              {nombreMina}
-            </Text>
-          </div>
-
-          <div className="space-y-4">
-            <SelectEmpleado
-              label="Responsable / Jefe de Mina"
-              placeholder="Buscar empleado..."
-              value={nuevoResponsable}
-              onChange={(val) => setNuevoResponsable(val)}
-              withAsterisk
-              error={assignError && !nuevoResponsable ? "Requerido" : undefined}
-            />
-
-            <CustomDatePicker
-              label="Fecha de Inicio"
-              value={fechaInicio}
-              onChange={(val: any) => setFechaInicio(val)}
-              error={assignError && !fechaInicio ? "Requerido" : undefined}
-              withAsterisk
-            />
-
-            {assignError && (
-              <Text size="xs" c="red">
-                {assignError}
-              </Text>
-            )}
-
-            <div className="flex justify-end gap-2 mt-6">
-              <Button
-                variant="default"
-                onClick={() => setShowForm(false)}
-                disabled={submitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="filled"
-                color="indigo"
-                onClick={handleAsignar}
-                loading={submitting}
-              >
-                Guardar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FormAsignarResponsableMina
+        idMina={idMina}
+        nombreMina={nombreMina}
+        onCancel={() => setShowForm(false)}
+        onSuccess={handleSuccessAsignacion}
+        excludeEmpleadoId={currentResponsableId}
+      />
     );
   }
 
