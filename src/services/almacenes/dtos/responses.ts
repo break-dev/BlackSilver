@@ -10,7 +10,7 @@ export interface RES_Almacen {
 
 export interface RES_ResponsableAlmacen {
     id_responsable_almacen: number;
-    id_usuario: number;
+    id_empleado: number;
     nombres: string;
     apellidos: string;
     fecha_inicio: string;

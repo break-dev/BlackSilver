@@ -46,10 +46,9 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
   const asignarResponsable = async (dto: DTO_AsignarResponsableAlmacen) => {
     setError("");
     try {
-      const response = await api.post<IRespuesta<boolean>>(
-        `${path}/asignar-responsable`,
-        dto,
-      );
+      const response = await api.post<
+        IRespuesta<RES_ResponsableAlmacen>
+      >(`${path}/asignar-responsable`, dto);
       const result = response.data;
       if (!result.success) setError(result.message);
       return result;

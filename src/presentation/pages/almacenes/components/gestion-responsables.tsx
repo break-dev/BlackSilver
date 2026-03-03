@@ -1,65 +1,41 @@
 import { Badge, Button, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { notifications } from "@mantine/notifications";
-import {
-  ArrowLeftIcon,
-  PlusIcon,
-  UserIcon,
-  ClockIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-
-// Services & Hooks
 import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
 import type { RES_ResponsableAlmacen } from "../../../../services/almacenes/dtos/responses";
-import { Schema_AsignarResponsableAlmacen } from "../../../../services/almacenes/dtos/requests";
-
-// Utils
-import { CustomDatePicker } from "../../../utils/date-picker-input";
-import { SelectEmpleado } from "../../../utils/select-empleado";
+import { FormAsignarResponsable } from "./form-asignar-responsable";
 
 interface GestionResponsablesProps {
   idAlmacen: number;
   nombreAlmacen?: string;
-  // idEmpresa removed as it is no longer relevant for warehouse responsibility
 }
 
 export const GestionResponsables = ({
   idAlmacen,
   nombreAlmacen,
 }: GestionResponsablesProps) => {
-  // Data State
   const [responsables, setResponsables] = useState<RES_ResponsableAlmacen[]>(
     [],
   );
   const [loading, setLoading] = useState(false);
   const [, setError] = useState("");
-
   // UI State
   const [showForm, setShowForm] = useState(false);
-
-  // Form State
-  const [nuevoResponsable, setNuevoResponsable] = useState<string | null>(null);
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
-  const [assignError, setAssignError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const { listarResponsables, asignarResponsable } = useAlmacenes({ setError });
+  const { listarResponsables } = useAlmacenes({ setError });
 
   // Cargar historial
   const cargarHistorial = async () => {
     setLoading(true);
     const data = await listarResponsables(idAlmacen);
     if (data) {
-      console.log("Datos historial Almacén:", data);
-      // Sort by start date DESC, then by ID DESC to ensure the newest is always on top
       const sorted = [...data].sort((a, b) => {
         const dateDiff =
           new Date(b.fecha_inicio).getTime() -
           new Date(a.fecha_inicio).getTime();
         if (dateDiff !== 0) return dateDiff;
-        return b.id_asignacion - a.id_asignacion;
+        return b.id_responsable_almacen - a.id_responsable_almacen;
       });
       setResponsables(sorted);
     }
@@ -67,124 +43,38 @@ export const GestionResponsables = ({
   };
 
   useEffect(() => {
-    if (!showForm) {
-      cargarHistorial();
-    }
+    cargarHistorial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idAlmacen, showForm]);
+  }, [idAlmacen]);
 
-  // Handle Assign
-  const handleAsignar = async () => {
-    setAssignError("");
-    if (!nuevoResponsable || !fechaInicio) {
-      setAssignError("Seleccione responsable y fecha de inicio.");
-      return;
-    }
+  const handleAsignacionExitosa = (
+    nuevoResponsable: RES_ResponsableAlmacen,
+  ) => {
+    setShowForm(false);
+    setResponsables((prev) => {
+      // Create a new array with the new item added
+      const newArray = [nuevoResponsable, ...prev];
 
-    // Validate DTO
-    const payload = {
-      id_almacen: idAlmacen,
-      id_empleado: Number(nuevoResponsable),
-      fecha_inicio: dayjs(fechaInicio).format("YYYY-MM-DD"),
-    };
-
-    const validation = Schema_AsignarResponsableAlmacen.safeParse(payload);
-    if (!validation.success) {
-      setAssignError("Datos inválidos.");
-      return;
-    }
-
-    setSubmitting(true);
-    const result = await asignarResponsable(validation.data);
-    if (result.success) {
-      notifications.show({
-        title: "Asignado",
-        message: "Nuevo responsable registrado.",
-        color: "green",
+      // Sort to ensure the newest is on top
+      return newArray.sort((a, b) => {
+        const dateDiff =
+          new Date(b.fecha_inicio).getTime() -
+          new Date(a.fecha_inicio).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return b.id_responsable_almacen - a.id_responsable_almacen;
       });
-      setShowForm(false);
-      setNuevoResponsable(null);
-      setFechaInicio(new Date());
-    } else {
-      setAssignError(result.message || "Error al asignar.");
-    }
-    setSubmitting(false);
+    });
   };
 
   // VISTA: FORMULARIO
   if (showForm) {
     return (
-      <div className="animate-fade-in space-y-4">
-        <Button
-          variant="subtle"
-          color="gray"
-          size="xs"
-          leftSection={<ArrowLeftIcon className="w-3 h-3" />}
-          onClick={() => setShowForm(false)}
-          className="hover:text-white text-zinc-400"
-        >
-          Volver al historial
-        </Button>
-
-        <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40">
-          <h3 className="text-white font-bold mb-4">Nueva Asignación</h3>
-
-          <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-            <Text
-              size="xs"
-              className="text-indigo-300 font-medium uppercase tracking-wide"
-            >
-              Asignando responsable a:
-            </Text>
-            <Text size="md" fw={700} className="text-white mt-1">
-              {nombreAlmacen}
-            </Text>
-          </div>
-
-          <div className="space-y-4">
-            <SelectEmpleado
-              label="Responsable / Jefe"
-              placeholder="Buscar empleado..."
-              value={nuevoResponsable}
-              onChange={(val) => setNuevoResponsable(val)}
-              withAsterisk
-              error={assignError && !nuevoResponsable ? "Requerido" : undefined}
-            />
-
-            <CustomDatePicker
-              label="Fecha de Inicio"
-              value={fechaInicio}
-              onChange={(val: any) => setFechaInicio(val)}
-              error={assignError && !fechaInicio ? "Requerido" : undefined}
-              withAsterisk
-            />
-
-            {assignError && (
-              <Text size="xs" c="red">
-                {assignError}
-              </Text>
-            )}
-
-            <div className="flex justify-end gap-2 mt-6">
-              <Button
-                variant="default"
-                onClick={() => setShowForm(false)}
-                disabled={submitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="filled"
-                color="indigo"
-                onClick={handleAsignar}
-                loading={submitting}
-              >
-                Guardar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <FormAsignarResponsable
+        idAlmacen={idAlmacen}
+        nombreAlmacen={nombreAlmacen}
+        onSuccess={handleAsignacionExitosa}
+        onCancel={() => setShowForm(false)}
+      />
     );
   }
 
@@ -230,26 +120,23 @@ export const GestionResponsables = ({
             const fullName =
               item.nombres && item.apellidos
                 ? `${item.apellidos} ${item.nombres}`
-                : (item as any).usuario_nombre || "Sin nombre";
+                : (item as unknown as { usuario_nombre?: string })
+                    .usuario_nombre || "Sin nombre";
 
             return (
               <div
-                key={item.id_asignacion || idx}
-                className={`
-                                    relative p-4 rounded-xl border flex items-start gap-4 transition-all
-                                    border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
-                                `}
+                key={item.id_responsable_almacen || idx}
+                className={`relative p-4 rounded-xl border flex items-start gap-4 transition-all 
+                border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60`}
               >
                 {/* Left: Avatar / Icon */}
                 <div
-                  className={`
-                                    w-12 h-12 rounded-full flex items-center justify-center shrink-0 border
-                                    ${
-                                      isActive
-                                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                                        : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
-                                    }
-                                `}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border
+                    ${
+                      isActive
+                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                        : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
+                    }`}
                 >
                   <UserIcon className="w-6 h-6" />
                 </div>
