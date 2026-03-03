@@ -146,7 +146,7 @@ export const Login = () => {
                     borderColor: "rgba(6, 182, 212, 0.2)",
                     color: "white",
                     transition: "border-color 0.2s ease",
-                    "&:focus-within": {
+                    "&:focusWithin": {
                       borderColor: "rgba(6, 182, 212, 0.8)",
                     },
                   },
