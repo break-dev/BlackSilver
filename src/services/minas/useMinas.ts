@@ -76,14 +76,14 @@ export const useMinas = ({ setError }: IUseHook) => {
     const asignarResponsable = async (dto: DTO_AsignarResponsableMina) => {
         setError("");
         try {
-            const response = await api.post<IRespuesta<boolean>>(`${path}/asignar-responsable`, dto);
+            const response = await api.post<IRespuesta<RES_ResponsableMina>>(`${path}/asignar-responsable`, dto);
             const result = response.data;
             if (!result.success) setError(result.message);
             return result;
         } catch (error) {
             const msg = String(error);
             setError(msg);
-            return { success: false, message: msg, data: false };
+            return { success: false, message: msg, data: null };
         }
     };
 

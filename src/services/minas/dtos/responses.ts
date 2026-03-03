@@ -22,7 +22,7 @@ export interface RES_EmpresaMina {
 }
 
 export interface RES_ResponsableMina {
-    id_asignacion: number;
+    id_responsable_mina: number;
     id_usuario: number;
     nombres: string;
     apellidos: string;

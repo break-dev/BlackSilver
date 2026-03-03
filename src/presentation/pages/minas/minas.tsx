@@ -22,8 +22,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
-
-// Components
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
@@ -31,12 +29,9 @@ import { RegistroMina } from "./components/registro-mina";
 import { GestionLabores } from "../labores/labores";
 import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
 import { GestionResponsablesMina } from "./components/gestion-responsables-mina";
-
-// Services
 import { useMinas } from "../../../services/minas/useMinas";
 import type { RES_Mina } from "../../../services/minas/dtos/responses";
-
-const PAGE_SIZE = 20;
+import { PAGE_SIZE } from "../../constants";
 
 export const MinasPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -76,7 +71,6 @@ export const MinasPage = () => {
   // Load Data
   const cargarDatos = async () => {
     setLoading(true);
-    // @ts-ignore
     const data = await listar();
     if (data) setMinas(data);
     setLoading(false);
@@ -110,9 +104,6 @@ export const MinasPage = () => {
   const handleSuccessCreate = (nuevaMina: RES_Mina) => {
     closeCreate();
     setMinas((prev) => [nuevaMina, ...prev]);
-    // Opcional: Abrir modal de empresas inmediatamente
-    // setSelectedMina(nuevaMina);
-    // openEmpresas();
   };
 
   const handleOpenLabores = (mina: RES_Mina) => {
@@ -258,7 +249,7 @@ export const MinasPage = () => {
       title: "",
       width: 80,
       textAlign: "right",
-      render: (_record) => (
+      render: () => (
         <Menu shadow="md" width={150} position="left">
           <Menu.Target>
             <ActionIcon variant="subtle" color="gray">

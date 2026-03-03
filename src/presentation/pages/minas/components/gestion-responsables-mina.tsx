@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge, Button, Loader, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
@@ -54,7 +55,7 @@ export const GestionResponsablesMina = ({
           new Date(b.fecha_inicio).getTime() -
           new Date(a.fecha_inicio).getTime();
         if (dateDiff !== 0) return dateDiff;
-        return b.id_asignacion - a.id_asignacion;
+        return b.id_responsable_mina - a.id_responsable_mina;
       });
       setResponsables(sorted);
     }
@@ -218,7 +219,7 @@ export const GestionResponsablesMina = ({
 
             return (
               <div
-                key={item.id_asignacion || idx}
+                key={item.id_responsable_mina || idx}
                 className={`
                                     relative p-4 rounded-xl border flex items-start gap-4 transition-all
                                     border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
