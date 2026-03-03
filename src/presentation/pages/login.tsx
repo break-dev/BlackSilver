@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextInput, PasswordInput, Button } from "@mantine/core";
 import { useUsuario } from "../../services/usuarios/useUsuario";
 import { useMenuNavegacion } from "../../services/menu-navegacion/useMenuNavegacion";
 import { Schema_Login } from "../../services/usuarios/dtos/requests";
+import { Wallpapers, BlackcitoLogo } from "../assets/imports";
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -11,9 +12,18 @@ export const Login = () => {
   const [error, setError] = useState<string>("");
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { login } = useUsuario({ setError });
   const { getMenuNavegacion } = useMenuNavegacion({ setError });
+
+  useEffect(() => {
+    if (Wallpapers.length === 0) return;
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % Wallpapers.length);
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,26 +52,50 @@ export const Login = () => {
   };
 
   return (
-    <div
-      className="min-h-screen w-full flex items-center justify-center p-4 
-      relative overflow-hidden "
-    >
-      {/* Login Card */}
-      <div className="relative w-full max-w-md mb-20">
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 overflow-hidden bg-black">
+      {/* Background Images */}
+      {Wallpapers.map((bg, index) => (
         <div
-          className="glass rounded-3xl p-8 shadow-2xl border border-zinc-800/50 
-          backdrop-blur-2xl py-16"
+          key={index}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+            index === currentImageIndex ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <img
+            src={bg}
+            alt={`Background ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/50 z-0"></div>
+
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-md mb-8 sm:mb-20">
+        <div
+          className="glass rounded-3xl p-8 shadow-2xl shadow-cyan-900/20 border border-cyan-500/20 
+          backdrop-blur-2xl py-12 sm:py-16 bg-zinc-950/50"
         >
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div
-              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-zinc-100 to-zinc-300 
-              flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform"
+              className="w-20 h-20 sm:w-28 sm:h-28 mx-auto
+              flex items-center justify-center transform hover:scale-105 transition-transform duration-300"
             >
-              <span className="text-xl font-bold text-zinc-900">BS</span>
+              <img
+                src={BlackcitoLogo}
+                alt="Black Silver Logo"
+                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(27,205,219,0.4)]"
+              />
             </div>
-            <h1 className="text-xl font-bold text-white mb-1">Black Silver</h1>
-            <p className="text-sm text-zinc-400">Sistema de Gestión Minera</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-wide">
+              Black Silver
+            </h1>
+            <p className="text-xs sm:text-sm text-cyan-400 font-medium tracking-widest uppercase">
+              Sistema de Gestión Minera
+            </p>
           </div>
 
           {/* Error Message */}
@@ -78,23 +112,45 @@ export const Login = () => {
           <form onSubmit={(e) => handleSubmit(e)} className="space-y-5">
             <div>
               <TextInput
-                label="Usuario"
+                label={<span className="text-zinc-300">Usuario</span>}
                 placeholder="Ingresa tu usuario"
                 radius="lg"
-                size="sm"
+                size="md"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
+                styles={{
+                  input: {
+                    backgroundColor: "rgba(24, 24, 27, 0.5)",
+                    borderColor: "rgba(6, 182, 212, 0.2)",
+                    color: "white",
+                    transition: "border-color 0.2s ease",
+                    "&:focus": {
+                      borderColor: "rgba(6, 182, 212, 0.8)",
+                    },
+                  },
+                }}
               />
             </div>
 
             <div>
               <PasswordInput
-                label="Contraseña"
+                label={<span className="text-zinc-300">Contraseña</span>}
                 placeholder="Ingresa tu contraseña"
                 radius="lg"
-                size="sm"
+                size="md"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                styles={{
+                  input: {
+                    backgroundColor: "rgba(24, 24, 27, 0.5)",
+                    borderColor: "rgba(6, 182, 212, 0.2)",
+                    color: "white",
+                    transition: "border-color 0.2s ease",
+                    "&:focus-within": {
+                      borderColor: "rgba(6, 182, 212, 0.8)",
+                    },
+                  },
+                }}
               />
             </div>
 
@@ -102,17 +158,17 @@ export const Login = () => {
               type="submit"
               fullWidth
               radius="lg"
-              size="sm"
+              size="md"
               loading={isLoading}
-              className="mt-7! bg-linear-to-r! from-zinc-100! to-zinc-300! text-zinc-900! 
-              font-semibold! hover:from-white! hover:to-zinc-200! shadow-lg!"
+              className="mt-8! bg-linear-to-r! from-cyan-600! to-blue-600! text-white! 
+              font-bold! hover:from-cyan-500! hover:to-blue-500! shadow-[0_0_20px_rgba(6,182,212,0.3)]! transition-all duration-300! border-0!"
             >
               Iniciar Sesión
             </Button>
           </form>
 
           {/* Footer */}
-          <p className="text-center text-xs text-zinc-500 mt-6">
+          <p className="text-center text-xs text-zinc-500 mt-8">
             &copy; 2026 Black Silver. Todos los derechos reservados.
           </p>
         </div>
