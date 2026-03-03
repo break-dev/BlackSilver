@@ -347,7 +347,7 @@ export const MinasPage = () => {
       <ModalEstandar
         opened={openedEmpresas}
         close={closeEmpresas}
-        title="Gestión de Empresas"
+        title="Empresas ejecutoras"
       >
         {selectedMina ? (
           <GestionEmpresasMina

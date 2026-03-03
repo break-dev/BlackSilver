@@ -1,7 +1,7 @@
 import { api } from "../api";
 import type { IRespuesta } from "../../shared/response";
 import type { IUseHook } from "../hook.interface";
-import type { RES_Concesion, RES_Asignacion } from "./dtos/responses";
+import type { RES_Concesion, RES_ContratoConcesion } from "./dtos/responses";
 import type {
   DTO_CrearConcesion,
   DTO_EditarConcesion,
@@ -111,14 +111,12 @@ export const useConcesiones = ({ setError }: IUseHook) => {
     }
   };
 
-  // --- Asignaciones ---
-
-  // Listar asignaciones
+  // Lista todas la empresas que tengan algun contrato con una concesion
   const listarAsignaciones = async (id_concesion: number) => {
     try {
-      const response = await api.post<IRespuesta<RES_Asignacion[]>>(
+      const response = await api.post<IRespuesta<RES_ContratoConcesion[]>>(
         `${path}/asignaciones`,
-        { id_concesion }
+        { id_concesion },
       );
       const result = response.data;
 
@@ -134,7 +132,7 @@ export const useConcesiones = ({ setError }: IUseHook) => {
     }
   };
 
-  // Asignar empresa
+  // Registrar nuevo contrato entre una empresa y una concesion
   const asignarEmpresa = async (dto: DTO_AsignarEmpresa) => {
     setError("");
     try {

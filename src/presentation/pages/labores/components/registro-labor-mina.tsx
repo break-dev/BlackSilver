@@ -1,15 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { TipoSostenimiento } from "../../../../shared/enums";
 import dayjs from "dayjs";
-
-// Services
 import { Schema_CrearLabor } from "../../../../services/labores/dtos/requests";
 import type { RES_Labor } from "../../../../services/labores/dtos/responses";
 import { useLabores } from "../../../../services/labores/useLabores";
-
-// Utils
 import { SelectTipoLabor } from "../../../utils/select-tipo-labor";
 import { SelectEmpresaMina } from "../../../utils/select-empresa-mina";
 import { CustomDatePicker } from "../../../utils/date-picker-input";
@@ -103,18 +100,18 @@ export const RegistroLaborMina = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SelectTipoLabor
-          value={idTipoLabor}
-          onChange={setIdTipoLabor}
+        <SelectEmpresaMina
+          idMina={idMina}
+          value={idEmpresa}
+          onChange={setIdEmpresa}
           required
           withAsterisk
           disabled={submitting}
         />
 
-        <SelectEmpresaMina
-          idMina={idMina}
-          value={idEmpresa}
-          onChange={setIdEmpresa}
+        <SelectTipoLabor
+          value={idTipoLabor}
+          onChange={setIdTipoLabor}
           required
           withAsterisk
           disabled={submitting}

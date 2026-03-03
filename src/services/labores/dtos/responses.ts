@@ -22,7 +22,7 @@ export interface RES_Labor {
 
 export interface RES_TipoLabor {
   id_tipo_labor: number;
-  prefijo: string;
+  codigo: string;
   nombre: string;
   es_de_produccion: 0 | 1;
 }

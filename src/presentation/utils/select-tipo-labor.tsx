@@ -36,7 +36,7 @@ export const SelectTipoLabor = ({
       leftSection={<TagIcon className="w-4 h-4 text-zinc-400" />}
       data={tipos.map((t) => ({
         value: String(t.id_tipo_labor),
-        label: `${t.nombre} (${t.prefijo})`,
+        label: `${t.nombre} (${t.codigo})`,
       }))}
       value={value}
       onChange={onChange}

@@ -3,22 +3,17 @@ import { useDisclosure } from "@mantine/hooks";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEffect, useState, useMemo } from "react";
-
-// Components
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroLaborMina } from "./components/registro-labor-mina";
-
-// Services
 import { useLabores } from "../../../services/labores/useLabores";
 import type { RES_Labor } from "../../../services/labores/dtos/responses";
+import { PAGE_SIZE } from "../../constants";
 
 interface GestionLaboresProps {
   idMina: number;
   nombreMina: string;
 }
-
-const PAGE_SIZE = 10;
 
 export const GestionLabores = ({ idMina, nombreMina }: GestionLaboresProps) => {
   // Data

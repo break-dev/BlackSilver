@@ -1,8 +1,6 @@
 import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
 import { useState, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
-
-// Services
 import { Schema_CrearMina } from "../../../../services/minas/dtos/requests";
 import type { RES_Mina } from "../../../../services/minas/dtos/responses";
 import { useMinas } from "../../../../services/minas/useMinas";
@@ -81,7 +79,6 @@ export const RegistroMina = ({ onSuccess, onCancel }: RegistroMinaProps) => {
     }
 
     // Send
-    // @ts-ignore
     const result = await crear(validation.data);
 
     if (result) {

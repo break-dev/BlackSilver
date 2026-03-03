@@ -19,7 +19,7 @@ import { useConcesiones } from "../../../../services/concesiones/useConcesiones"
 import { useEmpresas } from "../../../../services/empresas/useEmpresas";
 import type {
   RES_Concesion,
-  RES_Asignacion,
+  RES_ContratoConcesion,
 } from "../../../../services/concesiones/dtos/responses";
 import type { RES_Empresa } from "../../../../services/empresas/dtos/responses";
 import { useForm } from "@mantine/form";
@@ -34,7 +34,7 @@ interface GestionEmpresasProps {
 export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
   // Hooks
   const [loading, setLoading] = useState(true);
-  const [asignaciones, setAsignaciones] = useState<RES_Asignacion[]>([]);
+  const [asignaciones, setAsignaciones] = useState<RES_ContratoConcesion[]>([]);
   const [empresasDisponibles, setEmpresasDisponibles] = useState<RES_Empresa[]>(
     [],
   );
@@ -252,22 +252,18 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
             const isActive = item.estado === "Activo";
             return (
               <div
-                key={item.id || item.id_asignacion} // Fallback just in case
-                className={`
-                                    relative p-4 rounded-xl border flex items-start gap-4 transition-all
-                                    border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60
-                                `}
+                key={item.id_contrato_concesion}
+                className={`relative p-4 rounded-xl border flex items-start gap-4 transition-all
+                            border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60`}
               >
                 {/* Left: Avatar / Logo */}
                 <div
-                  className={`
-                                    w-12 h-12 rounded-full flex items-center justify-center shrink-0 border overflow-hidden
-                                    ${
-                                      isActive
-                                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                                        : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
-                                    }
-                                `}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border overflow-hidden
+                              ${
+                                isActive
+                                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                                  : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
+                              }`}
                 >
                   {item.path_logo ? (
                     <img
@@ -323,7 +319,7 @@ export const GestionEmpresas = ({ concesion }: GestionEmpresasProps) => {
                       variant="subtle"
                       onClick={() =>
                         handleDesasignar(
-                          item.id || item.id_asignacion!,
+                          item.id_contrato_concesion,
                           item.nombre_comercial || item.razon_social,
                         )
                       }
