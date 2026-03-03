@@ -29,7 +29,6 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
     }
   };
 
-  // Crear Almacen
   const crear = async (dto: DTO_CrearAlmacen) => {
     setError("");
     try {
@@ -44,7 +43,6 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
     }
   };
 
-  // Asignar Responsable
   const asignarResponsable = async (dto: DTO_AsignarResponsableAlmacen) => {
     setError("");
     try {
@@ -86,17 +84,17 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
   const asignarMina = async (dto: DTO_AsignarMinaAlmacen) => {
     setError("");
     try {
-      const response = await api.post<IRespuesta<boolean>>(
+      const response = await api.post<IRespuesta<RES_MinaAsignada>>(
         `${path}/asignar-mina`,
         dto,
       );
       const result = response.data;
-      if (result.success) return true;
+      if (result.success) return result.data;
       setError(result.message);
-      return false;
+      return null;
     } catch (error) {
       setError(String(error));
-      return false;
+      return null;
     }
   };
 

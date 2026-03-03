@@ -4,7 +4,6 @@ export const Schema_CrearAlmacen = z.object({
   nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   descripcion: z.string().optional(),
   es_principal: z.boolean().default(false),
-  // id_empresa ya no se envía
 });
 
 export type DTO_CrearAlmacen = z.infer<typeof Schema_CrearAlmacen>;

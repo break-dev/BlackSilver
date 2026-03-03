@@ -336,6 +336,20 @@ export const AlmacenesPage = () => {
           <AsignarMinaAlmacen
             idAlmacen={selectedAlmacen.id_almacen}
             nombreAlmacen={selectedAlmacen.nombre}
+            onMinasChange={(delta) => {
+              setAlmacenes((prev) =>
+                prev.map((alm) =>
+                  alm.id_almacen === selectedAlmacen.id_almacen
+                    ? { ...alm, minas_count: (alm.minas_count || 0) + delta }
+                    : alm,
+                ),
+              );
+              setSelectedAlmacen((prev) =>
+                prev
+                  ? { ...prev, minas_count: (prev.minas_count || 0) + delta }
+                  : null,
+              );
+            }}
           />
         )}
       </ModalEstandar>
