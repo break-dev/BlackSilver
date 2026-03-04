@@ -215,7 +215,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                 />
 
                 <NumberInput
-                    label="Cantidad Inicial (unidades de lote)"
+                    label={`Stock Inicial en ${unidadSeleccionada?.nombre || 'Unidades'}`}
                     placeholder="0.00"
                     min={0}
                     decimalScale={2}
@@ -228,11 +228,11 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                 />
 
                 <NumberInput
-                    label={`Contenido por ${unidades.find(u => String(u.id_unidad_medida) === form.values.id_unidad_medida)?.abreviatura || 'Unidad de Lote'}`}
+                    label="Contenido"
                     placeholder="1.00"
                     description={sonUnidadesIdenticas
                         ? "Misma unidad que la base (Bloqueado)"
-                        : `Cuántos ${productoSeleccionado?.unidad_medida_base || ''} vienen por cada ${unidadSeleccionada?.abreviatura || 'unidad de lote'}`
+                        : `Indique cuántas ${productoSeleccionado?.nombre_unidad_medida_base || 'unidades'} contiene cada ${unidadSeleccionada?.nombre || 'unidad de lote'}`
                     }
                     min={0.01}
                     decimalScale={2}
