@@ -14,4 +14,6 @@ export interface RES_MovimientoKardex {
     created_at: string;
     producto?: string;
     codigo_lote?: string;
+    unidad_lote?: string;
+    unidad_base?: string;
 }

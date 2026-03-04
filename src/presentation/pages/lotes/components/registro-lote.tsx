@@ -107,6 +107,16 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
     // Detectar si el producto seleccionado es perecible
     const esPerecible = Boolean(productoSeleccionado?.es_perecible);
 
+    // Función simple de pluralización para las unidades en español
+    const pluralizar = (nombre: string | undefined) => {
+        if (!nombre) return "";
+        const lower = nombre.toLowerCase();
+        if (lower.endsWith('s')) return nombre; // Ya parece plural
+        const vocales = ['a', 'e', 'i', 'o', 'u'];
+        const ultimaLetra = lower.charAt(lower.length - 1);
+        return vocales.includes(ultimaLetra) ? `${nombre}s` : `${nombre}es`;
+    };
+
     // Cargar catálogos (Productos y Unidades)
     useEffect(() => {
         const loadCatalogs = async () => {
@@ -232,7 +242,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     placeholder="1.00"
                     description={sonUnidadesIdenticas
                         ? "Misma unidad que la base (Bloqueado)"
-                        : `Indique cuántas ${productoSeleccionado?.nombre_unidad_medida_base || 'unidades'} contiene cada ${unidadSeleccionada?.nombre || 'unidad de lote'}`
+                        : `Indique cuánt@s ${pluralizar(productoSeleccionado?.nombre_unidad_medida_base) || 'unidades'} contiene cada ${unidadSeleccionada?.nombre || 'unidad de lote'}`
                     }
                     min={0.01}
                     decimalScale={2}
