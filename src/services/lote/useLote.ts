@@ -11,7 +11,7 @@ export const useLote = ({ setError }: IUseHook) => {
     const listarPorAlmacen = async (idAlmacen: number) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_Lote[]>>(`/lotes-almacen`, {
+            const response = await api.get<IRespuesta<RES_Lote[]>>(`/lotes/by-almacen`, {
                 params: { id_almacen: idAlmacen }
             });
             const result = response.data;
@@ -31,10 +31,10 @@ export const useLote = ({ setError }: IUseHook) => {
     const crear = async (dto: DTO_CrearLote) => {
         setError("");
         try {
-            // Formatear fechas para el backend (YYYY-MM-DD)
+            // Formatear fechas para el backend
             const payload = {
                 ...dto,
-                fecha_ingreso: dayjs(dto.fecha_ingreso).format("YYYY-MM-DD"),
+                fecha_hora_ingreso: dayjs(dto.fecha_hora_ingreso).format("YYYY-MM-DD HH:mm:ss"),
                 fecha_vencimiento: dto.fecha_vencimiento
                     ? dayjs(dto.fecha_vencimiento).format("YYYY-MM-DD")
                     : null
@@ -73,10 +73,11 @@ export const useLote = ({ setError }: IUseHook) => {
     };
 
     // Listar unidades de medida
-    const listarUnidadesMedida = async () => {
+    const listarUnidadesMedida = async (soloBase: boolean = false) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(`/unidades-medida`);
+            const url = soloBase ? `/productos/unidades-base` : `/lotes/unidades-medida`;
+            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(url);
             const result = response.data;
             if (result.success) {
                 return result.data;

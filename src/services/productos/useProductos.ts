@@ -45,8 +45,27 @@ export const useProductos = ({ setError }: IUseHook) => {
         }
     };
 
+    const listarUnidadesBase = async () => {
+        setError("");
+        try {
+            const response = await api.get<IRespuesta<any[]>>(`${path}/unidades-base`);
+            const result = response.data;
+
+            if (result.success) {
+                return result.data;
+            } else {
+                setError(result.message || "Error al listar unidades base");
+                return null;
+            }
+        } catch (error) {
+            setError(String(error));
+            return null;
+        }
+    };
+
     return {
         listar,
         crear,
+        listarUnidadesBase,
     };
 };

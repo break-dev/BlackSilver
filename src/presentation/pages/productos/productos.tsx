@@ -6,6 +6,7 @@ import {
   TextInput,
   Text,
   Chip,
+  Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useMemo, useState } from "react";
@@ -19,8 +20,8 @@ import {
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useProductos } from "../../../services/productos/useProductos";
-import { useCategoria } from "../../../services/categorias/useCategoria";
 import type { RES_Producto } from "../../../services/productos/dtos/responses";
+import { Periodo } from "../../../shared/enums";
 
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
@@ -44,17 +45,11 @@ export const ProductosPage = () => {
   const [verFiscalizados, setVerFiscalizados] = useState(false);
   const [verPerecibles, setVerPerecibles] = useState(false);
 
-  // Datos de Contexto
-  const [categorias, setCategorias] = useState<
-    { value: string; label: string }[]
-  >([]);
+  // Hooks
+  const { listar } = useProductos({ setError });
 
   // Modal
   const [opened, { open, close }] = useDisclosure(false);
-
-  // Hooks
-  const { listar } = useProductos({ setError });
-  const { listar: listarCategorias } = useCategoria({ setError });
 
   // Cargar Datos
   const cargarProductos = async () => {
@@ -64,20 +59,23 @@ export const ProductosPage = () => {
     setLoading(false);
   };
 
-  const cargarCategorias = async () => {
-    const data = await listarCategorias();
-    if (data) {
-      setCategorias(
-        data.map((c) => ({ value: String(c.id_categoria), label: c.nombre })),
-      );
-    }
-  };
-
   useEffect(() => {
     setTitle("Catálogo de Productos");
-    Promise.all([cargarProductos(), cargarCategorias()]);
+    cargarProductos();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Opciones de categorías derivadas de los productos cargados
+  const opcionesCategorias = useMemo(() => {
+    const capsulas = new Map<number, string>();
+    productos.forEach(p => {
+      capsulas.set(p.id_categoria, p.categoria);
+    });
+    return Array.from(capsulas.entries()).map(([id, nombre]) => ({
+      value: String(id),
+      label: nombre
+    }));
+  }, [productos]);
 
   const filteredRecords = useMemo(() => {
     return productos.filter((prod) => {
@@ -126,6 +124,9 @@ export const ProductosPage = () => {
             <Text size="sm" fw={600} className="text-white">
               {record.nombre}
             </Text>
+            <Text size="xs" className="text-zinc-500 italic">
+              {record.unidad_medida_base} ({record.unidad_medida_abreviatura})
+            </Text>
           </div>
         </Group>
       ),
@@ -137,6 +138,42 @@ export const ProductosPage = () => {
       render: (record) => (
         <Text size="sm" className="text-zinc-300 font-medium">
           {record.categoria}
+        </Text>
+      ),
+    },
+    {
+      accessor: "vencimiento",
+      title: "Vencimiento",
+      width: 140,
+      render: (record) => {
+        if (!record.es_perecible || !record.tiempo_espera_vencimiento) {
+          return <Text size="sm" c="dimmed">-</Text>;
+        }
+
+        const labelsMap: Record<string, string> = {
+          [Periodo.Diario]: "días",
+          [Periodo.Semanal]: "semanas",
+          [Periodo.Mensual]: "meses",
+          [Periodo.Anual]: "años",
+        };
+
+        const label = labelsMap[record.periodo_espera_vencimiento || ""] || record.periodo_espera_vencimiento;
+
+        return (
+          <Text size="sm" className="text-zinc-300 font-medium">
+            {record.tiempo_espera_vencimiento} {label}
+          </Text>
+        );
+      }
+    },
+    {
+      accessor: "stock_minimo",
+      title: "Stock Mín.",
+      textAlign: "center",
+      width: 120,
+      render: (record) => (
+        <Text size="sm" className="text-zinc-300 font-medium font-mono">
+          {record.stock_minimo} {record.unidad_medida_abreviatura}
         </Text>
       ),
     },
@@ -156,13 +193,19 @@ export const ProductosPage = () => {
             </Badge>
           )}
           {record.es_perecible && (
-            <Badge
-              leftSection={<ClockIcon className="w-3 h-3" />}
-              color="orange"
-              variant="light"
+            <Tooltip
+              label={`Vence en: ${record.tiempo_espera_vencimiento} ${record.periodo_espera_vencimiento?.charAt(0).toUpperCase()}${record.periodo_espera_vencimiento?.slice(1)}`}
+              withArrow
+              disabled={!record.tiempo_espera_vencimiento}
             >
-              Perecible
-            </Badge>
+              <Badge
+                leftSection={<ClockIcon className="w-3 h-3" />}
+                color="orange"
+                variant="light"
+              >
+                Perecible
+              </Badge>
+            </Tooltip>
           )}
           {!record.es_fiscalizado && !record.es_perecible && (
             <Text size="xs" c="dimmed">
@@ -214,7 +257,7 @@ export const ProductosPage = () => {
 
           <Select
             placeholder="Categoría"
-            data={categorias}
+            data={opcionesCategorias}
             value={filtroCategoria}
             onChange={(val) => {
               setFiltroCategoria(val);
@@ -263,7 +306,7 @@ export const ProductosPage = () => {
 
       {/* Tabla */}
       <DataTableEstandar
-        idAccessor="id"
+        idAccessor="id_producto"
         columns={columns}
         records={paginatedRecords}
         totalRecords={filteredRecords.length}

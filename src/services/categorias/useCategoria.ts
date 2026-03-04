@@ -7,10 +7,12 @@ import type { RES_Categoria } from "./dtos/responses";
 export const useCategoria = ({ setError }: IUseHook) => {
   const path = "/categorias";
 
-  const listar = async () => {
+  const listar = async (tipoRequerimiento?: string) => {
     setError("");
     try {
-      const response = await api.get<IRespuesta<RES_Categoria[]>>(path);
+      const response = await api.get<IRespuesta<RES_Categoria[]>>(path, {
+        params: { tipo_requerimiento: tipoRequerimiento },
+      });
       const result = response.data;
 
       if (result.success) {
