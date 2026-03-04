@@ -35,10 +35,11 @@ export const SelectUnidadMedida = ({
     return (
         <Select
             label={label}
-            placeholder={placeholder}
+            placeholder={loading ? "Cargando unidades..." : placeholder}
             searchable
             data={options}
             disabled={loading || props.disabled}
+            nothingFoundMessage={loading ? "Cargando..." : "No se encontraron unidades"}
             radius="lg"
             size="sm"
             classNames={{

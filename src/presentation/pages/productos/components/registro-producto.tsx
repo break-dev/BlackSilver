@@ -9,11 +9,13 @@ import {
   Tooltip,
   NumberInput,
   SimpleGrid,
+  Input,
+  Alert,
 } from "@mantine/core";
 import { useForm, zodResolver } from "@mantine/form";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useDisclosure } from "@mantine/hooks";
 
 import { useProductos } from "../../../../services/productos/useProductos";
@@ -40,6 +42,7 @@ const PERIODOS = [
 const inputStyles = {
   input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
   label: "text-zinc-300 mb-1 font-medium",
+  description: "text-zinc-500 italic text-[10.5px] mb-1.5",
   dropdown: "bg-zinc-900 border-zinc-800",
   option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
   section: "text-zinc-400",
@@ -50,6 +53,7 @@ export const RegistroProducto = ({
   onCancel,
 }: RegistroProductoProps) => {
   const [loading, setLoading] = useState(false);
+  const [isLoadingCategorias, setIsLoadingCategorias] = useState(false);
   const [categorias, setCategorias] = useState<
     { value: string; label: string }[]
   >([]);
@@ -78,15 +82,16 @@ export const RegistroProducto = ({
 
   useEffect(() => {
     const cargarCategorias = async () => {
+      setIsLoadingCategorias(true);
       const data = await listarCategorias("Bien");
       if (data) {
         setCategorias(
           data.map((c) => ({ value: String(c.id_categoria), label: c.nombre })),
         );
       }
+      setIsLoadingCategorias(false);
     };
     cargarCategorias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Recalcular días de vencimiento automáticamente
@@ -103,9 +108,8 @@ export const RegistroProducto = ({
 
       form.setFieldValue("dias_espera_vencimiento", (tiempo || 0) * f);
     } else {
-      form.setFieldValue("dias_espera_vencimiento", null);
+      form.setFieldValue("dias_espera_vencimiento", 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.values.tiempo_espera_vencimiento, form.values.periodo_espera_vencimiento]);
 
   const handleSubmit = async (values: typeof form.values) => {
@@ -134,12 +138,13 @@ export const RegistroProducto = ({
       <div className="flex items-end gap-2 px-1">
         <Select
           label="Categoría"
-          placeholder="Seleccione categoría de bienes"
+          placeholder={isLoadingCategorias ? "Cargando categorías..." : "Seleccione categoría de bienes"}
           data={categorias}
           searchable
-          nothingFoundMessage="No hay categorías de este tipo"
+          nothingFoundMessage={isLoadingCategorias ? "Cargando..." : "No hay categorías de este tipo"}
           withAsterisk
           className="flex-1"
+          disabled={isLoadingCategorias}
           radius="lg"
           size="sm"
           key={form.key("id_categoria")}
@@ -172,33 +177,44 @@ export const RegistroProducto = ({
         />
       </div>
 
-      {/* 3. Nombre y Stock (Fila Compartida 2:1) */}
-      <div className="grid grid-cols-12 gap-4 px-1">
-        <div className="col-span-12 sm:col-span-8">
-          <TextInput
-            label="Nombre del Producto"
-            placeholder="Ej: Dinamita 7/8 Famesa"
-            withAsterisk
-            radius="lg"
-            size="sm"
-            key={form.key("nombre")}
-            {...form.getInputProps("nombre")}
-            classNames={inputStyles}
-          />
+      {/* 3. Nombre (Fila Completa) */}
+      <div className="px-1">
+        <TextInput
+          label="Nombre del Producto"
+          placeholder="Ej: Dinamita 7/8 Famesa"
+          withAsterisk
+          radius="lg"
+          size="sm"
+          key={form.key("nombre")}
+          {...form.getInputProps("nombre")}
+          classNames={inputStyles}
+        />
+      </div>
+
+      {/* 4. Stock Mínimo (Diseño personalizado: Label/Input arriba, Descripción abajo) */}
+      <div className="px-1 py-1 space-y-1">
+        <div className="flex items-center gap-4">
+          <Input.Label className={inputStyles.label} style={{ marginBottom: 0, minWidth: '100px' }}>
+            Stock Mínimo
+          </Input.Label>
+          <div className="w-32">
+            <NumberInput
+              placeholder="0.00"
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              radius="lg"
+              size="sm"
+              key={form.key("stock_minimo")}
+              {...form.getInputProps("stock_minimo")}
+              classNames={inputStyles}
+            />
+          </div>
         </div>
-        <div className="col-span-12 sm:col-span-4">
-          <NumberInput
-            label="Stock Mínimo"
-            placeholder="0.00"
-            min={0}
-            decimalScale={2}
-            fixedDecimalScale
-            radius="lg"
-            size="sm"
-            key={form.key("stock_minimo")}
-            {...form.getInputProps("stock_minimo")}
-            classNames={inputStyles}
-          />
+        <div className="pl-[116px]"> {/* Alineado con el inicio del input */}
+          <Input.Description className={inputStyles.description}>
+            Límite para alertas de reposición
+          </Input.Description>
         </div>
       </div>
 
@@ -227,16 +243,28 @@ export const RegistroProducto = ({
         </div>
 
         {form.values.es_perecible && (
-          <div className="pt-8 mt-6 border-t border-zinc-800/50 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            <Text size="sm" fw={700} ta="center" className="text-zinc-200 uppercase tracking-widest">Configuración de Vencimiento Estimado</Text>
+          <div className="pt-8 mt-6 border-t border-zinc-800/50 space-y-7 animate-in fade-in slide-in-from-top-2 duration-300">
+            <Alert
+              icon={<InformationCircleIcon className="w-5 h-5" />}
+              color="indigo"
+              radius="lg"
+              variant="light"
+              styles={{
+                root: { backgroundColor: 'rgba(79, 70, 229, 0.1)', border: '1px solid rgba(79, 70, 229, 0.2)' },
+                message: { color: '#e0e7ff', fontSize: '12px' }
+              }}
+            >
+              Define con cuánta antelación deseas recibir avisos antes del vencimiento real.
+            </Alert>
 
             <SimpleGrid cols={2} spacing="md">
               <NumberInput
-                label="Tiempo de espera"
-                placeholder="Ej: 6"
+                label="Anticipar alerta por"
+                placeholder="Ej: 7"
                 min={1}
                 radius="lg"
                 size="sm"
+                hideControls
                 key={form.key("tiempo_espera_vencimiento")}
                 {...form.getInputProps("tiempo_espera_vencimiento")}
                 classNames={inputStyles}
@@ -253,18 +281,13 @@ export const RegistroProducto = ({
               />
             </SimpleGrid>
 
-            <div className="space-y-3">
-              <Text size="sm" fw={500} className="text-zinc-400 text-center">Total de días estimados</Text>
-              <TextInput
-                value={form.values.dias_espera_vencimiento?.toString() || "0"}
-                readOnly
-                radius="lg"
-                size="sm"
-                classNames={{
-                  input: "bg-zinc-800/40 border-zinc-800 text-zinc-400 font-black text-center cursor-default tracking-widest text-lg shadow-inner",
-                }}
-              />
-              <Text size="xs" ta="center" className="text-zinc-600 italic">Calculado automáticamente para trazabilidad</Text>
+            <div className="py-4 px-5 rounded-xl bg-zinc-900/50 border border-zinc-800 text-center space-y-1">
+              <Text size="sm" fw={700} className="text-zinc-300">
+                Resumen de la Configuración:
+              </Text>
+              <Text size="sm" className="text-zinc-400">
+                Se avisará el vencimiento de <span className="text-indigo-400 font-medium">{form.values.nombre || 'este producto'}</span> con <span className="text-indigo-400 font-medium">{form.values.dias_espera_vencimiento || 0} días</span> de anticipación.
+              </Text>
             </div>
           </div>
         )}
@@ -272,7 +295,7 @@ export const RegistroProducto = ({
 
       {error && <Text c="red" size="sm" fw={500} ta="center">{error}</Text>}
 
-      <Group justify="flex-end" mt="xl" gap="md">
+      <Group justify="flex-end" mt="md">
         <Button variant="subtle" onClick={onCancel} disabled={loading} radius="lg" className="text-zinc-400 hover:text-white">
           Cancelar
         </Button>
@@ -280,10 +303,9 @@ export const RegistroProducto = ({
           type="submit"
           loading={loading}
           radius="lg"
-          size="md"
-          className="bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg px-8"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
         >
-          Guardar Producto
+          Guardar
         </Button>
       </Group>
 
