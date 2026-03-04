@@ -4,9 +4,15 @@ import { useLote } from "../../services/lote/useLote";
 import type { RES_UnidadMedida } from "../../services/lote/dtos/responses";
 
 interface SelectUnidadMedidaProps extends Omit<SelectProps, 'data'> {
+    soloBase?: boolean;
 }
 
-export const SelectUnidadMedida = ({ label = "Unidad de Medida", placeholder = "Seleccione unidad", ...props }: SelectUnidadMedidaProps) => {
+export const SelectUnidadMedida = ({
+    label = "Unidad de Medida",
+    placeholder = "Seleccione unidad",
+    soloBase = false,
+    ...props
+}: SelectUnidadMedidaProps) => {
     const [data, setData] = useState<RES_UnidadMedida[]>([]);
     const [loading, setLoading] = useState(false);
     const [, setError] = useState("");
@@ -14,12 +20,12 @@ export const SelectUnidadMedida = ({ label = "Unidad de Medida", placeholder = "
 
     useEffect(() => {
         setLoading(true);
-        listarUnidadesMedida()
+        listarUnidadesMedida(soloBase)
             .then(res => {
                 if (res) setData(res);
             })
             .finally(() => setLoading(false));
-    }, []);
+    }, [soloBase]);
 
     const options = data.map(u => ({
         value: String(u.id_unidad_medida),

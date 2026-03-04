@@ -73,10 +73,11 @@ export const useLote = ({ setError }: IUseHook) => {
     };
 
     // Listar unidades de medida
-    const listarUnidadesMedida = async () => {
+    const listarUnidadesMedida = async (soloBase: boolean = false) => {
         setError("");
         try {
-            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(`/unidades-medida`);
+            const url = soloBase ? `/productos/unidades-base` : `/lotes/unidades-medida`;
+            const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(url);
             const result = response.data;
             if (result.success) {
                 return result.data;
