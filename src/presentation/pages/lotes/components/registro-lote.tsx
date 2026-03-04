@@ -20,9 +20,10 @@ const LocalSchema = z.object({
     id_producto: z.coerce.number().min(1, "Seleccione un producto"),
     id_unidad_medida: z.coerce.number().min(1, "Seleccione una unidad de medida"),
     id_almacen: z.coerce.number().min(1, "Seleccione un almacén"),
-    descripcion: z.string().optional(),
+    descripcion: z.string().optional().nullable(),
     stock_inicial: z.coerce.number().min(0, "El stock no puede ser negativo").default(0),
-    fecha_ingreso: z.any().refine((val) => val !== null && val !== undefined && new Date(val).toString() !== 'Invalid Date', { message: "Fecha requerida" }).transform((val) => new Date(val)),
+    contenido_por_presentacion: z.coerce.number().min(0.0001, "El contenido debe ser mayor a 0").default(1),
+    fecha_hora_ingreso: z.any().refine((val) => val !== null && val !== undefined && new Date(val).toString() !== 'Invalid Date', { message: "Fecha requerida" }).transform((val) => new Date(val)),
     fecha_vencimiento: z.any().transform((val) => {
         if (!val) return null;
         const d = new Date(val);
@@ -36,7 +37,8 @@ type FormValues = {
     id_almacen: string;
     descripcion: string;
     stock_inicial: number;
-    fecha_ingreso: Date;
+    contenido_por_presentacion: number;
+    fecha_hora_ingreso: Date;
     fecha_vencimiento: Date | null;
 };
 
@@ -59,7 +61,8 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
             id_almacen: initialAlmacenId ? String(initialAlmacenId) : "",
             descripcion: "",
             stock_inicial: 0,
-            fecha_ingreso: new Date(),
+            contenido_por_presentacion: 1,
+            fecha_hora_ingreso: new Date(),
             fecha_vencimiento: null,
         },
         validate: (values) => {
@@ -87,12 +90,22 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
         },
     });
 
+    const productoSeleccionado = productos.find(p => String(p.id_producto) === form.values.id_producto);
+    const unidadSeleccionada = unidades.find(u => String(u.id_unidad_medida) === form.values.id_unidad_medida);
+    const stockTotalBase = Number((form.values.stock_inicial * form.values.contenido_por_presentacion).toFixed(2));
+
+    const sonUnidadesIdenticas = productoSeleccionado && unidadSeleccionada &&
+        Number(productoSeleccionado.id_unidad_medida_base) === Number(unidadSeleccionada.id_unidad_medida);
+
+    // Efecto para bloquear contenido a 1 si las unidades son iguales
+    useEffect(() => {
+        if (sonUnidadesIdenticas) {
+            form.setFieldValue("contenido_por_presentacion", 1);
+        }
+    }, [sonUnidadesIdenticas]);
+
     // Detectar si el producto seleccionado es perecible
-    const esPerecible = (() => {
-        if (!form.values.id_producto) return false;
-        const p = productos.find(x => String(x.id_producto) === form.values.id_producto);
-        return p ? Boolean(p.es_perecible) : false;
-    })();
+    const esPerecible = Boolean(productoSeleccionado?.es_perecible);
 
     // Cargar catálogos (Productos y Unidades)
     useEffect(() => {
@@ -133,9 +146,10 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
             id_unidad_medida: Number(values.id_unidad_medida),
             id_almacen: Number(values.id_almacen),
             stock_inicial: Number(values.stock_inicial),
+            contenido_por_presentacion: Number(values.contenido_por_presentacion),
         };
 
-        const nuevoLote = await crear(dto);
+        const nuevoLote = await crear(dto as any);
         if (nuevoLote) {
             notifications.show({
                 title: "Éxito",
@@ -185,8 +199,8 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                 />
 
                 <Select
-                    label="Unidad de Medida"
-                    placeholder="Seleccione unidad"
+                    label="Unidad de Medida del Lote"
+                    placeholder="Seleccione unidad (ej: Caja, Bolsa)"
                     data={(unidades || []).map(u => ({
                         value: String(u.id_unidad_medida),
                         label: `${u.nombre} (${u.abreviatura})`
@@ -201,7 +215,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                 />
 
                 <NumberInput
-                    label="Stock Inicial"
+                    label="Cantidad Inicial (unidades de lote)"
                     placeholder="0.00"
                     min={0}
                     decimalScale={2}
@@ -213,14 +227,56 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                     classNames={inputClasses}
                 />
 
+                <NumberInput
+                    label={`Contenido por ${unidades.find(u => String(u.id_unidad_medida) === form.values.id_unidad_medida)?.abreviatura || 'Unidad de Lote'}`}
+                    placeholder="1.00"
+                    description={sonUnidadesIdenticas
+                        ? "Misma unidad que la base (Bloqueado)"
+                        : `Cuántos ${productoSeleccionado?.unidad_medida_base || ''} vienen por cada ${unidadSeleccionada?.abreviatura || 'unidad de lote'}`
+                    }
+                    min={0.01}
+                    decimalScale={2}
+                    fixedDecimalScale
+                    radius="lg"
+                    size="sm"
+                    withAsterisk
+                    disabled={sonUnidadesIdenticas || loading}
+                    {...form.getInputProps("contenido_por_presentacion")}
+                    classNames={inputClasses}
+                />
+
+                <div className="md:col-span-2">
+                    <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 space-y-3">
+                        <Text size="xs" fw={700} c="dimmed" className="uppercase tracking-wider">
+                            Resumen de Conversión
+                        </Text>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <Text size="xs" c="cyan.4" fw={600}>Ingreso en Lote</Text>
+                                <Text fw={700} size="xl" className="text-white">
+                                    {form.values.stock_inicial || 0} <span className="text-sm font-normal text-zinc-500">{unidadSeleccionada?.abreviatura || '---'}</span>
+                                </Text>
+                            </div>
+                            <div className="space-y-1">
+                                <Text size="xs" c="pink.4" fw={600}>Total en Unidades Base</Text>
+                                <Text fw={700} size="xl" className="text-pink-500">
+                                    {stockTotalBase} <span className="text-sm font-normal text-zinc-500">{productoSeleccionado?.unidad_medida_base || '---'}</span>
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <CustomDatePicker
                     label="Fecha de Ingreso"
                     placeholder="Seleccione fecha"
                     radius="lg"
                     size="sm"
-                    value={form.values.fecha_ingreso}
-                    onChange={(date) => form.setFieldValue("fecha_ingreso", date as unknown as Date)}
-                    error={form.errors.fecha_ingreso as string}
+                    withAsterisk
+                    value={form.values.fecha_hora_ingreso}
+                    onChange={(date) => form.setFieldValue("fecha_hora_ingreso", date as unknown as Date)}
+                    error={form.errors.fecha_hora_ingreso as string}
                 />
 
                 {esPerecible ? (
@@ -230,7 +286,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                         radius="lg"
                         size="sm"
                         withAsterisk
-                        minDate={new Date(form.values.fecha_ingreso)}
+                        minDate={new Date(form.values.fecha_hora_ingreso)}
                         value={form.values.fecha_vencimiento}
                         onChange={(date) => form.setFieldValue("fecha_vencimiento", date as unknown as Date)}
                         error={form.errors.fecha_vencimiento as string}

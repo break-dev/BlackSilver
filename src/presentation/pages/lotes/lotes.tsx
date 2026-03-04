@@ -6,6 +6,7 @@ import {
   CubeIcon,
   ClockIcon,
   MagnifyingGlassIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import dayjs from "dayjs";
@@ -40,7 +41,7 @@ export const LotesPage = () => {
     useDisclosure(false);
 
   // Hooks
-  const { listarPorAlmacen } = useLote({ setError: () => {} });
+  const { listarPorAlmacen } = useLote({ setError: () => { } });
 
   // Title
   useEffect(() => {
@@ -130,54 +131,150 @@ export const LotesPage = () => {
     {
       accessor: "producto",
       title: "Producto",
-      // width removed to auto-expand
       render: (record) => (
         <Group gap="xs">
           <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500">
             <CubeIcon className="w-4 h-4" />
           </div>
-          <div>
-            <Text size="sm" fw={600} className="text-white">
-              {record.producto}
+          <Text size="sm" fw={600} className="text-white">
+            {record.producto}
+          </Text>
+        </Group>
+      ),
+    },
+    {
+      accessor: "categoria",
+      title: "Categoría",
+      width: 150,
+      render: (record) => (
+        <Text size="sm" className="text-zinc-300 font-medium">
+          {record.categoria || "-"}
+        </Text>
+      ),
+    },
+    {
+      accessor: "stock_actual",
+      title: "Stock Actual",
+      width: 280,
+      render: (record) => {
+        const esBajoStock = Number(record.stock_total_almacen) <= Number(record.stock_minimo);
+
+        return (
+          <div className="flex flex-col gap-1">
+            <Group gap="xs" wrap="nowrap">
+              <Badge
+                variant="filled"
+                color="cyan"
+                radius="sm"
+                size="sm"
+                className="text-white fw-bold shadow-xs"
+              >
+                {record.stock_actual} {record.unidad_medida}
+              </Badge>
+              <div className="h-4 w-[1px] bg-zinc-800" />
+              <Badge
+                variant="filled"
+                color="pink"
+                radius="sm"
+                size="sm"
+                className="text-white fw-bold shadow-xs"
+              >
+                {record.stock_actual_base} {record.producto.split(' - ').pop()}
+              </Badge>
+            </Group>
+            {esBajoStock && (
+              <Badge color="red" variant="dot" size="xs" className="animate-pulse">
+                Bajo Stock (Mín: {record.stock_minimo})
+              </Badge>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessor: "fecha_hora_ingreso",
+      title: "Fecha de Ingreso",
+      width: 160,
+      render: (record) => (
+        <Group gap="sm" wrap="nowrap">
+          <CalendarDaysIcon className="w-5 h-5 text-indigo-400" />
+          <div className="flex flex-col gap-0">
+            <Text size="sm" fw={600} className="text-zinc-100">
+              {dayjs(record.fecha_hora_ingreso).format("DD/MM/YYYY")}
             </Text>
-            <Text size="xs" c="dimmed">
-              {record.categoria}
+            <Text size="xs" color="dimmed" fw={500}>
+              {dayjs(record.fecha_hora_ingreso).format("HH:mm A")}
             </Text>
           </div>
         </Group>
       ),
     },
     {
-      accessor: "stock_actual",
-      title: "Stock",
-      textAlign: "right",
-      width: 120,
-      render: (record) => (
-        <Text fw={700} c={record.stock_actual > 0 ? "green" : "red"}>
-          {record.stock_actual} {record.unidad_medida}
-        </Text>
-      ),
-    },
-    {
       accessor: "fecha_vencimiento",
       title: "Vencimiento",
-      width: 140,
+      width: 180,
       render: (record) => {
         if (!record.fecha_vencimiento)
           return (
-            <Text size="xs" c="dimmed">
-              -
-            </Text>
+            <Group gap="xs" wrap="nowrap" opacity={0.5}>
+              <div className="w-5 h-5 rounded flex items-center justify-center bg-zinc-800">
+                <ClockIcon className="w-3 h-3 text-zinc-500" />
+              </div>
+              <Text size="xs" c="dimmed" className="italic">
+                No perecible
+              </Text>
+            </Group>
           );
+
+        const dias = record.dias_para_vencer !== null ? Number(record.dias_para_vencer) : 0;
+        const diasConfig = record.dias_espera_vencimiento !== null ? Number(record.dias_espera_vencimiento) : 0;
+
+        // Determinar estado
+        let color = "zinc";
+        let mensaje = "Vigente";
+        let iconColor = "text-zinc-500";
+
+        if (dias < 0) {
+          color = "red";
+          mensaje = `Vencido hace ${Math.abs(dias)} días`;
+          iconColor = "text-red-500";
+        } else if (dias <= diasConfig) {
+          color = "orange";
+          mensaje = `Vence en ${dias} días`;
+          iconColor = "text-orange-400";
+        }
+
         return (
-          <Group gap={4}>
-            <ClockIcon className="w-3 h-3 text-zinc-500" />
-            <Text size="sm" className="text-zinc-300">
-              {dayjs(record.fecha_vencimiento).format("DD/MM/YYYY")}
-            </Text>
+          <Group gap="sm" wrap="nowrap">
+            <ClockIcon className={`w-5 h-5 ${iconColor}`} />
+            <div className="flex flex-col gap-0">
+              <Text size="sm" fw={600} className="text-zinc-100">
+                {dayjs(record.fecha_vencimiento).format("DD/MM/YYYY")}
+              </Text>
+              {mensaje !== "Vigente" && (
+                <Text size="xs" color={color} fw={700}>
+                  {mensaje}
+                </Text>
+              )}
+            </div>
           </Group>
         );
       },
+    },
+    {
+      accessor: "estado",
+      title: "Estado",
+      width: 100,
+      textAlign: "center",
+      render: (record) => (
+        <Badge
+          color={record.estado === "Activo" ? "green" : "red"}
+          variant="light"
+          size="sm"
+        >
+          {record.estado}
+        </Badge>
+      ),
     },
   ];
 

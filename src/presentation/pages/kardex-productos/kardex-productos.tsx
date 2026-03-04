@@ -38,7 +38,7 @@ export const KardexProductosPage = () => {
 
   // Hooks
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const { listarPorAlmacen } = useKardex({ setError: () => {} });
+  const { listarPorAlmacen } = useKardex({ setError: () => { } });
 
   // Title
   useEffect(() => {
@@ -94,8 +94,8 @@ export const KardexProductosPage = () => {
       const q = busqueda.toLowerCase();
       const matchBusqueda =
         !busqueda ||
-        m.codigo_movimiento.toLowerCase().includes(q) ||
-        (m.glosa || "").toLowerCase().includes(q) ||
+        m.tipo_origen.toLowerCase().includes(q) ||
+        (m.descripcion || "").toLowerCase().includes(q) ||
         (m.producto || "").toLowerCase().includes(q) ||
         (m.codigo_lote || "").toLowerCase().includes(q);
 
@@ -146,77 +146,83 @@ export const KardexProductosPage = () => {
     },
     {
       accessor: "tipo_movimiento",
-      title: "Movimiento",
-      width: 130,
+      title: "Transacción",
+      width: 240,
       render: (record) => {
         const isIngreso = record.tipo_movimiento
           .toLowerCase()
           .includes("ingreso");
         return (
-          <Badge
-            color={isIngreso ? "teal" : "orange"}
-            variant="light"
-            leftSection={
-              isIngreso ? (
-                <ArrowDownIcon className="w-3 h-3" />
-              ) : (
-                <ArrowUpIcon className="w-3 h-3" />
-              )
-            }
-          >
-            {record.tipo_movimiento}
-          </Badge>
+          <div className="flex flex-col gap-1">
+            <Badge
+              color={isIngreso ? "teal" : "orange"}
+              variant="light"
+              size="sm"
+              leftSection={
+                isIngreso ? (
+                  <ArrowDownIcon className="w-3 h-3" />
+                ) : (
+                  <ArrowUpIcon className="w-3 h-3" />
+                )
+              }
+            >
+              {record.tipo_movimiento}
+            </Badge>
+            <Text size="xs" fw={600} className="text-zinc-300 ml-1">
+              {record.tipo_origen}
+            </Text>
+          </div>
         );
       },
-    },
-    {
-      accessor: "codigo_movimiento",
-      title: "Concepto",
-      width: 160,
-      render: (record) => (
-        <Text size="sm" className="text-white font-medium">
-          {record.codigo_movimiento}
-        </Text>
-      ),
     },
     {
       accessor: "cantidad_movimiento",
-      title: "Cantidad",
+      title: "Cant. Movida",
       textAlign: "right",
-      width: 120,
+      width: 150,
       render: (record) => {
         const isIngreso = record.tipo_movimiento
           .toLowerCase()
           .includes("ingreso");
         return (
-          <Text fw={700} c={isIngreso ? "green" : "red"}>
-            {isIngreso ? "+" : "-"} {record.cantidad_movimiento}
-          </Text>
+          <div className="flex flex-col items-end">
+            <Text fw={700} size="sm" c={isIngreso ? "green" : "red"}>
+              {isIngreso ? "+" : "-"} {record.cantidad_movimiento}
+            </Text>
+            <Text size="xs" c="dimmed">
+              ({isIngreso ? "+" : "-"} {record.cantidad_movimiento_base} base)
+            </Text>
+          </div>
         );
       },
     },
     {
-      accessor: "cantidad_resultante",
-      title: "Saldo",
+      accessor: "stock_resultante",
+      title: "Saldos",
       textAlign: "right",
-      width: 120,
+      width: 150,
       render: (record) => (
-        <Text fw={600} className="text-zinc-200">
-          {record.cantidad_resultante}
-        </Text>
+        <div className="flex flex-col items-end">
+          <Text fw={600} size="sm" className="text-zinc-200">
+            {record.stock_resultante}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {record.stock_resultante_base} base
+          </Text>
+        </div>
       ),
     },
     {
-      accessor: "glosa",
+      accessor: "descripcion",
       title: "Ref.",
       width: 150,
       render: (record) => (
         <Text
           size="xs"
           className="text-zinc-400 italic truncate"
-          title={record.glosa}
+          title={record.descripcion || ""}
         >
-          {record.glosa || "-"}
+          {record.descripcion || "-"}
         </Text>
       ),
     },
