@@ -117,7 +117,7 @@ export const App = () => {
           element={<RequerimientosAlmacenPage />}
         />
         <Route
-          path="/logistica/requerimiento_almacen/atencion"
+          path="/logistica/requerimiento_almacen/atencion_requerimientos"
           element={<RequerimientosAlmacenEntregasPage />}
         />
         <Route

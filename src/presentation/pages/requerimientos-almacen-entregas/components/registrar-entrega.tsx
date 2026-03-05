@@ -1,18 +1,19 @@
-import { Button, Group, Loader, NumberInput, Paper, Stack, Table, Text, Badge, ActionIcon, Tooltip, Textarea } from "@mantine/core";
+import { Button, Group, Loader, NumberInput, Paper, Stack, Table, Text, Textarea, Select, Badge } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import {
-    CalendarIcon,
     BarsArrowDownIcon,
     ClipboardDocumentCheckIcon,
-    InformationCircleIcon,
     ClockIcon,
-    PrinterIcon,
+    CubeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
 import { useEntregas } from "../../../../services/requerimientos_almacen_entregas/useEntregas";
-import type { RES_LoteDisponible } from "../../../../services/requerimientos_almacen_entregas/dtos/responses";
+import type { RES_DetalleAtencionItem } from "../../../../services/requerimientos_almacen_entregas/dtos/responses";
 import type { RES_HistorialEntrega } from "../../../../services/requerimientos_almacen/dtos/responses";
+import { useEmpleados } from "../../../../services/empleados/useEmpleados";
+
+import { BlackcitoLogo } from "../../../../presentation/assets/imports";
 
 interface RegistrarEntregaProps {
     idRequerimiento: number;
@@ -29,60 +30,96 @@ interface RegistrarEntregaProps {
 export const RegistrarEntrega = ({
     idRequerimiento,
     idRequerimientoDetalle,
-    idProducto,
-    idAlmacen,
-    productoNombre,
-    cantidadSolicitada,
-    cantidadAtendida,
     onSuccess,
     onCancel
 }: RegistrarEntregaProps) => {
     const [loading, setLoading] = useState(true);
-    const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
+    const [itemData, setItemData] = useState<RES_DetalleAtencionItem | null>(null);
     const [historial, setHistorial] = useState<RES_HistorialEntrega[]>([]);
     const [entregaCantidades, setEntregaCantidades] = useState<Record<number, number>>({});
+    const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
     const [observacion, setObservacion] = useState("");
     const [error, setError] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const { obtenerLotesDisponibles, registrarEntrega, obtenerHistorialEntregas } = useEntregas({ setError });
-
-    const pendiente = Math.max(0, cantidadSolicitada - cantidadAtendida);
+    const { obtenerDetallesAtencion, registrarEntrega, obtenerHistorialEntregas } = useEntregas({ setError });
+    const { listar } = useEmpleados({ setError });
+    const [empleados, setEmpleados] = useState<{ value: string; label: string }[]>([]);
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadInitialData = async () => {
             setLoading(true);
             try {
-                const [resLotes, resHistorial] = await Promise.all([
-                    obtenerLotesDisponibles(idProducto, idAlmacen),
-                    obtenerHistorialEntregas(idRequerimientoDetalle)
+                const [resDetalles, resHistorial, resEmps] = await Promise.all([
+                    obtenerDetallesAtencion(idRequerimiento),
+                    obtenerHistorialEntregas(idRequerimientoDetalle),
+                    listar()
                 ]);
-                setLotes(resLotes || []);
+
+                const found = (resDetalles || []).find((d: any) => d.id_requerimiento_detalle === idRequerimientoDetalle);
+                if (found) {
+                    found.pendiente_base = Number(found.pendiente_base);
+                    found.cantidad_solicitada = Number(found.cantidad_solicitada);
+                    found.cantidad_solicitada_base = Number(found.cantidad_solicitada_base);
+
+                    if (found.lotes) {
+                        found.lotes = found.lotes.map((l: any) => ({
+                            ...l,
+                            stock_actual: Number(l.stock_actual),
+                            stock_actual_base: Number(l.stock_actual_base)
+                        }));
+                    }
+                    setItemData(found);
+                }
+
                 setHistorial(resHistorial || []);
+                setEmpleados((resEmps || []).map((e: any) => ({
+                    value: e.id_empleado?.toString() || "",
+                    label: `${e.nombre} ${e.apellido}`
+                })));
             } finally {
                 setLoading(false);
             }
         };
-        loadData();
-    }, [idRequerimientoDetalle, idAlmacen, idProducto]);
+        loadInitialData();
+    }, [idRequerimiento, idRequerimientoDetalle]);
 
-    const totalEntrega = useMemo(() => {
+    const totalEntregaBase = useMemo(() => {
         return Object.values(entregaCantidades).reduce((sum, val) => sum + (val || 0), 0);
     }, [entregaCantidades]);
 
     const handleConfirmar = async () => {
-        if (totalEntrega > pendiente) {
-            setError(`No se puede entregar más de lo pendiente (${pendiente.toFixed(2)})`);
+        if (!idEmpleadoRecibe) {
+            setError("Debe seleccionar quién recibe el material");
             return;
         }
 
+        if (!itemData) return;
+
+        const equivReq = itemData.cantidad_solicitada > 0
+            ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada
+            : 1;
+
         const detalles = Object.entries(entregaCantidades)
             .filter(([_, cant]) => cant > 0)
-            .map(([idLote, cant]) => ({
-                id_requerimiento_almacen_detalle: idRequerimientoDetalle,
-                id_lote: Number(idLote),
-                cantidad: cant
-            }));
+            .map(([idLote, cant]) => {
+                const lote = itemData.lotes.find(l => l.id_lote_producto === Number(idLote))!;
+                const equivLote = lote.stock_actual > 0
+                    ? lote.stock_actual_base / lote.stock_actual
+                    : 1;
+
+                const cBase = cant;
+                const cLote = cBase / equivLote;
+                const cReq = cBase / equivReq;
+
+                return {
+                    id_requerimiento_almacen_detalle: idRequerimientoDetalle,
+                    id_lote_producto: Number(idLote),
+                    cantidad_base: cBase,
+                    cantidad_lote: cLote,
+                    cantidad_requerimiento: cReq
+                };
+            });
 
         if (detalles.length === 0) return;
 
@@ -90,6 +127,7 @@ export const RegistrarEntrega = ({
         try {
             const ok = await registrarEntrega({
                 id_requerimiento: idRequerimiento,
+                id_empleado_recibe: Number(idEmpleadoRecibe),
                 fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
                 observacion,
                 detalles
@@ -101,240 +139,290 @@ export const RegistrarEntrega = ({
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center py-20">
-                <Loader color="indigo" size="lg" />
-            </div>
-        );
-    }
+    if (loading) return <div className="flex justify-center py-20"><Loader color="indigo" size="lg" /></div>;
+    if (!itemData) return <Text c="red">Error al cargar datos del ítem</Text>;
+
+    const equivReq = itemData.cantidad_solicitada > 0 ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada : 1;
+    const pendienteUnidadSolicitada = itemData.pendiente_base / equivReq;
+    const solicitadoUnidadSolicitada = itemData.cantidad_solicitada;
+    const stockDisponibleBase = itemData.lotes.reduce((sum, l) => sum + (l.stock_actual_base || 0), 0);
+    const stockDisponibleSolicitada = stockDisponibleBase / equivReq;
 
     return (
-        <Stack gap="xl">
-            {/* Header: Resumen del Producto (Premium Cards) */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800 flex flex-col justify-center gap-1">
-                    <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">Producto</Text>
-                    <Text size="md" fw={900} className="text-white truncate">{productoNombre}</Text>
-                </Paper>
-                <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800 flex flex-col justify-center gap-1">
-                    <Text size="xs" c="emerald.5" fw={800} className="uppercase tracking-widest">Total Despachar</Text>
-                    <Text size="md" fw={900} className="text-emerald-400 font-mono">{totalEntrega.toFixed(2)}</Text>
-                </Paper>
-                <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800 flex flex-col justify-center gap-1">
-                    <Text size="xs" c="indigo.5" fw={800} className="uppercase tracking-widest">Solicitado</Text>
-                    <Text size="md" fw={900} className="text-indigo-400 font-mono">{Number(cantidadSolicitada).toFixed(2)}</Text>
-                </Paper>
-                <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800 flex flex-col justify-center gap-1">
-                    <Text size="xs" c="amber.5" fw={800} className="uppercase tracking-widest">Pendiente</Text>
-                    <Text size="md" fw={900} className="text-amber-400 font-mono">{pendiente.toFixed(2)}</Text>
-                </Paper>
-            </div>
+        <Stack gap="lg" className="font-sans">
+            {/* 1. CABECERA: PRODUCTO Y MÉTRICAS (Estilo Refinado) */}
+            <Paper p="lg" radius="lg" className="bg-zinc-900/40 border border-zinc-800 shadow-sm overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <Group gap="md">
+                        <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                            <CubeIcon className="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                            <Text size="xs" c="indigo.4" fw={800} className="uppercase tracking-widest mb-0.5 opacity-80">Producto Solicitado</Text>
+                            <Text size="xl" fw={900} className="text-white leading-tight mb-1">{itemData.producto}</Text>
+                            <Group gap="xs">
+                                <Text size="sm" fw={800} c="indigo.3">
+                                    {itemData.cantidad_solicitada.toFixed(2)} {itemData.unidad_medida}
+                                </Text>
+                                <Text size="xs" c="zinc-5" fw={700}>Equivale a:</Text>
+                                <Text size="xs" c="zinc.3" fw={800}>{itemData.cantidad_solicitada_base.toFixed(2)} {itemData.unidad_medida_base}</Text>
+                                <Text size="10px" c="zinc.6" fw={700} className="italic">
+                                    ({equivReq.toFixed(2)} {itemData.unidad_medida_base}/{itemData.unidad_medida})
+                                </Text>
+                            </Group>
+                        </div>
+                    </Group>
 
-            {/* Formulario Superior */}
-            <div className="mb-2">
+                    <div className="flex gap-2">
+                        <div className="text-right px-5 py-1.5 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
+                            <Text size="9px" c="green.5" fw={900} className="uppercase tracking-widest mb-1">Stock Disp.</Text>
+                            <Group gap={4} justify="flex-end" align="baseline">
+                                <Text size="lg" fw={900} className="text-green-500 font-mono leading-none">
+                                    {stockDisponibleBase.toFixed(2)}
+                                </Text>
+                                <Text size="10px" fw={800} c="zinc.5" className="uppercase">{itemData.unidad_medida_base}</Text>
+                            </Group>
+                        </div>
+                        <div className="text-right px-5 py-1.5 bg-pink-500/5 rounded-xl border border-pink-500/10">
+                            <Text size="9px" c="pink.5" fw={900} className="uppercase tracking-widest mb-1">Pendiente</Text>
+                            <Group gap={4} justify="flex-end" align="baseline">
+                                <Text size="lg" fw={900} className="text-pink-500 font-mono leading-none">
+                                    {itemData.pendiente_base.toFixed(2)}
+                                </Text>
+                                <Text size="10px" fw={800} c="zinc.5" className="uppercase">{itemData.unidad_medida_base}</Text>
+                            </Group>
+                        </div>
+                    </div>
+                </div>
+            </Paper>
+
+            {/* 2. FORMULARIO SELECCIÓN RECEPTOR */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-1">
+                <Select
+                    label="¿Quién recibe el material?"
+                    placeholder="Buscar por Nombre"
+                    data={empleados}
+                    searchable
+                    required
+                    withAsterisk
+                    value={idEmpleadoRecibe}
+                    onChange={setIdEmpleadoRecibe}
+                    size="sm"
+                    radius="lg"
+                    classNames={{
+                        input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                        label: "text-zinc-300 mb-1 font-medium text-sm"
+                    }}
+                />
                 <Textarea
-                    label="Observación"
-                    placeholder="Puede dejar un comentario opcional sobre esta entrega..."
+                    label="Observación de la Entrega"
+                    placeholder="Escriba detalles adicionales si es necesario..."
                     value={observacion}
                     onChange={(e) => setObservacion(e.currentTarget.value)}
-                    radius="md"
-                    minRows={2}
+                    size="sm"
+                    radius="lg"
+                    minRows={1}
                     classNames={{
-                        input: "bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-white transition-colors",
-                        label: "text-zinc-500 font-bold mb-1 ml-1 text-xs"
+                        input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 py-2",
+                        label: "text-zinc-300 mb-1 font-medium text-sm"
                     }}
                 />
             </div>
 
-            {/* Aviso de Atención */}
-            <Paper p="sm" radius="md" className="bg-indigo-900/10 border border-indigo-900/30 shadow-sm shadow-indigo-900/10">
-                <Group gap="sm" wrap="nowrap" align="start">
-                    <div className="p-2 rounded-lg bg-indigo-500/20">
-                        <InformationCircleIcon className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <Stack gap={2}>
-                        <Text size="sm" fw={800} className="text-indigo-200">¡Atención!</Text>
-                        <Text size="xs" className="text-indigo-200/70 italic leading-snug">
-                            Aquí se mostrarán los lotes disponibles para la entrega del producto, además de las entregas que ya se realizaron.
-                        </Text>
-                    </Stack>
-                </Group>
-            </Paper>
-
-            <div className="space-y-8">
-                {/* Lotes Disponibles */}
-                <div className="space-y-4">
-                    <Group gap="xs" px={4}>
-                        <BarsArrowDownIcon className="w-4 h-4 text-indigo-400" />
-                        <Text fw={800} size="sm" className="text-zinc-100 italic">Lotes Disponibles para Entrega</Text>
+            {/* 4. TABLA DE LOTES (Ajustada al estilo ordenado) */}
+            <div className="space-y-4">
+                <Group justify="space-between" align="center" px={4}>
+                    <Group gap="xs">
+                        <BarsArrowDownIcon className="w-5 h-5 text-indigo-400" />
+                        <Text fw={900} size="sm" className="text-white uppercase tracking-widest">Lotes Disponibles para Entrega</Text>
                     </Group>
+                    <Badge variant="filled" color="indigo" radius="xl" size="xl" className="px-6 font-mono">
+                        TOTAL SELECCIONADO: {totalEntregaBase.toFixed(2)} {itemData.unidad_medida_base}
+                    </Badge>
+                </Group>
 
-                    <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
-                        <Table verticalSpacing="md" horizontalSpacing="xl">
-                            <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
+                <div className="overflow-hidden border border-zinc-800 rounded-3xl bg-zinc-950/40 shadow-2xl">
+                    <Table verticalSpacing="lg" horizontalSpacing="xl" className="border-collapse">
+                        <thead className="bg-zinc-900/80 text-zinc-400 text-[11px] font-bold border-b border-zinc-800">
+                            <tr>
+                                <th className="py-4 pl-8" style={{ width: '18%' }}>Cód. Lote</th>
+                                <th className="text-left" style={{ width: '18%' }}>Vencimiento</th>
+                                <th className="text-right" style={{ width: '22%' }}>Stock Disponible</th>
+                                <th className="text-center w-40">Cant. a Despachar</th>
+                                <th className="text-right pr-8" style={{ width: '18%' }}>Nuevo Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800/50">
+                            {itemData.lotes.length === 0 ? (
                                 <tr>
-                                    <th className="px-6 py-4 text-left">Lote / Vencimiento</th>
-                                    <th className="px-6 py-4 text-right">Stock Lote</th>
-                                    <th className="px-6 py-4 text-center w-36">Cant. a Despachar</th>
-                                    <th className="px-6 py-4 text-right">Nuevo Saldo</th>
+                                    <td colSpan={5} className="py-20 text-center text-zinc-600 italic">No hay lotes con stock disponible en este almacén.</td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-800/50">
-                                {lotes.map((lote) => {
-                                    const cantDespacho = Number(entregaCantidades[lote.id_lote] || 0);
-                                    const stockActual = Number(lote.stock_actual || 0);
-                                    const nuevoSaldo = stockActual - cantDespacho;
-                                    const diasVence = lote.dias_para_vencer ?? 999;
+                            ) : (
+                                itemData.lotes.map((lote) => {
+                                    const cant = entregaCantidades[lote.id_lote_producto] || 0;
+                                    const saldo = lote.stock_actual_base - cant;
+                                    const equivLote = lote.stock_actual > 0 ? lote.stock_actual_base / lote.stock_actual : 1;
 
-                                    let vencimientoColor = "zinc.5";
-                                    let vencimientoIconColor = "text-zinc-500";
-                                    if (diasVence <= 0) {
-                                        vencimientoColor = "red.5";
-                                        vencimientoIconColor = "text-red-500";
-                                    } else if (diasVence < 7) {
-                                        vencimientoColor = "amber.5";
-                                        vencimientoIconColor = "text-amber-500";
-                                    }
+                                    // Cálculo de vencimiento
+                                    const fechaVenc = lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento) : null;
+                                    const hoy = dayjs().startOf('day');
+                                    const diasRestantes = fechaVenc ? fechaVenc.diff(hoy, 'day') : null;
+                                    const esCritico = diasRestantes !== null && diasRestantes <= (itemData.dias_espera_vencimiento || 0);
+                                    const esVencido = diasRestantes !== null && diasRestantes < 0;
 
                                     return (
-                                        <tr key={lote.id_lote} className="hover:bg-zinc-900/40 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <Stack gap={2}>
-                                                    <Text size="sm" fw={800} className="text-zinc-100">{lote.codigo_lote}</Text>
-                                                    <Group gap={4}>
-                                                        <CalendarIcon className={`w-3 h-3 ${vencimientoIconColor}`} />
-                                                        <Text size="10px" fw={700} c={vencimientoColor}>
-                                                            Vence: {lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento).format("DD/MM/YYYY") : "No vence"}
-                                                            {diasVence < 7 && ` (${diasVence <= 0 ? 'Vencido' : `${diasVence} días`})`}
+                                        <tr key={lote.id_lote_producto} className="hover:bg-zinc-900/40 transition-all group border-b border-zinc-800/30">
+                                            <td className="py-5 pl-8 text-left">
+                                                <Badge variant="light" color="violet" radius="sm" size="sm" className="font-black">
+                                                    {lote.codigo_lote}
+                                                </Badge>
+                                            </td>
+                                            <td className="text-left">
+                                                {lote.fecha_vencimiento ? (
+                                                    <div className="flex flex-col gap-1">
+                                                        <Text size="11px" fw={800} className="text-zinc-200">
+                                                            {dayjs(lote.fecha_vencimiento).format('DD/MM/YYYY')}
                                                         </Text>
+                                                        <Badge
+                                                            variant="dot"
+                                                            size="xs"
+                                                            color={esVencido ? "red" : (esCritico ? "orange" : "teal")}
+                                                            className="px-0 font-bold"
+                                                        >
+                                                            {esVencido ? 'Vencido' : `${diasRestantes} días por vencer`}
+                                                        </Badge>
+                                                    </div>
+                                                ) : (
+                                                    <Text size="11px" fw={700} c="zinc.7" className="italic">No aplica</Text>
+                                                )}
+                                            </td>
+                                            <td className="text-right">
+                                                <div className="flex flex-col gap-1.5 items-end">
+                                                    <Group gap="xs" wrap="nowrap" justify="flex-end">
+                                                        <Badge variant="filled" color="cyan" radius="sm" size="sm" className="text-white fw-bold shadow-xs">
+                                                            {lote.stock_actual.toFixed(2)} {lote.unidad_lote}
+                                                        </Badge>
+                                                        <div className="h-4 w-[1px] bg-zinc-800" />
+                                                        <Badge variant="filled" color="pink" radius="sm" size="sm" className="text-white fw-bold shadow-xs">
+                                                            {lote.stock_actual_base.toFixed(2)} {lote.unidad_base}
+                                                        </Badge>
                                                     </Group>
-                                                </Stack>
+                                                    <Text size="10px" fw={700} c="zinc.5" className="italic opacity-80 mr-1">
+                                                        ({equivLote.toFixed(2)} {lote.unidad_base}/{lote.unidad_lote})
+                                                    </Text>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <Text size="sm" fw={800} className="text-zinc-100 font-mono">{stockActual.toFixed(2)}</Text>
+                                            <td className="text-center">
+                                                <div className="flex justify-center">
+                                                    <NumberInput
+                                                        size="sm"
+                                                        radius="md"
+                                                        min={0}
+                                                        max={lote.stock_actual_base}
+                                                        value={cant}
+                                                        onChange={(val) => setEntregaCantidades(p => ({ ...p, [lote.id_lote_producto]: Number(val) }))}
+                                                        placeholder="0.00"
+                                                        className="w-32"
+                                                        classNames={{
+                                                            input: "bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-white text-center font-black text-sm h-10 shadow-sm"
+                                                        }}
+                                                    />
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <NumberInput
-                                                    size="xs"
-                                                    radius="md"
-                                                    min={0}
-                                                    max={stockActual}
-                                                    decimalScale={2}
-                                                    value={cantDespacho}
-                                                    onChange={(val) => setEntregaCantidades(prev => ({
-                                                        ...prev,
-                                                        [lote.id_lote]: Number(val) || 0
-                                                    }))}
-                                                    classNames={{
-                                                        input: "bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-white text-center font-bold"
-                                                    }}
-                                                />
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <Text size="sm" fw={800} className="text-indigo-400 font-mono">{nuevoSaldo.toFixed(2)}</Text>
+                                            <td className="text-right pr-8">
+                                                <div className="flex flex-col items-end">
+                                                    <Text size="lg" fw={900} c={saldo < 0 ? "red.5" : "white"} className="font-mono tracking-tighter leading-none">
+                                                        {Number(saldo).toFixed(2)}
+                                                    </Text>
+                                                    <Text size="10px" fw={800} c="zinc.5" className="font-bold opacity-80">{lote.unidad_base}</Text>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
-                                })}
-                            </tbody>
-                        </Table>
-                    </div>
-                    <Text size="11px" c="zinc.5" mt={4} ta="right" fs="italic">
-                        * Los días restantes solo se resaltan si el lote vence en menos de 7 días.
-                    </Text>
-                </div>
-
-                {/* Historial de Entregas */}
-                <div className="space-y-4">
-                    <Group gap="xs" px={4}>
-                        <ClockIcon className="w-4 h-4 text-emerald-400" />
-                        <Text fw={800} size="sm" className="text-zinc-100 italic">Entregas Realizadas</Text>
-                    </Group>
-
-                    <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20 max-h-[400px] overflow-y-auto">
-                        <Table verticalSpacing="md" horizontalSpacing="xl">
-                            <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider sticky top-0 z-10 backdrop-blur-md">
-                                <tr>
-                                    <th className="px-6 py-4 text-center w-12">#</th>
-                                    <th className="px-6 py-4 text-left">Código</th>
-                                    <th className="px-6 py-4 text-left">Fecha de Entrega</th>
-                                    <th className="px-6 py-4 text-center">Responsable de Almacén</th>
-                                    <th className="px-6 py-4 text-right">Cantidad</th>
-                                    <th className="px-6 py-4 text-center w-24">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-800/50">
-                                {historial.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="py-10 text-center text-zinc-600 italic text-xs">
-                                            No hay entregas previas registradas
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    historial.map((h, idx) => (
-                                        <tr key={h.id_entrega} className="hover:bg-zinc-900/40 transition-colors group">
-                                            <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
-                                                {idx + 1}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Badge variant="light" color="indigo" radius="sm">{h.codigo_entrega}</Badge>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <Text size="sm" fw={700} c="zinc.4">{dayjs(h.fecha_entrega).format("DD/MM/YYYY HH:mm")}</Text>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <Text size="sm" c="zinc.3" fw={700}>{h.usuario_entrega}</Text>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <Text size="md" c="emerald.4" fw={900} className="font-mono">{Number(h.cantidad).toFixed(2)}</Text>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <Tooltip label="Imprimir Comprobante" position="top" withArrow>
-                                                    <ActionIcon variant="light" color="zinc" onClick={() => { }} className="hover:bg-indigo-500/20 hover:text-indigo-400 mx-auto transition-colors">
-                                                        <PrinterIcon className="w-4 h-4" />
-                                                    </ActionIcon>
-                                                </Tooltip>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </Table>
-                    </div>
+                                })
+                            )}
+                        </tbody>
+                    </Table>
                 </div>
             </div>
 
-            {/* Footer: Acciones y Validación */}
-            <Stack gap="sm">
-                {pendiente > 0 && totalEntrega > pendiente && (
-                    <Text c="red.4" size="xs" fw={700} className="text-center bg-red-500/10 p-2 rounded-lg border border-red-900/20 uppercase tracking-tighter">
-                        ¡Error! La cantidad total ({totalEntrega.toFixed(2)}) supera el pendiente ({pendiente.toFixed(2)})
-                    </Text>
-                )}
+            {/* MENSAJE INFORMATIVO (BlackcitoLogo) */}
+            <div className="bg-indigo-500/5 p-5 rounded-2xl border border-indigo-500/10 flex gap-6 items-center">
+                <img src={BlackcitoLogo} alt="Blackcito" className="w-14 h-14 animate-bounce object-contain" />
+                <Text size="sm" c="zinc.3" fw={600} className="leading-relaxed italic">
+                    Al confirmar, se descontará el stock de los lotes seleccionados y se registrará el movimiento en el Kardex.
+                </Text>
+            </div>
 
-                <div className="flex justify-end items-center bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 shadow-inner">
-                    <Group gap="sm">
-                        <Button variant="subtle" color="zinc" radius="xl" onClick={onCancel}>
-                            Cancelar
-                        </Button>
-                        <Button
-                            size="md"
-                            radius="xl"
-                            color="indigo"
-                            leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
-                            disabled={totalEntrega <= 0 || totalEntrega > pendiente || isProcessing}
-                            loading={isProcessing}
-                            onClick={handleConfirmar}
-                            className="px-8 shadow-xl shadow-indigo-900/30"
-                        >
-                            Confirmar Entrega
-                        </Button>
-                    </Group>
+            {/* 5. HISTORAL DE ENTREGAS */}
+            <div className="space-y-4">
+                <Group gap="xs" px={4}>
+                    <ClockIcon className="w-5 h-5 text-zinc-500" />
+                    <Text fw={900} size="sm" className="text-zinc-400 uppercase tracking-widest">Historial de Entregas Parciales</Text>
+                </Group>
+
+                <div className="overflow-hidden border border-zinc-800 rounded-2xl bg-zinc-950/20 max-h-48 overflow-y-auto">
+                    <Table verticalSpacing="sm" horizontalSpacing="xl">
+                        <thead className="bg-zinc-900/50 text-zinc-600 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800">
+                            <tr>
+                                <th className="py-4">Folio / Fecha</th>
+                                <th>Entregado a</th>
+                                <th className="text-right">Cantidad ({itemData.unidad_medida_base})</th>
+                                <th className="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800/10">
+                            {historial.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="py-10 text-center text-zinc-700 italic text-sm">No registra entregas previas para este ítem.</td>
+                                </tr>
+                            ) : (
+                                historial.map(h => (
+                                    <tr key={h.id_entrega} className="text-zinc-400 hover:bg-zinc-900/10 transition-colors">
+                                        <td className="py-4 font-mono">
+                                            <Text size="xs" fw={900} className="text-indigo-400">{h.codigo_entrega || `ENT-${h.id_entrega}`}</Text>
+                                            <Text size="10px" fw={700} c="zinc.6">{dayjs(h.fecha_entrega).format("DD/MM/YYYY HH:mm")}</Text>
+                                        </td>
+                                        <td><Text size="sm" fw={800}>{h.entregado_a}</Text></td>
+                                        <td className="text-right font-mono py-2 font-black text-green-600/80 text-lg">+{h.cantidad}</td>
+                                        <td className="text-center">
+                                            <Button variant="subtle" size="compact-xs" color="zinc" radius="md" className="uppercase font-black text-[9px] hover:bg-zinc-800">Detalle</Button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </Table>
                 </div>
-            </Stack>
+            </div>
 
-            {error && <Text c="red" size="xs" className="text-center italic">{error}</Text>}
+            {/* 6. PIE DE FORMULARIO */}
+            <Group justify="flex-end" gap="md" className="pt-8 border-t border-zinc-800 mt-4">
+                <Button
+                    variant="subtle"
+                    color="zinc"
+                    radius="xl"
+                    size="lg"
+                    onClick={onCancel}
+                    className="text-zinc-500 hover:text-white px-10 font-bold"
+                >
+                    Cancelar Operación
+                </Button>
+                <Button
+                    size="lg"
+                    radius="xl"
+                    color="indigo"
+                    leftSection={<ClipboardDocumentCheckIcon className="w-6 h-6" />}
+                    disabled={totalEntregaBase <= 0 || totalEntregaBase > itemData.pendiente_base || isProcessing}
+                    loading={isProcessing}
+                    onClick={handleConfirmar}
+                    className="bg-indigo-600 hover:bg-indigo-500 px-14 font-black uppercase tracking-widest shadow-2xl shadow-indigo-950/50 h-16"
+                >
+                    Confirmar Registro de Entrega
+                </Button>
+            </Group>
+            {error && <Text c="red" size="xs" ta="center" fw={800} className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide">{error}</Text>}
         </Stack>
     );
 };

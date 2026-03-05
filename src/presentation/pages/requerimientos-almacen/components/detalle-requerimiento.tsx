@@ -183,7 +183,9 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                         </thead>
                         <tbody className="divide-y divide-zinc-800/50">
                             {detalle.detalles.map((item, index) => {
-                                const progresoItem = Math.min(100, Math.round(((item.cantidad_atendida || 0) / (item.cantidad_solicitada || 1)) * 100));
+                                const solicitadoBase = Number(item.cantidad_solicitada_base || 1);
+                                const atendidoBase = Number(item.cantidad_atendida_base || 0);
+                                const progresoItem = Math.min(100, Math.round((atendidoBase / solicitadoBase) * 100));
 
                                 return (
                                     <tr key={item.id_requerimiento_detalle} className="hover:bg-zinc-900/40 transition-colors group">
