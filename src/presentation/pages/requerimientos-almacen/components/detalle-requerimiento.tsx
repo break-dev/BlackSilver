@@ -175,7 +175,7 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                                 <th className="px-6 py-4 text-center">Indicadores</th>
                                 <th className="px-6 py-4 text-right">Cant. Solic.</th>
                                 <th className="px-6 py-4 text-center w-40">Progreso</th>
-                                <th className="px-6 py-4 text-center">Unidad</th>
+                                <th className="px-6 py-4 text-center">Equivalencia</th>
                                 <th className="px-6 py-4 text-left">Comentario</th>
                                 <th className="px-6 py-4 text-center">Estado</th>
                                 <th className="px-6 py-4 text-center w-20">Acciones</th>
@@ -216,12 +216,19 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                                             </Group>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Text size="sm" fw={800} className="text-white font-mono">{Number(item.cantidad_solicitada || 0).toFixed(2)}</Text>
+                                            <Badge
+                                                variant="filled"
+                                                color="cyan"
+                                                radius="sm"
+                                                className="font-bold shadow-xs whitespace-nowrap"
+                                            >
+                                                {Number(item.cantidad_solicitada || 0).toFixed(0)} {item.unidad_medida}
+                                            </Badge>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex flex-col gap-1.5 w-full">
                                                 <div className="flex justify-between items-center px-1">
-                                                    <Text size="10px" fw={800} c="zinc-5">Atendido: {Number(item.cantidad_atendida || 0).toFixed(2)}</Text>
+                                                    <Text size="10px" fw={800} c="zinc-5">Atendido: {Number(item.cantidad_atendida || 0).toFixed(0)}</Text>
                                                     <Text size="10px" fw={900} c="indigo.4">{progresoItem}%</Text>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/30">
@@ -233,8 +240,13 @@ export const DetalleRequerimiento = ({ idRequerimiento, onOpenTrazabilidad }: De
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <Badge variant="outline" color="zinc.5" size="xs" className="font-bold border-zinc-700">
-                                                {item.unidad_medida}
+                                            <Badge
+                                                variant="filled"
+                                                color="pink"
+                                                radius="sm"
+                                                className="font-bold shadow-xs whitespace-nowrap"
+                                            >
+                                                {Number((item as any).cantidad_solicitada_base || 0).toFixed(0)} {(item as any).unidad_medida_base}
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-4">
