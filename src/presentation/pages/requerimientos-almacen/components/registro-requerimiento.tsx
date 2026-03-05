@@ -54,6 +54,7 @@ interface ItemDetalle {
   id_unidad_medida: string;
   unidad_medida_nombre: string;
   cantidad_solicitada: number;
+  contenido_por_presentacion: number;
   comentario: string;
 }
 
@@ -76,9 +77,9 @@ export const RegistroRequerimiento = ({
 
   const { crear, listarAlmacenesPorMina } = useRequerimientos({ setError });
   const { listarProductosDisponibles, listarUnidadesMedida } = useLote({
-    setError: () => {},
+    setError: () => { },
   });
-  const { listar: listarLabores } = useLabores({ setError: () => {} });
+  const { listar: listarLabores } = useLabores({ setError: () => { } });
 
   const form = useForm({
     initialValues: {
@@ -98,13 +99,15 @@ export const RegistroRequerimiento = ({
     initialValues: {
       id_producto: "",
       id_unidad_medida: "",
-      cantidad_solicitada: 0,
+      cantidad_solicitada: 1,
+      contenido_por_presentacion: 1,
       comentario: "",
     },
     validate: {
       id_producto: (val) => (!val ? "Seleccione un producto" : null),
       id_unidad_medida: (val) => (!val ? "Seleccione unidad" : null),
       cantidad_solicitada: (val) => (val <= 0 ? "Debe ser > 0" : null),
+      contenido_por_presentacion: (val) => (val <= 0 ? "Debe ser > 0" : null),
     },
   });
 
@@ -156,8 +159,13 @@ export const RegistroRequerimiento = ({
       return;
     }
 
-    const { id_producto, id_unidad_medida, cantidad_solicitada, comentario } =
-      formItem.values;
+    const {
+      id_producto,
+      id_unidad_medida,
+      cantidad_solicitada,
+      contenido_por_presentacion,
+      comentario,
+    } = formItem.values;
 
     const existingItemIndex = items.findIndex(
       (item) =>
@@ -196,6 +204,7 @@ export const RegistroRequerimiento = ({
         id_unidad_medida,
         unidad_medida_nombre: unidadObj ? unidadObj.nombre : "Unidad",
         cantidad_solicitada,
+        contenido_por_presentacion,
         comentario: comentario || "",
       };
 
@@ -210,6 +219,23 @@ export const RegistroRequerimiento = ({
 
     formItem.reset();
   };
+
+  // Ayudantes para etiquetas dinámicas
+  const selectedProducto = productosMaster.find(
+    (p) => String(p.id_producto) === formItem.values.id_producto,
+  );
+  const selectedUnidad = unidadesMaster.find(
+    (u) => String(u.id_unidad_medida) === formItem.values.id_unidad_medida,
+  );
+
+  const unidadNombre = selectedUnidad ? selectedUnidad.nombre : "Unidad";
+  const baseAbbr = selectedProducto
+    ? selectedProducto.nombre.split(" - ")[1] || "Base"
+    : "Base";
+
+  const totalBase =
+    formItem.values.cantidad_solicitada *
+    formItem.values.contenido_por_presentacion;
 
   const removeItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
@@ -260,6 +286,7 @@ export const RegistroRequerimiento = ({
           id_producto: Number(item.id_producto),
           id_unidad_medida: Number(item.id_unidad_medida),
           cantidad_solicitada: item.cantidad_solicitada,
+          contenido_por_presentacion: item.contenido_por_presentacion,
           comentario: item.comentario,
         })),
       };
@@ -487,52 +514,62 @@ export const RegistroRequerimiento = ({
 
         <div className="space-y-6">
           <div className="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
+              {/* FILA 1: Selección Principal */}
               <div className="md:col-span-5">
                 <SelectProducto
                   key={formItem.key("id_producto")}
                   {...formItem.getInputProps("id_producto")}
-                  error={formItem.errors.id_producto ? true : null} // Solo borde rojo, sin texto
+                  error={formItem.errors.id_producto ? true : null}
                   classNames={inputClasses}
                 />
               </div>
-              <div className="md:col-span-3">
+
+              <div className="md:col-span-4">
                 <SelectUnidadMedida
                   key={formItem.key("id_unidad_medida")}
                   {...formItem.getInputProps("id_unidad_medida")}
-                  error={formItem.errors.id_unidad_medida ? true : null} // Solo borde rojo
+                  error={formItem.errors.id_unidad_medida ? true : null}
                   classNames={inputClasses}
                 />
               </div>
-              <div className="md:col-span-2">
+
+              <div className="md:col-span-3">
                 <NumberInput
-                  label="Cantidad"
+                  label={`Cant. de ${unidadNombre}s`}
+                  description="Total a pedir"
                   placeholder="0.00"
                   min={0.01}
                   decimalScale={2}
                   key={formItem.key("cantidad_solicitada")}
                   {...formItem.getInputProps("cantidad_solicitada")}
-                  error={formItem.errors.cantidad_solicitada ? true : null} // Solo borde rojo
+                  error={formItem.errors.cantidad_solicitada ? true : null}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
                 />
               </div>
-              <div className="md:col-span-2">
-                <Button
-                  onClick={addItem}
-                  variant="light"
-                  color="pink"
-                  size="sm"
-                  className="w-full shadow-sm"
-                  leftSection={<PlusIcon className="w-4 h-4" />}
+
+              {/* FILA 2: Especificación y Acción */}
+              <div className="md:col-span-3">
+                <NumberInput
+                  label={`Contenido por ${unidadNombre}`}
+                  description={`Equivale en ${baseAbbr}`}
+                  placeholder="Ej: 10"
+                  min={0.01}
+                  decimalScale={2}
+                  key={formItem.key("contenido_por_presentacion")}
+                  {...formItem.getInputProps("contenido_por_presentacion")}
+                  error={
+                    formItem.errors.contenido_por_presentacion ? true : null
+                  }
+                  classNames={inputClasses}
                   radius="lg"
-                  h={36}
-                >
-                  Agregar
-                </Button>
+                  size="sm"
+                />
               </div>
-              <div className="md:col-span-12">
+
+              <div className="md:col-span-7">
                 <TextInput
                   label="Comentario del Producto"
                   placeholder="Detalles adicionales del producto para el almacén..."
@@ -542,6 +579,36 @@ export const RegistroRequerimiento = ({
                   radius="lg"
                   size="sm"
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <Button
+                  onClick={addItem}
+                  variant="filled"
+                  color="indigo"
+                  size="sm"
+                  className="w-full shadow-lg h-10 mb-[2px]"
+                  leftSection={<PlusIcon className="w-5 h-5 text-white" />}
+                  radius="lg"
+                >
+                  Confirmar
+                </Button>
+              </div>
+
+              {/* FILA 3: Resumen Visual */}
+              <div className="md:col-span-12 mt-[-8px]">
+                <Group gap="xs" px="xs">
+                  <Badge variant="dot" color="violet" size="lg" radius="sm">
+                    RESUMEN: {formItem.values.cantidad_solicitada} {unidadNombre}s
+                    x {formItem.values.contenido_por_presentacion} ={" "}
+                    <span className="font-extrabold text-white text-lg ml-1">
+                      {totalBase.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}{" "}
+                      {baseAbbr}
+                    </span>
+                  </Badge>
+                </Group>
               </div>
             </div>
           </div>
@@ -580,10 +647,24 @@ export const RegistroRequerimiento = ({
                   <td className="px-4 py-3 text-sm font-medium text-zinc-100">
                     {item.producto_nombre}
                   </td>
-                  <td className="px-4 py-3 text-sm text-right font-bold text-white tracking-wide">
-                    {item.cantidad_solicitada.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
+                  <td className="px-4 py-3 text-sm text-right">
+                    <Stack gap={0}>
+                      <Text size="sm" fw={800} className="text-white tracking-wide">
+                        {item.cantidad_solicitada.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </Text>
+                      <Text size="10px" c="dimmed" fw={600} className="italic">
+                        (
+                        {(
+                          item.cantidad_solicitada *
+                          item.contenido_por_presentacion
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}{" "}
+                        UND)
+                      </Text>
+                    </Stack>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <Badge variant="light" color="gray" size="sm">
