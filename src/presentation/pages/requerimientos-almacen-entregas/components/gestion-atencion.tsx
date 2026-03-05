@@ -108,7 +108,7 @@ export const GestionAtencion = ({
     const ok = await cambiarEstadoDetalle({
       id_requerimiento_almacen_detalle: selectedItemId,
       nuevo_estado: EstadoDetalleRequerimiento.RechazadoLogistica,
-      comentario_rechazo: rechazoMotivo,
+      comentario_decision: rechazoMotivo,
     });
     if (ok) {
       closeRechazo();
@@ -148,14 +148,14 @@ export const GestionAtencion = ({
   const progresoGeneral =
     detalle.detalles.length > 0
       ? Math.round(
-          detalle.detalles.reduce((acc, item) => {
-            const solicitada = Number(item.cantidad_solicitada) || 0;
-            const atendida = Number(item.cantidad_atendida) || 0;
-            const progresoItem =
-              solicitada > 0 ? (atendida / solicitada) * 100 : 0;
-            return acc + Math.min(progresoItem, 100);
-          }, 0) / detalle.detalles.length,
-        )
+        detalle.detalles.reduce((acc, item) => {
+          const solicitada = Number(item.cantidad_solicitada) || 0;
+          const atendida = Number(item.cantidad_atendida) || 0;
+          const progresoItem =
+            solicitada > 0 ? (atendida / solicitada) * 100 : 0;
+          return acc + Math.min(progresoItem, 100);
+        }, 0) / detalle.detalles.length,
+      )
       : 0;
 
   return (
@@ -451,7 +451,7 @@ export const GestionAtencion = ({
                 <th className="px-6 py-4 text-center">Indicadores</th>
                 <th className="px-6 py-4 text-right">Cant. Solic.</th>
                 <th className="px-6 py-4 text-center w-40">Progreso</th>
-                <th className="px-6 py-4 text-center">Unidad</th>
+                <th className="px-6 py-4 text-center">Equivalencia</th>
                 <th className="px-6 py-4 text-left">Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center w-36">Acciones</th>
@@ -464,7 +464,7 @@ export const GestionAtencion = ({
                   Math.round(
                     ((item.cantidad_atendida || 0) /
                       (item.cantidad_solicitada || 1)) *
-                      100,
+                    100,
                   ),
                 );
 
@@ -492,20 +492,17 @@ export const GestionAtencion = ({
                             c="zinc.5"
                             className="tracking-tighter italic"
                           >
-                            Stock almacén:
+                            Stock Almacén:
                           </Text>
-                          <Text
+                          <Badge
+                            variant="light"
                             size="xs"
-                            fw={900}
-                            c={
-                              Number(item.stock_disponible || 0) <
-                              Number(item.cantidad_solicitada || 0)
-                                ? "red.5"
-                                : "emerald.5"
-                            }
+                            radius="sm"
+                            color={Number(item.stock_disponible || 0) > 0 ? "emerald" : "orange"}
+                            className="font-black"
                           >
-                            {Number(item.stock_disponible || 0).toFixed(2)}
-                          </Text>
+                            {Number(item.stock_disponible || 0) > 0 ? "Disponible" : "No disponible"}
+                          </Badge>
                         </Group>
                       </div>
                     </td>
@@ -540,10 +537,16 @@ export const GestionAtencion = ({
                         )}
                       </Group>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Text size="sm" fw={800} className="text-white font-mono">
-                        {Number(item.cantidad_solicitada || 0).toFixed(2)}
-                      </Text>
+                    <td className="px-6 py-4 text-center">
+                      <Badge
+                        variant="filled"
+                        color="cyan.7"
+                        radius="sm"
+                        size="sm"
+                        className="font-black px-4"
+                      >
+                        {Number(item.cantidad_solicitada || 0).toFixed(0)} {item.unidad_medida}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
@@ -566,12 +569,13 @@ export const GestionAtencion = ({
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Badge
-                        variant="outline"
-                        color="zinc.5"
-                        size="xs"
-                        className="font-bold border-zinc-700"
+                        variant="filled"
+                        color="pink.7"
+                        radius="sm"
+                        size="sm"
+                        className="font-black px-4"
                       >
-                        {item.unidad_medida}
+                        {Number(item.cantidad_solicitada_base || 0).toFixed(0)} {item.unidad_medida_base}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -622,81 +626,81 @@ export const GestionAtencion = ({
 
                         {item.estado ===
                           EstadoDetalleRequerimiento.Pendiente && (
-                          <>
-                            <Tooltip label="Aprobar" position="top" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="green"
-                                onClick={() =>
-                                  handleAprobar(item.id_requerimiento_detalle)
-                                }
-                                loading={
-                                  isProcessing === item.id_requerimiento_detalle
-                                }
-                                disabled={
-                                  isProcessing !== null &&
-                                  isProcessing !== item.id_requerimiento_detalle
-                                }
-                              >
-                                <CheckCircleIcon className="w-5 h-5 text-white" />
-                              </ActionIcon>
-                            </Tooltip>
-                            <Tooltip label="Rechazar" position="top" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="red"
-                                onClick={() => {
-                                  setSelectedItemId(
-                                    item.id_requerimiento_detalle,
-                                  );
-                                  openRechazo();
-                                }}
-                                disabled={isProcessing !== null}
-                              >
-                                <XCircleIcon className="w-5 h-5 text-white" />
-                              </ActionIcon>
-                            </Tooltip>
-                          </>
-                        )}
+                            <>
+                              <Tooltip label="Aprobar" position="top" withArrow>
+                                <ActionIcon
+                                  variant="filled"
+                                  color="green"
+                                  onClick={() =>
+                                    handleAprobar(item.id_requerimiento_detalle)
+                                  }
+                                  loading={
+                                    isProcessing === item.id_requerimiento_detalle
+                                  }
+                                  disabled={
+                                    isProcessing !== null &&
+                                    isProcessing !== item.id_requerimiento_detalle
+                                  }
+                                >
+                                  <CheckCircleIcon className="w-5 h-5 text-white" />
+                                </ActionIcon>
+                              </Tooltip>
+                              <Tooltip label="Rechazar" position="top" withArrow>
+                                <ActionIcon
+                                  variant="filled"
+                                  color="red"
+                                  onClick={() => {
+                                    setSelectedItemId(
+                                      item.id_requerimiento_detalle,
+                                    );
+                                    openRechazo();
+                                  }}
+                                  disabled={isProcessing !== null}
+                                >
+                                  <XCircleIcon className="w-5 h-5 text-white" />
+                                </ActionIcon>
+                              </Tooltip>
+                            </>
+                          )}
 
                         {(item.estado ===
                           EstadoDetalleRequerimiento.AprobacionLogistica ||
                           item.estado ===
-                            EstadoDetalleRequerimiento.DespachoIniciado ||
+                          EstadoDetalleRequerimiento.DespachoIniciado ||
                           item.estado ===
-                            EstadoDetalleRequerimiento.NuevaEntrega ||
+                          EstadoDetalleRequerimiento.NuevaEntrega ||
                           item.estado ===
-                            EstadoDetalleRequerimiento.Completado ||
+                          EstadoDetalleRequerimiento.Completado ||
                           item.estado ===
-                            EstadoDetalleRequerimiento.Cerrado) && (
-                          <Tooltip
-                            label="Ver / Registrar Entrega"
-                            position="top"
-                            withArrow
-                          >
-                            <ActionIcon
-                              variant="filled"
-                              color="indigo"
-                              onClick={() => {
-                                setSelectedItemId(
-                                  item.id_requerimiento_detalle,
-                                );
-                                setSelectedIdProducto(item.id_producto);
-                                setSelectedItemName(item.producto);
-                                setSelectedItemSolicitado(
-                                  item.cantidad_solicitada || 0,
-                                );
-                                setSelectedItemAtendido(
-                                  item.cantidad_atendida || 0,
-                                );
-                                openEntrega();
-                              }}
-                              className="shadow-lg shadow-indigo-900/20"
+                          EstadoDetalleRequerimiento.Cerrado) && (
+                            <Tooltip
+                              label="Ver / Registrar Entrega"
+                              position="top"
+                              withArrow
                             >
-                              <TruckIcon className="w-4 h-4 text-white" />
-                            </ActionIcon>
-                          </Tooltip>
-                        )}
+                              <ActionIcon
+                                variant="filled"
+                                color="indigo"
+                                onClick={() => {
+                                  setSelectedItemId(
+                                    item.id_requerimiento_detalle,
+                                  );
+                                  setSelectedIdProducto(item.id_producto);
+                                  setSelectedItemName(item.producto);
+                                  setSelectedItemSolicitado(
+                                    item.cantidad_solicitada || 0,
+                                  );
+                                  setSelectedItemAtendido(
+                                    item.cantidad_atendida || 0,
+                                  );
+                                  openEntrega();
+                                }}
+                                className="shadow-lg shadow-indigo-900/20"
+                              >
+                                <TruckIcon className="w-4 h-4 text-white" />
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
                       </Group>
                     </td>
                   </tr>

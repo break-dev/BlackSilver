@@ -18,6 +18,7 @@ export interface RES_LoteAtencion {
     stock_actual_base: number;
     unidad_base: string;
     fecha_vencimiento: string | null;
+    contenido_por_presentacion: number;
     stock_formateado: string;
 }
 

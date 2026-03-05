@@ -62,7 +62,7 @@ export const useEntregas = ({ setError }: IUseHook) => {
     const registrarEntrega = async (dto: DTO_RegistrarEntrega) => {
         setError("");
         try {
-            const res = await api.post<IRespuesta<null>>(`${path}/atencion/registrar-entrega`, dto);
+            const res = await api.post<IRespuesta<any>>(`${path}/atencion/registrar-entrega`, dto);
             if (res.data.success) return true;
             setError(res.data.message || "Error al registrar entrega");
             return false;

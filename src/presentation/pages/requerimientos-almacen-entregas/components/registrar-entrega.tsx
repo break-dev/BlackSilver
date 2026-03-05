@@ -104,10 +104,7 @@ export const RegistrarEntrega = ({
             .filter(([_, cant]) => cant > 0)
             .map(([idLote, cant]) => {
                 const lote = itemData.lotes.find(l => l.id_lote_producto === Number(idLote))!;
-                const equivLote = lote.stock_actual > 0
-                    ? lote.stock_actual_base / lote.stock_actual
-                    : 1;
-
+                const equivLote = lote.contenido_por_presentacion || 1;
                 const cBase = cant;
                 const cLote = cBase / equivLote;
                 const cReq = cBase / equivReq;
@@ -143,10 +140,7 @@ export const RegistrarEntrega = ({
     if (!itemData) return <Text c="red">Error al cargar datos del ítem</Text>;
 
     const equivReq = itemData.cantidad_solicitada > 0 ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada : 1;
-    const pendienteUnidadSolicitada = itemData.pendiente_base / equivReq;
-    const solicitadoUnidadSolicitada = itemData.cantidad_solicitada;
     const stockDisponibleBase = itemData.lotes.reduce((sum, l) => sum + (l.stock_actual_base || 0), 0);
-    const stockDisponibleSolicitada = stockDisponibleBase / equivReq;
 
     return (
         <Stack gap="lg" className="font-sans">
@@ -232,14 +226,9 @@ export const RegistrarEntrega = ({
 
             {/* 4. TABLA DE LOTES (Ajustada al estilo ordenado) */}
             <div className="space-y-4">
-                <Group justify="space-between" align="center" px={4}>
-                    <Group gap="xs">
-                        <BarsArrowDownIcon className="w-5 h-5 text-indigo-400" />
-                        <Text fw={900} size="sm" className="text-white uppercase tracking-widest">Lotes Disponibles para Entrega</Text>
-                    </Group>
-                    <Badge variant="filled" color="indigo" radius="xl" size="xl" className="px-6 font-mono">
-                        TOTAL SELECCIONADO: {totalEntregaBase.toFixed(2)} {itemData.unidad_medida_base}
-                    </Badge>
+                <Group gap="xs" px={4} align="center">
+                    <BarsArrowDownIcon className="w-5 h-5 text-indigo-400" />
+                    <Text fw={900} size="sm" className="text-white uppercase tracking-widest">Lotes Disponibles para Entrega</Text>
                 </Group>
 
                 <div className="overflow-hidden border border-zinc-800 rounded-3xl bg-zinc-950/40 shadow-2xl">
@@ -262,7 +251,7 @@ export const RegistrarEntrega = ({
                                 itemData.lotes.map((lote) => {
                                     const cant = entregaCantidades[lote.id_lote_producto] || 0;
                                     const saldo = lote.stock_actual_base - cant;
-                                    const equivLote = lote.stock_actual > 0 ? lote.stock_actual_base / lote.stock_actual : 1;
+                                    const equivLote = Number(lote.contenido_por_presentacion) || 1;
 
                                     // Cálculo de vencimiento
                                     const fechaVenc = lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento) : null;
@@ -355,39 +344,68 @@ export const RegistrarEntrega = ({
                 </Text>
             </div>
 
-            {/* 5. HISTORAL DE ENTREGAS */}
+            {/* 5. HISTORIAL DE ENTREGAS (Rediseño) */}
             <div className="space-y-4">
-                <Group gap="xs" px={4}>
+                <Group gap="xs" px={4} align="center">
                     <ClockIcon className="w-5 h-5 text-zinc-500" />
-                    <Text fw={900} size="sm" className="text-zinc-400 uppercase tracking-widest">Historial de Entregas Parciales</Text>
+                    <Text fw={900} size="sm" className="text-zinc-400">Historial de Entregas</Text>
                 </Group>
 
-                <div className="overflow-hidden border border-zinc-800 rounded-2xl bg-zinc-950/20 max-h-48 overflow-y-auto">
-                    <Table verticalSpacing="sm" horizontalSpacing="xl">
-                        <thead className="bg-zinc-900/50 text-zinc-600 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800">
+                <div className="overflow-hidden border border-zinc-800 rounded-3xl bg-zinc-950/20 max-h-64 overflow-y-auto shadow-sm">
+                    <Table verticalSpacing="md" horizontalSpacing="xl" className="border-collapse">
+                        <thead className="bg-zinc-900/50 text-zinc-400 text-[11px] font-bold border-b border-zinc-800">
                             <tr>
-                                <th className="py-4">Folio / Fecha</th>
-                                <th>Entregado a</th>
-                                <th className="text-right">Cantidad ({itemData.unidad_medida_base})</th>
-                                <th className="text-center">Acciones</th>
+                                <th className="py-4 pl-8" style={{ width: '18%' }}>Cod. Entrega</th>
+                                <th className="text-left" style={{ width: '18%' }}>Fecha</th>
+                                <th className="text-left">Entregado a</th>
+                                <th className="text-right" style={{ width: '20%' }}>Cantidad ({itemData.unidad_medida_base})</th>
+                                <th className="text-center" style={{ width: '12%' }}>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-800/10">
+                        <tbody className="divide-y divide-zinc-800/20">
                             {historial.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="py-10 text-center text-zinc-700 italic text-sm">No registra entregas previas para este ítem.</td>
+                                    <td colSpan={5} className="py-12 text-center text-zinc-700 italic text-sm">No registra entregas previas para este ítem.</td>
                                 </tr>
                             ) : (
                                 historial.map(h => (
-                                    <tr key={h.id_entrega} className="text-zinc-400 hover:bg-zinc-900/10 transition-colors">
-                                        <td className="py-4 font-mono">
-                                            <Text size="xs" fw={900} className="text-indigo-400">{h.codigo_entrega || `ENT-${h.id_entrega}`}</Text>
-                                            <Text size="10px" fw={700} c="zinc.6">{dayjs(h.fecha_entrega).format("DD/MM/YYYY HH:mm")}</Text>
+                                    <tr key={h.id_entrega} className="text-zinc-400 hover:bg-zinc-900/40 transition-all group">
+                                        <td className="py-4 pl-8">
+                                            <Badge variant="light" color="violet" radius="sm" size="sm" className="font-black">
+                                                {h.codigo_entrega || `ENT-${h.id_entrega}`}
+                                            </Badge>
                                         </td>
-                                        <td><Text size="sm" fw={800}>{h.entregado_a}</Text></td>
-                                        <td className="text-right font-mono py-2 font-black text-green-600/80 text-lg">+{h.cantidad}</td>
+                                        <td className="text-left">
+                                            <div className="flex flex-col">
+                                                <Text size="11px" fw={700} className="text-zinc-300">
+                                                    {dayjs(h.fecha_entrega).format("DD/MM/YYYY")}
+                                                </Text>
+                                                <Text size="10px" fw={600} c="zinc.6" className="uppercase">
+                                                    {dayjs(h.fecha_entrega).format("HH:mm A")}
+                                                </Text>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <Text size="sm" fw={700} className="text-zinc-300">{h.entregado_a || "No especificado"}</Text>
+                                        </td>
+                                        <td className="text-right pr-6">
+                                            <div className="flex flex-col items-end">
+                                                <Text size="md" fw={900} className="text-emerald-500 font-mono tracking-tighter leading-none">
+                                                    +{Number(h.cantidad).toFixed(2)}
+                                                </Text>
+                                                <Text size="10px" fw={800} c="zinc.6" className="font-bold opacity-80">{itemData.unidad_medida_base}</Text>
+                                            </div>
+                                        </td>
                                         <td className="text-center">
-                                            <Button variant="subtle" size="compact-xs" color="zinc" radius="md" className="uppercase font-black text-[9px] hover:bg-zinc-800">Detalle</Button>
+                                            <Button
+                                                variant="subtle"
+                                                size="compact-xs"
+                                                color="zinc"
+                                                radius="md"
+                                                className="font-bold text-[10px] hover:bg-zinc-800 text-zinc-500"
+                                            >
+                                                Ver detalle
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))
@@ -401,28 +419,26 @@ export const RegistrarEntrega = ({
             <Group justify="flex-end" gap="md" className="pt-8 border-t border-zinc-800 mt-4">
                 <Button
                     variant="subtle"
-                    color="zinc"
-                    radius="xl"
-                    size="lg"
+                    radius="lg"
+                    size="md"
                     onClick={onCancel}
-                    className="text-zinc-500 hover:text-white px-10 font-bold"
+                    className="text-zinc-400 hover:text-white px-8 font-bold"
                 >
-                    Cancelar Operación
+                    Cancelar
                 </Button>
                 <Button
-                    size="lg"
-                    radius="xl"
-                    color="indigo"
-                    leftSection={<ClipboardDocumentCheckIcon className="w-6 h-6" />}
-                    disabled={totalEntregaBase <= 0 || totalEntregaBase > itemData.pendiente_base || isProcessing}
+                    size="md"
+                    radius="lg"
+                    leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
+                    disabled={!idEmpleadoRecibe || totalEntregaBase <= 0 || totalEntregaBase > itemData.pendiente_base || isProcessing}
                     loading={isProcessing}
                     onClick={handleConfirmar}
-                    className="bg-indigo-600 hover:bg-indigo-500 px-14 font-black uppercase tracking-widest shadow-2xl shadow-indigo-950/50 h-16"
+                    className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-10"
                 >
-                    Confirmar Registro de Entrega
+                    Guardar
                 </Button>
             </Group>
-            {error && <Text c="red" size="xs" ta="center" fw={800} className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide">{error}</Text>}
+            {error && <Text c="red" size="xs" ta="center" fw={800} className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide mt-2">{error}</Text>}
         </Stack>
     );
 };
