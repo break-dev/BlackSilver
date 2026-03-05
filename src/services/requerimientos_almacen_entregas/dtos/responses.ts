@@ -10,13 +10,30 @@ export interface RES_RequerimientoAtencionPendiente {
     total_items: number;
 }
 
-export interface RES_LoteDisponible {
-    id_lote: number;
+export interface RES_LoteAtencion {
+    id_lote_producto: number;
     codigo_lote: string;
-    descripcion: string;
     stock_actual: number;
-    unidad_medida: string;
-    fecha_ingreso: string;
+    unidad_lote: string;
+    stock_actual_base: number;
+    unidad_base: string;
     fecha_vencimiento: string | null;
-    dias_para_vencer: number | null;
+    contenido_por_presentacion: number;
+    stock_formateado: string;
+}
+
+export interface RES_DetalleAtencionItem {
+    id_requerimiento_detalle: number;
+    id_producto: number;
+    producto: string;
+    es_perecible: number;
+    dias_espera_vencimiento: number | null;
+    unidad_medida: string;
+    unidad_medida_base: string;
+    cantidad_solicitada: number;
+    cantidad_solicitada_base: number;
+    cantidad_entregada_base: number;
+    pendiente_base: number;
+    estado: string;
+    lotes: RES_LoteAtencion[];
 }

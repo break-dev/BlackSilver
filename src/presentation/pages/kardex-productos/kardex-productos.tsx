@@ -1,4 +1,4 @@
-import { Badge, Text, TextInput, Select } from "@mantine/core";
+import { Badge, Text, TextInput, Select, Group } from "@mantine/core";
 import { useEffect, useState, useMemo } from "react";
 import dayjs from "dayjs";
 import {
@@ -6,6 +6,7 @@ import {
   ArrowUpIcon,
   CubeIcon,
   MagnifyingGlassIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -15,6 +16,7 @@ import type { RES_MovimientoKardex } from "../../../services/kardex/dtos/respons
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { SelectAlmacen } from "../../utils/select-almacen";
+import { TipoMovimiento } from "../../../shared/enums";
 
 const PAGE_SIZE = 20;
 
@@ -118,36 +120,34 @@ export const KardexProductosPage = () => {
       render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
-      accessor: "created_at",
-      title: "Fecha",
-      width: 140,
+      accessor: "codigo_lote",
+      title: "Cód. Lote",
+      width: 120,
       render: (record) => (
-        <Text size="sm" className="text-zinc-300">
-          {dayjs(record.created_at).format("DD/MM/YYYY HH:mm")}
-        </Text>
+        <Badge variant="light" color="violet" radius="sm">
+          {record.codigo_lote}
+        </Badge>
       ),
     },
     {
       accessor: "producto",
       title: "Producto",
-      width: 200,
+      width: 220,
       render: (record) => (
-        <div className="flex flex-col">
+        <Group gap="xs">
+          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500">
+            <CubeIcon className="w-4 h-4" />
+          </div>
           <Text size="sm" fw={600} className="text-white">
             {record.producto || "-"}
           </Text>
-          {record.codigo_lote && (
-            <Text size="xs" c="dimmed" className="font-mono">
-              {record.codigo_lote}
-            </Text>
-          )}
-        </div>
+        </Group>
       ),
     },
     {
       accessor: "tipo_movimiento",
       title: "Transacción",
-      width: 240,
+      width: 200,
       render: (record) => {
         const isIngreso = record.tipo_movimiento
           .toLowerCase()
@@ -177,20 +177,24 @@ export const KardexProductosPage = () => {
     },
     {
       accessor: "cantidad_movimiento",
-      title: "Cant. Movida",
+      title: "Movimiento",
       textAlign: "right",
-      width: 150,
+      width: 160,
       render: (record) => {
-        const isIngreso = record.tipo_movimiento
-          .toLowerCase()
-          .includes("ingreso");
+        const isIngreso = record.tipo_movimiento === TipoMovimiento.Ingreso;
         return (
-          <div className="flex flex-col items-end">
-            <Text fw={700} size="sm" c={isIngreso ? "green" : "red"}>
-              {isIngreso ? "+" : "-"} {record.cantidad_movimiento}
-            </Text>
-            <Text size="xs" c="dimmed">
-              ({isIngreso ? "+" : "-"} {record.cantidad_movimiento_base} base)
+          <div className="flex flex-col items-end gap-1">
+            <Badge
+              variant="filled"
+              color={isIngreso ? "green" : "red"}
+              size="sm"
+              radius="sm"
+              className="font-bold shadow-md"
+            >
+              {isIngreso ? "+" : "-"} {Number(record.cantidad_movimiento).toFixed(2)} {record.unidad_lote}
+            </Badge>
+            <Text size="xs" c={isIngreso ? "green" : "red"} fw={700} className="italic pr-1 opacity-90">
+              ({isIngreso ? "+" : "-"} {Number(record.cantidad_movimiento_base).toFixed(2)} {record.unidad_base})
             </Text>
           </div>
         );
@@ -198,28 +202,58 @@ export const KardexProductosPage = () => {
     },
     {
       accessor: "stock_resultante",
-      title: "Saldos",
+      title: "Stock Resultante",
       textAlign: "right",
-      width: 150,
+      width: 160,
       render: (record) => (
-        <div className="flex flex-col items-end">
-          <Text fw={600} size="sm" className="text-zinc-200">
-            {record.stock_resultante}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {record.stock_resultante_base} base
-          </Text>
+        <div className="flex flex-col items-end gap-1">
+          <Badge
+            variant="filled"
+            color="cyan"
+            radius="sm"
+            size="sm"
+            className="text-white font-bold shadow-xs whitespace-nowrap"
+          >
+            {Number(record.stock_resultante).toFixed(2)} {record.unidad_lote}
+          </Badge>
+          <Badge
+            variant="filled"
+            color="pink"
+            radius="sm"
+            size="sm"
+            className="text-white font-bold shadow-xs whitespace-nowrap"
+          >
+            {Number(record.stock_resultante_base).toFixed(2)} {record.unidad_base}
+          </Badge>
         </div>
+      ),
+    },
+    {
+      accessor: "created_at",
+      title: "Fecha",
+      width: 160,
+      render: (record) => (
+        <Group gap="sm" wrap="nowrap">
+          <CalendarDaysIcon className="w-5 h-5 text-indigo-400" />
+          <div className="flex flex-col gap-0">
+            <Text size="sm" fw={600} className="text-zinc-100">
+              {dayjs(record.created_at).format("DD/MM/YYYY")}
+            </Text>
+            <Text size="xs" color="dimmed" fw={500}>
+              {dayjs(record.created_at).format("HH:mm A")}
+            </Text>
+          </div>
+        </Group>
       ),
     },
     {
       accessor: "descripcion",
       title: "Ref.",
-      width: 150,
+      width: 250,
       render: (record) => (
         <Text
           size="xs"
-          className="text-zinc-400 italic truncate"
+          className="text-zinc-400 italic"
           title={record.descripcion || ""}
         >
           {record.descripcion || "-"}

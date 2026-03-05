@@ -57,3 +57,7 @@ export enum Periodo {
   Anual = "anual",
   Ninguno = "ninguno",
 }
+export enum TipoMovimiento {
+  Ingreso = "Ingreso",
+  Salida = "Salida",
+}

@@ -29,6 +29,7 @@ export interface RES_ProductoDisponible {
     es_perecible: 0 | 1;
     id_unidad_medida_base: number;
     unidad_medida_base: string;
+    nombre_unidad_medida_base: string;
     stock_minimo: number | string;
 }
 

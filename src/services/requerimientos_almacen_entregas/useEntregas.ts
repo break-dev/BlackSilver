@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import type { IUseHook } from "../hook.interface";
-import type { RES_RequerimientoAtencionPendiente, RES_LoteDisponible } from "./dtos/responses";
+import type { RES_RequerimientoAtencionPendiente, RES_DetalleAtencionItem } from "./dtos/responses";
 import type { RES_HistorialEntrega } from "../requerimientos_almacen/dtos/responses";
 import type { DTO_AtencionCambiarEstado, DTO_RegistrarEntrega } from "./dtos/requests";
 import type { IRespuesta } from "../../shared/response";
@@ -42,16 +42,15 @@ export const useEntregas = ({ setError }: IUseHook) => {
         }
     };
 
-    // 3. Obtener Lotes Disponibles para Despacho
-    const obtenerLotesDisponibles = async (idProducto: number, idAlmacen: number) => {
+    // 3. Obtener Detalles de Atención (Ítems + Lotes)
+    const obtenerDetallesAtencion = async (idRequerimiento: number) => {
         setError("");
         try {
-            const res = await api.post<IRespuesta<RES_LoteDisponible[]>>(`${path}/atencion/obtener-lotes-disponibles`, {
-                id_producto: idProducto,
-                id_almacen: idAlmacen
+            const res = await api.post<IRespuesta<RES_DetalleAtencionItem[]>>(`${path}/atencion/obtener-detalles`, {
+                id_requerimiento: idRequerimiento
             });
             if (res.data.success) return res.data.data;
-            setError(res.data.message || "Error al obtener lotes");
+            setError(res.data.message || "Error al obtener detalles");
             return [];
         } catch (err: any) {
             setError(err.response?.data?.message || "Error de conexión");
@@ -63,7 +62,7 @@ export const useEntregas = ({ setError }: IUseHook) => {
     const registrarEntrega = async (dto: DTO_RegistrarEntrega) => {
         setError("");
         try {
-            const res = await api.post<IRespuesta<null>>(`${path}/atencion/registrar-entrega`, dto);
+            const res = await api.post<IRespuesta<any>>(`${path}/atencion/registrar-entrega`, dto);
             if (res.data.success) return true;
             setError(res.data.message || "Error al registrar entrega");
             return false;
@@ -90,7 +89,7 @@ export const useEntregas = ({ setError }: IUseHook) => {
     return {
         obtenerAtencionesPendientes,
         cambiarEstadoDetalle,
-        obtenerLotesDisponibles,
+        obtenerDetallesAtencion,
         registrarEntrega,
         obtenerHistorialEntregas
     };

@@ -49,6 +49,9 @@ export interface RES_RequerimientoDetalleCompleto {
         unidad_medida: string;
         cantidad_solicitada: number;
         cantidad_atendida: number;
+        cantidad_solicitada_base: number;
+        cantidad_atendida_base: number;
+        unidad_medida_base: string;
         stock_disponible?: number; // Stock total REAL en este almacén
         comentario: string | null;
         estado: string;
