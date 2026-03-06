@@ -154,10 +154,13 @@ export const KardexProductosPage = () => {
           .includes("ingreso");
         return (
           <div className="flex flex-col gap-1">
+            <Text size="xs" fw={700} className="text-zinc-200 ml-1 tracking-tight">
+              {record.tipo_origen}
+            </Text>
             <Badge
               color={isIngreso ? "teal" : "orange"}
               variant="light"
-              size="sm"
+              size="xs"
               leftSection={
                 isIngreso ? (
                   <ArrowDownIcon className="w-3 h-3" />
@@ -168,9 +171,6 @@ export const KardexProductosPage = () => {
             >
               {record.tipo_movimiento}
             </Badge>
-            <Text size="xs" fw={600} className="text-zinc-300 ml-1">
-              {record.tipo_origen}
-            </Text>
           </div>
         );
       },
@@ -248,7 +248,7 @@ export const KardexProductosPage = () => {
     },
     {
       accessor: "descripcion",
-      title: "Ref.",
+      title: "Descripción",
       width: 250,
       render: (record) => (
         <Text
