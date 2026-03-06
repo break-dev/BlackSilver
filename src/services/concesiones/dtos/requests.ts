@@ -6,7 +6,7 @@ export const Schema_CrearConcesion = z.object({
   codigo_concesion: z.string().min(1, "El código es obligatorio"),
   codigo_reinfo: z.string().min(1, "El código REINFO es obligatorio"),
   ubigeo: z.string().optional(),
-  tipo_mineral: z.enum(["Polimetalico", "Carbon"]),
+  tipo_mineral: z.enum(["Polimetalico", "Carbon", "Aurifero"]),
 });
 
 export type DTO_CrearConcesion = z.infer<typeof Schema_CrearConcesion>;
@@ -18,7 +18,7 @@ export const Schema_EditarConcesion = z.object({
   codigo_concesion: z.string().optional(),
   codigo_reinfo: z.string().optional(),
   ubigeo: z.string().optional(),
-  tipo_mineral: z.enum(["Polimetalico", "Carbon"]).optional(),
+  tipo_mineral: z.enum(["Polimetalico", "Carbon", "Aurifero"]).optional(),
 });
 
 // Asignar

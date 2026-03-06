@@ -23,7 +23,7 @@ export const RegistroConcesion = ({
   const [codigo_reinfo, setCodigoReinfo] = useState("");
   const [ubigeo, setUbigeo] = useState("");
   const [tipo_mineral, setTipoMineral] = useState<
-    "Polimetalico" | "Carbon" | undefined
+    "Polimetalico" | "Carbon" | "Aurifero" | undefined
   >(undefined);
 
   // Service
@@ -33,7 +33,7 @@ export const RegistroConcesion = ({
     e.preventDefault();
     setError("");
     try {
-      // Validacion manual Zod (alineado con Categories)
+      // Validacion manual
       const validation = Schema_CrearConcesion.safeParse({
         nombre,
         codigo_concesion,
@@ -73,9 +73,9 @@ focus: ring - zinc - 300 text - white placeholder: text - zinc - 500`,
     <form onSubmit={handleSubmit} className="space-y-4">
       <TextInput
         label="Nombre"
-        placeholder="Ej. Mina Santa Rosa"
+        placeholder="Ej. Santa Rosa"
         withAsterisk
-        required // HTML5 required
+        required
         radius="lg"
         size="sm"
         classNames={inputClasses}
