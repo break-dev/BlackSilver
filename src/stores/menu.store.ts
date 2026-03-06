@@ -21,3 +21,16 @@ export const useMenuNavegacionStore = create<IMenuNavegacionStore>()(
     },
   ),
 );
+
+// Listener para sincronización entre pestañas
+window.addEventListener("storage", (event) => {
+  if (event.key === "blacksilver-menu") {
+    if (event.newValue) {
+      // Si hay un nuevo valor de menú, intenta sincronizar
+      useMenuNavegacionStore.persist.rehydrate();
+    } else {
+      // Si el valor fue eliminado/vaciado, hace clear del menu
+      useMenuNavegacionStore.getState().clearMenu();
+    }
+  }
+});

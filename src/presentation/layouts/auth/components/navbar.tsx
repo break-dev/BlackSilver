@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   XMarkIcon,
@@ -8,7 +8,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { iconos_menu_navegacion } from "../../../../shared/variables";
 import { useMenuNavegacionStore } from "../../../../stores/menu.store";
-import type { IModulo } from "../../../../services/menu-navegacion/dtos/responses";
 
 interface NavbarProps {
   onClose: () => void;
@@ -18,18 +17,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [menu, setMenu] = useState<IModulo[]>(
-    () => useMenuNavegacionStore.getState().menu,
-  );
-
-  // Suscrubirse a los cambios del store
-  useEffect(() => {
-    const unsubscribe = useMenuNavegacionStore.subscribe((state) => {
-      setMenu(state.menu);
-    });
-
-    return unsubscribe;
-  }, []);
+  const menu = useMenuNavegacionStore((state) => state.menu);
 
   const go = (url: string) => {
     onClose();

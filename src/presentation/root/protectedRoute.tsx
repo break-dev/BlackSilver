@@ -3,7 +3,7 @@ import { useAuthStore } from "../../stores/auth.store";
 
 // Componente que protege rutas autenticadas
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useAuthStore.getState().isAuthenticated;
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

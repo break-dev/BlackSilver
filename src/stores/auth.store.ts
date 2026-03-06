@@ -40,3 +40,16 @@ export const useAuthStore = create<IAuthStore>()(
     },
   ),
 );
+
+// Listener para sincronización entre pestañas
+window.addEventListener("storage", (event) => {
+  if (event.key === "blacksilver-auth") {
+    if (event.newValue) {
+      // Si hay un nuevo valor, intenta sincronizar (e.g., login en otra pestaña)
+      useAuthStore.persist.rehydrate();
+    } else {
+      // Si el valor fue eliminado/vaciado, hace clear de la auth (e.g., logout/clear en otra pestaña)
+      useAuthStore.getState().clearAuth();
+    }
+  }
+});
