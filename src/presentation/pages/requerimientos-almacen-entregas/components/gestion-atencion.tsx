@@ -73,13 +73,13 @@ export const GestionAtencion = ({
   const { obtenerDetalle } = useRequerimientos({ setError });
   const { cambiarEstadoDetalle } = useEntregas({ setError });
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     try {
       const res = await obtenerDetalle(idRequerimiento);
       if (res) setDetalle(res);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -95,7 +95,7 @@ export const GestionAtencion = ({
         nuevo_estado: EstadoDetalleRequerimiento.AprobacionLogistica,
       });
       if (ok) {
-        await loadData();
+        await loadData(true);
         onSuccess();
       }
     } finally {
@@ -105,16 +105,21 @@ export const GestionAtencion = ({
 
   const handleRechazar = async () => {
     if (!selectedItemId) return;
-    const ok = await cambiarEstadoDetalle({
-      id_requerimiento_almacen_detalle: selectedItemId,
-      nuevo_estado: EstadoDetalleRequerimiento.RechazadoLogistica,
-      comentario_decision: rechazoMotivo,
-    });
-    if (ok) {
-      closeRechazo();
-      setRechazoMotivo("");
-      loadData();
-      onSuccess();
+    setIsProcessing(selectedItemId);
+    try {
+      const ok = await cambiarEstadoDetalle({
+        id_requerimiento_almacen_detalle: selectedItemId,
+        nuevo_estado: EstadoDetalleRequerimiento.RechazadoLogistica,
+        comentario_decision: rechazoMotivo,
+      });
+      if (ok) {
+        closeRechazo();
+        setRechazoMotivo("");
+        await loadData(true);
+        onSuccess();
+      }
+    } finally {
+      setIsProcessing(null);
     }
   };
 
@@ -761,7 +766,8 @@ export const GestionAtencion = ({
             <Button
               color="red"
               radius="md"
-              disabled={!rechazoMotivo.trim()}
+              disabled={!rechazoMotivo.trim() || isProcessing !== null}
+              loading={isProcessing !== null}
               onClick={handleRechazar}
             >
               Confirmar Rechazo
@@ -788,7 +794,7 @@ export const GestionAtencion = ({
             cantidadAtendida={selectedItemAtendido}
             onSuccess={() => {
               closeEntrega();
-              loadData();
+              loadData(true);
               onSuccess();
             }}
             onCancel={closeEntrega}
