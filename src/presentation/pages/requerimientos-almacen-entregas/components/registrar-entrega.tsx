@@ -70,6 +70,7 @@ export const RegistrarEntrega = ({
   >([]);
 
   useEffect(() => {
+    let cancelled = false;
     const loadInitialData = async () => {
       setLoading(true);
       try {
@@ -78,6 +79,8 @@ export const RegistrarEntrega = ({
           obtenerHistorialEntregas(idRequerimientoDetalle),
           listar(),
         ]);
+
+        if (cancelled) return;
 
         const found = (resDetalles || []).find(
           (d: any) => d.id_requerimiento_detalle === idRequerimientoDetalle,
@@ -107,17 +110,16 @@ export const RegistrarEntrega = ({
           })),
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     loadInitialData();
-  }, [
-    idRequerimiento,
-    idRequerimientoDetalle,
-    listar,
-    obtenerDetallesAtencion,
-    obtenerHistorialEntregas,
-  ]);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idRequerimiento, idRequerimientoDetalle]);
 
   const totalEntregaBase = useMemo(() => {
     return Object.values(entregaCantidades).reduce(
