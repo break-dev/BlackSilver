@@ -4,12 +4,10 @@
 :root {
   /* Negro profundo y plateados */
   --bg: #09090b;
-  --surface: #18181b;
-  --border: #27272a;
   --text: #fafafa;
-  --text-muted: #71717a;
+  --text-muted: #919191;
   --accent: #a1a1aa;
-  --text-base: 16px;
+  font-size: 14px;
 }
 
 html,
@@ -23,7 +21,6 @@ body,
 
 body {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: var(--text-base);
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
@@ -131,8 +128,8 @@ body {
 .mantine-TextInput-input,
 .mantine-PasswordInput-input,
 .mantine-PasswordInput-innerInput {
-  background: var(--surface) !important;
-  border-color: var(--border) !important;
+  background: #18181b !important;
+  border-color: #27272a !important;
   color: var(--text) !important;
   transition: all 0.2s ease !important;
 }
