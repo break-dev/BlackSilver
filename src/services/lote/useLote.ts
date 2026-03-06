@@ -91,10 +91,29 @@ export const useLote = ({ setError }: IUseHook) => {
         }
     };
 
+    // Ajustar stock de un lote
+    const ajustarStock = async (dto: any) => {
+        setError("");
+        try {
+            const response = await api.post<IRespuesta<RES_Lote>>(`/lotes/ajustar-stock`, dto);
+            const result = response.data;
+            if (result.success) {
+                return result.data;
+            } else {
+                setError(result.message);
+                return null;
+            }
+        } catch (error) {
+            setError(String(error));
+            return null;
+        }
+    };
+
     return {
         listarPorAlmacen,
         crear,
         listarProductosDisponibles,
-        listarUnidadesMedida
+        listarUnidadesMedida,
+        ajustarStock
     };
 };

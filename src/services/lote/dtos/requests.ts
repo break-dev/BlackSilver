@@ -12,3 +12,10 @@ export const Schema_CrearLote = z.object({
 });
 
 export type DTO_CrearLote = z.infer<typeof Schema_CrearLote>;
+
+export interface DTO_AjustarStock {
+    id_lote: number;
+    nuevo_stock: number;
+    nuevo_stock_base: number;
+    motivo?: string;
+}

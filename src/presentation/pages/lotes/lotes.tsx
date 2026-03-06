@@ -1,4 +1,4 @@
-import { Badge, Button, Group, Text, TextInput, Select } from "@mantine/core";
+import { Badge, Button, Group, Text, TextInput, Select, ActionIcon } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -7,6 +7,7 @@ import {
   ClockIcon,
   MagnifyingGlassIcon,
   CalendarDaysIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import dayjs from "dayjs";
@@ -18,6 +19,7 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroLote } from "./components/registro-lote";
+import { AjusteStockModal } from "./components/ajuste-stock";
 import { SelectAlmacen } from "../../utils/select-almacen";
 
 const PAGE_SIZE = 20;
@@ -39,6 +41,9 @@ export const LotesPage = () => {
   // Modals
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
+
+  const [loteParaAjustar, setLoteParaAjustar] = useState<RES_Lote | null>(null);
+  const [openedAjuste, { open: openAjuste, close: closeAjuste }] = useDisclosure(false);
 
   // Hooks
   const { listarPorAlmacen } = useLote({ setError: () => { } });
@@ -181,6 +186,19 @@ export const LotesPage = () => {
               >
                 {record.stock_actual_base} {record.producto.split(' - ').pop()}
               </Badge>
+
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={() => {
+                  setLoteParaAjustar(record);
+                  openAjuste();
+                }}
+                title="Ajustar Stock"
+              >
+                <PencilSquareIcon className="w-4 h-4" />
+              </ActionIcon>
             </Group>
             {esBajoStock && (
               <Badge color="red" variant="dot" size="xs" className="animate-pulse">
@@ -415,6 +433,27 @@ export const LotesPage = () => {
           }}
           onCancel={closeCreate}
         />
+      </ModalEstandar>
+
+      {/* Modal Ajuste Stock */}
+      <ModalEstandar
+        opened={openedAjuste}
+        close={closeAjuste}
+        title="Ajuste de Stock"
+        size="lg"
+      >
+        {loteParaAjustar && (
+          <AjusteStockModal
+            lote={loteParaAjustar}
+            onSuccess={(updatedLote) => {
+              setLotes((prev) =>
+                prev.map((l) => l.id_lote === updatedLote.id_lote ? updatedLote : l)
+              );
+              closeAjuste();
+            }}
+            onCancel={closeAjuste}
+          />
+        )}
       </ModalEstandar>
     </div>
   );
