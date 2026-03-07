@@ -50,7 +50,8 @@ export const SelectConcesionAsignada = ({
       data={data.map((c) => ({
         // We use id_asignacion if available as the value, OR fallback to id_concesion if that's what we want to track
         // BUT Backend Guide says: "Valor a guardar: id_asignacion".
-        value: c.id_asignacion?.toString() || c.id_concesion.toString(),
+        value:
+          (c as any).id_asignacion?.toString() || c.id_concesion.toString(),
         label: c.nombre,
       }))}
       value={value}
@@ -58,7 +59,8 @@ export const SelectConcesionAsignada = ({
         onChange?.(val);
         const selected = data.find(
           (c) =>
-            (c.id_asignacion?.toString() || c.id_concesion.toString()) === val,
+            ((c as any).id_asignacion?.toString() ||
+              c.id_concesion.toString()) === val,
         );
         if (selected && onSelectOption) {
           onSelectOption(selected);

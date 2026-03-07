@@ -46,9 +46,10 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
   const asignarResponsable = async (dto: DTO_AsignarResponsableAlmacen) => {
     setError("");
     try {
-      const response = await api.post<
-        IRespuesta<RES_ResponsableAlmacen>
-      >(`${path}/asignar-responsable`, dto);
+      const response = await api.post<IRespuesta<RES_ResponsableAlmacen>>(
+        `${path}/asignar-responsable`,
+        dto,
+      );
       const result = response.data;
       if (!result.success) setError(result.message);
       return result;
@@ -137,6 +138,23 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
     }
   };
 
+  /** Almacenes donde el usuario autenticado es responsable activo */
+  const listarAlmacenesPropios = async () => {
+    setError("");
+    try {
+      const response = await api.get<
+        IRespuesta<{ id_almacen: number; nombre: string }[]>
+      >("/almacenes/por-responsable");
+      const result = response.data;
+      if (result.success) return result.data;
+      setError(result.message);
+      return [];
+    } catch (error) {
+      setError(String(error));
+      return [];
+    }
+  };
+
   return {
     listar,
     crear,
@@ -145,5 +163,6 @@ export const useAlmacenes = ({ setError }: IUseHook) => {
     asignarMina,
     listarMinas,
     desasignarMina,
+    listarAlmacenesPropios,
   };
 };

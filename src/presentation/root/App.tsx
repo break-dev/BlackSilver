@@ -18,6 +18,7 @@ import { LotesPage } from "../pages/lotes/lotes";
 import { KardexProductosPage } from "../pages/kardex-productos/kardex-productos";
 import { RequerimientosAlmacenPage } from "../pages/requerimientos-almacen/requerimientos-almacen";
 import { RequerimientosAlmacenEntregasPage } from "../pages/requerimientos-almacen-entregas/requerimientos-almacen-entregas";
+import { SolicitudesReabastecimiento } from "../pages/solicitudes-reabastecimiento/solicitudes-reabastecimiento";
 
 export const App = () => {
   return (
@@ -120,9 +121,14 @@ export const App = () => {
           path="/logistica/requerimiento_almacen/atencion_requerimientos"
           element={<RequerimientosAlmacenEntregasPage />}
         />
+        {/* Solicitudes de Reabastecimiento */}
         <Route
-          path="/logistica/requerimiento_almacen/entregas"
-          element={<PlaceholderPage titulo="Entregas" />}
+          path="/logistica/solicitud_reabastecimiento/solicitudes"
+          element={<SolicitudesReabastecimiento />}
+        />
+        <Route
+          path="/logistica/solicitud_reabastecimiento/atencion_solicitudes"
+          element={<PlaceholderPage titulo="Solicitudes de Reabastecimiento" />}
         />
         //#endregion
       </Route>

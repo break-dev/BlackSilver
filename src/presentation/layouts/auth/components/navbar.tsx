@@ -31,7 +31,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
       onClick={onClose}
     >
       <nav
-        className="absolute left-4 top-4 bottom-4 w-80 max-w-[85vw] 
+        className="absolute left-4 top-4 bottom-4 w-[320px] max-w-[85vw] 
         bg-gray-950 backdrop-blur-xl rounded-2xl border border-zinc-800/50 
         shadow-2xl overflow-hidden animate-slideInLeft"
         onClick={(e) => e.stopPropagation()}
