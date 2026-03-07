@@ -209,7 +209,7 @@ export const RegistroLote = ({ onSuccess, onCancel, initialAlmacenId }: Registro
                 />
 
                 <Select
-                    label="Unidad de Medida del Lote"
+                    label="Und. de Medida del Lote"
                     placeholder="Seleccione unidad (ej: Caja, Bolsa)"
                     data={(unidades || []).map(u => ({
                         value: String(u.id_unidad_medida),
