@@ -11,15 +11,12 @@ import { useUIStore } from "../../../stores/ui.store";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 
-const PAGE_SIZE = 35;
-
 export const CategoriasPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
   // Estado local
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Filtros
   const [busqueda, setBusqueda] = useState("");
@@ -90,10 +87,6 @@ export const CategoriasPage = () => {
   }, [categorias, busqueda, filtroTipo, filtroEstado]);
 
   // Paginación
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return categoriasFiltradas.slice(inicio, inicio + PAGE_SIZE);
-  }, [categoriasFiltradas, page]);
 
   // Callback registro exitoso
   const handleRegistroExitoso = (categoria: RES_Categoria) => {
@@ -107,7 +100,7 @@ export const CategoriasPage = () => {
       title: "#",
       textAlign: "center",
       width: 60,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => index + 1,
     },
     {
       accessor: "nombre",
@@ -177,7 +170,6 @@ export const CategoriasPage = () => {
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.currentTarget.value);
-              setPage(1);
             }}
             className="flex-1 min-w-50"
             radius="lg"
@@ -193,7 +185,6 @@ export const CategoriasPage = () => {
             value={filtroTipo}
             onChange={(val) => {
               setFiltroTipo(val);
-              setPage(1);
             }}
             clearable
             radius="lg"
@@ -212,7 +203,6 @@ export const CategoriasPage = () => {
             value={filtroEstado}
             onChange={(val) => {
               setFiltroEstado(val);
-              setPage(1);
             }}
             clearable
             radius="lg"
@@ -244,10 +234,7 @@ export const CategoriasPage = () => {
       <DataTableEstandar
         idAccessor="id_categoria"
         columns={columns}
-        records={registrosPaginados}
-        totalRecords={categoriasFiltradas.length}
-        page={page}
-        onPageChange={setPage}
+        records={categoriasFiltradas}
         loading={loading}
       />
 

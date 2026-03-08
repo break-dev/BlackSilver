@@ -34,8 +34,6 @@ import { useCargos } from "../../../services/cargos/useCargos";
 import type { RES_Empleado } from "../service/empleados.responses";
 import type { RES_Cargo } from "../../../services/cargos/dtos/responses";
 
-const PAGE_SIZE = 20;
-
 export const EmpleadosPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
   const [opened, { open, close }] = useDisclosure(false);
@@ -44,7 +42,6 @@ export const EmpleadosPage = () => {
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Filter States
   const [busqueda, setBusqueda] = useState("");
@@ -91,11 +88,6 @@ export const EmpleadosPage = () => {
     });
   }, [empleados, busqueda, filtroEmpresa, filtroCargo]);
 
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    return filteredRecords.slice(from, from + PAGE_SIZE);
-  }, [filteredRecords, page]);
-
   // Handlers
   const handleSuccess = (nuevoEmpleado: RES_Empleado) => {
     close();
@@ -123,7 +115,7 @@ export const EmpleadosPage = () => {
       title: "#",
       width: 60,
       textAlign: "center",
-      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_, index) => index + 1,
     },
     {
       accessor: "nombre",
@@ -275,10 +267,7 @@ export const EmpleadosPage = () => {
       {/* Table */}
       <DataTableEstandar
         columns={columns}
-        records={paginatedRecords}
-        totalRecords={filteredRecords.length}
-        page={page}
-        onPageChange={setPage}
+        records={filteredRecords}
         loading={loading}
         idAccessor="id_empleado"
       />

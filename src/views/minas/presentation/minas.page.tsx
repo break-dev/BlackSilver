@@ -31,7 +31,6 @@ import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
 import { GestionResponsablesMina } from "./components/gestion-responsables-mina";
 import { useMinas } from "../../../services/minas/useMinas";
 import type { RES_Mina } from "../service/minas.responses";
-import { PAGE_SIZE } from "../../constants";
 
 export const MinasPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -60,7 +59,6 @@ export const MinasPage = () => {
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Filter States
   const [busqueda, setBusqueda] = useState("");
@@ -95,11 +93,6 @@ export const MinasPage = () => {
     });
   }, [minas, busqueda]);
 
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    return filteredRecords.slice(from, from + PAGE_SIZE);
-  }, [filteredRecords, page]);
-
   // Handlers
   const handleSuccessCreate = (nuevaMina: RES_Mina) => {
     closeCreate();
@@ -128,7 +121,7 @@ export const MinasPage = () => {
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_, index) => index + 1,
     },
     {
       accessor: "nombre",
@@ -312,10 +305,7 @@ export const MinasPage = () => {
       <DataTableEstandar
         idAccessor="id_mina"
         columns={columns}
-        records={paginatedRecords}
-        totalRecords={filteredRecords.length}
-        page={page}
-        onPageChange={setPage}
+        records={filteredRecords}
         loading={loading}
       />
 

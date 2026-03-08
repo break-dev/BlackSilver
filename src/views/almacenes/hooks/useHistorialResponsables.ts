@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { AlmacenesService } from "../service/almacenes.service";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
 
 /**

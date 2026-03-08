@@ -18,8 +18,6 @@ import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { SelectAlmacen } from "../../utils/select-almacen";
 import { TipoMovimiento } from "../../../shared/enums/estados";
 
-const PAGE_SIZE = 20;
-
 export const KardexProductosPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
@@ -36,7 +34,6 @@ export const KardexProductosPage = () => {
 
   // Estado de UI
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
 
   // Hooks
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -52,9 +49,6 @@ export const KardexProductosPage = () => {
   useEffect(() => {
     const loadMovimientos = async () => {
       setMovimientos([]);
-      setPage(1);
-      setFiltroProducto(null);
-      setFiltroLote(null);
       setBusqueda("");
 
       if (!idAlmacen) return;
@@ -105,11 +99,6 @@ export const KardexProductosPage = () => {
     });
   }, [movimientos, busqueda, filtroProducto, filtroLote]);
 
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    return filteredRecords.slice(from, from + PAGE_SIZE);
-  }, [filteredRecords, page]);
-
   // Columns
   const columns: DataTableColumn<RES_MovimientoKardex>[] = [
     {
@@ -117,7 +106,7 @@ export const KardexProductosPage = () => {
       title: "#",
       textAlign: "center",
       width: 60,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => index + 1,
     },
     {
       accessor: "codigo_lote",
@@ -306,7 +295,6 @@ export const KardexProductosPage = () => {
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.currentTarget.value);
-              setPage(1);
             }}
             disabled={!idAlmacen}
             className="flex-1 min-w-[200px]"
@@ -327,7 +315,6 @@ export const KardexProductosPage = () => {
                 onChange={(val) => {
                   setFiltroProducto(val);
                   setFiltroLote(null);
-                  setPage(1);
                 }}
                 searchable
                 clearable
@@ -346,7 +333,6 @@ export const KardexProductosPage = () => {
                 value={filtroLote}
                 onChange={(val) => {
                   setFiltroLote(val);
-                  setPage(1);
                 }}
                 searchable
                 clearable
@@ -380,10 +366,7 @@ export const KardexProductosPage = () => {
         <DataTableEstandar
           idAccessor="id_kardex"
           columns={columns}
-          records={paginatedRecords}
-          totalRecords={filteredRecords.length}
-          page={page}
-          onPageChange={setPage}
+          records={filteredRecords}
           loading={loading}
         />
       )}

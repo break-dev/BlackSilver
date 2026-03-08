@@ -10,8 +10,6 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 
-const PAGE_SIZE = 35;
-
 export const EmpresasPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
@@ -19,7 +17,6 @@ export const EmpresasPage = () => {
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Filtros
   const [busqueda, setBusqueda] = useState("");
@@ -69,10 +66,6 @@ export const EmpresasPage = () => {
   }, [empresas, busqueda]);
 
   // Paginación
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return empresasFiltradas.slice(inicio, inicio + PAGE_SIZE);
-  }, [empresasFiltradas, page]);
 
   // Callback al registrar exitosamente
   const handleRegistroExitoso = (empresa: RES_Empresa) => {
@@ -86,7 +79,7 @@ export const EmpresasPage = () => {
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => index + 1,
     },
     {
       accessor: "ruc",
@@ -145,7 +138,6 @@ export const EmpresasPage = () => {
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.currentTarget.value);
-              setPage(1);
             }}
             className="flex-1 min-w-64"
             radius="lg"
@@ -173,10 +165,7 @@ export const EmpresasPage = () => {
       <DataTableEstandar
         idAccessor="id_empresa"
         columns={columns}
-        records={registrosPaginados}
-        totalRecords={empresasFiltradas.length}
-        page={page}
-        onPageChange={setPage}
+        records={empresasFiltradas}
         loading={loading}
       />
 

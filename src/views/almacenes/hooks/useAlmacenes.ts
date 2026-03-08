@@ -1,18 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type { RES_Almacen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";
-import { PAGE_SIZE } from "../../../presentation/constants";
 
 export const useAlmacenes = () => {
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
 
-  // Búsqueda / Paginación
+  // Búsqueda
   const [busqueda, setBusqueda] = useState("");
-  const [page, setPage] = useState(1);
 
   useEffect(() => {
     listar();
@@ -38,7 +36,6 @@ export const useAlmacenes = () => {
     });
   }, [message]);
 
-  /** Centraliza las notificaciones desde componentes hijos (modales). */
   const handleChildMessage = (msg: IMessage) => {
     if (!msg.type) return;
     setMessage({ ...msg });
@@ -72,11 +69,6 @@ export const useAlmacenes = () => {
     );
   }, [almacenes, busqueda]);
 
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return almacenesFiltrados.slice(inicio, inicio + PAGE_SIZE);
-  }, [almacenesFiltrados, page]);
-
   return {
     almacenes,
     loading,
@@ -85,9 +77,6 @@ export const useAlmacenes = () => {
     handleChildMessage,
     busqueda,
     setBusqueda,
-    page,
-    setPage,
     almacenesFiltrados,
-    registrosPaginados,
   };
 };

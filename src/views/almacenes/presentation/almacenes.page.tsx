@@ -29,7 +29,6 @@ import { HistorialResponsables } from "./historial-responsables";
 import { MinasAbastecidas } from "./minas-abastecidas";
 import { useAlmacenes } from "../hooks/useAlmacenes";
 import type { RES_Almacen } from "../service/almacenes.responses";
-import { PAGE_SIZE } from "../../../presentation/constants";
 
 export const AlmacenesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -44,9 +43,6 @@ export const AlmacenesPage = () => {
     handleChildMessage,
     busqueda,
     setBusqueda,
-    page,
-    setPage,
-    registrosPaginados,
     almacenesFiltrados,
   } = useAlmacenes();
 
@@ -68,7 +64,6 @@ export const AlmacenesPage = () => {
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
     },
     {
       accessor: "nombre",
@@ -208,7 +203,6 @@ export const AlmacenesPage = () => {
           value={busqueda}
           onChange={(e) => {
             setBusqueda(e.currentTarget.value);
-            setPage(1);
           }}
           className="flex-1 min-w-64"
           radius="lg"
@@ -232,10 +226,7 @@ export const AlmacenesPage = () => {
       <DataTableEstandar
         idAccessor="id_almacen"
         columns={columns}
-        records={registrosPaginados}
-        totalRecords={almacenesFiltrados.length}
-        page={page}
-        onPageChange={setPage}
+        records={almacenesFiltrados}
         loading={loading}
       />
 

@@ -28,8 +28,6 @@ import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroProducto } from "./registro-producto";
 
-const PAGE_SIZE = 20;
-
 export const ProductosPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
@@ -37,7 +35,6 @@ export const ProductosPage = () => {
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Estado de Filtros
   const [busqueda, setBusqueda] = useState("");
@@ -96,11 +93,6 @@ export const ProductosPage = () => {
   }, [productos, busqueda, filtroCategoria, verFiscalizados, verPerecibles]);
 
   // Paginación
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE;
-    return filteredRecords.slice(from, to);
-  }, [filteredRecords, page]);
 
   // Columnas
   const columns: DataTableColumn<RES_Producto>[] = [
@@ -109,7 +101,7 @@ export const ProductosPage = () => {
       title: "#",
       textAlign: "center",
       width: 60,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => index + 1,
     },
     {
       accessor: "nombre",
@@ -248,11 +240,7 @@ export const ProductosPage = () => {
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-              setPage(1);
-            }}
+            onChange={(e) => setBusqueda(e.currentTarget.value)}
             className="flex-1 min-w-[200px]"
             radius="lg"
             classNames={{
@@ -264,11 +252,7 @@ export const ProductosPage = () => {
           <Select
             placeholder="Categoría"
             data={opcionesCategorias}
-            value={filtroCategoria}
-            onChange={(val) => {
-              setFiltroCategoria(val);
-              setPage(1);
-            }}
+            onChange={(val) => setFiltroCategoria(val)}
             clearable
             searchable
             radius="lg"
@@ -314,10 +298,7 @@ export const ProductosPage = () => {
       <DataTableEstandar
         idAccessor="id_producto"
         columns={columns}
-        records={paginatedRecords}
-        totalRecords={filteredRecords.length}
-        page={page}
-        onPageChange={setPage}
+        records={filteredRecords}
         loading={loading}
       />
 

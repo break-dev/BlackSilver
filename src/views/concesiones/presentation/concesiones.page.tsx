@@ -25,7 +25,6 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { SelectTipoMineral } from "../../utils/select-tipo-mineral";
-import { PAGE_SIZE } from "../../constants";
 
 export const ConcesionesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -33,7 +32,6 @@ export const ConcesionesPage = () => {
   const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
 
   // Filtros
   const [busqueda, setBusqueda] = useState("");
@@ -100,10 +98,6 @@ export const ConcesionesPage = () => {
   }, [concesiones, busqueda, filtroEstado, filtroMineral]);
 
   // Paginación
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return concesionesFiltradas.slice(inicio, inicio + PAGE_SIZE);
-  }, [concesionesFiltradas, page]);
 
   // Callback al registrar exitosamente
   const handleRegistroExitoso = (concesion: RES_Concesion) => {
@@ -117,7 +111,7 @@ export const ConcesionesPage = () => {
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
+      render: (_record, index) => index + 1,
     },
     {
       accessor: "nombre",
@@ -243,7 +237,6 @@ export const ConcesionesPage = () => {
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.currentTarget.value);
-              setPage(1);
             }}
             className="flex-1 min-w-64"
             radius="lg"
@@ -260,7 +253,6 @@ export const ConcesionesPage = () => {
             value={filtroMineral}
             onChange={(val) => {
               setFiltroMineral(val);
-              setPage(1);
             }}
             clearable
             className="min-w-36"
@@ -272,7 +264,6 @@ export const ConcesionesPage = () => {
             value={filtroEstado}
             onChange={(val) => {
               setFiltroEstado(val);
-              setPage(1);
             }}
             clearable
             radius="lg"
@@ -303,10 +294,7 @@ export const ConcesionesPage = () => {
       <DataTableEstandar
         idAccessor="id_concesion"
         columns={columns}
-        records={registrosPaginados}
-        totalRecords={concesionesFiltradas.length}
-        page={page}
-        onPageChange={setPage}
+        records={concesionesFiltradas}
         loading={loading}
       />
 
