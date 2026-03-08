@@ -21,7 +21,7 @@ import {
 import dayjs from "dayjs";
 
 import { useRequerimientos } from "../../../services/requerimientos_almacen/useRequerimientos";
-import type { RES_TrazabilidadEvento } from "../services/responses";
+import type { RES_TrazabilidadEvento } from "../services/requerimiento.responses";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 
 interface TrazabilidadRequerimientoProps {

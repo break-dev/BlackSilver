@@ -21,7 +21,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import dayjs from "dayjs";
 
 import { useLote } from "../../../services/lote/useLote";
-import type { RES_Lote } from "../service/responses";
+import type { RES_Lote } from "../service/lotes-productos.responses";
 
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";

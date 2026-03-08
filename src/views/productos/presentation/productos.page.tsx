@@ -20,7 +20,7 @@ import {
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useProductos } from "../../../services/productos/useProductos";
-import type { RES_Producto } from "../service/responses";
+import type { RES_Producto } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/estados";
 
 import { useUIStore } from "../../../stores/ui.store";

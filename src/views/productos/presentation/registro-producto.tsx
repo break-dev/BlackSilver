@@ -19,12 +19,12 @@ import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useDisclosure } from "@mantine/hooks";
 
 import { useProductos } from "../../../services/productos/useProductos";
-import { Schema_CrearProducto } from "../service/requests";
+import { Schema_CrearProducto } from "../service/productos.requests";
 import { useCategoria } from "../../../services/categorias/useCategoria";
 import { ModalEstandar } from "../../../utils/modal-estandar";
 import { RegistroCategoria } from "../../categorias/components/registro-categoria";
 import { SelectUnidadMedida } from "../../../utils/select-unidad-medida";
-import type { RES_Producto } from "../service/responses";
+import type { RES_Producto } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/estados";
 
 interface RegistroProductoProps {

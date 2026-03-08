@@ -21,7 +21,7 @@ import type {
   RES_Concesion,
   RES_ContratoConcesion,
 } from "../service/concesiones.responses";
-import type { RES_Empresa } from "../../empresas/service/responses";
+import type { RES_Empresa } from "../../empresas/service/empresas.responses";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { CustomDatePicker } from "../../../utils/date-picker-input";

@@ -7,7 +7,7 @@ import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroLaborMina } from "./registro-labor-mina";
 import { useLabores } from "../../../services/labores/useLabores";
-import type { RES_Labor } from "../service/responses";
+import type { RES_Labor } from "../service/labores.responses";
 import { PAGE_SIZE } from "../../constants";
 
 interface GestionLaboresProps {

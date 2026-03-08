@@ -16,7 +16,7 @@ import { CustomDatePicker as DatePickerInput } from "../../../utils/date-picker-
 
 // Services
 import { useLabores } from "../../../services/labores/useLabores";
-import type { RES_HistorialResponsableLabor } from "../service/responses";
+import type { RES_HistorialResponsableLabor } from "../service/labores.responses";
 
 interface AsignarResponsableLaborProps {
   idLabor: number;

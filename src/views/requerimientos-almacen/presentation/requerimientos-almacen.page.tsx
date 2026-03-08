@@ -24,7 +24,7 @@ import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useRequerimientos } from "../../../services/requerimientos_almacen/useRequerimientos";
-import type { RES_RequerimientoAlmacen } from "../services/responses";
+import type { RES_RequerimientoAlmacen } from "../services/requerimiento.responses";
 import { Premura, EstadoRequerimiento } from "../../../shared/enums/estados";
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";

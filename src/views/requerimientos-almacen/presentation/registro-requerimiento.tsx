@@ -37,8 +37,8 @@ import { Premura, EstadoBase } from "../../../shared/enums/estados";
 import { SelectMina } from "../../../utils/select-mina";
 import { CustomDatePicker } from "../../../utils/date-picker-input";
 import type { RES_Almacen } from "../../../../views/almacenes/service/dtos/almacenes.responses";
-import type { RES_RequerimientoAlmacen } from "../services/responses";
-import type { RES_Labor } from "../../labores/service/responses";
+import type { RES_RequerimientoAlmacen } from "../services/requerimiento.responses";
+import type { RES_Labor } from "../../labores/service/labores.responses";
 
 interface RegistroRequerimientoProps {
   initialMinaId?: number | null;

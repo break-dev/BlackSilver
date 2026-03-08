@@ -11,7 +11,7 @@ import {
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useKardex } from "../../../services/kardex/useKardex";
-import type { RES_MovimientoKardex } from "../service/responses";
+import type { RES_MovimientoKardex } from "../service/kardex-productos.responses";
 
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";

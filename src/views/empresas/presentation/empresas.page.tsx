@@ -4,7 +4,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { type DataTableColumn } from "mantine-datatable";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useEmpresas } from "../../../services/empresas/useEmpresas";
-import type { RES_Empresa } from "../service/responses";
+import type { RES_Empresa } from "../service/empresas.responses";
 import { RegistroEmpresa } from "./components/registro-empresa";
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";

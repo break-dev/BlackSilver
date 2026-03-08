@@ -23,7 +23,7 @@ import {
 import dayjs from "dayjs";
 
 import { useRequerimientos } from "../../../services/requerimientos_almacen/useRequerimientos";
-import type { RES_RequerimientoDetalleCompleto } from "../services/responses";
+import type { RES_RequerimientoDetalleCompleto } from "../services/requerimiento.responses";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 
 interface DetalleRequerimientoProps {

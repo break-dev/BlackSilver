@@ -15,7 +15,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useLote } from "../../../services/lote/useLote";
-import type { RES_Lote } from "../service/responses";
+import type { RES_Lote } from "../service/lotes-productos.responses";
 
 interface AjusteStockModalProps {
   lote: RES_Lote;

@@ -30,7 +30,7 @@ import { GestionLabores } from "../labores/labores";
 import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
 import { GestionResponsablesMina } from "./components/gestion-responsables-mina";
 import { useMinas } from "../../../services/minas/useMinas";
-import type { RES_Mina } from "../service/responses";
+import type { RES_Mina } from "../service/minas.responses";
 import { PAGE_SIZE } from "../../constants";
 
 export const MinasPage = () => {

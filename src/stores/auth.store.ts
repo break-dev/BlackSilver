@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import type {
   RES_Login,
   RES_LoginUsuario,
-} from "../views/login/service/responses";
+} from "../views/login/service/login.responses";
 
 export interface IAuthStore {
   token: string;

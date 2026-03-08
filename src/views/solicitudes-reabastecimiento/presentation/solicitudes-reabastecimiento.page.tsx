@@ -26,7 +26,7 @@ import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { useAlmacenes } from "../../../services/almacenes/useAlmacenes";
 import { useSolicitudesReabastecimiento } from "../../../services/solicitudes-reabastecimiento/useSolicitudesReabastecimiento";
-import type { RES_SolicitudReabastecimiento } from "../service/solicitudes-reabastecimiento.requests";
+import type { RES_SolicitudReabastecimiento } from "../service/solicitudes.requests";
 import { SolicitudReabastecimientoForm } from "./components/solicitud-reabastecimiento-form";
 import { DetalleSolicitudReabastecimiento } from "./components/detalle-solicitud";
 

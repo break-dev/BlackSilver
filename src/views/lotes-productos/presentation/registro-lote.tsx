@@ -16,7 +16,7 @@ import type {
   RES_Lote,
   RES_ProductoDisponible,
   RES_UnidadMedida,
-} from "../service/responses";
+} from "../service/lotes-productos.responses";
 import { CustomDatePicker } from "../../../utils/date-picker-input";
 import { SelectAlmacen } from "../../../utils/select-almacen";
 
