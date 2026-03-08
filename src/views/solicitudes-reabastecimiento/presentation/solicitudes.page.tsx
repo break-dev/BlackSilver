@@ -22,17 +22,17 @@ import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { useAlmacenes } from "../../../services/almacenes/useAlmacenes";
-import { useSolicitudesReabastecimiento } from "../../../services/solicitudes-reabastecimiento/useSolicitudesReabastecimiento";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { useAlmacenes } from "../../almacenes/hooks/useAlmacenes";
+import { useSolicitudes } from "../hooks/useSolicitudes";
 import type { RES_SolicitudReabastecimiento } from "../service/solicitudes.requests";
 import { SolicitudReabastecimientoForm } from "./components/solicitud-reabastecimiento-form";
 import { DetalleSolicitudReabastecimiento } from "./components/detalle-solicitud";
 
 const PAGE_SIZE = 35;
 
-export const SolicitudesReabastecimiento = () => {
+export const SolicitudesReabastecimientoPage = () => {
   const { setTitle } = useUIStore();
   const [, setError] = useState("");
   const [data, setData] = useState<RES_SolicitudReabastecimiento[]>([]);

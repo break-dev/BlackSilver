@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Skeleton } from "@mantine/core";
 import {
   XMarkIcon,
   ChevronRightIcon,
@@ -7,7 +8,7 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import { iconos_menu_navegacion } from "./iconos-menu-navegacion";
-import { useMenuNavegacionStore } from "../../../../stores/menu.store";
+import { useMenuNav } from "../../../../shared/menu-navegacion/useMenuNav";
 
 interface NavbarProps {
   onClose: () => void;
@@ -17,7 +18,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const menu = useMenuNavegacionStore((state) => state.menu);
+  const { menu, loading } = useMenuNav();
 
   const go = (url: string) => {
     onClose();
@@ -71,8 +72,23 @@ export const Navbar = ({ onClose }: NavbarProps) => {
             Inicio
           </button>
 
-          {/* Renderizar menu de navegacion */}
-          {Array.isArray(menu) &&
+          {/* Renderizar menu de navegacion o esqueletos de carga */}
+          {loading ? (
+            <div className="space-y-3 p-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton
+                  key={i}
+                  height={34}
+                  radius="xl"
+                  animate
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            Array.isArray(menu) &&
             menu.map((mod) => {
               const modIconData = iconos_menu_navegacion.find(
                 (i) => i.modulo_path === mod.path,
@@ -150,7 +166,8 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                   )}
                 </div>
               );
-            })}
+            })
+          )}
         </div>
       </nav>
     </div>

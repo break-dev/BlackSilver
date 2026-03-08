@@ -1,14 +1,7 @@
-import { api } from "../../shared/api";
-import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../../shared/hook.interface";
-import type {
-  DTO_CrearSolicitudReabastecimiento,
-  RES_SolicitudReabastecimiento,
-  RES_SolicitudReabastecimientoDetalle,
-  RES_SolicitudDetalleCompleto,
-} from "../../views/solicitudes-reabastecimiento/service/solicitudes-reabastecimiento.requests";
 
-export const useSolicitudesReabastecimiento = ({ setError }: IUseHook) => {
+
+
+export const useSolicitudes = () => {
   const path = "/solicitudes-reabastecimiento";
 
   const listar = async (filters?: { id_almacen_solicitante?: number }) => {

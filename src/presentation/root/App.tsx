@@ -18,7 +18,7 @@ import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
 import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
-import { SolicitudesReabastecimiento } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
+import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 import {
   ConfiguracionLayout,
   EmpresasLayout,
@@ -131,7 +131,7 @@ export const App = () => {
           >
             <Route
               path="solicitudes"
-              element={<SolicitudesReabastecimiento />}
+              element={<SolicitudesReabastecimientoPage />}
             />
             <Route
               path="atencion_solicitudes"
@@ -139,7 +139,7 @@ export const App = () => {
             />
           </Route>
         </Route>
-        
+
         {/* Redireccion */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>

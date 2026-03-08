@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth.store";
+import { useMenuNavegacionStore } from "../stores/menu.store";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -37,6 +38,14 @@ api.interceptors.response.use(
   },
   (error) => {
     console.log("[API] Error en la respuesta:", error);
+
+    // Si recibimos un 401, cerramos la sesion automaticamente
+    if (error.response?.status === 401) {
+      useAuthStore.getState().clearAuth();
+      // Tambien limpiamos el menu para evitar inconsistencias
+      useMenuNavegacionStore.getState().clearMenu();
+    }
+
     return Promise.reject(error);
   },
 );
