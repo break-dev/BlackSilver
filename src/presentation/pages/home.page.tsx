@@ -7,10 +7,9 @@ import {
   ArrowUpRightIcon,
 } from "@heroicons/react/24/outline";
 import { useAuthStore } from "../../stores/auth.store";
-
 import { useUIStore } from "../../stores/ui.store";
 
-export const Home = () => {
+export const HomePage = () => {
   const navigate = useNavigate();
   const usuario = useAuthStore((s) => s.usuario);
   const setTitle = useUIStore((state) => state.setTitle);

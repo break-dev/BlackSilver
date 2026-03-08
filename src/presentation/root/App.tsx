@@ -1,24 +1,36 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { PublicLayout } from "../layouts/public";
-import { AuthLayout } from "../layouts/auth/auth";
+import { PublicLayout } from "../layouts/public.layout";
+import { AuthLayout } from "../layouts/auth/auth.layout";
 import { ProtectedRoute } from "./protectedRoute";
 import { PublicRoute } from "./publicRoute";
-import { PlaceholderPage } from "../pages/placeholder";
+import { PlaceholderPage } from "../pages/placeholder.page";
 // Vistas
-import { Login } from "../pages/login";
-import { Home } from "../pages/home";
-import { ConcesionesPage } from "../pages/concesiones/concesiones";
-import MinasPage from "../pages/minas/minas";
-import { EmpresasPage } from "../pages/empresas/empresas";
-import { CategoriasPage } from "../pages/categorias/categorias";
-import { EmpleadosPage } from "../pages/empleados/empleados";
+import { LoginPage } from "../../views/login/presentation/login.page";
+import { HomePage } from "../pages/home.page";
+import { ConcesionesPage } from "../../views/concesiones/presentation/concesiones.page";
+import MinasPage from "../../views/minas/presentation/minas.page";
+import { EmpresasPage } from "../../views/empresas/presentation/empresas.page";
+import { CategoriasPage } from "../../views/categorias/presentation/categorias.page";
+import { EmpleadosPage } from "../../views/empleados/presentation/empleados.page";
 import AlmacenesPage from "../../views/almacenes/presentation/almacenes.page";
-import { ProductosPage } from "../pages/productos/productos";
-import { LotesPage } from "../pages/lotes/lotes";
-import { KardexProductosPage } from "../pages/kardex-productos/kardex-productos";
-import { RequerimientosAlmacenPage } from "../pages/requerimientos-almacen/requerimientos-almacen";
-import { RequerimientosAlmacenEntregasPage } from "../pages/requerimientos-almacen-entregas/requerimientos-almacen-entregas";
-import { SolicitudesReabastecimiento } from "../pages/solicitudes-reabastecimiento/solicitudes-reabastecimiento";
+import { ProductosPage } from "../../views/productos/presentation/productos.page";
+import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
+import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
+import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
+import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
+import { SolicitudesReabastecimiento } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
+import {
+  ConfiguracionLayout,
+  EmpresasLayout,
+  PersonalLayout,
+  UsuariosLayout,
+} from "../layouts/configuracion.layout";
+import {
+  LogisticaLayout,
+  InventarioLayout,
+  RequerimientoAlmacenLayout,
+  SolicitudReabastecimientoLayout,
+} from "../layouts/logistica.layout";
 
 export const App = () => {
   return (
@@ -31,8 +43,7 @@ export const App = () => {
           </PublicRoute>
         }
       >
-        <Route path="/login" element={<Login />} />
-        {/* Redireccion a login si intenta acceder a una ruta que no existe */}
+        <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Route>
 
@@ -46,91 +57,91 @@ export const App = () => {
       >
         {/* Inicio */}
         <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/home" element={<HomePage />} />
+
         {/* Perfil */}
         <Route
           path="/perfil"
           element={<PlaceholderPage titulo="Mi Perfil" />}
         />
-        {/* Redireccion a home si intenta acceder a una ruta que no existe */}
+
+        {/* Configuracion */}
+        <Route path="/configuracion" element={<ConfiguracionLayout />}>
+          {/* Empresas */}
+          <Route path="empresas" element={<EmpresasLayout />}>
+            <Route path="empresas" element={<EmpresasPage />} />
+            <Route path="almacenes" element={<AlmacenesPage />} />
+            <Route path="concesiones" element={<ConcesionesPage />} />
+            <Route path="minas" element={<MinasPage />} />
+          </Route>
+
+          {/* Personal */}
+          <Route path="personal" element={<PersonalLayout />}>
+            <Route path="areas" element={<PlaceholderPage titulo="Áreas" />} />
+            <Route
+              path="cargos"
+              element={<PlaceholderPage titulo="Cargos" />}
+            />
+            <Route path="trabajadores" element={<EmpleadosPage />} />
+          </Route>
+
+          {/* Usuarios */}
+          <Route path="usuarios" element={<UsuariosLayout />}>
+            <Route path="roles" element={<PlaceholderPage titulo="Roles" />} />
+            <Route
+              path="cuentas"
+              element={<PlaceholderPage titulo="Cuentas" />}
+            />
+          </Route>
+        </Route>
+
+        {/* Logistica */}
+        <Route path="/logistica" element={<LogisticaLayout />}>
+          {/* Inventario */}
+          <Route path="inventario" element={<InventarioLayout />}>
+            <Route path="categorias" element={<CategoriasPage />} />
+            <Route
+              path="familias"
+              element={<PlaceholderPage titulo="Familias" />}
+            />
+            <Route path="productos" element={<ProductosPage />} />
+            <Route path="lotes" element={<LotesPage />} />
+            <Route path="kardex" element={<KardexProductosPage />} />
+          </Route>
+
+          {/* Requerimientos de Almacen */}
+          <Route
+            path="requerimiento_almacen"
+            element={<RequerimientoAlmacenLayout />}
+          >
+            <Route
+              path="requerimientos"
+              element={<RequerimientosAlmacenPage />}
+            />
+            <Route
+              path="atencion_requerimientos"
+              element={<RequerimientosAlmacenAtencionPage />}
+            />
+          </Route>
+
+          {/* Solicitudes de Reabastecimiento */}
+          <Route
+            path="solicitud_reabastecimiento"
+            element={<SolicitudReabastecimientoLayout />}
+          >
+            <Route
+              path="solicitudes"
+              element={<SolicitudesReabastecimiento />}
+            />
+            <Route
+              path="atencion_solicitudes"
+              element={<PlaceholderPage titulo="Atencion de Solicitudes" />}
+            />
+          </Route>
+        </Route>
+        
+        {/* Redireccion */}
         <Route path="*" element={<Navigate to="/home" replace />} />
-        //#region Configuracion
-        {/* Empresas */}
-        <Route
-          path="/configuracion/empresas/empresas"
-          element={<EmpresasPage />}
-        />
-        <Route
-          path="/configuracion/empresas/almacenes"
-          element={<AlmacenesPage />}
-        />
-        <Route
-          path="/configuracion/empresas/concesiones"
-          element={<ConcesionesPage />}
-        />
-        <Route path="/configuracion/empresas/minas" element={<MinasPage />} />
-        {/* Personal */}
-        <Route
-          path="/configuracion/personal/areas"
-          element={<PlaceholderPage titulo="Áreas" />}
-        />
-        <Route
-          path="/configuracion/personal/cargos"
-          element={<PlaceholderPage titulo="Cargos" />}
-        />
-        <Route
-          path="/configuracion/personal/trabajadores"
-          element={<EmpleadosPage />}
-        />
-        {/* Usuarios */}
-        <Route
-          path="/configuracion/usuarios/roles"
-          element={<PlaceholderPage titulo="Roles" />}
-        />
-        <Route
-          path="/configuracion/usuarios/cuentas"
-          element={<PlaceholderPage titulo="Cuentas" />}
-        />
-        //#endregion
-        {/*  */}
-        //#region Logistica
-        {/* Inventario */}
-        <Route
-          path="/logistica/inventario/categorias"
-          element={<CategoriasPage />}
-        />
-        <Route
-          path="/logistica/inventario/familias"
-          element={<PlaceholderPage titulo="Familias" />}
-        />
-        <Route
-          path="/logistica/inventario/productos"
-          element={<ProductosPage />}
-        />
-        <Route path="/logistica/inventario/lotes" element={<LotesPage />} />
-        <Route
-          path="/logistica/inventario/kardex"
-          element={<KardexProductosPage />}
-        />
-        {/* Solicitudes de Almacen */}
-        <Route
-          path="/logistica/requerimiento_almacen/requerimientos"
-          element={<RequerimientosAlmacenPage />}
-        />
-        <Route
-          path="/logistica/requerimiento_almacen/atencion_requerimientos"
-          element={<RequerimientosAlmacenEntregasPage />}
-        />
-        {/* Solicitudes de Reabastecimiento */}
-        <Route
-          path="/logistica/solicitud_reabastecimiento/solicitudes"
-          element={<SolicitudesReabastecimiento />}
-        />
-        <Route
-          path="/logistica/solicitud_reabastecimiento/atencion_solicitudes"
-          element={<PlaceholderPage titulo="Solicitudes de Reabastecimiento" />}
-        />
-        //#endregion
       </Route>
     </Routes>
   );

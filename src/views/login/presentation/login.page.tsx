@@ -6,7 +6,7 @@ import { useMenuNavegacion } from "../../services/menu-navegacion/useMenuNavegac
 import { Schema_Login } from "../../services/usuarios/dtos/requests";
 import { Wallpapers, BlackcitoLogo } from "../assets/imports";
 
-export const Login = () => {
+export const LoginPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");

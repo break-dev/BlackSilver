@@ -30,7 +30,7 @@ import { GestionAtencion } from "./components/gestion-atencion";
 
 const PAGE_SIZE = 15;
 
-export const RequerimientosAlmacenEntregasPage = () => {
+export const RequerimientosAlmacenAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
