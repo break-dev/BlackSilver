@@ -1,152 +1,103 @@
-import { useState, useMemo, useEffect } from "react";
-import { Button, TextInput, Badge, Select } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  TextInput,
+  Text,
+  Menu,
+} from "@mantine/core";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TrashIcon,
+  PencilSquareIcon,
+  EllipsisVerticalIcon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useCategoria } from "../../../services/categorias/useCategoria";
-import type { RES_Categoria } from "../service/categorias.responses";
-import { EstadoBase, TipoRequerimiento } from "../../../shared/enums/estados";
+import { useTitlePage } from "../../../hooks/useTitlePage";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
-import { useUIStore } from "../../../stores/ui.store";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
+import { useCategorias } from "../hooks/useCategorias";
+import { useRegistroCategoria } from "../hooks/useRegistroCategoria";
+import type { RES_Categoria } from "../service/categorias.responses";
 
 export const CategoriasPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
-  // Estado local
-  const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  useTitlePage("Categorías");
 
-  // Filtros
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState<string | null>(null);
-  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
+  const {
+    loading,
+    busqueda,
+    setBusqueda,
+    categoriasFiltradas,
+    openedCreate,
+    openCreate,
+    closeCreate,
+    onCategoriaCreada,
+  } = useCategorias();
 
-  // Modal
-  const [opened, { open, close }] = useDisclosure(false);
-
-  // Servicio
-  const { listar } = useCategoria({ setError });
-
-  // Carga inicial
-  useEffect(() => {
-    let cancelled = false;
-    listar()
-      .then((data) => {
-        if (!cancelled) {
-          setCategorias(data || []);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Title
-  useEffect(() => {
-    setTimeout(() => {
-      setTitle("Categorías");
-    }, 0);
-  }, [setTitle]);
-
-  // Opciones de filtros
-  const tiposUnicos = useMemo(() => {
-    const set = new Set(categorias.map((c) => c.tipo_requerimiento));
-    return Array.from(set)
-      .filter(Boolean)
-      .sort()
-      .map((t) => ({ value: String(t), label: String(t) }));
-  }, [categorias]);
-
-  const estadosUnicos = useMemo(() => {
-    const set = new Set(categorias.map((c) => c.estado));
-    return Array.from(set)
-      .filter(Boolean)
-      .sort()
-      .map((e) => ({ value: String(e), label: String(e) }));
-  }, [categorias]);
-
-  // Datos filtrados
-  const categoriasFiltradas = useMemo(() => {
-    return categorias.filter((c) => {
-      const matchBusqueda =
-        !busqueda ||
-        c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
-
-      const matchTipo = !filtroTipo || c.tipo_requerimiento === filtroTipo;
-      const matchEstado = !filtroEstado || c.estado === filtroEstado;
-
-      return matchBusqueda && matchTipo && matchEstado;
-    });
-  }, [categorias, busqueda, filtroTipo, filtroEstado]);
-
-  // Paginación
-
-  // Callback registro exitoso
-  const handleRegistroExitoso = (categoria: RES_Categoria) => {
-    close();
-    setCategorias((prev) => [categoria, ...prev]);
-  };
+  const registro = useRegistroCategoria({
+    onSuccess: onCategoriaCreada,
+    onClose: closeCreate,
+  });
 
   const columns: DataTableColumn<RES_Categoria>[] = [
     {
       accessor: "index",
       title: "#",
       textAlign: "center",
-      width: 60,
-      render: (_record, index) => index + 1,
+      width: 50,
+      render: (_, index) => index + 1,
     },
     {
       accessor: "nombre",
       title: "Categoría",
+      width: 250,
       render: (record) => (
-        <span className="text-indigo-200 font-semibold">{record.nombre}</span>
+        <Group gap="xs">
+          <TagIcon className="w-5 h-5 text-zinc-500" />
+          <div>
+            <Text size="sm" fw={500} className="text-zinc-200">
+              {record.nombre}
+            </Text>
+            {record.tipo_requerimiento && (
+              <Badge size="xs" variant="light" color="indigo">
+                {record.tipo_requerimiento}
+              </Badge>
+            )}
+          </div>
+        </Group>
       ),
     },
     {
-      accessor: "tipo_requerimiento",
-      title: "Tipo",
+      accessor: "clasificacion_bien",
+      title: "Clasificación",
+      width: 200,
       render: (record) => (
-        <Badge
-          color={
-            record.tipo_requerimiento === TipoRequerimiento.Bien
-              ? "blue"
-              : "cyan"
-          }
-          variant="light"
-          size="sm"
-          radius="sm"
-        >
-          {record.tipo_requerimiento}
-        </Badge>
+        <Text size="sm" className="text-zinc-400">
+          {record.clasificacion_bien || "-"}
+        </Text>
       ),
     },
     {
       accessor: "descripcion",
       title: "Descripción",
-      width: "40%",
       render: (record) => (
-        <span
-          className="text-zinc-400 text-sm truncate block"
-          title={record.descripcion || ""}
-        >
+        <Text size="sm" className="text-zinc-400 truncate max-w-xs">
           {record.descripcion || "-"}
-        </span>
+        </Text>
       ),
     },
     {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
+      width: 100,
       render: (record) => (
         <Badge
-          color={record.estado === EstadoBase.Activo ? "green" : "red"}
+          color={record.estado === "Activo" ? "green" : "red"}
           variant="light"
           radius="sm"
           size="sm"
@@ -155,82 +106,70 @@ export const CategoriasPage = () => {
         </Badge>
       ),
     },
+    {
+      accessor: "actions",
+      title: "",
+      width: 80,
+      textAlign: "right",
+      render: () => (
+        <Menu shadow="md" width={150} position="left">
+          <Menu.Target>
+            <ActionIcon variant="subtle" color="gray">
+              <EllipsisVerticalIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
+            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
+            <Menu.Item
+              leftSection={<PencilSquareIcon className="w-4 h-4" />}
+              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            >
+              Editar
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<TrashIcon className="w-4 h-4" />}
+              color="red"
+              className="hover:bg-red-900/20"
+            >
+              Eliminar
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      ),
+    },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Encabezado y Filtros */}
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-4 flex-1">
-          <TextInput
-            placeholder="Buscar por nombre o descripción..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-            }}
-            className="flex-1 min-w-50"
-            radius="lg"
-            size="sm"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            }}
-          />
-          <Select
-            placeholder="Tipo"
-            data={tiposUnicos}
-            value={filtroTipo}
-            onChange={(val) => {
-              setFiltroTipo(val);
-            }}
-            clearable
-            radius="lg"
-            size="sm"
-            className="min-w-30"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-          <Select
-            placeholder="Estado"
-            data={estadosUnicos}
-            value={filtroEstado}
-            onChange={(val) => {
-              setFiltroEstado(val);
-            }}
-            clearable
-            radius="lg"
-            size="sm"
-            className="min-w-30"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-        </div>
-        {/* End of filters wrapper */}
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={open}
+        <TextInput
+          placeholder="Buscar categorías..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
+          value={busqueda}
+          onChange={(e) => {
+            setBusqueda(e.currentTarget.value);
+          }}
+          className="flex-1 min-w-64"
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-        font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 shrink-0"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          }}
+        />
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={openCreate}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
         >
           Nueva Categoría
         </Button>
       </div>
 
-      {/* DataTable */}
       <DataTableEstandar
         idAccessor="id_categoria"
         columns={columns}
@@ -238,12 +177,31 @@ export const CategoriasPage = () => {
         loading={loading}
       />
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-
-      {/* Modal de Registro */}
-      <ModalEstandar opened={opened} close={close} title="Nueva Categoría">
-        <RegistroCategoria onSuccess={handleRegistroExitoso} onCancel={close} />
+      <ModalEstandar
+        opened={openedCreate}
+        close={closeCreate}
+        title="Nueva Categoría"
+      >
+        <RegistroCategoria
+          nombre={registro.nombre}
+          setNombre={registro.setNombre}
+          descripcion={registro.descripcion}
+          setDescripcion={registro.setDescripcion}
+          tipoRequerimiento={registro.tipoRequerimiento}
+          setTipoRequerimiento={registro.setTipoRequerimiento}
+          clasificacionBien={registro.clasificacionBien}
+          setClasificacionBien={registro.setClasificacionBien}
+          error={registro.error}
+          loading={registro.loading}
+          onSave={registro.handleGuardar}
+          onCancel={() => {
+            closeCreate();
+            registro.reset();
+          }}
+        />
       </ModalEstandar>
     </div>
   );
 };
+
+export default CategoriasPage;

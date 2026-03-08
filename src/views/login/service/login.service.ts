@@ -1,4 +1,4 @@
-import { api } from "../../../shared/api";
+import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
 import type { DTO_Login } from "./login.requests";
 import type { RES_Login } from "./login.responses";

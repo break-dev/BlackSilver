@@ -1,4 +1,4 @@
-import { api } from "../shared/api";
+import { api } from "./api";
 import type { IRespuesta, IModulo } from "../shared/interfaces";
 
 export class MenuNavService {
