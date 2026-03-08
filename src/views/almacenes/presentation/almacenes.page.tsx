@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ActionIcon,
   Badge,
@@ -21,7 +21,7 @@ import {
   RectangleStackIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroAlmacen } from "./registro-almacen";
@@ -31,11 +31,7 @@ import { useAlmacenes } from "../hooks/useAlmacenes";
 import type { RES_Almacen } from "../service/almacenes.responses";
 
 export const AlmacenesPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
-  useEffect(() => {
-    setTitle("Almacenes");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useTitlePage("Almacenes");
 
   const {
     loading,

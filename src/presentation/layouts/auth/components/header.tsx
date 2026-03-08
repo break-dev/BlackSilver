@@ -1,21 +1,13 @@
-import { useState, useEffect } from "react";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { UserMenu } from "./user-menu";
-import { useUIStore } from "../../../../stores/ui.store";
+import { useTitlePage } from "../../../../hooks/useTitlePage";
 
 interface HeaderProps {
   onMenuToggle: () => void;
 }
 
 export const Header = ({ onMenuToggle }: HeaderProps) => {
-  const [title, setTitle] = useState(useUIStore.getState().title);
-
-  useEffect(() => {
-    const unsubscribe = useUIStore.subscribe((state) => {
-      setTitle(state.title);
-    });
-    return unsubscribe;
-  }, []);
+  const { title } = useTitlePage();
 
   return (
     <header
@@ -45,7 +37,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
           className="text-base font-semibold text-white tracking-wide 
           hidden sm:block"
         >
-          {title ? `Black Silver - ${title}` : "Black Silver"}
+          {title ? title : "Black Silver"}
         </span>
       </div>
 

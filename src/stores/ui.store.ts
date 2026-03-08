@@ -13,7 +13,7 @@ export const useUIStore = create<UIState>((set) => ({
   title: "",
   setTitle: (title: string) => {
     set({ title });
-    document.title = title ? `Black Silver - ${title}` : "Black Silver";
+    document.title = title ? `${title} | Black Silver` : "Black Silver";
   },
   message: { type: "", content: "" },
   notify: (message: IMessage) => {
