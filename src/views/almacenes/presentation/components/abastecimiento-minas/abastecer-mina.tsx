@@ -3,19 +3,15 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState, useMemo } from "react";
 import { CubeIcon } from "@heroicons/react/24/outline";
-import { useMinas } from "../../../../services/minas/useMinas";
-import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
-import type { RES_MinaAsignada } from "../../../../services/almacenes/dtos/responses";
-import type { RES_Mina } from "../../../../services/minas/dtos/responses";
+import type { RES_MinaAbastecida, RES_MinaDisponible } from "../../../service/almacenes.responses";
 
 interface FormVincularMinaProps {
   idAlmacen: number;
-  minasAsignadas: RES_MinaAsignada[];
-  onSuccess: (mina: RES_MinaAsignada) => void;
+  onSuccess: (mina: RES_MinaAbastecida) => void;
   onCancel: () => void;
 }
 
-export const FormVincularMina = ({
+export const AbastecerMina = ({
   idAlmacen,
   minasAsignadas,
   onSuccess,

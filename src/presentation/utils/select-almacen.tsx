@@ -2,7 +2,7 @@ import { Select, type SelectProps } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { useAlmacenes } from "../../services/almacenes/useAlmacenes";
-import type { RES_Almacen } from "../../services/almacenes/dtos/responses";
+import type { RES_Almacen } from "../../views/almacenes/service/dtos/almacenes.responses";
 
 interface SelectAlmacenProps extends Omit<SelectProps, "data"> {
   value?: string | null;

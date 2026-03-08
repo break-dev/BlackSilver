@@ -1,6 +1,6 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 import type { RES_Concesion, RES_ContratoConcesion } from "./dtos/responses";
 import type {
   DTO_CrearConcesion,
@@ -36,7 +36,7 @@ export const useConcesiones = ({ setError }: IUseHook) => {
     try {
       const response = await api.post<IRespuesta<RES_Concesion[]>>(
         `${path}/by-empresa`,
-        { id_empresa }
+        { id_empresa },
       );
       const result = response.data;
 
@@ -138,7 +138,7 @@ export const useConcesiones = ({ setError }: IUseHook) => {
     try {
       const response = await api.post<IRespuesta<boolean>>(
         `${path}/asignar`,
-        dto
+        dto,
       );
       const result = response.data;
 
@@ -160,7 +160,7 @@ export const useConcesiones = ({ setError }: IUseHook) => {
     try {
       const response = await api.post<IRespuesta<boolean>>(
         `${path}/desasignar`,
-        { id_asignacion }
+        { id_asignacion },
       );
       const result = response.data;
 
@@ -180,7 +180,7 @@ export const useConcesiones = ({ setError }: IUseHook) => {
   const listarTiposMineral = async () => {
     try {
       const response = await api.get<IRespuesta<string[]>>(
-        `${path}/tipos-mineral`
+        `${path}/tipos-mineral`,
       );
       const result = response.data;
       if (result.success) return result.data;

@@ -1,6 +1,6 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 import type { DTO_CrearCategoria, DTO_EditarCategoria } from "./dtos/requests";
 import type { RES_Categoria } from "./dtos/responses";
 

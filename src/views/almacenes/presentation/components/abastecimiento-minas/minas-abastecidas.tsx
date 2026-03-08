@@ -2,25 +2,26 @@ import { Button, Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { PlusIcon, CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { notifications } from "@mantine/notifications";
-import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
-import type { RES_MinaAsignada } from "../../../../services/almacenes/dtos/responses";
-import { ModalEstandar } from "../../../utils/modal-estandar";
-import { FormVincularMina } from "./form-vincular-mina";
+import type { RES_MinaAbastecida } from "../../../service/almacenes.responses";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { AbastecerMina } from "./abastecer-mina";
 
-interface AsignarMinaAlmacenProps {
+interface MinasAbastecidasProps {
   idAlmacen: number;
   nombreAlmacen?: string;
   onMinasChange?: (delta: number) => void;
 }
 
-export const AsignarMinaAlmacen = ({
+export const MinasAbastecidas = ({
   idAlmacen,
   nombreAlmacen,
   onMinasChange,
-}: AsignarMinaAlmacenProps) => {
+}: MinasAbastecidasProps) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [minasAsignadas, setMinasAsignadas] = useState<RES_MinaAsignada[]>([]);
+  const [minasAsignadas, setMinasAsignadas] = useState<RES_MinaAbastecida[]>(
+    [],
+  );
   const [, setError] = useState("");
 
   const { listarMinas, desasignarMina } = useAlmacenes({ setError });
@@ -60,7 +61,7 @@ export const AsignarMinaAlmacen = ({
     }
   };
 
-  const handleVinculacionExitosa = (nuevaMina: RES_MinaAsignada) => {
+  const handleVinculacionExitosa = (nuevaMina: RES_MinaAbastecida) => {
     setMinasAsignadas((prev) => {
       // Verificamos si la mina ya está en la lista (generalmente backend ya previene duplicados)
       const exists = prev.some(
@@ -154,7 +155,7 @@ export const AsignarMinaAlmacen = ({
         close={() => setShowForm(false)}
         title="Vincular Mina al Almacén"
       >
-        <FormVincularMina
+        <AbastecerMina
           idAlmacen={idAlmacen}
           minasAsignadas={minasAsignadas}
           onCancel={() => setShowForm(false)}

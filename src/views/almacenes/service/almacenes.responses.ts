@@ -1,0 +1,44 @@
+import { EstadoBase } from "../../../shared/enums";
+
+export interface RES_Almacen {
+  id_almacen: number;
+  nombre: string;
+  descripcion?: string;
+  es_principal: boolean | number;
+  estado: EstadoBase;
+  responsable_actual?: string; // nombre completo
+  minas_count?: number;
+}
+
+// Posible empleado para ser responsable de un almacen
+export interface RES_EmpleadoDisponible {
+  id_empleado: number;
+  nombre_completo: string;
+  dni?: string;
+  path_foto?: string;
+}
+
+// Responsable de un almacen
+export interface RES_ResponsableAlmacen {
+  id_responsable_almacen: number;
+  nombre_completo: string;
+  dni?: string;
+  path_foto?: string;
+  fecha_inicio: string;
+  fecha_fin?: string;
+  estado: EstadoBase;
+}
+
+// Posible mina para ser abastecida por un almacen
+export interface RES_MinaDisponible {
+  id_mina: number;
+  nombre: string;
+  concesion: string;
+}
+
+// Mina abastecida por un almacen
+export interface RES_MinaAbastecida {
+  id_almacen_mina: number;
+  nombre: string;
+  concesion: string;
+}

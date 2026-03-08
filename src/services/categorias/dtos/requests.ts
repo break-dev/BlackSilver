@@ -18,4 +18,3 @@ export const Schema_EditarCategoria = Schema_CrearCategoria.extend({
 });
 
 export type DTO_EditarCategoria = z.infer<typeof Schema_EditarCategoria>;
-

@@ -40,11 +40,13 @@ const PERIODOS = [
 ];
 
 const inputStyles = {
-  input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
   label: "text-zinc-300 mb-1 font-medium",
   description: "text-zinc-500 italic text-[10.5px] mb-1.5",
   dropdown: "bg-zinc-900 border-zinc-800",
-  option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+  option:
+    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
   section: "text-zinc-400",
 };
 
@@ -110,7 +112,10 @@ export const RegistroProducto = ({
     } else {
       form.setFieldValue("dias_espera_vencimiento", 0);
     }
-  }, [form.values.tiempo_espera_vencimiento, form.values.periodo_espera_vencimiento]);
+  }, [
+    form.values.tiempo_espera_vencimiento,
+    form.values.periodo_espera_vencimiento,
+  ]);
 
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
@@ -138,10 +143,18 @@ export const RegistroProducto = ({
       <div className="flex items-end gap-2 px-1">
         <Select
           label="Categoría"
-          placeholder={isLoadingCategorias ? "Cargando categorías..." : "Seleccione categoría de bienes"}
+          placeholder={
+            isLoadingCategorias
+              ? "Cargando categorías..."
+              : "Seleccione categoría de bienes"
+          }
           data={categorias}
           searchable
-          nothingFoundMessage={isLoadingCategorias ? "Cargando..." : "No hay categorías de este tipo"}
+          nothingFoundMessage={
+            isLoadingCategorias
+              ? "Cargando..."
+              : "No hay categorías de este tipo"
+          }
           withAsterisk
           className="flex-1"
           disabled={isLoadingCategorias}
@@ -194,7 +207,10 @@ export const RegistroProducto = ({
       {/* 4. Stock Mínimo (Diseño personalizado: Label/Input arriba, Descripción abajo) */}
       <div className="px-1 py-1 space-y-1">
         <div className="flex items-center gap-4">
-          <Input.Label className={inputStyles.label} style={{ marginBottom: 0, minWidth: '100px' }}>
+          <Input.Label
+            className={inputStyles.label}
+            style={{ marginBottom: 0, minWidth: "100px" }}
+          >
             Stock Mínimo
           </Input.Label>
           <div className="w-32">
@@ -211,7 +227,9 @@ export const RegistroProducto = ({
             />
           </div>
         </div>
-        <div className="pl-[116px]"> {/* Alineado con el inicio del input */}
+        <div className="pl-[116px]">
+          {" "}
+          {/* Alineado con el inicio del input */}
           <Input.Description className={inputStyles.description}>
             Límite para alertas de reposición
           </Input.Description>
@@ -220,7 +238,12 @@ export const RegistroProducto = ({
 
       {/* 4. Indicadores y Perecibilidad */}
       <div className="mt-8 p-6 rounded-2xl border border-zinc-800 bg-zinc-900/30 space-y-6 mx-1">
-        <Text size="xs" className="font-bold text-zinc-500 uppercase tracking-[0.2em]">Indicadores del Producto</Text>
+        <Text
+          size="xs"
+          className="font-bold text-zinc-500 uppercase tracking-[0.2em]"
+        >
+          Indicadores del Producto
+        </Text>
 
         <div className="space-y-5 pt-3">
           <Checkbox
@@ -229,7 +252,11 @@ export const RegistroProducto = ({
             color="red"
             key={form.key("es_fiscalizado")}
             {...form.getInputProps("es_fiscalizado", { type: "checkbox" })}
-            classNames={{ label: "text-zinc-200 font-medium", input: "bg-zinc-100 border-zinc-700 shadow-sm transition-colors", description: "text-zinc-500" }}
+            classNames={{
+              label: "text-zinc-200 font-medium",
+              input: "bg-zinc-100 border-zinc-700 shadow-sm transition-colors",
+              description: "text-zinc-500",
+            }}
           />
 
           <Checkbox
@@ -238,7 +265,11 @@ export const RegistroProducto = ({
             color="orange"
             key={form.key("es_perecible")}
             {...form.getInputProps("es_perecible", { type: "checkbox" })}
-            classNames={{ label: "text-zinc-200 font-medium", input: "bg-zinc-100 border-zinc-700 shadow-sm transition-colors", description: "text-zinc-500" }}
+            classNames={{
+              label: "text-zinc-200 font-medium",
+              input: "bg-zinc-100 border-zinc-700 shadow-sm transition-colors",
+              description: "text-zinc-500",
+            }}
           />
         </div>
 
@@ -250,11 +281,15 @@ export const RegistroProducto = ({
               radius="lg"
               variant="light"
               styles={{
-                root: { backgroundColor: 'rgba(79, 70, 229, 0.1)', border: '1px solid rgba(79, 70, 229, 0.2)' },
-                message: { color: '#e0e7ff', fontSize: '12px' }
+                root: {
+                  backgroundColor: "rgba(79, 70, 229, 0.1)",
+                  border: "1px solid rgba(79, 70, 229, 0.2)",
+                },
+                message: { color: "#e0e7ff", fontSize: "12px" },
               }}
             >
-              Define con cuánta antelación deseas recibir avisos antes del vencimiento real.
+              Define con cuánta antelación deseas recibir avisos antes del
+              vencimiento real.
             </Alert>
 
             <SimpleGrid cols={2} spacing="md">
@@ -286,17 +321,35 @@ export const RegistroProducto = ({
                 Resumen de la Configuración:
               </Text>
               <Text size="sm" className="text-zinc-400">
-                Se avisará el vencimiento de <span className="text-indigo-400 font-medium">{form.values.nombre || 'este producto'}</span> con <span className="text-indigo-400 font-medium">{form.values.dias_espera_vencimiento || 0} días</span> de anticipación.
+                Se avisará el vencimiento de{" "}
+                <span className="text-indigo-400 font-medium">
+                  {form.values.nombre || "este producto"}
+                </span>{" "}
+                con{" "}
+                <span className="text-indigo-400 font-medium">
+                  {form.values.dias_espera_vencimiento || 0} días
+                </span>{" "}
+                de anticipación.
               </Text>
             </div>
           </div>
         )}
       </div>
 
-      {error && <Text c="red" size="sm" fw={500} ta="center">{error}</Text>}
+      {error && (
+        <Text c="red" size="sm" fw={500} ta="center">
+          {error}
+        </Text>
+      )}
 
       <Group justify="flex-end" mt="md">
-        <Button variant="subtle" onClick={onCancel} disabled={loading} radius="lg" className="text-zinc-400 hover:text-white">
+        <Button
+          variant="subtle"
+          onClick={onCancel}
+          disabled={loading}
+          radius="lg"
+          className="text-zinc-400 hover:text-white"
+        >
           Cancelar
         </Button>
         <Button
@@ -310,10 +363,17 @@ export const RegistroProducto = ({
       </Group>
 
       {/* Nested Modal for Category */}
-      <ModalEstandar opened={openedCat} close={closeCat} title="Nueva Categoría">
+      <ModalEstandar
+        opened={openedCat}
+        close={closeCat}
+        title="Nueva Categoría"
+      >
         <RegistroCategoria
           onSuccess={(newCat) => {
-            const newItem = { value: String(newCat.id_categoria), label: newCat.nombre };
+            const newItem = {
+              value: String(newCat.id_categoria),
+              label: newCat.nombre,
+            };
             setCategorias((prev) => [...prev, newItem]);
             form.setFieldValue("id_categoria", newItem.value);
             closeCat();

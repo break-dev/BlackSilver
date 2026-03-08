@@ -4,25 +4,22 @@ import { notifications } from "@mantine/notifications";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
-import { Schema_AsignarResponsableAlmacen } from "../../../../services/almacenes/dtos/requests";
-import type { RES_ResponsableAlmacen } from "../../../../services/almacenes/dtos/responses";
-import { CustomDatePicker } from "../../../utils/date-picker-input";
-import { SelectEmpleado } from "../../../utils/select-empleado";
+import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
+import type { RES_ResponsableAlmacen } from "../../service/almacenes.responses";
 
-interface FormAsignarResponsableProps {
+interface NuevoResponsableProps {
   idAlmacen: number;
   nombreAlmacen?: string;
   onSuccess: (responsable: RES_ResponsableAlmacen) => void;
   onCancel: () => void;
 }
 
-export const FormAsignarResponsable = ({
+export const NuevoResponsable = ({
   idAlmacen,
   nombreAlmacen,
   onSuccess,
   onCancel,
-}: FormAsignarResponsableProps) => {
+}: NuevoResponsableProps) => {
   // Form State
   const [nuevoResponsable, setNuevoResponsable] = useState<string | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());

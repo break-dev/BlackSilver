@@ -1,9 +1,9 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
 import type { DTO_Login } from "./dtos/requests";
 import type { RES_Login } from "./dtos/responses";
 import { useAuthStore } from "../../stores/auth.store";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 
 export const useUsuario = ({ setError }: IUseHook) => {
   // inicio de sesion

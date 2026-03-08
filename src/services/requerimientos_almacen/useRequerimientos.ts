@@ -1,13 +1,13 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 import type {
   RES_RequerimientoAlmacen,
   RES_RequerimientoDetalleCompleto,
   RES_TrazabilidadEvento,
 } from "./dtos/responses";
 import type { DTO_CrearRequerimiento } from "./dtos/requests";
-import type { RES_Almacen } from "../almacenes/dtos/responses";
+import type { RES_Almacen } from "../../views/almacenes/service/dtos/almacenes.responses";
 
 export const useRequerimientos = ({ setError }: IUseHook) => {
   const path = "/requerimientos";

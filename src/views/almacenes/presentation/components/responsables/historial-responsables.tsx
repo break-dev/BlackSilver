@@ -3,16 +3,15 @@ import { useEffect, useState } from "react";
 import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
-import type { RES_ResponsableAlmacen } from "../../../../services/almacenes/dtos/responses";
-import { FormAsignarResponsable } from "./form-asignar-responsable";
+import type { RES_ResponsableAlmacen } from "../../service/almacenes.responses";
+import { FormAsignarResponsable } from "./nuevo-responsable";
 
 interface GestionResponsablesProps {
   idAlmacen: number;
   nombreAlmacen?: string;
 }
 
-export const GestionResponsables = ({
+export const HistorialResponsables = ({
   idAlmacen,
   nombreAlmacen,
 }: GestionResponsablesProps) => {
@@ -117,11 +116,7 @@ export const GestionResponsables = ({
         <div className="space-y-3">
           {responsables.map((item, idx) => {
             const isActive = item.estado?.toUpperCase() === "ACTIVO";
-            const fullName =
-              item.nombres && item.apellidos
-                ? `${item.apellidos} ${item.nombres}`
-                : (item as unknown as { usuario_nombre?: string })
-                    .usuario_nombre || "Sin nombre";
+            const fullName = item.nombre_completo;
 
             return (
               <div

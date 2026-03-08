@@ -1,5 +1,5 @@
-import { api } from "../api";
-import type { IUseHook } from "../hook.interface";
+import { api } from "../../shared/api";
+import type { IUseHook } from "../../shared/hook.interface";
 import type { IRespuesta } from "../../shared/response";
 import type { RES_Empresa, RES_UsuarioEmpresa } from "./dtos/responses";
 import type { DTO_CrearEmpresa } from "./dtos/requests";
@@ -51,7 +51,7 @@ export const useEmpresas = ({ setError }: IUseHook) => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_Empresa[]>>(
-        "/empresas/by-session"
+        "/empresas/by-session",
       );
       const result = response.data;
       return result.data || [];
@@ -62,12 +62,14 @@ export const useEmpresas = ({ setError }: IUseHook) => {
   };
 
   // Get users by company
-  const getUsuariosEmpresa = async (id_empresa: number): Promise<RES_UsuarioEmpresa[]> => {
+  const getUsuariosEmpresa = async (
+    id_empresa: number,
+  ): Promise<RES_UsuarioEmpresa[]> => {
     setError("");
     try {
       const response = await api.get<IRespuesta<RES_UsuarioEmpresa[]>>(
         "/empresas/usuarios",
-        { params: { id_empresa } }
+        { params: { id_empresa } },
       );
       const result = response.data;
       if (result.success) {

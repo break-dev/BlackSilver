@@ -30,7 +30,7 @@ import dayjs from "dayjs";
 import { useRequerimientos } from "../../../../services/requerimientos_almacen/useRequerimientos";
 import { useEntregas } from "../../../../services/requerimientos_almacen_entregas/useEntregas";
 import type { RES_RequerimientoDetalleCompleto } from "../../../../services/requerimientos_almacen/dtos/responses";
-import { EstadoDetalleRequerimiento } from "../../../../shared/enums";
+import { EstadoDetalleRequerimiento } from "../../../../shared/enums.ts";
 import { TrazabilidadRequerimiento } from "../../requerimientos-almacen/components/trazabilidad-requerimiento";
 import { ModalEstandar } from "../../../utils/modal-estandar.tsx";
 import { RegistrarEntrega } from "./registrar-entrega.tsx";
@@ -153,14 +153,14 @@ export const GestionAtencion = ({
   const progresoGeneral =
     detalle.detalles.length > 0
       ? Math.round(
-        detalle.detalles.reduce((acc, item) => {
-          const solicitada = Number(item.cantidad_solicitada) || 0;
-          const atendida = Number(item.cantidad_atendida) || 0;
-          const progresoItem =
-            solicitada > 0 ? (atendida / solicitada) * 100 : 0;
-          return acc + Math.min(progresoItem, 100);
-        }, 0) / detalle.detalles.length,
-      )
+          detalle.detalles.reduce((acc, item) => {
+            const solicitada = Number(item.cantidad_solicitada) || 0;
+            const atendida = Number(item.cantidad_atendida) || 0;
+            const progresoItem =
+              solicitada > 0 ? (atendida / solicitada) * 100 : 0;
+            return acc + Math.min(progresoItem, 100);
+          }, 0) / detalle.detalles.length,
+        )
       : 0;
 
   return (
@@ -469,7 +469,7 @@ export const GestionAtencion = ({
                   Math.round(
                     ((item.cantidad_atendida || 0) /
                       (item.cantidad_solicitada || 1)) *
-                    100,
+                      100,
                   ),
                 );
 
@@ -503,10 +503,16 @@ export const GestionAtencion = ({
                             variant="light"
                             size="xs"
                             radius="sm"
-                            color={Number(item.stock_disponible || 0) > 0 ? "emerald" : "orange"}
+                            color={
+                              Number(item.stock_disponible || 0) > 0
+                                ? "emerald"
+                                : "orange"
+                            }
                             className="font-black"
                           >
-                            {Number(item.stock_disponible || 0) > 0 ? "Disponible" : "No disponible"}
+                            {Number(item.stock_disponible || 0) > 0
+                              ? "Disponible"
+                              : "No disponible"}
                           </Badge>
                         </Group>
                       </div>
@@ -550,7 +556,8 @@ export const GestionAtencion = ({
                         size="sm"
                         className="font-black px-4"
                       >
-                        {Number(item.cantidad_solicitada || 0).toFixed(0)} {item.unidad_medida}
+                        {Number(item.cantidad_solicitada || 0).toFixed(0)}{" "}
+                        {item.unidad_medida}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -580,7 +587,8 @@ export const GestionAtencion = ({
                         size="sm"
                         className="font-black px-4"
                       >
-                        {Number(item.cantidad_solicitada_base || 0).toFixed(0)} {item.unidad_medida_base}
+                        {Number(item.cantidad_solicitada_base || 0).toFixed(0)}{" "}
+                        {item.unidad_medida_base}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -631,81 +639,81 @@ export const GestionAtencion = ({
 
                         {item.estado ===
                           EstadoDetalleRequerimiento.Pendiente && (
-                            <>
-                              <Tooltip label="Aprobar" position="top" withArrow>
-                                <ActionIcon
-                                  variant="filled"
-                                  color="green"
-                                  onClick={() =>
-                                    handleAprobar(item.id_requerimiento_detalle)
-                                  }
-                                  loading={
-                                    isProcessing === item.id_requerimiento_detalle
-                                  }
-                                  disabled={
-                                    isProcessing !== null &&
-                                    isProcessing !== item.id_requerimiento_detalle
-                                  }
-                                >
-                                  <CheckCircleIcon className="w-5 h-5 text-white" />
-                                </ActionIcon>
-                              </Tooltip>
-                              <Tooltip label="Rechazar" position="top" withArrow>
-                                <ActionIcon
-                                  variant="filled"
-                                  color="red"
-                                  onClick={() => {
-                                    setSelectedItemId(
-                                      item.id_requerimiento_detalle,
-                                    );
-                                    openRechazo();
-                                  }}
-                                  disabled={isProcessing !== null}
-                                >
-                                  <XCircleIcon className="w-5 h-5 text-white" />
-                                </ActionIcon>
-                              </Tooltip>
-                            </>
-                          )}
-
-                        {(item.estado ===
-                          EstadoDetalleRequerimiento.AprobacionLogistica ||
-                          item.estado ===
-                          EstadoDetalleRequerimiento.DespachoIniciado ||
-                          item.estado ===
-                          EstadoDetalleRequerimiento.NuevaEntrega ||
-                          item.estado ===
-                          EstadoDetalleRequerimiento.Completado ||
-                          item.estado ===
-                          EstadoDetalleRequerimiento.Cerrado) && (
-                            <Tooltip
-                              label="Ver / Registrar Entrega"
-                              position="top"
-                              withArrow
-                            >
+                          <>
+                            <Tooltip label="Aprobar" position="top" withArrow>
                               <ActionIcon
                                 variant="filled"
-                                color="indigo"
+                                color="green"
+                                onClick={() =>
+                                  handleAprobar(item.id_requerimiento_detalle)
+                                }
+                                loading={
+                                  isProcessing === item.id_requerimiento_detalle
+                                }
+                                disabled={
+                                  isProcessing !== null &&
+                                  isProcessing !== item.id_requerimiento_detalle
+                                }
+                              >
+                                <CheckCircleIcon className="w-5 h-5 text-white" />
+                              </ActionIcon>
+                            </Tooltip>
+                            <Tooltip label="Rechazar" position="top" withArrow>
+                              <ActionIcon
+                                variant="filled"
+                                color="red"
                                 onClick={() => {
                                   setSelectedItemId(
                                     item.id_requerimiento_detalle,
                                   );
-                                  setSelectedIdProducto(item.id_producto);
-                                  setSelectedItemName(item.producto);
-                                  setSelectedItemSolicitado(
-                                    item.cantidad_solicitada || 0,
-                                  );
-                                  setSelectedItemAtendido(
-                                    item.cantidad_atendida || 0,
-                                  );
-                                  openEntrega();
+                                  openRechazo();
                                 }}
-                                className="shadow-lg shadow-indigo-900/20"
+                                disabled={isProcessing !== null}
                               >
-                                <TruckIcon className="w-4 h-4 text-white" />
+                                <XCircleIcon className="w-5 h-5 text-white" />
                               </ActionIcon>
                             </Tooltip>
-                          )}
+                          </>
+                        )}
+
+                        {(item.estado ===
+                          EstadoDetalleRequerimiento.AprobacionLogistica ||
+                          item.estado ===
+                            EstadoDetalleRequerimiento.DespachoIniciado ||
+                          item.estado ===
+                            EstadoDetalleRequerimiento.NuevaEntrega ||
+                          item.estado ===
+                            EstadoDetalleRequerimiento.Completado ||
+                          item.estado ===
+                            EstadoDetalleRequerimiento.Cerrado) && (
+                          <Tooltip
+                            label="Ver / Registrar Entrega"
+                            position="top"
+                            withArrow
+                          >
+                            <ActionIcon
+                              variant="filled"
+                              color="indigo"
+                              onClick={() => {
+                                setSelectedItemId(
+                                  item.id_requerimiento_detalle,
+                                );
+                                setSelectedIdProducto(item.id_producto);
+                                setSelectedItemName(item.producto);
+                                setSelectedItemSolicitado(
+                                  item.cantidad_solicitada || 0,
+                                );
+                                setSelectedItemAtendido(
+                                  item.cantidad_atendida || 0,
+                                );
+                                openEntrega();
+                              }}
+                              className="shadow-lg shadow-indigo-900/20"
+                            >
+                              <TruckIcon className="w-4 h-4 text-white" />
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
                       </Group>
                     </td>
                   </tr>

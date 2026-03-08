@@ -25,10 +25,10 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../utils/datatable-estandar";
 import { ModalEstandar } from "../../utils/modal-estandar";
 import { RegistroAlmacen } from "./components/registro-almacen";
-import { GestionResponsables } from "./components/gestion-responsables";
-import { AsignarMinaAlmacen } from "./components/asignar-mina-almacen";
+import { GestionResponsables } from "./components/historial-responsables";
+import { AsignarMinaAlmacen } from "./components/abastecimiento-minas/minas-abastecidas";
 import { useAlmacenes } from "../../../services/almacenes/useAlmacenes";
-import type { RES_Almacen } from "../../../services/almacenes/dtos/responses";
+import type { RES_Almacen } from "../service/dtos/almacenes.responses";
 import { PAGE_SIZE } from "../../constants";
 
 export const AlmacenesPage = () => {

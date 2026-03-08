@@ -68,12 +68,12 @@ export const ProductosPage = () => {
   // Opciones de categorías derivadas de los productos cargados
   const opcionesCategorias = useMemo(() => {
     const capsulas = new Map<number, string>();
-    productos.forEach(p => {
+    productos.forEach((p) => {
       capsulas.set(p.id_categoria, p.categoria);
     });
     return Array.from(capsulas.entries()).map(([id, nombre]) => ({
       value: String(id),
-      label: nombre
+      label: nombre,
     }));
   }, [productos]);
 
@@ -147,7 +147,11 @@ export const ProductosPage = () => {
       width: 140,
       render: (record) => {
         if (!record.es_perecible || !record.tiempo_espera_vencimiento) {
-          return <Text size="sm" c="dimmed">-</Text>;
+          return (
+            <Text size="sm" c="dimmed">
+              -
+            </Text>
+          );
         }
 
         const labelsMap: Record<string, string> = {
@@ -157,14 +161,16 @@ export const ProductosPage = () => {
           [Periodo.Anual]: "años",
         };
 
-        const label = labelsMap[record.periodo_espera_vencimiento || ""] || record.periodo_espera_vencimiento;
+        const label =
+          labelsMap[record.periodo_espera_vencimiento || ""] ||
+          record.periodo_espera_vencimiento;
 
         return (
           <Text size="sm" className="text-zinc-300 font-medium">
             {record.tiempo_espera_vencimiento} {label}
           </Text>
         );
-      }
+      },
     },
     {
       accessor: "stock_minimo",

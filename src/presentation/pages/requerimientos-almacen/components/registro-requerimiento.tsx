@@ -36,7 +36,7 @@ import { useLabores } from "../../../../services/labores/useLabores";
 import { Premura, EstadoBase } from "../../../../shared/enums";
 import { SelectMina } from "../../../utils/select-mina";
 import { CustomDatePicker } from "../../../utils/date-picker-input";
-import type { RES_Almacen } from "../../../../services/almacenes/dtos/responses";
+import type { RES_Almacen } from "../../../../views/almacenes/service/dtos/almacenes.responses";
 import type { RES_RequerimientoAlmacen } from "../../../../services/requerimientos_almacen/dtos/responses";
 import type { RES_Labor } from "../../../../services/labores/dtos/responses";
 
@@ -77,9 +77,9 @@ export const RegistroRequerimiento = ({
 
   const { crear, listarAlmacenesPorMina } = useRequerimientos({ setError });
   const { listarProductosDisponibles, listarUnidadesMedida } = useLote({
-    setError: () => { },
+    setError: () => {},
   });
-  const { listar: listarLabores } = useLabores({ setError: () => { } });
+  const { listar: listarLabores } = useLabores({ setError: () => {} });
 
   const form = useForm({
     initialValues: {
@@ -142,7 +142,7 @@ export const RegistroRequerimiento = ({
     selectedProducto &&
     selectedUnidad &&
     String(selectedProducto.id_unidad_medida_base) ===
-    String(formItem.values.id_unidad_medida);
+      String(formItem.values.id_unidad_medida);
 
   // Cargar listas maestras (Productos y Unidades)
   useEffect(() => {
@@ -185,7 +185,11 @@ export const RegistroRequerimiento = ({
     if (esUnidadBase) {
       formItem.setFieldValue("contenido_por_presentacion", 1);
     }
-  }, [formItem.values.id_producto, formItem.values.id_unidad_medida, esUnidadBase]);
+  }, [
+    formItem.values.id_producto,
+    formItem.values.id_unidad_medida,
+    esUnidadBase,
+  ]);
 
   const addItem = () => {
     const validation = formItem.validate();
@@ -207,7 +211,9 @@ export const RegistroRequerimiento = ({
     } = formItem.values;
 
     const existingIndex = items.findIndex(
-      (it) => it.id_producto === id_producto && it.id_unidad_medida === id_unidad_medida
+      (it) =>
+        it.id_producto === id_producto &&
+        it.id_unidad_medida === id_unidad_medida,
     );
 
     if (existingIndex > -1) {
@@ -629,18 +635,28 @@ export const RegistroRequerimiento = ({
 
                   <Group gap="xl">
                     <Stack gap={2}>
-                      <Text size="10px" c="zinc.5" fw={700} className="uppercase">
+                      <Text
+                        size="10px"
+                        c="zinc.5"
+                        fw={700}
+                        className="uppercase"
+                      >
                         Pedido en Requerimiento
                       </Text>
                       <div className="flex items-baseline gap-1.5">
                         <Text
                           fw={800}
                           size="xl"
-                          className={selectedUnidad ? "text-white" : "text-zinc-700"}
+                          className={
+                            selectedUnidad ? "text-white" : "text-zinc-700"
+                          }
                         >
-                          {formItem.values.cantidad_solicitada.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formItem.values.cantidad_solicitada.toLocaleString(
+                            "en-US",
+                            {
+                              minimumFractionDigits: 2,
+                            },
+                          )}
                         </Text>
                         <Text
                           size="xs"
@@ -656,7 +672,12 @@ export const RegistroRequerimiento = ({
                     <div className="h-10 w-px bg-zinc-800" />
 
                     <Stack gap={2}>
-                      <Text size="10px" c="zinc.5" fw={700} className="uppercase">
+                      <Text
+                        size="10px"
+                        c="zinc.5"
+                        fw={700}
+                        className="uppercase"
+                      >
                         Total en Unidades Base
                       </Text>
                       <div className="flex items-baseline gap-1.5">
@@ -664,7 +685,9 @@ export const RegistroRequerimiento = ({
                           fw={800}
                           size="xl"
                           className={
-                            selectedProducto ? "text-emerald-400" : "text-zinc-700"
+                            selectedProducto
+                              ? "text-emerald-400"
+                              : "text-zinc-700"
                           }
                         >
                           {totalBase.toLocaleString("en-US", {
@@ -695,10 +718,18 @@ export const RegistroRequerimiento = ({
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
             <tr>
               <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Producto</th>
-              <th className="px-4 py-3 text-right font-semibold w-32">Cant. Solicitada</th>
-              <th className="px-4 py-3 text-right font-semibold w-32">Equivalencia</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[280px]">Comentario</th>
+              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
+                Producto
+              </th>
+              <th className="px-4 py-3 text-right font-semibold w-32">
+                Cant. Solicitada
+              </th>
+              <th className="px-4 py-3 text-right font-semibold w-32">
+                Equivalencia
+              </th>
+              <th className="px-4 py-3 text-left font-semibold min-w-[280px]">
+                Comentario
+              </th>
               <th className="px-4 py-3 text-center w-16"></th>
             </tr>
           </thead>
@@ -744,7 +775,8 @@ export const RegistroRequerimiento = ({
                       className="text-white fw-bold shadow-xs whitespace-nowrap"
                     >
                       {(
-                        item.cantidad_solicitada * item.contenido_por_presentacion
+                        item.cantidad_solicitada *
+                        item.contenido_por_presentacion
                       ).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                       })}{" "}

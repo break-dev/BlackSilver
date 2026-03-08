@@ -9,8 +9,8 @@ import {
 } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
-import { Schema_CrearAlmacen } from "../../../../services/almacenes/dtos/requests";
-import type { RES_Almacen } from "../../../../services/almacenes/dtos/responses";
+import { Schema_CrearAlmacen } from "../../service/almacenes.requests";
+import type { RES_Almacen } from "../../service/dtos/almacenes.responses";
 import { useAlmacenes } from "../../../../services/almacenes/useAlmacenes";
 
 interface RegistroAlmacenProps {

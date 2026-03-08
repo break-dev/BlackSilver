@@ -1,71 +1,71 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 import type { RES_Empleado } from "./dtos/responses";
 import type { DTO_CrearEmpleado } from "./dtos/requests";
 
 export const useEmpleados = ({ setError }: IUseHook) => {
-    const path = "/empleados";
+  const path = "/empleados";
 
-    // Listar todos los empleados o por empresa
-    const listar = async (filters?: { id_empresa?: number }) => {
-        setError("");
-        try {
-            const endpoint = filters?.id_empresa ? "/empresas/usuarios" : path;
-            const response = await api.get<IRespuesta<RES_Empleado[]>>(endpoint, {
-                params: filters
-            });
-            const result = response.data;
+  // Listar todos los empleados o por empresa
+  const listar = async (filters?: { id_empresa?: number }) => {
+    setError("");
+    try {
+      const endpoint = filters?.id_empresa ? "/empresas/usuarios" : path;
+      const response = await api.get<IRespuesta<RES_Empleado[]>>(endpoint, {
+        params: filters,
+      });
+      const result = response.data;
 
-            if (result.success) {
-                return result.data;
-            } else {
-                setError(result.message);
-                return [];
-            }
-        } catch (error) {
-            setError(String(error));
-            return [];
-        }
-    };
+      if (result.success) {
+        return result.data;
+      } else {
+        setError(result.message);
+        return [];
+      }
+    } catch (error) {
+      setError(String(error));
+      return [];
+    }
+  };
 
-    // Crear nuevo empleado
-    const crear = async (dto: DTO_CrearEmpleado) => {
-        setError("");
-        try {
-            // Backend espera JSON normal, foto como string opcional (URL)
-            const response = await api.post<IRespuesta<RES_Empleado>>(path, dto);
-            const result = response.data;
+  // Crear nuevo empleado
+  const crear = async (dto: DTO_CrearEmpleado) => {
+    setError("");
+    try {
+      // Backend espera JSON normal, foto como string opcional (URL)
+      const response = await api.post<IRespuesta<RES_Empleado>>(path, dto);
+      const result = response.data;
 
-            if (result.success) {
-                return result.data;
-            } else {
-                setError(result.message); // Mensajes como 'DNI duplicado' vendrán acá
-                return null;
-            }
-        } catch (error) {
-            setError(String(error));
-            return null;
-        }
-    };
+      if (result.success) {
+        return result.data;
+      } else {
+        setError(result.message); // Mensajes como 'DNI duplicado' vendrán acá
+        return null;
+      }
+    } catch (error) {
+      setError(String(error));
+      return null;
+    }
+  };
 
-    // Eliminar (Soft Delete)
-    const eliminar = async (id: number) => {
-        setError("");
-        try {
-            const response = await api.delete<IRespuesta<boolean>>(`${path}/${id}`);
-            if (response.data.success) return true;
-            setError(response.data.message);
-            return false;
-        } catch (err) {
-            setError(String(err));
-            return false;
-        }
-    };
+  // Eliminar (Soft Delete)
+  const eliminar = async (id: number) => {
+    setError("");
+    try {
+      const response = await api.delete<IRespuesta<boolean>>(`${path}/${id}`);
+      if (response.data.success) return true;
+      setError(response.data.message);
+      return false;
+    } catch (err) {
+      setError(String(err));
+      return false;
+    }
+  };
 
-    return {
-        listar,
-        crear,
-        eliminar
-    };
+  return {
+    listar,
+    crear,
+    eliminar,
+  };
 };

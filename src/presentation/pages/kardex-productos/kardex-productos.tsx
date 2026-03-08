@@ -40,7 +40,7 @@ export const KardexProductosPage = () => {
 
   // Hooks
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const { listarPorAlmacen } = useKardex({ setError: () => { } });
+  const { listarPorAlmacen } = useKardex({ setError: () => {} });
 
   // Title
   useEffect(() => {
@@ -154,7 +154,11 @@ export const KardexProductosPage = () => {
           .includes("ingreso");
         return (
           <div className="flex flex-col gap-1">
-            <Text size="xs" fw={700} className="text-zinc-200 ml-1 tracking-tight">
+            <Text
+              size="xs"
+              fw={700}
+              className="text-zinc-200 ml-1 tracking-tight"
+            >
               {record.tipo_origen}
             </Text>
             <Badge
@@ -191,10 +195,19 @@ export const KardexProductosPage = () => {
               radius="sm"
               className="font-bold shadow-md"
             >
-              {isIngreso ? "+" : "-"} {Number(record.cantidad_movimiento).toFixed(2)} {record.unidad_lote}
+              {isIngreso ? "+" : "-"}{" "}
+              {Number(record.cantidad_movimiento).toFixed(2)}{" "}
+              {record.unidad_lote}
             </Badge>
-            <Text size="xs" c={isIngreso ? "green" : "red"} fw={700} className="italic pr-1 opacity-90">
-              ({isIngreso ? "+" : "-"} {Number(record.cantidad_movimiento_base).toFixed(2)} {record.unidad_base})
+            <Text
+              size="xs"
+              c={isIngreso ? "green" : "red"}
+              fw={700}
+              className="italic pr-1 opacity-90"
+            >
+              ({isIngreso ? "+" : "-"}{" "}
+              {Number(record.cantidad_movimiento_base).toFixed(2)}{" "}
+              {record.unidad_base})
             </Text>
           </div>
         );
@@ -223,7 +236,8 @@ export const KardexProductosPage = () => {
             size="sm"
             className="text-white font-bold shadow-xs whitespace-nowrap"
           >
-            {Number(record.stock_resultante_base).toFixed(2)} {record.unidad_base}
+            {Number(record.stock_resultante_base).toFixed(2)}{" "}
+            {record.unidad_base}
           </Badge>
         </div>
       ),

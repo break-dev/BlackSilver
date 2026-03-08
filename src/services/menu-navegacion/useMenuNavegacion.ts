@@ -1,6 +1,6 @@
-import { api } from "../api";
+import { api } from "../../shared/api";
 import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../hook.interface";
+import type { IUseHook } from "../../shared/hook.interface";
 import type { IModulo } from "./dtos/responses";
 import { useMenuNavegacionStore } from "../../stores/menu.store";
 

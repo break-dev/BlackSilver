@@ -38,7 +38,9 @@ export const RegistroCategoria = ({
       });
 
       if (!validation.success) {
-        const msg = validation.error.issues[0]?.message || "Por favor complete todos los campos requeridos correctamente.";
+        const msg =
+          validation.error.issues[0]?.message ||
+          "Por favor complete todos los campos requeridos correctamente.";
         setError(msg);
         return;
       }
