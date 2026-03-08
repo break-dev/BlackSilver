@@ -12,7 +12,7 @@ import MinasPage from "../pages/minas/minas";
 import { EmpresasPage } from "../pages/empresas/empresas";
 import { CategoriasPage } from "../pages/categorias/categorias";
 import { EmpleadosPage } from "../pages/empleados/empleados";
-import AlmacenesPage from "../pages/almacenes/almacenes";
+import AlmacenesPage from "../../views/almacenes/presentation/almacenes.page";
 import { ProductosPage } from "../pages/productos/productos";
 import { LotesPage } from "../pages/lotes/lotes";
 import { KardexProductosPage } from "../pages/kardex-productos/kardex-productos";

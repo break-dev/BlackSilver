@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { IModulo } from "../services/menu-navegacion/dtos/responses";
+import type { IModulo } from "../services/menu-navegacion/responses";
 
 export interface IMenuNavegacionStore {
   menu: IModulo[];

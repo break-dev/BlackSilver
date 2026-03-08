@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataTable, type DataTableColumn } from "mantine-datatable";
-import { PAGE_SIZE } from "../constants";
+
+// Determina la cantidad de filas a renderizar
+// por cada pagina de un datatable
+export const PAGE_SIZE = 35;
 
 interface DataTableEstandarProps {
   idAccessor: string;

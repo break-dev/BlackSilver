@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ActionIcon,
   Badge,
@@ -22,28 +22,34 @@ import {
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { RegistroAlmacen } from "./components/registro-almacen";
-import { GestionResponsables } from "./components/historial-responsables";
-import { AsignarMinaAlmacen } from "./components/abastecimiento-minas/minas-abastecidas";
-import { useAlmacenes } from "../../../services/almacenes/useAlmacenes";
-import type { RES_Almacen } from "../service/dtos/almacenes.responses";
-import { PAGE_SIZE } from "../../constants";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroAlmacen } from "./registro-almacen";
+import { HistorialResponsables } from "./historial-responsables";
+import { MinasAbastecidas } from "./minas-abastecidas";
+import { useAlmacenes } from "../hooks/useAlmacenes";
+import type { RES_Almacen } from "../service/almacenes.responses";
+import { PAGE_SIZE } from "../../../presentation/constants";
 
 export const AlmacenesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
+  useEffect(() => {
+    setTitle("Almacenes");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Estado local
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
+  const {
+    loading,
+    setAlmacenes,
+    handleChildMessage,
+    busqueda,
+    setBusqueda,
+    page,
+    setPage,
+    registrosPaginados,
+    almacenesFiltrados,
+  } = useAlmacenes();
 
-  // Filtros
-  const [busqueda, setBusqueda] = useState("");
-
-  // Modales
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
   const [
@@ -52,66 +58,9 @@ export const AlmacenesPage = () => {
   ] = useDisclosure(false);
   const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
     useDisclosure(false);
-
-  // Selección
   const [selectedAlmacen, setSelectedAlmacen] = useState<RES_Almacen | null>(
     null,
   );
-
-  // Servicio
-  const { listar } = useAlmacenes({ setError });
-
-  // Carga inicial
-  useEffect(() => {
-    let cancelled = false;
-    listar()
-      .then((data) => {
-        if (!cancelled) setAlmacenes(data || []);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Title
-  useEffect(() => {
-    setTimeout(() => {
-      setTitle("Almacenes");
-    }, 0);
-  }, [setTitle]);
-
-  // Datos filtrados
-  const almacenesFiltrados = useMemo(() => {
-    return almacenes.filter((alm) => {
-      const matchBusqueda =
-        !busqueda ||
-        alm.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        (alm.responsable_actual || "")
-          .toLowerCase()
-          .includes(busqueda.toLowerCase());
-
-      return matchBusqueda;
-    });
-  }, [almacenes, busqueda]);
-
-  // Paginación
-  const registrosPaginados = useMemo(() => {
-    const inicio = (page - 1) * PAGE_SIZE;
-    return almacenesFiltrados.slice(inicio, inicio + PAGE_SIZE);
-  }, [almacenesFiltrados, page]);
-
-  // Callback al registrar exitosamente
-  const handleRegistroExitoso = (nuevoAlmacen: RES_Almacen) => {
-    closeCreate();
-    setAlmacenes((prev) => [nuevoAlmacen, ...prev]);
-  };
-
-  const isPrincipal = (val: boolean | number) => val === true || val === 1;
 
   const columns: DataTableColumn<RES_Almacen>[] = [
     {
@@ -132,7 +81,7 @@ export const AlmacenesPage = () => {
             <Text size="sm" fw={500} className="text-zinc-200">
               {record.nombre}
             </Text>
-            {isPrincipal(record.es_principal) && (
+            {record.es_principal && (
               <Badge size="xs" variant="light" color="pink">
                 Principal
               </Badge>
@@ -151,7 +100,6 @@ export const AlmacenesPage = () => {
           <Badge variant="light" color="cyan" size="sm" radius="sm">
             {record.minas_count || 0} Minas
           </Badge>
-
           <Tooltip label="Ver Minas">
             <ActionIcon
               variant="subtle"
@@ -186,7 +134,6 @@ export const AlmacenesPage = () => {
               Sin Asignar
             </Badge>
           )}
-
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -195,7 +142,6 @@ export const AlmacenesPage = () => {
               setSelectedAlmacen(record);
               openResponsables();
             }}
-            title="Gestionar Responsable"
           >
             <PencilSquareIcon className="w-4 h-4" />
           </ActionIcon>
@@ -253,29 +199,25 @@ export const AlmacenesPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Encabezado y Filtros */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-4 flex-1">
-          <TextInput
-            placeholder="Buscar por nombre o responsable..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-              setPage(1);
-            }}
-            className="flex-1 min-w-64"
-            radius="lg"
-            size="sm"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            }}
-          />
-        </div>
-
+        <TextInput
+          placeholder="Buscar por nombre o responsable..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
+          value={busqueda}
+          onChange={(e) => {
+            setBusqueda(e.currentTarget.value);
+            setPage(1);
+          }}
+          className="flex-1 min-w-64"
+          radius="lg"
+          size="sm"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          }}
+        />
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openCreate}
@@ -287,7 +229,6 @@ export const AlmacenesPage = () => {
         </Button>
       </div>
 
-      {/* DataTable */}
       <DataTableEstandar
         idAccessor="id_almacen"
         columns={columns}
@@ -298,8 +239,6 @@ export const AlmacenesPage = () => {
         loading={loading}
       />
 
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
       {/* Modal: Crear Almacén */}
       <ModalEstandar
         opened={openedCreate}
@@ -307,35 +246,47 @@ export const AlmacenesPage = () => {
         title="Nuevo Almacén"
       >
         <RegistroAlmacen
-          onSuccess={handleRegistroExitoso}
+          onSuccess={(nuevo) => {
+            closeCreate();
+            setAlmacenes((prev) => [nuevo, ...prev]);
+          }}
           onCancel={closeCreate}
         />
       </ModalEstandar>
 
-      {/* Modal: Gestionar Responsables */}
+      {/* Modal: Historial de Responsables */}
       <ModalEstandar
         opened={openedResponsables}
         close={closeResponsables}
         title="Gestión de Responsables"
       >
         {selectedAlmacen && (
-          <GestionResponsables
-            idAlmacen={selectedAlmacen.id_almacen}
-            nombreAlmacen={selectedAlmacen.nombre}
+          <HistorialResponsables
+            almacen={selectedAlmacen}
+            onMessage={handleChildMessage}
+            onUpdateResponsable={(nombre) =>
+              setAlmacenes((prev) =>
+                prev.map((alm) =>
+                  alm.id_almacen === selectedAlmacen.id_almacen
+                    ? { ...alm, responsable_actual: nombre }
+                    : alm,
+                ),
+              )
+            }
           />
         )}
       </ModalEstandar>
 
-      {/* Modal: Gestionar Alcance */}
+      {/* Modal: Abastecimiento a Minas */}
       <ModalEstandar
         opened={openedAlcance}
         close={closeAlcance}
         title="Gestión de Minas"
       >
         {selectedAlmacen && (
-          <AsignarMinaAlmacen
-            idAlmacen={selectedAlmacen.id_almacen}
-            nombreAlmacen={selectedAlmacen.nombre}
+          <MinasAbastecidas
+            almacen={selectedAlmacen}
+            onMessage={handleChildMessage}
             onMinasChange={(delta) => {
               setAlmacenes((prev) =>
                 prev.map((alm) =>

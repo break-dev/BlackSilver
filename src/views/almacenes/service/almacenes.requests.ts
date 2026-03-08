@@ -10,13 +10,10 @@ export type DTO_CrearAlmacen = z.infer<typeof Schema_CrearAlmacen>;
 
 //
 
-export interface DTO_NuevoResponsable {
-  id_almacen: number;
-  id_empleado: number;
-  fecha_inicio: string;
-}
+export const Schema_NuevoResponsable = z.object({
+  id_almacen: z.number().int().positive(),
+  id_empleado: z.number().int().positive("Seleccione un empleado"),
+  fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"),
+});
 
-export interface DTO_AbastecerMina {
-  id_almacen: number;
-  id_mina: number;
-}
+export type DTO_NuevoResponsable = z.infer<typeof Schema_NuevoResponsable>;
