@@ -4,8 +4,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
-import "@mantine/dates/styles.css"; // Ensure styles are imported locally if global is missing
-import "dayjs/locale/es"; // Spanish locale
+import "@mantine/dates/styles.css";
+import "dayjs/locale/es";
 
 interface CustomDatePickerProps extends Omit<
   DatePickerInputProps,

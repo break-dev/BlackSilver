@@ -6,7 +6,7 @@ import {
   HomeIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
-import { iconos_menu_navegacion } from "../../../iconos-menu-navegacion";
+import { iconos_menu_navegacion } from "./iconos-menu-navegacion";
 import { useMenuNavegacionStore } from "../../../../stores/menu.store";
 
 interface NavbarProps {
