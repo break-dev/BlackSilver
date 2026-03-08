@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Group, TextInput, Textarea, Select } from "@mantine/core";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";

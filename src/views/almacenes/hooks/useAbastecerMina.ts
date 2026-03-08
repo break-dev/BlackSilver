@@ -1,82 +1,82 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
-import type { IMessage } from "../../../shared/interfaces";
 import type {
   RES_MinaAbastecida,
   RES_MinaDisponible,
 } from "../service/almacenes.responses";
 
 export const useAbastecerMina = (id_almacen: number) => {
+  const { notify } = useNotify();
+
+  // Estados de datos
   const [minasDisponibles, setMinasDisponibles] = useState<
     RES_MinaDisponible[]
   >([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
 
-  useEffect(() => {
-    listarDisponibles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id_almacen]);
+  // Formulario
+  const [idMina, setIdMina] = useState<string>("");
+  const [formError, setFormError] = useState("");
+  const [isAssigning, setIsAssigning] = useState(false);
 
-  const listarDisponibles = async () => {
+  const listarDisponibles = useCallback(async () => {
     setLoading(true);
-    setMessage({ type: "", content: "" });
     try {
       const result = await AlmacenesService.get_minas(id_almacen);
       if (result.success) {
         setMinasDisponibles(result.data);
-        if (result.data.length === 0) {
-          setMessage({
-            type: "info",
-            content: "No se encontraron minas disponibles",
-          });
-        }
       } else {
-        setMessage({
-          type: "error",
-          content: "Hubo un error al cargar las minas disponibles",
-        });
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({
+      notify({
         type: "error",
-        content: "Hubo un error al cargar las minas disponibles",
+        content: "Error al cargar las minas disponibles",
       });
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id_almacen, notify]);
 
-  const asignar = async (
-    mina: RES_MinaDisponible,
-  ): Promise<RES_MinaAbastecida | null> => {
-    setMessage({ type: "", content: "" });
+  useEffect(() => {
+    listarDisponibles();
+  }, [listarDisponibles]);
+
+  const handleAsignar = async (
+    onSuccess?: (mina: RES_MinaAbastecida) => void,
+  ) => {
+    setFormError("");
+    if (!idMina) {
+      setFormError("Seleccione una mina");
+      return;
+    }
+
+    const mina = minasDisponibles.find((m) => String(m.id_mina) === idMina);
+    if (!mina) return;
+
+    setIsAssigning(true);
     try {
       const result = await AlmacenesService.nueva_mina_por_abastecer(
         id_almacen,
         mina.id_mina,
       );
       if (result.success) {
-        setMessage({
+        notify({
           type: "success",
-          content: result.message || "Se guardó correctamente",
+          content: result.message || "Mina vinculada",
         });
-        return result.data;
+        onSuccess?.(result.data);
+        setIdMina("");
       } else {
-        setMessage({
-          type: "error",
-          content: result.message || "Hubo un error al abastecer la mina",
-        });
-        return null;
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({
-        type: "error",
-        content: "Hubo un error al intentar abastecer la mina",
-      });
+      notify({ type: "error", content: "Error al vincular la mina" });
       console.error(error);
-      return null;
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -93,5 +93,15 @@ export const useAbastecerMina = (id_almacen: number) => {
     }));
   }, [minasDisponibles]);
 
-  return { minasDisponibles, loading, message, selectOptions, asignar };
+  return {
+    minasDisponibles,
+    loading,
+    selectOptions,
+    // Formulario
+    idMina,
+    setIdMina,
+    formError,
+    isAssigning,
+    handleAsignar,
+  };
 };

@@ -1,5 +1,4 @@
 import { Select, Button, Loader } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import type { RES_MinaAbastecida } from "../service/almacenes.responses";
 import { useAbastecerMina } from "../hooks/useAbastecerMina";
@@ -15,24 +14,20 @@ export const AbastecerMina = ({
   onSuccess,
   onCancel,
 }: AbastecerMinaProps) => {
-  const { selectOptions, loading, minasDisponibles, asignar } =
-    useAbastecerMina(idAlmacen);
+  const {
+    selectOptions,
+    loading,
+    minasDisponibles,
+    idMina,
+    setIdMina,
+    formError,
+    isAssigning,
+    handleAsignar,
+  } = useAbastecerMina(idAlmacen);
 
-  const form = useForm({
-    initialValues: { id_mina: "" },
-    validate: { id_mina: (val) => (!val ? "Seleccione una mina" : null) },
-  });
-
-  const handleSubmit = async (values: typeof form.values) => {
-    const mina = minasDisponibles.find(
-      (m) => String(m.id_mina) === values.id_mina,
-    );
-    if (!mina) return;
-
-    const result = await asignar(mina);
-    if (result) {
-      onSuccess(result);
-    }
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleAsignar(onSuccess);
   };
 
   if (loading && minasDisponibles.length === 0) {
@@ -45,7 +40,7 @@ export const AbastecerMina = ({
 
   return (
     <div className="animate-fade-in p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-      <form onSubmit={form.onSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Select
           label="Mina"
           placeholder="Buscar mina..."
@@ -53,7 +48,9 @@ export const AbastecerMina = ({
           searchable
           nothingFoundMessage="No hay minas disponibles"
           leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
-          {...form.getInputProps("id_mina")}
+          value={idMina}
+          onChange={(val) => setIdMina(val || "")}
+          error={formError}
           radius="lg"
           size="sm"
           classNames={{
@@ -72,11 +69,11 @@ export const AbastecerMina = ({
             size="sm"
             variant="default"
             onClick={onCancel}
-            disabled={loading}
+            disabled={isAssigning}
           >
             Cancelar
           </Button>
-          <Button size="sm" type="submit" loading={loading}>
+          <Button size="sm" type="submit" loading={isAssigning}>
             Vincular
           </Button>
         </div>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ActionIcon,
   Badge,
@@ -9,7 +8,6 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -40,19 +38,40 @@ export const AlmacenesPage = () => {
     busqueda,
     setBusqueda,
     almacenesFiltrados,
+    // Modales y Selección
+    openedCreate,
+    openCreate,
+    closeCreate,
+    openedResponsables,
+    openResponsables,
+    closeResponsables,
+    openedAlcance,
+    openAlcance,
+    closeAlcance,
+    selectedAlmacen,
+    setSelectedAlmacen,
+    // Registro
+    formNombre,
+    setFormNombre,
+    formDescripcion,
+    setFormDescripcion,
+    formEsPrincipal,
+    setFormEsPrincipal,
+    formError,
+    isRegistering,
+    handleCrearAlmacen,
+    resetForm,
   } = useAlmacenes();
 
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
-    useDisclosure(false);
-  const [
-    openedResponsables,
-    { open: openResponsables, close: closeResponsables },
-  ] = useDisclosure(false);
-  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
-    useDisclosure(false);
-  const [selectedAlmacen, setSelectedAlmacen] = useState<RES_Almacen | null>(
-    null,
-  );
+  const handleOpenResponsables = (alm: RES_Almacen) => {
+    setSelectedAlmacen(alm);
+    openResponsables();
+  };
+
+  const handleOpenAlcance = (alm: RES_Almacen) => {
+    setSelectedAlmacen(alm);
+    openAlcance();
+  };
 
   const columns: DataTableColumn<RES_Almacen>[] = [
     {
@@ -96,10 +115,7 @@ export const AlmacenesPage = () => {
               variant="subtle"
               color="cyan"
               size="sm"
-              onClick={() => {
-                setSelectedAlmacen(record);
-                openAlcance();
-              }}
+              onClick={() => handleOpenAlcance(record)}
             >
               <RectangleStackIcon className="w-4 h-4" />
             </ActionIcon>
@@ -107,6 +123,7 @@ export const AlmacenesPage = () => {
         </Group>
       ),
     },
+
     {
       accessor: "responsable_actual",
       title: "Responsable",
@@ -129,16 +146,14 @@ export const AlmacenesPage = () => {
             variant="subtle"
             color="gray"
             size="sm"
-            onClick={() => {
-              setSelectedAlmacen(record);
-              openResponsables();
-            }}
+            onClick={() => handleOpenResponsables(record)}
           >
             <PencilSquareIcon className="w-4 h-4" />
           </ActionIcon>
         </Group>
       ),
     },
+
     {
       accessor: "estado",
       title: "Estado",
@@ -233,11 +248,19 @@ export const AlmacenesPage = () => {
         title="Nuevo Almacén"
       >
         <RegistroAlmacen
-          onSuccess={(nuevo) => {
+          nombre={formNombre}
+          setNombre={setFormNombre}
+          descripcion={formDescripcion}
+          setDescripcion={setFormDescripcion}
+          esPrincipal={formEsPrincipal}
+          setEsPrincipal={setFormEsPrincipal}
+          formError={formError}
+          loading={isRegistering}
+          onSubmit={handleCrearAlmacen}
+          onCancel={() => {
             closeCreate();
-            setAlmacenes((prev) => [nuevo, ...prev]);
+            resetForm();
           }}
-          onCancel={closeCreate}
         />
       </ModalEstandar>
 

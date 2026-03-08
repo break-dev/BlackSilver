@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface DataTableEstandarProps {
   idAccessor: string;
   columns: DataTableColumn<any>[];

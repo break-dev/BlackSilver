@@ -1,20 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
+import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
 import { Schema_NuevoResponsable } from "../service/almacenes.requests";
-import type { IMessage } from "../../../shared/interfaces";
 import type {
   RES_EmpleadoDisponible,
   RES_ResponsableAlmacen,
 } from "../service/almacenes.responses";
 
-/**
- * Maneja el formulario de asignación de un nuevo responsable a un almacén.
- * Incluye la carga de empleados disponibles.
- */
 export const useNuevoResponsable = (id_almacen: number) => {
+  const { notify } = useNotify();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
 
   // Empleados disponibles
   const [empleados, setEmpleados] = useState<RES_EmpleadoDisponible[]>([]);
@@ -27,24 +23,29 @@ export const useNuevoResponsable = (id_almacen: number) => {
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [formError, setFormError] = useState("");
 
-  useEffect(() => {
-    cargarEmpleados();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id_almacen]);
-
-  const cargarEmpleados = async () => {
+  const cargarEmpleados = useCallback(async () => {
     setLoadingEmpleados(true);
     try {
       const result = await AlmacenesService.get_empleados(id_almacen);
       if (result.success) {
         setEmpleados(result.data);
+      } else {
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
       console.error(error);
+      notify({
+        type: "error",
+        content: "Error al cargar empleados disponibles",
+      });
     } finally {
       setLoadingEmpleados(false);
     }
-  };
+  }, [id_almacen, notify]);
+
+  useEffect(() => {
+    cargarEmpleados();
+  }, [cargarEmpleados]);
 
   const empleadosOptions = useMemo(
     () =>
@@ -56,12 +57,14 @@ export const useNuevoResponsable = (id_almacen: number) => {
     [empleados],
   );
 
-  const asignar = async (): Promise<RES_ResponsableAlmacen | null> => {
+  const handleAsignar = async (
+    onSuccess?: (nuevo: RES_ResponsableAlmacen) => void,
+  ) => {
     setFormError("");
 
     if (!empleadoSeleccionado || !fechaInicio) {
       setFormError("Seleccione responsable y fecha de inicio.");
-      return null;
+      return;
     }
 
     const payload = {
@@ -73,27 +76,28 @@ export const useNuevoResponsable = (id_almacen: number) => {
     const validation = Schema_NuevoResponsable.safeParse(payload);
     if (!validation.success) {
       setFormError(validation.error.issues[0]?.message || "Datos inválidos.");
-      return null;
+      return;
     }
 
     setLoading(true);
     try {
       const result = await AlmacenesService.nuevo_responsable(validation.data);
       if (result.success) {
-        setMessage({ type: "success", content: result.message });
+        notify({
+          type: "success",
+          content: result.message || "Responsable asignado",
+        });
         resetForm();
-        return result.data;
+        if (onSuccess) onSuccess(result.data);
       } else {
         setFormError(result.message);
-        setMessage({ type: "error", content: result.message });
-        return null;
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
       const msg = "Error al asignar el nuevo responsable";
       setFormError(msg);
-      setMessage({ type: "error", content: msg });
+      notify({ type: "error", content: msg });
       console.error(error);
-      return null;
     } finally {
       setLoading(false);
     }
@@ -107,13 +111,13 @@ export const useNuevoResponsable = (id_almacen: number) => {
 
   return {
     loading: loading || loadingEmpleados,
-    message,
+    isAssigning: loading,
     empleadosOptions,
     empleadoSeleccionado,
     setEmpleadoSeleccionado,
     fechaInicio,
     setFechaInicio,
     formError,
-    asignar,
+    handleAsignar,
   };
 };

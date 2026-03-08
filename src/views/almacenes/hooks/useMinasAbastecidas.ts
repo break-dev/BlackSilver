@@ -1,30 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
-import type { IMessage } from "../../../shared/interfaces";
 import type { RES_MinaAbastecida } from "../service/almacenes.responses";
 
 export const useMinasAbastecidas = (id_almacen: number) => {
+  const { notify } = useNotify();
   const [minas, setMinas] = useState<RES_MinaAbastecida[]>([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    listar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id_almacen]);
-
-  const listar = async () => {
+  const listar = useCallback(async () => {
     setLoading(true);
-    setMessage({ type: "", content: "" });
     try {
       const result = await AlmacenesService.get_minas_abastecidas(id_almacen);
       if (result.success) {
         setMinas(result.data);
       } else {
-        setMessage({ type: "error", content: result.message });
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({
+      notify({
         type: "error",
         content: "Error al cargar las minas abastecidas",
       });
@@ -32,10 +27,18 @@ export const useMinasAbastecidas = (id_almacen: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id_almacen, notify]);
 
-  const desasignar = async (id_almacen_mina: number): Promise<boolean> => {
-    setMessage({ type: "", content: "" });
+  useEffect(() => {
+    listar();
+  }, [listar]);
+
+  const handleDesvincular = async (
+    id_almacen_mina: number,
+    onMinasChange?: (delta: number) => void,
+  ) => {
+    if (!confirm("¿Está seguro de desvincular esta mina del almacén?")) return;
+
     try {
       const result =
         await AlmacenesService.eliminar_abastecimiento_mina(id_almacen_mina);
@@ -43,30 +46,41 @@ export const useMinasAbastecidas = (id_almacen: number) => {
         setMinas((prev) =>
           prev.filter((m) => m.id_almacen_mina !== id_almacen_mina),
         );
-        setMessage({ type: "success", content: result.message });
-        return true;
+        notify({
+          type: "success",
+          content: result.message || "Mina desvinculada",
+        });
+        if (onMinasChange) onMinasChange(-1);
       } else {
-        setMessage({ type: "error", content: result.message });
-        return false;
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({ type: "error", content: "Error al desvincular la mina" });
+      notify({ type: "error", content: "Error al desvincular la mina" });
       console.error(error);
-      return false;
     }
   };
 
-  const agregar = (nuevaMina: RES_MinaAbastecida) => {
+  const handleVinculada = (
+    nueva: RES_MinaAbastecida,
+    onMinasChange?: (delta: number) => void,
+  ) => {
     setMinas((prev) => {
       const exists = prev.some(
-        (m) => m.id_almacen_mina === nuevaMina.id_almacen_mina,
+        (m) => m.id_almacen_mina === nueva.id_almacen_mina,
       );
       if (exists) return prev;
-      return [...prev, nuevaMina].sort((a, b) =>
-        a.nombre.localeCompare(b.nombre),
-      );
+      return [...prev, nueva].sort((a, b) => a.nombre.localeCompare(b.nombre));
     });
+    if (onMinasChange) onMinasChange(1);
+    setShowForm(false);
   };
 
-  return { minas, loading, message, desasignar, agregar };
+  return {
+    minas,
+    loading,
+    showForm,
+    setShowForm,
+    handleDesvincular,
+    handleVinculada,
+  };
 };

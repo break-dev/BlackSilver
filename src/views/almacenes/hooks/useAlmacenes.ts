@@ -1,16 +1,46 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import type { IMessage } from "../../../shared/interfaces";
+
 import type { RES_Almacen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";
+import { Schema_CrearAlmacen } from "../service/almacenes.requests";
 
 export const useAlmacenes = () => {
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [loading, setLoading] = useState(false);
   const { notify } = useNotify();
 
-  // Búsqueda
+  // Estados de la lista
+  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
+  const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+
+  // Modales y selección
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [
+    openedResponsables,
+    { open: openResponsables, close: closeResponsables },
+  ] = useDisclosure(false);
+  const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
+    useDisclosure(false);
+  const [selectedAlmacen, setSelectedAlmacen] = useState<RES_Almacen | null>(
+    null,
+  );
+
+  // Formulario de Registro
+  const [formNombre, setFormNombre] = useState("");
+  const [formDescripcion, setFormDescripcion] = useState("");
+  const [formEsPrincipal, setFormEsPrincipal] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const resetForm = useCallback(() => {
+    setFormNombre("");
+    setFormDescripcion("");
+    setFormEsPrincipal(false);
+    setFormError("");
+  }, []);
 
   const handleChildMessage = (msg: IMessage) => {
     if (!msg.type) return;
@@ -34,6 +64,39 @@ export const useAlmacenes = () => {
     }
   }, [notify]);
 
+  const handleCrearAlmacen = async () => {
+    setFormError("");
+    const data = {
+      nombre: formNombre,
+      descripcion: formDescripcion,
+      es_principal: formEsPrincipal,
+    };
+
+    const validation = Schema_CrearAlmacen.safeParse(data);
+    if (!validation.success) {
+      setFormError(validation.error.issues[0].message);
+      return;
+    }
+
+    setIsRegistering(true);
+    try {
+      const result = await AlmacenesService.crear_almacen(validation.data);
+      if (result.success) {
+        setAlmacenes((prev) => [result.data, ...prev]);
+        notify({ type: "success", content: "Almacén creado correctamente" });
+        closeCreate();
+        resetForm();
+      } else {
+        setFormError(result.message);
+      }
+    } catch (error) {
+      setFormError("Error inesperado al crear el almacén");
+      console.error(error);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   useEffect(() => {
     listar();
   }, [listar]);
@@ -49,12 +112,38 @@ export const useAlmacenes = () => {
   }, [almacenes, busqueda]);
 
   return {
+    // Lista
     almacenes,
     loading,
     setAlmacenes,
-    handleChildMessage,
     busqueda,
     setBusqueda,
     almacenesFiltrados,
+    handleChildMessage,
+
+    // Modales y Selección
+    openedCreate,
+    openCreate,
+    closeCreate,
+    openedResponsables,
+    openResponsables,
+    closeResponsables,
+    openedAlcance,
+    openAlcance,
+    closeAlcance,
+    selectedAlmacen,
+    setSelectedAlmacen,
+
+    // Registro
+    formNombre,
+    setFormNombre,
+    formDescripcion,
+    setFormDescripcion,
+    formEsPrincipal,
+    setFormEsPrincipal,
+    formError,
+    isRegistering,
+    handleCrearAlmacen,
+    resetForm,
   };
 };

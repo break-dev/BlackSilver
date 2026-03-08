@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Button,
   Group,
@@ -8,69 +7,45 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { z } from "zod";
-import { AlmacenesService } from "../service/almacenes.service";
-import { Schema_CrearAlmacen } from "../service/almacenes.requests";
-import type { RES_Almacen } from "../service/almacenes.responses";
 
 interface RegistroAlmacenProps {
-  onSuccess: (almacen: RES_Almacen) => void;
+  nombre: string;
+  setNombre: (val: string) => void;
+  descripcion: string;
+  setDescripcion: (val: string) => void;
+  esPrincipal: boolean;
+  setEsPrincipal: (val: boolean) => void;
+  formError: string;
+  loading: boolean;
+  onSubmit: () => void;
   onCancel: () => void;
 }
 
 export const RegistroAlmacen = ({
-  onSuccess,
+  nombre,
+  setNombre,
+  descripcion,
+  setDescripcion,
+  esPrincipal,
+  setEsPrincipal,
+  formError,
+  loading,
+  onSubmit,
   onCancel,
 }: RegistroAlmacenProps) => {
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [esPrincipal, setEsPrincipal] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [loading, setLoading] = useState(false);
-
   const inputClasses = {
     input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
     focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
     label: "text-zinc-300 mb-1 font-medium",
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormError("");
-
-    let validated: z.infer<typeof Schema_CrearAlmacen>;
-    try {
-      validated = Schema_CrearAlmacen.parse({
-        nombre,
-        descripcion,
-        es_principal: esPrincipal,
-      });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setFormError(
-          err.issues[0]?.message || "Complete los campos requeridos.",
-        );
-      }
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const result = await AlmacenesService.crear_almacen(validated);
-      if (result.success) {
-        onSuccess(result.data);
-      } else {
-        setFormError(result.message);
-      }
-    } catch {
-      setFormError("Error al crear el almacén");
-    } finally {
-      setLoading(false);
-    }
+    onSubmit();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative space-y-5">
+    <form onSubmit={handleFormSubmit} className="relative space-y-5">
       <Stack gap="md">
         <TextInput
           label="Nombre del Almacén"

@@ -1,7 +1,6 @@
-import { useEffect } from "react";
-import { Button, Select, Text } from "@mantine/core";
+import { Button, Select, Text, Stack } from "@mantine/core";
 import { ArrowLeftIcon, UserIcon } from "@heroicons/react/24/outline";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
 import { useNuevoResponsable } from "../hooks/useNuevoResponsable";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -17,31 +16,24 @@ interface NuevoResponsableProps {
 export const NuevoResponsable = ({
   idAlmacen,
   nombreAlmacen,
-  onMessage,
   onSuccess,
   onCancel,
 }: NuevoResponsableProps) => {
   const {
+    loading,
+    isAssigning,
     empleadosOptions,
     empleadoSeleccionado,
     setEmpleadoSeleccionado,
     fechaInicio,
     setFechaInicio,
     formError,
-    loading,
-    message,
-    asignar,
+    handleAsignar,
   } = useNuevoResponsable(idAlmacen);
 
-  // Burbujear mensajes hacia el hook de la página
-  useEffect(() => {
-    if (message.type && message.content) onMessage?.(message);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message]);
-
-  const handleAsignar = async () => {
-    const result = await asignar();
-    if (result) onSuccess(result);
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleAsignar(onSuccess);
   };
 
   return (
@@ -72,63 +64,71 @@ export const NuevoResponsable = ({
           </Text>
         </div>
 
-        <div className="space-y-4">
-          <Select
-            label="Responsable / Jefe"
-            placeholder="Buscar empleado..."
-            leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
-            data={empleadosOptions}
-            value={empleadoSeleccionado}
-            onChange={setEmpleadoSeleccionado}
-            disabled={loading}
-            withAsterisk
-            error={formError && !empleadoSeleccionado ? "Requerido" : undefined}
-            searchable
-            clearable
-            nothingFoundMessage="No se encontraron empleados disponibles"
-            radius="lg"
-            size="sm"
-            maxDropdownHeight={300}
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option:
-                "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-              label: "text-zinc-300 mb-1 font-medium",
-              description: "text-zinc-500 text-xs",
-            }}
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Stack gap="md">
+            <Select
+              label="Responsable / Jefe"
+              placeholder="Buscar empleado..."
+              leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
+              data={empleadosOptions}
+              value={empleadoSeleccionado}
+              onChange={setEmpleadoSeleccionado}
+              disabled={loading || isAssigning}
+              withAsterisk
+              error={
+                formError && !empleadoSeleccionado ? "Requerido" : undefined
+              }
+              searchable
+              clearable
+              nothingFoundMessage="No se encontraron empleados disponibles"
+              radius="lg"
+              size="sm"
+              maxDropdownHeight={300}
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option:
+                  "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
+                label: "text-zinc-300 mb-1 font-medium",
+                description: "text-zinc-500 text-xs",
+              }}
+            />
 
-          <CustomDatePicker
-            label="Fecha de Inicio"
-            value={fechaInicio}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onChange={(val: any) => setFechaInicio(val)}
-            error={formError && !fechaInicio ? "Requerido" : undefined}
-            withAsterisk
-          />
+            <CustomDatePicker
+              label="Fecha de Inicio"
+              value={fechaInicio}
+              onChange={(val: any) => setFechaInicio(val)}
+              error={formError && !fechaInicio ? "Requerido" : undefined}
+              withAsterisk
+              disabled={loading || isAssigning}
+            />
 
-          {formError && (
-            <Text size="xs" c="red">
-              {formError}
-            </Text>
-          )}
+            {formError && (
+              <Text size="xs" className="text-red-500">
+                {formError}
+              </Text>
+            )}
 
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="default" onClick={onCancel} disabled={loading}>
-              Cancelar
-            </Button>
-            <Button
-              variant="filled"
-              color="indigo"
-              onClick={handleAsignar}
-              loading={loading}
-            >
-              Guardar
-            </Button>
-          </div>
-        </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button
+                variant="default"
+                onClick={onCancel}
+                disabled={loading || isAssigning}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="filled"
+                color="indigo"
+                type="submit"
+                loading={isAssigning}
+              >
+                Guardar
+              </Button>
+            </div>
+          </Stack>
+        </form>
       </div>
     </div>
   );

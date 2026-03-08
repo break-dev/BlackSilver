@@ -1,37 +1,28 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
-import type { IMessage } from "../../../shared/interfaces";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
 
-/**
- * Maneja la lista del historial de responsables de un almacén.
- */
 export const useHistorialResponsables = (id_almacen: number) => {
+  const { notify } = useNotify();
   const [responsables, setResponsables] = useState<RES_ResponsableAlmacen[]>(
     [],
   );
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    listar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id_almacen]);
-
-  const listar = async () => {
+  const listar = useCallback(async () => {
     setLoading(true);
-    setMessage({ type: "", content: "" });
     try {
       const result =
         await AlmacenesService.get_historial_responsables(id_almacen);
       if (result.success) {
         setResponsables(result.data);
       } else {
-        setMessage({ type: "error", content: result.message });
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({
+      notify({
         type: "error",
         content: "Error al cargar el historial de responsables",
       });
@@ -39,10 +30,19 @@ export const useHistorialResponsables = (id_almacen: number) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id_almacen, notify]);
 
-  const agregarResponsable = (nuevo: RES_ResponsableAlmacen) => {
+  useEffect(() => {
+    listar();
+  }, [listar]);
+
+  const handleSuccess = (
+    nuevo: RES_ResponsableAlmacen,
+    onUpdateResponsable?: (nombre: string) => void,
+  ) => {
     setResponsables((prev) => [nuevo, ...prev]);
+    if (onUpdateResponsable) onUpdateResponsable(nuevo.nombre_completo);
+    setShowForm(false);
   };
 
   const responsablesOrdenados = useMemo(() => {
@@ -58,9 +58,8 @@ export const useHistorialResponsables = (id_almacen: number) => {
   return {
     responsables: responsablesOrdenados,
     loading,
-    message,
     showForm,
     setShowForm,
-    agregarResponsable,
+    handleSuccess,
   };
 };

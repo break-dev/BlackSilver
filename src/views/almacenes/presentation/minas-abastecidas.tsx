@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { Button, Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
+import { Button, Loader, ActionIcon, Tooltip, Text } from "@mantine/core";
 import { PlusIcon, CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useMinasAbastecidas } from "../hooks/useMinasAbastecidas";
 import { AbastecerMina } from "./abastecer-mina";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type {
   RES_Almacen,
   RES_MinaAbastecida,
@@ -18,31 +16,26 @@ interface MinasAbastecidasProps {
 
 export const MinasAbastecidas = ({
   almacen,
-  onMessage,
   onMinasChange,
 }: MinasAbastecidasProps) => {
-  const [showForm, setShowForm] = useState(false);
-  const { minas, loading, message, desasignar, agregar } = useMinasAbastecidas(
-    almacen.id_almacen,
-  );
+  const {
+    minas,
+    loading,
+    showForm,
+    setShowForm,
+    handleDesvincular,
+    handleVinculada,
+  } = useMinasAbastecidas(almacen.id_almacen);
 
-  // Burbujear mensajes hacia el hook de la página
-  // useEffect removed intentionally — message is passed via onMessage from operations below
-
-  const handleDesvincular = async (id_almacen_mina: number) => {
-    if (!confirm("¿Está seguro de desvincular esta mina del almacén?")) return;
-    const success = await desasignar(id_almacen_mina);
-    if (success) {
-      onMessage?.(message);
-      if (onMinasChange) onMinasChange(-1);
-    }
-  };
-
-  const handleVinculada = (nueva: RES_MinaAbastecida) => {
-    agregar(nueva);
-    if (onMinasChange) onMinasChange(1);
-    setShowForm(false);
-  };
+  if (showForm) {
+    return (
+      <AbastecerMina
+        idAlmacen={almacen.id_almacen}
+        onSuccess={(nueva) => handleVinculada(nueva, onMinasChange)}
+        onCancel={() => setShowForm(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -102,7 +95,9 @@ export const MinasAbastecidas = ({
                   variant="subtle"
                   color="red"
                   size="sm"
-                  onClick={() => handleDesvincular(item.id_almacen_mina)}
+                  onClick={() =>
+                    handleDesvincular(item.id_almacen_mina, onMinasChange)
+                  }
                 >
                   <TrashIcon className="w-4 h-4" />
                 </ActionIcon>
@@ -111,18 +106,6 @@ export const MinasAbastecidas = ({
           ))}
         </div>
       )}
-
-      <ModalEstandar
-        opened={showForm}
-        close={() => setShowForm(false)}
-        title="Abastecer otras minas"
-      >
-        <AbastecerMina
-          idAlmacen={almacen.id_almacen}
-          onCancel={() => setShowForm(false)}
-          onSuccess={handleVinculada}
-        />
-      </ModalEstandar>
     </div>
   );
 };

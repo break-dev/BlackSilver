@@ -1,5 +1,4 @@
 import { Badge, Button, Loader, Text } from "@mantine/core";
-import { useEffect } from "react";
 import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -22,20 +21,8 @@ export const HistorialResponsables = ({
   onMessage,
   onUpdateResponsable,
 }: HistorialResponsablesProps) => {
-  const {
-    responsables,
-    loading,
-    message,
-    showForm,
-    setShowForm,
-    agregarResponsable,
-  } = useHistorialResponsables(almacen.id_almacen);
-
-  // Burbujear mensajes hacia el hook de la página
-  useEffect(() => {
-    if (message.type && message.content) onMessage?.(message);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message]);
+  const { responsables, loading, showForm, setShowForm, handleSuccess } =
+    useHistorialResponsables(almacen.id_almacen);
 
   if (showForm) {
     return (
@@ -43,11 +30,7 @@ export const HistorialResponsables = ({
         idAlmacen={almacen.id_almacen}
         nombreAlmacen={almacen.nombre}
         onMessage={onMessage}
-        onSuccess={(nuevo) => {
-          agregarResponsable(nuevo);
-          if (onUpdateResponsable) onUpdateResponsable(nuevo.nombre_completo);
-          setShowForm(false);
-        }}
+        onSuccess={(nuevo) => handleSuccess(nuevo, onUpdateResponsable)}
         onCancel={() => setShowForm(false)}
       />
     );
