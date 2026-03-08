@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { OrganigramaService } from "../service/organigrama.service";
 import { Schema_RegistroArea } from "../service/organigrama.requests";
@@ -33,6 +33,7 @@ export const useRegistroArea = (
         setError(resp.message);
       }
     } catch (err) {
+      console.error(err);
       setError("Error inesperado");
     } finally {
       setLoading(false);

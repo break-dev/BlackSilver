@@ -1,205 +1,54 @@
-import { api } from "../../shared/api";
-import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { RES_Concesion, RES_ContratoConcesion } from "./dtos/responses";
-import type {
-  DTO_CrearConcesion,
-  DTO_EditarConcesion,
-  DTO_AsignarEmpresa,
-} from "./dtos/requests";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNotify } from "../../../hooks/useNotify";
+import { ConcesionesService } from "../service/concesiones.service";
+import type { RES_Concesion } from "../service/concesiones.responses";
 
-export const useConcesiones = ({ setError }: IUseHook) => {
-  const path = "/concesiones";
+export const useConcesiones = () => {
+  const { notify } = useNotify();
+  const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
 
-  // Listar concesiones
-  const listar = async () => {
-    setError("");
+  const listar = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await api.get<IRespuesta<RES_Concesion[]>>(path);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
+      const resp = await ConcesionesService.get_concesiones();
+      if (resp.success) {
+        setConcesiones(resp.data);
       } else {
-        setError(result.message);
-        return [];
+        notify({ type: "error", content: resp.message });
       }
-    } catch (error) {
-      setError(String(error));
-      return [];
+    } catch (err) {
+      notify({ type: "error", content: "Error al cargar las concesiones" });
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [notify]);
 
-  // Listar concesiones por empresa (para obtener id_asignacion)
-  const listarPorEmpresa = async (id_empresa: number) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Concesion[]>>(
-        `${path}/by-empresa`,
-        { id_empresa },
-      );
-      const result = response.data;
+  useEffect(() => {
+    listar();
+  }, [listar]);
 
-      if (result.success) {
-        return result.data;
-      } else {
-        // setError(result.error); // Optional: silent fail for selects
-        return [];
-      }
-    } catch (error) {
-      console.error(String(error));
-      return [];
-    }
-  };
+  const filtradas = useMemo(() => {
+    const q = busqueda.toLowerCase();
+    return concesiones.filter(
+      (c) =>
+        c.nombre.toLowerCase().includes(q) ||
+        c.codigo_concesion.toLowerCase().includes(q),
+    );
+  }, [concesiones, busqueda]);
 
-  // Crear concesion
-  const crearConcesion = async (dto: DTO_CrearConcesion) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Concesion>>(path, dto);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message);
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
-  };
-
-  // Editar concesion
-  const editar = async (dto: DTO_EditarConcesion) => {
-    setError("");
-    try {
-      const response = await api.put<IRespuesta<RES_Concesion>>(path, dto);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message);
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
-  };
-
-  // Eliminar concesion
-  const eliminar = async (id: number) => {
-    setError("");
-    try {
-      const response = await api.delete<IRespuesta<boolean>>(path, {
-        data: { id: id },
-      });
-      const result = response.data;
-
-      if (result.success) {
-        return true;
-      } else {
-        setError(result.message);
-        return false;
-      }
-    } catch (error) {
-      setError(String(error));
-      return false;
-    }
-  };
-
-  // Lista todas la empresas que tengan algun contrato con una concesion
-  const listarAsignaciones = async (id_concesion: number) => {
-    try {
-      const response = await api.post<IRespuesta<RES_ContratoConcesion[]>>(
-        `${path}/asignaciones`,
-        { id_concesion },
-      );
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        console.error(result.message);
-        return [];
-      }
-    } catch (error) {
-      console.error(String(error));
-      return [];
-    }
-  };
-
-  // Registrar nuevo contrato entre una empresa y una concesion
-  const asignarEmpresa = async (dto: DTO_AsignarEmpresa) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<boolean>>(
-        `${path}/asignar`,
-        dto,
-      );
-      const result = response.data;
-
-      if (result.success) {
-        return true;
-      } else {
-        setError(result.message);
-        return false;
-      }
-    } catch (error) {
-      setError(String(error));
-      return false;
-    }
-  };
-
-  // Desasignar empresa
-  const desasignarEmpresa = async (id_asignacion: number) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<boolean>>(
-        `${path}/desasignar`,
-        { id_asignacion },
-      );
-      const result = response.data;
-
-      if (result.success) {
-        return true;
-      } else {
-        setError(result.message);
-        return false;
-      }
-    } catch (error) {
-      setError(String(error));
-      return false;
-    }
-  };
-
-  // Listar tipos de mineral
-  const listarTiposMineral = async () => {
-    try {
-      const response = await api.get<IRespuesta<string[]>>(
-        `${path}/tipos-mineral`,
-      );
-      const result = response.data;
-      if (result.success) return result.data;
-      return [];
-    } catch (error) {
-      console.error(String(error));
-      return [];
-    }
+  const pushNuevaConcesion = (nueva: RES_Concesion) => {
+    setConcesiones((prev) => [nueva, ...prev]);
   };
 
   return {
-    listar,
-    listarPorEmpresa,
-    crearConcesion,
-    editar,
-    eliminar,
-    listarAsignaciones,
-    asignarEmpresa,
-    desasignarEmpresa,
-    listarTiposMineral,
+    concesiones: filtradas,
+    loading,
+    busqueda,
+    setBusqueda,
+    recargar: listar,
+    pushNuevaConcesion,
   };
 };

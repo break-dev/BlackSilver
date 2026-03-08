@@ -1,323 +1,176 @@
-import { useState, useMemo, useEffect } from "react";
 import {
   Button,
-  TextInput,
-  Badge,
-  Select,
-  Tooltip,
-  ActionIcon,
   Group,
+  TextInput,
+  Text,
+  Badge,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { type DataTableColumn } from "mantine-datatable";
 import {
-  PlusIcon,
   MagnifyingGlassIcon,
-  MapPinIcon,
-  BriefcaseIcon,
+  TicketIcon,
+  InformationCircleIcon,
+  BuildingOfficeIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
-import { GestionEmpresas } from "./contratos";
-import { useConcesiones } from "../../../services/concesiones/useConcesiones";
-import type { RES_Concesion } from "../service/concesiones.responses";
-import { EstadoBase } from "../../../shared/enums/estados";
+import { type DataTableColumn } from "mantine-datatable";
+import { useDisclosure } from "@mantine/hooks";
+import { useState } from "react";
+
+import { useTitlePage } from "../../../hooks/useTitlePage";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+
+import { useConcesiones } from "../hooks/useConcesiones";
+import { ModalContratos } from "./historial-contratos";
 import { RegistroConcesion } from "./registro-concesion";
-import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { SelectTipoMineral } from "../../utils/select-tipo-mineral";
+import type { RES_Concesion } from "../service/concesiones.responses";
 
 export const ConcesionesPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
-  // Estado local
-  const [concesiones, setConcesiones] = useState<RES_Concesion[]>([]);
-  const [loading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  useTitlePage("Concesiones");
 
-  // Filtros
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
-  const [filtroMineral, setFiltroMineral] = useState<string | null>(null);
+  const { concesiones, loading, busqueda, setBusqueda, pushNuevaConcesion } =
+    useConcesiones();
 
-  // Modal registro
-  const [opened, { open, close }] = useDisclosure(false);
-
-  // Modal Gestión Empresas
-  const [gestionOpened, { open: openGestion, close: closeGestion }] =
+  const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
+  const [nombreSeleccionado, setNombreSeleccionado] = useState("");
+  const [openedContratos, { open: openContratos, close: closeContratos }] =
     useDisclosure(false);
-  const [selectedConcesion, setSelectedConcesion] =
-    useState<RES_Concesion | null>(null);
-
-  // Servicio
-  const { listar } = useConcesiones({ setError });
-
-  // Carga inicial
-  useEffect(() => {
-    let cancelled = false;
-    listar()
-      .then((data) => {
-        if (!cancelled) setConcesiones(data || []);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Title
-  useEffect(() => {
-    setTimeout(() => {
-      setTitle("Concesiones");
-    }, 0);
-  }, [setTitle]);
-
-  // Opciones de filtros derivados de los datos
-  const estadosUnicos = useMemo(() => {
-    const set = new Set(concesiones.map((c) => c.estado));
-    return Array.from(set)
-      .sort()
-      .map((e) => ({ value: e, label: e }));
-  }, [concesiones]);
-
-  // Datos filtrados
-  const concesionesFiltradas = useMemo(() => {
-    return concesiones.filter((c) => {
-      const matchBusqueda =
-        !busqueda ||
-        c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.codigo_concesion?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.codigo_reinfo?.toLowerCase().includes(busqueda.toLowerCase());
-
-      const matchEstado = !filtroEstado || c.estado === filtroEstado;
-      const matchMineral = !filtroMineral || c.tipo_mineral === filtroMineral;
-
-      return matchBusqueda && matchEstado && matchMineral;
-    });
-  }, [concesiones, busqueda, filtroEstado, filtroMineral]);
-
-  // Paginación
-
-  // Callback al registrar exitosamente
-  const handleRegistroExitoso = (concesion: RES_Concesion) => {
-    close();
-    setConcesiones((prev) => [concesion, ...prev]);
-  };
+  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
+    useDisclosure(false);
 
   const columns: DataTableColumn<RES_Concesion>[] = [
     {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_record, index) => index + 1,
-    },
-    {
       accessor: "nombre",
-      title: "Nombre Concesión",
-      width: 200,
-      render: (record) => (
-        <span className="text-zinc-200 font-semibold">{record.nombre}</span>
+      title: "Concesión",
+      render: (r) => (
+        <Group gap="xs">
+          <TicketIcon className="w-5 h-5 text-amber-500" />
+          <div>
+            <Text size="sm" fw={500} className="text-zinc-200">
+              {r.nombre}
+            </Text>
+            <Text size="xs" className="text-zinc-500">
+              Cód: {r.codigo_concesion}
+            </Text>
+          </div>
+        </Group>
       ),
     },
     {
-      accessor: "codigo_concesion",
-      title: "Cod. Concesión",
-      width: 140,
-      render: (record) =>
-        record.codigo_concesion ? (
-          <Badge
-            variant="light"
-            color="violet"
-            radius="sm"
-            className="font-mono"
-          >
-            {record.codigo_concesion}
-          </Badge>
-        ) : (
-          <span className="text-zinc-600">-</span>
-        ),
-    },
-    {
-      accessor: "codigo_reinfo",
-      title: "Cod. REINFO",
-      width: 140,
-      render: (record) =>
-        record.codigo_reinfo ? (
-          <Badge variant="light" color="pink" radius="sm" className="font-mono">
-            {record.codigo_reinfo}
-          </Badge>
-        ) : (
-          <span className="text-zinc-600">-</span>
-        ),
-    },
-    {
       accessor: "tipo_mineral",
-      title: "Tipo De Mineral",
-      width: 130,
-      render: (record) =>
-        record.tipo_mineral ? (
-          <span className="text-zinc-300 font-medium">
-            {record.tipo_mineral}
-          </span>
-        ) : (
-          <span className="text-zinc-500">-</span>
-        ),
+      title: "Tipo Mineral",
+      render: (r) => (
+        <Badge variant="outline" color="gray" size="sm">
+          {r.tipo_mineral}
+        </Badge>
+      ),
     },
     {
-      accessor: "ubigeo",
-      title: "Ubicación",
-      width: 150,
-      render: (record) =>
-        record.ubigeo ? (
-          <div className="flex items-center gap-1 text-zinc-400 text-sm">
-            <MapPinIcon className="w-4 h-4 text-emerald-500" />
-            <span className="truncate max-w-[140px]">{record.ubigeo}</span>
-          </div>
-        ) : (
-          "-"
-        ),
-    },
-    {
-      accessor: "empresas_asignadas",
-      title: "Empresas",
+      accessor: "contratos_activos",
+      title: "Contratos",
       textAlign: "center",
-      width: 130,
-      render: (record) => (
-        <Group gap={6} justify="center">
-          <Badge variant="light" color="indigo" size="sm" radius="sm">
-            {record.empresas_asignadas || 0} Asign.
-          </Badge>
-
-          <Tooltip label="Gestionar Empresas">
+      render: (r) => (
+        <Badge
+          variant="light"
+          color={r.contratos_activos > 0 ? "indigo" : "gray"}
+          radius="md"
+        >
+          {r.contratos_activos} activo(s)
+        </Badge>
+      ),
+    },
+    {
+      accessor: "actions",
+      title: "",
+      width: 100,
+      textAlign: "right",
+      render: (r) => (
+        <Group gap="xs" justify="flex-end">
+          <Tooltip label="Gestionar Contratos">
             <ActionIcon
-              size="sm"
-              variant="subtle"
+              variant="light"
               color="indigo"
+              radius="md"
               onClick={() => {
-                setSelectedConcesion(record);
-                openGestion();
+                setIdSeleccionado(r.id_concesion);
+                setNombreSeleccionado(r.nombre);
+                openContratos();
               }}
             >
-              <BriefcaseIcon className="w-4 h-4" />
+              <BuildingOfficeIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Más información">
+            <ActionIcon variant="subtle" color="gray">
+              <InformationCircleIcon className="w-5 h-5" />
             </ActionIcon>
           </Tooltip>
         </Group>
       ),
     },
-    {
-      accessor: "estado",
-      title: "Estado",
-      textAlign: "center",
-      width: 100,
-      render: (record) => (
-        <Badge
-          color={record.estado === EstadoBase.Activo ? "green" : "red"}
-          variant="light"
-          radius="sm"
-          size="sm"
-        >
-          {record.estado}
-        </Badge>
-      ),
-    },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Encabezado y Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-4 flex-1">
-          <TextInput
-            placeholder="Buscar por nombre, código o REINFO..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-            }}
-            className="flex-1 min-w-64"
-            radius="lg"
-            size="sm"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-            }}
-          />
-
-          <SelectTipoMineral
-            label=""
-            placeholder="Mineral"
-            value={filtroMineral}
-            onChange={(val) => {
-              setFiltroMineral(val);
-            }}
-            clearable
-            className="min-w-36"
-          />
-
-          <Select
-            placeholder="Estado"
-            data={estadosUnicos}
-            value={filtroEstado}
-            onChange={(val) => {
-              setFiltroEstado(val);
-            }}
-            clearable
-            radius="lg"
-            size="sm"
-            className="min-w-36"
-            classNames={{
-              input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 
-            focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-        </div>
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={open}
+    <div className="space-y-6 animate-fade-in">
+      <Group justify="space-between">
+        <TextInput
+          placeholder="Buscar concesión..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
           radius="lg"
-          size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-        font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 shrink-0"
+          className="w-full sm:w-80"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+          }}
+        />
+        <Button
+          variant="filled"
+          color="indigo"
+          radius="lg"
+          onClick={openRegistro}
+          leftSection={<PlusIcon className="w-5 h-5" />}
         >
           Nueva Concesión
         </Button>
-      </div>
+      </Group>
 
-      {/* DataTable */}
       <DataTableEstandar
         idAccessor="id_concesion"
         columns={columns}
-        records={concesionesFiltradas}
+        records={concesiones}
         loading={loading}
       />
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-
-      {/* Modal de Registro */}
-      <ModalEstandar opened={opened} close={close} title="Nueva Concesión">
-        <RegistroConcesion onSuccess={handleRegistroExitoso} onCancel={close} />
+      <ModalEstandar
+        opened={openedContratos}
+        close={closeContratos}
+        title={`Contratos - ${nombreSeleccionado}`}
+        size="lg"
+      >
+        {idSeleccionado && <ModalContratos idConcesion={idSeleccionado} />}
       </ModalEstandar>
 
-      {/* Modal de Gestión de Empresas */}
       <ModalEstandar
-        opened={gestionOpened}
-        close={closeGestion}
-        title="Gestión de Empresas"
+        opened={openedRegistro}
+        close={closeRegistro}
+        title="Nueva Concesión"
+        size="md"
       >
-        {selectedConcesion && (
-          <GestionEmpresas
-            concesion={selectedConcesion}
-            onClose={closeGestion}
-          />
-        )}
+        <RegistroConcesion
+          onSuccess={(nueva) => {
+            pushNuevaConcesion(nueva);
+            closeRegistro();
+          }}
+        />
       </ModalEstandar>
     </div>
   );
 };
+
+export default ConcesionesPage;

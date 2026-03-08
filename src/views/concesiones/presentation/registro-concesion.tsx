@@ -1,162 +1,85 @@
-import { Button, Group, TextInput } from "@mantine/core";
-import { useState } from "react";
-import { Schema_CrearConcesion } from "../service/concesiones.requests";
+import { Stack, Group, TextInput, Select, Button } from "@mantine/core";
+import { TicketIcon } from "@heroicons/react/24/outline";
+import { useRegistroConcesion } from "../hooks/useRegistroConcesion";
 import type { RES_Concesion } from "../service/concesiones.responses";
-import { useConcesiones } from "../../../services/concesiones/useConcesiones";
-import { SelectTipoMineral } from "../../../utils/select-tipo-mineral";
 
 interface RegistroConcesionProps {
-  onSuccess?: (concesion: RES_Concesion) => void;
-  onCancel?: () => void;
+  onSuccess: (nueva: RES_Concesion) => void;
 }
 
-export const RegistroConcesion = ({
-  onSuccess,
-  onCancel,
-}: RegistroConcesionProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+export const RegistroConcesion = ({ onSuccess }: RegistroConcesionProps) => {
+  const { form, setField, handleSubmit, loading } =
+    useRegistroConcesion(onSuccess);
 
-  // Form State manual (alineado con Categories)
-  const [nombre, setNombre] = useState("");
-  const [codigo_concesion, setCodigoConcesion] = useState("");
-  const [codigo_reinfo, setCodigoReinfo] = useState("");
-  const [ubigeo, setUbigeo] = useState("");
-  const [tipo_mineral, setTipoMineral] = useState<
-    "Polimetalico" | "Carbon" | "Aurifero" | undefined
-  >(undefined);
-
-  // Service
-  const { crearConcesion } = useConcesiones({ setError });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    try {
-      // Validacion manual
-      const validation = Schema_CrearConcesion.safeParse({
-        nombre,
-        codigo_concesion,
-        codigo_reinfo,
-        ubigeo,
-        tipo_mineral,
-      });
-
-      if (!validation.success) {
-        setError(
-          "Por favor complete todos los campos requeridos correctamente.",
-        );
-        console.error(validation.error);
-        return;
-      }
-
-      setIsLoading(true);
-      const response = await crearConcesion(validation.data);
-      if (response) {
-        onSuccess?.(response);
-      }
-    } catch (e) {
-      console.error(e);
-      setError("Ocurrió un error al intentar guardar.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const inputClasses = {
-    input: `bg - zinc - 900 / 50 border - zinc - 800 focus: border - zinc - 300 focus: ring - 1
-focus: ring - zinc - 300 text - white placeholder: text - zinc - 500`,
-    label: "text-zinc-300 mb-1 font-medium",
+  const fieldClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+    label: "text-zinc-400 text-xs mb-1",
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <TextInput
-        label="Nombre"
-        placeholder="Ej. Santa Rosa"
-        withAsterisk
-        required
-        radius="lg"
-        size="sm"
-        classNames={inputClasses}
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <Stack gap="lg">
+      <Group grow align="flex-start">
         <TextInput
-          label="Código"
-          placeholder="Ej. COD-12345"
-          withAsterisk
-          required
+          label="Nombre de Concesión"
+          placeholder="Ej. San Juan 1"
+          value={form.nombre}
+          onChange={(e) => setField("nombre", e.currentTarget.value)}
+          classNames={fieldClasses}
           radius="lg"
-          size="sm"
-          classNames={inputClasses}
-          value={codigo_concesion}
-          onChange={(e) => setCodigoConcesion(e.target.value)}
+          required
         />
-
         <TextInput
-          label="Cod. REINFO"
-          placeholder="Ej. REINFO-999"
-          withAsterisk
+          label="Código Concesión"
+          placeholder="Ej. 01020304"
+          value={form.codigo_concesion}
+          onChange={(e) => setField("codigo_concesion", e.currentTarget.value)}
+          classNames={fieldClasses}
+          radius="lg"
           required
-          radius="lg"
-          size="sm"
-          classNames={inputClasses}
-          value={codigo_reinfo}
-          onChange={(e) => setCodigoReinfo(e.target.value)}
         />
-      </div>
-
-      <SelectTipoMineral
-        label="Tipo de Mineral"
-        placeholder="Seleccionar"
-        withAsterisk
-        required
-        value={tipo_mineral}
-        onChange={(val: string | null) =>
-          setTipoMineral(val as "Polimetalico" | "Carbon" | undefined)
-        }
-      />
-
-      <TextInput
-        label="Ubicación (Ubigeo/Coordenadas)"
-        placeholder="Ej. -12.043, -77.028"
-        radius="lg"
-        size="sm"
-        classNames={inputClasses}
-        value={ubigeo}
-        onChange={(e) => setUbigeo(e.target.value)}
-      />
-
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-      <Group justify="flex-end" gap="md" mt="xl">
-        {onCancel && (
-          <Button
-            variant="subtle"
-            onClick={onCancel}
-            disabled={isLoading}
-            radius="lg"
-            size="sm"
-            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 
-            transition-colors"
-          >
-            Cancelar
-          </Button>
-        )}
-        <Button
-          type="submit"
-          loading={isLoading}
-          radius="lg"
-          size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 
-          font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
-        >
-          Guardar
-        </Button>
       </Group>
-    </form>
+
+      <Group grow align="flex-start">
+        <TextInput
+          label="Código REINFO"
+          placeholder="Ej. R-0001"
+          value={form.codigo_reinfo || ""}
+          onChange={(e) => setField("codigo_reinfo", e.currentTarget.value)}
+          classNames={fieldClasses}
+          radius="lg"
+        />
+        <TextInput
+          label="Ubigeo"
+          placeholder="Ej. 150101"
+          value={form.ubigeo || ""}
+          onChange={(e) => setField("ubigeo", e.currentTarget.value)}
+          classNames={fieldClasses}
+          radius="lg"
+        />
+      </Group>
+
+      <Select
+        label="Tipo Mineral"
+        placeholder="Seleccione tipo"
+        data={["Metálico", "No Metálico"]}
+        value={form.tipo_mineral}
+        onChange={(val) => setField("tipo_mineral", val)}
+        classNames={fieldClasses}
+        radius="lg"
+        required
+      />
+
+      <Button
+        fullWidth
+        onClick={handleSubmit}
+        loading={loading}
+        radius="lg"
+        className="bg-indigo-600 hover:bg-indigo-700 h-[42px] mt-2"
+        leftSection={<TicketIcon className="w-5 h-5" />}
+      >
+        Registrar Concesión
+      </Button>
+    </Stack>
   );
 };

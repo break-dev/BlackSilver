@@ -1,26 +1,29 @@
 export interface RES_Concesion {
   id_concesion: number;
   nombre: string;
-  codigo_concesion?: string;
-  codigo_reinfo?: string;
-  tipo_mineral?: string;
-  ubigeo?: string;
-  empresas_asignadas: number;
+  codigo_concesion: string;
+  codigo_reinfo: string | null;
+  ubigeo: string | null;
+  tipo_mineral: string;
   estado: string;
-  id_contrato_concesion?: number;
+  contratos_activos: number;
 }
 
-export interface RES_ContratoConcesion {
-  id_contrato_concesion: number;
-  id_concesion: number;
+export interface RES_Contrato {
+  id_contrato: number;
   id_empresa: number;
-  // Campos de empresa
-  razon_social: string;
-  nombre_comercial?: string;
+  nombre_comercial: string;
   ruc: string;
-  path_logo?: string;
-  // Campos del contrato
+  path_logo: string | null;
   fecha_inicio: string;
-  fecha_fin?: string | null;
-  estado: string; // "Activo" | "Inactivo"
+  fecha_fin: string | null;
+  estado: string;
+}
+
+export interface RES_Empresa {
+  id_empresa: number;
+  ruc: string;
+  nombre_comercial: string;
+  razon_social: string;
+  path_logo: string | null;
 }
