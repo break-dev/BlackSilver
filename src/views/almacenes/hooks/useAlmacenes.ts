@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { notifications } from "@mantine/notifications";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNotify } from "../../../hooks/useNotify";
 import type { IMessage } from "../../../shared/interfaces";
 import type { RES_Almacen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";
@@ -7,57 +7,36 @@ import { AlmacenesService } from "../service/almacenes.service";
 export const useAlmacenes = () => {
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<IMessage>({ type: "", content: "" });
+  const { notify } = useNotify();
 
   // Búsqueda
   const [busqueda, setBusqueda] = useState("");
 
-  useEffect(() => {
-    listar();
-  }, []);
-
-  // Único punto de notificaciones
-  useEffect(() => {
-    if (!message.type || !message.content) return;
-    const colorMap: Record<string, string> = {
-      success: "green",
-      error: "red",
-      info: "blue",
-    };
-    const titleMap: Record<string, string> = {
-      success: "Éxito",
-      error: "Error",
-      info: "Información",
-    };
-    notifications.show({
-      title: titleMap[message.type] ?? "",
-      message: message.content,
-      color: colorMap[message.type] ?? "gray",
-    });
-  }, [message]);
-
   const handleChildMessage = (msg: IMessage) => {
     if (!msg.type) return;
-    setMessage({ ...msg });
+    notify(msg);
   };
 
-  const listar = async () => {
+  const listar = useCallback(async () => {
     setLoading(true);
-    setMessage({ type: "", content: "" });
     try {
       const result = await AlmacenesService.get_almacenes();
       if (result.success) {
         setAlmacenes(result.data);
       } else {
-        setMessage({ type: "error", content: result.message });
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setMessage({ type: "error", content: "Error al cargar los almacenes" });
+      notify({ type: "error", content: "Error al cargar los almacenes" });
       console.error(error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    listar();
+  }, [listar]);
 
   const almacenesFiltrados = useMemo(() => {
     const q = busqueda.toLowerCase();
@@ -72,7 +51,6 @@ export const useAlmacenes = () => {
   return {
     almacenes,
     loading,
-    message,
     setAlmacenes,
     handleChildMessage,
     busqueda,

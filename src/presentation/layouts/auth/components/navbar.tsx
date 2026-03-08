@@ -8,7 +8,8 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import { iconos_menu_navegacion } from "./iconos-menu-navegacion";
-import { useMenuNav } from "../../../../shared/menu-navegacion/useMenuNav";
+import { useMenuNav } from "../../../../hooks/useMenuNav";
+import type { ISubmodulo } from "../../../../shared/interfaces";
 
 interface NavbarProps {
   onClose: () => void;
@@ -123,7 +124,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                       className="ml-4 mt-1 space-y-1 border-l-2 border-zinc-800 pl-3 
                     animate-slideDown"
                     >
-                      {mod.submodulos.map((sub) => {
+                      {mod.submodulos.map((sub: ISubmodulo) => {
                         const subIconData = Array.isArray(
                           modIconData?.submodulos,
                         )

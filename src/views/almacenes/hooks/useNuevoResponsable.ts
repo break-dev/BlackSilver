@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import { AlmacenesService } from "../service/almacenes.service";
 import { Schema_NuevoResponsable } from "../service/almacenes.requests";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type {
   RES_EmpleadoDisponible,
   RES_ResponsableAlmacen,

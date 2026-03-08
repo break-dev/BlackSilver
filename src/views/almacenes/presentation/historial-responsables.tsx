@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import type { IMessage } from "../../../shared/enums/message";
+import type { IMessage } from "../../../shared/interfaces";
 import type {
   RES_Almacen,
   RES_ResponsableAlmacen,

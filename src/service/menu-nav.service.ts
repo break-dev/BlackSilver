@@ -1,5 +1,5 @@
-import { api } from "../api";
-import type { IRespuesta, IModulo } from "../interfaces";
+import { api } from "../shared/api";
+import type { IRespuesta, IModulo } from "../shared/interfaces";
 
 export class MenuNavService {
   private static PATH = "/menu-nav";

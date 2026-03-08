@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import type { IModulo } from "../interfaces";
-import { MenuNavService } from "./menu-nav.service";
-import { useMenuNavegacionStore } from "../../stores/menu.store";
+import type { IModulo } from "../shared/interfaces";
+import { MenuNavService } from "../service/menu-nav.service";
+import { useMenuNavegacionStore } from "../stores/menu.store";
 
 export const useMenuNav = () => {
   const [loading, setLoading] = useState(false);
