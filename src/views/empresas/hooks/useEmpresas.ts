@@ -1,91 +1,71 @@
-import { api } from "../../shared/api";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { IRespuesta } from "../../shared/response";
-import type { RES_Empresa, RES_UsuarioEmpresa } from "./dtos/responses";
-import type { DTO_CrearEmpresa } from "./dtos/requests";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import { useNotify } from "../../../hooks/useNotify";
+import { EmpresasService } from "../service/empresas.service";
+import type { RES_Empresa } from "../service/empresas.responses";
 
-export const useEmpresas = ({ setError }: IUseHook) => {
-  const path = "/empresas";
+export const useEmpresas = () => {
+  const { notify } = useNotify();
 
-  // Listar empresas
-  const listar = async () => {
-    setError("");
+  // Estados de la lista
+  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+
+  // Modales
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+
+  const listar = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await api.get<IRespuesta<RES_Empresa[]>>(path);
-      const result = response.data;
-
+      const result = await EmpresasService.get_empresas();
       if (result.success) {
-        return result.data;
+        setEmpresas(result.data);
       } else {
-        // Prefer 'message' for user-friendly errors, aligned with Categories/Concesiones style
-        setError(result.message);
-        return [];
+        notify({ type: "error", content: result.message });
       }
     } catch (error) {
-      setError(String(error));
-      return [];
-    }
-  };
-
-  // Crear empresa
-  const crearEmpresa = async (dto: DTO_CrearEmpresa) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Empresa>>(path, dto);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message || "Error");
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
-  };
-
-  // (Mantener compatibilidad) Listar empresas por sesión (usado en SelectEmpresas)
-  const getEmpresasBySession = async (): Promise<RES_Empresa[]> => {
-    setError("");
-    try {
-      const response = await api.get<IRespuesta<RES_Empresa[]>>(
-        "/empresas/by-session",
-      );
-      const result = response.data;
-      return result.data || [];
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
-  };
-
-  // Get users by company
-  const getUsuariosEmpresa = async (
-    id_empresa: number,
-  ): Promise<RES_UsuarioEmpresa[]> => {
-    setError("");
-    try {
-      const response = await api.get<IRespuesta<RES_UsuarioEmpresa[]>>(
-        "/empresas/usuarios",
-        { params: { id_empresa } },
-      );
-      const result = response.data;
-      if (result.success) {
-        return result.data || [];
-      }
-      return [];
-    } catch (error) {
+      notify({ type: "error", content: "Error al cargar las empresas" });
       console.error(error);
-      return [];
+    } finally {
+      setLoading(false);
     }
+  }, [notify]);
+
+  useEffect(() => {
+    listar();
+  }, [listar]);
+
+  const empresasFiltradas = useMemo(() => {
+    const q = busqueda.toLowerCase();
+    return empresas.filter(
+      (emp) =>
+        !q ||
+        emp.razon_social.toLowerCase().includes(q) ||
+        emp.nombre_comercial.toLowerCase().includes(q) ||
+        emp.ruc.includes(q),
+    );
+  }, [empresas, busqueda]);
+
+  const onEmpresaCreada = (nueva: RES_Empresa) => {
+    setEmpresas((prev) => [nueva, ...prev]);
   };
 
   return {
-    listar,
-    crearEmpresa,
-    getEmpresasBySession,
-    getUsuariosEmpresa,
+    empresas,
+    loading,
+    busqueda,
+    setBusqueda,
+    empresasFiltradas,
+
+    // Modales
+    openedCreate,
+    openCreate,
+    closeCreate,
+
+    // Handlers
+    onEmpresaCreada,
+    recargar: listar,
   };
 };
