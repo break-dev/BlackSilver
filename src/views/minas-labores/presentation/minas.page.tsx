@@ -20,7 +20,7 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroMina } from "./registro-mina";
 import { EmpresasEjecutoras } from "./empresas-ejecutoras";
 import { HistorialResponsables } from "./historial-responsables";
-import { GestionLabores } from "./labores.page";
+import { GestionLabores } from "./labores";
 
 export const MinasPage = () => {
   const {
@@ -52,14 +52,6 @@ export const MinasPage = () => {
     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
       {/* Header & Concesión Selector */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-sm shadow-2xl">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            Minas y Labores
-          </h1>
-          <p className="text-zinc-500 font-medium">
-            Gestión de concesiones mineras y sus frentes de trabajo
-          </p>
-        </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="w-full sm:w-72">

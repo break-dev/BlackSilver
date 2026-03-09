@@ -23,9 +23,9 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 import { useConcesiones } from "../hooks/useConcesiones";
-import { ModalContratos } from "./historial-contratos";
 import { RegistroConcesion } from "./registro-concesion";
 import type { RES_Concesion } from "../service/concesiones.responses";
+import { HistorialContratos } from "./historial-contratos";
 
 export const ConcesionesPage = () => {
   useTitlePage("Concesiones");
@@ -153,7 +153,7 @@ export const ConcesionesPage = () => {
         title={`Contratos - ${nombreSeleccionado}`}
         size="lg"
       >
-        {idSeleccionado && <ModalContratos idConcesion={idSeleccionado} />}
+        {idSeleccionado && <HistorialContratos idConcesion={idSeleccionado} />}
       </ModalEstandar>
 
       <ModalEstandar

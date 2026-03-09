@@ -104,7 +104,7 @@ export const ProductosPage = () => {
       textAlign: "right",
       render: (r) => (
         <Text size="sm" fw={500} className="text-right">
-          {r.stock_minimo.toFixed(2)}
+          {(Number(r.stock_minimo) || 0).toFixed(2)}
         </Text>
       ),
     },

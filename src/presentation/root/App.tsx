@@ -4,21 +4,7 @@ import { AuthLayout } from "../layouts/auth/auth.layout";
 import { ProtectedRoute } from "./protectedRoute";
 import { PublicRoute } from "./publicRoute";
 import { PlaceholderPage } from "../pages/placeholder.page";
-// Vistas
-import { LoginPage } from "../../views/login/presentation/login.page";
-import { HomePage } from "../pages/home.page";
-import { ConcesionesPage } from "../../views/concesiones/presentation/concesiones.page";
-import MinasPage from "../../views/minas/presentation/minas.page";
-import { EmpresasPage } from "../../views/empresas/presentation/empresas.page";
-import { CategoriasPage } from "../../views/categorias/presentation/categorias.page";
-import { EmpleadosPage } from "../../views/empleados/presentation/empleados.page";
-import AlmacenesPage from "../../views/almacenes/presentation/almacenes.page";
-import { ProductosPage } from "../../views/productos/presentation/productos.page";
-import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
-import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
-import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
-import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
-import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
+// Layouts
 import {
   ConfiguracionLayout,
   EmpresasLayout,
@@ -31,6 +17,22 @@ import {
   RequerimientoAlmacenLayout,
   SolicitudReabastecimientoLayout,
 } from "../layouts/logistica.layout";
+// Vistas
+import { LoginPage } from "../../views/login/presentation/login.page";
+import { HomePage } from "../pages/home.page";
+import { ConcesionesPage } from "../../views/concesiones/presentation/concesiones.page";
+import { MinasPage } from "../../views/minas-labores/presentation/minas.page";
+import { EmpresasPage } from "../../views/empresas/presentation/empresas.page";
+import { CategoriasPage } from "../../views/categorias/presentation/categorias.page";
+import { EmpleadosPage } from "../../views/empleados/presentation/empleados.page";
+import { AlmacenesPage } from "../../views/almacenes/presentation/almacenes.page";
+import { ProductosPage } from "../../views/productos/presentation/productos.page";
+import OrganigramaPage from "../../views/organigrama/presentation/organigrama.page";
+// import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
+// import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
+// import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
+// import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
+// import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 
 export const App = () => {
   return (
@@ -77,11 +79,7 @@ export const App = () => {
 
           {/* Personal */}
           <Route path="personal" element={<PersonalLayout />}>
-            <Route path="areas" element={<PlaceholderPage titulo="Áreas" />} />
-            <Route
-              path="cargos"
-              element={<PlaceholderPage titulo="Cargos" />}
-            />
+            <Route path="areas_cargos" element={<OrganigramaPage />} />
             <Route path="trabajadores" element={<EmpleadosPage />} />
           </Route>
 
@@ -105,12 +103,12 @@ export const App = () => {
               element={<PlaceholderPage titulo="Familias" />}
             />
             <Route path="productos" element={<ProductosPage />} />
-            <Route path="lotes" element={<LotesPage />} />
-            <Route path="kardex" element={<KardexProductosPage />} />
+            {/* <Route path="lotes" element={<LotesPage />} />
+            <Route path="kardex" element={<KardexProductosPage />} /> */}
           </Route>
 
           {/* Requerimientos de Almacen */}
-          <Route
+          {/* <Route
             path="requerimiento_almacen"
             element={<RequerimientoAlmacenLayout />}
           >
@@ -122,10 +120,10 @@ export const App = () => {
               path="atencion_requerimientos"
               element={<RequerimientosAlmacenAtencionPage />}
             />
-          </Route>
+          </Route> */}
 
           {/* Solicitudes de Reabastecimiento */}
-          <Route
+          {/* <Route
             path="solicitud_reabastecimiento"
             element={<SolicitudReabastecimientoLayout />}
           >
@@ -137,7 +135,7 @@ export const App = () => {
               path="atencion_solicitudes"
               element={<PlaceholderPage titulo="Atencion de Solicitudes" />}
             />
-          </Route>
+          </Route> */}
         </Route>
 
         {/* Redireccion */}
