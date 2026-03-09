@@ -3,8 +3,8 @@ import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistroLaborMina } from "./registro-labor-mina";
-import { useGestionLabores } from "../hooks/useGestionLabores";
+import { RegistroLabor } from "./registro-labor";
+import { useLabores } from "../hooks/useLabores";
 import type { RES_Labor, RES_ResumenMina } from "../service/minas.responses";
 
 interface Props {
@@ -21,7 +21,7 @@ export const GestionLabores = ({ mina }: Props) => {
     openCreate,
     closeCreate,
     handleLaborCreada,
-  } = useGestionLabores({ idMina: mina.id_mina });
+  } = useLabores({ idMina: mina.id_mina });
 
   const columns: DataTableColumn<RES_Labor>[] = [
     {
@@ -77,16 +77,6 @@ export const GestionLabores = ({ mina }: Props) => {
       render: (r) => (
         <Text size="xs" className="text-zinc-500">
           {r.fecha_inicio ? new Date(r.fecha_inicio).toLocaleDateString() : "-"}
-        </Text>
-      ),
-    },
-    {
-      accessor: "fecha_fin",
-      title: "Término",
-      width: 120,
-      render: (r) => (
-        <Text size="xs" className="text-zinc-500">
-          {r.fecha_fin ? new Date(r.fecha_fin).toLocaleDateString() : "-"}
         </Text>
       ),
     },
@@ -160,7 +150,7 @@ export const GestionLabores = ({ mina }: Props) => {
         title="Nueva Labor"
         size="lg"
       >
-        <RegistroLaborMina
+        <RegistroLabor
           idMina={mina.id_mina}
           onSuccess={handleLaborCreada}
           onCancel={closeCreate}

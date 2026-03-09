@@ -1,42 +1,26 @@
 import {
-  ActionIcon,
   Badge,
   Button,
-  Group,
-  Menu,
   Select,
-  TextInput,
   Text,
+  TextInput,
+  ThemeIcon,
   Tooltip,
 } from "@mantine/core";
 import {
-  MagnifyingGlassIcon,
   PlusIcon,
-  TrashIcon,
-  PencilSquareIcon,
-  EllipsisVerticalIcon,
+  MagnifyingGlassIcon,
   MapPinIcon,
+  UserIcon,
   BriefcaseIcon,
-  RectangleStackIcon,
-  UserCircleIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { type DataTableColumn } from "mantine-datatable";
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { useMinas } from "../hooks/useMinas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroMina } from "./registro-mina";
-import { GestionEmpresasMina } from "./gestion-empresas-mina";
-import { GestionResponsablesMina } from "./gestion-responsables-mina";
-import { GestionLabores } from "../labores/presentation/labores.page";
-import { useMinasPage } from "../hooks/useMinasPage";
-import type { RES_ResumenMina } from "../service/minas.responses";
-
-const inputClasses = {
-  input:
-    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-  dropdown: "bg-zinc-900 border-zinc-800",
-  option:
-    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-700 rounded-md my-0.5",
-};
+import { EmpresasEjecutoras } from "./empresas-ejecutoras";
+import { HistorialResponsables } from "./historial-responsables";
+import { GestionLabores } from "./labores.page";
 
 export const MinasPage = () => {
   const {
@@ -62,212 +46,200 @@ export const MinasPage = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
-  } = useMinasPage();
-
-  const columns: DataTableColumn<RES_ResumenMina>[] = [
-    {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_, i) => i + 1,
-    },
-    {
-      accessor: "nombre",
-      title: "Mina",
-      width: 200,
-      render: (r) => (
-        <Text size="sm" fw={600} className="text-white">
-          {r.nombre}
-        </Text>
-      ),
-    },
-    {
-      accessor: "responsable",
-      title: "Responsable",
-      width: 220,
-      render: (r) => (
-        <Group gap="xs">
-          {r.responsable ? (
-            <>
-              <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-              <Text size="sm" className="text-zinc-200">
-                {r.responsable}
-              </Text>
-            </>
-          ) : (
-            <Badge variant="outline" color="gray" size="sm">
-              Sin Asignar
-            </Badge>
-          )}
-          <Tooltip label="Gestionar Responsable">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={() => handleOpenResponsables(r)}
-            >
-              <PencilSquareIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
-    },
-    {
-      accessor: "cantidad_empresas_ejecutoras",
-      title: "Empresas",
-      width: 130,
-      textAlign: "center",
-      render: (r) => (
-        <Group gap={6} justify="center">
-          <Badge variant="light" color="indigo" size="sm" radius="sm">
-            {r.cantidad_empresas_ejecutoras ?? 0} Ejec.
-          </Badge>
-          <Tooltip label="Gestionar Empresas">
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              color="indigo"
-              onClick={() => handleOpenEmpresas(r)}
-            >
-              <BriefcaseIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
-    },
-    {
-      accessor: "cantidad_labores",
-      title: "Labores",
-      width: 130,
-      textAlign: "center",
-      render: (r) => (
-        <Group gap={6} justify="center">
-          <Badge variant="light" color="cyan" size="sm" radius="sm">
-            {r.cantidad_labores ?? 0} Act.
-          </Badge>
-          <Tooltip label="Ver Labores">
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              color="cyan"
-              onClick={() => handleOpenLabores(r)}
-            >
-              <RectangleStackIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
-    },
-    {
-      accessor: "estado",
-      title: "Estado",
-      textAlign: "center",
-      width: 100,
-      render: (r) => (
-        <Badge
-          color={r.estado === "Activo" ? "green" : "red"}
-          variant="light"
-          size="sm"
-        >
-          {r.estado}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "actions",
-      title: "",
-      width: 60,
-      textAlign: "right",
-      render: () => (
-        <Menu shadow="md" width={150} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
-  ];
+  } = useMinas();
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Selector de concesión */}
-      <div className="flex flex-col sm:flex-row gap-4 items-end">
-        <div className="flex-1 max-w-xs">
-          <label className="block text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1.5">
-            <MapPinIcon className="w-3.5 h-3.5 inline mr-1" />
-            Concesión
-          </label>
-          <Select
-            placeholder="Seleccione una concesión"
-            data={concesiones.map((c) => ({
-              value: String(c.id_concesion),
-              label: c.nombre,
-            }))}
-            value={concesionSeleccionada ? String(concesionSeleccionada) : null}
-            onChange={(v) => setConcesionSeleccionada(v ? parseInt(v) : null)}
-            searchable
-            nothingFoundMessage="Sin concesiones"
-            classNames={inputClasses}
-            radius="lg"
-          />
+    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
+      {/* Header & Concesión Selector */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-sm shadow-2xl">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            Minas y Labores
+          </h1>
+          <p className="text-zinc-500 font-medium">
+            Gestión de concesiones mineras y sus frentes de trabajo
+          </p>
         </div>
 
-        <div className="flex gap-3 flex-1">
-          <TextInput
-            placeholder="Buscar mina..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 min-w-[180px]"
-            radius="lg"
-            classNames={inputClasses}
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="w-full sm:w-72">
+            <Select
+              placeholder="Seleccione Concesión"
+              data={concesiones.map((c) => ({
+                value: String(c.id_concesion),
+                label: c.nombre,
+              }))}
+              value={
+                concesionSeleccionada ? String(concesionSeleccionada) : null
+              }
+              onChange={(v) => setConcesionSeleccionada(v ? parseInt(v) : null)}
+              label={
+                <span className="text-zinc-500 text-xs font-bold uppercase mb-1 block">
+                  Concesión Activa
+                </span>
+              }
+              classNames={{
+                input:
+                  "bg-zinc-950/50 border-zinc-800 text-white font-semibold focus:border-indigo-500/50 h-11 rounded-xl",
+                dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl",
+                option:
+                  "hover:bg-zinc-800 text-zinc-300 rounded-lg mx-1 my-0.5",
+              }}
+            />
+          </div>
           <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openCreate}
-            radius="lg"
+            size="lg"
+            radius="xl"
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            className="w-full sm:w-auto bg-linear-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 border-0 shadow-lg shadow-indigo-500/20"
             disabled={!concesionSeleccionada}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
           >
             Nueva Mina
           </Button>
         </div>
       </div>
 
-      {/* Tabla */}
-      <DataTableEstandar
-        idAccessor="id_mina"
-        columns={columns}
-        records={minasFiltradas}
-        loading={loading}
-      />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white">Minas Registradas</h2>
+            <Badge variant="filled" color="indigo" radius="sm">
+              {minasFiltradas.length}
+            </Badge>
+          </div>
+          <div className="relative w-full max-w-xs">
+            <TextInput
+              placeholder="Buscar mina..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.currentTarget.value)}
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-600" />
+              }
+              classNames={{
+                input:
+                  "bg-zinc-900/40 border-zinc-800 text-white rounded-xl focus:border-zinc-500 h-10 w-full pl-10",
+              }}
+            />
+          </div>
+        </div>
 
-      {/* Modal: Nueva Mina */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-48 rounded-3xl bg-zinc-900/20 animate-pulse border border-zinc-800/50"
+              />
+            ))}
+          </div>
+        ) : minasFiltradas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-3xl border border-dashed border-zinc-800">
+            <Squares2X2Icon className="w-12 h-12 text-zinc-700 mb-4" />
+            <p className="text-zinc-500 font-medium">
+              No se encontraron minas registradas
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {minasFiltradas.map((mina) => (
+              <div
+                key={mina.id_mina}
+                className="group relative bg-zinc-900/30 rounded-3xl border border-zinc-800/60 p-6 hover:bg-zinc-900/50 hover:border-indigo-500/30 transition-all duration-300 shadow-xl"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                      {mina.nombre}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-zinc-500 text-sm font-medium">
+                      <MapPinIcon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">
+                        {mina.descripcion || "Sin ubicación"}
+                      </span>
+                    </div>
+                  </div>
+                  <ThemeIcon
+                    variant="light"
+                    color="indigo"
+                    size="lg"
+                    radius="xl"
+                    className="shrink-0 shadow-inner"
+                  >
+                    <Squares2X2Icon className="w-5 h-5" />
+                  </ThemeIcon>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-950/30 border border-zinc-800/50">
+                    <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/10">
+                      <UserIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-600 font-bold uppercase block tracking-tighter">
+                        Responsable Actual
+                      </span>
+                      <Text
+                        size="sm"
+                        className="text-zinc-300 font-bold leading-tight"
+                      >
+                        {mina.responsable || "No asignado"}
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Tooltip label="Gestionar Labores">
+                    <Button
+                      fullWidth
+                      variant="light"
+                      color="indigo"
+                      size="md"
+                      radius="xl"
+                      className="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold border border-indigo-500/10"
+                      onClick={() => handleOpenLabores(mina)}
+                    >
+                      Labores
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Responsables">
+                    <Button
+                      variant="light"
+                      color="orange"
+                      size="md"
+                      radius="xl"
+                      className="px-3 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 border border-orange-500/10"
+                      onClick={() => handleOpenResponsables(mina)}
+                    >
+                      <UserIcon className="w-5 h-5" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip label="Empresas">
+                    <Button
+                      variant="light"
+                      color="cyan"
+                      size="md"
+                      radius="xl"
+                      className="px-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/10"
+                      onClick={() => handleOpenEmpresas(mina)}
+                    >
+                      <BriefcaseIcon className="w-5 h-5" />
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modales */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Nueva Mina"
+        title={"Nueva Mina"}
+        size="md"
       >
         {concesionSeleccionada && (
           <RegistroMina
@@ -278,28 +250,28 @@ export const MinasPage = () => {
         )}
       </ModalEstandar>
 
-      {/* Modal: Empresas Ejecutoras */}
       <ModalEstandar
         opened={openedEmpresas}
         close={closeEmpresas}
-        title="Empresas ejecutoras"
+        title={"Empresas Ejecutoras"}
+        size="lg"
       >
-        {selectedMina && (
-          <GestionEmpresasMina
+        {selectedMina && concesionSeleccionada && (
+          <EmpresasEjecutoras
             idMina={selectedMina.id_mina}
-            idConcesion={concesionSeleccionada ?? 0}
+            idConcesion={concesionSeleccionada}
           />
         )}
       </ModalEstandar>
 
-      {/* Modal: Responsables */}
       <ModalEstandar
         opened={openedResponsables}
         close={closeResponsables}
-        title="Responsables de Mina"
+        title={"Responsables"}
+        size="lg"
       >
         {selectedMina && (
-          <GestionResponsablesMina
+          <HistorialResponsables
             mina={selectedMina}
             onResponsableAsignado={(nombre) =>
               handleResponsableAsignado(selectedMina.id_mina, nombre)
@@ -308,12 +280,11 @@ export const MinasPage = () => {
         )}
       </ModalEstandar>
 
-      {/* Modal: Labores */}
       <ModalEstandar
         opened={openedLabores}
         close={closeLabores}
-        title="Labores"
-        size="80%"
+        title={"Labores"}
+        size="xl"
       >
         {selectedMina && <GestionLabores mina={selectedMina} />}
       </ModalEstandar>

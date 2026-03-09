@@ -11,14 +11,6 @@ export const Schema_CrearMina = z.object({
 });
 export type DTO_CrearMina = z.infer<typeof Schema_CrearMina>;
 
-// Actualizar mina — el usuario ingresa nombre/descripcion
-export const Schema_UpdateMina = z.object({
-  id_mina: z.number().int().positive(),
-  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
-  descripcion: z.string().optional(),
-});
-export type DTO_UpdateMina = z.infer<typeof Schema_UpdateMina>;
-
 // Asignar empresa ejecutora — solo IDs, el front los arma
 export interface DTO_AsignarEmpresaMina {
   id_mina: number;
@@ -36,7 +28,6 @@ export const Schema_AsignarResponsable = z.object({
 });
 export type DTO_AsignarResponsable = z.infer<typeof Schema_AsignarResponsable>;
 
-// Labores — el usuario ingresa todos los campos manualmente
 export const Schema_CrearLabor = z.object({
   id_mina: z.number().int().positive({ message: "La mina es obligatoria" }),
   id_empresa: z
@@ -57,11 +48,5 @@ export const Schema_CrearLabor = z.object({
   alto: z.coerce.number().optional().nullable(),
   nivel: z.string().optional().nullable(),
   fecha_inicio: z.string().optional().nullable(),
-  fecha_fin: z.string().optional().nullable(),
 });
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;
-
-export const Schema_UpdateLabor = Schema_CrearLabor.extend({
-  id_labor: z.number().int().positive(),
-});
-export type DTO_UpdateLabor = z.infer<typeof Schema_UpdateLabor>;

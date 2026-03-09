@@ -21,6 +21,7 @@ export interface RES_ResumenMina {
 // Empresa ejecutora actual de la mina
 export interface RES_EmpresaEjecutora {
   id_empresa_mina: number;
+  id_empresa: number;
   razon_social: string;
   ruc: string;
   path_logo: string | null;
@@ -76,11 +77,4 @@ export interface RES_TipoLabor {
   id_tipo_labor: number;
   nombre: string;
   es_de_produccion: 0 | 1;
-}
-
-// Empresa ejecutora de la mina, para elegir al crear una labor
-export interface RES_EmpresaEjecutoraMina {
-  id_empresa: number;
-  razon_social: string;
-  path_logo: string | null;
 }

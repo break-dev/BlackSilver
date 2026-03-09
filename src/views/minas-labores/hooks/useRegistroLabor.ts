@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNotify } from "../../../../hooks/useNotify";
+import { useNotify } from "../../../hooks/useNotify";
 import { MinasService } from "../service/minas.service";
 import { Schema_CrearLabor } from "../service/minas.requests";
 import type {
-  RES_EmpresaEjecutoraMina,
+  RES_EmpresaEjecutora,
   RES_Labor,
   RES_TipoLabor,
 } from "../service/minas.responses";
@@ -20,7 +20,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   // Datos para los selects
   const [tiposLabor, setTiposLabor] = useState<RES_TipoLabor[]>([]);
   const [empresasEjecutoras, setEmpresasEjecutoras] = useState<
-    RES_EmpresaEjecutoraMina[]
+    RES_EmpresaEjecutora[]
   >([]);
   const [loadingSelects, setLoadingSelects] = useState(false);
 
@@ -57,7 +57,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     try {
       const [resTipos, resEmpresas] = await Promise.all([
         MinasService.getTiposLabor(),
-        MinasService.getEmpresasLabor(idMina),
+        MinasService.getEmpresasEjecutoras(idMina),
       ]);
       if (resTipos.data.success) setTiposLabor(resTipos.data.data);
       if (resEmpresas.data.success)

@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useNotify } from "../../../hooks/useNotify";
 import { MinasService } from "../service/minas.service";
 import { Schema_CrearMina } from "../service/minas.requests";
 import type { RES_ResumenMina } from "../service/minas.responses";
@@ -15,7 +14,6 @@ export const useRegistroMina = ({
   onSuccess,
   onCancel,
 }: Props) => {
-  const { notify } = useNotify();
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");

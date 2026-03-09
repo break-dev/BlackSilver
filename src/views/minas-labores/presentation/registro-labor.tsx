@@ -29,7 +29,7 @@ const TIPO_SOSTENIMIENTO_OPTIONS = [
   { value: "Mecanizada", label: "Mecanizada" },
 ];
 
-export const RegistroLaborMina = ({ idMina, onSuccess, onCancel }: Props) => {
+export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   const {
     tiposLabor,
     empresasEjecutoras,

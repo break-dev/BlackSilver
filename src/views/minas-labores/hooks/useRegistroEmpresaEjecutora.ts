@@ -1,0 +1,55 @@
+import { useState, useCallback, useEffect } from "react";
+import { MinasService } from "../service/minas.service";
+import type { RES_EmpresaDisponible } from "../service/minas.responses";
+
+interface Props {
+  idMina: number;
+  idConcesion: number;
+}
+
+export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
+  const [disponibles, setDisponibles] = useState<RES_EmpresaDisponible[]>([]);
+  const [loadingDisponibles, setLoadingDisponibles] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const cargarDisponibles = useCallback(async () => {
+    setLoadingDisponibles(true);
+    try {
+      const { data: res } = await MinasService.getEmpresasDisponibles(
+        idConcesion,
+        idMina,
+      );
+      if (res.success) setDisponibles(res.data);
+    } finally {
+      setLoadingDisponibles(false);
+    }
+  }, [idConcesion, idMina]);
+
+  useEffect(() => {
+    cargarDisponibles();
+  }, [cargarDisponibles]);
+
+  const asignarEmpresa = async (id_empresa: number) => {
+    setIsSubmitting(true);
+    try {
+      const { data: res } = await MinasService.asignarEmpresa({
+        id_mina: idMina,
+        id_empresa,
+      });
+      if (res.success) {
+        cargarDisponibles();
+        return res.data;
+      }
+      throw new Error(res.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return {
+    disponibles,
+    loadingDisponibles,
+    isSubmitting,
+    asignarEmpresa,
+  };
+};

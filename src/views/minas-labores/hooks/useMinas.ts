@@ -1,131 +1,165 @@
-import { api } from "../../shared/api";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { IRespuesta } from "../../shared/response";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import { useUIStore } from "../../../stores/ui.store";
+import { useNotify } from "../../../hooks/useNotify";
+import { MinasService } from "../service/minas.service";
 import type {
-  DTO_CrearMina,
-  DTO_AsignarEmpresaMina,
-  DTO_AsignarResponsableMina,
-} from "./dtos/requests";
-import type { RES_Mina, RES_ResponsableMina } from "./dtos/responses";
-import type { RES_Empresa } from "../../views/empresas/service/responses";
+  RES_ConcesionItem,
+  RES_ResumenMina,
+} from "../service/minas.responses";
 
-export const useMinas = ({ setError }: IUseHook) => {
-  const path = "/minas";
+export const useMinas = () => {
+  const setTitle = useUIStore((state) => state.setTitle);
+  const { notify } = useNotify();
 
-  // 1. Listar Minas
-  const listar = async (filters?: { id_concesion?: number }) => {
-    setError("");
+  // Concesiones
+  const [concesiones, setConcesiones] = useState<RES_ConcesionItem[]>([]);
+  const [concesionSeleccionada, setConcesionSeleccionada] = useState<
+    number | null
+  >(null);
+
+  // Minas
+  const [minas, setMinas] = useState<RES_ResumenMina[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+
+  // Modales
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [openedEmpresas, { open: openEmpresas, close: closeEmpresas }] =
+    useDisclosure(false);
+  const [
+    openedResponsables,
+    { open: openResponsables, close: closeResponsables },
+  ] = useDisclosure(false);
+  const [openedLabores, { open: openLabores, close: closeLabores }] =
+    useDisclosure(false);
+
+  const [selectedMina, setSelectedMina] = useState<RES_ResumenMina | null>(
+    null,
+  );
+
+  // Cargar concesiones al montar
+  const cargarConcesiones = useCallback(async () => {
     try {
-      const response = await api.get<IRespuesta<RES_Mina[]>>(path, {
-        params: filters,
-      });
-      const result = response.data;
-      if (result.success) return result.data;
-      setError(result.message);
-      return [];
-    } catch (error) {
-      setError(String(error));
-      return [];
+      const { data: res } = await MinasService.getConcesionesSesion();
+      if (res.success) {
+        setConcesiones(res.data);
+        if (res.data.length > 0) {
+          setConcesionSeleccionada(res.data[0].id_concesion);
+        }
+      } else {
+        notify({ type: "error", content: res.message });
+      }
+    } catch {
+      notify({ type: "error", content: "Error al cargar las concesiones" });
     }
+  }, [notify]);
+
+  // Cargar minas cuando cambia la concesión
+  const cargarMinas = useCallback(
+    async (id_concesion: number) => {
+      setLoading(true);
+      try {
+        const { data: res } = await MinasService.getMinasResumen(id_concesion);
+        if (res.success) {
+          setMinas(res.data);
+        } else {
+          notify({ type: "error", content: res.message });
+        }
+      } catch {
+        notify({ type: "error", content: "Error al cargar las minas" });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [notify],
+  );
+
+  useEffect(() => {
+    setTitle("Minas y Labores");
+    cargarConcesiones();
+  }, [setTitle, cargarConcesiones]);
+
+  useEffect(() => {
+    if (concesionSeleccionada) {
+      cargarMinas(concesionSeleccionada);
+    }
+  }, [concesionSeleccionada, cargarMinas]);
+
+  const minasFiltradas = useMemo(() => {
+    const q = busqueda.toLowerCase();
+    return minas.filter((m) => !q || m.nombre.toLowerCase().includes(q));
+  }, [minas, busqueda]);
+
+  const handleMinaCreada = (nueva: RES_ResumenMina) => {
+    setMinas((prev) => [nueva, ...prev]);
+    closeCreate();
+    notify({ type: "success", content: "Mina creada correctamente" });
   };
 
-  // 2. Crear Mina
-  const crear = async (dto: DTO_CrearMina) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Mina>>(path, dto);
-      const result = response.data;
-      if (result.success) return result.data;
-      setError(result.message);
-      return null;
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
+  const handleOpenEmpresas = (mina: RES_ResumenMina) => {
+    setSelectedMina(mina);
+    openEmpresas();
   };
 
-  // 3. Asignar Empresa
-  const asignarEmpresa = async (dto: DTO_AsignarEmpresaMina) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<boolean>>(
-        `${path}/asignar-empresa`,
-        dto,
-      );
-      const result = response.data;
-      if (result.success) return true;
-      setError(result.message);
-      return false;
-    } catch (error) {
-      setError(String(error));
-      return false;
-    }
+  const handleOpenResponsables = (mina: RES_ResumenMina) => {
+    setSelectedMina(mina);
+    openResponsables();
   };
 
-  // 4. Listar Empresas Asignadas a Mina
-  const listarEmpresasAsignadas = async (id_mina: number) => {
-    setError("");
-    try {
-      const response = await api.get<IRespuesta<RES_Empresa[]>>(
-        `${path}/empresas`,
-        {
-          params: { id_mina },
-        },
-      );
-      const result = response.data;
-      if (result.success) return result.data;
-      setError(result.message);
-      return [];
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
+  const handleOpenLabores = (mina: RES_ResumenMina) => {
+    setSelectedMina(mina);
+    openLabores();
   };
 
-  // 5. Asignar Responsable de Mina
-  const asignarResponsable = async (dto: DTO_AsignarResponsableMina) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_ResponsableMina>>(
-        `${path}/asignar-responsable`,
-        dto,
-      );
-      const result = response.data;
-      if (!result.success) setError(result.message);
-      return result;
-    } catch (error) {
-      const msg = String(error);
-      setError(msg);
-      return { success: false, message: msg, data: null };
-    }
-  };
-
-  // 6. Listar Responsables de Mina
-  const listarResponsables = async (id_mina: number) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_ResponsableMina[]>>(
-        `${path}/responsables`,
-        {
-          id_mina,
-        },
-      );
-      const result = response.data;
-      if (result.success) return result.data;
-      setError(result.message);
-      return [];
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
+  const handleResponsableAsignado = (
+    id_mina: number,
+    nuevoNombreResponsable: string,
+  ) => {
+    setMinas((prev) =>
+      prev.map((m) =>
+        m.id_mina === id_mina
+          ? { ...m, responsable: nuevoNombreResponsable }
+          : m,
+      ),
+    );
   };
 
   return {
-    listar,
-    crear,
-    asignarEmpresa,
-    listarEmpresasAsignadas,
-    asignarResponsable,
-    listarResponsables,
+    // Concesiones
+    concesiones,
+    concesionSeleccionada,
+    setConcesionSeleccionada,
+
+    // Minas
+    minas,
+    minasFiltradas,
+    loading,
+    busqueda,
+    setBusqueda,
+
+    // Modales
+    openedCreate,
+    openCreate,
+    closeCreate,
+    openedEmpresas,
+    closeEmpresas,
+    openedResponsables,
+    closeResponsables,
+    openedLabores,
+    closeLabores,
+    selectedMina,
+
+    // Handlers
+    handleMinaCreada,
+    handleOpenEmpresas,
+    handleOpenResponsables,
+    handleOpenLabores,
+    handleResponsableAsignado,
+
+    // Concesion seleccionada como objeto
+    concesionSeleccionadaObj:
+      concesiones.find((c) => c.id_concesion === concesionSeleccionada) ?? null,
   };
 };

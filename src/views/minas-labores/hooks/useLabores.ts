@@ -1,117 +1,70 @@
-import { api } from "../../shared/api";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { IRespuesta } from "../../shared/response";
-import type {
-  RES_Labor,
-  RES_TipoLabor,
-  RES_HistorialResponsableLabor,
-} from "./dtos/responses";
-import type {
-  DTO_CrearLabor,
-  DTO_AsignarResponsableLabor,
-} from "./dtos/requests";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import { useNotify } from "../../../hooks/useNotify";
+import { MinasService } from "../service/minas.service";
+import type { RES_Labor } from "../service/minas.responses";
 
-export const useLabores = ({ setError }: IUseHook) => {
-  const path = "/labores";
+interface Props {
+  idMina: number;
+}
 
-  // 1. Listar Labores por Mina
-  const listar = async (filters?: { id_mina?: number }) => {
-    setError("");
+export const useLabores = ({ idMina }: Props) => {
+  const { notify } = useNotify();
+
+  const [labores, setLabores] = useState<RES_Labor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+
+  const cargar = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await api.get<IRespuesta<RES_Labor[]>>(path, {
-        params: filters,
-      });
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
+      const { data: res } = await MinasService.getLabores(idMina);
+      if (res.success) {
+        setLabores(res.data);
       } else {
-        setError(result.message);
-        return [];
+        notify({ type: "error", content: res.message });
       }
-    } catch (error) {
-      setError(String(error));
-      return [];
+    } catch {
+      notify({ type: "error", content: "Error al cargar las labores" });
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [idMina, notify]);
 
-  // 2. Listar Tipos de Labor
-  const listarTipos = async () => {
-    setError("");
-    try {
-      const response = await api.get<IRespuesta<RES_TipoLabor[]>>(
-        `${path}/tipos`,
-      );
-      const result = response.data;
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
 
-      if (result.success) return result.data;
-      setError(result.message);
-      return [];
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
-  };
+  const laboresFiltradas = useMemo(() => {
+    const q = busqueda.toLowerCase().trim();
+    if (!q) return labores;
+    return labores.filter(
+      (l) =>
+        l.nombre.toLowerCase().includes(q) ||
+        l.correlativo?.toLowerCase().includes(q) ||
+        l.empresa?.toLowerCase().includes(q) ||
+        l.veta?.toLowerCase().includes(q) ||
+        l.nivel?.toLowerCase().includes(q),
+    );
+  }, [labores, busqueda]);
 
-  // 3. Crear Labor
-  const crearLabor = async (dto: DTO_CrearLabor) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Labor>>(path, dto);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message);
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
-  };
-
-  // 4. Historial de Responsables
-  const historial_responsables = async (idLabor: number) => {
-    setError("");
-    try {
-      const response = await api.get<
-        IRespuesta<RES_HistorialResponsableLabor[]>
-      >(`${path}/historial-responsables/${idLabor}`);
-      const result = response.data;
-      if (result.success) return result.data;
-      setError(result.message);
-      return [];
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
-  };
-
-  // 5. Asignar Responsable
-  const asignar_responsable = async (dto: DTO_AsignarResponsableLabor) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<boolean>>(
-        `${path}/asignar-responsable`,
-        dto,
-      );
-      const result = response.data;
-      if (result.success) return true;
-      setError(result.message);
-      return false;
-    } catch (error) {
-      setError(String(error));
-      return false;
-    }
+  const handleLaborCreada = (nueva: RES_Labor) => {
+    setLabores((prev) => [nueva, ...prev]);
+    closeCreate();
+    notify({ type: "success", content: "Labor creada correctamente" });
   };
 
   return {
-    listar,
-    listarTipos,
-    crearLabor,
-    historial_responsables,
-    asignar_responsable,
+    laboresFiltradas,
+    loading,
+    busqueda,
+    setBusqueda,
+    openedCreate,
+    openCreate,
+    closeCreate,
+    handleLaborCreada,
   };
 };
