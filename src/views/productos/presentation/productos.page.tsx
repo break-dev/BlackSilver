@@ -1,123 +1,57 @@
 import {
-  Badge,
   Button,
   Group,
-  Select,
   TextInput,
   Text,
-  Chip,
+  Badge,
+  ActionIcon,
   Tooltip,
+  Stack,
+  Card,
+  ThemeIcon,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useMemo, useState } from "react";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   CubeIcon,
-  ExclamationTriangleIcon,
-  ClockIcon,
+  PencilSquareIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
+import { useDisclosure } from "@mantine/hooks";
 
-import { useProductos } from "../../../services/productos/useProductos";
-import type { RES_Producto } from "../service/productos.responses";
-import { Periodo } from "../../../shared/enums/estados";
+import { useTitlePage } from "../../../hooks/useTitlePage";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
-import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
+import { useProductos } from "../hooks/useProductos";
 import { RegistroProducto } from "./registro-producto";
+import type { RES_Producto } from "../service/productos.responses";
 
 export const ProductosPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Inventario / Catálogo de Productos");
 
-  // Estado de Datos
-  const [productos, setProductos] = useState<RES_Producto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { productos, loading, busqueda, setBusqueda, pushNuevoProducto } =
+    useProductos();
 
-  // Estado de Filtros
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
-  const [verFiscalizados, setVerFiscalizados] = useState(false);
-  const [verPerecibles, setVerPerecibles] = useState(false);
+  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
+    useDisclosure(false);
 
-  // Hooks
-  const { listar } = useProductos({ setError });
-
-  // Modal
-  const [opened, { open, close }] = useDisclosure(false);
-
-  // Cargar Datos
-  const cargarProductos = async () => {
-    setLoading(true);
-    const data = await listar();
-    if (data) setProductos(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    setTitle("Catálogo de Productos");
-    cargarProductos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Opciones de categorías derivadas de los productos cargados
-  const opcionesCategorias = useMemo(() => {
-    const capsulas = new Map<number, string>();
-    productos.forEach((p) => {
-      capsulas.set(p.id_categoria, p.categoria);
-    });
-    return Array.from(capsulas.entries()).map(([id, nombre]) => ({
-      value: String(id),
-      label: nombre,
-    }));
-  }, [productos]);
-
-  const filteredRecords = useMemo(() => {
-    return productos.filter((prod) => {
-      const term = busqueda.toLowerCase();
-      const matchNombre = prod.nombre.toLowerCase().includes(term);
-      const matchCategoria =
-        !filtroCategoria || String(prod.id_categoria) === filtroCategoria;
-
-      // Si el chip esta activo, SOLO mostramos los que son true.
-      // Si esta inactivo, mostramos todos (no filtramos).
-      const matchFiscalizado = !verFiscalizados || prod.es_fiscalizado;
-      const matchPerecible = !verPerecibles || prod.es_perecible;
-
-      return (
-        matchNombre && matchCategoria && matchFiscalizado && matchPerecible
-      );
-    });
-  }, [productos, busqueda, filtroCategoria, verFiscalizados, verPerecibles]);
-
-  // Paginación
-
-  // Columnas
   const columns: DataTableColumn<RES_Producto>[] = [
     {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 60,
-      render: (_record, index) => index + 1,
-    },
-    {
-      accessor: "nombre",
+      accessor: "producto",
       title: "Producto",
-      width: 250,
-      render: (record) => (
-        <Group gap="xs">
-          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-500">
-            <CubeIcon className="w-4 h-4" />
-          </div>
+      render: (r) => (
+        <Group gap="sm">
+          <ThemeIcon variant="light" color="indigo" radius="md" size="lg">
+            <CubeIcon className="w-5 h-5" />
+          </ThemeIcon>
           <div>
-            <Text size="sm" fw={600} className="text-white">
-              {record.nombre}
+            <Text size="sm" fw={500} className="text-zinc-200">
+              {r.nombre}
             </Text>
-            <Text size="xs" className="text-zinc-500 italic">
-              {record.unidad_medida_base} ({record.unidad_medida_abreviatura})
+            <Text size="xs" className="text-zinc-500">
+              ID: {r.id_producto}
             </Text>
           </div>
         </Group>
@@ -126,198 +60,149 @@ export const ProductosPage = () => {
     {
       accessor: "categoria",
       title: "Categoría",
-      width: 150,
-      render: (record) => (
-        <Text size="sm" className="text-zinc-300 font-medium">
-          {record.categoria}
+      render: (r) => (
+        <Badge variant="dot" color="indigo" size="sm">
+          {r.categoria}
+        </Badge>
+      ),
+    },
+    {
+      accessor: "unidad",
+      title: "Unidad Base",
+      render: (r) => (
+        <Text size="sm" className="text-zinc-400">
+          {r.unidad_medida_base} ({r.unidad_medida_abreviatura})
         </Text>
       ),
     },
     {
-      accessor: "vencimiento",
-      title: "Vencimiento",
-      width: 140,
-      render: (record) => {
-        if (!record.es_perecible || !record.tiempo_espera_vencimiento) {
-          return (
-            <Text size="sm" c="dimmed">
-              -
-            </Text>
-          );
-        }
-
-        const labelsMap: Record<string, string> = {
-          [Periodo.Diario]: "días",
-          [Periodo.Semanal]: "semanas",
-          [Periodo.Mensual]: "meses",
-          [Periodo.Anual]: "años",
-        };
-
-        const label =
-          labelsMap[record.periodo_espera_vencimiento || ""] ||
-          record.periodo_espera_vencimiento;
-
-        return (
-          <Text size="sm" className="text-zinc-300 font-medium">
-            {record.tiempo_espera_vencimiento} {label}
-          </Text>
-        );
-      },
-    },
-    {
-      accessor: "stock_minimo",
-      title: "Stock Mín.",
-      textAlign: "center",
-      width: 120,
-      render: (record) => (
-        <Text size="sm" className="text-zinc-300 font-medium font-mono">
-          {record.stock_minimo} {record.unidad_medida_abreviatura}
-        </Text>
-      ),
-    },
-    {
-      accessor: "indicadores",
-      title: "Indicadores",
-      width: 200,
-      render: (record) => (
-        <Group gap={6}>
-          {record.es_fiscalizado && (
-            <Badge
-              leftSection={<ExclamationTriangleIcon className="w-3 h-3" />}
-              color="red"
-              variant="light"
-            >
+      accessor: "control",
+      title: "Control",
+      render: (r) => (
+        <Group gap={4}>
+          {r.es_fiscalizado && (
+            <Badge color="yellow" variant="light" size="xs">
               Fiscalizado
             </Badge>
           )}
-          {record.es_perecible && (
-            <Tooltip
-              label={`Vence en: ${record.tiempo_espera_vencimiento} ${record.periodo_espera_vencimiento?.charAt(0).toUpperCase()}${record.periodo_espera_vencimiento?.slice(1)}`}
-              withArrow
-              disabled={!record.tiempo_espera_vencimiento}
-            >
-              <Badge
-                leftSection={<ClockIcon className="w-3 h-3" />}
-                color="orange"
-                variant="light"
-              >
-                Perecible
-              </Badge>
-            </Tooltip>
+          {r.es_perecible && (
+            <Badge color="red" variant="light" size="xs">
+              Perecible
+            </Badge>
           )}
-          {!record.es_fiscalizado && !record.es_perecible && (
-            <Text size="xs" c="dimmed">
-              -
+          {!r.es_fiscalizado && !r.es_perecible && (
+            <Text size="xs" className="text-zinc-600 italic">
+              Estándar
             </Text>
           )}
         </Group>
       ),
     },
     {
-      accessor: "estado",
-      title: "Estado",
-      textAlign: "center",
+      accessor: "stock_minimo",
+      title: "Stock Mín.",
+      textAlign: "right",
+      render: (r) => (
+        <Text size="sm" fw={500} className="text-right">
+          {r.stock_minimo.toFixed(2)}
+        </Text>
+      ),
+    },
+    {
+      accessor: "actions",
+      title: "",
       width: 100,
-      render: (record) => (
-        <Badge
-          color={record.estado === "Activo" ? "green" : "red"}
-          variant="light"
-          size="sm"
-        >
-          {record.estado}
-        </Badge>
+      textAlign: "right",
+      render: () => (
+        <Group gap="xs" justify="flex-end">
+          <Tooltip label="Editar">
+            <ActionIcon variant="light" color="indigo" radius="md">
+              <PencilSquareIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Detalles">
+            <ActionIcon variant="subtle" color="gray">
+              <InformationCircleIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Cabecera y Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-wrap gap-4 flex-1">
+    <div className="space-y-6 animate-fade-in">
+      <Card
+        withBorder
+        radius="lg"
+        className="bg-zinc-900/30 border-zinc-800 p-6"
+      >
+        <Group justify="space-between">
+          <Stack gap={4}>
+            <Text size="xl" fw={700} className="text-white">
+              Catálogo de Productos
+            </Text>
+            <Text size="xs" className="text-zinc-500">
+              Gestione los bienes y suministros registrados en el sistema
+            </Text>
+          </Stack>
+
+          <Button
+            variant="filled"
+            color="indigo"
+            radius="lg"
+            onClick={openRegistro}
+            leftSection={<PlusIcon className="w-5 h-5" />}
+          >
+            Nuevo Producto
+          </Button>
+        </Group>
+      </Card>
+
+      <Stack gap="md">
+        <Group justify="space-between">
           <TextInput
-            placeholder="Buscar producto..."
+            placeholder="Buscar por nombre o categoría..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
+            value={busqueda}
             onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 min-w-[200px]"
             radius="lg"
+            className="w-full sm:w-80"
             classNames={{
               input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
             }}
           />
+          <Text size="xs" className="text-zinc-500">
+            Mostrando {productos.length} productos
+          </Text>
+        </Group>
 
-          <Select
-            placeholder="Categoría"
-            data={opcionesCategorias}
-            onChange={(val) => setFiltroCategoria(val)}
-            clearable
-            searchable
-            radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500 min-w-[140px]",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "hover:bg-zinc-800 text-zinc-300",
-            }}
-          />
+        <DataTableEstandar
+          idAccessor="id_producto"
+          columns={columns}
+          records={productos}
+          loading={loading}
+        />
+      </Stack>
 
-          <Group gap="xs">
-            <Chip
-              checked={verFiscalizados}
-              onChange={setVerFiscalizados}
-              color="red"
-              variant="light"
-            >
-              Fiscalizados
-            </Chip>
-            <Chip
-              checked={verPerecibles}
-              onChange={setVerPerecibles}
-              color="orange"
-              variant="light"
-            >
-              Perecibles
-            </Chip>
-          </Group>
-        </div>
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={open}
-          radius="lg"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shrink-0"
-        >
-          Nuevo Producto
-        </Button>
-      </div>
-
-      {/* Tabla */}
-      <DataTableEstandar
-        idAccessor="id_producto"
-        columns={columns}
-        records={filteredRecords}
-        loading={loading}
-      />
-
-      {error && (
-        <Text c="red" size="sm">
-          {error}
-        </Text>
-      )}
-
-      {/* Modal de Registro */}
-      <ModalEstandar opened={opened} close={close} title="Nuevo Producto">
+      <ModalEstandar
+        opened={openedRegistro}
+        close={closeRegistro}
+        title="Registrar Nuevo Producto"
+        size="lg"
+      >
         <RegistroProducto
-          onSuccess={(nuevoProducto) => {
-            close();
-            setProductos((prev) => [nuevoProducto, ...prev]);
+          onSuccess={(nuevo) => {
+            pushNuevoProducto(nuevo);
+            closeRegistro();
           }}
-          onCancel={close}
         />
       </ModalEstandar>
     </div>
   );
 };
+
+export default ProductosPage;

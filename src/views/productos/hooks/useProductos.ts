@@ -1,73 +1,49 @@
-import { api } from "../../shared/api";
-import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { DTO_CrearProducto } from "./dtos/requests";
-import type { RES_Producto } from "./dtos/responses";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { ProductosService } from "../service/productos.service";
+import type { RES_Producto } from "../service/productos.responses";
 
-export const useProductos = ({ setError }: IUseHook) => {
-  const path = "/productos";
+export const useProductos = () => {
+  const [productos, setProductos] = useState<RES_Producto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
 
-  const listar = async () => {
-    setError("");
+  const listar = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await api.get<IRespuesta<RES_Producto[]>>(path);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message || "Error al listar productos");
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      console.error(error);
-      return null;
+      const resp = await ProductosService.get_productos();
+      if (resp.success) setProductos(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const crear = async (dto: DTO_CrearProducto) => {
-    setError("");
-    try {
-      const response = await api.post<IRespuesta<RES_Producto>>(path, dto);
-      const result = response.data;
+  useEffect(() => {
+    listar();
+  }, [listar]);
 
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message || "Error al crear producto");
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      console.error(error);
-      return null;
-    }
-  };
+  const filtrados = useMemo(() => {
+    const query = busqueda.toLowerCase().trim();
+    if (!query) return productos;
+    return productos.filter(
+      (p) =>
+        p.nombre.toLowerCase().includes(query) ||
+        p.categoria.toLowerCase().includes(query) ||
+        p.unidad_medida_abreviatura.toLowerCase().includes(query),
+    );
+  }, [productos, busqueda]);
 
-  const listarUnidadesBase = async () => {
-    setError("");
-    try {
-      const response = await api.get<IRespuesta<any[]>>(
-        `${path}/unidades-base`,
-      );
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message || "Error al listar unidades base");
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
+  const pushNuevoProducto = (nuevo: RES_Producto) => {
+    setProductos((prev) => [nuevo, ...prev]);
   };
 
   return {
-    listar,
-    crear,
-    listarUnidadesBase,
+    productos: filtrados,
+    loading,
+    busqueda,
+    setBusqueda,
+    recargar: listar,
+    pushNuevoProducto,
   };
 };
