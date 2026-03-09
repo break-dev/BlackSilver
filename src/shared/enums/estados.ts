@@ -20,3 +20,11 @@ export enum EstadoDetalleRequerimiento {
   Completado = "Completado",
   Cerrado = "Cerrado",
 }
+
+export enum EstadoVencimiento {
+  NA = "N/A",
+  SinFecha = "Sin Fecha",
+  Vigente = "Vigente",
+  PorVencer = "Por Vencer",
+  Vencido = "Vencido",
+}

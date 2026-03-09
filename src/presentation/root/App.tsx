@@ -28,7 +28,7 @@ import { EmpleadosPage } from "../../views/empleados/presentation/empleados.page
 import { AlmacenesPage } from "../../views/almacenes/presentation/almacenes.page";
 import { ProductosPage } from "../../views/productos/presentation/productos.page";
 import OrganigramaPage from "../../views/organigrama/presentation/organigrama.page";
-// import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
+import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 // import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 // import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
 // import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
@@ -103,8 +103,8 @@ export const App = () => {
               element={<PlaceholderPage titulo="Familias" />}
             />
             <Route path="productos" element={<ProductosPage />} />
-            {/* <Route path="lotes" element={<LotesPage />} />
-            <Route path="kardex" element={<KardexProductosPage />} /> */}
+            <Route path="lotes" element={<LotesPage />} />
+            {/* <Route path="kardex" element={<KardexProductosPage />} />  */}
           </Route>
 
           {/* Requerimientos de Almacen */}

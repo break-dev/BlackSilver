@@ -1,41 +1,49 @@
+import type { EstadoVencimiento } from "../../../shared/enums/estados";
+
 export interface RES_Lote {
-    id_lote: number;
-    id_producto: number;
-    producto: string;
-    categoria: string;
-    id_unidad_medida: number;
-    unidad_medida: string;
-    id_almacen: number;
-    descripcion: string | null;
-    codigo_lote: string;
-    stock_actual: number | string;
-    contenido_por_presentacion: number | string;
-    stock_actual_base: number | string;
-    fecha_hora_ingreso: string;
-    fecha_vencimiento: string | null;
-    estado: string;
-    // Alertas y config
-    es_perecible: number | boolean;
-    stock_minimo: number | string;
-    dias_espera_vencimiento: number | null;
-    dias_para_vencer: number | null;
-    stock_total_almacen: number | string;
+  id_lote: number;
+  id_producto: number;
+  id_almacen: number;
+  id_unidad_medida: number;
+  producto: string;
+  unidad_medida_base: string;
+  categoria: string | null;
+  unidad_medida: string;
+  descripcion: string | null;
+  correlativo: string;
+  stock_actual: number;
+  contenido_por_presentacion: number;
+  stock_actual_base: number;
+  fecha_hora_ingreso: string;
+  fecha_vencimiento: string | null;
+  estado: string;
+  es_perecible: number | boolean;
+  es_fiscalizado: number | boolean;
+  stock_minimo: number;
+  dias_espera_vencimiento: number | null;
+  dias_para_vencer: number | null;
+  estado_vencimiento: EstadoVencimiento;
 }
 
 export interface RES_ProductoDisponible {
-    id_producto: number;
-    nombre: string;
-    categoria: string;
-    es_perecible: 0 | 1;
-    id_unidad_medida_base: number;
-    unidad_medida_base: string;
-    nombre_unidad_medida_base: string;
-    stock_minimo: number | string;
+  id_producto: number;
+  id_unidad_medida_base: number;
+  nombre: string;
+  es_perecible: 0 | 1;
+  es_fiscalizado: 0 | 1;
+  stock_minimo: number;
+  tiempo_espera_vencimiento: number | null;
+  periodo_espera_vencimiento: string | null;
+  dias_espera_vencimiento: number | null;
 }
 
 export interface RES_UnidadMedida {
-    id_unidad_medida: number;
-    nombre: string;
-    abreviatura: string;
-    estado: string;
+  id_unidad_medida: number;
+  nombre: string;
+  abreviatura: string;
+}
+
+export interface RES_Almacen {
+  id_almacen: number;
+  nombre: string;
 }

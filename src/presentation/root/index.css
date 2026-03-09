@@ -7,7 +7,8 @@
   --text: #fafafa;
   --text-muted: #acacac;
   --accent: #a1a1aa;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 400;
 }
 
 html,
@@ -122,36 +123,4 @@ body {
   background: rgba(24, 24, 27, 0.7);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Mantine overrides */
-.mantine-TextInput-input,
-.mantine-PasswordInput-input,
-.mantine-PasswordInput-innerInput {
-  background: #18181b !important;
-  border-color: #27272a !important;
-  color: var(--text) !important;
-  transition: all 0.2s ease !important;
-}
-
-.mantine-TextInput-input:focus,
-.mantine-PasswordInput-input:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(161, 161, 170, 0.1) !important;
-}
-
-.mantine-InputWrapper-label {
-  color: var(--text-muted) !important;
-  font-weight: 500 !important;
-  margin-bottom: 8px !important;
-}
-
-.mantine-Button-root {
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-}
-
-.mantine-Button-root:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

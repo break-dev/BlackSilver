@@ -5,20 +5,21 @@ import {
   Select,
   Text,
   TextInput,
+  Stack,
+  Divider,
+  Paper,
+  Loader,
+  Center,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useEffect, useState } from "react";
-import { notifications } from "@mantine/notifications";
-import { z } from "zod";
+import {
+  CalendarIcon,
+  ArchiveBoxIcon,
+  ScaleIcon,
+} from "@heroicons/react/24/outline";
+import { DatePickerInput } from "@mantine/dates";
 
-import { useLote } from "../../../services/lote/useLote";
-import type {
-  RES_Lote,
-  RES_ProductoDisponible,
-  RES_UnidadMedida,
-} from "../service/lotes.responses";
-import { CustomDatePicker } from "../../../utils/date-picker-input";
-import { SelectAlmacen } from "../../../utils/select-almacen";
+import { useRegistroLote } from "../hooks/useRegistroLote";
+import type { RES_Lote } from "../service/lotes.responses";
 
 interface RegistroLoteProps {
   onSuccess: (lote: RES_Lote) => void;
@@ -26,395 +27,237 @@ interface RegistroLoteProps {
   initialAlmacenId?: number | null;
 }
 
-// Define Schema locally
-const LocalSchema = z.object({
-  id_producto: z.coerce.number().min(1, "Seleccione un producto"),
-  id_unidad_medida: z.coerce.number().min(1, "Seleccione una unidad de medida"),
-  id_almacen: z.coerce.number().min(1, "Seleccione un almacén"),
-  descripcion: z.string().optional().nullable(),
-  stock_inicial: z.coerce
-    .number()
-    .min(0, "El stock no puede ser negativo")
-    .default(0),
-  contenido_por_presentacion: z.coerce
-    .number()
-    .min(0.0001, "El contenido debe ser mayor a 0")
-    .default(1),
-  fecha_hora_ingreso: z
-    .any()
-    .refine(
-      (val) =>
-        val !== null &&
-        val !== undefined &&
-        new Date(val).toString() !== "Invalid Date",
-      { message: "Fecha requerida" },
-    )
-    .transform((val) => new Date(val)),
-  fecha_vencimiento: z
-    .any()
-    .transform((val) => {
-      if (!val) return null;
-      const d = new Date(val);
-      return isNaN(d.getTime()) ? null : d;
-    })
-    .nullable(),
-});
-
-type FormValues = {
-  id_producto: string;
-  id_unidad_medida: string;
-  id_almacen: string;
-  descripcion: string;
-  stock_inicial: number;
-  contenido_por_presentacion: number;
-  fecha_hora_ingreso: Date;
-  fecha_vencimiento: Date | null;
-};
-
 export const RegistroLote = ({
   onSuccess,
   onCancel,
   initialAlmacenId,
 }: RegistroLoteProps) => {
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const {
+    idAlmacen,
+    setIdAlmacen,
+    idProducto,
+    setIdProducto,
+    idUnidadMedida,
+    setIdUnidadMedida,
+    stockInicial,
+    setStockInicial,
+    contenidoPorPresentacion,
+    setContenidoPorPresentacion,
+    fechaHoraIngreso,
+    setFechaHoraIngreso,
+    fechaVencimiento,
+    setFechaVencimiento,
+    descripcion,
+    setDescripcion,
+    loading,
+    submitting,
+    error,
+    catalogs,
+    derived,
+    handleSubmit,
+  } = useRegistroLote({ initialAlmacenId, onSuccess });
 
-  // Data State
-  const [productos, setProductos] = useState<RES_ProductoDisponible[]>([]);
-  const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
-
-  // Hooks
-  const { crear, listarProductosDisponibles, listarUnidadesMedida } = useLote({
-    setError,
-  });
-
-  const form = useForm<FormValues>({
-    initialValues: {
-      id_producto: "",
-      id_unidad_medida: "",
-      id_almacen: initialAlmacenId ? String(initialAlmacenId) : "",
-      descripcion: "",
-      stock_inicial: 0,
-      contenido_por_presentacion: 1,
-      fecha_hora_ingreso: new Date(),
-      fecha_vencimiento: null,
-    },
-    validate: (values) => {
-      const result = LocalSchema.safeParse(values);
-      const errors: Record<string, string> = {};
-
-      if (!result.success) {
-        result.error.issues.forEach((issue) => {
-          const path = issue.path[0];
-          if (path) {
-            errors[path.toString()] = issue.message;
-          }
-        });
-      }
-
-      // Validar fecha de vencimiento si el producto es perecible
-      if (values.id_producto) {
-        const product = productos.find(
-          (p) => String(p.id_producto) === values.id_producto,
-        );
-        if (product?.es_perecible && !values.fecha_vencimiento) {
-          errors.fecha_vencimiento = "Fecha de vencimiento requerida";
-        }
-      }
-
-      return errors;
-    },
-  });
-
-  const productoSeleccionado = productos.find(
-    (p) => String(p.id_producto) === form.values.id_producto,
-  );
-  const unidadSeleccionada = unidades.find(
-    (u) => String(u.id_unidad_medida) === form.values.id_unidad_medida,
-  );
-  const stockTotalBase = Number(
-    (
-      form.values.stock_inicial * form.values.contenido_por_presentacion
-    ).toFixed(2),
-  );
-
-  const sonUnidadesIdenticas =
-    productoSeleccionado &&
-    unidadSeleccionada &&
-    Number(productoSeleccionado.id_unidad_medida_base) ===
-      Number(unidadSeleccionada.id_unidad_medida);
-
-  // Efecto para bloquear contenido a 1 si las unidades son iguales
-  useEffect(() => {
-    if (sonUnidadesIdenticas) {
-      form.setFieldValue("contenido_por_presentacion", 1);
-    }
-  }, [sonUnidadesIdenticas]);
-
-  // Detectar si el producto seleccionado es perecible
-  const esPerecible = Boolean(productoSeleccionado?.es_perecible);
-
-  // Función simple de pluralización para las unidades en español
-  const pluralizar = (nombre: string | undefined) => {
-    if (!nombre) return "";
-    const lower = nombre.toLowerCase();
-    if (lower.endsWith("s")) return nombre; // Ya parece plural
-    const vocales = ["a", "e", "i", "o", "u"];
-    const ultimaLetra = lower.charAt(lower.length - 1);
-    return vocales.includes(ultimaLetra) ? `${nombre}s` : `${nombre}es`;
-  };
-
-  // Cargar catálogos (Productos y Unidades)
-  useEffect(() => {
-    const loadCatalogs = async () => {
-      setLoading(true);
-      try {
-        const [prodData, unitData] = await Promise.all([
-          listarProductosDisponibles(),
-          listarUnidadesMedida(),
-        ]);
-
-        if (prodData && Array.isArray(prodData)) {
-          setProductos(prodData);
-        } else {
-          setProductos([]);
-        }
-
-        if (unitData && Array.isArray(unitData)) {
-          setUnidades(unitData);
-        } else {
-          setUnidades([]);
-        }
-      } catch (err) {
-        console.error("Error loading catalogs", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCatalogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleSubmit = async (values: FormValues) => {
-    setSubmitting(true);
-    const dto = {
-      ...values,
-      id_producto: Number(values.id_producto),
-      id_unidad_medida: Number(values.id_unidad_medida),
-      id_almacen: Number(values.id_almacen),
-      stock_inicial: Number(values.stock_inicial),
-      contenido_por_presentacion: Number(values.contenido_por_presentacion),
-    };
-
-    const nuevoLote = await crear(dto as any);
-    if (nuevoLote) {
-      notifications.show({
-        title: "Éxito",
-        message: "Lote registrado correctamente.",
-        color: "green",
-      });
-      onSuccess(nuevoLote);
-    }
-    setSubmitting(false);
-  };
-
-  const inputClasses = {
-    input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+  const inputStyles = {
+    input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+    label:
+      "text-zinc-400 font-bold uppercase tracking-widest text-[10px] mb-1.5",
     dropdown: "bg-zinc-900 border-zinc-800",
-    option:
-      "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-    label: "text-zinc-300 mb-1 font-medium",
+    option: "text-zinc-300 hover:bg-zinc-800",
   };
+
+  if (loading) {
+    return (
+      <Center p="xl">
+        <Stack align="center" gap="sm">
+          <Loader color="indigo" size="sm" />
+          <Text
+            size="xs"
+            c="dimmed"
+            fw={700}
+            className="uppercase tracking-widest"
+          >
+            Cargando catálogos...
+          </Text>
+        </Stack>
+      </Center>
+    );
+  }
 
   return (
-    <form
-      onSubmit={form.onSubmit(handleSubmit)}
-      className="relative space-y-4 min-h-[300px]"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SelectAlmacen
-          placeholder="Seleccione almacén"
-          withAsterisk
-          disabled={loading}
-          className="md:col-span-2"
-          {...form.getInputProps("id_almacen")}
-          classNames={inputClasses}
+    <form onSubmit={handleSubmit} className="p-1 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Select
+          label="Almacén de Destino"
+          placeholder="Elegir almacén..."
+          data={catalogs.almacenes.map((a) => ({
+            value: String(a.id_almacen),
+            label: a.nombre,
+          }))}
+          searchable
+          value={idAlmacen ? String(idAlmacen) : null}
+          onChange={(val) => setIdAlmacen(Number(val))}
+          classNames={inputStyles}
         />
 
         <Select
           label="Producto"
           placeholder="Buscar producto..."
-          data={(productos || []).map((p) => ({
+          data={catalogs.productos.map((p) => ({
             value: String(p.id_producto),
             label: p.nombre,
           }))}
           searchable
-          withAsterisk
-          disabled={loading}
-          radius="lg"
-          size="sm"
-          className="md:col-span-2"
-          {...form.getInputProps("id_producto")}
-          classNames={inputClasses}
+          value={idProducto ? String(idProducto) : null}
+          onChange={(val) => setIdProducto(Number(val))}
+          classNames={inputStyles}
         />
 
+        <Divider className="md:col-span-2 border-zinc-800/50" />
+
         <Select
-          label="Und. de Medida del Lote"
-          placeholder="Seleccione unidad (ej: Caja, Bolsa)"
-          data={(unidades || []).map((u) => ({
+          label="Unidad del Lote"
+          placeholder="Ej: Caja, Saco, etc."
+          data={catalogs.unidades.map((u) => ({
             value: String(u.id_unidad_medida),
             label: `${u.nombre} (${u.abreviatura})`,
           }))}
-          searchable
-          withAsterisk
-          disabled={loading}
-          radius="lg"
-          size="sm"
-          {...form.getInputProps("id_unidad_medida")}
-          classNames={inputClasses}
+          value={idUnidadMedida ? String(idUnidadMedida) : null}
+          onChange={(val) => setIdUnidadMedida(Number(val))}
+          classNames={inputStyles}
         />
 
         <NumberInput
-          label={`Stock Inicial en ${unidadSeleccionada?.nombre || "Unidades"}`}
+          label="Stock de Ingreso"
           placeholder="0.00"
-          min={0}
           decimalScale={2}
-          fixedDecimalScale
-          radius="lg"
-          size="sm"
-          withAsterisk
-          {...form.getInputProps("stock_inicial")}
-          classNames={inputClasses}
+          min={0}
+          value={stockInicial}
+          onChange={(val) => setStockInicial(Number(val))}
+          classNames={inputStyles}
+          leftSection={<ArchiveBoxIcon className="w-4 h-4 text-zinc-500" />}
         />
 
         <NumberInput
-          label="Contenido"
+          label="Contenido por Unidad"
           placeholder="1.00"
+          disabled={derived.sonUnidadesIdenticas}
+          decimalScale={4}
+          min={0.0001}
+          value={contenidoPorPresentacion}
+          onChange={(val) => setContenidoPorPresentacion(Number(val))}
+          classNames={inputStyles}
+          leftSection={<ScaleIcon className="w-4 h-4 text-zinc-500" />}
           description={
-            sonUnidadesIdenticas
-              ? "Misma unidad que la base (Bloqueado)"
-              : `Indique cuánt@s ${pluralizar(productoSeleccionado?.nombre_unidad_medida_base) || "unidades"} contiene cada ${unidadSeleccionada?.nombre || "unidad de lote"}`
+            derived.productoSeleccionado
+              ? `Indique la cantidad de unidades base por empaque.`
+              : ""
           }
-          min={0.01}
-          decimalScale={2}
-          fixedDecimalScale
-          radius="lg"
-          size="sm"
-          withAsterisk
-          disabled={sonUnidadesIdenticas || loading}
-          {...form.getInputProps("contenido_por_presentacion")}
-          classNames={inputClasses}
         />
 
-        <div className="md:col-span-2">
-          <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 space-y-3">
+        <Paper
+          withBorder
+          p="md"
+          radius="lg"
+          bg="indigo.9/5"
+          className="border-indigo-500/10 self-end"
+        >
+          <Stack gap={0} align="center">
             <Text
-              size="xs"
-              fw={700}
-              c="dimmed"
-              className="uppercase tracking-wider"
+              size="10px"
+              fw={800}
+              c="indigo.4"
+              className="uppercase tracking-widest leading-none mb-1"
             >
-              Resumen de Conversión
+              Stock Base Proyectado
             </Text>
+            <Group gap="xs" align="baseline">
+              <Text size="xl" fw={900} className="text-white leading-none">
+                {derived.stockTotalBase}
+              </Text>
+              <Text size="xs" fw={700} c="dimmed" className="italic">
+                UNIDADES
+              </Text>
+            </Group>
+          </Stack>
+        </Paper>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Text size="xs" c="cyan.4" fw={600}>
-                  Ingreso en Lote
-                </Text>
-                <Text fw={700} size="xl" className="text-white">
-                  {form.values.stock_inicial || 0}{" "}
-                  <span className="text-sm font-normal text-zinc-500">
-                    {unidadSeleccionada?.abreviatura || "---"}
-                  </span>
-                </Text>
-              </div>
-              <div className="space-y-1">
-                <Text size="xs" c="pink.4" fw={600}>
-                  Total en Unidades Base
-                </Text>
-                <Text fw={700} size="xl" className="text-pink-500">
-                  {stockTotalBase}{" "}
-                  <span className="text-sm font-normal text-zinc-500">
-                    {productoSeleccionado?.unidad_medida_base || "---"}
-                  </span>
-                </Text>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Divider className="md:col-span-2 border-zinc-800/50" />
 
-        <CustomDatePicker
+        <DatePickerInput
           label="Fecha de Ingreso"
-          placeholder="Seleccione fecha"
-          radius="lg"
-          size="sm"
-          withAsterisk
-          value={form.values.fecha_hora_ingreso}
-          onChange={(date) =>
-            form.setFieldValue("fecha_hora_ingreso", date as unknown as Date)
-          }
-          error={form.errors.fecha_hora_ingreso as string}
+          placeholder="Seleccionar..."
+          value={fechaHoraIngreso}
+          onChange={(val) => setFechaHoraIngreso(val as Date | null)}
+          leftSection={<CalendarIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={inputStyles}
         />
 
-        {esPerecible ? (
-          <CustomDatePicker
+        {derived.productoSeleccionado?.es_perecible ? (
+          <DatePickerInput
             label="Fecha de Vencimiento"
-            placeholder="Seleccione fecha"
-            radius="lg"
-            size="sm"
-            withAsterisk
-            minDate={new Date(form.values.fecha_hora_ingreso)}
-            value={form.values.fecha_vencimiento}
-            onChange={(date) =>
-              form.setFieldValue("fecha_vencimiento", date as unknown as Date)
-            }
-            error={form.errors.fecha_vencimiento as string}
+            placeholder="Seleccionar..."
+            value={fechaVencimiento}
+            onChange={(val) => setFechaVencimiento(val as Date | null)}
+            leftSection={<CalendarIcon className="w-4 h-4 text-red-500" />}
+            classNames={inputStyles}
+            minDate={fechaHoraIngreso || undefined}
           />
         ) : (
-          <div className="flex items-center justify-center h-full pt-6">
+          <Paper
+            p="sm"
+            radius="lg"
+            bg="zinc.9/5"
+            className="flex items-center justify-center border border-dashed border-zinc-800 opacity-50"
+          >
             <Text size="xs" c="dimmed" className="italic">
-              Este producto no requiere fecha de vencimiento
+              Producto no perecible
             </Text>
-          </div>
+          </Paper>
         )}
 
         <TextInput
-          label="Descripción / Referencia"
-          placeholder="Ej: Compra Famesa F-504"
-          radius="lg"
-          size="sm"
+          label="Observaciones / Documento"
+          placeholder="Ej: Factura F-001, etc."
           className="md:col-span-2"
-          {...form.getInputProps("descripcion")}
-          classNames={inputClasses}
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.currentTarget.value)}
+          classNames={inputStyles}
         />
       </div>
 
       {error && (
-        <Text c="red" size="sm">
+        <Text
+          color="red"
+          size="sm"
+          ta="center"
+          fw={700}
+          className="italic animate-pulse"
+        >
           {error}
         </Text>
       )}
 
-      <Group justify="flex-end" mt="md">
+      <Group
+        justify="flex-end"
+        mt="xl"
+        className="pt-6 border-t border-zinc-800/50"
+      >
         <Button
           variant="subtle"
+          color="zinc"
           onClick={onCancel}
-          disabled={submitting}
           radius="lg"
-          className="text-zinc-400 hover:text-white"
+          className="text-zinc-500 font-bold"
         >
-          Cancelar
+          Descartar
         </Button>
         <Button
           type="submit"
           loading={submitting}
           radius="lg"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+          className="bg-zinc-100 hover:bg-white text-zinc-900 font-black px-8 shadow-xl"
         >
-          Guardar
+          Confirmar Registro
         </Button>
       </Group>
     </form>
