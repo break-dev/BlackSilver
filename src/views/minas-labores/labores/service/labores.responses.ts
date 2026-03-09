@@ -1,11 +1,9 @@
+// Labor con toda la info de empresa y tipo
 export interface RES_Labor {
   id_labor: number;
-  id_empresa: number;
-  id_mina: number;
-  id_tipo_labor: number;
-  mina: string;
   empresa: string;
-  tipo_labor_nombre: string;
+  path_logo_empresa: string | null;
+  tipo_labor: string;
   es_de_produccion: 0 | 1;
   correlativo: string;
   nombre: string;
@@ -15,25 +13,22 @@ export interface RES_Labor {
   ancho: number | null;
   alto: number | null;
   nivel: string | null;
+  fecha_inicio: string | null;
   fecha_fin: string | null;
   created_at: string;
   estado: string;
 }
 
+// Tipo de labor para el selector
 export interface RES_TipoLabor {
   id_tipo_labor: number;
-  codigo: string;
   nombre: string;
   es_de_produccion: 0 | 1;
 }
 
-export interface RES_HistorialResponsableLabor {
-  id_asignacion: number;
-  id_usuario: number;
-  nombres: string;
-  apellidos: string;
-  usuario_nombre: string;
-  fecha_inicio: string;
-  fecha_fin: string | null;
-  estado: string;
+// Empresa ejecutora de la mina, para elegir al crear una labor
+export interface RES_EmpresaEjecutoraMina {
+  id_empresa: number;
+  razon_social: string;
+  path_logo: string | null;
 }

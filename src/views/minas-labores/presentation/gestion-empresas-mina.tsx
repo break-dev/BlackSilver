@@ -1,139 +1,128 @@
-import { Button, Loader, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Loader, Text, ActionIcon, Tooltip } from "@mantine/core";
 import {
   PlusIcon,
   BriefcaseIcon,
+  XMarkIcon,
   IdentificationIcon,
 } from "@heroicons/react/24/outline";
-import { useMinas } from "../../../../services/minas/useMinas";
-import type { RES_Empresa } from "../../../../services/empresas/dtos/responses";
-import { FormAsignarEmpresaMina } from "./form-asignar-empresa-mina";
+import { useGestionEmpresasMina } from "../hooks/useGestionEmpresasMina";
+import type { RES_ResumenMina } from "../service/minas.responses";
 
-interface GestionEmpresasMinaProps {
+interface Props {
   idMina: number;
-  idConcesion: number; // Required to filter valid companies
-  nombreMina?: string;
+  idConcesion: number;
 }
 
-export const GestionEmpresasMina = ({
-  idMina,
-  idConcesion,
-  nombreMina,
-}: GestionEmpresasMinaProps) => {
-  // States
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+export const GestionEmpresasMina = ({ idMina, idConcesion }: Props) => {
+  const {
+    ejecutoras,
+    disponibles,
+    loading,
+    loadingAdd,
+    asignarEmpresa,
+    desasignarEmpresa,
+  } = useGestionEmpresasMina({ idMina, idConcesion });
 
-  // Lists
-  const [empresasAsignadas, setEmpresasAsignadas] = useState<RES_Empresa[]>([]);
-
-  const [, setError] = useState("");
-
-  // Services
-  const { listarEmpresasAsignadas } = useMinas({ setError });
-
-  // Load Data
-  const cargarDatos = async () => {
-    setLoading(true);
-    try {
-      const misEmpresas = await (listarEmpresasAsignadas
-        ? listarEmpresasAsignadas(idMina)
-        : Promise.resolve([]));
-
-      if (misEmpresas) setEmpresasAsignadas(misEmpresas);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (idMina && idConcesion) {
-      cargarDatos();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idMina, idConcesion]);
-
-  // UI
-  if (showForm) {
+  if (loading) {
     return (
-      <FormAsignarEmpresaMina
-        idMina={idMina}
-        idConcesion={idConcesion}
-        empresasAsignadasIds={empresasAsignadas.map((e) => e.id_empresa)}
-        onCancel={() => setShowForm(false)}
-        onSuccess={() => {
-          setShowForm(false);
-          cargarDatos(); // Reload after assigning a new company
-        }}
-      />
+      <div className="flex justify-center py-10">
+        <Loader size="sm" color="gray" />
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-2">
-        <div>
-          <h3 className="text-lg font-bold text-white leading-tight">
-            {nombreMina}
-          </h3>
-        </div>
-        <Button
-          size="xs"
-          variant="light"
-          color="indigo"
-          leftSection={<PlusIcon className="w-4 h-4" />}
-          onClick={() => setShowForm(true)}
-          className="hover:bg-indigo-900/30 transition-colors"
-        >
-          Asignar
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-10">
-          <Loader size="sm" color="gray" />
-        </div>
-      ) : empresasAsignadas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-          <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mb-3">
-            <BriefcaseIcon className="w-6 h-6 text-zinc-600" />
-          </div>
-          <Text size="sm" className="text-zinc-500 font-medium">
-            No hay empresas asignadas
+      {/* Añadir ejecutora */}
+      {disponibles.length > 0 && (
+        <div className="space-y-2">
+          <Text
+            size="xs"
+            className="text-zinc-500 uppercase tracking-wider font-semibold"
+          >
+            Agregar empresa ejecutora
           </Text>
-          <Text size="xs" className="text-zinc-600 mt-1">
-            Asigne una empresa para comenzar.
-          </Text>
-        </div>
-      ) : (
-        <div className="space-y-3 animate-fade-in">
-          {empresasAsignadas.map((emp) => (
-            <div
-              key={emp.id_empresa}
-              className="relative p-4 rounded-xl border flex items-start gap-4 transition-all border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60"
-            >
-              <div className="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0">
-                <BriefcaseIcon className="w-6 h-6" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                  <Text className="text-base font-bold text-white truncate">
-                    {emp.nombre_comercial || emp.razon_social}
+          <div className="space-y-2">
+            {disponibles.map((emp) => (
+              <div
+                key={emp.id_empresa}
+                className="flex items-center justify-between p-3 rounded-xl border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <BriefcaseIcon className="w-4 h-4 text-zinc-500" />
+                  <Text size="sm" className="text-zinc-300">
+                    {emp.razon_social}
                   </Text>
                 </div>
-
-                <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                  <IdentificationIcon className="w-4 h-4 shrink-0" />
-                  <span>RUC: {emp.ruc}</span>
-                </div>
+                <Tooltip label="Asignar">
+                  <ActionIcon
+                    size="sm"
+                    variant="light"
+                    color="indigo"
+                    loading={loadingAdd}
+                    onClick={() => asignarEmpresa(emp.id_empresa)}
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Tooltip>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
+
+      {/* Ejecutoras actuales */}
+      <div className="space-y-2">
+        <Text
+          size="xs"
+          className="text-zinc-500 uppercase tracking-wider font-semibold"
+        >
+          Empresas ejecutoras asignadas
+        </Text>
+
+        {ejecutoras.length === 0 ? (
+          <div className="flex flex-col items-center py-8 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
+            <BriefcaseIcon className="w-6 h-6 text-zinc-600 mb-2" />
+            <Text size="sm" className="text-zinc-500">
+              No hay empresas asignadas
+            </Text>
+          </div>
+        ) : (
+          <div className="space-y-2 animate-fade-in">
+            {ejecutoras.map((emp) => (
+              <div
+                key={emp.id_empresa_mina}
+                className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0">
+                    <BriefcaseIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <Text className="text-sm font-bold text-white">
+                      {emp.razon_social}
+                    </Text>
+                    <div className="flex items-center gap-1 text-xs text-zinc-500">
+                      <IdentificationIcon className="w-3.5 h-3.5" />
+                      <span>RUC: {emp.ruc}</span>
+                    </div>
+                  </div>
+                </div>
+                <Tooltip label="Quitar empresa">
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    color="red"
+                    onClick={() => desasignarEmpresa(emp.id_empresa_mina)}
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

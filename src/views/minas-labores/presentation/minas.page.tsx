@@ -4,11 +4,11 @@ import {
   Button,
   Group,
   Menu,
+  Select,
   TextInput,
   Text,
   Tooltip,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -21,163 +21,78 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { useEffect, useState, useMemo } from "react";
-import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { RegistroMina } from "./components/registro-mina";
-import { GestionLabores } from "../labores/labores";
-import { GestionEmpresasMina } from "./components/gestion-empresas-mina";
-import { GestionResponsablesMina } from "./components/gestion-responsables-mina";
-import { useMinas } from "../../../services/minas/useMinas";
-import type { RES_Mina } from "../service/minas.responses";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroMina } from "./registro-mina";
+import { GestionEmpresasMina } from "./gestion-empresas-mina";
+import { GestionResponsablesMina } from "./gestion-responsables-mina";
+import { GestionLabores } from "../labores/presentation/labores.page";
+import { useMinasPage } from "../hooks/useMinasPage";
+import type { RES_ResumenMina } from "../service/minas.responses";
+
+const inputClasses = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+  dropdown: "bg-zinc-900 border-zinc-800",
+  option:
+    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-700 rounded-md my-0.5",
+};
 
 export const MinasPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
-
-  // Modals
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
-    useDisclosure(false);
-
-  // Gestión Labores Modal
-  const [openedLabores, { open: openLabores, close: closeLabores }] =
-    useDisclosure(false);
-
-  // Gestión Empresas Modal
-  const [openedEmpresas, { open: openEmpresas, close: closeEmpresas }] =
-    useDisclosure(false);
-
-  // Gestión Responsables Modal
-  const [
+  const {
+    concesiones,
+    concesionSeleccionada,
+    setConcesionSeleccionada,
+    minasFiltradas,
+    loading,
+    busqueda,
+    setBusqueda,
+    openedCreate,
+    openCreate,
+    closeCreate,
+    openedEmpresas,
+    closeEmpresas,
     openedResponsables,
-    { open: openResponsables, close: closeResponsables },
-  ] = useDisclosure(false);
+    closeResponsables,
+    openedLabores,
+    closeLabores,
+    selectedMina,
+    handleMinaCreada,
+    handleOpenEmpresas,
+    handleOpenResponsables,
+    handleOpenLabores,
+    handleResponsableAsignado,
+  } = useMinasPage();
 
-  const [selectedMina, setSelectedMina] = useState<RES_Mina | null>(null);
-
-  // Data
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState("");
-
-  // Filter States
-  const [busqueda, setBusqueda] = useState("");
-
-  // Hooks
-  const { listar } = useMinas({ setError });
-
-  // Load Data
-  const cargarDatos = async () => {
-    setLoading(true);
-    const data = await listar();
-    if (data) setMinas(data);
-    setLoading(false);
-  };
-
-  // Initial Load
-  useEffect(() => {
-    setTitle("Minas y Labores");
-    cargarDatos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Derived Filters
-  const filteredRecords = useMemo(() => {
-    return minas.filter((m) => {
-      const term = busqueda.toLowerCase();
-      return (
-        !busqueda ||
-        m.nombre.toLowerCase().includes(term) ||
-        (m.concesion || "").toLowerCase().includes(term)
-      );
-    });
-  }, [minas, busqueda]);
-
-  // Handlers
-  const handleSuccessCreate = (nuevaMina: RES_Mina) => {
-    closeCreate();
-    setMinas((prev) => [nuevaMina, ...prev]);
-  };
-
-  const handleOpenLabores = (mina: RES_Mina) => {
-    setSelectedMina(mina);
-    openLabores();
-  };
-
-  const handleOpenEmpresas = (mina: RES_Mina) => {
-    setSelectedMina(mina);
-    openEmpresas();
-  };
-
-  const handleOpenResponsables = (mina: RES_Mina) => {
-    setSelectedMina(mina);
-    openResponsables();
-  };
-
-  // Columns
-  const columns: DataTableColumn<RES_Mina>[] = [
+  const columns: DataTableColumn<RES_ResumenMina>[] = [
     {
       accessor: "index",
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => index + 1,
+      render: (_, i) => i + 1,
     },
     {
       accessor: "nombre",
       title: "Mina",
       width: 200,
-      render: (record) => (
+      render: (r) => (
         <Text size="sm" fw={600} className="text-white">
-          {record.nombre}
+          {r.nombre}
         </Text>
-      ),
-    },
-    {
-      accessor: "concesion",
-      title: "Concesión",
-      width: 200,
-      render: (record) => (
-        <div className="flex items-center gap-1.5 text-zinc-300 text-sm">
-          <MapPinIcon className="w-4 h-4 text-zinc-500" />
-          <span>{record.concesion || "Sin Concesión"}</span>
-        </div>
-      ),
-    },
-    {
-      accessor: "labores_count",
-      title: "Labores",
-      width: 130,
-      textAlign: "center",
-      render: (record) => (
-        <Group gap={6} justify="center">
-          <Badge variant="light" color="cyan" size="sm" radius="sm">
-            {record.labores_count || 0} Asign.
-          </Badge>
-          <Tooltip label="Ver Labores">
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              color="cyan"
-              onClick={() => handleOpenLabores(record)}
-            >
-              <RectangleStackIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
       ),
     },
     {
       accessor: "responsable",
       title: "Responsable",
-      width: 200,
-      render: (record) => (
+      width: 220,
+      render: (r) => (
         <Group gap="xs">
-          {record.responsable_actual ? (
+          {r.responsable ? (
             <>
-              <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+              <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
               <Text size="sm" className="text-zinc-200">
-                {record.responsable_actual}
+                {r.responsable}
               </Text>
             </>
           ) : (
@@ -185,13 +100,12 @@ export const MinasPage = () => {
               Sin Asignar
             </Badge>
           )}
-
           <Tooltip label="Gestionar Responsable">
             <ActionIcon
               variant="subtle"
               color="gray"
               size="sm"
-              onClick={() => handleOpenResponsables(record)}
+              onClick={() => handleOpenResponsables(r)}
             >
               <PencilSquareIcon className="w-4 h-4" />
             </ActionIcon>
@@ -200,23 +114,46 @@ export const MinasPage = () => {
       ),
     },
     {
-      accessor: "empresas_count",
+      accessor: "cantidad_empresas_ejecutoras",
       title: "Empresas",
       width: 130,
       textAlign: "center",
-      render: (record) => (
+      render: (r) => (
         <Group gap={6} justify="center">
           <Badge variant="light" color="indigo" size="sm" radius="sm">
-            {record.empresas_count || 0} Asign.
+            {r.cantidad_empresas_ejecutoras ?? 0} Ejec.
           </Badge>
           <Tooltip label="Gestionar Empresas">
             <ActionIcon
               size="sm"
               variant="subtle"
               color="indigo"
-              onClick={() => handleOpenEmpresas(record)}
+              onClick={() => handleOpenEmpresas(r)}
             >
               <BriefcaseIcon className="w-4 h-4" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      ),
+    },
+    {
+      accessor: "cantidad_labores",
+      title: "Labores",
+      width: 130,
+      textAlign: "center",
+      render: (r) => (
+        <Group gap={6} justify="center">
+          <Badge variant="light" color="cyan" size="sm" radius="sm">
+            {r.cantidad_labores ?? 0} Act.
+          </Badge>
+          <Tooltip label="Ver Labores">
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              color="cyan"
+              onClick={() => handleOpenLabores(r)}
+            >
+              <RectangleStackIcon className="w-4 h-4" />
             </ActionIcon>
           </Tooltip>
         </Group>
@@ -227,20 +164,20 @@ export const MinasPage = () => {
       title: "Estado",
       textAlign: "center",
       width: 100,
-      render: (record) => (
+      render: (r) => (
         <Badge
-          color={record.estado === "Activo" ? "green" : "red"}
+          color={r.estado === "Activo" ? "green" : "red"}
           variant="light"
           size="sm"
         >
-          {record.estado}
+          {r.estado}
         </Badge>
       ),
     },
     {
       accessor: "actions",
       title: "",
-      width: 80,
+      width: 60,
       textAlign: "right",
       render: () => (
         <Menu shadow="md" width={150} position="left">
@@ -271,108 +208,114 @@ export const MinasPage = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Cabecera y Filtros */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-end sm:items-center">
-        <div className="flex gap-4 flex-1 w-full sm:w-auto">
+    <div className="space-y-5 animate-fade-in">
+      {/* Selector de concesión */}
+      <div className="flex flex-col sm:flex-row gap-4 items-end">
+        <div className="flex-1 max-w-xs">
+          <label className="block text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1.5">
+            <MapPinIcon className="w-3.5 h-3.5 inline mr-1" />
+            Concesión
+          </label>
+          <Select
+            placeholder="Seleccione una concesión"
+            data={concesiones.map((c) => ({
+              value: String(c.id_concesion),
+              label: c.nombre,
+            }))}
+            value={concesionSeleccionada ? String(concesionSeleccionada) : null}
+            onChange={(v) => setConcesionSeleccionada(v ? parseInt(v) : null)}
+            searchable
+            nothingFoundMessage="Sin concesiones"
+            classNames={inputClasses}
+            radius="lg"
+          />
+        </div>
+
+        <div className="flex gap-3 flex-1">
           <TextInput
-            placeholder="Buscar por nombre o concesión..."
+            placeholder="Buscar mina..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
             value={busqueda}
             onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 min-w-[200px]"
+            className="flex-1 min-w-[180px]"
             radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
+            classNames={inputClasses}
           />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openCreate}
+            radius="lg"
+            disabled={!concesionSeleccionada}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+          >
+            Nueva Mina
+          </Button>
         </div>
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openCreate}
-          radius="lg"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
-        >
-          Nueva Mina
-        </Button>
       </div>
 
       {/* Tabla */}
       <DataTableEstandar
         idAccessor="id_mina"
         columns={columns}
-        records={filteredRecords}
+        records={minasFiltradas}
         loading={loading}
       />
 
-      {/* Modal: Crear Mina */}
+      {/* Modal: Nueva Mina */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
         title="Nueva Mina"
       >
-        <RegistroMina onSuccess={handleSuccessCreate} onCancel={closeCreate} />
-      </ModalEstandar>
-
-      {/* Modal: Gestión de Labores */}
-      <ModalEstandar
-        opened={openedLabores}
-        close={closeLabores}
-        title="Gestión de Labores"
-        size="80%"
-      >
-        {selectedMina ? (
-          <GestionLabores
-            idMina={selectedMina.id_mina}
-            nombreMina={selectedMina.nombre}
+        {concesionSeleccionada && (
+          <RegistroMina
+            idConcesion={concesionSeleccionada}
+            onSuccess={handleMinaCreada}
+            onCancel={closeCreate}
           />
-        ) : null}
+        )}
       </ModalEstandar>
 
-      {/* Modal: Gestión de Empresas */}
+      {/* Modal: Empresas Ejecutoras */}
       <ModalEstandar
         opened={openedEmpresas}
         close={closeEmpresas}
         title="Empresas ejecutoras"
       >
-        {selectedMina ? (
+        {selectedMina && (
           <GestionEmpresasMina
             idMina={selectedMina.id_mina}
-            idConcesion={selectedMina.id_concesion} // Required for filtering valid contracts
-            nombreMina={selectedMina.nombre}
+            idConcesion={concesionSeleccionada ?? 0}
           />
-        ) : null}
+        )}
       </ModalEstandar>
 
-      {/* Modal: Gestión de Responsables */}
+      {/* Modal: Responsables */}
       <ModalEstandar
         opened={openedResponsables}
         close={closeResponsables}
         title="Responsables de Mina"
       >
-        {selectedMina ? (
+        {selectedMina && (
           <GestionResponsablesMina
-            idMina={selectedMina.id_mina}
-            nombreMina={selectedMina.nombre}
-            onResponsableChange={(nuevo) => {
-              setMinas((prev) =>
-                prev.map((m) =>
-                  m.id_mina === selectedMina.id_mina
-                    ? {
-                        ...m,
-                        responsable_actual:
-                          `${nuevo.apellidos} ${nuevo.nombres}`.trim(),
-                      }
-                    : m,
-                ),
-              );
-            }}
+            mina={selectedMina}
+            onResponsableAsignado={(nombre) =>
+              handleResponsableAsignado(selectedMina.id_mina, nombre)
+            }
           />
-        ) : null}
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Labores */}
+      <ModalEstandar
+        opened={openedLabores}
+        close={closeLabores}
+        title="Labores"
+        size="80%"
+      >
+        {selectedMina && <GestionLabores mina={selectedMina} />}
       </ModalEstandar>
     </div>
   );
