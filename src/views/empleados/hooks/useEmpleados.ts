@@ -1,71 +1,81 @@
-import { api } from "../../shared/api";
-import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { RES_Empleado } from "./dtos/responses";
-import type { DTO_CrearEmpleado } from "./dtos/requests";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { EmpleadosService } from "../service/empleados.service";
+import type { RES_Empleado, RES_Empresa } from "../service/empleados.responses";
 
-export const useEmpleados = ({ setError }: IUseHook) => {
-  const path = "/empleados";
+export const useEmpleados = () => {
+  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
+  const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
 
-  // Listar todos los empleados o por empresa
-  const listar = async (filters?: { id_empresa?: number }) => {
-    setError("");
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+
+  const cargarEmpresas = useCallback(async () => {
+    setLoadingEmpresas(true);
     try {
-      const endpoint = filters?.id_empresa ? "/empresas/usuarios" : path;
-      const response = await api.get<IRespuesta<RES_Empleado[]>>(endpoint, {
-        params: filters,
-      });
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message);
-        return [];
-      }
-    } catch (error) {
-      setError(String(error));
-      return [];
-    }
-  };
-
-  // Crear nuevo empleado
-  const crear = async (dto: DTO_CrearEmpleado) => {
-    setError("");
-    try {
-      // Backend espera JSON normal, foto como string opcional (URL)
-      const response = await api.post<IRespuesta<RES_Empleado>>(path, dto);
-      const result = response.data;
-
-      if (result.success) {
-        return result.data;
-      } else {
-        setError(result.message); // Mensajes como 'DNI duplicado' vendrán acá
-        return null;
-      }
-    } catch (error) {
-      setError(String(error));
-      return null;
-    }
-  };
-
-  // Eliminar (Soft Delete)
-  const eliminar = async (id: number) => {
-    setError("");
-    try {
-      const response = await api.delete<IRespuesta<boolean>>(`${path}/${id}`);
-      if (response.data.success) return true;
-      setError(response.data.message);
-      return false;
+      const resp = await EmpleadosService.get_empresas();
+      if (resp.success) setEmpresas(resp.data);
     } catch (err) {
-      setError(String(err));
-      return false;
+      console.error(err);
+    } finally {
+      setLoadingEmpresas(false);
+    }
+  }, []);
+
+  const listar = useCallback(async (selectedId: number) => {
+    setLoading(true);
+    try {
+      const resp = await EmpleadosService.get_empleados(selectedId);
+      if (resp.success) setEmpleados(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarEmpresas();
+  }, [cargarEmpresas]);
+
+  useEffect(() => {
+    if (idEmpresa) {
+      listar(idEmpresa);
+    } else {
+      setEmpleados([]);
+    }
+  }, [idEmpresa, listar]);
+
+  const filtrados = useMemo(() => {
+    const query = busqueda.toLowerCase().trim();
+    if (!query) return empleados;
+    return empleados.filter(
+      (e) =>
+        e.nombre.toLowerCase().includes(query) ||
+        e.apellido.toLowerCase().includes(query) ||
+        e.dni?.includes(query) ||
+        e.cargo.toLowerCase().includes(query),
+    );
+  }, [empleados, busqueda]);
+
+  const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
+    // Solo agregar si pertenece a la empresa que estamos visualizando
+    if (nuevo.id_empresa === idEmpresa) {
+      setEmpleados((prev) => [nuevo, ...prev]);
     }
   };
 
   return {
-    listar,
-    crear,
-    eliminar,
+    empresas,
+    idEmpresa,
+    setIdEmpresa,
+    empleados: filtrados,
+    loadingEmpresas,
+    loading,
+    busqueda,
+    setBusqueda,
+    recargar: () => idEmpresa && listar(idEmpresa),
+    pushNuevoEmpleado,
   };
 };

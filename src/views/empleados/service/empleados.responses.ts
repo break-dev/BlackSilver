@@ -1,14 +1,33 @@
 export interface RES_Empleado {
-  id_empleado: number; // OLD: id
+  id_empleado: number;
+  id_empresa: number;
+  empresa: string;
+  id_cargo: number;
+  cargo: string;
+  area: string;
   nombre: string;
   apellido: string;
-  dni: string;
-  ruc?: string;
-  id_cargo: number;
-  cargo: string; // Nombre del cargo
+  dni: string | null;
+  ruc: string | null;
+  carnet_extranjeria: string | null;
+  pasaporte: string | null;
+  fecha_nacimiento: string | null;
+  path_foto: string | null;
+  estado: string;
+}
+
+export interface RES_Empresa {
   id_empresa: number;
-  empresa: string; // Razón Social o Nombre Comercial
-  fecha_nacimiento?: string;
-  path_foto?: string;
-  estado: string; // "Activo" | "Inactivo"
+  nombre_comercial: string;
+  razon_social: string;
+}
+
+export interface RES_Area {
+  id_area: number;
+  nombre: string;
+}
+
+export interface RES_Cargo {
+  id_cargo: number;
+  nombre: string;
 }

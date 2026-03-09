@@ -1,209 +1,118 @@
 import {
-  ActionIcon,
-  Badge,
   Button,
   Group,
-  Menu,
   TextInput,
-  Avatar,
   Text,
+  Badge,
+  ActionIcon,
+  Tooltip,
+  Avatar,
   Select,
+  Stack,
+  Card,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { notifications } from "@mantine/notifications";
 import {
   MagnifyingGlassIcon,
-  PlusIcon,
-  TrashIcon,
+  InformationCircleIcon,
   PencilSquareIcon,
-  EllipsisVerticalIcon,
+  PlusIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { useEffect, useState, useMemo } from "react";
+import { useDisclosure } from "@mantine/hooks";
 
-// Components
-import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
+import { useTitlePage } from "../../../hooks/useTitlePage";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+
+import { useEmpleados } from "../hooks/useEmpleados";
 import { RegistroEmpleado } from "./registro-empleado";
-import { SelectEmpresas } from "../../utils/select-empresas";
-
-// Services
-import { useEmpleados } from "../../../services/empleados/useEmpleados";
-import { useCargos } from "../../../services/cargos/useCargos";
 import type { RES_Empleado } from "../service/empleados.responses";
-import type { RES_Cargo } from "../../../services/cargos/dtos/responses";
 
 export const EmpleadosPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
-  const [opened, { open, close }] = useDisclosure(false);
+  useTitlePage("Personal / Empleados");
 
-  // Data
-  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [, setError] = useState("");
+  const {
+    empresas,
+    idEmpresa,
+    setIdEmpresa,
+    empleados,
+    loadingEmpresas,
+    loading,
+    busqueda,
+    setBusqueda,
+    pushNuevoEmpleado,
+  } = useEmpleados();
 
-  // Filter States
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEmpresa, setFiltroEmpresa] = useState<string | null>(null);
-  const [filtroCargo, setFiltroCargo] = useState<string | null>(null);
-  const [cargos, setCargos] = useState<RES_Cargo[]>([]);
+  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
+    useDisclosure(false);
 
-  // Hooks
-  const { listar, eliminar } = useEmpleados({ setError });
-  const { listar: listarCargos } = useCargos({ setError });
-
-  // Load Data
-  const fetchData = async () => {
-    setLoading(true);
-    const [dataEmpleados, dataCargos] = await Promise.all([
-      listar(),
-      listarCargos(),
-    ]);
-    if (dataEmpleados) setEmpleados(dataEmpleados);
-    if (dataCargos) setCargos(dataCargos);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    setTitle("Personal / Empleados");
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Derived Filters
-  const filteredRecords = useMemo(() => {
-    return empleados.filter((emp) => {
-      const matchSearch =
-        !busqueda ||
-        emp.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        emp.apellido.toLowerCase().includes(busqueda.toLowerCase()) ||
-        emp.dni.includes(busqueda);
-
-      const matchEmpresa =
-        !filtroEmpresa || String(emp.id_empresa) === filtroEmpresa;
-      const matchCargo = !filtroCargo || emp.cargo === filtroCargo;
-
-      return matchSearch && matchEmpresa && matchCargo;
-    });
-  }, [empleados, busqueda, filtroEmpresa, filtroCargo]);
-
-  // Handlers
-  const handleSuccess = (nuevoEmpleado: RES_Empleado) => {
-    close();
-    setEmpleados((prev) => [nuevoEmpleado, ...prev]);
-  };
-
-  const handleDelete = async (id: number, nombre: string) => {
-    if (!confirm(`¿Eliminar al empleado ${nombre}?`)) return;
-
-    const success = await eliminar(id);
-    if (success) {
-      notifications.show({
-        title: "Eliminado",
-        message: "Empleado eliminado correctamente",
-        color: "blue",
-      });
-      fetchData();
-    }
-  };
-
-  // Columns
   const columns: DataTableColumn<RES_Empleado>[] = [
     {
-      accessor: "id_empleado",
-      title: "#",
-      width: 60,
-      textAlign: "center",
-      render: (_, index) => index + 1,
-    },
-    {
-      accessor: "nombre",
+      accessor: "empleado",
       title: "Empleado",
-      width: 250,
-      render: (record) => (
+      render: (r) => (
         <Group gap="sm">
-          <Avatar src={record.path_foto} radius="xl" color="indigo" size="sm">
-            {(record.nombre?.[0] || "").toUpperCase()}
-            {(record.apellido?.[0] || "").toUpperCase()}
+          <Avatar src={r.path_foto} radius="xl">
+            {r.nombre[0]}
+            {r.apellido[0]}
           </Avatar>
           <div>
-            <Text size="sm" fw={500} className="text-white">
-              {record.nombre} {record.apellido}
+            <Text size="sm" fw={500} className="text-zinc-200">
+              {r.nombre} {r.apellido}
             </Text>
-            <Text size="xs" c="dimmed">
-              {record.dni}
+            <Text size="xs" className="text-zinc-500">
+              DNI: {r.dni || "---"}
             </Text>
           </div>
         </Group>
       ),
     },
     {
-      accessor: "cargo",
-      title: "Cargo",
-      width: 150,
-      render: (record) => (
-        <Badge variant="light" color="pink" size="sm" className="normal-case">
-          {record.cargo}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "empresa",
-      title: "Empresa",
-      width: 200,
-      render: (record) => (
-        <Text size="sm" className="text-zinc-300">
-          {record.empresa}
-        </Text>
+      accessor: "ubicacion",
+      title: "Área / Cargo",
+      render: (r) => (
+        <div>
+          <Text size="sm" className="text-zinc-200">
+            {r.cargo}
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            {r.area}
+          </Text>
+        </div>
       ),
     },
     {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
-      width: 100,
-      render: (record) => (
+      render: (r) => (
         <Badge
-          color={record.estado === "Activo" ? "green" : "red"}
           variant="light"
-          size="sm"
+          color={r.estado === "Activo" ? "green" : "gray"}
+          radius="md"
         >
-          {record.estado}
+          {r.estado}
         </Badge>
       ),
     },
     {
       accessor: "actions",
       title: "",
-      width: 80,
+      width: 100,
       textAlign: "right",
-      render: (record) => (
-        <Group gap={4} justify="flex-end">
-          <Menu shadow="md" width={150} position="left">
-            <Menu.Target>
-              <ActionIcon variant="subtle" color="gray">
-                <EllipsisVerticalIcon className="w-5 h-5" />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-              <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-              <Menu.Item
-                leftSection={<PencilSquareIcon className="w-4 h-4" />}
-                className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              >
-                Editar
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<TrashIcon className="w-4 h-4" />}
-                color="red"
-                className="hover:bg-red-900/20"
-                onClick={() => handleDelete(record.id_empleado, record.nombre)}
-              >
-                Eliminar
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+      render: () => (
+        <Group gap="xs" justify="flex-end">
+          <Tooltip label="Editar">
+            <ActionIcon variant="light" color="indigo" radius="md">
+              <PencilSquareIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Más información">
+            <ActionIcon variant="subtle" color="gray">
+              <InformationCircleIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       ),
     },
@@ -211,71 +120,114 @@ export const EmpleadosPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header / Filters */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-end sm:items-center">
-        <div className="flex gap-4 flex-1 w-full sm:w-auto">
-          <TextInput
-            placeholder="Buscar por nombre o DNI..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 min-w-[200px]"
-            radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-          />
-          <Select
-            placeholder="Filtrar por Cargo"
-            data={cargos.map((c) => ({ value: c.nombre, label: c.nombre }))}
-            value={filtroCargo}
-            onChange={setFiltroCargo}
-            clearable
-            searchable
-            className="w-full sm:w-48"
-            radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800 hover:text-white",
-            }}
-          />
-          <SelectEmpresas
-            label={null}
-            placeholder="Filtrar por Empresa"
-            value={filtroEmpresa}
-            onChange={setFiltroEmpresa}
-            clearable
-            className="w-full sm:w-64"
-          />
-        </div>
+      <Card
+        withBorder
+        radius="lg"
+        className="bg-zinc-900/30 border-zinc-800 p-6"
+      >
+        <Stack gap="md">
+          <Group align="flex-end" justify="space-between">
+            <Stack gap={4} className="flex-1 max-w-sm">
+              <Text
+                size="xs"
+                fw={500}
+                className="text-zinc-500 uppercase tracking-wider"
+              >
+                Filtrar por Empresa
+              </Text>
+              <Select
+                placeholder={
+                  loadingEmpresas ? "Cargando..." : "Seleccione una empresa"
+                }
+                data={empresas.map((e) => ({
+                  value: e.id_empresa.toString(),
+                  label: e.nombre_comercial,
+                }))}
+                value={idEmpresa?.toString() || null}
+                onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
+                leftSection={
+                  <BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />
+                }
+                radius="lg"
+                classNames={{
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+                }}
+                disabled={loadingEmpresas}
+                searchable
+              />
+            </Stack>
 
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={open}
+            <Button
+              variant="filled"
+              color="indigo"
+              radius="lg"
+              onClick={openRegistro}
+              leftSection={<PlusIcon className="w-5 h-5" />}
+              className="mb-[2px]"
+            >
+              Nuevo Empleado
+            </Button>
+          </Group>
+        </Stack>
+      </Card>
+
+      {idEmpresa ? (
+        <Stack gap="md">
+          <Group justify="space-between">
+            <TextInput
+              placeholder="Buscar por nombre, DNI o cargo..."
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+              }
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.currentTarget.value)}
+              radius="lg"
+              className="w-full sm:w-80"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+              }}
+            />
+          </Group>
+
+          <DataTableEstandar
+            idAccessor="id_empleado"
+            columns={columns}
+            records={empleados}
+            loading={loading}
+          />
+        </Stack>
+      ) : (
+        <Card
+          withBorder
           radius="lg"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
+          className="bg-zinc-900/20 border-zinc-800 border-dashed py-12"
         >
-          Nuevo Empleado
-        </Button>
-      </div>
+          <Stack align="center" gap="sm">
+            <BuildingOfficeIcon className="w-12 h-12 text-zinc-700" />
+            <Text className="text-zinc-500" fw={500}>
+              Seleccione una empresa para ver el personal
+            </Text>
+          </Stack>
+        </Card>
+      )}
 
-      {/* Table */}
-      <DataTableEstandar
-        columns={columns}
-        records={filteredRecords}
-        loading={loading}
-        idAccessor="id_empleado"
-      />
-
-      {/* Modal Registro */}
-      <ModalEstandar opened={opened} close={close} title="Nuevo Empleado">
-        <RegistroEmpleado onSuccess={handleSuccess} onCancel={close} />
+      <ModalEstandar
+        opened={openedRegistro}
+        close={closeRegistro}
+        title="Registrar Nuevo Empleado"
+        size="md"
+      >
+        <RegistroEmpleado
+          onSuccess={(nuevo) => {
+            pushNuevoEmpleado(nuevo);
+            closeRegistro();
+          }}
+        />
       </ModalEstandar>
     </div>
   );
 };
+
+export default EmpleadosPage;
