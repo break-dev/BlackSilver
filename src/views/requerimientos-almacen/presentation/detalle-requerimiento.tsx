@@ -390,10 +390,18 @@ export const DetalleRequerimiento = ({
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
-                        <div className="flex justify-between items-center px-1">
-                          <Text size="11px" fw={800} c="zinc-5">
-                            Atendido:{" "}
-                            {Number(item.cantidad_entregada || 0).toFixed(0)}
+                        <div className="flex justify-between items-center px-1 gap-2">
+                          <Text
+                            size="11px"
+                            fw={800}
+                            c="zinc-5"
+                            className="flex flex-row gap-0.5"
+                          >
+                            <span>Atendido: </span>
+                            <span>
+                              {Number(item.cantidad_entregada || 0).toFixed(0)}
+                            </span>
+                            <span>{item.unidad_medida}</span>
                           </Text>
                           <Text size="11px" fw={900} c="indigo.4">
                             {progresoItem}%
