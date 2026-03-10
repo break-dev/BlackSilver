@@ -348,7 +348,7 @@ export const RegistroRequerimiento = ({
                     Resumen del pedido
                   </Text>
 
-                  <Group gap="xl">
+                  <Group gap="xl" wrap="nowrap">
                     <Stack gap={2}>
                       <Text
                         size="10px"

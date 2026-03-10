@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { useState, useEffect, useCallback } from "react";
 import { notifications } from "@mantine/notifications";
 import { RequerimientosService } from "../services/requerimientos.service";
@@ -144,8 +145,9 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       id_almacen_destino: idAlmacenDestino,
       id_labores: idLabores.length > 0 ? idLabores : null,
       premura,
-      fecha_entrega_requerida:
-        fechaEntregaRequerida?.toISOString().split("T")[0] || null,
+      fecha_entrega_requerida: fechaEntregaRequerida
+        ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
+        : null,
       detalles,
     };
 
