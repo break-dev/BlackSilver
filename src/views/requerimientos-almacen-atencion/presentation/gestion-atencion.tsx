@@ -405,8 +405,7 @@ export const GestionAtencion = ({
       <Paper
         p="md"
         radius="xl"
-        bg="zinc.9/50"
-        className="border border-zinc-800"
+        className="bg-zinc-900/50 border border-zinc-800"
       >
         <Group justify="space-between" mb={8} px={4}>
           <Text

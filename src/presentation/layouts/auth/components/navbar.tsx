@@ -33,7 +33,7 @@ return (
     onClick={onClose}
   >
     <nav
-      className="absolute left-4 top-4 bottom-4 w-[280px] max-w-[85vw] 
+      className="absolute left-4 top-4 bottom-4 w-70 max-w-[75vw] 
         bg-gray-950 backdrop-blur-xl rounded-2xl border border-zinc-800/50 
         shadow-2xl overflow-hidden animate-slideInLeft"
       onClick={(e) => e.stopPropagation()}

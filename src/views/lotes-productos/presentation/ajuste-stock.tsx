@@ -48,8 +48,7 @@ export const AjusteStockModal = ({
       <Paper
         p="md"
         radius="lg"
-        bg="zinc.9/10"
-        className="border border-zinc-800/50"
+        className="bg-zinc-900/10 border border-zinc-800/50"
       >
         <Group justify="space-between" align="flex-start" wrap="nowrap">
           <Stack gap={2}>

@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Badge,
   Button,
   Group,
   NumberInput,
@@ -11,819 +10,296 @@ import {
   TextInput,
   MultiSelect,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { useState, useEffect } from "react";
-import { notifications } from "@mantine/notifications";
 import {
-  PlusIcon,
   TrashIcon,
-  BoltIcon,
-  FireIcon,
-  HandThumbUpIcon,
-  BuildingStorefrontIcon,
-  WrenchScrewdriverIcon,
-} from "@heroicons/react/24/outline";
-import dayjs from "dayjs";
-// Removed DateInput import as CustomDatePicker is now used
-import {
   ClipboardDocumentListIcon,
   ShoppingCartIcon,
-} from "@heroicons/react/24/solid";
-
-import { useRequerimientos } from "../../../services/requerimientos_almacen/useRequerimientos";
-import { useLote } from "../../../services/lote/useLote";
-import { useLabores } from "../../../services/labores/useLabores";
-import { Premura, EstadoBase } from "../../../shared/enums/estados";
-import { SelectMina } from "../../../utils/select-mina";
-import { CustomDatePicker } from "../../../utils/date-picker-input";
-import type { RES_Almacen } from "../../../../views/almacenes/service/dtos/almacenes.responses";
-import type { RES_RequerimientoAlmacen } from "../services/requerimiento.responses";
-import type { RES_Labor } from "../../labores/service/labores.responses";
+} from "@heroicons/react/24/outline";
+import { useRegistroRequerimiento } from "../hooks/useRegistroRequerimiento";
+import { Premura } from "../../../shared/enums/otros";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroRequerimientoProps {
-  initialMinaId?: number | null;
-  onSuccess: (requerimiento: RES_RequerimientoAlmacen) => void;
+  onSuccess: () => void;
   onCancel: () => void;
 }
 
-interface ItemDetalle {
-  id_producto: string;
-  producto_nombre: string;
-  id_unidad_medida: string;
-  unidad_medida_nombre: string;
-  unidad_medida_abbr: string;
-  unidad_base_abbr: string;
-  cantidad_solicitada: number;
-  contenido_por_presentacion: number;
-  comentario: string;
-}
+const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
+  <div className="flex flex-col gap-2 mb-4">
+    <div className="flex items-center gap-2">
+      <Icon className="w-5 h-5 text-amber-500" />
+      <Text fw={700} size="sm" c="white" className="uppercase tracking-tight">
+        {title}
+      </Text>
+    </div>
+    <div className="h-0.5 w-full bg-linear-to-r from-amber-500/50 to-transparent" />
+  </div>
+);
 
 export const RegistroRequerimiento = ({
-  initialMinaId,
   onSuccess,
   onCancel,
 }: RegistroRequerimientoProps) => {
-  const [submitting, setSubmitting] = useState(false);
-  const [, setError] = useState("");
-  const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [loadingLabores, setLoadingLabores] = useState(false);
-  const [labores, setLabores] = useState<RES_Labor[]>([]);
-  const [items, setItems] = useState<ItemDetalle[]>([]);
-
-  // Listas maestras para lookup
-  const [productosMaster, setProductosMaster] = useState<any[]>([]);
-  const [unidadesMaster, setUnidadesMaster] = useState<any[]>([]);
-
-  const { crear, listarAlmacenesPorMina } = useRequerimientos({ setError });
-  const { listarProductosDisponibles, listarUnidadesMedida } = useLote({
-    setError: () => {},
-  });
-  const { listar: listarLabores } = useLabores({ setError: () => {} });
-
-  const form = useForm({
-    initialValues: {
-      id_mina: initialMinaId ? String(initialMinaId) : "",
-      id_labores: [] as string[],
-      id_almacen_destino: "",
-      premura: Premura.Normal,
-      fecha_entrega_requerida: null as Date | null,
+  const {
+    state: {
+      minas,
+      almacenes,
+      labores,
+      productos,
+      unidades,
+      idMina,
+      setIdMina,
+      idAlmacenDestino,
+      setIdAlmacenDestino,
+      idLabores,
+      setIdLabores,
+      premura,
+      setPremura,
+      fechaEntregaRequerida,
+      setFechaEntregaRequerida,
+      idProducto,
+      setIdProducto,
+      idUnidadMedida,
+      setIdUnidadMedida,
+      cantidad,
+      setCantidad,
+      contenido,
+      setContenido,
+      comentarioItem,
+      setComentarioItem,
+      detalles,
     },
-    validate: {
-      id_mina: (val) => (!val ? "Seleccione una mina" : null),
-      id_almacen_destino: (val) => (!val ? "Seleccione un almacén" : null),
-    },
-  });
-
-  const formItem = useForm({
-    initialValues: {
-      id_producto: "",
-      id_unidad_medida: "",
-      cantidad_solicitada: 0,
-      contenido_por_presentacion: 1,
-      comentario: "",
-    },
-    validate: {
-      id_producto: (val) => (!val ? "Seleccione un producto" : null),
-      id_unidad_medida: (val) => (!val ? "Seleccione unidad" : null),
-      cantidad_solicitada: (val) => (val < 0 ? "Debe ser >= 0" : null),
-      contenido_por_presentacion: (val) => (val <= 0 ? "Debe ser > 0" : null),
-    },
-  });
-
-  const pluralizar = (nombre: string | undefined) => {
-    if (!nombre) return "";
-    const lower = nombre.toLowerCase();
-    if (lower.endsWith("s")) return nombre;
-    const vocales = ["a", "e", "i", "o", "u"];
-    const ultimaLetra = lower.charAt(lower.length - 1);
-    return vocales.includes(ultimaLetra) ? `${nombre}s` : `${nombre}es`;
-  };
-
-  // Ayudantes para etiquetas dinámicas
-  const selectedProducto = productosMaster.find(
-    (p) => String(p.id_producto) === formItem.values.id_producto,
-  );
-  const selectedUnidad = unidadesMaster.find(
-    (u) => String(u.id_unidad_medida) === formItem.values.id_unidad_medida,
-  );
-
-  const unidadNombre = selectedUnidad ? selectedUnidad.nombre : "Unidad";
-  const unidadAbbr = selectedUnidad ? selectedUnidad.abreviatura : "---";
-
-  const baseNombre = selectedProducto?.nombre_unidad_medida_base || "---";
-  const baseAbbr = selectedProducto?.unidad_medida_base || "---";
-
-  const totalBase =
-    formItem.values.cantidad_solicitada *
-    formItem.values.contenido_por_presentacion;
-
-  const esUnidadBase =
-    selectedProducto &&
-    selectedUnidad &&
-    String(selectedProducto.id_unidad_medida_base) ===
-      String(formItem.values.id_unidad_medida);
-
-  // Cargar listas maestras (Productos y Unidades)
-  useEffect(() => {
-    const loadCatalogs = async () => {
-      try {
-        const [prodData, unitData] = await Promise.all([
-          listarProductosDisponibles(),
-          listarUnidadesMedida(),
-        ]);
-        if (prodData) setProductosMaster(prodData);
-        if (unitData) setUnidadesMaster(unitData);
-      } catch (err) {
-        console.error("Error loading catalogs", err);
-      }
-    };
-    loadCatalogs();
-  }, []);
-
-  // Cargar datos cuando cambia la mina
-  useEffect(() => {
-    if (form.values.id_mina) {
-      const idMinaNum = Number(form.values.id_mina);
-      setLoadingAlmacenes(true);
-      listarAlmacenesPorMina(idMinaNum)
-        .then((res) => setAlmacenes(res || []))
-        .finally(() => setLoadingAlmacenes(false));
-
-      setLoadingLabores(true);
-      listarLabores({ id_mina: idMinaNum })
-        .then((res) => setLabores(res || []))
-        .finally(() => setLoadingLabores(false));
-
-      form.setFieldValue("id_almacen_destino", "");
-      form.setFieldValue("id_labores", []);
-    }
-  }, [form.values.id_mina]);
-
-  // Resetear contenido si la unidad es la base
-  useEffect(() => {
-    if (esUnidadBase) {
-      formItem.setFieldValue("contenido_por_presentacion", 1);
-    }
-  }, [
-    formItem.values.id_producto,
-    formItem.values.id_unidad_medida,
-    esUnidadBase,
-  ]);
-
-  const addItem = () => {
-    const validation = formItem.validate();
-    if (validation.hasErrors) {
-      notifications.show({
-        title: "Atención",
-        message: "Por favor complete los datos del producto.",
-        color: "orange",
-      });
-      return;
-    }
-
-    const {
-      id_producto,
-      id_unidad_medida,
-      cantidad_solicitada,
-      contenido_por_presentacion,
-      comentario,
-    } = formItem.values;
-
-    const existingIndex = items.findIndex(
-      (it) =>
-        it.id_producto === id_producto &&
-        it.id_unidad_medida === id_unidad_medida,
-    );
-
-    if (existingIndex > -1) {
-      const updated = [...items];
-      updated[existingIndex].cantidad_solicitada += cantidad_solicitada;
-      setItems(updated);
-    } else {
-      setItems([
-        ...items,
-        {
-          id_producto,
-          producto_nombre: selectedProducto?.nombre || "Producto",
-          id_unidad_medida,
-          unidad_medida_nombre: selectedUnidad?.nombre || "Unidad",
-          unidad_medida_abbr: selectedUnidad?.abreviatura || "---",
-          unidad_base_abbr: selectedProducto?.unidad_medida_base || "---",
-          cantidad_solicitada,
-          contenido_por_presentacion,
-          comentario: comentario || "",
-        },
-      ]);
-    }
-    formItem.setValues({
-      ...formItem.values,
-      cantidad_solicitada: 0,
-      comentario: "",
-    });
-  };
-
-  const removeItem = (index: number) => {
-    setItems((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async () => {
-    const validation = form.validate();
-
-    if (validation.hasErrors) {
-      notifications.show({
-        title: "Error",
-        message: "Por favor complete los campos requeridos",
-        color: "red",
-      });
-      return;
-    }
-
-    if (items.length === 0) {
-      notifications.show({
-        title: "Error",
-        message: "Debe agregar al menos un producto al requerimiento",
-        color: "red",
-      });
-      return;
-    }
-
-    const idAlmacen = Number(form.values.id_almacen_destino);
-    if (!idAlmacen || isNaN(idAlmacen)) {
-      notifications.show({
-        title: "Error",
-        message: "Seleccione un almacén de destino válido",
-        color: "red",
-      });
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const dto = {
-        id_mina: Number(form.values.id_mina),
-        id_labores: form.values.id_labores.map(Number),
-        id_almacen_destino: idAlmacen,
-        premura: form.values.premura,
-        fecha_entrega_requerida: form.values.fecha_entrega_requerida
-          ? dayjs(form.values.fecha_entrega_requerida).format("YYYY-MM-DD")
-          : null,
-        detalles: items.map((item) => ({
-          id_producto: Number(item.id_producto),
-          id_unidad_medida: Number(item.id_unidad_medida),
-          cantidad_solicitada: item.cantidad_solicitada,
-          contenido_por_presentacion: item.contenido_por_presentacion,
-          comentario: item.comentario,
-        })),
-      };
-
-      console.log("[DEBUG] Solicitud POST /requerimientos:", dto);
-
-      const res = await crear(dto);
-      if (res) {
-        notifications.show({
-          title: "Éxito",
-          message: "Requerimiento generado correctamente",
-          color: "green",
-        });
-        onSuccess(res);
-      }
-    } catch (err) {
-      console.error("[ERROR] handleSubmit:", err);
-      setError("Error al procesar el requerimiento");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    derived: { sonUnidadesIdenticas, canAdd },
+    status: { submitting, error },
+    actions: { agregarItem, eliminarItem, handleSubmit },
+  } = useRegistroRequerimiento({ onSuccess });
 
   const inputClasses = {
     input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
-    dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl ",
-    option:
-      "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-    label: "text-zinc-300 mb-1.5 font-semibold tracking-tight",
+      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+    label: "text-zinc-300 font-semibold mb-1",
   };
 
-  const SectionHeader = ({
-    icon: Icon,
-    title,
-  }: {
-    icon: any;
-    title: string;
-  }) => (
-    <div className="flex flex-col gap-2 mb-6">
-      <div className="flex items-center gap-2">
-        <Icon className="w-5 h-5 text-amber-500" />
-        <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">
-          {title}
-        </Text>
-      </div>
-      <div className="h-0.5 w-full bg-linear-to-r from-amber-500/50 to-transparent rounded-full" />
-    </div>
-  );
-
   return (
-    <Stack gap={32} p="md">
-      {/* Sección: Datos de la solicitud */}
+    <Stack gap={24} p="sm">
       <section>
         <SectionHeader
           icon={ClipboardDocumentListIcon}
           title="Datos de la solicitud"
         />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-8">
-          {/* Fila 1: Mina | Almacén | Fecha */}
-          <SelectMina
-            withAsterisk
-            disabled={!!initialMinaId}
-            key={form.key("id_mina")}
-            {...form.getInputProps("id_mina")}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Select
+            label="Mina"
+            placeholder="Seleccione mina"
+            data={minas.map((m) => ({
+              value: String(m.id_mina),
+              label: m.nombre,
+            }))}
+            value={idMina ? String(idMina) : null}
+            onChange={(val) => setIdMina(Number(val))}
             classNames={inputClasses}
-            className="lg:col-span-1"
+            radius="lg"
+            searchable
           />
 
           <Select
             label="Almacén Destino"
             placeholder="Seleccione almacén"
-            withAsterisk
             data={almacenes.map((a) => ({
-              value: String(a.id_almacen || (a as any).id || ""),
+              value: String(a.id_almacen),
               label: a.nombre,
             }))}
-            disabled={!form.values.id_mina || loadingAlmacenes}
-            key={form.key("id_almacen_destino")}
-            {...form.getInputProps("id_almacen_destino")}
-            radius="lg"
-            size="sm"
+            value={idAlmacenDestino ? String(idAlmacenDestino) : null}
+            onChange={(val) => setIdAlmacenDestino(Number(val))}
+            disabled={!idMina}
             classNames={inputClasses}
-            leftSection={
-              <BuildingStorefrontIcon className="w-4 h-4 text-zinc-400" />
-            }
-            className="lg:col-span-1"
+            radius="lg"
           />
 
           <CustomDatePicker
-            label="Fecha de Entrega (Opcional)"
+            label="Fecha de Entrega"
             placeholder="Seleccione fecha"
-            key={form.key("fecha_entrega_requerida")}
-            value={form.values.fecha_entrega_requerida}
-            onChange={(date) =>
-              form.setFieldValue(
-                "fecha_entrega_requerida",
-                date as unknown as Date,
-              )
-            }
+            value={fechaEntregaRequerida}
+            onChange={(val) => setFechaEntregaRequerida(val as Date | null)}
             radius="lg"
-            size="sm"
-            minDate={new Date()}
-            clearable
-            className="lg:col-span-1"
           />
 
-          {/* Fila 2: Labores Destino */}
           <div className="lg:col-span-3">
             <MultiSelect
-              label="Labores Destino (Opcional)"
-              placeholder={
-                loadingLabores ? "Cargando labores..." : "Asigne labores..."
-              }
-              description="Seleccione las labores donde se emplearán estos materiales"
-              data={labores
-                .filter((l) => l.estado === EstadoBase.Activo)
-                .map((l) => ({ value: String(l.id_labor), label: l.nombre }))}
-              disabled={!form.values.id_mina || loadingLabores}
-              hidePickedOptions
-              searchable
-              leftSection={
-                <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-400" />
-              }
-              key={form.key("id_labores")}
-              {...form.getInputProps("id_labores")}
-              radius="lg"
-              size="sm"
-              styles={{
-                pill: {
-                  backgroundColor: "rgba(245, 158, 11, 0.15)",
-                  border: "1px solid rgba(245, 158, 11, 0.4)",
-                  color: "#fef3c7",
-                  fontWeight: 600,
-                  height: "24px",
-                  lineHeight: "22px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  paddingLeft: "10px",
-                  paddingRight: "4px",
-                },
-                pillsList: {
-                  gap: "6px",
-                  padding: "4px 0",
-                },
-                input: {
-                  minHeight: "48px",
-                  display: "flex",
-                  alignItems: "center",
-                },
-              }}
+              label="Labores Destino"
+              placeholder="Asigne labores..."
+              data={labores.map((l) => ({
+                value: String(l.id_labor),
+                label: l.nombre,
+              }))}
+              value={idLabores.map(String)}
+              onChange={(vals) => setIdLabores(vals.map(Number))}
+              disabled={!idMina}
               classNames={inputClasses}
+              radius="lg"
             />
           </div>
 
-          {/* Fila 3: Prioridad / Premura */}
-          <div className="lg:col-span-3 bg-zinc-900/30 p-4 rounded-2xl border border-zinc-800/50">
-            <Group justify="space-between" align="center" wrap="nowrap">
-              <Stack gap={0}>
-                <Text
-                  size="xs"
-                  fw={700}
-                  className="text-zinc-400 uppercase tracking-widest"
-                >
-                  Prioridad
-                </Text>
-                <Text size="sm" fw={600} className="text-white">
-                  Nivel de Urgencia
-                </Text>
-              </Stack>
+          <div className="lg:col-span-3 bg-zinc-900/30 p-4 rounded-xl border border-zinc-800">
+            <Group justify="space-between">
+              <Text size="sm" fw={600}>
+                Prioridad
+              </Text>
               <Group gap="xs">
-                <Button
-                  size="xs"
-                  variant={
-                    form.values.premura === Premura.Normal ? "filled" : "light"
-                  }
-                  color="blue"
-                  onClick={() => form.setFieldValue("premura", Premura.Normal)}
-                  leftSection={<HandThumbUpIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  NORMAL
-                </Button>
-                <Button
-                  size="xs"
-                  variant={
-                    form.values.premura === Premura.Urgente ? "filled" : "light"
-                  }
-                  color="orange"
-                  onClick={() => form.setFieldValue("premura", Premura.Urgente)}
-                  leftSection={<BoltIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  URGENTE
-                </Button>
-                <Button
-                  size="xs"
-                  variant={
-                    form.values.premura === Premura.Emergencia
-                      ? "filled"
-                      : "light"
-                  }
-                  color="red"
-                  onClick={() =>
-                    form.setFieldValue("premura", Premura.Emergencia)
-                  }
-                  leftSection={<FireIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  EMERGENCIA
-                </Button>
+                {Object.values(Premura).map((p) => (
+                  <Button
+                    key={p}
+                    size="xs"
+                    variant={premura === p ? "filled" : "light"}
+                    color={
+                      p === Premura.Normal
+                        ? "blue"
+                        : p === Premura.Urgente
+                          ? "orange"
+                          : "red"
+                    }
+                    onClick={() => setPremura(p)}
+                  >
+                    {p.toUpperCase()}
+                  </Button>
+                ))}
               </Group>
             </Group>
           </div>
         </div>
       </section>
 
-      {/* Sección: Items a solicitar */}
       <section>
-        <SectionHeader icon={ShoppingCartIcon} title="Items a solicitar" />
-
-        <div className="space-y-6">
-          <div className="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
-              {/* FILA 1: Selección Principal */}
-              <div className="md:col-span-5">
-                <Select
-                  label="Producto"
-                  placeholder="Seleccione producto"
-                  data={productosMaster.map((p) => ({
-                    value: String(p.id_producto),
-                    label: p.nombre,
-                  }))}
-                  searchable
-                  key={formItem.key("id_producto")}
-                  {...formItem.getInputProps("id_producto")}
-                  error={formItem.errors.id_producto ? true : null}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-4">
-                <Select
-                  label="Unidad de Medida"
-                  placeholder="Seleccione unidad"
-                  data={unidadesMaster.map((u) => ({
-                    value: String(u.id_unidad_medida),
-                    label: `${u.nombre} (${u.abreviatura})`,
-                  }))}
-                  searchable
-                  key={formItem.key("id_unidad_medida")}
-                  {...formItem.getInputProps("id_unidad_medida")}
-                  error={formItem.errors.id_unidad_medida ? true : null}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-3">
-                <NumberInput
-                  label={`Cantidad de ${pluralizar(unidadNombre)}`}
-                  placeholder="0.00"
-                  min={0}
-                  decimalScale={2}
-                  key={formItem.key("cantidad_solicitada")}
-                  {...formItem.getInputProps("cantidad_solicitada")}
-                  error={formItem.errors.cantidad_solicitada ? true : null}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              {/* FILA 2: Especificación y Acción */}
-              <div className="md:col-span-3">
-                <NumberInput
-                  label={`Contenido por ${unidadNombre}`}
-                  description={`Indique cuánt@s ${pluralizar(baseNombre)} contiene cada ${unidadNombre}`}
-                  placeholder="Ej: 10"
-                  min={0.01}
-                  decimalScale={2}
-                  key={formItem.key("contenido_por_presentacion")}
-                  {...formItem.getInputProps("contenido_por_presentacion")}
-                  disabled={esUnidadBase}
-                  error={
-                    formItem.errors.contenido_por_presentacion ? true : null
-                  }
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-7">
-                <TextInput
-                  label="Comentario del Producto"
-                  placeholder="Detalles adicionales del producto para el almacén..."
-                  key={formItem.key("comentario")}
-                  {...formItem.getInputProps("comentario")}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Button
-                  onClick={addItem}
-                  variant="filled"
-                  color="indigo"
-                  size="sm"
-                  className="w-full shadow-lg h-10 mb-[2px]"
-                  leftSection={<PlusIcon className="w-5 h-5 text-white" />}
-                  radius="lg"
-                >
-                  Agregar
-                </Button>
-              </div>
-
-              {/* FILA 3: Resumen de Conversión Estilo Lote */}
-              <div className="md:col-span-12 mt-2">
-                <div className="bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/50 border-dashed">
-                  <Text
-                    size="xs"
-                    fw={700}
-                    c="zinc.5"
-                    mb="xs"
-                    className="uppercase tracking-widest flex items-center gap-2"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-                    Resumen de Conversión
-                  </Text>
-
-                  <Group gap="xl">
-                    <Stack gap={2}>
-                      <Text
-                        size="10px"
-                        c="zinc.5"
-                        fw={700}
-                        className="uppercase"
-                      >
-                        Pedido en Requerimiento
-                      </Text>
-                      <div className="flex items-baseline gap-1.5">
-                        <Text
-                          fw={800}
-                          size="xl"
-                          className={
-                            selectedUnidad ? "text-white" : "text-zinc-700"
-                          }
-                        >
-                          {formItem.values.cantidad_solicitada.toLocaleString(
-                            "en-US",
-                            {
-                              minimumFractionDigits: 2,
-                            },
-                          )}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={700}
-                          c="zinc.5"
-                          className="uppercase tracking-wider"
-                        >
-                          {unidadAbbr}
-                        </Text>
-                      </div>
-                    </Stack>
-
-                    <div className="h-10 w-px bg-zinc-800" />
-
-                    <Stack gap={2}>
-                      <Text
-                        size="10px"
-                        c="zinc.5"
-                        fw={700}
-                        className="uppercase"
-                      >
-                        Total en Unidades Base
-                      </Text>
-                      <div className="flex items-baseline gap-1.5">
-                        <Text
-                          fw={800}
-                          size="xl"
-                          className={
-                            selectedProducto
-                              ? "text-emerald-400"
-                              : "text-zinc-700"
-                          }
-                        >
-                          {totalBase.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={700}
-                          c="zinc.5"
-                          className="uppercase tracking-wider"
-                        >
-                          {baseAbbr}
-                        </Text>
-                      </div>
-                    </Stack>
-                  </Group>
-                </div>
-              </div>
+        <SectionHeader icon={ShoppingCartIcon} title="Productos" />
+        <div className="bg-zinc-900/40 p-4 rounded-xl border border-zinc-800 grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-5">
+            <Select
+              label="Producto"
+              data={productos.map((p) => ({
+                value: String(p.id_producto),
+                label: p.nombre,
+              }))}
+              value={idProducto ? String(idProducto) : null}
+              onChange={(val) => setIdProducto(Number(val))}
+              searchable
+              classNames={inputClasses}
+            />
+          </div>
+          <div className="md:col-span-4">
+            <Select
+              label="Unidad"
+              data={unidades.map((u) => ({
+                value: String(u.id_unidad_medida),
+                label: u.nombre,
+              }))}
+              value={idUnidadMedida ? String(idUnidadMedida) : null}
+              onChange={(val) => setIdUnidadMedida(Number(val))}
+              classNames={inputClasses}
+            />
+          </div>
+          <div className="md:col-span-3">
+            <NumberInput
+              label="Cantidad"
+              value={cantidad}
+              onChange={(val) => setCantidad(Number(val))}
+              min={0}
+              classNames={inputClasses}
+            />
+          </div>
+          {!sonUnidadesIdenticas && idProducto > 0 && idUnidadMedida > 0 && (
+            <div className="md:col-span-3">
+              <NumberInput
+                label={`Contenido por ${unidades.find((u) => u.id_unidad_medida === idUnidadMedida)?.nombre}`}
+                value={contenido}
+                onChange={(val) => setContenido(Number(val))}
+                min={0}
+                classNames={inputClasses}
+              />
             </div>
+          )}
+          <div
+            className={
+              sonUnidadesIdenticas ? "md:col-span-12" : "md:col-span-9"
+            }
+          >
+            <TextInput
+              label="Comentario"
+              value={comentarioItem}
+              onChange={(e) => setComentarioItem(e.target.value)}
+              classNames={inputClasses}
+            />
+          </div>
+          <div className="md:col-span-12">
+            <Button
+              onClick={agregarItem}
+              disabled={!canAdd}
+              fullWidth
+              radius="lg"
+              color="indigo"
+            >
+              Agregar Producto
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Lista de Items (Carrito) */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-800 shadow-sm">
-        <Table variant="unstyled" className="w-full text-zinc-300">
-          <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
-            <tr>
-              <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
-                Producto
-              </th>
-              <th className="px-4 py-3 text-right font-semibold w-32">
-                Cant. Solicitada
-              </th>
-              <th className="px-4 py-3 text-right font-semibold w-32">
-                Equivalencia
-              </th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[280px]">
-                Comentario
-              </th>
-              <th className="px-4 py-3 text-center w-16"></th>
+      <Table variant="unstyled" className="text-zinc-300">
+        <thead>
+          <tr className="bg-zinc-900 text-zinc-400 text-xs">
+            <th className="p-3">ITEM</th>
+            <th className="p-3">CANTIDAD</th>
+            <th className="p-3">EQUIVALENCIA BASE</th>
+            <th className="p-3">ACCIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          {detalles.map((det, idx) => (
+            <tr key={idx} className="border-t border-zinc-800">
+              <td className="p-3">
+                {
+                  productos.find((p) => p.id_producto === det.id_producto)
+                    ?.nombre
+                }
+              </td>
+              <td className="p-3">
+                {det.cantidad_solicitada}{" "}
+                {
+                  unidades.find(
+                    (u) => u.id_unidad_medida === det.id_unidad_medida,
+                  )?.abreviatura
+                }
+              </td>
+              <td className="p-3">
+                {det.cantidad_solicitada * det.contenido_por_presentacion}{" "}
+                {
+                  productos.find((p) => p.id_producto === det.id_producto)
+                    ?.unidad_medida_base
+                }
+              </td>
+              <td className="p-3">
+                <ActionIcon color="red" onClick={() => eliminarItem(idx)}>
+                  <TrashIcon className="w-4 h-4" />
+                </ActionIcon>
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800 bg-zinc-900/40">
-            {items.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="px-4 py-10 text-center text-zinc-500 italic"
-                >
-                  No hay productos agregados al requerimiento
-                </td>
-              </tr>
-            ) : (
-              items.map((item, index) => (
-                <tr key={index} className="hover:bg-white/5 transition-colors">
-                  <td className="px-4 py-3 text-xs text-center text-zinc-500">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-medium text-zinc-100">
-                    {item.producto_nombre}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <Badge
-                      variant="filled"
-                      color="cyan"
-                      radius="sm"
-                      size="sm"
-                      className="text-white fw-bold shadow-xs whitespace-nowrap"
-                    >
-                      {item.cantidad_solicitada.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      {item.unidad_medida_abbr}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <Badge
-                      variant="filled"
-                      color="pink"
-                      radius="sm"
-                      size="sm"
-                      className="text-white fw-bold shadow-xs whitespace-nowrap"
-                    >
-                      {(
-                        item.cantidad_solicitada *
-                        item.contenido_por_presentacion
-                      ).toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                      })}{" "}
-                      {item.unidad_base_abbr}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-zinc-400">
-                    {item.comentario || "-"}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <ActionIcon
-                      color="red"
-                      variant="subtle"
-                      onClick={() => removeItem(index)}
-                      radius="md"
-                      size="sm"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </ActionIcon>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </div>
+          ))}
+        </tbody>
+      </Table>
 
-      <Group justify="flex-end" mt="md">
-        <Button
-          variant="subtle"
-          onClick={onCancel}
-          disabled={submitting}
-          radius="lg"
-          className="text-zinc-400 hover:text-white"
-        >
+      <Group justify="flex-end" mt="xl">
+        <Button variant="outline" color="gray" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button
-          onClick={handleSubmit}
-          loading={submitting}
-          disabled={items.length === 0}
-          radius="lg"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
-        >
-          Guardar
+        <Button onClick={handleSubmit} loading={submitting} color="teal">
+          Registrar Requerimiento
         </Button>
       </Group>
+
+      {error && (
+        <Text c="red" size="sm">
+          {error}
+        </Text>
+      )}
     </Stack>
   );
 };

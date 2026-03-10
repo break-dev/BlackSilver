@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Premura } from "../../../shared/enums/estados";
+import { Premura } from "../../../shared/enums/otros";
 
 export interface DTO_CrearRequerimiento {
   id_mina: number;
@@ -14,6 +14,7 @@ export interface DTO_CrearRequerimientoDetalle {
   id_producto: number;
   id_unidad_medida: number;
   cantidad_solicitada: number;
+  contenido_por_presentacion: number;
   comentario?: string | null;
 }
 
@@ -22,6 +23,9 @@ export const Schema_CrearRequerimientoDetalle = z.object({
   id_producto: z.number().min(1, "Seleccione un producto"),
   id_unidad_medida: z.number().min(1, "Seleccione una unidad"),
   cantidad_solicitada: z.number().min(0.01, "La cantidad debe ser mayor a 0"),
+  contenido_por_presentacion: z
+    .number()
+    .min(0.0001, "El contenido debe ser mayor a 0"),
   comentario: z.string().nullable().optional(),
 });
 

@@ -43,11 +43,11 @@ export const AuthLayout = () => {
   }, [message, clearMessage]);
 
   return (
-    <div className="h-full w-full bg-slate-950">
+    <div className="min-h-screen w-full bg-slate-950 flex flex-col">
       <Header onMenuToggle={() => setOpen(true)} />
       {open && <Navbar onClose={() => setOpen(false)} />}
 
-      <main className="pt-24 px-4 pb-6">
+      <main className="flex-1 pt-24 px-4 pb-6">
         <Outlet />
       </main>
     </div>

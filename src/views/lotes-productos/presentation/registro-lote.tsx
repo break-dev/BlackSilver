@@ -158,8 +158,7 @@ export const RegistroLote = ({
           withBorder
           p="md"
           radius="lg"
-          bg="indigo.9/5"
-          className="border-indigo-500/10 self-end"
+          className="bg-indigo-900/5 border-indigo-500/10 self-end"
         >
           <Stack gap={0} align="center">
             <Text
@@ -206,8 +205,7 @@ export const RegistroLote = ({
           <Paper
             p="sm"
             radius="lg"
-            bg="zinc.9/5"
-            className="flex items-center justify-center border border-dashed border-zinc-800 opacity-50"
+            className="flex items-center justify-center bg-zinc-900/5 border border-dashed border-zinc-800 opacity-50"
           >
             <Text size="xs" c="dimmed" className="italic">
               Producto no perecible

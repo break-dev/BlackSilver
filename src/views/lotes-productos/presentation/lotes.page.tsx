@@ -314,12 +314,7 @@ export const LotesPage = () => {
                 : `QUEDAN: ${record.dias_para_vencer} DÍAS`}
             </Text>
             {record.dias_espera_vencimiento && (
-              <Text
-                size="9px"
-                c="dimmed"
-                fw={700}
-                className="uppercase"
-              >
+              <Text size="9px" c="dimmed" fw={700} className="uppercase">
                 Aviso: {record.dias_espera_vencimiento}d. antes
               </Text>
             )}
@@ -352,8 +347,7 @@ export const LotesPage = () => {
         withBorder
         p={6}
         radius="lg"
-        bg="zinc.9/30"
-        className="border-zinc-800/50 shadow-2xl backdrop-blur-md"
+        className="bg-zinc-900/30 border-zinc-800/50 shadow-2xl backdrop-blur-md"
       >
         <div className="flex flex-col lg:flex-row gap-2 items-end">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 flex-1 w-full">
