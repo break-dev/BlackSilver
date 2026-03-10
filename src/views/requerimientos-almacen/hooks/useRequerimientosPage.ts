@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { RequerimientosService } from "../services/requerimientos.service";
 import type {
   RES_RequerimientoAlmacen,
@@ -14,11 +14,12 @@ export const useRequerimientosPage = () => {
   >([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Filtros
-  const [mes, setMes] = useState<string>(new Date().getMonth() + 1 + "");
+  // Filtros de Periodo
+  const [mes, setMes] = useState<string>(String(new Date().getMonth() + 1));
   const [yearcito, setYearcito] = useState<string>(
-    new Date().getFullYear() + "",
+    String(new Date().getFullYear()),
   );
+  const [search, setSearch] = useState("");
 
   // Detalle y Trazabilidad (UI)
   const [selectedReq, setSelectedReq] =
@@ -111,8 +112,19 @@ export const useRequerimientosPage = () => {
     }
   };
 
+  const filteredRecords = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return requerimientos;
+    return requerimientos.filter(
+      (item) =>
+        (item.correlativo || "").toLowerCase().includes(q) ||
+        (item.solicitante || "").toLowerCase().includes(q),
+    );
+  }, [requerimientos, search]);
+
   return {
     requerimientos,
+    filteredRecords,
     loading,
     error,
     filters: {
@@ -120,6 +132,8 @@ export const useRequerimientosPage = () => {
       setMes,
       yearcito,
       setYearcito,
+      search,
+      setSearch,
     },
     actions: {
       listar,

@@ -64,13 +64,13 @@ export const LoginPage = () => {
               />
             </div>
             <h1
-              className="text-2xl sm:text-3xl font-bold text-white 
+              className="text-xl sm:text-2xl font-bold text-white 
               mb-2 tracking-wide"
             >
               Black Silver
             </h1>
             <p
-              className="text-xs sm:text-sm text-cyan-400 font-medium 
+              className="text-[12px]! sm:text-sm text-cyan-400 font-medium 
               tracking-widest uppercase"
             >
               Sistema de Gestión Minera
@@ -100,7 +100,7 @@ export const LoginPage = () => {
                 label={<span className="text-zinc-300">Usuario</span>}
                 placeholder="Ingresa tu usuario"
                 radius="lg"
-                size="md"
+                size="sm"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 styles={{
@@ -122,7 +122,7 @@ export const LoginPage = () => {
                 label={<span className="text-zinc-300">Contraseña</span>}
                 placeholder="Ingresa tu contraseña"
                 radius="lg"
-                size="md"
+                size="sm"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 styles={{
@@ -143,7 +143,7 @@ export const LoginPage = () => {
               type="submit"
               fullWidth
               radius="lg"
-              size="md"
+              size="sm"
               loading={isLoading}
               className="mt-8! bg-linear-to-r! from-cyan-600! to-blue-600! text-white! 
               font-bold! hover:from-cyan-500! hover:to-blue-500! 

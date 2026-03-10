@@ -7,7 +7,7 @@ import {
   HomeIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
-import { iconos_menu_navegacion } from "./iconos-menu-navegacion";
+import { iconos_menu_navegacion } from "../../../variables/iconos-menu-navegacion";
 import { useMenuNav } from "../../../../hooks/useMenuNav";
 import type { ISubmodulo } from "../../../../shared/interfaces";
 
@@ -43,7 +43,7 @@ return (
         className="flex items-center justify-between p-4 border-b 
           border-zinc-800/50"
       >
-        <span className="font-semibold text-white text-[14px]!">
+        <span className="font-semibold text-white text-sm">
           Navegación
         </span>
         <button
@@ -72,7 +72,7 @@ return (
             }`}
         >
           <HomeIcon className="w-3.5 h-3.5" />
-          <span className="text-[13px]! font-medium">Inicio</span>
+          <span className="text-sm font-medium">Inicio</span>
         </button>
 
         {/* Renderizar menu de navegacion o esqueletos de carga */}
@@ -111,7 +111,7 @@ return (
                 >
                   <div className="flex items-center gap-2.5">
                     <ModIcon className="w-3.5 h-3.5" />
-                    <span className="text-[13px]! font-medium">
+                    <span className="text-sm font-medium">
                       {mod.nombre || "Sin nombre"}
                     </span>
                   </div>
@@ -140,7 +140,7 @@ return (
                         <div key={sub.id_submodulo || sub.nombre}>
                           {/* Submodule header */}
                           <div
-                            className="flex items-center gap-2 text-[11px]! font-semibold text-slate-500 
+                            className="flex items-center gap-2 text-xs font-semibold text-slate-500 
                               uppercase tracking-wider px-3 py-1.5"
                           >
                             <SubIcon className="w-[14px] h-[14px]" />
@@ -159,7 +159,7 @@ return (
                                     : "text-zinc-400 hover:text-zinc-300 hover:bg-white/5"
                                 }`}
                               >
-                                <span className="text-[13px]!">
+                                <span className="text-sm">
                                   {sec.nombre || "Sin nombre"}
                                 </span>
                               </button>

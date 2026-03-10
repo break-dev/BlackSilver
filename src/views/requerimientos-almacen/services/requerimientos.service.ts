@@ -16,7 +16,7 @@ import type { DTO_CrearRequerimiento } from "./requerimientos.requests";
 const path = "/requerimientos-almacen";
 
 export const RequerimientosService = {
-  listar: async (filters: { mes: string; yearcito: string }) => {
+  listar: async (filters: { mes?: string; yearcito?: string }) => {
     const res = await api.get<IRespuesta<RES_RequerimientoAlmacen[]>>(path, {
       params: filters,
     });

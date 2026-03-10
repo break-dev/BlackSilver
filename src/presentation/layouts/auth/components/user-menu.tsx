@@ -42,7 +42,7 @@ export const UserMenu = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-7 h-7 rounded-full bg-linear-to-br from-zinc-700 
-        to-zinc-800 flex items-center justify-center text-[10px] font-semibold 
+        to-zinc-800 flex items-center justify-center text-xs font-semibold 
         text-white ring-2 ring-zinc-700 hover:ring-zinc-600 
         transition-all hover:scale-105"
       >
@@ -91,7 +91,7 @@ export const UserMenu = () => {
               hover:bg-red-500/10 transition-colors group"
             >
               <ArrowLeftStartOnRectangleIcon className="w-3.5 h-3.5 text-red-400/80" />
-              <span className="text-[12px] font-medium text-red-400/80 group-hover:text-red-400">
+              <span className="text-xs font-medium text-red-400/80 group-hover:text-red-400">
                 Cerrar Sesión
               </span>
             </button>

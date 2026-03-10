@@ -35,7 +35,6 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
           <span className="text-[8px] font-bold text-zinc-900">BS</span>
         </div>
         <span
-          /* Reducido de text-base (16px) a text-sm (14px) */
           className="text-sm font-semibold text-white tracking-wide 
           hidden sm:block"
         >
