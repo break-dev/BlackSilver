@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
+import { EstadoBase } from "../../../shared/enums/estados";
 
 export const useHistorialResponsables = (id_almacen: number) => {
   const { notify } = useNotify();
@@ -40,7 +41,22 @@ export const useHistorialResponsables = (id_almacen: number) => {
     nuevo: RES_ResponsableAlmacen,
     onUpdateResponsable?: (nombre: string) => void,
   ) => {
-    setResponsables((prev) => [nuevo, ...prev]);
+    // Al agregar uno nuevo, el anterior(es) que estaba activo debe pasar a inactivo visualmente
+    setResponsables((prev) => {
+      const actualizados = prev.map((res) => {
+        // Comparación segura usando el enum
+        if (res.estado === EstadoBase.Activo) {
+          return {
+            ...res,
+            estado: EstadoBase.Inactivo,
+            fecha_fin: nuevo.fecha_inicio, // Se asume que termina cuando empieza el nuevo
+          };
+        }
+        return res;
+      });
+      return [nuevo, ...actualizados];
+    });
+
     if (onUpdateResponsable) onUpdateResponsable(nuevo.nombre_completo);
     setShowForm(false);
   };
