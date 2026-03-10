@@ -4,6 +4,12 @@ import {
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
 
+export interface RES_LaborRelacionada {
+  id_labo: number;
+  nombre: string;
+  correlativo: string;
+}
+
 export interface RES_RequerimientoAlmacen {
   id_requerimiento: number;
   id_empleado_solicitante: number;
@@ -16,6 +22,7 @@ export interface RES_RequerimientoAlmacen {
   premura: Premura;
   fecha_entrega_requerida: string;
   estado: EstadoRequerimiento;
+  labores: RES_LaborRelacionada[];
   created_at: string;
   observacion?: string;
 }
@@ -46,12 +53,6 @@ export interface RES_TrazabilidadEvento {
   estado: string;
 }
 
-export interface RES_LaborRelacionada {
-  id_labo: number;
-  nombre: string;
-  correlativo: string;
-  descripcion: string;
-}
 
 // Interfaces Locales para Catálogos (Aislamiento BFF)
 export interface RES_Mina_Local {

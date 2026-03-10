@@ -32,7 +32,6 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroRequerimiento } from "./registro-requerimiento";
 import { DetalleRequerimiento } from "./detalle-requerimiento";
 import { TrazabilidadRequerimiento } from "./trazabilidad-requerimiento";
-import { LaboresRequerimiento } from "./labores-requerimiento";
 import type { RES_RequerimientoAlmacen } from "../services/requerimientos.responses";
 import { MESES } from "../../../presentation/variables/meses";
 
@@ -48,7 +47,7 @@ export const RequerimientosAlmacenPage = () => {
     filteredRecords,
     loading,
     filters: { mes, setMes, yearcito, setYearcito, search, setSearch },
-    actions: { listar, verDetalles, verTrazabilidad, verLabores },
+    actions: { listar, verDetalles, verTrazabilidad },
     ui: {
       selectedReq,
       detalles,
@@ -56,8 +55,6 @@ export const RequerimientosAlmacenPage = () => {
       selectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
-      laboresVinculadas,
-      loadingLabores,
     },
   } = useRequerimientosPage();
 
@@ -66,8 +63,6 @@ export const RequerimientosAlmacenPage = () => {
   const [openedDetalle, { open: openDet, close: closeDet }] =
     useDisclosure(false);
   const [openedTrace, { open: openTrace, close: closeTrace }] =
-    useDisclosure(false);
-  const [openedLabores, { open: openLabores, close: closeLabores }] =
     useDisclosure(false);
 
   useEffect(() => {
@@ -205,21 +200,6 @@ export const RequerimientosAlmacenPage = () => {
         width: 120,
         render: (item) => (
           <Group gap="xs" justify="center">
-            <Tooltip label="Ver Labores" position="top" withArrow>
-              <ActionIcon
-                variant="filled"
-                color="indigo"
-                radius="md"
-                onClick={() => {
-                  verLabores(item);
-                  openLabores();
-                }}
-                className="shadow-sm hover:scale-110 transition-transform"
-              >
-                <MapPinIcon className="w-5 h-5 text-white" />
-              </ActionIcon>
-            </Tooltip>
-
             <Tooltip label="Ver Detalle" position="top" withArrow>
               <ActionIcon
                 variant="filled"
@@ -238,7 +218,7 @@ export const RequerimientosAlmacenPage = () => {
         ),
       },
     ],
-    [verDetalles, openDet, verLabores, openLabores],
+    [verDetalles, openDet],
   );
 
   const inputClasses = {
@@ -261,6 +241,7 @@ export const RequerimientosAlmacenPage = () => {
               onChange={(val) => setMes(val || "1")}
               classNames={inputClasses}
               radius="lg"
+              size="xs"
             />
             <Select
               label="Año"
@@ -272,6 +253,7 @@ export const RequerimientosAlmacenPage = () => {
               }
               classNames={inputClasses}
               radius="lg"
+              size="xs"
             />
             <TextInput
               label="Búsqueda rápida"
@@ -283,6 +265,7 @@ export const RequerimientosAlmacenPage = () => {
               onChange={(e) => setSearch(e.target.value)}
               classNames={inputClasses}
               radius="lg"
+              size="xs"
             />
           </div>
 
@@ -290,7 +273,7 @@ export const RequerimientosAlmacenPage = () => {
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openReg}
             radius="xl"
-            size="md"
+            size="xs"
             className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all w-full lg:w-auto px-8"
           >
             Nuevo Requerimiento
@@ -350,6 +333,7 @@ export const RequerimientosAlmacenPage = () => {
           <DetalleRequerimiento
             headerData={selectedReq}
             detalles={detalles}
+            laboresVinculadas={selectedReq?.labores || []}
             loading={loadingDetalle}
             onOpenTrazabilidad={(det) => {
               verTrazabilidad(det);
@@ -372,18 +356,6 @@ export const RequerimientosAlmacenPage = () => {
             loading={loadingTrazabilidad}
           />
         )}
-      </ModalEstandar>
-
-      <ModalEstandar
-        opened={openedLabores}
-        close={closeLabores}
-        title="Labores Involucradas"
-        size="lg"
-      >
-        <LaboresRequerimiento
-          labores={laboresVinculadas}
-          loading={loadingLabores}
-        />
       </ModalEstandar>
     </div>
   );

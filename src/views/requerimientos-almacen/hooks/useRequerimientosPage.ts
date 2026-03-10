@@ -4,7 +4,6 @@ import type {
   RES_RequerimientoAlmacen,
   RES_RequerimientoDetalle,
   RES_TrazabilidadEvento,
-  RES_LaborRelacionada,
 } from "../services/requerimientos.responses";
 
 export const useRequerimientosPage = () => {
@@ -33,11 +32,6 @@ export const useRequerimientosPage = () => {
     [],
   );
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
-
-  const [laboresVinculadas, setLaboresVinculadas] = useState<
-    RES_LaborRelacionada[]
-  >([]);
-  const [loadingLabores, setLoadingLabores] = useState(false);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -95,23 +89,6 @@ export const useRequerimientosPage = () => {
     }
   };
 
-  const verLabores = async (req: RES_RequerimientoAlmacen) => {
-    setSelectedReq(req);
-    setLoadingLabores(true);
-    try {
-      const res = await RequerimientosService.obtenerLaboresVinculadas(
-        req.id_requerimiento,
-      );
-      if (res.success) {
-        setLaboresVinculadas(res.data);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingLabores(false);
-    }
-  };
-
   const filteredRecords = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return requerimientos;
@@ -139,7 +116,6 @@ export const useRequerimientosPage = () => {
       listar,
       verDetalles,
       verTrazabilidad,
-      verLabores,
     },
     ui: {
       selectedReq,
@@ -150,8 +126,6 @@ export const useRequerimientosPage = () => {
       setSelectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
-      laboresVinculadas,
-      loadingLabores,
     },
   };
 };
