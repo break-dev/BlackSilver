@@ -9,6 +9,7 @@ export const Schema_RegistroEmpresa = z.object({
     .string()
     .min(3, "El nombre comercial debe tener al menos 3 caracteres"),
   abreviatura: z.string().optional(),
+  path_logo: z.string().optional(),
 });
 
 export type DTO_RegistroEmpresa = z.infer<typeof Schema_RegistroEmpresa>;
