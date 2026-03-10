@@ -53,7 +53,6 @@ export interface RES_TrazabilidadEvento {
   estado: string;
 }
 
-
 // Interfaces Locales para Catálogos (Aislamiento BFF)
 export interface RES_Mina_Local {
   id_mina: number;
@@ -75,6 +74,7 @@ export interface RES_Producto_Local {
   id_producto: number;
   id_unidad_medida_base: number;
   nombre: string;
+  unidad_medida_base_abv: string;
   unidad_medida_base: string;
 }
 
@@ -82,4 +82,15 @@ export interface RES_Unidad_Local {
   id_unidad_medida: number;
   nombre: string;
   abreviatura: string;
+}
+
+export interface RES_DataRegistro {
+  minas: RES_Mina_Local[];
+  productos: RES_Producto_Local[];
+  unidades: RES_Unidad_Local[];
+}
+
+export interface RES_DataByMina {
+  almacenes: RES_Almacen_Local[];
+  labores: RES_Labor_Local[];
 }

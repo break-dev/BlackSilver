@@ -50,19 +50,17 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
 
-  // 1. Cargar Catálogos Iniciales
+  // 1. Cargar Catálogos Iniciales (Consolidado)
   useEffect(() => {
     const loadInitial = async () => {
       setLoadingCatalogs(true);
       try {
-        const [resMinas, resProds, resUnits] = await Promise.all([
-          RequerimientosService.listarMinas(),
-          RequerimientosService.listarProductos(),
-          RequerimientosService.listarUnidades(),
-        ]);
-        if (resMinas.success) setMinas(resMinas.data);
-        if (resProds.success) setProductos(resProds.data);
-        if (resUnits.success) setUnidades(resUnits.data);
+        const res = await RequerimientosService.obtenerDataRegistro();
+        if (res.success) {
+          setMinas(res.data.minas);
+          setProductos(res.data.productos);
+          setUnidades(res.data.unidades);
+        }
       } finally {
         setLoadingCatalogs(false);
       }
@@ -70,16 +68,15 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     loadInitial();
   }, []);
 
-  // 2. Cargar Almacenes y Labores al elegir Mina
+  // 2. Cargar Almacenes y Labores al elegir Mina (Consolidado)
   useEffect(() => {
     if (idMina > 0) {
       const loadMinaData = async () => {
-        const [resAlms, resLabs] = await Promise.all([
-          RequerimientosService.listarAlmacenesPorMina(idMina),
-          RequerimientosService.listarLaboresPorMina(idMina),
-        ]);
-        if (resAlms.success) setAlmacenes(resAlms.data);
-        if (resLabs.success) setLabores(resLabs.data);
+        const res = await RequerimientosService.obtenerDataByMina(idMina);
+        if (res.success) {
+          setAlmacenes(res.data.almacenes);
+          setLabores(res.data.labores);
+        }
       };
       loadMinaData();
     } else {

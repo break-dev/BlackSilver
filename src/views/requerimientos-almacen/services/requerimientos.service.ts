@@ -10,6 +10,8 @@ import type {
   RES_Labor_Local,
   RES_Producto_Local,
   RES_Unidad_Local,
+  RES_DataRegistro,
+  RES_DataByMina,
 } from "./requerimientos.responses";
 import type { DTO_CrearRequerimiento } from "./requerimientos.requests";
 
@@ -94,6 +96,23 @@ export const RequerimientosService = {
   listarUnidades: async () => {
     const res = await api.get<IRespuesta<RES_Unidad_Local[]>>(
       `${path}/unidades`,
+    );
+    return res.data;
+  },
+
+  obtenerDataRegistro: async () => {
+    const res = await api.get<IRespuesta<RES_DataRegistro>>(
+      `${path}/data-to-registro`,
+    );
+    return res.data;
+  },
+
+  obtenerDataByMina: async (idMina: number) => {
+    const res = await api.get<IRespuesta<RES_DataByMina>>(
+      `${path}/data-by-mina`,
+      {
+        params: { id_mina: idMina },
+      },
     );
     return res.data;
   },
