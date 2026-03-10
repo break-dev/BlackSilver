@@ -12,12 +12,10 @@ export interface RES_LaborRelacionada {
 
 export interface RES_RequerimientoAlmacen {
   id_requerimiento: number;
-  id_empleado_solicitante: number;
   id_mina: number;
   id_almacen_destino: number;
   correlativo: string;
   mina: string;
-  solicitante: string;
   almacen_destino: string;
   premura: Premura;
   fecha_entrega_requerida: string;

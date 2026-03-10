@@ -13,7 +13,6 @@ import {
   ClockIcon,
   CubeIcon,
   ListBulletIcon,
-  UserIcon,
   MapPinIcon,
   BuildingStorefrontIcon,
   CalendarDaysIcon,
@@ -76,34 +75,6 @@ export const DetalleRequerimiento = ({
     <Stack gap="xl" className="animate-fade-in">
       {/* Header: Datos Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-        <Paper
-          p="md"
-          radius="lg"
-          className="bg-indigo-500/6 border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/10 transition-all"
-        >
-          <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
-          <Stack gap={2} className="relative z-10">
-            <Group gap={6}>
-              <UserIcon className="w-4 h-4 text-indigo-400" />
-              <Text
-                size="xs"
-                c="indigo.3"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Solicitante
-              </Text>
-            </Group>
-            <Text
-              size="md"
-              fw={900}
-              className="text-white tracking-tight leading-tight"
-            >
-              {headerData.solicitante}
-            </Text>
-          </Stack>
-        </Paper>
-
         <Paper
           p="md"
           radius="lg"
@@ -187,6 +158,36 @@ export const DetalleRequerimiento = ({
             </Text>
           </Stack>
         </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-zinc-500/6 border border-zinc-500/20 relative overflow-hidden group hover:bg-zinc-500/10 transition-all"
+        >
+          <ClockIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-zinc-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <ClockIcon className="w-4 h-4 text-zinc-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Fecha Requerida
+              </Text>
+            </Group>
+            <Text
+              size="md"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight font-mono"
+            >
+              {headerData.fecha_entrega_requerida
+                ? dayjs(headerData.fecha_entrega_requerida).format("DD/MM/YYYY")
+                : "No especificada"}
+            </Text>
+          </Stack>
+        </Paper>
       </div>
 
       {/* Sub-header: Estados, Fechas y Labores */}
@@ -196,7 +197,7 @@ export const DetalleRequerimiento = ({
         bg="transparent"
         className="border border-zinc-800/50 mx-2"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Stack gap={4}>
             <Text
               size="xs"
@@ -253,10 +254,9 @@ export const DetalleRequerimiento = ({
                     key={l.id_labo}
                     variant="outline"
                     color="indigo"
-                    size="xs"
-                    className="text-[11px]"
+                    size="sm"
                   >
-                    {l.nombre}
+                    ({l.correlativo}) {l.nombre}
                   </Badge>
                 ))
               ) : (
@@ -276,30 +276,11 @@ export const DetalleRequerimiento = ({
                 fw={800}
                 className="uppercase tracking-widest"
               >
-                Fecha Requerida
+                Feccha de Registro
               </Text>
             </div>
             <Text size="sm" fw={800} className="text-zinc-100 italic">
-              {headerData.fecha_entrega_requerida
-                ? dayjs(headerData.fecha_entrega_requerida).format("DD/MM/YYYY")
-                : "No especificada"}
-            </Text>
-          </Stack>
-
-          <Stack gap={4}>
-            <div className="flex items-center gap-1.5 font-bold">
-              <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
-              <Text
-                size="xs"
-                c="zinc.5"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Fecha de Registro
-              </Text>
-            </div>
-            <Text size="sm" fw={400} className="text-zinc-400 font-mono">
-              {dayjs(headerData.created_at).format("DD/MM/YYYY HH:mm")}
+              {dayjs(headerData.created_at).format("DD/MM/YYYY")}
             </Text>
           </Stack>
         </div>

@@ -14,7 +14,6 @@ import { useEffect, useMemo } from "react";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
-  UserCircleIcon,
   MapPinIcon,
   CalendarDaysIcon,
   BuildingStorefrontIcon,
@@ -111,19 +110,6 @@ export const RequerimientosAlmacenPage = () => {
             </Badge>
           );
         },
-      },
-      {
-        accessor: "solicitante",
-        title: "Solicitante",
-        width: 200,
-        render: (item) => (
-          <Group gap="xs" wrap="nowrap">
-            <UserCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
-            <Text size="sm" className="text-zinc-200 truncate">
-              {item.solicitante}
-            </Text>
-          </Group>
-        ),
       },
       {
         accessor: "mina",
