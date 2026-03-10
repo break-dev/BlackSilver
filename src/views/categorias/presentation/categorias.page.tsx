@@ -54,7 +54,7 @@ export const CategoriasPage = () => {
     {
       accessor: "nombre",
       title: "Categoría",
-      width: 250,
+      width: 280,
       render: (record) => (
         <Group gap="xs">
           <TagIcon className="w-5 h-5 text-zinc-500" />

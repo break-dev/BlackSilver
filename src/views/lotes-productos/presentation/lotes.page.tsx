@@ -151,23 +151,27 @@ export const LotesPage = () => {
         return (
           <div className="flex flex-col items-center gap-1.5">
             <Group gap="lg" wrap="nowrap" justify="center">
-              <div className="flex flex-col items-center">
-                <Badge
-                  variant="filled"
-                  color="teal.9"
-                  radius="md"
-                  className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
-                >
-                  {record.stock_actual} {record.unidad_medida}
-                </Badge>
-                <div className="flex items-center gap-1 mt-1 px-1">
-                  <Text size="10px" c="white" fw={800}>
-                    {record.contenido_por_presentacion}{" "}
-                    {record.unidad_medida_base} x {record.unidad_medida}
-                  </Text>
-                </div>
-              </div>
+              {record.unidad_medida_base !== record.unidad_medida && (
+                <div className="flex flex-col items-center">
+                  <Badge
+                    variant="filled"
+                    color="teal.9"
+                    radius="md"
+                    className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
+                  >
+                    {record.stock_actual} {record.unidad_medida}
+                  </Badge>
 
+                  <div className="flex items-center gap-1 mt-1 px-1">
+                    {/* Verificamos que las unidades sean distintas antes de renderizar el texto */}
+
+                    <Text size="10px" c="white" fw={800}>
+                      {record.contenido_por_presentacion}{" "}
+                      {record.unidad_medida_base} x {record.unidad_medida}
+                    </Text>
+                  </div>
+                </div>
+              )}
               <div className="h-8 w-px bg-zinc-800/50" />
 
               <div className="flex flex-col items-center">
@@ -352,7 +356,7 @@ export const LotesPage = () => {
         <div className="flex flex-col lg:flex-row gap-2 items-end">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 flex-1 w-full">
             <Select
-              label="Almacén de Consulta"
+              label="Almacén"
               placeholder="Seleccionar..."
               data={almacenes.map((a) => ({
                 value: String(a.id_almacen),
@@ -401,7 +405,7 @@ export const LotesPage = () => {
             />
 
             <Select
-              label="Filtrar por Categoría"
+              label="Por Categoría"
               placeholder="Todas"
               size="xs"
               data={categoriasUnicas}
@@ -428,7 +432,7 @@ export const LotesPage = () => {
             />
 
             <Select
-              label="Filtrar por Producto"
+              label="Por Producto"
               placeholder="Todos"
               size="xs"
               data={productosUnicos}

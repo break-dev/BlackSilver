@@ -7,7 +7,6 @@ import {
   ActionIcon,
   Tooltip,
   Stack,
-  Card,
   ThemeIcon,
 } from "@mantine/core";
 import {
@@ -29,7 +28,7 @@ import { RegistroProducto } from "./registro-producto";
 import type { RES_Producto } from "../service/productos.responses";
 
 export const ProductosPage = () => {
-  useTitlePage("Inventario / Catálogo de Productos");
+  useTitlePage("Catálogo de Productos");
 
   const { productos, loading, busqueda, setBusqueda, pushNuevoProducto } =
     useProductos();
@@ -132,33 +131,6 @@ export const ProductosPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card
-        withBorder
-        radius="lg"
-        className="bg-zinc-900/30 border-zinc-800 p-6"
-      >
-        <Group justify="space-between">
-          <Stack gap={4}>
-            <Text size="xl" fw={700} className="text-white">
-              Catálogo de Productos
-            </Text>
-            <Text size="xs" className="text-zinc-500">
-              Gestione los bienes y suministros registrados en el sistema
-            </Text>
-          </Stack>
-
-          <Button
-            variant="filled"
-            color="indigo"
-            radius="lg"
-            onClick={openRegistro}
-            leftSection={<PlusIcon className="w-5 h-5" />}
-          >
-            Nuevo Producto
-          </Button>
-        </Group>
-      </Card>
-
       <Stack gap="md">
         <Group justify="space-between">
           <TextInput
@@ -175,9 +147,15 @@ export const ProductosPage = () => {
                 "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
             }}
           />
-          <Text size="xs" className="text-zinc-500">
-            Mostrando {productos.length} productos
-          </Text>
+          <Button
+            variant="filled"
+            color="indigo"
+            radius="lg"
+            onClick={openRegistro}
+            leftSection={<PlusIcon className="w-5 h-5" />}
+          >
+            Nuevo Producto
+          </Button>
         </Group>
 
         <DataTableEstandar
