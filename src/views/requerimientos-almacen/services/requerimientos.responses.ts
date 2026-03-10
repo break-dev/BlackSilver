@@ -5,7 +5,7 @@ import {
 import { Premura } from "../../../shared/enums/otros";
 
 export interface RES_LaborRelacionada {
-  id_labo: number;
+  id_labor: number;
   nombre: string;
   correlativo: string;
 }

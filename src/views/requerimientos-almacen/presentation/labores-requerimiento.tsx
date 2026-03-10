@@ -41,7 +41,7 @@ export const LaboresRequerimiento = ({
       <div className="grid grid-cols-1 gap-4">
         {labores.map((labor) => (
           <Paper
-            key={labor.id_labo}
+            key={labor.id_labor}
             p="md"
             radius="lg"
             className="bg-zinc-900/50 border border-indigo-500/20 hover:border-indigo-500/40 transition-colors"

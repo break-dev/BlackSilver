@@ -251,7 +251,7 @@ export const DetalleRequerimiento = ({
               {laboresVinculadas && laboresVinculadas.length > 0 ? (
                 laboresVinculadas.map((l) => (
                   <Badge
-                    key={l.id_labo}
+                    key={l.id_labor}
                     variant="outline"
                     color="indigo"
                     size="sm"

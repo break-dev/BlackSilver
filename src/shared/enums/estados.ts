@@ -1,22 +1,26 @@
 export enum EstadoBase {
   Activo = "Activo",
   Inactivo = "Inactivo",
+  //
+  Activa = "Activa",
+  Inactiva = "Inactiva",
 }
 
 // Sincronizado con PHP: EstadoRequerimiento
 export enum EstadoRequerimiento {
-  Generada = "Generada",
-  Cerrada = "Cerrada",
-  Anulada = "Anulada",
+  Generado = "Generado",
+  Cerrado = "Cerrado",
+  EnProceso = "En Proceso",
+  Anulado = "Anulado",
 }
 
 // Sincronizado con PHP: EstadoDetalleRequerimiento
 export enum EstadoDetalleRequerimiento {
-  Pendiente = "Pendiente",
-  AprobacionLogistica = "Aprobación - Logística",
-  DespachoIniciado = "Despacho iniciado",
-  NuevaEntrega = "Nueva entrega",
-  RechazadoLogistica = "Rechazado - Logística",
+  EsperandoAprobacion = "Esperando aprobación",
+  Rechazado = "Rechazado",
+  Aprobado = "Aprobado",
+  EnDespacho = "En Despacho",
+  NuevaEntrega = "Nueva Entrega",
   Completado = "Completado",
   Cerrado = "Cerrado",
 }
