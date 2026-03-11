@@ -44,15 +44,15 @@ export const DetalleRequerimiento = ({
 }: DetalleRequerimientoProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case EstadoDetalleRequerimiento.Pendiente:
+      case EstadoDetalleRequerimiento.EsperandoAprobacion:
         return "blue";
-      case EstadoDetalleRequerimiento.AprobacionLogistica:
+      case EstadoDetalleRequerimiento.Aprobado:
         return "violet";
-      case EstadoDetalleRequerimiento.DespachoIniciado:
+      case EstadoDetalleRequerimiento.EnDespacho:
         return "orange";
       case EstadoDetalleRequerimiento.NuevaEntrega:
         return "green";
-      case EstadoDetalleRequerimiento.RechazadoLogistica:
+      case EstadoDetalleRequerimiento.Rechazado:
         return "red";
       case EstadoDetalleRequerimiento.Completado:
         return "cyan";

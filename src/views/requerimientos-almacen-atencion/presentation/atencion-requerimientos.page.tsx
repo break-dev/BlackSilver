@@ -1,5 +1,4 @@
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Badge,
   Group,
@@ -22,71 +21,44 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEntregas } from "../hooks/useEntregas";
-import type { RES_RequerimientoAtencionPendiente } from "../service/atencion.responses";
+import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
 import { Premura, EstadoRequerimiento } from "../../../shared/enums/estados";
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { GestionAtencion } from "./gestion-atencion";
+import { DetalleRequerimiento } from "./detalle-requerimiento.tsx";
+import { MESES } from "../../../presentation/variables/meses.ts";
 
 const PAGE_SIZE = 15;
 
 export const RequerimientosAlmacenAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
+  const [errorLocal, setErrorLocal] = useState("");
 
-  const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
-  const [mes, setMes] = useState<string>(dayjs().format("M"));
-  const [yearcito, setYearcito] = useState<string>(dayjs().format("YYYY"));
-
-  const [data, setData] = useState<RES_RequerimientoAtencionPendiente[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState("");
-  const [busqueda, setBusqueda] = useState("");
-
-  const [openedGestion, { open: openGestion, close: closeGestion }] =
-    useDisclosure(false);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-
-  const { 
-    obtenerRequerimientos, 
-    obtenerAlmacenesAutorizados, 
-    almacenes, 
-    loadingAlmacenes 
-  } = useEntregas({ setError });
+  const {
+    idAlmacen, setIdAlmacen,
+    mes, setMes,
+    yearcito, setYearcito,
+    busqueda, setBusqueda,
+    filteredRecords,
+    loading,
+    obtenerAlmacenesAutorizados,
+    almacenes,
+    loadingAlmacenes,
+    loadData,
+    page, setPage,
+    openedGestion, openGestion, closeGestion,
+    selectedId, setSelectedId
+  } = useEntregas({ setError: setErrorLocal });
 
   useEffect(() => {
     setTitle("Atención de Requerimientos");
     obtenerAlmacenesAutorizados();
   }, [setTitle, obtenerAlmacenesAutorizados]);
 
-  const loadData = useCallback(async () => {
-    if (!idAlmacen || !mes || !yearcito) return;
-    setLoading(true);
-    try {
-      const res = await obtenerRequerimientos(Number(idAlmacen), mes, yearcito);
-      setData(res || []);
-    } finally {
-      setLoading(false);
-    }
-  }, [idAlmacen, mes, yearcito, obtenerRequerimientos]);
+  // Ya no manejamos 'page' localmente ni disclosures
 
-  useEffect(() => {
-    loadData();
-  }, [idAlmacen, mes, yearcito, loadData]);
-
-  const filteredRecords = useMemo(() => {
-    const q = busqueda.toLowerCase().trim();
-    if (!q) return data;
-    return data.filter(
-      (item) =>
-        item.codigo_requerimiento.toLowerCase().includes(q) ||
-        item.solicitante.toLowerCase().includes(q) ||
-        item.mina.toLowerCase().includes(q),
-    );
-  }, [data, busqueda]);
-
-  const columns: DataTableColumn<RES_RequerimientoAtencionPendiente>[] =
+  const columns: DataTableColumn<RES_RequerimientoAlmacen>[] =
     useMemo(
       () => [
         {
@@ -97,12 +69,12 @@ export const RequerimientosAlmacenAtencionPage = () => {
           render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
         },
         {
-          accessor: "codigo_requerimiento",
+          accessor: "correlativo",
           title: "Código",
           width: 140,
           render: (item) => (
             <Badge variant="light" color="indigo" radius="sm">
-              {item.codigo_requerimiento}
+              {item.correlativo}
             </Badge>
           ),
         },
@@ -193,14 +165,14 @@ export const RequerimientosAlmacenAtencionPage = () => {
           title: "Estado",
           width: 130,
           render: (item) => {
-            const colors = {
+            const colors: Record<string, string> = {
               [EstadoRequerimiento.Generado]: "green",
               [EstadoRequerimiento.Cerrado]: "gray",
               [EstadoRequerimiento.Anulado]: "red",
             };
             const color =
-              item.estado && (colors as any)[item.estado]
-                ? (colors as any)[item.estado]
+              item.estado && colors[item.estado]
+                ? colors[item.estado]
                 : "gray";
             return (
               <Badge
@@ -238,7 +210,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           ),
         },
       ],
-      [page, openGestion],
+      [page, openGestion, setSelectedId],
     );
 
   return (
@@ -267,20 +239,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
             <Select
               placeholder="Mes"
               leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
-              data={[
-                { value: "1", label: "Enero" },
-                { value: "2", label: "Febrero" },
-                { value: "3", label: "Marzo" },
-                { value: "4", label: "Abril" },
-                { value: "5", label: "Mayo" },
-                { value: "6", label: "Junio" },
-                { value: "7", label: "Julio" },
-                { value: "8", label: "Agosto" },
-                { value: "9", label: "Septiembre" },
-                { value: "10", label: "Octubre" },
-                { value: "11", label: "Noviembre" },
-                { value: "12", label: "Diciembre" },
-              ]}
+              data={MESES}
               value={mes}
               onChange={(val) => setMes(val || "")}
               radius="lg"
@@ -361,8 +320,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
         size="95%"
       >
         {selectedId && (
-          <GestionAtencion
-            idRequerimiento={selectedId}
+          <DetalleRequerimiento
+            requerimiento={filteredRecords.find(r => r.id_requerimiento === selectedId)!}
+            almacenNombre={almacenes.find(a => String(a.id_almacen) === idAlmacen)?.nombre || "Almacén Seleccionado"}
             idAlmacen={Number(idAlmacen)}
             onSuccess={() => {
               loadData();
@@ -371,9 +331,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
         )}
       </ModalEstandar>
 
-      {error && (
+      {errorLocal && (
         <Text c="red" size="sm" mt="md">
-          {error}
+          {errorLocal}
         </Text>
       )}
     </div>

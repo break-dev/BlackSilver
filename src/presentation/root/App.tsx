@@ -15,7 +15,7 @@ import {
   LogisticaLayout,
   InventarioLayout,
   RequerimientoAlmacenLayout,
-  SolicitudReabastecimientoLayout,
+  // SolicitudReabastecimientoLayout,
 } from "../layouts/logistica.layout";
 // Vistas
 import { LoginPage } from "../../views/login/presentation/login.page";
@@ -30,7 +30,7 @@ import { ProductosPage } from "../../views/productos/presentation/productos.page
 import OrganigramaPage from "../../views/organigrama/presentation/organigrama.page";
 import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
-import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
+import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
 // import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 

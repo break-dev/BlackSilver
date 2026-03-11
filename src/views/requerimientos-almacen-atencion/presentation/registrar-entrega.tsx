@@ -11,35 +11,19 @@ import {
   Select,
   Badge,
 } from "@mantine/core";
-import { useEffect, useState, useMemo } from "react";
 import {
-  BarsArrowDownIcon,
   ClipboardDocumentCheckIcon,
+  BarsArrowDownIcon,
   ClockIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-
-import { useEntregas } from "../hooks/useEntregas";
-import type { RES_DetalleAtencionItem } from "../service/atencion.responses";
-import { useEmpleados } from "../../../../service/empleados/useEmpleados";
-
-export interface RES_HistorialEntrega {
-  id_entrega: number;
-  codigo_entrega: string;
-  id_lote_producto: number;
-  cantidad: number;
-  fecha_entrega: string;
-  created_at: string;
-  empleado: string;
-  entregado_a: string;
-}
+import { BlackcitoLogo } from "../../../presentation/assets/imports";
+import { useRegistrarEntrega } from "../hooks/useRegistrarEntrega";
 
 export interface IUseHook {
   setError: (msg: string) => void;
 }
-
-import { BlackcitoLogo } from "../../../../presentation/assets/imports";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
@@ -56,141 +40,35 @@ interface RegistrarEntregaProps {
 export const RegistrarEntrega = ({
   idRequerimiento,
   idRequerimientoDetalle,
+  idProducto,
+  idAlmacen,
   onSuccess,
   onCancel,
 }: RegistrarEntregaProps) => {
-  const [loading, setLoading] = useState(true);
-  const [itemData, setItemData] = useState<RES_DetalleAtencionItem | null>(
-    null,
-  );
-  const [historial, setHistorial] = useState<RES_HistorialEntrega[]>([]);
-  const [entregaCantidades, setEntregaCantidades] = useState<
-    Record<number, number>
-  >({});
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
-  const [observacion, setObservacion] = useState("");
-  const [error, setError] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-
   const {
-    obtenerDetallesRequerimiento,
-    registrarEntrega,
-    obtenerHistorialEntregas,
-  } = useEntregas({ setError });
-  const { listar } = useEmpleados({ setError });
-  const [empleados, setEmpleados] = useState<
-    { value: string; label: string }[]
-  >([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadInitialData = async () => {
-      setLoading(true);
-      try {
-        const [resDetalles, resHistorial, resEmps] = await Promise.all([
-          obtenerDetallesRequerimiento(idRequerimiento),
-          obtenerHistorialEntregas(idRequerimientoDetalle),
-          listar(),
-        ]);
-
-        if (cancelled) return;
-
-        const found = (resDetalles || []).find(
-          (d: any) => d.id_requerimiento_detalle === idRequerimientoDetalle,
-        );
-        if (found) {
-          found.pendiente_base = Number(found.pendiente_base);
-          found.cantidad_solicitada = Number(found.cantidad_solicitada);
-          found.cantidad_solicitada_base = Number(
-            found.cantidad_solicitada_base,
-          );
-
-          if (found.lotes) {
-            found.lotes = found.lotes.map((l: any) => ({
-              ...l,
-              stock_actual: Number(l.stock_actual),
-              stock_actual_base: Number(l.stock_actual_base),
-            }));
-          }
-          setItemData(found);
-        }
-
-        setHistorial(resHistorial || []);
-        setEmpleados(
-          (resEmps || []).map((e: any) => ({
-            value: e.id_empleado?.toString() || "",
-            label: `${e.nombre} ${e.apellido}`,
-          })),
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    loadInitialData();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idRequerimiento, idRequerimientoDetalle]);
-
-  const totalEntregaBase = useMemo(() => {
-    return Object.values(entregaCantidades).reduce(
-      (sum, val) => sum + (val || 0),
-      0,
-    );
-  }, [entregaCantidades]);
-
-  const handleConfirmar = async () => {
-    if (!idEmpleadoRecibe) {
-      setError("Debe seleccionar quién recibe el material");
-      return;
-    }
-
-    if (!itemData) return;
-
-    const equivReq =
-      itemData.cantidad_solicitada > 0
-        ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada
-        : 1;
-
-    const detalles = Object.entries(entregaCantidades)
-      .filter(([_, cant]) => cant > 0)
-      .map(([idLote, cant]) => {
-        const lote = itemData.lotes.find(
-          (l) => l.id_lote_producto === Number(idLote),
-        )!;
-        const equivLote = lote.contenido_por_presentacion || 1;
-        const cBase = cant;
-        const cLote = cBase / equivLote;
-        const cReq = cBase / equivReq;
-
-        return {
-          id_requerimiento_almacen_detalle: idRequerimientoDetalle,
-          id_lote_producto: Number(idLote),
-          cantidad_base: cBase,
-          cantidad_lote: cLote,
-          cantidad_requerimiento: cReq,
-        };
-      });
-
-    if (detalles.length === 0) return;
-
-    setIsProcessing(true);
-    try {
-      const ok = await registrarEntrega({
-        id_requerimiento: idRequerimiento,
-        id_empleado_recibe: Number(idEmpleadoRecibe),
-        fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        observacion,
-        detalles,
-      });
-
-      if (ok) onSuccess();
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    loading,
+    itemData,
+    historial,
+    entregaCantidades,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
+    observacion,
+    setObservacion,
+    error,
+    isProcessing,
+    empleados,
+    totalEntregaBase,
+    equivReq,
+    stockDisponibleBase,
+    handleCantChange,
+    handleConfirmar,
+  } = useRegistrarEntrega({
+    idRequerimiento,
+    idRequerimientoDetalle,
+    idProducto,
+    idAlmacen,
+    onSuccess,
+  });
 
   if (loading)
     return (
@@ -199,15 +77,6 @@ export const RegistrarEntrega = ({
       </div>
     );
   if (!itemData) return <Text c="red">Error al cargar datos del ítem</Text>;
-
-  const equivReq =
-    itemData.cantidad_solicitada > 0
-      ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada
-      : 1;
-  const stockDisponibleBase = itemData.lotes.reduce(
-    (sum, l) => sum + (l.stock_actual_base || 0),
-    0,
-  );
 
   return (
     <Stack gap="lg" className="font-sans">
@@ -241,18 +110,18 @@ export const RegistrarEntrega = ({
               </Text>
               <Group gap="xs">
                 <Text size="sm" fw={800} c="indigo.3">
-                  {itemData.cantidad_solicitada.toFixed(2)}{" "}
+                  {Number(itemData.cantidad_solicitada).toFixed(2)}{" "}
                   {itemData.unidad_medida}
                 </Text>
                 <Text size="xs" c="zinc-5" fw={700}>
                   Equivale a:
                 </Text>
                 <Text size="xs" c="zinc.3" fw={800}>
-                  {itemData.cantidad_solicitada_base.toFixed(2)}{" "}
+                  {Number(itemData.cantidad_solicitada_base).toFixed(2)}{" "}
                   {itemData.unidad_medida_base}
                 </Text>
                 <Text size="10px" c="zinc.6" fw={700} className="italic">
-                  ({equivReq.toFixed(2)} {itemData.unidad_medida_base}/
+                  ({Number(equivReq).toFixed(2)} {itemData.unidad_medida_base}/
                   {itemData.unidad_medida})
                 </Text>
               </Group>
@@ -275,7 +144,7 @@ export const RegistrarEntrega = ({
                   fw={900}
                   className="text-green-500 font-mono leading-none"
                 >
-                  {stockDisponibleBase.toFixed(2)}
+                  {Number(stockDisponibleBase).toFixed(2)}
                 </Text>
                 <Text size="10px" fw={800} c="zinc.5" className="uppercase">
                   {itemData.unidad_medida_base}
@@ -297,7 +166,7 @@ export const RegistrarEntrega = ({
                   fw={900}
                   className="text-pink-500 font-mono leading-none"
                 >
-                  {itemData.pendiente_base.toFixed(2)}
+                  {Number(itemData.pendiente_base || 0).toFixed(2)}
                 </Text>
                 <Text size="10px" fw={800} c="zinc.5" className="uppercase">
                   {itemData.unidad_medida_base}
@@ -380,38 +249,27 @@ export const RegistrarEntrega = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {itemData.lotes.length === 0 ? (
+              {!itemData.lotes || itemData.lotes.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="py-20 text-center text-zinc-600 italic"
-                  >
-                    No hay lotes con stock disponible en este almacén.
-                  </td>
+                  <td colSpan={5} className="py-20 text-center text-zinc-600 italic">No hay lotes con stock disponible en este almacén.</td>
                 </tr>
               ) : (
                 itemData.lotes.map((lote) => {
-                  const cant = entregaCantidades[lote.id_lote_producto] || 0;
-                  const saldo = lote.stock_actual_base - cant;
-                  const equivLote =
-                    Number(lote.contenido_por_presentacion) || 1;
+                  const idLoteProd = lote.id_lote!; // Assert as mapped
+                  const cant = entregaCantidades[idLoteProd] || 0;
+                  const saldo = (lote.stock_actual_base || 0) - cant;
+                  const equivLote = Number(lote.contenido_por_presentacion) || 1;
 
                   // Cálculo de vencimiento
-                  const fechaVenc = lote.fecha_vencimiento
-                    ? dayjs(lote.fecha_vencimiento)
-                    : null;
+                  const fechaVenc = lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento) : null;
                   const hoy = dayjs().startOf("day");
-                  const diasRestantes = fechaVenc
-                    ? fechaVenc.diff(hoy, "day")
-                    : null;
-                  const esCritico =
-                    diasRestantes !== null &&
-                    diasRestantes <= (itemData.dias_espera_vencimiento || 0);
+                  const diasRestantes = fechaVenc ? fechaVenc.diff(hoy, "day") : null;
+                  const esCritico = diasRestantes !== null && diasRestantes <= 5; // Valor por defecto o configurable
                   const esVencido = diasRestantes !== null && diasRestantes < 0;
 
                   return (
                     <tr
-                      key={lote.id_lote_producto}
+                      key={lote.id_lote}
                       className="hover:bg-zinc-900/40 transition-all group border-b border-zinc-800/30"
                     >
                       <td className="py-5 pl-8 text-left">
@@ -422,7 +280,7 @@ export const RegistrarEntrega = ({
                           size="sm"
                           className="font-black"
                         >
-                          {lote.codigo_lote}
+                          {lote.correlativo}
                         </Badge>
                       </td>
                       <td className="text-left">
@@ -475,9 +333,9 @@ export const RegistrarEntrega = ({
                               size="sm"
                               className="text-white fw-bold shadow-xs"
                             >
-                              {lote.stock_actual.toFixed(2)} {lote.unidad_lote}
+                              {Number(lote.stock_actual).toFixed(2)} {lote.unidad_medida}
                             </Badge>
-                            <div className="h-4 w-[1px] bg-zinc-800" />
+                            <div className="w-px h-8 bg-zinc-800" />
                             <Badge
                               variant="filled"
                               color="pink"
@@ -485,8 +343,8 @@ export const RegistrarEntrega = ({
                               size="sm"
                               className="text-white fw-bold shadow-xs"
                             >
-                              {lote.stock_actual_base.toFixed(2)}{" "}
-                              {lote.unidad_base}
+                              {Number(lote.stock_actual_base).toFixed(2)}{" "}
+                              {itemData.unidad_medida_base}
                             </Badge>
                           </Group>
                           <Text
@@ -495,8 +353,8 @@ export const RegistrarEntrega = ({
                             c="zinc.5"
                             className="italic opacity-80 mr-1"
                           >
-                            ({equivLote.toFixed(2)} {lote.unidad_base}/
-                            {lote.unidad_lote})
+                            ({Number(equivLote).toFixed(2)} {itemData.unidad_medida_base}/
+                            {lote.unidad_medida})
                           </Text>
                         </div>
                       </td>
@@ -509,10 +367,7 @@ export const RegistrarEntrega = ({
                             max={lote.stock_actual_base}
                             value={cant}
                             onChange={(val) =>
-                              setEntregaCantidades((p) => ({
-                                ...p,
-                                [lote.id_lote_producto]: Number(val),
-                              }))
+                              handleCantChange(lote.id_lote, Number(val))
                             }
                             placeholder="0.00"
                             className="w-32"
@@ -539,7 +394,7 @@ export const RegistrarEntrega = ({
                             c="zinc.5"
                             className="font-bold opacity-80"
                           >
-                            {lote.unidad_base}
+                            {itemData.unidad_medida_base}
                           </Text>
                         </div>
                       </td>
@@ -610,7 +465,7 @@ export const RegistrarEntrega = ({
               ) : (
                 historial.map((h) => (
                   <tr
-                    key={h.id_entrega}
+                    key={h.id_requerimiento_almacen_entrega}
                     className="text-zinc-400 hover:bg-zinc-900/40 transition-all group"
                   >
                     <td className="py-4 pl-8">
@@ -621,13 +476,13 @@ export const RegistrarEntrega = ({
                         size="sm"
                         className="font-black"
                       >
-                        {h.codigo_entrega || `ENT-${h.id_entrega}`}
+                        {h.correlativo}
                       </Badge>
                     </td>
                     <td className="text-left">
                       <div className="flex flex-col">
                         <Text size="11px" fw={700} className="text-zinc-300">
-                          {dayjs(h.fecha_entrega).format("DD/MM/YYYY")}
+                          {dayjs(h.fecha_hora_entrega * 1000).format("DD/MM/YYYY")}
                         </Text>
                         <Text
                           size="10px"
@@ -635,13 +490,13 @@ export const RegistrarEntrega = ({
                           c="zinc.6"
                           className="uppercase"
                         >
-                          {dayjs(h.fecha_entrega).format("HH:mm A")}
+                          {dayjs(h.fecha_hora_entrega * 1000).format("HH:mm A")}
                         </Text>
                       </div>
                     </td>
                     <td>
                       <Text size="sm" fw={700} className="text-zinc-300">
-                        {h.entregado_a || "No especificado"}
+                        {h.empleado_recibe}
                       </Text>
                     </td>
                     <td className="text-right pr-6">
@@ -704,7 +559,7 @@ export const RegistrarEntrega = ({
           disabled={
             !idEmpleadoRecibe ||
             totalEntregaBase <= 0 ||
-            totalEntregaBase > itemData.pendiente_base ||
+            totalEntregaBase > (itemData.pendiente_base || 0) ||
             isProcessing
           }
           loading={isProcessing}
