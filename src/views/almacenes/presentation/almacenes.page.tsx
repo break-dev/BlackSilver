@@ -142,14 +142,16 @@ export const AlmacenesPage = () => {
               Sin Asignar
             </Badge>
           )}
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            onClick={() => handleOpenResponsables(record)}
-          >
-            <PencilSquareIcon className="w-4 h-4" />
-          </ActionIcon>
+          <Tooltip label="Ver Responsables">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="sm"
+              onClick={() => handleOpenResponsables(record)}
+            >
+              <PencilSquareIcon className="w-4 h-4" />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       ),
     },

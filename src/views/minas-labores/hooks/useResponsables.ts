@@ -3,6 +3,8 @@ import { useNotify } from "../../../hooks/useNotify";
 import { MinasService } from "../service/minas.service";
 import type { RES_HistorialResponsable } from "../service/minas.responses";
 
+import { EstadoBase } from "../../../shared/enums/estados";
+
 interface Props {
   idMina: number;
   onResponsableAsignado?: (nombreResponsable: string) => void;
@@ -34,7 +36,20 @@ export const useResponsablesMina = ({
   }, [cargar]);
 
   const handleResponsableAsignado = (nueva: RES_HistorialResponsable) => {
-    setHistorial((prev) => [nueva, ...prev]);
+    setHistorial((prev) => {
+      const actualizados = prev.map((res) => {
+        if (res.estado?.toUpperCase() === "ACTIVO") {
+          return {
+            ...res,
+            estado: EstadoBase.Inactivo,
+            fecha_fin: nueva.fecha_inicio,
+          };
+        }
+        return res;
+      });
+      return [nueva, ...actualizados];
+    });
+
     onResponsableAsignado?.(nueva.empleado);
     notify({
       type: "success",

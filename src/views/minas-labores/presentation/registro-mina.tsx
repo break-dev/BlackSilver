@@ -1,21 +1,23 @@
-import { Button, Group, TextInput, Textarea } from "@mantine/core";
-import type { RES_ResumenMina } from "../service/minas.responses";
+import { Stack, Group, Select, TextInput, Textarea, Button } from "@mantine/core";
+import type { RES_ConcesionItem, RES_ResumenMina } from "../service/minas.responses";
 import { useRegistroMina } from "../hooks/useRegistroMina";
 
 interface Props {
-  idConcesion: number;
+  concesiones: RES_ConcesionItem[];
   onSuccess: (nueva: RES_ResumenMina) => void;
   onCancel: () => void;
 }
 
-const inputClasses = {
+const fieldClasses = {
   input:
-    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
   label: "text-zinc-300 mb-1 font-medium",
 };
 
-export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
+export const RegistroMina = ({ concesiones, onSuccess, onCancel }: Props) => {
   const {
+    idConcesion,
+    setIdConcesion,
     nombre,
     setNombre,
     descripcion,
@@ -24,10 +26,27 @@ export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
     isSubmitting,
     handleSubmit,
     handleCancel,
-  } = useRegistroMina({ idConcesion, onSuccess, onCancel });
+  } = useRegistroMina({ concesiones, onSuccess, onCancel });
 
   return (
-    <div className="space-y-5">
+    <Stack gap="md">
+      <Select
+        label="Concesión"
+        placeholder="Selecciona una concesión..."
+        data={concesiones.map((c) => ({
+          value: String(c.id_concesion),
+          label: c.nombre,
+        }))}
+        value={idConcesion}
+        onChange={setIdConcesion}
+        disabled={isSubmitting}
+        withAsterisk
+        searchable
+        nothingFoundMessage="No hay concesiones disponibles"
+        radius="lg"
+        classNames={fieldClasses}
+      />
+
       <TextInput
         label="Nombre de la Mina"
         placeholder="Ej. Mina Esperanza - Nivel 1"
@@ -35,7 +54,7 @@ export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
         withAsterisk
         disabled={isSubmitting}
         radius="lg"
-        classNames={inputClasses}
+        classNames={fieldClasses}
         value={nombre}
         onChange={(e) => setNombre(e.currentTarget.value)}
       />
@@ -46,7 +65,7 @@ export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
         radius="lg"
         minRows={3}
         disabled={isSubmitting}
-        classNames={inputClasses}
+        classNames={fieldClasses}
         value={descripcion}
         onChange={(e) => setDescripcion(e.currentTarget.value)}
       />
@@ -62,7 +81,7 @@ export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
           disabled={isSubmitting}
           radius="lg"
           size="sm"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
         >
           Cancelar
         </Button>
@@ -71,11 +90,11 @@ export const RegistroMina = ({ idConcesion, onSuccess, onCancel }: Props) => {
           onClick={handleSubmit}
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8"
         >
           Guardar
         </Button>
       </Group>
-    </div>
+    </Stack>
   );
 };

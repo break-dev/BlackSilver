@@ -10,7 +10,6 @@ export const useHistorialResponsables = (id_almacen: number) => {
     [],
   );
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -58,7 +57,6 @@ export const useHistorialResponsables = (id_almacen: number) => {
     });
 
     if (onUpdateResponsable) onUpdateResponsable(nuevo.nombre_completo);
-    setShowForm(false);
   };
 
   const responsablesOrdenados = useMemo(() => {
@@ -74,8 +72,6 @@ export const useHistorialResponsables = (id_almacen: number) => {
   return {
     responsables: responsablesOrdenados,
     loading,
-    showForm,
-    setShowForm,
     handleSuccess,
   };
 };

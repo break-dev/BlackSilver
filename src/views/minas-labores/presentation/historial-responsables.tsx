@@ -1,12 +1,12 @@
-import { Badge, Button, Loader, Text } from "@mantine/core";
-import { PlusIcon, UserIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { Badge, Text, Stack, Skeleton, Group } from "@mantine/core";
+import { UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useResponsablesMina } from "../hooks/useResponsables";
 import { RegistroResponsable } from "./registro-responsable";
-import { useDisclosure } from "@mantine/hooks";
 import type {
   RES_ResumenMina,
   RES_HistorialResponsable,
 } from "../service/minas.responses";
+import dayjs from "dayjs";
 
 interface Props {
   mina: RES_ResumenMina;
@@ -17,104 +17,106 @@ export const HistorialResponsables = ({
   mina,
   onResponsableAsignado,
 }: Props) => {
-  const [openedForm, { open: openForm, close: closeForm }] =
-    useDisclosure(false);
-
-  const { historial, loading, handleResponsableAsignado } = useResponsablesMina(
-    {
-      idMina: mina.id_mina,
-      onResponsableAsignado,
-    },
-  );
-
-  if (loading) {
-    return (
-      <div className="flex justify-center py-10">
-        <Loader size="sm" color="gray" />
-      </div>
-    );
-  }
+  const { historial, loading, handleResponsableAsignado } = useResponsablesMina({
+    idMina: mina.id_mina,
+    onResponsableAsignado,
+  });
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-bold text-white">
-            Historial de Responsables
-          </h3>
-          <p className="text-zinc-500 text-sm">{mina.nombre}</p>
-        </div>
-        {!openedForm && (
-          <Button
-            size="xs"
-            variant="light"
-            color="indigo"
-            leftSection={<PlusIcon className="w-4 h-4" />}
-            onClick={openForm}
-            className="hover:bg-indigo-900/30"
-          >
-            Asignar Nuevo
-          </Button>
-        )}
+    <div className="space-y-6 animate-fade-in">
+      {/* Formulario siempre visible igual que Almacenes */}
+      <RegistroResponsable
+        idMina={mina.id_mina}
+        nombreMina={mina.nombre}
+        onSuccess={(nueva) => {
+          handleResponsableAsignado(nueva);
+        }}
+      />
+
+      {/* Separador estilizado */}
+      <div className="flex items-center gap-2">
+        <div className="h-px flex-1 bg-zinc-800" />
+        <Text
+          size="xs"
+          fw={700}
+          className="text-zinc-500 uppercase tracking-widest px-2"
+        >
+          Historial de Responsables
+        </Text>
+        <div className="h-px flex-1 bg-zinc-800" />
       </div>
 
-      {openedForm && (
-        <RegistroResponsable
-          idMina={mina.id_mina}
-          onSuccess={(nueva) => {
-            handleResponsableAsignado(nueva);
-            closeForm();
-          }}
-          onCancel={closeForm}
-        />
+      {/* Skeletons mientras carga */}
+      {loading && (
+        <Stack gap="sm">
+          {[1, 2, 3].map((i) => (
+            <Group
+              key={i}
+              wrap="nowrap"
+              className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl"
+            >
+              <Skeleton height={40} width={40} radius="xl" />
+              <Stack gap={6} className="flex-1">
+                <Skeleton height={13} width="50%" radius="sm" />
+                <Skeleton height={10} width="35%" radius="sm" />
+              </Stack>
+            </Group>
+          ))}
+        </Stack>
       )}
 
-      {/* Historial */}
-      {historial.length === 0 ? (
-        <div className="text-center py-10 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/30">
-          <UserIcon className="w-10 h-10 text-zinc-600 mx-auto mb-2" />
-          <p className="text-zinc-500 text-sm">
-            No hay responsables asignados aún.
+      {/* Estado vacío */}
+      {!loading && historial.length === 0 && (
+        <div className="text-center py-12 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10">
+          <UserIcon className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-500 text-sm font-medium">
+            No hay responsables asignados aún
           </p>
         </div>
-      ) : (
-        <div className="space-y-3">
+      )}
+
+      {/* Lista de responsables */}
+      {!loading && historial.length > 0 && (
+        <div className="grid gap-3">
           {historial.map((item: RES_HistorialResponsable, idx: number) => {
             const isActive = item.estado?.toUpperCase() === "ACTIVO";
             return (
               <div
                 key={item.id_responsable_mina || idx}
-                className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/40 flex items-start gap-4 hover:bg-zinc-900/60 transition-all"
+                className="flex items-center gap-3 p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl hover:bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-200"
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 border ${
-                    isActive
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${isActive
                       ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
                       : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
-                  }`}
+                    }`}
                 >
-                  <UserIcon className="w-6 h-6" />
+                  <UserIcon className="w-5 h-5" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <Text className="text-base font-bold text-white truncate">
+                  <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                    <Text className="text-sm font-bold text-white truncate">
                       {item.empleado}
                     </Text>
-                    <Badge
-                      color={isActive ? "indigo" : "gray"}
-                      size="sm"
-                      variant={isActive ? "light" : "outline"}
-                    >
-                      {isActive ? "ACTUAL" : "HISTÓRICO"}
-                    </Badge>
+                    {isActive ? (
+                      <Badge color="indigo" size="sm" variant="light">
+                        ACTUAL
+                      </Badge>
+                    ) : (
+                      <Badge color="gray" size="sm" variant="outline">
+                        HISTÓRICO
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-zinc-500">
-                    <ClockIcon className="w-4 h-4 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                    <ClockIcon className="w-3.5 h-3.5 shrink-0" />
                     <span>
-                      {item.fecha_inicio}
+                      {dayjs(item.fecha_inicio).format("YYYY-MM-DD")}
                       <span className="mx-1.5 opacity-40">|</span>
-                      {item.fecha_fin ?? "Presente"}
+                      {item.fecha_fin
+                        ? dayjs(item.fecha_fin).format("YYYY-MM-DD")
+                        : "Presente"}
                     </span>
                   </div>
                 </div>

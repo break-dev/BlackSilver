@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import dayjs from "dayjs";
 import { MinasService } from "../service/minas.service";
 import { Schema_AsignarResponsable } from "../service/minas.requests";
 import type {
@@ -23,7 +24,7 @@ export const useRegistroResponsable = ({
   const [loadingDisponibles, setLoadingDisponibles] = useState(false);
 
   const [idEmpleado, setIdEmpleado] = useState<number | null>(null);
-  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +44,7 @@ export const useRegistroResponsable = ({
 
   const resetForm = useCallback(() => {
     setIdEmpleado(null);
-    setFechaInicio("");
+    setFechaInicio(new Date());
     setFormError("");
   }, []);
 
@@ -57,7 +58,7 @@ export const useRegistroResponsable = ({
     const validation = Schema_AsignarResponsable.safeParse({
       id_mina: idMina,
       id_empleado: idEmpleado,
-      fecha_inicio: fechaInicio,
+      fecha_inicio: fechaInicio ? dayjs(fechaInicio).format("YYYY-MM-DD") : "",
     });
 
     if (!validation.success) {

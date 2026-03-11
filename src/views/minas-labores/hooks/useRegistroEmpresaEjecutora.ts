@@ -11,6 +11,7 @@ export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
   const [disponibles, setDisponibles] = useState<RES_EmpresaDisponible[]>([]);
   const [loadingDisponibles, setLoadingDisponibles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
 
   const cargarDisponibles = useCallback(async () => {
     setLoadingDisponibles(true);
@@ -37,6 +38,7 @@ export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
         id_empresa,
       });
       if (res.success) {
+        setIdEmpresa(null); // Resetear selección
         cargarDisponibles();
         return res.data;
       }
@@ -50,6 +52,8 @@ export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
     disponibles,
     loadingDisponibles,
     isSubmitting,
+    idEmpresa,
+    setIdEmpresa,
     asignarEmpresa,
   };
 };

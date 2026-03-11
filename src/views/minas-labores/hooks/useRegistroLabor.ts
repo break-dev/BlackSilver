@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import dayjs from "dayjs";
 import { useNotify } from "../../../hooks/useNotify";
 import { MinasService } from "../service/minas.service";
 import { Schema_CrearLabor } from "../service/minas.requests";
@@ -34,7 +35,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   const [ancho, setAncho] = useState<string>("");
   const [alto, setAlto] = useState<string>("");
   const [nivel, setNivel] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+  const [fechaFin, setFechaFin] = useState<Date | null>(null);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,7 +50,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setAncho("");
     setAlto("");
     setNivel("");
-    setFechaInicio("");
+    setFechaInicio(null);
+    setFechaFin(null);
     setFormError("");
   }, []);
 
@@ -95,7 +98,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
       ancho: ancho ? parseFloat(ancho) : null,
       alto: alto ? parseFloat(alto) : null,
       nivel: nivel || null,
-      fecha_inicio: fechaInicio || null,
+      fecha_inicio: fechaInicio ? dayjs(fechaInicio).format("YYYY-MM-DD") : null,
+      fecha_fin: fechaFin ? dayjs(fechaFin).format("YYYY-MM-DD") : null,
     });
 
     if (!validation.success) {
@@ -107,13 +111,22 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     try {
       const { data: res } = await MinasService.crearLabor(validation.data);
       if (res.success) {
+        notify({
+          type: "success",
+          content: "Labor registrada correctamente",
+        });
         onSuccess(res.data);
         resetForm();
       } else {
         setFormError(res.message);
       }
-    } catch {
-      setFormError("Error inesperado al crear la labor");
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Error inesperado al crear la labor";
+      setFormError(msg);
+      notify({
+        type: "error",
+        content: msg,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -145,6 +158,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setNivel,
     fechaInicio,
     setFechaInicio,
+    fechaFin,
+    setFechaFin,
     formError,
     isSubmitting,
     handleSubmit,

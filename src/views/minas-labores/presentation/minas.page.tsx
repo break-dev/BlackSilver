@@ -1,20 +1,19 @@
 import {
+  ActionIcon,
   Badge,
   Button,
-  Select,
-  Text,
   TextInput,
-  ThemeIcon,
   Tooltip,
 } from "@mantine/core";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
-  MapPinIcon,
   UserIcon,
   BriefcaseIcon,
   Squares2X2Icon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useMinas } from "../hooks/useMinas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroMina } from "./registro-mina";
@@ -23,10 +22,10 @@ import { HistorialResponsables } from "./historial-responsables";
 import { GestionLabores } from "./labores";
 
 export const MinasPage = () => {
+  useTitlePage("Minas y Labores");
+
   const {
     concesiones,
-    concesionSeleccionada,
-    setConcesionSeleccionada,
     minasFiltradas,
     loading,
     busqueda,
@@ -49,218 +48,206 @@ export const MinasPage = () => {
   } = useMinas();
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in pb-10">
-      {/* Header & Concesión Selector */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-sm shadow-2xl">
-
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <div className="w-full sm:w-72">
-            <Select
-              placeholder="Seleccione Concesión"
-              data={concesiones.map((c) => ({
-                value: String(c.id_concesion),
-                label: c.nombre,
-              }))}
-              value={
-                concesionSeleccionada ? String(concesionSeleccionada) : null
-              }
-              onChange={(v) => setConcesionSeleccionada(v ? parseInt(v) : null)}
-              label={
-                <span className="text-zinc-500 text-xs font-bold uppercase mb-1 block">
-                  Concesión Activa
-                </span>
-              }
-              classNames={{
-                input:
-                  "bg-zinc-950/50 border-zinc-800 text-white font-semibold focus:border-indigo-500/50 h-11 rounded-xl",
-                dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl",
-                option:
-                  "hover:bg-zinc-800 text-zinc-300 rounded-lg mx-1 my-0.5",
-              }}
-            />
-          </div>
-          <Button
-            onClick={openCreate}
-            size="lg"
-            radius="xl"
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            className="w-full sm:w-auto bg-linear-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 border-0 shadow-lg shadow-indigo-500/20"
-            disabled={!concesionSeleccionada}
-          >
-            Nueva Mina
-          </Button>
-        </div>
+    <div className="space-y-6 animate-fade-in">
+      {/* Header — igual que Empresas / Almacenes */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <TextInput
+          placeholder="Buscar mina por nombre..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
+          className="flex-1 min-w-64"
+          radius="lg"
+          size="sm"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          }}
+        />
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={openCreate}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+        >
+          Nueva Mina
+        </Button>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white">Minas Registradas</h2>
-            <Badge variant="filled" color="indigo" radius="sm">
-              {minasFiltradas.length}
-            </Badge>
-          </div>
-          <div className="relative w-full max-w-xs">
-            <TextInput
-              placeholder="Buscar mina..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.currentTarget.value)}
-              leftSection={
-                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-600" />
-              }
-              classNames={{
-                input:
-                  "bg-zinc-900/40 border-zinc-800 text-white rounded-xl focus:border-zinc-500 h-10 w-full pl-10",
-              }}
+      {/* Grid de tarjetas */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="h-44 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
             />
-          </div>
+          ))}
         </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-48 rounded-3xl bg-zinc-900/20 animate-pulse border border-zinc-800/50"
-              />
-            ))}
-          </div>
-        ) : minasFiltradas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-3xl border border-dashed border-zinc-800">
-            <Squares2X2Icon className="w-12 h-12 text-zinc-700 mb-4" />
-            <p className="text-zinc-500 font-medium">
-              No se encontraron minas registradas
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {minasFiltradas.map((mina) => (
+      ) : minasFiltradas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
+          <Squares2X2Icon className="w-10 h-10 text-zinc-700 mb-3" />
+          <p className="text-zinc-500 text-sm font-medium">
+            No se encontraron minas registradas
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {minasFiltradas.map((mina) => {
+            const isActive = mina.estado === "Activo";
+            return (
               <div
                 key={mina.id_mina}
-                className="group relative bg-zinc-900/30 rounded-3xl border border-zinc-800/60 p-6 hover:bg-zinc-900/50 hover:border-indigo-500/30 transition-all duration-300 shadow-xl"
+                className="group relative flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-3 hover:border-zinc-700/80 hover:bg-zinc-900/50 transition-all duration-200"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
-                      {mina.nombre}
-                    </h3>
-                    <div className="flex items-center gap-1.5 text-zinc-500 text-sm font-medium">
-                      <MapPinIcon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">
-                        {mina.descripcion || "Sin ubicación"}
-                      </span>
-                    </div>
-                  </div>
-                  <ThemeIcon
-                    variant="light"
-                    color="indigo"
-                    size="lg"
-                    radius="xl"
-                    className="shrink-0 shadow-inner"
-                  >
-                    <Squares2X2Icon className="w-5 h-5" />
-                  </ThemeIcon>
-                </div>
+                {/* Badge de estado — esquina superior derecha */}
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color={isActive ? "green" : "gray"}
+                  radius="sm"
+                  className="absolute top-3 right-3"
+                >
+                  {mina.estado}
+                </Badge>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-950/30 border border-zinc-800/50">
-                    <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/10">
-                      <UserIcon className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-600 font-bold uppercase block tracking-tighter">
-                        Responsable Actual
-                      </span>
-                      <Text
-                        size="sm"
-                        className="text-zinc-300 font-bold leading-tight"
+                {/* Header: nombre + descripción */}
+                <div className="pr-14">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tooltip label="Concesión">
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color="indigo"
+                        radius="sm"
+                        className="font-bold border-indigo-500/20"
                       >
-                        {mina.responsable || "No asignado"}
-                      </Text>
-                    </div>
+                        {mina.concesion}
+                      </Badge>
+                    </Tooltip>
+                  </div>
+                  <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
+                    {mina.nombre}
+                  </h3>
+                  <p className="text-xs text-zinc-500 truncate mt-0.5">
+                    {mina.descripcion || "Sin descripción"}
+                  </p>
+                </div>
+
+                {/* Responsable */}
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${mina.responsable
+                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                      : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50"
+                    }`}>
+                    <UserIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">
+                      Responsable
+                    </span>
+                    <span className={`text-xs font-semibold truncate block ${mina.responsable ? "text-zinc-300" : "text-zinc-600 italic"
+                      }`}>
+                      {mina.responsable || "Sin asignar"}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Tooltip label="Gestionar Labores">
-                    <Button
-                      fullWidth
-                      variant="light"
-                      color="indigo"
-                      size="md"
-                      radius="xl"
-                      className="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 font-bold border border-indigo-500/10"
-                      onClick={() => handleOpenLabores(mina)}
-                    >
-                      Labores
-                    </Button>
-                  </Tooltip>
-                  <Tooltip label="Responsables">
-                    <Button
-                      variant="light"
-                      color="orange"
-                      size="md"
-                      radius="xl"
-                      className="px-3 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 border border-orange-500/10"
-                      onClick={() => handleOpenResponsables(mina)}
-                    >
-                      <UserIcon className="w-5 h-5" />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip label="Empresas">
-                    <Button
-                      variant="light"
-                      color="cyan"
-                      size="md"
-                      radius="xl"
-                      className="px-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/10"
-                      onClick={() => handleOpenEmpresas(mina)}
-                    >
-                      <BriefcaseIcon className="w-5 h-5" />
-                    </Button>
-                  </Tooltip>
+                {/* Footer: stats + botones en la misma fila */}
+                <div className="flex items-center justify-between pt-1 border-t border-zinc-800/50">
+                  {/* Stats */}
+                  <div className="flex items-center gap-3 text-xs text-zinc-600">
+                    <span className="flex items-center gap-1">
+                      <Squares2X2Icon className="w-3.5 h-3.5" />
+                      {mina.cantidad_labores} labores
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <BuildingOffice2Icon className="w-3.5 h-3.5" />
+                      {mina.cantidad_empresas_ejecutoras} empresas
+                    </span>
+                  </div>
+
+                  {/* Acciones */}
+                  <div className="flex items-center gap-1.5">
+                    <Tooltip label="Gestionar Labores">
+                      <ActionIcon
+                        variant="filled"
+                        color="pink"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenLabores(mina)}
+                      >
+                        <Squares2X2Icon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Ver Responsables">
+                      <ActionIcon
+                        variant="filled"
+                        color="violet"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenResponsables(mina)}
+                      >
+                        <UserIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Empresas Ejecutoras">
+                      <ActionIcon
+                        variant="filled"
+                        color="cyan"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenEmpresas(mina)}
+                      >
+                        <BriefcaseIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Modales */}
+      {/* Modal: Nueva Mina */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title={"Nueva Mina"}
+        title="Registrar Mina"
         size="md"
       >
-        {concesionSeleccionada && (
-          <RegistroMina
-            idConcesion={concesionSeleccionada}
-            onSuccess={handleMinaCreada}
-            onCancel={closeCreate}
-          />
-        )}
+        <RegistroMina
+          concesiones={concesiones}
+          onSuccess={handleMinaCreada}
+          onCancel={closeCreate}
+        />
       </ModalEstandar>
 
+      {/* Modal: Empresas Ejecutoras */}
       <ModalEstandar
         opened={openedEmpresas}
         close={closeEmpresas}
-        title={"Empresas Ejecutoras"}
-        size="lg"
+        title="Empresas Ejecutoras"
+        size="md"
       >
-        {selectedMina && concesionSeleccionada && (
+        {selectedMina && (
           <EmpresasEjecutoras
             idMina={selectedMina.id_mina}
-            idConcesion={concesionSeleccionada}
+            idConcesion={selectedMina.id_concesion}
           />
         )}
       </ModalEstandar>
 
+      {/* Modal: Responsables */}
       <ModalEstandar
         opened={openedResponsables}
         close={closeResponsables}
-        title={"Responsables"}
-        size="lg"
+        title="Responsables"
+        size="md"
       >
         {selectedMina && (
           <HistorialResponsables
@@ -272,11 +259,12 @@ export const MinasPage = () => {
         )}
       </ModalEstandar>
 
+      {/* Modal: Labores */}
       <ModalEstandar
         opened={openedLabores}
         close={closeLabores}
-        title={"Labores"}
-        size="xl"
+        title="Labores"
+        size="90%"
       >
         {selectedMina && <GestionLabores mina={selectedMina} />}
       </ModalEstandar>

@@ -7,6 +7,8 @@ export interface RES_ConcesionItem {
 // Resumen de mina con responsable activo y conteos (tabla principal)
 export interface RES_ResumenMina {
   id_mina: number;
+  id_concesion: number;
+  concesion: string;
   nombre: string;
   descripcion: string | null;
   responsable: string | null;
