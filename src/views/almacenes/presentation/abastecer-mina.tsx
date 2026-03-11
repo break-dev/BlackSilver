@@ -1,23 +1,22 @@
-import { Select, Button, Loader } from "@mantine/core";
+import { Select, Button, Text, Stack, Group, Box } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import type { RES_MinaAbastecida } from "../service/almacenes.responses";
 import { useAbastecerMina } from "../hooks/useAbastecerMina";
 
 interface AbastecerMinaProps {
   idAlmacen: number;
+  nombreAlmacen: string;
   onSuccess: (mina: RES_MinaAbastecida) => void;
-  onCancel: () => void;
 }
 
 export const AbastecerMina = ({
   idAlmacen,
+  nombreAlmacen,
   onSuccess,
-  onCancel,
 }: AbastecerMinaProps) => {
   const {
     selectOptions,
     loading,
-    minasDisponibles,
     idMina,
     setIdMina,
     formError,
@@ -30,20 +29,31 @@ export const AbastecerMina = ({
     handleAsignar(onSuccess);
   };
 
-  if (loading && minasDisponibles.length === 0) {
-    return (
-      <div className="flex justify-center p-10">
-        <Loader size="sm" color="gray" />
-      </div>
-    );
-  }
-
   return (
-    <div className="animate-fade-in p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Stack
+      gap="md"
+      className="animate-fade-in p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl"
+    >
+      {/* Header igual a NuevoContrato */}
+      <Group gap="sm" align="center">
+        <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <CubeIcon className="w-4 h-4 text-indigo-400" />
+        </Box>
+        <Stack gap={0}>
+          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+            Nueva Mina a Abastecer
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            {nombreAlmacen}
+          </Text>
+        </Stack>
+      </Group>
+
+      {/* Formulario */}
+      <form onSubmit={handleSubmit} className="space-y-3">
         <Select
           label="Mina"
-          placeholder="Buscar mina..."
+          placeholder={loading ? "Cargando minas..." : "Buscar mina..."}
           data={selectOptions}
           searchable
           nothingFoundMessage="No hay minas disponibles"
@@ -53,6 +63,7 @@ export const AbastecerMina = ({
           error={formError}
           radius="lg"
           size="sm"
+          disabled={loading || isAssigning}
           classNames={{
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
@@ -64,20 +75,19 @@ export const AbastecerMina = ({
               "text-zinc-500 font-bold text-xs uppercase mt-2 mb-1 pl-2",
           }}
         />
-        <div className="flex justify-end gap-2 mt-4">
+        <Group justify="flex-end">
           <Button
+            type="submit"
+            loading={isAssigning}
+            disabled={!idMina}
+            radius="lg"
             size="sm"
-            variant="default"
-            onClick={onCancel}
-            disabled={isAssigning}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
           >
-            Cancelar
+            Vincular Mina
           </Button>
-          <Button size="sm" type="submit" loading={isAssigning}>
-            Vincular
-          </Button>
-        </div>
+        </Group>
       </form>
-    </div>
+    </Stack>
   );
 };

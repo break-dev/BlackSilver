@@ -3,6 +3,7 @@ import {
   Text,
   Badge,
   ActionIcon,
+  Tooltip,
   Group,
   Skeleton,
 } from "@mantine/core";
@@ -160,20 +161,20 @@ export const HistorialContratos = ({
 
                 {/* Acción terminar */}
                 {c.estado === "Activo" && (
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    radius="md"
-                    size="sm"
-                    onClick={() =>
-                      handleTerminarContrato(c.id_contrato, onContratoTerminado)
-                    }
-                    loading={estaTerminando}
-                    title="Finalizar Contrato"
-                    className="hover:bg-red-500/10 shrink-0"
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </ActionIcon>
+                  <Tooltip label="Finalizar Contrato">
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      size="sm"
+                      onClick={() =>
+                        handleTerminarContrato(c.id_contrato, onContratoTerminado)
+                      }
+                      loading={estaTerminando}
+                      className="shrink-0"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </ActionIcon>
+                  </Tooltip>
                 )}
               </Group>
             );
