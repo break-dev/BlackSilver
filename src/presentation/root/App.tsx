@@ -30,7 +30,7 @@ import { ProductosPage } from "../../views/productos/presentation/productos.page
 import OrganigramaPage from "../../views/organigrama/presentation/organigrama.page";
 import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
-// import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
+import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion.page";
 // import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 
@@ -116,10 +116,10 @@ export const App = () => {
               path="requerimientos"
               element={<RequerimientosAlmacenPage />}
             />
-            {/* <Route
+            <Route
               path="atencion_requerimientos"
               element={<RequerimientosAlmacenAtencionPage />}
-            /> */}
+            />
           </Route>
 
           {/* Solicitudes de Reabastecimiento */}
@@ -130,10 +130,6 @@ export const App = () => {
             <Route
               path="solicitudes"
               element={<SolicitudesReabastecimientoPage />}
-            />
-            <Route
-              path="atencion_solicitudes"
-              element={<PlaceholderPage titulo="Atencion de Solicitudes" />}
             />
           </Route> */}
         </Route>

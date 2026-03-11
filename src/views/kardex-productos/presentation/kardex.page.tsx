@@ -89,9 +89,7 @@ export const KardexProductosPage = () => {
 
       const q = busqueda.toLowerCase();
       const matchBusqueda =
-        !busqueda ||
-        m.tipo_origen.toLowerCase().includes(q) ||
-        (m.descripcion || "").toLowerCase().includes(q) ||
+        !busqueda ||        (m.descripcion || "").toLowerCase().includes(q) ||
         (m.producto || "").toLowerCase().includes(q) ||
         (m.codigo_lote || "").toLowerCase().includes(q);
 
@@ -143,13 +141,7 @@ export const KardexProductosPage = () => {
           .includes("ingreso");
         return (
           <div className="flex flex-col gap-1">
-            <Text
-              size="xs"
-              fw={700}
-              className="text-zinc-200 ml-1 tracking-tight"
-            >
-              {record.tipo_origen}
-            </Text>
+
             <Badge
               color={isIngreso ? "teal" : "orange"}
               variant="light"

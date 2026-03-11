@@ -20,12 +20,26 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { useEntregas } from "../../../../services/requerimientos_almacen_entregas/useEntregas";
-import type { RES_DetalleAtencionItem } from "../../service/responses";
-import type { RES_HistorialEntrega } from "../../../requerimientos-almacen/services/responses";
-import { useEmpleados } from "../../../../services/empleados/useEmpleados";
+import { useEntregas } from "../hooks/useEntregas";
+import type { RES_DetalleAtencionItem } from "../service/atencion.responses";
+import { useEmpleados } from "../../../../service/empleados/useEmpleados";
 
-import { BlackcitoLogo } from "../../../assets/imports";
+export interface RES_HistorialEntrega {
+  id_entrega: number;
+  codigo_entrega: string;
+  id_lote_producto: number;
+  cantidad: number;
+  fecha_entrega: string;
+  created_at: string;
+  empleado: string;
+  entregado_a: string;
+}
+
+export interface IUseHook {
+  setError: (msg: string) => void;
+}
+
+import { BlackcitoLogo } from "../../../../presentation/assets/imports";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
@@ -59,7 +73,7 @@ export const RegistrarEntrega = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const {
-    obtenerDetallesAtencion,
+    obtenerDetallesRequerimiento,
     registrarEntrega,
     obtenerHistorialEntregas,
   } = useEntregas({ setError });
@@ -74,7 +88,7 @@ export const RegistrarEntrega = ({
       setLoading(true);
       try {
         const [resDetalles, resHistorial, resEmps] = await Promise.all([
-          obtenerDetallesAtencion(idRequerimiento),
+          obtenerDetallesRequerimiento(idRequerimiento),
           obtenerHistorialEntregas(idRequerimientoDetalle),
           listar(),
         ]);

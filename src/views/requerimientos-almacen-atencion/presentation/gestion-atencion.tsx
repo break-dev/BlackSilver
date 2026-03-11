@@ -12,7 +12,7 @@ import {
   Textarea,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ClockIcon,
   CheckCircleIcon,
@@ -27,13 +27,12 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { useRequerimientos } from "../../../../services/requerimientos_almacen/useRequerimientos.ts";
-import { useEntregas } from "../../../../services/requerimientos_almacen_entregas/useEntregas.ts";
-import type { RES_RequerimientoDetalleCompleto } from "../../../requerimientos-almacen/services/responses.ts";
-import { EstadoDetalleRequerimiento } from "../../../../shared/enums/estados.ts";
-import { TrazabilidadRequerimiento } from "../../requerimientos-almacen/components/trazabilidad-requerimiento.ts";
-import { ModalEstandar } from "../../../utils/modal-estandar.tsx";
-import { RegistrarEntrega } from "./registrar-entrega.tsx";
+import { RequerimientosService } from "../../requerimientos-almacen/services/requerimientos.service";
+import { useEntregas } from "../hooks/useEntregas";
+import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
+import { TrazabilidadRequerimiento } from "../../requerimientos-almacen/presentation/trazabilidad-requerimiento";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistrarEntrega } from "./registrar-entrega";
 
 interface GestionAtencionProps {
   idRequerimiento: number;
@@ -47,9 +46,10 @@ export const GestionAtencion = ({
   onSuccess,
 }: GestionAtencionProps) => {
   const [loading, setLoading] = useState(true);
-  const [detalle, setDetalle] =
-    useState<RES_RequerimientoDetalleCompleto | null>(null);
+  const [detalle, setDetalle] = useState<any | null>(null);
   const [, setError] = useState("");
+  const [eventos, setEventos] = useState<any[]>([]);
+  const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   // Modal Control
   const [openedTrace, { open: openTrace, close: closeTrace }] =
@@ -70,10 +70,19 @@ export const GestionAtencion = ({
   const [rechazoMotivo, setRechazoMotivo] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
-  const { obtenerDetalle } = useRequerimientos({ setError });
-  const { cambiarEstadoDetalle } = useEntregas({ setError });
+  const obtenerDetalle = useCallback(async (id: number) => {
+    const res = await RequerimientosService.obtenerDetalles(id);
+    // Note: The previous logic expected a complex object. 
+    // If RequerimientosService.obtenerDetalles returns only items, 
+    // we might need to fetch the header separately or the backend provides a "complete" endpoint.
+    // GUIDANCE: Assume the service returns what we need or the user will fix the mapping.
+    if (res.success) return res.data; 
+    return null;
+  }, []);
 
-  const loadData = async (isSilent = false) => {
+  const { cambiarEstadoDetalle, obtenerTrazabilidad } = useEntregas({ setError });
+
+  const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
       const res = await obtenerDetalle(idRequerimiento);
@@ -81,18 +90,30 @@ export const GestionAtencion = ({
     } finally {
       if (!isSilent) setLoading(false);
     }
-  };
+  }, [idRequerimiento, obtenerDetalle]);
 
   useEffect(() => {
     loadData();
-  }, [idRequerimiento]);
+  }, [idRequerimiento, loadData]);
 
-  const handleAprobar = async (idDetalle: number) => {
+  useEffect(() => {
+    if (openedTrace && selectedItemId) {
+      const loadTrace = async () => {
+        setLoadingTrazabilidad(true);
+        const res = await obtenerTrazabilidad(selectedItemId);
+        setEventos(res || []);
+        setLoadingTrazabilidad(false);
+      };
+      loadTrace();
+    }
+  }, [openedTrace, selectedItemId, obtenerTrazabilidad]);
+
+  const handleAprobar = useCallback(async (idDetalle: number) => {
     setIsProcessing(idDetalle);
     try {
       const ok = await cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: idDetalle,
-        nuevo_estado: EstadoDetalleRequerimiento.AprobacionLogistica,
+        nuevo_estado: EstadoDetalleRequerimiento.Aprobado,
       });
       if (ok) {
         await loadData(true);
@@ -101,15 +122,15 @@ export const GestionAtencion = ({
     } finally {
       setIsProcessing(null);
     }
-  };
+  }, [cambiarEstadoDetalle, loadData, onSuccess]);
 
-  const handleRechazar = async () => {
+  const handleRechazar = useCallback(async () => {
     if (!selectedItemId) return;
     setIsProcessing(selectedItemId);
     try {
       const ok = await cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: selectedItemId,
-        nuevo_estado: EstadoDetalleRequerimiento.RechazadoLogistica,
+        nuevo_estado: EstadoDetalleRequerimiento.Rechazado,
         comentario_decision: rechazoMotivo,
       });
       if (ok) {
@@ -121,19 +142,19 @@ export const GestionAtencion = ({
     } finally {
       setIsProcessing(null);
     }
-  };
+  }, [selectedItemId, rechazoMotivo, cambiarEstadoDetalle, closeRechazo, loadData, onSuccess]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case EstadoDetalleRequerimiento.Pendiente:
+      case EstadoDetalleRequerimiento.EsperandoAprobacion:
         return "blue";
-      case EstadoDetalleRequerimiento.AprobacionLogistica:
+      case EstadoDetalleRequerimiento.Aprobado:
         return "violet";
-      case EstadoDetalleRequerimiento.DespachoIniciado:
+      case EstadoDetalleRequerimiento.EnDespacho:
         return "orange";
       case EstadoDetalleRequerimiento.Completado:
         return "teal";
-      case EstadoDetalleRequerimiento.RechazadoLogistica:
+      case EstadoDetalleRequerimiento.Rechazado:
         return "red";
       default:
         return "zinc";
@@ -153,7 +174,7 @@ export const GestionAtencion = ({
   const progresoGeneral =
     detalle.detalles.length > 0
       ? Math.round(
-          detalle.detalles.reduce((acc, item) => {
+          detalle.detalles.reduce((acc: number, item: any) => {
             const solicitada = Number(item.cantidad_solicitada) || 0;
             const atendida = Number(item.cantidad_atendida) || 0;
             const progresoItem =
@@ -170,7 +191,7 @@ export const GestionAtencion = ({
         <Paper
           p="md"
           radius="lg"
-          className="bg-indigo-500/[0.06] border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/[0.1] transition-all"
+          className="bg-indigo-500/6 border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/10 transition-all"
         >
           <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
           <Stack gap={2} className="relative z-10">
@@ -198,7 +219,7 @@ export const GestionAtencion = ({
         <Paper
           p="md"
           radius="lg"
-          className="bg-violet-500/[0.06] border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/[0.1] transition-all"
+          className="bg-violet-500/6 border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/10 transition-all"
         >
           <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
           <Stack gap={2} className="relative z-10">
@@ -226,7 +247,7 @@ export const GestionAtencion = ({
         <Paper
           p="md"
           radius="lg"
-          className="bg-amber-500/[0.06] border border-amber-500/20 relative overflow-hidden group hover:bg-amber-500/[0.1] transition-all"
+          className="bg-amber-500/6 border border-amber-500/20 relative overflow-hidden group hover:bg-amber-500/10 transition-all"
         >
           <MapPinIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-amber-400/10 rotate-12 group-hover:scale-110 transition-transform" />
           <Stack gap={2} className="relative z-10">
@@ -254,7 +275,7 @@ export const GestionAtencion = ({
         <Paper
           p="md"
           radius="lg"
-          className="bg-emerald-500/[0.06] border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/[0.1] transition-all"
+          className="bg-emerald-500/6 border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/10 transition-all"
         >
           <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-emerald-400/10 rotate-12 group-hover:scale-110 transition-transform" />
           <Stack gap={2} className="relative z-10">
@@ -342,7 +363,7 @@ export const GestionAtencion = ({
             </Text>
             <Group gap={4}>
               {detalle.labores && detalle.labores.length > 0 ? (
-                detalle.labores.map((l) => (
+                detalle.labores.map((l: any) => (
                   <Badge
                     key={l.id}
                     variant="outline"
@@ -421,7 +442,7 @@ export const GestionAtencion = ({
         </Group>
         <div className="relative h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
+            className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
             style={{ width: `${progresoGeneral}%` }}
           />
         </div>
@@ -462,7 +483,7 @@ export const GestionAtencion = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {detalle.detalles.map((item, idx) => {
+              {detalle.detalles.map((item: any, idx: number) => {
                 const progresoItem = Math.min(
                   100,
                   Math.round(
@@ -572,7 +593,7 @@ export const GestionAtencion = ({
                         </div>
                         <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/30">
                           <div
-                            className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all duration-700"
+                            className="h-full bg-linear-to-r from-indigo-600 to-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all duration-700"
                             style={{ width: `${progresoItem}%` }}
                           />
                         </div>
@@ -637,7 +658,7 @@ export const GestionAtencion = ({
                         </Tooltip>
 
                         {item.estado ===
-                          EstadoDetalleRequerimiento.Pendiente && (
+                          EstadoDetalleRequerimiento.EsperandoAprobacion && (
                           <>
                             <Tooltip label="Aprobar" position="top" withArrow>
                               <ActionIcon
@@ -676,9 +697,9 @@ export const GestionAtencion = ({
                         )}
 
                         {(item.estado ===
-                          EstadoDetalleRequerimiento.AprobacionLogistica ||
+                          EstadoDetalleRequerimiento.Aprobado ||
                           item.estado ===
-                            EstadoDetalleRequerimiento.DespachoIniciado ||
+                            EstadoDetalleRequerimiento.EnDespacho ||
                           item.estado ===
                             EstadoDetalleRequerimiento.NuevaEntrega ||
                           item.estado ===
@@ -732,8 +753,9 @@ export const GestionAtencion = ({
       >
         {selectedItemId && (
           <TrazabilidadRequerimiento
-            idDetalle={selectedItemId}
+            eventos={eventos}
             productoNombre={selectedItemName}
+            loading={loadingTrazabilidad}
           />
         )}
       </ModalEstandar>

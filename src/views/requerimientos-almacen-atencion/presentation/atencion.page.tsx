@@ -1,3 +1,5 @@
+import { useDisclosure } from "@mantine/hooks";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Badge,
   Group,
@@ -6,9 +8,9 @@ import {
   TextInput,
   ActionIcon,
   Tooltip,
+  Select,
+  Loader,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   UserCircleIcon,
@@ -19,14 +21,13 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
-import { useEntregas } from "../../../services/requerimientos_almacen_entregas/useEntregas";
+import { useEntregas } from "../hooks/useEntregas";
 import type { RES_RequerimientoAtencionPendiente } from "../service/atencion.responses";
 import { Premura, EstadoRequerimiento } from "../../../shared/enums/estados";
 import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../utils/datatable-estandar";
-import { ModalEstandar } from "../../utils/modal-estandar";
-import { SelectAlmacen } from "../../utils/select-almacen";
-import { GestionAtencion } from "./components/gestion-atencion";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { GestionAtencion } from "./gestion-atencion";
 
 const PAGE_SIZE = 15;
 
@@ -34,6 +35,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
+  const [mes, setMes] = useState<string>(dayjs().format("M"));
+  const [yearcito, setYearcito] = useState<string>(dayjs().format("YYYY"));
+
   const [data, setData] = useState<RES_RequerimientoAtencionPendiente[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -44,26 +48,32 @@ export const RequerimientosAlmacenAtencionPage = () => {
     useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const { obtenerAtencionesPendientes } = useEntregas({ setError });
+  const { 
+    obtenerRequerimientos, 
+    obtenerAlmacenesAutorizados, 
+    almacenes, 
+    loadingAlmacenes 
+  } = useEntregas({ setError });
 
   useEffect(() => {
     setTitle("Atención de Requerimientos");
-  }, []);
+    obtenerAlmacenesAutorizados();
+  }, [setTitle, obtenerAlmacenesAutorizados]);
 
-  const loadData = async () => {
-    if (!idAlmacen) return;
+  const loadData = useCallback(async () => {
+    if (!idAlmacen || !mes || !yearcito) return;
     setLoading(true);
     try {
-      const res = await obtenerAtencionesPendientes(Number(idAlmacen));
+      const res = await obtenerRequerimientos(Number(idAlmacen), mes, yearcito);
       setData(res || []);
     } finally {
       setLoading(false);
     }
-  };
+  }, [idAlmacen, mes, yearcito, obtenerRequerimientos]);
 
   useEffect(() => {
     loadData();
-  }, [idAlmacen]);
+  }, [idAlmacen, mes, yearcito, loadData]);
 
   const filteredRecords = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
@@ -75,11 +85,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
         item.mina.toLowerCase().includes(q),
     );
   }, [data, busqueda]);
-
-  const paginatedRecords = useMemo(() => {
-    const from = (page - 1) * PAGE_SIZE;
-    return filteredRecords.slice(from, from + PAGE_SIZE);
-  }, [filteredRecords, page]);
 
   const columns: DataTableColumn<RES_RequerimientoAtencionPendiente>[] =
     useMemo(
@@ -158,12 +163,19 @@ export const RequerimientosAlmacenAtencionPage = () => {
           title: "Prioridad",
           width: 120,
           render: (item) => {
-            const colors = {
-              [Premura.Normal]: "cyan",
-              [Premura.Urgente]: "orange",
-              [Premura.Emergencia]: "red",
+            const getPremuraColor = (premura: string) => {
+              switch (premura) {
+                case Premura.Normal:
+                  return "blue";
+                case Premura.Urgente:
+                  return "orange";
+                case Premura.MuyUrgente:
+                  return "red";
+                default:
+                  return "zinc";
+              }
             };
-            const color = colors[item.premura as Premura] || "gray";
+            const color = getPremuraColor(item.premura);
             return (
               <Badge
                 color={color}
@@ -182,9 +194,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
           width: 130,
           render: (item) => {
             const colors = {
-              [EstadoRequerimiento.Generada]: "green",
-              [EstadoRequerimiento.Cerrada]: "gray",
-              [EstadoRequerimiento.Anulada]: "red",
+              [EstadoRequerimiento.Generado]: "green",
+              [EstadoRequerimiento.Cerrado]: "gray",
+              [EstadoRequerimiento.Anulado]: "red",
             };
             const color =
               item.estado && (colors as any)[item.estado]
@@ -226,19 +238,76 @@ export const RequerimientosAlmacenAtencionPage = () => {
           ),
         },
       ],
-      [page],
+      [page, openGestion],
     );
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
       <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
         <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+          {/* Almacén Selector */}
           <div className="w-full sm:w-72">
-            <SelectAlmacen
-              label={null}
+            <Select
               placeholder="Seleccione Almacén a Atender"
+              leftSection={loadingAlmacenes ? <Loader size="xs" /> : <MapPinIcon className="w-4 h-4 text-zinc-400" />}
+              data={almacenes.map(a => ({ value: String(a.id_almacen), label: a.nombre }))}
               value={idAlmacen}
-              onChange={(val) => setIdAlmacen(val)}
+              onChange={setIdAlmacen}
+              radius="lg"
+              classNames={{
+                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          {/* Mes Selector */}
+          <div className="w-full sm:w-40">
+            <Select
+              placeholder="Mes"
+              leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
+              data={[
+                { value: "1", label: "Enero" },
+                { value: "2", label: "Febrero" },
+                { value: "3", label: "Marzo" },
+                { value: "4", label: "Abril" },
+                { value: "5", label: "Mayo" },
+                { value: "6", label: "Junio" },
+                { value: "7", label: "Julio" },
+                { value: "8", label: "Agosto" },
+                { value: "9", label: "Septiembre" },
+                { value: "10", label: "Octubre" },
+                { value: "11", label: "Noviembre" },
+                { value: "12", label: "Diciembre" },
+              ]}
+              value={mes}
+              onChange={(val) => setMes(val || "")}
+              radius="lg"
+              classNames={{
+                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          {/* Año Selector */}
+          <div className="w-full sm:w-32">
+            <Select
+              placeholder="Año"
+              data={Array.from({ length: 5 }, (_, i) => ({
+                value: String(dayjs().year() - i),
+                label: String(dayjs().year() - i)
+              }))}
+              value={yearcito}
+              onChange={(val) => setYearcito(val || "")}
+              radius="lg"
+              classNames={{
+                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
             />
           </div>
 
@@ -280,10 +349,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
         <DataTableEstandar
           idAccessor="id_requerimiento"
           columns={columns}
-          records={paginatedRecords}
-          totalRecords={filteredRecords.length}
-          page={page}
-          onPageChange={setPage}
+          records={filteredRecords}
           loading={loading}
         />
       )}
