@@ -71,24 +71,21 @@ export const HistorialContratos = ({
 
           {/* ── SKELETON mientras carga ── */}
           {loading && (
-            <>
+            <Stack gap="sm">
               {[1, 2, 3].map((i) => (
                 <Group
                   key={i}
                   wrap="nowrap"
-                  align="flex-start"
-                  className="p-4 rounded-2xl border border-zinc-800/50 bg-zinc-900/30"
+                  className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg"
                 >
-                  <Skeleton height={44} width={44} radius="lg" />
+                  <Skeleton height={40} width={40} radius="xl" />
                   <Stack gap={6} className="flex-1">
-                    <Skeleton height={14} width="55%" radius="sm" />
-                    <Skeleton height={10} width="20%" radius="sm" />
+                    <Skeleton height={13} width="50%" radius="sm" />
                     <Skeleton height={10} width="35%" radius="sm" />
-                    <Skeleton height={10} width="45%" radius="sm" />
                   </Stack>
                 </Group>
               ))}
-            </>
+            </Stack>
           )}
 
           {/* ── ESTADO VACÍO ── */}
@@ -109,58 +106,60 @@ export const HistorialContratos = ({
           {/* ── CARDS ── */}
           {!loading && contratos.map((c) => {
             const estaTerminando = loadingIdContrato === c.id_contrato;
+            const isActive = c.estado === "Activo";
 
             return (
-              <Group
+              <div
                 key={c.id_contrato}
-                wrap="nowrap"
-                align="flex-start"
-                className={`p-4 rounded-2xl border transition-all duration-300 ${estaTerminando
+                className={`flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 ${
+                  estaTerminando
                     ? "opacity-50 scale-[0.99] border-red-500/20 bg-red-900/5"
-                    : c.estado === "Activo"
-                      ? "bg-zinc-900/40 border-zinc-800 shadow-xl"
-                      : "bg-zinc-900/10 border-zinc-800/40 opacity-50 grayscale-[50%]"
-                  }`}
+                    : isActive
+                      ? "bg-zinc-900/30 border-zinc-800/50"
+                      : "bg-zinc-900/10 border-zinc-800/30 opacity-50 grayscale-[50%]"
+                }`}
               >
                 {/* Ícono empresa */}
                 <div
-                  className={`w-11 h-11 rounded-full flex items-center justify-center border shrink-0 ${c.estado === "Activo"
-                      ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-400 shadow-lg shadow-indigo-900/20"
-                      : "bg-zinc-800/50 border-zinc-700 text-zinc-500"
-                    }`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${
+                    isActive
+                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                      : "bg-zinc-800/50 text-zinc-500 border-zinc-700/50"
+                  }`}
                 >
                   <BuildingOffice2Icon className="w-5 h-5" />
                 </div>
 
                 {/* Info */}
-                <Stack gap={4} className="flex-1 min-w-0">
-                  <Group gap="xs" align="center" wrap="nowrap">
-                    <Text size="sm" fw={700} className="text-zinc-100 truncate leading-tight">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <Text className="text-sm font-bold text-white truncate">
                       {c.nombre_comercial}
                     </Text>
-                    <Badge
-                      size="xs"
-                      variant={c.estado === "Activo" ? "filled" : "outline"}
-                      color={c.estado === "Activo" ? "indigo" : "gray"}
-                      radius="sm"
-                      className="font-bold tracking-tighter shrink-0"
-                    >
-                      {c.estado === "Activo" ? "ACTIVO" : "INACTIVO"}
-                    </Badge>
-                  </Group>
-                  <Text size="xs" className="text-zinc-500 font-mono">
-                    {c.ruc}
-                  </Text>
-                  <Group gap={4} className="mt-0.5">
-                    <CalendarIcon className="w-3 h-3 text-zinc-600" />
-                    <Text size="xs" className="text-zinc-500">
-                      {c.fecha_inicio} | {c.fecha_fin ?? "Presente"}
-                    </Text>
-                  </Group>
-                </Stack>
+                    {isActive ? (
+                      <Badge color="indigo" size="sm" variant="light">
+                        ACTIVO
+                      </Badge>
+                    ) : (
+                      <Badge color="gray" size="sm" variant="outline">
+                        INACTIVO
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                    <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-mono">{c.ruc}</span>
+                    <span className="opacity-40 mx-0.5">·</span>
+                    <span>
+                      {c.fecha_inicio}
+                      <span className="mx-1 opacity-40">|</span>
+                      {c.fecha_fin ?? "Presente"}
+                    </span>
+                  </div>
+                </div>
 
                 {/* Acción terminar */}
-                {c.estado === "Activo" && (
+                {isActive && (
                   <Tooltip label="Finalizar Contrato">
                     <ActionIcon
                       variant="subtle"
@@ -176,7 +175,7 @@ export const HistorialContratos = ({
                     </ActionIcon>
                   </Tooltip>
                 )}
-              </Group>
+              </div>
             );
           })}
         </Stack>
