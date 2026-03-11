@@ -147,15 +147,15 @@ export const TrazabilidadRequerimiento = ({
 
 const getStatusStyles = (status: string) => {
   switch (status) {
-    case EstadoDetalleRequerimiento.Pendiente:
+    case EstadoDetalleRequerimiento.EsperandoAprobacion:
       return { color: "blue", variant: "light" as const };
-    case EstadoDetalleRequerimiento.AprobacionLogistica:
+    case EstadoDetalleRequerimiento.Aprobado:
       return { color: "violet", variant: "light" as const };
-    case EstadoDetalleRequerimiento.DespachoIniciado:
+    case EstadoDetalleRequerimiento.EnDespacho:
       return { color: "orange", variant: "light" as const };
     case EstadoDetalleRequerimiento.NuevaEntrega:
       return { color: "green", variant: "light" as const };
-    case EstadoDetalleRequerimiento.RechazadoLogistica:
+    case EstadoDetalleRequerimiento.Rechazado:
       return { color: "red", variant: "filled" as const };
     case EstadoDetalleRequerimiento.Completado:
       return { color: "cyan", variant: "light" as const };
@@ -168,15 +168,15 @@ const getStatusStyles = (status: string) => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case EstadoDetalleRequerimiento.Pendiente:
+    case EstadoDetalleRequerimiento.EsperandoAprobacion:
       return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.AprobacionLogistica:
+    case EstadoDetalleRequerimiento.Aprobado:
       return <CheckBadgeIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.DespachoIniciado:
+    case EstadoDetalleRequerimiento.EnDespacho:
       return <TruckIcon className="w-4 h-4 text-white" />;
     case EstadoDetalleRequerimiento.NuevaEntrega:
       return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.RechazadoLogistica:
+    case EstadoDetalleRequerimiento.Rechazado:
       return <XCircleIcon className="w-4 h-4 text-white" />;
     case EstadoDetalleRequerimiento.Completado:
       return <CheckCircleIcon className="w-4 h-4 text-white" />;
