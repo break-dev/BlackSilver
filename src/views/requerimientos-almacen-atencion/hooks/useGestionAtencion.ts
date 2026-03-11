@@ -75,13 +75,23 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
         nuevo_estado: EstadoDetalleRequerimiento.Aprobado,
       });
       if (ok) {
-        await loadData(true);
+        setDetalle((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                detalles: prev.detalles.map(item => 
+                    item.id_requerimiento_almacen_detalle === idDetalle 
+                    ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado } 
+                    : item
+                )
+            };
+        });
         onSuccess();
       }
     } finally {
       setIsProcessing(null);
     }
-  }, [cambiarEstadoDetalle, loadData, onSuccess]);
+  }, [cambiarEstadoDetalle, onSuccess]);
 
   const handleRechazar = useCallback(async () => {
     if (!selectedItemId) return;
@@ -94,14 +104,25 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
       });
       if (ok) {
         closeRechazo();
+        const motivo = rechazoMotivo;
         setRechazoMotivo("");
-        await loadData(true);
+        setDetalle((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                detalles: prev.detalles.map(item => 
+                    item.id_requerimiento_almacen_detalle === selectedItemId 
+                    ? { ...item, estado: EstadoDetalleRequerimiento.Rechazado, comentario_decision: motivo } 
+                    : item
+                )
+            };
+        });
         onSuccess();
       }
     } finally {
       setIsProcessing(null);
     }
-  }, [selectedItemId, rechazoMotivo, cambiarEstadoDetalle, closeRechazo, loadData, onSuccess]);
+  }, [selectedItemId, rechazoMotivo, cambiarEstadoDetalle, closeRechazo, onSuccess]);
 
   const getStatusColor = (status: string) => {
     if (status === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) return "blue";

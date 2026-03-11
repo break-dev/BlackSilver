@@ -229,42 +229,52 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     );
   }, [data, busqueda]);
 
-  return {
-    // Estados
-    idAlmacen,
-    setIdAlmacen,
-    mes,
-    setMes,
-    yearcito,
-    setYearcito,
-    busqueda,
-    setBusqueda,
-    data,
-    filteredRecords,
-    loading,
-    error,
-    setError,
-    
-    // Métodos
-    loadData,
-    cambiarEstadoDetalle,
-    obtenerDetallesRequerimiento,
-    obtenerLotesDisponibles,
-    registrarEntrega,
-    obtenerHistorialEntregas,
-    obtenerTrazabilidad,
-    obtenerAlmacenesAutorizados,
-    obtenerEmpleados,
-    
-    // UI Estados
-    openedGestion,
-    openGestion,
-    closeGestion,
-    selectedId,
-    setSelectedId,
-    
-    // Catálogos
-    almacenes,
-    loadingAlmacenes,
+    // -- Local State Updates --
+    const updateRequirementLocal = useCallback((id: number, newData: Partial<RES_RequerimientoAlmacen>) => {
+      setData((prev) => 
+        prev.map((item) => 
+          item.id_requerimiento === id ? { ...item, ...newData } : item
+        )
+      );
+    }, []);
+
+    return {
+      // Estados
+      idAlmacen,
+      setIdAlmacen,
+      mes,
+      setMes,
+      yearcito,
+      setYearcito,
+      busqueda,
+      setBusqueda,
+      data,
+      filteredRecords,
+      loading,
+      error,
+      setError,
+      
+      // Métodos
+      loadData,
+      cambiarEstadoDetalle,
+      obtenerDetallesRequerimiento,
+      obtenerLotesDisponibles,
+      registrarEntrega,
+      obtenerHistorialEntregas,
+      obtenerTrazabilidad,
+      obtenerAlmacenesAutorizados,
+      obtenerEmpleados,
+      updateRequirementLocal,
+      
+      // UI Estados
+      openedGestion,
+      openGestion,
+      closeGestion,
+      selectedId,
+      setSelectedId,
+      
+      // Catálogos
+      almacenes,
+      loadingAlmacenes,
+    };
   };
-};

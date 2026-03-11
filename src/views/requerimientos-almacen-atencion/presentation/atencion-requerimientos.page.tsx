@@ -45,7 +45,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
     obtenerAlmacenesAutorizados,
     almacenes,
     loadingAlmacenes,
-    loadData,
+    updateRequirementLocal,
     openedGestion, openGestion, closeGestion,
     selectedId, setSelectedId
   } = useEntregas({ setError: setErrorLocal });
@@ -322,7 +322,8 @@ export const RequerimientosAlmacenAtencionPage = () => {
             almacenNombre={almacenes.find(a => String(a.id_almacen) === idAlmacen)?.nombre || "Almacén Seleccionado"}
             idAlmacen={Number(idAlmacen)}
             onSuccess={() => {
-              loadData();
+              // Actualizamos localmente el estado a 'En Proceso' para evitar re-fetch de la lista general
+              updateRequirementLocal(selectedId, { estado: EstadoRequerimiento.EnProceso });
             }}
           />
         )}
