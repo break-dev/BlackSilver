@@ -39,7 +39,6 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [busqueda, setBusqueda] = useState("");
-  const [page, setPage] = useState(1);
   const [openedGestion, { open: openGestion, close: closeGestion }] = useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
@@ -258,8 +257,6 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     obtenerEmpleados,
     
     // UI Estados
-    page,
-    setPage,
     openedGestion,
     openGestion,
     closeGestion,

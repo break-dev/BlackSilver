@@ -242,7 +242,7 @@ export const DetalleRequerimiento = ({
                         </>
                       )}
 
-                      {(item.estado !== EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) && (
+                      {(item.estado == EstadoDetalleRequerimiento.Aprobado.toString()) && (
                         <Tooltip label="Ver / Registrar Entrega" position="top" withArrow>
                           <ActionIcon variant="filled" color="indigo" onClick={() => {
                             setSelectedItemId(item.id_requerimiento_almacen_detalle);

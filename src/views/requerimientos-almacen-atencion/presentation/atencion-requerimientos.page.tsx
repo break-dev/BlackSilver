@@ -29,7 +29,7 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DetalleRequerimiento } from "./detalle-requerimiento.tsx";
 import { MESES } from "../../../presentation/variables/meses.ts";
 
-const PAGE_SIZE = 15;
+
 
 export const RequerimientosAlmacenAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -46,7 +46,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
     almacenes,
     loadingAlmacenes,
     loadData,
-    page, setPage,
     openedGestion, openGestion, closeGestion,
     selectedId, setSelectedId
   } = useEntregas({ setError: setErrorLocal });
@@ -66,7 +65,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
           title: "#",
           textAlign: "center",
           width: 60,
-          render: (_record, index) => (page - 1) * PAGE_SIZE + index + 1,
         },
         {
           accessor: "correlativo",
@@ -210,7 +208,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           ),
         },
       ],
-      [page, openGestion, setSelectedId],
+      [openGestion, setSelectedId],
     );
 
   return (
@@ -278,7 +276,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
             value={busqueda}
             onChange={(e) => {
               setBusqueda(e.currentTarget.value);
-              setPage(1);
             }}
             disabled={!idAlmacen}
             className="flex-1 min-w-[200px]"
