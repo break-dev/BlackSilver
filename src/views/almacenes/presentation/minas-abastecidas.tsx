@@ -1,5 +1,5 @@
-import { Button, Loader, ActionIcon, Tooltip, Text } from "@mantine/core";
-import { PlusIcon, CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ActionIcon, Tooltip, Text, Group, Stack, Skeleton } from "@mantine/core";
+import { CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMinasAbastecidas } from "../hooks/useMinasAbastecidas";
 import { AbastecerMina } from "./abastecer-mina";
 import type { IMessage } from "../../../shared/interfaces";
@@ -21,53 +21,59 @@ export const MinasAbastecidas = ({
   const {
     minas,
     loading,
-    showForm,
-    setShowForm,
     handleDesvincular,
     handleVinculada,
   } = useMinasAbastecidas(almacen.id_almacen);
 
-  if (showForm) {
-    return (
-      <AbastecerMina
-        idAlmacen={almacen.id_almacen}
-        onSuccess={(nueva) => handleVinculada(nueva, onMinasChange)}
-        onCancel={() => setShowForm(false)}
-      />
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-bold text-white">Minas asignadas</h3>
-          <p className="text-zinc-500 text-sm">{almacen.nombre}</p>
-        </div>
-        <Button
-          size="xs"
-          variant="light"
-          color="indigo"
-          leftSection={<PlusIcon className="w-4 h-4" />}
-          onClick={() => setShowForm(true)}
-          className="hover:bg-indigo-900/30 transition-colors"
-        >
-          Asignar Mina
-        </Button>
+      {/* Formulario siempre visible — el header va dentro */}
+      <AbastecerMina
+        idAlmacen={almacen.id_almacen}
+        nombreAlmacen={almacen.nombre}
+        onSuccess={(nueva) => handleVinculada(nueva, onMinasChange)}
+      />
+
+      {/* Separador */}
+      <div className="flex items-center gap-2">
+        <div className="h-px flex-1 bg-zinc-800" />
+        <Text size="xs" fw={700} className="text-zinc-500 uppercase tracking-widest px-2">
+          Minas Asignadas
+        </Text>
+        <div className="h-px flex-1 bg-zinc-800" />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center p-10">
-          <Loader size="sm" color="gray" />
-        </div>
-      ) : minas.length === 0 ? (
+      {/* Skeleton mientras carga */}
+      {loading && (
+        <Stack gap="sm">
+          {[1, 2, 3].map((i) => (
+            <Group
+              key={i}
+              wrap="nowrap"
+              className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg"
+            >
+              <Skeleton height={40} width={40} radius="xl" />
+              <Stack gap={6} className="flex-1">
+                <Skeleton height={13} width="50%" radius="sm" />
+                <Skeleton height={10} width="35%" radius="sm" />
+              </Stack>
+            </Group>
+          ))}
+        </Stack>
+      )}
+
+      {/* Estado vacío */}
+      {!loading && minas.length === 0 && (
         <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl">
           <CubeIcon className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
           <p className="text-zinc-500 text-sm">
             Este almacén no atiende ninguna mina.
           </p>
         </div>
-      ) : (
+      )}
+
+      {/* Lista de minas */}
+      {!loading && (
         <div className="grid gap-3">
           {minas.map((item: RES_MinaAbastecida, idx: number) => (
             <div

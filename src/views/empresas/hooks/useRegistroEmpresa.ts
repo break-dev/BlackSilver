@@ -20,6 +20,7 @@ export const useRegistroEmpresa = ({
   const [razonSocial, setRazonSocial] = useState("");
   const [nombreComercial, setNombreComercial] = useState("");
   const [abreviatura, setAbreviatura] = useState("");
+  const [pathLogo, setPathLogo] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export const useRegistroEmpresa = ({
     setRazonSocial("");
     setNombreComercial("");
     setAbreviatura("");
+    setPathLogo("");
     setError("");
   }, []);
 
@@ -39,6 +41,7 @@ export const useRegistroEmpresa = ({
       razon_social: razonSocial,
       nombre_comercial: nombreComercial,
       abreviatura,
+      path_logo: pathLogo,
     };
 
     const validation = Schema_RegistroEmpresa.safeParse(data);
@@ -78,6 +81,8 @@ export const useRegistroEmpresa = ({
     setNombreComercial,
     abreviatura,
     setAbreviatura,
+    pathLogo,
+    setPathLogo,
     error,
     loading,
     handleGuardar,

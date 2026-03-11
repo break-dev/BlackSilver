@@ -9,6 +9,8 @@ interface RegistroEmpresaProps {
   setNombreComercial: (val: string) => void;
   abreviatura: string;
   setAbreviatura: (val: string) => void;
+  pathLogo: string;
+  setPathLogo: (val: string) => void;
   error: string;
   loading: boolean;
   onSave: () => void;
@@ -24,6 +26,8 @@ export const RegistroEmpresa = ({
   setNombreComercial,
   abreviatura,
   setAbreviatura,
+  pathLogo,
+  setPathLogo,
   error,
   loading,
   onSave,
@@ -82,6 +86,16 @@ export const RegistroEmpresa = ({
         classNames={inputClasses}
         value={abreviatura}
         onChange={(e) => setAbreviatura(e.currentTarget.value)}
+      />
+
+      <TextInput
+        label="Logo URL"
+        placeholder="Ej. https://misitio.com/logo.png"
+        disabled={loading}
+        radius="lg"
+        classNames={inputClasses}
+        value={pathLogo}
+        onChange={(e) => setPathLogo(e.currentTarget.value)}
       />
 
       {error && (

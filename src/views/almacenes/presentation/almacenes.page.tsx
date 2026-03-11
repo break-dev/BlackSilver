@@ -91,7 +91,7 @@ export const AlmacenesPage = () => {
             <Text size="sm" fw={500} className="text-zinc-200">
               {record.nombre}
             </Text>
-            {record.es_principal && (
+            {Number(record.es_principal) === 1 && (
               <Badge size="xs" variant="light" color="pink">
                 Principal
               </Badge>

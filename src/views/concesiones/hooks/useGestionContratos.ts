@@ -7,7 +7,8 @@ export const useGestionContratos = (id_concesion?: number) => {
   const { notify } = useNotify();
   const [contratos, setContratos] = useState<RES_Contrato[]>([]);
   const [loading, setLoading] = useState(false);
-  const [loadingAccion, setLoadingAccion] = useState(false);
+  // Ahora rastreamos qué id_contrato específico está en proceso
+  const [loadingIdContrato, setLoadingIdContrato] = useState<number | null>(null);
 
   const listar = useCallback(async () => {
     if (!id_concesion) return;
@@ -26,25 +27,33 @@ export const useGestionContratos = (id_concesion?: number) => {
     listar();
   }, [listar]);
 
-  const handleTerminarContrato = async (id_contrato: number) => {
-    setLoadingAccion(true);
+  /**
+   * Termina un contrato y notifica el delta (-1) para actualizar el contador
+   * en la tabla principal de concesiones.
+   */
+  const handleTerminarContrato = async (
+    id_contrato: number,
+    onContratoTerminado?: () => void,
+  ) => {
+    setLoadingIdContrato(id_contrato);
     try {
       const resp = await ConcesionesService.terminar_contrato(id_contrato);
       if (resp.success) {
         notify({ type: "success", content: "Contrato finalizado" });
+        onContratoTerminado?.();
         listar();
       }
     } catch {
       notify({ type: "error", content: "Error inesperado" });
     } finally {
-      setLoadingAccion(false);
+      setLoadingIdContrato(null);
     }
   };
 
   return {
     contratos,
     loading,
-    loadingAccion,
+    loadingIdContrato,
     handleTerminarContrato,
     recargar: listar,
   };

@@ -1,82 +1,108 @@
-import { Group, Select, TextInput, Button, Text, Stack } from "@mantine/core";
-import { UserPlusIcon } from "@heroicons/react/24/outline";
+import { Select, Button, Text, Stack, Group, Box } from "@mantine/core";
+import {
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 import { useState } from "react";
+import dayjs from "dayjs";
 import { useNuevoContrato } from "../hooks/useNuevoContrato";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface NuevoContratoProps {
   idConcesion: number;
+  nombreConcesion: string;
+  empresasConContratoActivo: number[];
   onSuccess: () => void;
 }
 
 export const NuevoContrato = ({
   idConcesion,
+  nombreConcesion,
+  empresasConContratoActivo,
   onSuccess,
 }: NuevoContratoProps) => {
   const { empresas, loading, loadingAccion, handleCrearContrato } =
     useNuevoContrato(idConcesion, onSuccess);
 
   const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
-  const [fechaInicio, setFechaInicio] = useState("");
-
-  const fieldClasses = {
-    input:
-      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
-    label: "text-zinc-400 text-xs mb-1",
-  };
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
 
   const handleSubmit = async () => {
     if (!idEmpresa || !fechaInicio) return;
-    await handleCrearContrato(parseInt(idEmpresa), fechaInicio);
+    const fechaStr = dayjs(fechaInicio).format("YYYY-MM-DD");
+    await handleCrearContrato(parseInt(idEmpresa), fechaStr);
     setIdEmpresa(null);
-    setFechaInicio("");
+    setFechaInicio(null);
   };
+
+  const selectData = empresas.map((e) => ({
+    value: e.id_empresa.toString(),
+    label: e.nombre_comercial,
+    disabled: empresasConContratoActivo.includes(e.id_empresa),
+  }));
 
   return (
     <Stack
-      gap="sm"
+      gap="md"
       className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/50"
     >
-      <Text
-        size="sm"
-        fw={600}
-        className="text-zinc-300 flex items-center gap-2"
-      >
-        <UserPlusIcon className="w-5 h-5 text-indigo-400" />
-        Añadir Contrato
-      </Text>
-      <Group align="flex-end" grow>
+      {/* Header con nombre de concesión */}
+      <Group gap="sm" align="center">
+        <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <DocumentTextIcon className="w-4 h-4 text-indigo-400" />
+        </Box>
+        <Stack gap={0}>
+          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+            Nuevo Contrato
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            {nombreConcesion}
+          </Text>
+        </Stack>
+      </Group>
+
+      {/* Grid de 2 columnas iguales */}
+      <div className="grid grid-cols-2 gap-3">
         <Select
           label="Empresa"
-          placeholder={loading ? "Cargando empresas..." : "Seleccione empresa"}
-          data={empresas.map((e) => ({
-            value: e.id_empresa.toString(),
-            label: e.nombre_comercial,
-          }))}
+          placeholder={loading ? "Cargando..." : "Seleccione empresa"}
+          data={selectData}
           value={idEmpresa}
           onChange={setIdEmpresa}
-          classNames={fieldClasses}
           radius="lg"
+          size="sm"
           searchable
           required
           disabled={loading}
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            dropdown: "bg-zinc-900 border-zinc-800",
+            option:
+              "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 data-[disabled]:text-zinc-600 data-[disabled]:cursor-not-allowed rounded-md my-1",
+            label: "text-zinc-300 mb-1 font-medium",
+          }}
         />
-        <TextInput
+
+        <CustomDatePicker
           label="Fecha Inicio"
-          type="date"
-          classNames={fieldClasses}
-          radius="lg"
+          placeholder="Seleccione fecha"
           value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.currentTarget.value)}
+          onChange={(val) => setFechaInicio(val as Date | null)}
           required
         />
+      </div>
+
+      {/* Botón abajo a la derecha */}
+      <Group justify="flex-end">
         <Button
           onClick={handleSubmit}
           loading={loadingAccion}
           radius="lg"
-          className="bg-indigo-600 hover:bg-indigo-700 h-[38px]"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
           disabled={!idEmpresa || !fechaInicio}
         >
-          Añadir
+          Crear Contrato
         </Button>
       </Group>
     </Stack>

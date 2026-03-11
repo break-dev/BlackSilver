@@ -26,3 +26,9 @@ export enum TipoMovimiento {
   Ingreso = "Ingreso",
   Salida = "Salida",
 }
+
+export enum TipoMineral {
+  Polimetalico = "Polimetálico",
+  Carbon = "Carbón",
+  Aurifero = "Aurífero",
+}

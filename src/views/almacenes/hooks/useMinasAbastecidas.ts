@@ -7,7 +7,6 @@ export const useMinasAbastecidas = (id_almacen: number) => {
   const { notify } = useNotify();
   const [minas, setMinas] = useState<RES_MinaAbastecida[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -72,14 +71,11 @@ export const useMinasAbastecidas = (id_almacen: number) => {
       return [...prev, nueva].sort((a, b) => a.nombre.localeCompare(b.nombre));
     });
     if (onMinasChange) onMinasChange(1);
-    setShowForm(false);
   };
 
   return {
     minas,
     loading,
-    showForm,
-    setShowForm,
     handleDesvincular,
     handleVinculada,
   };
