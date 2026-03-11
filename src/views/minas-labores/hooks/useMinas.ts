@@ -12,13 +12,10 @@ export const useMinas = () => {
   const setTitle = useUIStore((state) => state.setTitle);
   const { notify } = useNotify();
 
-  // Concesiones
+  // Concesiones — solo para el formulario de nueva mina
   const [concesiones, setConcesiones] = useState<RES_ConcesionItem[]>([]);
-  const [concesionSeleccionada, setConcesionSeleccionada] = useState<
-    number | null
-  >(null);
 
-  // Minas
+  // Minas — se cargan TODAS al montar, sin filtro de concesión
   const [minas, setMinas] = useState<RES_ResumenMina[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -39,15 +36,12 @@ export const useMinas = () => {
     null,
   );
 
-  // Cargar concesiones al montar
+  // Cargar concesiones (para el selector dentro del modal de crear)
   const cargarConcesiones = useCallback(async () => {
     try {
       const { data: res } = await MinasService.getConcesionesSesion();
       if (res.success) {
         setConcesiones(res.data);
-        if (res.data.length > 0) {
-          setConcesionSeleccionada(res.data[0].id_concesion);
-        }
       } else {
         notify({ type: "error", content: res.message });
       }
@@ -56,36 +50,28 @@ export const useMinas = () => {
     }
   }, [notify]);
 
-  // Cargar minas cuando cambia la concesión
-  const cargarMinas = useCallback(
-    async (id_concesion: number) => {
-      setLoading(true);
-      try {
-        const { data: res } = await MinasService.getMinasResumen(id_concesion);
-        if (res.success) {
-          setMinas(res.data);
-        } else {
-          notify({ type: "error", content: res.message });
-        }
-      } catch {
-        notify({ type: "error", content: "Error al cargar las minas" });
-      } finally {
-        setLoading(false);
+  // Cargar TODAS las minas sin filtro
+  const cargarMinas = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: res } = await MinasService.getMinasResumen();
+      if (res.success) {
+        setMinas(res.data);
+      } else {
+        notify({ type: "error", content: res.message });
       }
-    },
-    [notify],
-  );
+    } catch {
+      notify({ type: "error", content: "Error al cargar las minas" });
+    } finally {
+      setLoading(false);
+    }
+  }, [notify]);
 
   useEffect(() => {
     setTitle("Minas y Labores");
     cargarConcesiones();
-  }, [setTitle, cargarConcesiones]);
-
-  useEffect(() => {
-    if (concesionSeleccionada) {
-      cargarMinas(concesionSeleccionada);
-    }
-  }, [concesionSeleccionada, cargarMinas]);
+    cargarMinas();
+  }, [setTitle, cargarConcesiones, cargarMinas]);
 
   const minasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase();
@@ -127,10 +113,8 @@ export const useMinas = () => {
   };
 
   return {
-    // Concesiones
+    // Concesiones (solo para formulario de crear)
     concesiones,
-    concesionSeleccionada,
-    setConcesionSeleccionada,
 
     // Minas
     minas,
@@ -157,9 +141,5 @@ export const useMinas = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
-
-    // Concesion seleccionada como objeto
-    concesionSeleccionadaObj:
-      concesiones.find((c) => c.id_concesion === concesionSeleccionada) ?? null,
   };
 };

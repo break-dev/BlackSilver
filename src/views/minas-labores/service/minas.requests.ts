@@ -48,5 +48,6 @@ export const Schema_CrearLabor = z.object({
   alto: z.coerce.number().optional().nullable(),
   nivel: z.string().optional().nullable(),
   fecha_inicio: z.string().optional().nullable(),
+  fecha_fin: z.string().optional().nullable(),
 });
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;

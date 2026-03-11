@@ -1,26 +1,27 @@
 import { useState, useCallback } from "react";
 import { MinasService } from "../service/minas.service";
 import { Schema_CrearMina } from "../service/minas.requests";
-import type { RES_ResumenMina } from "../service/minas.responses";
+import type { RES_ConcesionItem, RES_ResumenMina } from "../service/minas.responses";
 
 interface Props {
-  idConcesion: number;
+  concesiones: RES_ConcesionItem[];
   onSuccess: (nueva: RES_ResumenMina) => void;
   onCancel: () => void;
 }
 
 export const useRegistroMina = ({
-  idConcesion,
+  concesiones: _concesiones,
   onSuccess,
   onCancel,
 }: Props) => {
-
+  const [idConcesion, setIdConcesion] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = useCallback(() => {
+    setIdConcesion(null);
     setNombre("");
     setDescripcion("");
     setFormError("");
@@ -35,7 +36,7 @@ export const useRegistroMina = ({
     setFormError("");
 
     const validation = Schema_CrearMina.safeParse({
-      id_concesion: idConcesion,
+      id_concesion: idConcesion ? Number(idConcesion) : undefined,
       nombre,
       descripcion: descripcion || undefined,
     });
@@ -62,6 +63,8 @@ export const useRegistroMina = ({
   };
 
   return {
+    idConcesion,
+    setIdConcesion,
     nombre,
     setNombre,
     descripcion,

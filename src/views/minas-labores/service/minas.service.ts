@@ -24,9 +24,9 @@ export const MinasService = {
   getConcesionesSesion: () =>
     api.get<IRespuesta<RES_ConcesionItem[]>>(`${BASE_MINAS}/concesiones`),
 
-  getMinasResumen: (id_concesion: number) =>
+  getMinasResumen: (id_concesion?: number) =>
     api.get<IRespuesta<RES_ResumenMina[]>>(`${BASE_MINAS}`, {
-      params: { id_concesion },
+      params: id_concesion ? { id_concesion } : undefined,
     }),
 
   crearMina: (dto: DTO_CrearMina) =>

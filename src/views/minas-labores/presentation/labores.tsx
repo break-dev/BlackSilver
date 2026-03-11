@@ -33,16 +33,16 @@ export const GestionLabores = ({ mina }: Props) => {
     {
       accessor: "nombre",
       title: "Labor",
-      width: 220,
+      width: 240,
       render: (r) => (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1 py-1">
           <Text size="sm" fw={600} className="text-zinc-200">
             {r.nombre}
           </Text>
           <Text size="xs" c="dimmed" className="font-mono">
             {r.correlativo}
           </Text>
-          <div className="flex gap-2 mt-1">
+          <div className="flex gap-1.5 flex-wrap mt-0.5">
             <Badge variant="outline" color="cyan" size="xs">
               {r.tipo_labor}
             </Badge>
@@ -51,19 +51,33 @@ export const GestionLabores = ({ mina }: Props) => {
                 Producción
               </Badge>
             )}
+            {r.tipo_sostenimiento && (
+              <Badge color="gray" size="xs" variant="outline">
+                {r.tipo_sostenimiento}
+              </Badge>
+            )}
           </div>
+          {/* Detalles técnicos opcionales */}
+          {(r.veta || r.nivel || r.ancho || r.alto) && (
+            <div className="flex gap-2 flex-wrap text-[10px] text-zinc-600 mt-0.5">
+              {r.veta && <span>Veta: <span className="text-zinc-500">{r.veta}</span></span>}
+              {r.nivel && <span>Nivel: <span className="text-zinc-500">{r.nivel}</span></span>}
+              {r.ancho && <span>{r.ancho}m ancho</span>}
+              {r.alto && <span>{r.alto}m alto</span>}
+            </div>
+          )}
         </div>
       ),
     },
     {
       accessor: "empresa",
       title: "Empresa",
-      width: 250,
+      width: 200,
       render: (r) =>
         r.empresa ? (
-          <Badge variant="light" color="indigo" size="sm" radius="sm">
+          <Text size="sm" className="text-zinc-300 font-medium">
             {r.empresa}
-          </Badge>
+          </Text>
         ) : (
           <Text size="xs" c="dimmed">
             Sin asignar
@@ -72,19 +86,34 @@ export const GestionLabores = ({ mina }: Props) => {
     },
     {
       accessor: "fecha_inicio",
-      title: "Inicio",
-      width: 120,
+      title: "Período",
+      width: 160,
       render: (r) => (
-        <Text size="xs" className="text-zinc-500">
-          {r.fecha_inicio ? new Date(r.fecha_inicio).toLocaleDateString() : "-"}
-        </Text>
+        <div className="flex flex-col gap-0.5">
+          <Text size="xs" className="text-zinc-400">
+            Inicio:{" "}
+            <span className="text-zinc-300">
+              {r.fecha_inicio
+                ? new Date(r.fecha_inicio).toLocaleDateString("es-PE")
+                : "—"}
+            </span>
+          </Text>
+          <Text size="xs" className="text-zinc-400">
+            Fin:{" "}
+            <span className={r.fecha_fin ? "text-zinc-300" : "text-zinc-600 italic"}>
+              {r.fecha_fin
+                ? new Date(r.fecha_fin).toLocaleDateString("es-PE")
+                : "En curso"}
+            </span>
+          </Text>
+        </div>
       ),
     },
     {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
-      width: 120,
+      width: 110,
       render: (r) => (
         <Badge
           color={r.estado === "Activo" ? "green" : "gray"}
@@ -111,26 +140,24 @@ export const GestionLabores = ({ mina }: Props) => {
           <TextInput
             placeholder="Buscar por nombre, veta o nivel..."
             leftSection={
-              <MagnifyingGlassIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
             }
             value={busqueda}
             onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1 sm:w-64"
-            radius="md"
+            className="flex-1"
+            radius="lg"
             size="sm"
             classNames={{
               input:
-                "bg-zinc-900 border-zinc-800 focus:border-indigo-500/50 text-white placeholder:text-zinc-600",
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
             }}
           />
           <Button
-            size="sm"
-            variant="light"
-            color="indigo"
-            leftSection={<PlusIcon className="w-4 h-4" />}
+            leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openCreate}
-            radius="md"
-            className="hover:bg-indigo-900/30 shrink-0"
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
           >
             Nueva Labor
           </Button>
@@ -147,7 +174,7 @@ export const GestionLabores = ({ mina }: Props) => {
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Nueva Labor"
+        title="Registrar Labor"
         size="lg"
       >
         <RegistroLabor

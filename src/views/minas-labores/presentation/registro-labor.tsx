@@ -5,7 +5,9 @@ import {
   TextInput,
   Textarea,
   Loader,
+  Stack,
 } from "@mantine/core";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { useRegistroLabor } from "../hooks/useRegistroLabor";
 import type { RES_Labor } from "../service/minas.responses";
 
@@ -15,13 +17,10 @@ interface Props {
   onCancel: () => void;
 }
 
-const inputClasses = {
+const fieldClasses = {
   input:
-    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
   label: "text-zinc-300 mb-1 font-medium",
-  dropdown: "bg-zinc-900 border-zinc-800",
-  option:
-    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-700 rounded-md my-0.5",
 };
 
 const TIPO_SOSTENIMIENTO_OPTIONS = [
@@ -54,6 +53,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setNivel,
     fechaInicio,
     setFechaInicio,
+    fechaFin,
+    setFechaFin,
     formError,
     isSubmitting,
     handleSubmit,
@@ -69,7 +70,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <Stack gap="md" className="animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
           label="Empresa Ejecutora"
@@ -85,7 +86,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           onChange={(v) => setIdEmpresa(v ? parseInt(v) : null)}
           searchable
           nothingFoundMessage="Sin empresas ejecutoras"
-          classNames={inputClasses}
+          radius="lg"
+          classNames={fieldClasses}
         />
 
         <Select
@@ -102,7 +104,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           onChange={(v) => setIdTipoLabor(v ? parseInt(v) : null)}
           searchable
           nothingFoundMessage="Sin tipos de labor"
-          classNames={inputClasses}
+          radius="lg"
+          classNames={fieldClasses}
         />
       </div>
 
@@ -114,7 +117,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           withAsterisk
           disabled={isSubmitting}
           radius="lg"
-          classNames={inputClasses}
+          classNames={fieldClasses}
           value={nombre}
           onChange={(e) => setNombre(e.currentTarget.value)}
         />
@@ -128,30 +131,36 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           data={TIPO_SOSTENIMIENTO_OPTIONS}
           value={tipoSostenimiento || null}
           onChange={(v) => setTipoSostenimiento(v || "")}
-          classNames={inputClasses}
+          radius="lg"
+          classNames={fieldClasses}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-800/30 pt-2">
-        <div>
-          <label className="text-zinc-300 text-sm font-medium block mb-1">
-            Fecha Inicio
-          </label>
-          <input
-            type="date"
-            value={fechaInicio}
-            onChange={(e) => setFechaInicio(e.currentTarget.value)}
-            className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-400"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-800/30 pt-4">
+        <CustomDatePicker
+          label="Fecha Inicio"
+          placeholder="Seleccione fecha de inicio"
+          value={fechaInicio}
+          onChange={setFechaInicio}
+          disabled={isSubmitting}
+          required
+          withAsterisk
+        />
+        <CustomDatePicker
+          label="Fecha Fin (Opcional)"
+          placeholder="Seleccione fecha de término"
+          value={fechaFin}
+          onChange={setFechaFin}
+          disabled={isSubmitting}
+        />
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-800/30 pt-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-800/30 pt-4">
         <TextInput
           label="Veta"
           placeholder="Veta..."
           radius="lg"
-          classNames={inputClasses}
+          classNames={fieldClasses}
           value={veta}
           onChange={(e) => setVeta(e.currentTarget.value)}
         />
@@ -159,7 +168,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           label="Nivel"
           placeholder="Nivel..."
           radius="lg"
-          classNames={inputClasses}
+          classNames={fieldClasses}
           value={nivel}
           onChange={(e) => setNivel(e.currentTarget.value)}
         />
@@ -169,7 +178,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           type="number"
           step="0.01"
           radius="lg"
-          classNames={inputClasses}
+          classNames={fieldClasses}
           value={ancho}
           onChange={(e) => setAncho(e.currentTarget.value)}
         />
@@ -179,7 +188,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           type="number"
           step="0.01"
           radius="lg"
-          classNames={inputClasses}
+          classNames={fieldClasses}
           value={alto}
           onChange={(e) => setAlto(e.currentTarget.value)}
         />
@@ -191,7 +200,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         radius="lg"
         minRows={2}
         disabled={isSubmitting}
-        classNames={inputClasses}
+        classNames={fieldClasses}
         value={descripcion ?? ""}
         onChange={(e) => setDescripcion(e.currentTarget.value)}
       />
@@ -207,7 +216,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           disabled={isSubmitting}
           radius="lg"
           size="sm"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50"
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
         >
           Cancelar
         </Button>
@@ -216,11 +225,11 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           onClick={handleSubmit}
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8"
         >
           Guardar
         </Button>
       </Group>
-    </div>
+    </Stack>
   );
 };
