@@ -8,6 +8,7 @@ export interface RES_ConcesionItem {
 export interface RES_ResumenMina {
   id_mina: number;
   id_concesion: number;
+  concesion: string;
   nombre: string;
   descripcion: string | null;
   responsable: string | null;

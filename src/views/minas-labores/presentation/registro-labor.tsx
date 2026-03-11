@@ -141,7 +141,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           label="Fecha Inicio"
           placeholder="Seleccione fecha de inicio"
           value={fechaInicio}
-          onChange={setFechaInicio}
+          onChange={(val: any) => setFechaInicio(val)}
           disabled={isSubmitting}
           required
           withAsterisk
@@ -150,7 +150,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           label="Fecha Fin (Opcional)"
           placeholder="Seleccione fecha de término"
           value={fechaFin}
-          onChange={setFechaFin}
+          onChange={(val: any) => setFechaFin(val)}
           disabled={isSubmitting}
         />
       </div>

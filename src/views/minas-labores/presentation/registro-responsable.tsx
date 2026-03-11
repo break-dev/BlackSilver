@@ -1,22 +1,29 @@
-import { Button, Select, Loader } from "@mantine/core";
+import { Button, Select, Loader, Stack, Group, Box, Text } from "@mantine/core";
+import { UserIcon } from "@heroicons/react/24/outline";
 import { useRegistroResponsable } from "../hooks/useRegistroResponsable";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import type { RES_HistorialResponsable } from "../service/minas.responses";
 
 interface Props {
   idMina: number;
+  nombreMina?: string;
   onSuccess: (nueva: RES_HistorialResponsable) => void;
-  onCancel: () => void;
 }
 
 const inputClasses = {
-  input: "bg-zinc-900/50 border-zinc-800 text-white",
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
   label: "text-zinc-300 mb-1 font-medium",
   dropdown: "bg-zinc-900 border-zinc-800",
   option:
-    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-700 rounded-md my-0.5",
+    "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-0.5",
 };
 
-export const RegistroResponsable = ({ idMina, onSuccess, onCancel }: Props) => {
+export const RegistroResponsable = ({
+  idMina,
+  nombreMina,
+  onSuccess,
+}: Props) => {
   const {
     empleadosDisponibles,
     loadingDisponibles,
@@ -27,15 +34,39 @@ export const RegistroResponsable = ({ idMina, onSuccess, onCancel }: Props) => {
     formError,
     isSubmitting,
     handleSubmit,
-    handleCancel,
-  } = useRegistroResponsable({ idMina, onSuccess, onCancel });
+  } = useRegistroResponsable({ idMina, onSuccess, onCancel: () => {} });
 
   return (
-    <div className="p-4 rounded-xl border border-zinc-700 bg-zinc-900/50 space-y-4">
-      <div className="relative">
+    <Stack
+      gap="md"
+      className="animate-fade-in p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl"
+    >
+      {/* Header — igual que Almacenes */}
+      <Group gap="sm" align="center">
+        <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <UserIcon className="w-4 h-4 text-indigo-400" />
+        </Box>
+        <Stack gap={0}>
+          <Text
+            size="xs"
+            fw={700}
+            className="text-zinc-300 uppercase tracking-wider"
+          >
+            Nueva Asignación
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            {nombreMina}
+          </Text>
+        </Stack>
+      </Group>
+
+      {/* Formulario */}
+      <div className="space-y-4">
         <Select
-          label="Empleado"
-          placeholder="Seleccione un empleado"
+          label="Responsable / Jefe"
+          placeholder="Seleccione un responsable"
+          withAsterisk
+          leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
           data={empleadosDisponibles.map((e) => ({
             value: String(e.id_empleado),
             label: e.empleado,
@@ -45,45 +76,41 @@ export const RegistroResponsable = ({ idMina, onSuccess, onCancel }: Props) => {
           searchable
           nothingFoundMessage="Sin empleados disponibles"
           classNames={inputClasses}
-          disabled={loadingDisponibles}
+          radius="lg"
+          disabled={isSubmitting || loadingDisponibles}
           rightSection={loadingDisponibles && <Loader size={14} color="gray" />}
         />
-      </div>
 
-      <div>
-        <label className="text-zinc-300 text-sm font-medium block mb-1">
-          Fecha de inicio
-        </label>
-        <input
-          type="date"
+        <CustomDatePicker
+          label="Fecha de inicio"
+          placeholder="Seleccione fecha"
           value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.currentTarget.value)}
-          className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-400"
-        />
-      </div>
-
-      {formError && <p className="text-red-400 text-sm">{formError}</p>}
-
-      <div className="flex gap-2 justify-end">
-        <Button
-          size="xs"
-          variant="subtle"
-          onClick={handleCancel}
+          onChange={(val: any) => setFechaInicio(val)}
           disabled={isSubmitting}
-          className="text-zinc-400 hover:text-white"
-        >
-          Cancelar
-        </Button>
-        <Button
-          size="xs"
-          variant="light"
-          color="indigo"
-          loading={isSubmitting}
-          onClick={handleSubmit}
-        >
-          Confirmar
-        </Button>
+          required
+          withAsterisk
+        />
+
+        {formError && (
+          <Text size="xs" className="text-red-400 font-medium px-1">
+            {formError}
+          </Text>
+        )}
+
+        <div className="flex justify-end pt-2">
+          <Button
+            size="sm"
+            variant="filled"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6"
+            loading={isSubmitting}
+            disabled={!idEmpleado || !fechaInicio}
+            onClick={handleSubmit}
+            radius="lg"
+          >
+            Asignar Responsable
+          </Button>
+        </div>
       </div>
-    </div>
+    </Stack>
   );
 };

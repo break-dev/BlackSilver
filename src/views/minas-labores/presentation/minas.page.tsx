@@ -116,6 +116,19 @@ export const MinasPage = () => {
 
                 {/* Header: nombre + descripción */}
                 <div className="pr-14">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tooltip label="Concesión">
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color="indigo"
+                        radius="sm"
+                        className="font-bold border-indigo-500/20"
+                      >
+                        {mina.concesion}
+                      </Badge>
+                    </Tooltip>
+                  </div>
                   <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
                     {mina.nombre}
                   </h3>
@@ -219,7 +232,7 @@ export const MinasPage = () => {
         opened={openedEmpresas}
         close={closeEmpresas}
         title="Empresas Ejecutoras"
-        size="lg"
+        size="md"
       >
         {selectedMina && (
           <EmpresasEjecutoras
@@ -234,7 +247,7 @@ export const MinasPage = () => {
         opened={openedResponsables}
         close={closeResponsables}
         title="Responsables"
-        size="lg"
+        size="md"
       >
         {selectedMina && (
           <HistorialResponsables
