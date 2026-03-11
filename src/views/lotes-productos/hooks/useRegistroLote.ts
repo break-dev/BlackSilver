@@ -141,6 +141,10 @@ export const useRegistroLote = ({
     }
   };
 
+  const unidadBase = unidades.find(
+    (u) => u.id_unidad_medida === productoSeleccionado?.id_unidad_medida_base,
+  );
+
   return {
     // Form State & Setters
     idAlmacen,
@@ -175,6 +179,8 @@ export const useRegistroLote = ({
     // Derived
     derived: {
       productoSeleccionado,
+      unidadSeleccionada,
+      unidadBase,
       stockTotalBase,
       sonUnidadesIdenticas,
     },

@@ -1,4 +1,5 @@
-export const pluralizar = (nombre: string) => {
+export const pluralizar = (nombre: string | undefined | null) => {
+  if (!nombre) return "";
   const lower = nombre.toLowerCase();
   if (lower.endsWith("s")) return nombre;
   const vocales = ["a", "e", "i", "o", "u"];
