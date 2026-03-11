@@ -82,6 +82,10 @@ export const useAjusteStock = ({ lote, onSuccess }: UseAjusteStockProps) => {
     }
   };
 
+  const isSame =
+    Number(nuevoStockBase.toFixed(4)) === Number(lote.stock_actual_base);
+  const diff = nuevoStockBase - Number(lote.stock_actual_base);
+
   return {
     nuevoStock,
     nuevoStockBase,
@@ -89,6 +93,8 @@ export const useAjusteStock = ({ lote, onSuccess }: UseAjusteStockProps) => {
     setMotivo,
     submitting,
     error,
+    isSame,
+    diff,
     handleStockChange,
     handleBaseStockChange,
     handleSubmit,
