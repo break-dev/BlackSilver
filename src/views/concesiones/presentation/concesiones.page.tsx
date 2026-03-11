@@ -34,7 +34,7 @@ import { HistorialContratos } from "./historial-contratos";
 export const ConcesionesPage = () => {
   useTitlePage("Concesiones");
 
-  const { concesiones, loading, busqueda, setBusqueda, pushNuevaConcesion } =
+  const { concesiones, loading, busqueda, setBusqueda, pushNuevaConcesion, actualizarContratosActivos } =
     useConcesiones();
 
   const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
@@ -245,10 +245,17 @@ export const ConcesionesPage = () => {
       <ModalEstandar
         opened={openedContratos}
         close={closeContratos}
-        title={`Contratos - ${nombreSeleccionado}`}
+        title="Contratos"
         size="lg"
       >
-        {idSeleccionado && <HistorialContratos idConcesion={idSeleccionado} />}
+        {idSeleccionado && (
+          <HistorialContratos
+            idConcesion={idSeleccionado}
+            nombreConcesion={nombreSeleccionado}
+            onContratoCreado={() => actualizarContratosActivos(idSeleccionado, +1)}
+            onContratoTerminado={() => actualizarContratosActivos(idSeleccionado, -1)}
+          />
+        )}
       </ModalEstandar>
 
       <ModalEstandar

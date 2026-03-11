@@ -43,6 +43,16 @@ export const useConcesiones = () => {
     setConcesiones((prev) => [nueva, ...prev]);
   };
 
+  const actualizarContratosActivos = (id_concesion: number, delta: number) => {
+    setConcesiones((prev) =>
+      prev.map((c) =>
+        c.id_concesion === id_concesion
+          ? { ...c, contratos_activos: Math.max(0, c.contratos_activos + delta) }
+          : c,
+      ),
+    );
+  };
+
   return {
     concesiones: filtradas,
     loading,
@@ -50,5 +60,6 @@ export const useConcesiones = () => {
     setBusqueda,
     recargar: listar,
     pushNuevaConcesion,
+    actualizarContratosActivos,
   };
 };
