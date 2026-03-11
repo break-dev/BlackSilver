@@ -46,7 +46,7 @@ export const RequerimientosAlmacenPage = () => {
     filteredRecords,
     loading,
     filters: { mes, setMes, yearcito, setYearcito, search, setSearch },
-    actions: { listar, verDetalles, verTrazabilidad },
+    actions: { addRecord, verDetalles, verTrazabilidad },
     ui: {
       selectedReq,
       detalles,
@@ -161,14 +161,15 @@ export const RequerimientosAlmacenPage = () => {
         title: "Estado",
         width: 130,
         render: (item) => {
-          const colorMap = {
-            [EstadoRequerimiento.Generada]: "green",
-            [EstadoRequerimiento.Cerrada]: "gray",
-            [EstadoRequerimiento.Anulada]: "red",
+          const colorMap: Record<EstadoRequerimiento, string> = {
+            [EstadoRequerimiento.Generado]: "green",
+            [EstadoRequerimiento.Cerrado]: "gray",
+            [EstadoRequerimiento.Anulado]: "red",
+            [EstadoRequerimiento.EnProceso]: "blue",
           };
           return (
             <Badge
-              color={colorMap[item.estado as EstadoRequerimiento]}
+              color={colorMap[item.estado] || "gray"}
               variant="light"
               radius="sm"
               size="sm"
@@ -301,9 +302,9 @@ export const RequerimientosAlmacenPage = () => {
         size="80%"
       >
         <RegistroRequerimiento
-          onSuccess={() => {
+          onSuccess={(item) => {
             closeReg();
-            listar();
+            addRecord(item);
           }}
           onCancel={closeReg}
         />

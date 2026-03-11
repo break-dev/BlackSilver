@@ -95,7 +95,7 @@ export const useRequerimientosPage = () => {
     return requerimientos.filter(
       (item) =>
         (item.correlativo || "").toLowerCase().includes(q) ||
-        (item.solicitante || "").toLowerCase().includes(q),
+        (item.mina || "").toLowerCase().includes(q),
     );
   }, [requerimientos, search]);
 
@@ -114,6 +114,9 @@ export const useRequerimientosPage = () => {
     },
     actions: {
       listar,
+      addRecord: (record: RES_RequerimientoAlmacen) => {
+        setRequerimientos((prev) => [record, ...prev]);
+      },
       verDetalles,
       verTrazabilidad,
     },

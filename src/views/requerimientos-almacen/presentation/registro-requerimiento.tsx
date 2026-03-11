@@ -27,12 +27,20 @@ import { Premura } from "../../../shared/enums/otros";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { pluralizar } from "../../../presentation/functions/pluralizar";
 
+import type { RES_RequerimientoAlmacen } from "../services/requerimientos.responses";
+
 interface RegistroRequerimientoProps {
-  onSuccess: () => void;
+  onSuccess: (item: RES_RequerimientoAlmacen) => void;
   onCancel: () => void;
 }
 
-const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
+const SectionHeader = ({
+  icon: Icon,
+  title,
+}: {
+  icon: React.ElementType;
+  title: string;
+}) => (
   <div className="flex flex-col gap-2 mb-6">
     <div className="flex items-center gap-2">
       <Icon className="w-5 h-5 text-amber-500" />

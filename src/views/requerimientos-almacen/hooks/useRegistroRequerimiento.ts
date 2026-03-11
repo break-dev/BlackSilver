@@ -13,11 +13,12 @@ import type {
   RES_Labor_Local,
   RES_Producto_Local,
   RES_Unidad_Local,
+  RES_RequerimientoAlmacen,
 } from "../services/requerimientos.responses";
 import { Premura } from "../../../shared/enums/otros";
 
 interface Props {
-  onSuccess: () => void;
+  onSuccess: (item: RES_RequerimientoAlmacen) => void;
 }
 
 export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
@@ -166,7 +167,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
           message: "Requerimiento registrado correctamente",
           color: "teal",
         });
-        onSuccess();
+        onSuccess(res.data);
       } else {
         setError(res.message);
       }
