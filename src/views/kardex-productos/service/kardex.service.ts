@@ -1,0 +1,38 @@
+import { api } from "../../../service/api";
+import type { IRespuesta } from "../../../shared/interfaces";
+import type { RES_MovimientoKardex, RES_Almacen } from "./kardex.responses";
+
+export class KardexService {
+  private static readonly PATH = "/kardex-productos";
+
+  /**
+   * Obtener movimientos de Kardex por almacén y periodo
+   */
+  static async listarPorAlmacen(
+    idAlmacen: number,
+    mes: number,
+    yearcito: number,
+  ) {
+    const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(
+      this.PATH,
+      {
+        params: {
+          id_almacen: idAlmacen,
+          mes,
+          yearcito,
+        },
+      },
+    );
+    return response.data;
+  }
+
+  /**
+   * Obtener almacenes autorizados para el Kardex
+   */
+  static async listarAlmacenes() {
+    const response = await api.get<IRespuesta<RES_Almacen[]>>(
+      `${this.PATH}/almacenes`,
+    );
+    return response.data;
+  }
+}
