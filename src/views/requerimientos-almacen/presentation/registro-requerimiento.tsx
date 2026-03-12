@@ -62,6 +62,7 @@ export const RegistroRequerimiento = ({
       almacenes,
       labores,
       productos,
+      productosFiltrados,
       unidades,
       idMina,
       setIdMina,
@@ -254,7 +255,7 @@ export const RegistroRequerimiento = ({
                 <Select
                   label="Producto"
                   placeholder="Seleccione producto"
-                  data={productos.map((p) => ({
+                  data={productosFiltrados.map((p) => ({
                     value: String(p.id_producto),
                     label: p.nombre,
                   }))}

@@ -24,13 +24,14 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
   const [openedEntrega, { open: openEntrega, close: closeEntrega }] = useDisclosure(false);
   const [openedRechazo, { open: openRechazo, close: closeRechazo }] = useDisclosure(false);
+  const [openedAprobar, { open: openAprobar, close: closeAprobar }] = useDisclosure(false);
 
   // Selected Data
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
   const [selectedItemSolicitado, setSelectedItemSolicitado] = useState(0);
   const [selectedItemAtendido, setSelectedItemAtendido] = useState(0);
-  const [rechazoMotivo, setRechazoMotivo] = useState("");
+  const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
   const { 
@@ -67,21 +68,26 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     }
   }, [openedTrace, selectedItemId, obtenerTrazabilidad]);
 
-  const handleAprobar = useCallback(async (idDetalle: number) => {
-    setIsProcessing(idDetalle);
+  const handleAprobar = useCallback(async () => {
+    if (!selectedItemId) return;
+    setIsProcessing(selectedItemId);
     try {
       const ok = await cambiarEstadoDetalle({
-        id_requerimiento_almacen_detalle: idDetalle,
+        id_requerimiento_almacen_detalle: selectedItemId,
         nuevo_estado: EstadoDetalleRequerimiento.Aprobado,
+        comentario_decision: comentarioAccion,
       });
       if (ok) {
+        closeAprobar();
+        const motivo = comentarioAccion;
+        setComentarioAccion("");
         setDetalle((prev) => {
             if (!prev) return prev;
             return {
                 ...prev,
                 detalles: prev.detalles.map(item => 
-                    item.id_requerimiento_almacen_detalle === idDetalle 
-                    ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado } 
+                    item.id_requerimiento_almacen_detalle === selectedItemId 
+                    ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado, comentario_decision: motivo } 
                     : item
                 )
             };
@@ -91,7 +97,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     } finally {
       setIsProcessing(null);
     }
-  }, [cambiarEstadoDetalle, onSuccess]);
+  }, [selectedItemId, comentarioAccion, cambiarEstadoDetalle, closeAprobar, onSuccess]);
 
   const handleRechazar = useCallback(async () => {
     if (!selectedItemId) return;
@@ -100,12 +106,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
       const ok = await cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: selectedItemId,
         nuevo_estado: EstadoDetalleRequerimiento.Rechazado,
-        comentario_decision: rechazoMotivo,
+        comentario_decision: comentarioAccion,
       });
       if (ok) {
         closeRechazo();
-        const motivo = rechazoMotivo;
-        setRechazoMotivo("");
+        const motivo = comentarioAccion;
+        setComentarioAccion("");
         setDetalle((prev) => {
             if (!prev) return prev;
             return {
@@ -122,7 +128,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     } finally {
       setIsProcessing(null);
     }
-  }, [selectedItemId, rechazoMotivo, cambiarEstadoDetalle, closeRechazo, onSuccess]);
+  }, [selectedItemId, comentarioAccion, cambiarEstadoDetalle, closeRechazo, onSuccess]);
 
   const getStatusColor = (status: string) => {
     if (status === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) return "blue";
@@ -164,11 +170,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     openedTrace, openTrace, closeTrace,
     openedEntrega, openEntrega, closeEntrega,
     openedRechazo, openRechazo, closeRechazo,
+    openedAprobar, openAprobar, closeAprobar,
     selectedItemId, setSelectedItemId,
     selectedItemName, setSelectedItemName,
     selectedItemSolicitado, setSelectedItemSolicitado,
     selectedItemAtendido, setSelectedItemAtendido,
-    rechazoMotivo, setRechazoMotivo,
+    comentarioAccion, setComentarioAccion,
     isProcessing,
     progresoGeneral,
     handleAprobar,

@@ -59,7 +59,8 @@ export const DetalleRequerimiento = ({
     selectedItemName, setSelectedItemName,
     selectedItemSolicitado, setSelectedItemSolicitado,
     selectedItemAtendido, setSelectedItemAtendido,
-    rechazoMotivo, setRechazoMotivo,
+    comentarioAccion, setComentarioAccion,
+    openedAprobar, openAprobar, closeAprobar,
     isProcessing,
     progresoGeneral,
     handleAprobar,
@@ -227,7 +228,10 @@ export const DetalleRequerimiento = ({
                       {item.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
                         <>
                           <Tooltip label="Aprobar" position="top" withArrow>
-                            <ActionIcon variant="filled" color="green" onClick={() => handleAprobar(item.id_requerimiento_almacen_detalle)} loading={isProcessing === item.id_requerimiento_almacen_detalle} disabled={isProcessing !== null && isProcessing !== item.id_requerimiento_almacen_detalle}>
+                            <ActionIcon variant="filled" color="green" onClick={() => {
+                              setSelectedItemId(item.id_requerimiento_almacen_detalle);
+                              openAprobar();
+                            }} disabled={isProcessing !== null}>
                               <CheckCircleIcon className="w-5 h-5 text-white" />
                             </ActionIcon>
                           </Tooltip>
@@ -275,10 +279,24 @@ export const DetalleRequerimiento = ({
             <ExclamationTriangleIcon className="w-8 h-8 text-red-400 mt-1" />
             <Text size="sm" className="text-red-100 italic">Esta acción marcará el producto como rechazado.</Text>
           </Paper>
-          <Textarea label="Motivo del rechazo" placeholder="Escriba aquí..." minRows={4} value={rechazoMotivo} onChange={(e) => setRechazoMotivo(e.currentTarget.value)} />
+          <Textarea label="Motivo del rechazo" placeholder="Escriba aquí..." minRows={4} value={comentarioAccion} onChange={(e) => setComentarioAccion(e.currentTarget.value)} />
           <Group justify="end">
             <Button variant="subtle" color="zinc" onClick={closeRechazo}>Cancelar</Button>
-            <Button color="red" disabled={!rechazoMotivo.trim() || isProcessing !== null} loading={isProcessing !== null} onClick={handleRechazar}>Rechazar</Button>
+            <Button color="red" disabled={!comentarioAccion.trim() || isProcessing !== null} loading={isProcessing !== null} onClick={handleRechazar}>Rechazar</Button>
+          </Group>
+        </Stack>
+      </ModalEstandar>
+
+      <ModalEstandar opened={openedAprobar} close={closeAprobar} title="Aprobar ítem" size="md">
+        <Stack gap="md">
+          <Paper p="md" className="bg-green-500/10 border border-green-900/50 rounded-xl flex items-start gap-4">
+            <CheckCircleIcon className="w-8 h-8 text-green-400 mt-1" />
+            <Text size="sm" className="text-green-100 italic">¿Desea aprobar este producto? Puede ingresar un comentario opcional.</Text>
+          </Paper>
+          <Textarea label="Comentario (Opcional)" placeholder="Escriba aquí..." minRows={4} value={comentarioAccion} onChange={(e) => setComentarioAccion(e.currentTarget.value)} />
+          <Group justify="end">
+            <Button variant="subtle" color="zinc" onClick={closeAprobar}>Cancelar</Button>
+            <Button color="green" loading={isProcessing !== null} onClick={handleAprobar}>Aprobar</Button>
           </Group>
         </Stack>
       </ModalEstandar>
