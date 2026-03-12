@@ -6,6 +6,7 @@ import {
   Stack,
   Select,
 } from "@mantine/core";
+import { TipoRequerimiento, TipoBien } from "../../../shared/enums/tipos";
 
 interface RegistroCategoriaProps {
   nombre: string;
@@ -64,7 +65,7 @@ export const RegistroCategoria = ({
         disabled={loading}
         radius="lg"
         classNames={inputClasses}
-        data={["Bienes", "Servicios"]}
+        data={Object.values(TipoRequerimiento)}
         value={tipoRequerimiento}
         onChange={setTipoRequerimiento}
       />
@@ -75,13 +76,7 @@ export const RegistroCategoria = ({
         disabled={loading}
         radius="lg"
         classNames={inputClasses}
-        data={[
-          "Materia Prima",
-          "Producto Terminado",
-          "Repuesto",
-          "Suministro",
-          "Otro",
-        ]}
+        data={Object.values(TipoBien)}
         value={clasificacionBien}
         onChange={setClasificacionBien}
       />
