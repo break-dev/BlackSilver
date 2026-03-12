@@ -251,20 +251,31 @@ export const RegistrarEntrega = ({
             <tbody className="divide-y divide-zinc-800/50">
               {!itemData.lotes || itemData.lotes.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center text-zinc-600 italic">No hay lotes con stock disponible en este almacén.</td>
+                  <td
+                    colSpan={5}
+                    className="py-20 text-center text-zinc-600 italic"
+                  >
+                    No hay lotes con stock disponible en este almacén.
+                  </td>
                 </tr>
               ) : (
                 itemData.lotes.map((lote) => {
                   const idLoteProd = lote.id_lote!; // Assert as mapped
                   const cant = entregaCantidades[idLoteProd] || 0;
                   const saldo = (lote.stock_actual_base || 0) - cant;
-                  const equivLote = Number(lote.contenido_por_presentacion) || 1;
+                  const equivLote =
+                    Number(lote.contenido_por_presentacion) || 1;
 
                   // Cálculo de vencimiento
-                  const fechaVenc = lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento) : null;
+                  const fechaVenc = lote.fecha_vencimiento
+                    ? dayjs(lote.fecha_vencimiento)
+                    : null;
                   const hoy = dayjs().startOf("day");
-                  const diasRestantes = fechaVenc ? fechaVenc.diff(hoy, "day") : null;
-                  const esCritico = diasRestantes !== null && diasRestantes <= 5; // Valor por defecto o configurable
+                  const diasRestantes = fechaVenc
+                    ? fechaVenc.diff(hoy, "day")
+                    : null;
+                  const esCritico =
+                    diasRestantes !== null && diasRestantes <= 5; // Valor por defecto o configurable
                   const esVencido = diasRestantes !== null && diasRestantes < 0;
 
                   return (
@@ -333,7 +344,8 @@ export const RegistrarEntrega = ({
                               size="sm"
                               className="text-white fw-bold shadow-xs"
                             >
-                              {Number(lote.stock_actual).toFixed(2)} {lote.unidad_medida}
+                              {Number(lote.stock_actual).toFixed(2)}{" "}
+                              {lote.unidad_medida}
                             </Badge>
                             <div className="w-px h-8 bg-zinc-800" />
                             <Badge
@@ -353,8 +365,8 @@ export const RegistrarEntrega = ({
                             c="zinc.5"
                             className="italic opacity-80 mr-1"
                           >
-                            ({Number(equivLote).toFixed(2)} {itemData.unidad_medida_base}/
-                            {lote.unidad_medida})
+                            ({Number(equivLote).toFixed(2)}{" "}
+                            {itemData.unidad_medida_base}/{lote.unidad_medida})
                           </Text>
                         </div>
                       </td>
@@ -482,7 +494,9 @@ export const RegistrarEntrega = ({
                     <td className="text-left">
                       <div className="flex flex-col">
                         <Text size="11px" fw={700} className="text-zinc-300">
-                          {dayjs(h.fecha_hora_entrega * 1000).format("DD/MM/YYYY")}
+                          {dayjs(h.fecha_hora_entrega * 1000).format(
+                            "DD/MM/YYYY",
+                          )}
                         </Text>
                         <Text
                           size="10px"
