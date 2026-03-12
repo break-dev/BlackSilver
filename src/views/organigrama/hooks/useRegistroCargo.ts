@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { OrganigramaService } from "../service/organigrama.service";
 import { Schema_RegistroCargo } from "../service/organigrama.requests";
@@ -16,6 +16,12 @@ export const useRegistroCargo = (
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (defaultAreaId) {
+      setIdArea(defaultAreaId.toString());
+    }
+  }, [defaultAreaId]);
 
   const handleGuardar = async () => {
     setError("");
@@ -37,7 +43,6 @@ export const useRegistroCargo = (
         onSuccess(resp.data);
         onClose();
         setNombre("");
-        setIdArea(null);
       } else {
         setError(resp.message);
       }
