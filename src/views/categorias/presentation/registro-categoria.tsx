@@ -68,6 +68,7 @@ export const RegistroCategoria = ({
         data={Object.values(TipoRequerimiento)}
         value={tipoRequerimiento}
         onChange={setTipoRequerimiento}
+        comboboxProps={{ withinPortal: true, zIndex: 99999, transitionProps: { transition: 'pop', duration: 200 } }}
       />
 
       <Select
@@ -79,6 +80,7 @@ export const RegistroCategoria = ({
         data={Object.values(TipoBien)}
         value={clasificacionBien}
         onChange={setClasificacionBien}
+        comboboxProps={{ withinPortal: true, zIndex: 99999, transitionProps: { transition: 'pop', duration: 200 } }}
       />
 
       <Textarea

@@ -5,6 +5,7 @@ interface ModalEstandarProps {
   title: string;
   children: React.ReactNode;
   size?: string | number;
+  zIndex?: number;
 }
 export const ModalEstandar = ({
   opened,
@@ -12,12 +13,14 @@ export const ModalEstandar = ({
   title,
   children,
   size,
+  zIndex,
 }: ModalEstandarProps) => {
   return (
     <Modal
       opened={opened}
       onClose={close}
       size={size || "md"}
+      zIndex={zIndex}
       title={
         <div className="flex items-center gap-3">
           <div

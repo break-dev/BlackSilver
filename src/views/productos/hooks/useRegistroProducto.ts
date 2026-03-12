@@ -103,6 +103,7 @@ export const useRegistroProducto = (
     loading,
     loadingCategorias,
     loadingUnidades,
+    cargarCategorias,
     handleSubmit,
   };
 };
