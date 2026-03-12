@@ -1,13 +1,25 @@
 import { Stack, Group, TextInput, Select, Button } from "@mantine/core";
-import { UserPlusIcon } from "@heroicons/react/24/outline";
+import {
+  UserIcon,
+  IdentificationIcon,
+  BuildingOfficeIcon,
+  BriefcaseIcon,
+} from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
 import type { RES_Empleado } from "../service/empleados.responses";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroEmpleadoProps {
+  idEmpresaDefault?: number | null;
   onSuccess: (nuevo: RES_Empleado) => void;
+  onCancel: () => void;
 }
 
-export const RegistroEmpleado = ({ onSuccess }: RegistroEmpleadoProps) => {
+export const RegistroEmpleado = ({
+  idEmpresaDefault,
+  onSuccess,
+  onCancel,
+}: RegistroEmpleadoProps) => {
   const {
     form,
     setField,
@@ -21,56 +33,16 @@ export const RegistroEmpleado = ({ onSuccess }: RegistroEmpleadoProps) => {
     loadingAreas,
     loadingCargos,
     handleSubmit,
-  } = useRegistroEmpleado(onSuccess);
+  } = useRegistroEmpleado(onSuccess, idEmpresaDefault);
 
   const fieldClasses = {
     input:
-      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
-    label: "text-zinc-400 text-xs mb-1",
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
   };
 
   return (
-    <Stack gap="lg">
-      <Group grow align="flex-start">
-        <TextInput
-          label="Nombres"
-          placeholder="Ej. Juan"
-          value={form.nombre}
-          onChange={(e) => setField("nombre", e.currentTarget.value)}
-          classNames={fieldClasses}
-          radius="lg"
-          required
-        />
-        <TextInput
-          label="Apellidos"
-          placeholder="Ej. Pérez"
-          value={form.apellido}
-          onChange={(e) => setField("apellido", e.currentTarget.value)}
-          classNames={fieldClasses}
-          radius="lg"
-          required
-        />
-      </Group>
-
-      <Group grow align="flex-start">
-        <TextInput
-          label="DNI"
-          placeholder="Ej. 12345678"
-          value={form.dni || ""}
-          onChange={(e) => setField("dni", e.currentTarget.value)}
-          classNames={fieldClasses}
-          radius="lg"
-        />
-        <TextInput
-          label="Fecha de Nacimiento"
-          type="date"
-          value={form.fecha_nacimiento || ""}
-          onChange={(e) => setField("fecha_nacimiento", e.currentTarget.value)}
-          classNames={fieldClasses}
-          radius="lg"
-        />
-      </Group>
-
+    <Stack gap="md">
       <Select
         label="Empresa"
         placeholder={
@@ -82,14 +54,64 @@ export const RegistroEmpleado = ({ onSuccess }: RegistroEmpleadoProps) => {
         }))}
         value={form.id_empresa === 0 ? null : form.id_empresa.toString()}
         onChange={(val) => setField("id_empresa", Number(val))}
+        leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
         classNames={fieldClasses}
         radius="lg"
         required
+        withAsterisk
         searchable
-        disabled={loadingEmpresas}
+        disabled={loadingEmpresas || loading}
       />
 
-      <Group grow align="flex-start">
+      <Group grow align="flex-start" gap="md">
+        <TextInput
+          label="Nombres"
+          placeholder="Ej. Juan"
+          value={form.nombre}
+          onChange={(e) => setField("nombre", e.currentTarget.value)}
+          leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          required
+          withAsterisk
+          disabled={loading}
+        />
+        <TextInput
+          label="Apellidos"
+          placeholder="Ej. Pérez"
+          value={form.apellido}
+          onChange={(e) => setField("apellido", e.currentTarget.value)}
+          leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          required
+          withAsterisk
+          disabled={loading}
+        />
+      </Group>
+
+      <Group grow align="flex-start" gap="md">
+        <TextInput
+          label="DNI"
+          placeholder="Ej. 12345678"
+          value={form.dni || ""}
+          onChange={(e) => setField("dni", e.currentTarget.value.replace(/\D/g, ""))}
+          leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          maxLength={8}
+          disabled={loading}
+        />
+        <CustomDatePicker
+          label="Fecha de Nacimiento"
+          placeholder="Seleccione fecha"
+          value={form.fecha_nacimiento || null}
+          onChange={(val: any) => setField("fecha_nacimiento", val)}
+          disabled={loading}
+        />
+      </Group>
+
+      <Group grow align="flex-start" gap="md">
         <Select
           label="Área"
           placeholder={loadingAreas ? "Cargando áreas..." : "Seleccione área"}
@@ -99,11 +121,13 @@ export const RegistroEmpleado = ({ onSuccess }: RegistroEmpleadoProps) => {
           }))}
           value={idArea?.toString() || null}
           onChange={(val) => setIdArea(Number(val))}
+          leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
           required
+          withAsterisk
           searchable
-          disabled={loadingAreas}
+          disabled={loadingAreas || loading}
         />
         <Select
           label="Cargo"
@@ -120,24 +144,37 @@ export const RegistroEmpleado = ({ onSuccess }: RegistroEmpleadoProps) => {
           }))}
           value={form.id_cargo === 0 ? null : form.id_cargo.toString()}
           onChange={(val) => setField("id_cargo", Number(val))}
+          leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
           required
-          disabled={!idArea || loadingCargos}
+          withAsterisk
+          disabled={!idArea || loadingCargos || loading}
           searchable
         />
       </Group>
 
-      <Button
-        fullWidth
-        onClick={handleSubmit}
-        loading={loading}
-        radius="lg"
-        className="bg-indigo-600 hover:bg-indigo-700 h-[42px] mt-2"
-        leftSection={<UserPlusIcon className="w-5 h-5" />}
-      >
-        Registrar Empleado
-      </Button>
+      <Group justify="flex-end" gap="md" mt="xl">
+        <Button
+          variant="subtle"
+          onClick={onCancel}
+          disabled={loading}
+          radius="lg"
+          size="sm"
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
+        >
+          Cancelar
+        </Button>
+        <Button
+          loading={loading}
+          onClick={handleSubmit}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8"
+        >
+          Guardar
+        </Button>
+      </Group>
     </Stack>
   );
 };

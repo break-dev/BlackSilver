@@ -5,11 +5,9 @@ import {
   Text,
   Badge,
   ActionIcon,
-  Tooltip,
   Avatar,
   Select,
-  Stack,
-  Card,
+  Menu,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -17,6 +15,8 @@ import {
   PencilSquareIcon,
   PlusIcon,
   BuildingOfficeIcon,
+  EllipsisVerticalIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -49,11 +49,18 @@ export const EmpleadosPage = () => {
 
   const columns: DataTableColumn<RES_Empleado>[] = [
     {
+      accessor: "index",
+      title: "#",
+      textAlign: "center",
+      width: 50,
+      render: (_, index) => index + 1,
+    },
+    {
       accessor: "empleado",
       title: "Empleado",
       render: (r) => (
         <Group gap="sm">
-          <Avatar src={r.path_foto} radius="xl">
+          <Avatar src={r.path_foto} radius="xl" color="cyan" variant="light">
             {r.nombre[0]}
             {r.apellido[0]}
           </Avatar>
@@ -99,82 +106,72 @@ export const EmpleadosPage = () => {
     {
       accessor: "actions",
       title: "",
-      width: 100,
+      width: 60,
       textAlign: "right",
       render: () => (
-        <Group gap="xs" justify="flex-end">
-          <Tooltip label="Editar">
-            <ActionIcon variant="light" color="indigo" radius="md">
-              <PencilSquareIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Más información">
+        <Menu shadow="md" width={150} position="left">
+          <Menu.Target>
             <ActionIcon variant="subtle" color="gray">
-              <InformationCircleIcon className="w-5 h-5" />
+              <EllipsisVerticalIcon className="w-5 h-5" />
             </ActionIcon>
-          </Tooltip>
-        </Group>
+          </Menu.Target>
+          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
+            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
+            <Menu.Item
+              leftSection={<PencilSquareIcon className="w-4 h-4" />}
+              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            >
+              Editar
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<InformationCircleIcon className="w-4 h-4" />}
+              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+            >
+              Información
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<TrashIcon className="w-4 h-4" />}
+              color="red"
+              className="hover:bg-red-900/20"
+            >
+              Eliminar
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
       ),
     },
   ];
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card
-        withBorder
-        radius="lg"
-        className="bg-zinc-900/30 border-zinc-800 p-6"
-      >
-        <Stack gap="md">
-          <Group align="flex-end" justify="space-between">
-            <Stack gap={4} className="flex-1 max-w-sm">
-              <Text
-                size="xs"
-                fw={500}
-                className="text-zinc-500 uppercase tracking-wider"
-              >
-                Filtrar por Empresa
-              </Text>
-              <Select
-                placeholder={
-                  loadingEmpresas ? "Cargando..." : "Seleccione una empresa"
-                }
-                data={empresas.map((e) => ({
-                  value: e.id_empresa.toString(),
-                  label: e.nombre_comercial,
-                }))}
-                value={idEmpresa?.toString() || null}
-                onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
-                leftSection={
-                  <BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />
-                }
-                radius="lg"
-                classNames={{
-                  input:
-                    "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
-                }}
-                disabled={loadingEmpresas}
-                searchable
-              />
-            </Stack>
+      {/* Header — Estilo unificado */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
+          <Select
+            placeholder={
+              loadingEmpresas ? "Cargando..." : "Filtrar por empresa..."
+            }
+            data={empresas.map((e) => ({
+              value: e.id_empresa.toString(),
+              label: e.nombre_comercial,
+            }))}
+            value={idEmpresa?.toString() || null}
+            onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
+            leftSection={
+              <BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />
+            }
+            radius="lg"
+            size="sm"
+            className="w-full sm:w-64"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
+            }}
+            disabled={loadingEmpresas}
+            searchable
+          />
 
-            <Button
-              variant="filled"
-              color="indigo"
-              radius="lg"
-              onClick={openRegistro}
-              leftSection={<PlusIcon className="w-5 h-5" />}
-              className="mb-[2px]"
-            >
-              Nuevo Empleado
-            </Button>
-          </Group>
-        </Stack>
-      </Card>
-
-      {idEmpresa ? (
-        <Stack gap="md">
-          <Group justify="space-between">
+          {idEmpresa && (
             <TextInput
               placeholder="Buscar por nombre, DNI o cargo..."
               leftSection={
@@ -183,47 +180,61 @@ export const EmpleadosPage = () => {
               value={busqueda}
               onChange={(e) => setBusqueda(e.currentTarget.value)}
               radius="lg"
+              size="sm"
               className="w-full sm:w-80"
               classNames={{
                 input:
-                  "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+                  "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
               }}
             />
-          </Group>
+          )}
+        </div>
 
-          <DataTableEstandar
-            idAccessor="id_empleado"
-            columns={columns}
-            records={empleados}
-            loading={loading}
-          />
-        </Stack>
-      ) : (
-        <Card
-          withBorder
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={openRegistro}
           radius="lg"
-          className="bg-zinc-900/20 border-zinc-800 border-dashed py-12"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 w-full lg:w-auto px-6 h-[38px]"
         >
-          <Stack align="center" gap="sm">
-            <BuildingOfficeIcon className="w-12 h-12 text-zinc-700" />
-            <Text className="text-zinc-500" fw={500}>
-              Seleccione una empresa para ver el personal
-            </Text>
-          </Stack>
-        </Card>
+          Nuevo Empleado
+        </Button>
+      </div>
+
+      {idEmpresa ? (
+        <DataTableEstandar
+          idAccessor="id_empleado"
+          columns={columns}
+          records={empleados}
+          loading={loading}
+        />
+      ) : (
+        <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800/60 rounded-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-3">
+            <BuildingOfficeIcon className="w-6 h-6 text-zinc-600" />
+          </div>
+          <Text size="sm" className="text-zinc-500">
+            Sin empresa asignada
+          </Text>
+          <Text size="xs" className="text-zinc-600 mt-0.5">
+            Seleccione una empresa para ver el personal
+          </Text>
+        </div>
       )}
 
       <ModalEstandar
         opened={openedRegistro}
         close={closeRegistro}
-        title="Registrar Nuevo Empleado"
+        title="Registrar Empleado"
         size="md"
       >
         <RegistroEmpleado
+          idEmpresaDefault={idEmpresa}
           onSuccess={(nuevo) => {
             pushNuevoEmpleado(nuevo);
             closeRegistro();
           }}
+          onCancel={closeRegistro}
         />
       </ModalEstandar>
     </div>
