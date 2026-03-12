@@ -2,6 +2,7 @@ export interface RES_Area {
   id_area: number;
   nombre: string;
   estado: string;
+  cantidad_cargos: number;
 }
 
 export interface RES_Cargo {

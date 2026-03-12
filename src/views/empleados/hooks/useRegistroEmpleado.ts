@@ -27,9 +27,13 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
 
 export const useRegistroEmpleado = (
   onSuccess: (nuevo: RES_Empleado) => void,
+  idEmpresaDefault: number | null = null
 ) => {
   const { notify } = useNotify();
-  const [form, setForm] = useState<DTO_CrearEmpleado>(INITIAL_FORM);
+  const [form, setForm] = useState<DTO_CrearEmpleado>({
+    ...INITIAL_FORM,
+    id_empresa: idEmpresaDefault ?? 0,
+  });
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [cargos, setCargos] = useState<RES_Cargo[]>([]);

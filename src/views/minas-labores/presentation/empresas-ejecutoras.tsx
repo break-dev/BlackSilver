@@ -1,4 +1,4 @@
-import { Loader, Text, Stack, Group, Skeleton, Box } from "@mantine/core";
+import { Text, Stack, Group, Skeleton } from "@mantine/core";
 import { BriefcaseIcon, IdentificationIcon } from "@heroicons/react/24/outline";
 import { RegistroEmpresaEjecutora } from "./registro-empresa-ejecutora";
 import { useEmpresasEjecutoras } from "../hooks/useEmpresasEjecutoras";

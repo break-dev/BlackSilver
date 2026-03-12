@@ -2,10 +2,9 @@ import {
   ActionIcon,
   Badge,
   Button,
-  Group,
   TextInput,
-  Text,
   Menu,
+  Tooltip,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -13,16 +12,14 @@ import {
   TrashIcon,
   PencilSquareIcon,
   EllipsisVerticalIcon,
-  TagIcon,
+  Squares2X2Icon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { type DataTableColumn } from "mantine-datatable";
 import { useTitlePage } from "../../../hooks/useTitlePage";
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
 import { useCategorias } from "../hooks/useCategorias";
 import { useRegistroCategoria } from "../hooks/useRegistroCategoria";
-import type { RES_Categoria } from "../service/categorias.responses";
 
 export const CategoriasPage = () => {
   useTitlePage("Categorías");
@@ -43,101 +40,7 @@ export const CategoriasPage = () => {
     onClose: closeCreate,
   });
 
-  const columns: DataTableColumn<RES_Categoria>[] = [
-    {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_, index) => index + 1,
-    },
-    {
-      accessor: "nombre",
-      title: "Categoría",
-      width: 280,
-      render: (record) => (
-        <Group gap="xs">
-          <TagIcon className="w-5 h-5 text-zinc-500" />
-          <div>
-            <Text size="sm" fw={500} className="text-zinc-200">
-              {record.nombre}
-            </Text>
-            {record.tipo_requerimiento && (
-              <Badge size="xs" variant="light" color="indigo">
-                {record.tipo_requerimiento}
-              </Badge>
-            )}
-          </div>
-        </Group>
-      ),
-    },
-    {
-      accessor: "clasificacion_bien",
-      title: "Clasificación",
-      width: 200,
-      render: (record) => (
-        <Text size="sm" className="text-zinc-400">
-          {record.clasificacion_bien || "-"}
-        </Text>
-      ),
-    },
-    {
-      accessor: "descripcion",
-      title: "Descripción",
-      render: (record) => (
-        <Text size="sm" className="text-zinc-400 truncate max-w-xs">
-          {record.descripcion || "-"}
-        </Text>
-      ),
-    },
-    {
-      accessor: "estado",
-      title: "Estado",
-      textAlign: "center",
-      width: 100,
-      render: (record) => (
-        <Badge
-          color={record.estado === "Activo" ? "green" : "red"}
-          variant="light"
-          radius="sm"
-          size="sm"
-        >
-          {record.estado}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "actions",
-      title: "",
-      width: 80,
-      textAlign: "right",
-      render: () => (
-        <Menu shadow="md" width={150} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
-  ];
+  // Eliminamos const columns -> pasamos a vista Card
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -170,12 +73,106 @@ export const CategoriasPage = () => {
         </Button>
       </div>
 
-      <DataTableEstandar
-        idAccessor="id_categoria"
-        columns={columns}
-        records={categoriasFiltradas}
-        loading={loading}
-      />
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div
+              key={i}
+              className="h-32 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
+            />
+          ))}
+        </div>
+      ) : categoriasFiltradas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
+          <Squares2X2Icon className="w-10 h-10 text-zinc-700 mb-3" />
+          <p className="text-zinc-500 text-sm font-medium">
+            No se encontraron categorías registradas
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {categoriasFiltradas.map((cat) => {
+            const isActive = cat.estado === "Activo";
+            return (
+              <div
+                key={cat.id_categoria}
+                className="group relative flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-3 hover:border-zinc-700/80 hover:bg-zinc-900/50 transition-all duration-200"
+              >
+                {/* Badge de estado en la esquina */}
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color={isActive ? "green" : "red"}
+                  radius="sm"
+                  className="absolute top-3 right-3"
+                >
+                  {cat.estado}
+                </Badge>
+
+                {/* Header: Titulo + Clasificación */}
+                <div className="pr-14">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tooltip label="Tipo de Requerimiento">
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color="indigo"
+                        radius="sm"
+                        className="font-bold border-indigo-500/20"
+                      >
+                        {cat.tipo_requerimiento || "Sin Tipo"}
+                      </Badge>
+                    </Tooltip>
+                  </div>
+                  <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
+                    {cat.nombre}
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
+                    {cat.descripcion || "Sin descripción"}
+                  </p>
+                </div>
+
+                {/* Footer: Stats/Clasificación y Acciones */}
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-auto">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-600 font-medium">
+                    <ClipboardDocumentCheckIcon className="w-4 h-4" />
+                    <span className="truncate max-w-[120px]">
+                      {cat.clasificacion_bien || "Sin Clasificar"}
+                    </span>
+                  </div>
+
+                  {/* Acciones 3 dots */}
+                  <Menu shadow="md" width={150} position="bottom-end">
+                    <Menu.Target>
+                      <ActionIcon variant="subtle" color="gray" size="sm">
+                        <EllipsisVerticalIcon className="w-5 h-5" />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
+                      <Menu.Label className="text-zinc-500">
+                        Acciones
+                      </Menu.Label>
+                      <Menu.Item
+                        leftSection={<PencilSquareIcon className="w-4 h-4" />}
+                        className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                      >
+                        Editar Info
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<TrashIcon className="w-4 h-4" />}
+                        color="red"
+                        className="hover:bg-red-900/20"
+                      >
+                        Eliminar
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <ModalEstandar
         opened={openedCreate}

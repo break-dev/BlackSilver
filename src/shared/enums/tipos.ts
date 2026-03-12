@@ -18,7 +18,7 @@ export enum TipoRequerimiento {
 
 export enum TipoBien {
   Suministro = "Suministro",
-  Material = "Material",
+  Materiales = "Materiales",
   ActivoFijo = "Activo Fijo",
 }
 

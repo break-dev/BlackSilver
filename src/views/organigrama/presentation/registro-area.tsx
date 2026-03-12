@@ -1,4 +1,5 @@
-import { Button, Group, TextInput, Stack } from "@mantine/core";
+import { Button, Group, TextInput, Stack, Box, Text } from "@mantine/core";
+import { RectangleGroupIcon } from "@heroicons/react/24/outline";
 
 interface Props {
   nombre: string;
@@ -9,6 +10,12 @@ interface Props {
   onCancel: () => void;
 }
 
+const fieldClasses = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+  label: "text-zinc-300 font-medium mb-1",
+};
+
 export const RegistroArea = ({
   nombre,
   setNombre,
@@ -17,17 +24,28 @@ export const RegistroArea = ({
   onSave,
   onCancel,
 }: Props) => {
-  const fieldClasses = {
-    input: "bg-zinc-900/50 border-zinc-800 text-white",
-    label: "text-zinc-300 font-medium mb-1",
-  };
-
   return (
-    <Stack gap="md">
+    <Stack gap="md" className="animate-fade-in">
+      {/* Header — Estilo unificado */}
+      <Group gap="sm" align="center" mb="xs">
+        <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <RectangleGroupIcon className="w-4 h-4 text-indigo-400" />
+        </Box>
+        <Stack gap={0}>
+          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+            Nueva Área Administrativa
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            Define un nuevo departamento en la empresa
+          </Text>
+        </Stack>
+      </Group>
+
       <TextInput
         label="Nombre del Área"
         placeholder="Ej. Operaciones, Recursos Humanos..."
         required
+        withAsterisk
         disabled={loading}
         radius="lg"
         classNames={fieldClasses}
@@ -35,25 +53,32 @@ export const RegistroArea = ({
         onChange={(e) => setNombre(e.currentTarget.value)}
       />
 
-      {error && <div className="text-red-500 text-sm">{error}</div>}
+      {error && (
+        <Text size="xs" className="text-red-400 font-medium px-1">
+          {error}
+        </Text>
+      )}
 
       <Group justify="flex-end" gap="md" mt="xl">
         <Button
           variant="subtle"
-          color="gray"
           onClick={onCancel}
           disabled={loading}
           radius="lg"
+          size="sm"
+          className="text-zinc-400 hover:text-white"
         >
           Cancelar
         </Button>
         <Button
           onClick={onSave}
           loading={loading}
+          disabled={!nombre.trim()}
           radius="lg"
-          className="bg-indigo-600"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8"
         >
-          Guardar
+          Guardar Área
         </Button>
       </Group>
     </Stack>
