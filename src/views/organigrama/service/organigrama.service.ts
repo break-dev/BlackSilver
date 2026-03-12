@@ -36,4 +36,11 @@ export class OrganigramaService {
     const { data } = await api.post(`${this.PATH}/cargos`, dto);
     return data;
   };
+
+  public static cambiar_estado_cargo = async (
+    id_cargo: number,
+  ): Promise<IRespuesta<null>> => {
+    const { data } = await api.patch(`${this.PATH}/cargos/${id_cargo}/estado`);
+    return data;
+  };
 }

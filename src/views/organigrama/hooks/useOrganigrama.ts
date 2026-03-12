@@ -81,5 +81,24 @@ export const useOrganigrama = () => {
       areaSeleccionada && listarCargos(areaSeleccionada.id_area),
     onAreaCreada: (nueva: RES_Area) => setAreas((prev) => [nueva, ...prev]),
     onCargoCreado: (nuevo: RES_Cargo) => setCargos((prev) => [nuevo, ...prev]),
+    handleCambiarEstadoCargo: async (id_cargo: number) => {
+      try {
+        const resp = await OrganigramaService.cambiar_estado_cargo(id_cargo);
+        if (resp.success) {
+          setCargos((prev) =>
+            prev.map((c) =>
+              c.id_cargo === id_cargo
+                ? {
+                    ...c,
+                    estado: c.estado === "Activo" ? "Inactivo" : "Activo",
+                  }
+                : c,
+            ),
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
   };
 };

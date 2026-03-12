@@ -27,14 +27,13 @@ export const OrganigramaPage = () => {
     loadingCargos,
     busquedaAreas,
     setBusquedaAreas,
-    busquedaCargos,
-    setBusquedaCargos,
     areasFiltradas,
     cargosFiltrados,
     areaSeleccionada,
     setAreaSeleccionada,
     onAreaCreada,
     onCargoCreado,
+    handleCambiarEstadoCargo,
   } = useOrganigrama();
 
   const [openedArea, { open: openArea, close: closeArea }] =
@@ -178,19 +177,19 @@ export const OrganigramaPage = () => {
       <ModalEstandar
         opened={openedCargos}
         close={closeCargos}
-        title={`Administración de Cargos - ${areaSeleccionada?.nombre}`}
+        title="Cargos"
         size="lg"
       >
         <ListaCargos
+          areaNombre={areaSeleccionada?.nombre || ""}
           cargos={cargosFiltrados}
           loading={loadingCargos}
-          busqueda={busquedaCargos}
-          setBusqueda={setBusquedaCargos}
           nombre={regCargo.nombre}
           setNombre={regCargo.setNombre}
           loadingGuardar={regCargo.loading}
           onSave={regCargo.handleGuardar}
           error={regCargo.error}
+          onToggleStatus={handleCambiarEstadoCargo}
         />
       </ModalEstandar>
     </div>
