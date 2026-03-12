@@ -1,14 +1,6 @@
 export enum EstadoBase {
   Activo = "Activo",
   Inactivo = "Inactivo",
-  //
-  Activa = "Activa",
-  Inactiva = "Inactiva",
-}
-export enum Premura {
-  Normal = "Normal",
-  Urgente = "Urgente",
-  MuyUrgente = "Muy Urgente",
 }
 
 // Sincronizado con PHP: EstadoRequerimiento

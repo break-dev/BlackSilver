@@ -6,8 +6,8 @@ import type {
   RES_Lote,
   RES_Empleado
 } from "../service/atencion.responses";
-import { useEntregas } from "./useEntregas";
-
+import { AtencionService } from "../service/atencion.service";
+import type { AxiosError } from "axios";
 interface UseRegistrarEntregaProps {
   idRequerimiento: number;
   idRequerimientoDetalle: number;
@@ -33,29 +33,27 @@ export const useRegistrarEntrega = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [empleados, setEmpleados] = useState<{ value: string; label: string }[]>([]);
 
-  const {
-    obtenerDetallesRequerimiento,
-    registrarEntrega,
-    obtenerHistorialEntregas,
-    obtenerEmpleados,
-    obtenerLotesDisponibles,
-  } = useEntregas({ setError });
-
   useEffect(() => {
     let cancelled = false;
     const loadInitialData = async () => {
       setLoading(true);
+      setError("");
       try {
         const [resDetalles, resHistorial, resEmps, resLotes] = await Promise.all([
-          obtenerDetallesRequerimiento(idRequerimiento),
-          obtenerHistorialEntregas(idRequerimientoDetalle),
-          obtenerEmpleados(),
-          obtenerLotesDisponibles(idProducto, idAlmacen),
+          AtencionService.obtenerDetallesRequerimiento(idRequerimiento),
+          AtencionService.obtenerHistorialEntregas(idRequerimientoDetalle),
+          AtencionService.obtenerEmpleados(),
+          AtencionService.obtenerLotesDisponibles(idProducto, idAlmacen),
         ]);
 
         if (cancelled) return;
 
-        const found = (resDetalles || []).find(
+        const dataDetalles = resDetalles.success ? resDetalles.data : [];
+        const dataHistorial = resHistorial.success ? resHistorial.data : [];
+        const dataEmps = resEmps.success ? resEmps.data : [];
+        const dataLotes = resLotes.success ? resLotes.data : [];
+
+        const found = dataDetalles.find(
           (d: RES_DetalleRequerimiento) => d.id_requerimiento_almacen_detalle === idRequerimientoDetalle,
         );
         if (found) {
@@ -65,7 +63,7 @@ export const useRegistrarEntrega = ({
           
           const pendienteBase = cSolicitadaBase - cEntregadaBase;
           
-          const castedLotes = (resLotes || []).map((l: RES_Lote) => ({
+          const castedLotes = dataLotes.map((l: RES_Lote) => ({
             ...l,
             stock_actual: Number(l.stock_actual),
             stock_actual_base: Number(l.stock_actual_base),
@@ -82,9 +80,9 @@ export const useRegistrarEntrega = ({
           });
         }
 
-        setHistorial(resHistorial || []);
+        setHistorial(dataHistorial);
         setEmpleados(
-          (resEmps || []).map((e: RES_Empleado) => ({
+          dataEmps.map((e: RES_Empleado) => ({
             value: e.id_empleado?.toString() || "",
             label: e.nombre_completo,
           })),
@@ -98,7 +96,6 @@ export const useRegistrarEntrega = ({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idRequerimiento, idRequerimientoDetalle, idProducto, idAlmacen]);
 
   const totalEntregaBase = useMemo(() => {
@@ -173,8 +170,9 @@ export const useRegistrarEntrega = ({
     if (detalles.length === 0) return;
 
     setIsProcessing(true);
+    setError("");
     try {
-      const ok = await registrarEntrega({
+      const res = await AtencionService.registrarEntrega({
         id_requerimiento: idRequerimiento,
         id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
@@ -182,7 +180,14 @@ export const useRegistrarEntrega = ({
         detalles,
       });
 
-      if (ok) onSuccess();
+      if (res.success) {
+        onSuccess();
+      } else {
+        setError(res.message || "Error al registrar entrega");
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || "Error de conexión");
     } finally {
       setIsProcessing(false);
     }

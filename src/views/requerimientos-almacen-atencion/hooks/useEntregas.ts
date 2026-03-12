@@ -3,12 +3,7 @@ import type { AxiosError } from "axios";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import type {
-  RES_RequerimientoAlmacen,
-  RES_DetalleRequerimiento,
-  RES_Entrega,
-  RES_Empleado,
-  RES_Lote,
-  RES_Trazabilidad
+  RES_RequerimientoAlmacen
 } from "../service/atencion.responses";
 
 import type {
@@ -16,8 +11,7 @@ import type {
   DTO_RegistrarEntrega,
 } from "../service/atencion.requests";
 import { useDisclosure } from "@mantine/hooks";
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces";
+import { AtencionService } from "../service/atencion.service";
 
 export interface IUseHook {
   setError: (msg: string) => void;
@@ -42,8 +36,6 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const [openedGestion, { open: openGestion, close: closeGestion }] = useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const path = "/requerimientos-atencion";
-
   // Sincronizar error externo si es necesario
   useEffect(() => {
     if (error && externalSetError) externalSetError(error);
@@ -54,12 +46,10 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const obtenerAlmacenesAutorizados = useCallback(async () => {
     setLoadingAlmacenes(true);
     try {
-      const res = await api.get<IRespuesta<{ id_almacen: number; nombre: string }[]>>(
-        `${path}/almacenes-autorizados`
-      );
-      if (res.data.success) {
-        setAlmacenes(res.data.data);
-        return res.data.data;
+      const data = await AtencionService.obtenerAlmacenesAutorizados();
+      if (data.success) {
+        setAlmacenes(data.data);
+        return data.data;
       }
       return [];
     } catch {
@@ -67,127 +57,101 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     } finally {
       setLoadingAlmacenes(false);
     }
-  }, [path]);
+  }, []);
 
   // 0.1 Obtener Empleados para esta vista (quien recibe)
   const obtenerEmpleados = useCallback(async () => {
     try {
-      const res = await api.get<IRespuesta<RES_Empleado[]>>(`${path}/empleados`);
-      if (res.data.success) return res.data.data;
+      const data = await AtencionService.obtenerEmpleados();
+      if (data.success) return data.data;
       return [];
     } catch {
       return [];
     }
-  }, [path]);
+  }, []);
 
   // 2. Cambiar Estado del Detalle (Aprobar/Rechazar)
   const cambiarEstadoDetalle = useCallback(async (dto: DTO_AtencionCambiarEstado) => {
     setError("");
     try {
-      const res = await api.put<IRespuesta<null>>(
-        `${path}/save-decision-detalle`,
-        dto,
-      );
-      if (res.data.success) return true;
-      setError(res.data.message || "Error al cambiar estado");
+      const data = await AtencionService.cambiarEstadoDetalle(dto);
+      if (data.success) return true;
+      setError(data.message || "Error al cambiar estado");
       return false;
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
       setError(axiosError.response?.data?.message || "Error de conexión");
       return false;
     }
-  }, [path]);
+  }, []);
 
   // 3. Obtener Detalles de un Requerimiento
   const obtenerDetallesRequerimiento = useCallback(async (idRequerimiento: number) => {
     setError("");
     try {
-      const res = await api.get<IRespuesta<RES_DetalleRequerimiento[]>>(
-        `${path}/detalles-by-requerimiento`,
-        {
-          params: { id_requerimiento: idRequerimiento },
-        },
-      );
-      if (res.data.success) return res.data.data;
-      setError(res.data.message || "Error al obtener detalles");
+      const data = await AtencionService.obtenerDetallesRequerimiento(idRequerimiento);
+      if (data.success) return data.data;
+      setError(data.message || "Error al obtener detalles");
       return [];
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
       setError(axiosError.response?.data?.message || "Error de conexión");
       return [];
     }
-  }, [path]);
+  }, []);
 
   // 4. Obtener Lotes Disponibles
   const obtenerLotesDisponibles = useCallback(async (idProducto: number, idAlmacen: number) => {
     setError("");
     try {
-      const res = await api.get<IRespuesta<RES_Lote[]>>(
-        `${path}/lotes`,
-        {
-          params: { id_producto: idProducto, id_almacen: idAlmacen },
-        },
-      );
-      if (res.data.success) return res.data.data;
+      const data = await AtencionService.obtenerLotesDisponibles(idProducto, idAlmacen);
+      if (data.success) return data.data;
       return [];
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
       setError(axiosError.response?.data?.message || "Error de conexión");
       return [];
     }
-  }, [path]);
+  }, []);
 
   // 5. Registrar Entrega Física
   const registrarEntrega = useCallback(async (dto: DTO_RegistrarEntrega) => {
     setError("");
     try {
-      const res = await api.post<IRespuesta<null>>(
-        `${path}/save-entrega`,
-        dto,
-      );
-      if (res.data.success) return true;
-      setError(res.data.message || "Error al registrar entrega");
+      const data = await AtencionService.registrarEntrega(dto);
+      if (data.success) return true;
+      setError(data.message || "Error al registrar entrega");
       return false;
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
       setError(axiosError.response?.data?.message || "Error de conexión");
       return false;
     }
-  }, [path]);
+  }, []);
 
   // 6. Historial de Entregas
   const obtenerHistorialEntregas = useCallback(async (idDetalle: number) => {
     setError("");
     try {
-      const res = await api.get<IRespuesta<RES_Entrega[]>>(
-        `${path}/entregas`,
-        {
-          params: { id_requerimiento_almacen_detalle: idDetalle },
-        },
-      );
-      if (res.data.success) return res.data.data;
+      const data = await AtencionService.obtenerHistorialEntregas(idDetalle);
+      if (data.success) return data.data;
       return [];
     } catch {
       return [];
     }
-  }, [path]);
+  }, []);
 
   // 7. Obtener Trazabilidad de un Detalle
   const obtenerTrazabilidad = useCallback(async (idDetalle: number) => {
     setError("");
     try {
-      const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
-        `${path}/trazabilidad`,
-        {
-          params: { id_requerimiento_almacen_detalle: idDetalle },
-        },
-      );
-      if (res.data.success) return res.data.data;
+      const data = await AtencionService.obtenerTrazabilidad(idDetalle);
+      if (data.success) return data.data;
       return [];
     } catch {
       return [];
     }
-  }, [path]);
+  }, []);
 
   // -- Lógica de Carga de Datos --
   const loadData = useCallback(async () => {
@@ -195,14 +159,11 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get<IRespuesta<RES_RequerimientoAlmacen[]>>(
-        `${path}/requerimientos`,
-        { params: { id_almacen: idAlmacen, mes, yearcito } }
-      );
-      if (res.data.success) {
-        setData(res.data.data || []);
+      const dataResp = await AtencionService.obtenerRequerimientos(idAlmacen, mes, yearcito);
+      if (dataResp.success) {
+        setData(dataResp.data || []);
       } else {
-        setError(res.data.message || "Error al obtener requerimientos");
+        setError(dataResp.message || "Error al obtener requerimientos");
       }
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
@@ -229,42 +190,52 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     );
   }, [data, busqueda]);
 
-  return {
-    // Estados
-    idAlmacen,
-    setIdAlmacen,
-    mes,
-    setMes,
-    yearcito,
-    setYearcito,
-    busqueda,
-    setBusqueda,
-    data,
-    filteredRecords,
-    loading,
-    error,
-    setError,
-    
-    // Métodos
-    loadData,
-    cambiarEstadoDetalle,
-    obtenerDetallesRequerimiento,
-    obtenerLotesDisponibles,
-    registrarEntrega,
-    obtenerHistorialEntregas,
-    obtenerTrazabilidad,
-    obtenerAlmacenesAutorizados,
-    obtenerEmpleados,
-    
-    // UI Estados
-    openedGestion,
-    openGestion,
-    closeGestion,
-    selectedId,
-    setSelectedId,
-    
-    // Catálogos
-    almacenes,
-    loadingAlmacenes,
+    // -- Local State Updates --
+    const updateRequirementLocal = useCallback((id: number, newData: Partial<RES_RequerimientoAlmacen>) => {
+      setData((prev) => 
+        prev.map((item) => 
+          item.id_requerimiento === id ? { ...item, ...newData } : item
+        )
+      );
+    }, []);
+
+    return {
+      // Estados
+      idAlmacen,
+      setIdAlmacen,
+      mes,
+      setMes,
+      yearcito,
+      setYearcito,
+      busqueda,
+      setBusqueda,
+      data,
+      filteredRecords,
+      loading,
+      error,
+      setError,
+      
+      // Métodos
+      loadData,
+      cambiarEstadoDetalle,
+      obtenerDetallesRequerimiento,
+      obtenerLotesDisponibles,
+      registrarEntrega,
+      obtenerHistorialEntregas,
+      obtenerTrazabilidad,
+      obtenerAlmacenesAutorizados,
+      obtenerEmpleados,
+      updateRequirementLocal,
+      
+      // UI Estados
+      openedGestion,
+      openGestion,
+      closeGestion,
+      selectedId,
+      setSelectedId,
+      
+      // Catálogos
+      almacenes,
+      loadingAlmacenes,
+    };
   };
-};

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
 import { RequerimientosService } from "../services/requerimientos.service";
 import { Schema_CrearRequerimiento } from "../services/requerimientos.requests";
@@ -72,6 +72,12 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
 
   // 2. Cargar Almacenes y Labores al elegir Mina (Consolidado)
   useEffect(() => {
+    // Siempre limpiamos al cambiar la mina para evitar inconsistencias mientras carga la API
+    setAlmacenes([]);
+    setLabores([]);
+    setIdAlmacenDestino(0);
+    setIdLabores([]);
+
     if (idMina > 0) {
       const loadMinaData = async () => {
         const res = await RequerimientosService.obtenerDataByMina(idMina);
@@ -81,9 +87,6 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
         }
       };
       loadMinaData();
-    } else {
-      setAlmacenes([]);
-      setLabores([]);
     }
   }, [idMina]);
 
@@ -105,6 +108,13 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       setContenido(1);
     }
   }, [sonUnidadesIdenticas]);
+
+  // Filtrar productos que ya están presentes en la lista de detalles
+  const productosFiltrados = useMemo(() => {
+    return productos.filter(
+      (p) => !detalles.some((d) => d.id_producto === p.id_producto),
+    );
+  }, [productos, detalles]);
 
   // Agregar item a la lista
   const agregarItem = useCallback(() => {
@@ -193,6 +203,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       almacenes,
       labores,
       productos,
+      productosFiltrados,
       unidades,
       idMina,
       setIdMina,

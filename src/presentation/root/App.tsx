@@ -31,7 +31,7 @@ import OrganigramaPage from "../../views/organigrama/presentation/organigrama.pa
 import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
 import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
-// import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
+import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 
 export const App = () => {
@@ -104,7 +104,7 @@ export const App = () => {
             />
             <Route path="productos" element={<ProductosPage />} />
             <Route path="lotes" element={<LotesPage />} />
-            {/* <Route path="kardex" element={<KardexProductosPage />} />  */}
+            <Route path="kardex" element={<KardexProductosPage />} />
           </Route>
 
           {/* Requerimientos de Almacen */}

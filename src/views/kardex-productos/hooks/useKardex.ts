@@ -1,57 +1,158 @@
-import { api } from "../../shared/api";
-import type { IRespuesta } from "../../shared/response";
-import type { IUseHook } from "../../shared/hook.interface";
-import type { RES_MovimientoKardex } from "./dtos/responses";
+import { useState, useCallback, useMemo, useEffect } from "react";
+import dayjs from "dayjs";
+import { KardexService } from "../service/kardex.service";
+import type { RES_MovimientoKardex, RES_Almacen } from "../service/kardex.responses";
 
-export const useKardex = ({ setError }: IUseHook) => {
-  // Obtener movimientos de Kardex por Lote
-  const listarPorLote = async (idLote: number) => {
+export const useKardex = () => {
+  // -- Estados de Filtro Principal (Periodo y Almacén) --
+  const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
+  const [mes, setMes] = useState<string>(dayjs().format("M"));
+  const [yearcito, setYearcito] = useState<string>(dayjs().format("YYYY"));
+
+  // -- Estados de Catálogos --
+  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
+  const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
+
+  // -- Estados de Filtros Locales y Búsqueda --
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
+  const [filtroLote, setFiltroLote] = useState<string | null>(null);
+
+  // -- Estado de Datos --
+  const [movimientos, setMovimientos] = useState<RES_MovimientoKardex[]>([]);
+  const [loadingMovimientos, setLoadingMovimientos] = useState(false);
+  const [error, setError] = useState("");
+
+  // 1. Obtener Almacenes Autorizados
+  const loadAlmacenes = useCallback(async () => {
+    setLoadingAlmacenes(true);
     setError("");
     try {
-      const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(
-        `/kardex`,
-        {
-          params: { id_lote: idLote },
-        },
-      );
-      const result = response.data;
-      if (result.success) {
-        return result.data;
+      const res = await KardexService.listarAlmacenes();
+      if (res.success) {
+        setAlmacenes(res.data);
       } else {
-        setError(result.message || "Error al obtener movimientos");
-        return null;
+        setError(res.message || "Error al cargar almacenes");
       }
-    } catch (error) {
-      setError(String(error));
-      return null;
+    } catch {
+      setError("Error de conexión al cargar almacenes");
+    } finally {
+      setLoadingAlmacenes(false);
     }
-  };
+  }, []);
 
-  // Obtener movimientos de todo el almacén
-  const listarPorAlmacen = async (idAlmacen: number) => {
+  // 2. Cargar Movimientos (Kardex)
+  const loadMovimientos = useCallback(async () => {
+    if (!idAlmacen || !mes || !yearcito) {
+      setMovimientos([]);
+      return;
+    }
+
+    setLoadingMovimientos(true);
     setError("");
     try {
-      const response = await api.get<IRespuesta<RES_MovimientoKardex[]>>(
-        `/kardex`,
-        {
-          params: { id_almacen: idAlmacen },
-        },
+      const res = await KardexService.listarPorAlmacen(
+        Number(idAlmacen),
+        Number(mes),
+        Number(yearcito)
       );
-      const result = response.data;
-      if (result.success) {
-        return result.data;
+      if (res.success) {
+        setMovimientos(res.data);
       } else {
-        setError(result.message || "Error al obtener movimientos");
-        return null;
+        setMovimientos([]);
+        setError(res.message || "Error al cargar movimientos");
       }
-    } catch (error) {
-      setError(String(error));
-      return null;
+    } catch {
+      setMovimientos([]);
+      setError("Error de conexión al cargar movimientos");
+    } finally {
+      setLoadingMovimientos(false);
     }
-  };
+  }, [idAlmacen, mes, yearcito]);
+
+  
+  // Cargar almacenes al montar
+  useEffect(() => {
+    loadAlmacenes();
+  }, [loadAlmacenes]);
+
+  // Cargar movimientos al cambiar periodo o almacén
+  useEffect(() => {
+    loadMovimientos();
+  }, [loadMovimientos]);
+
+  // Resetear filtros locales al cambiar almacén
+  useEffect(() => {
+    setFiltroProducto(null);
+    setFiltroLote(null);
+    setBusqueda("");
+  }, [idAlmacen]);
+
+  // -- Lógica de Filtrado y Opciones --
+
+  const productosUnicos = useMemo(() => {
+    const unique = new Set(movimientos.map((m) => m.producto).filter(Boolean));
+    return Array.from(unique)
+      .sort()
+      .map((p) => ({ value: String(p), label: String(p) }));
+  }, [movimientos]);
+
+  const lotesUnicos = useMemo(() => {
+    const source = filtroProducto
+      ? movimientos.filter((m) => m.producto === filtroProducto)
+      : movimientos;
+
+    const unique = new Set(source.map((m) => String(m.correlativo)).filter(Boolean));
+    return Array.from(unique)
+      .sort()
+      .map((l) => ({ value: l, label: l }));
+  }, [movimientos, filtroProducto]);
+
+  const filteredRecords = useMemo(() => {
+    return movimientos.filter((m) => {
+      const matchProducto = !filtroProducto || m.producto === filtroProducto;
+      const matchLote = !filtroLote || String(m.correlativo) === filtroLote;
+
+      const q = busqueda.toLowerCase().trim();
+      const matchBusqueda =
+        !q ||
+        (m.descripcion || "").toLowerCase().includes(q) ||
+        (m.producto || "").toLowerCase().includes(q) ||
+        (String(m.correlativo) || "").toLowerCase().includes(q) ||
+        (m.categoria || "").toLowerCase().includes(q);
+
+      return matchProducto && matchLote && matchBusqueda;
+    });
+  }, [movimientos, busqueda, filtroProducto, filtroLote]);
 
   return {
-    listarPorLote,
-    listarPorAlmacen,
+    // Estados y Setters para la UI
+    idAlmacen,
+    setIdAlmacen,
+    mes,
+    setMes,
+    yearcito,
+    setYearcito,
+    busqueda,
+    setBusqueda,
+    filtroProducto,
+    setFiltroProducto,
+    filtroLote,
+    setFiltroLote,
+    
+    // Datos Procesados
+    movimientos,
+    filteredRecords,
+    almacenes,
+    productosUnicos,
+    lotesUnicos,
+    
+    // Estados de Carga y Error
+    loadingMovimientos,
+    loadingAlmacenes,
+    error,
+    
+    // Métodos Manuales (si se requieren)
+    loadMovimientos,
   };
 };

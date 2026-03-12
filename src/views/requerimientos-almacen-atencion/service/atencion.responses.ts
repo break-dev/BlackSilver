@@ -1,9 +1,9 @@
 import {
     EstadoRequerimiento,
     EstadoDetalleRequerimiento,
-    EstadoVencimiento,
-    Premura
+    EstadoVencimiento
 } from "../../../shared/enums/estados";
+import { Premura } from "../../../shared/enums/otros";
 
 /**
  * Representa un requerimiento en el resumen de atención

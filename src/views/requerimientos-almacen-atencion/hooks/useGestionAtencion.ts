@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
-import { useEntregas } from "./useEntregas";
 import type { RES_DetalleRequerimiento, RES_Trazabilidad } from "../service/atencion.responses";
+import { AtencionService } from "../service/atencion.service";
+import type { AxiosError } from "axios";
 
 interface UseGestionAtencionProps {
   idRequerimiento: number;
@@ -24,32 +25,32 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
   const [openedEntrega, { open: openEntrega, close: closeEntrega }] = useDisclosure(false);
   const [openedRechazo, { open: openRechazo, close: closeRechazo }] = useDisclosure(false);
+  const [openedAprobar, { open: openAprobar, close: closeAprobar }] = useDisclosure(false);
 
   // Selected Data
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
   const [selectedItemSolicitado, setSelectedItemSolicitado] = useState(0);
   const [selectedItemAtendido, setSelectedItemAtendido] = useState(0);
-  const [rechazoMotivo, setRechazoMotivo] = useState("");
+  const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
-
-  const { 
-    cambiarEstadoDetalle, 
-    obtenerTrazabilidad,
-    obtenerDetallesRequerimiento 
-  } = useEntregas({ setError });
 
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
-      const res = await obtenerDetallesRequerimiento(idRequerimiento);
-      if (res) {
-          setDetalle((prev) => ({ ...prev, detalles: res } as DetalleState));
+      const resp = await AtencionService.obtenerDetallesRequerimiento(idRequerimiento);
+      if (resp.success) {
+          setDetalle((prev) => ({ ...prev, detalles: resp.data } as DetalleState));
+      } else {
+          setError(resp.message || "Error al obtener detalles");
       }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || "Error de conexión");
     } finally {
       if (!isSilent) setLoading(false);
     }
-  }, [idRequerimiento, obtenerDetallesRequerimiento]);
+  }, [idRequerimiento]);
 
   useEffect(() => {
     loadData();
@@ -59,49 +60,95 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     if (openedTrace && selectedItemId) {
       const loadTrace = async () => {
         setLoadingTrazabilidad(true);
-        const res = await obtenerTrazabilidad(selectedItemId);
-        setEventos(res || []);
+        try {
+          const res = await AtencionService.obtenerTrazabilidad(selectedItemId);
+          if (res.success) {
+            setEventos(res.data);
+          } else {
+            setEventos([]);
+          }
+        } catch {
+          setEventos([]);
+        }
         setLoadingTrazabilidad(false);
       };
       loadTrace();
     }
-  }, [openedTrace, selectedItemId, obtenerTrazabilidad]);
+  }, [openedTrace, selectedItemId]);
 
-  const handleAprobar = useCallback(async (idDetalle: number) => {
-    setIsProcessing(idDetalle);
+  const handleAprobar = useCallback(async () => {
+    if (!selectedItemId) return;
+    setIsProcessing(selectedItemId);
+    setError("");
     try {
-      const ok = await cambiarEstadoDetalle({
-        id_requerimiento_almacen_detalle: idDetalle,
+      const res = await AtencionService.cambiarEstadoDetalle({
+        id_requerimiento_almacen_detalle: selectedItemId,
         nuevo_estado: EstadoDetalleRequerimiento.Aprobado,
+        comentario_decision: comentarioAccion,
       });
-      if (ok) {
-        await loadData(true);
+      if (res.success) {
+        closeAprobar();
+        const motivo = comentarioAccion;
+        setComentarioAccion("");
+        setDetalle((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                detalles: prev.detalles.map(item => 
+                    item.id_requerimiento_almacen_detalle === selectedItemId 
+                    ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado, comentario_decision: motivo } 
+                    : item
+                )
+            };
+        });
         onSuccess();
+      } else {
+        setError(res.message || "Error al aprobar");
       }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || "Error de conexión");
     } finally {
       setIsProcessing(null);
     }
-  }, [cambiarEstadoDetalle, loadData, onSuccess]);
+  }, [selectedItemId, comentarioAccion, closeAprobar, onSuccess]);
 
   const handleRechazar = useCallback(async () => {
     if (!selectedItemId) return;
     setIsProcessing(selectedItemId);
+    setError("");
     try {
-      const ok = await cambiarEstadoDetalle({
+      const res = await AtencionService.cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: selectedItemId,
         nuevo_estado: EstadoDetalleRequerimiento.Rechazado,
-        comentario_decision: rechazoMotivo,
+        comentario_decision: comentarioAccion,
       });
-      if (ok) {
+      if (res.success) {
         closeRechazo();
-        setRechazoMotivo("");
-        await loadData(true);
+        const motivo = comentarioAccion;
+        setComentarioAccion("");
+        setDetalle((prev) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                detalles: prev.detalles.map(item => 
+                    item.id_requerimiento_almacen_detalle === selectedItemId 
+                    ? { ...item, estado: EstadoDetalleRequerimiento.Rechazado, comentario_decision: motivo } 
+                    : item
+                )
+            };
+        });
         onSuccess();
+      } else {
+        setError(res.message || "Error al rechazar");
       }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || "Error de conexión");
     } finally {
       setIsProcessing(null);
     }
-  }, [selectedItemId, rechazoMotivo, cambiarEstadoDetalle, closeRechazo, loadData, onSuccess]);
+  }, [selectedItemId, comentarioAccion, closeRechazo, onSuccess]);
 
   const getStatusColor = (status: string) => {
     if (status === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) return "blue";
@@ -143,11 +190,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     openedTrace, openTrace, closeTrace,
     openedEntrega, openEntrega, closeEntrega,
     openedRechazo, openRechazo, closeRechazo,
+    openedAprobar, openAprobar, closeAprobar,
     selectedItemId, setSelectedItemId,
     selectedItemName, setSelectedItemName,
     selectedItemSolicitado, setSelectedItemSolicitado,
     selectedItemAtendido, setSelectedItemAtendido,
-    rechazoMotivo, setRechazoMotivo,
+    comentarioAccion, setComentarioAccion,
     isProcessing,
     progresoGeneral,
     handleAprobar,
