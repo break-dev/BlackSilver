@@ -1,9 +1,6 @@
 export enum EstadoBase {
   Activo = "Activo",
   Inactivo = "Inactivo",
-  //
-  Activa = "Activa",
-  Inactiva = "Inactiva",
 }
 export enum Premura {
   Normal = "Normal",
