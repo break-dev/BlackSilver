@@ -1,8 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
-import type { RES_DetalleRequerimiento, RES_Trazabilidad } from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
+import type { 
+  RES_Trazabilidad,
+  DetalleRequerimientoExtendido 
+} from "../service/atencion.responses";
 import type { AxiosError } from "axios";
 
 interface UseGestionAtencionProps {
@@ -10,37 +13,49 @@ interface UseGestionAtencionProps {
   onSuccess: () => void;
 }
 
-interface DetalleState {
-  detalles: RES_DetalleRequerimiento[];
-}
-
 export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAtencionProps) => {
   const [loading, setLoading] = useState(true);
-  const [detalle, setDetalle] = useState<DetalleState | null>(null);
+  const [detalles, setDetalles] = useState<DetalleRequerimientoExtendido[]>([]);
   const [error, setError] = useState("");
   const [eventos, setEventos] = useState<RES_Trazabilidad[]>([]);
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   // Modal Control
   const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
-  const [openedEntrega, { open: openEntrega, close: closeEntrega }] = useDisclosure(false);
   const [openedRechazo, { open: openRechazo, close: closeRechazo }] = useDisclosure(false);
   const [openedAprobar, { open: openAprobar, close: closeAprobar }] = useDisclosure(false);
+  const [openedEntregaBatch, { open: openEntregaBatch, close: closeEntregaBatch }] = useDisclosure(false);
+  const [openedHistorialGlobal, { open: openHistorialGlobal, close: closeHistorialGlobal }] = useDisclosure(false);
 
   // Selected Data
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
-  const [selectedItemSolicitado, setSelectedItemSolicitado] = useState(0);
-  const [selectedItemAtendido, setSelectedItemAtendido] = useState(0);
   const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
+
+  // Batch Selection
+  const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
+
+  const toggleItemSelection = useCallback((id: number) => {
+    setSelectedItemsIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  }, []);
+
+  const deselectAllItems = useCallback(() => {
+    setSelectedItemsIds([]);
+  }, []);
 
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
       const resp = await AtencionService.obtenerDetallesRequerimiento(idRequerimiento);
       if (resp.success) {
-          setDetalle((prev) => ({ ...prev, detalles: resp.data } as DetalleState));
+          setDetalles(resp.data.map(d => ({
+              ...d,
+              pendiente_base: d.cantidad_solicitada_base - d.cantidad_entregada_base,
+              equivReq: d.cantidad_solicitada > 0 ? d.cantidad_solicitada_base / d.cantidad_solicitada : 1
+          })));
       } else {
           setError(resp.message || "Error al obtener detalles");
       }
@@ -90,17 +105,13 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
         closeAprobar();
         const motivo = comentarioAccion;
         setComentarioAccion("");
-        setDetalle((prev) => {
-            if (!prev) return prev;
-            return {
-                ...prev,
-                detalles: prev.detalles.map(item => 
-                    item.id_requerimiento_almacen_detalle === selectedItemId 
-                    ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado, comentario_decision: motivo } 
-                    : item
-                )
-            };
-        });
+        setDetalles((prev) => 
+            prev.map(item => 
+                item.id_requerimiento_almacen_detalle === selectedItemId 
+                ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado, comentario_decision: motivo } 
+                : item
+            )
+        );
         onSuccess();
       } else {
         setError(res.message || "Error al aprobar");
@@ -127,17 +138,13 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
         closeRechazo();
         const motivo = comentarioAccion;
         setComentarioAccion("");
-        setDetalle((prev) => {
-            if (!prev) return prev;
-            return {
-                ...prev,
-                detalles: prev.detalles.map(item => 
-                    item.id_requerimiento_almacen_detalle === selectedItemId 
-                    ? { ...item, estado: EstadoDetalleRequerimiento.Rechazado, comentario_decision: motivo } 
-                    : item
-                )
-            };
-        });
+        setDetalles((prev) => 
+            prev.map(item => 
+                item.id_requerimiento_almacen_detalle === selectedItemId 
+                ? { ...item, estado: EstadoDetalleRequerimiento.Rechazado, comentario_decision: motivo } 
+                : item
+            )
+        );
         onSuccess();
       } else {
         setError(res.message || "Error al rechazar");
@@ -161,15 +168,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   };
 
   const progresoGeneral = useMemo(() => {
-    if (!detalle || !detalle.detalles || detalle.detalles.length === 0) return 0;
+    if (detalles.length === 0) return 0;
 
-    // Solo promediamos los productos que están "Aprobados" o en un estado posterior (hasta completado)
-    // No contamos los "Rechazados" o "Anulados" en el promedio de atención si el usuario lo prefiere así,
-    // pero usualmente se promedia lo que es "atendible".
-    const itemsAtendibles = detalle.detalles.filter(item => 
+    const itemsAtendibles = detalles.filter(item => 
       item.estado !== EstadoDetalleRequerimiento.Rechazado.toString() &&
       item.estado !== EstadoDetalleRequerimiento.EsperandoAprobacion.toString() &&
-      (item.estado as string) !== "Anulado" // Por si acaso
+      (item.estado as string) !== "Anulado"
     );
 
     if (itemsAtendibles.length === 0) return 0;
@@ -179,22 +183,22 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     }, 0);
 
     return Math.round(sumaProgreso / itemsAtendibles.length);
-  }, [detalle]);
+  }, [detalles]);
 
   return {
     loading,
-    detalle,
+    detalles,
     error,
     eventos,
     loadingTrazabilidad,
     openedTrace, openTrace, closeTrace,
-    openedEntrega, openEntrega, closeEntrega,
     openedRechazo, openRechazo, closeRechazo,
     openedAprobar, openAprobar, closeAprobar,
+    openedEntregaBatch, openEntregaBatch, closeEntregaBatch,
+    openedHistorialGlobal, openHistorialGlobal, closeHistorialGlobal,
     selectedItemId, setSelectedItemId,
     selectedItemName, setSelectedItemName,
-    selectedItemSolicitado, setSelectedItemSolicitado,
-    selectedItemAtendido, setSelectedItemAtendido,
+    selectedItemsIds, toggleItemSelection, deselectAllItems,
     comentarioAccion, setComentarioAccion,
     isProcessing,
     progresoGeneral,

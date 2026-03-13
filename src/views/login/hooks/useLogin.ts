@@ -4,8 +4,10 @@ import { useAuthStore } from "../../../stores/auth.store";
 import { LoginService } from "../service/login.service";
 import { Schema_Login } from "../service/login.requests";
 import { Wallpapers } from "../../../presentation/assets/imports";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 
 export const useLogin = () => {
+  useTitlePage("Inicio de Sesión");
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");

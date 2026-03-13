@@ -13,60 +13,52 @@ import {
 } from "@mantine/core";
 import {
   ClipboardDocumentCheckIcon,
-  BarsArrowDownIcon,
-  ClockIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import { BlackcitoLogo } from "../../../presentation/assets/imports";
-import { useRegistrarEntrega } from "../hooks/useRegistrarEntrega";
-
-export interface IUseHook {
-  setError: (msg: string) => void;
-}
+import { useRegistrarEntregaBatch } from "../hooks/useRegistrarEntrega";
+import type {
+  RES_DetalleRequerimiento,
+  DetalleRequerimientoExtendido,
+} from "../service/atencion.responses";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
-  idRequerimientoDetalle: number;
-  idProducto: number;
   idAlmacen: number;
-  productoNombre: string;
-  cantidadSolicitada: number;
-  cantidadAtendida: number;
+  selectedItemsIds: number[];
+  detallesRequerimiento: RES_DetalleRequerimiento[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export const RegistrarEntrega = ({
   idRequerimiento,
-  idRequerimientoDetalle,
-  idProducto,
   idAlmacen,
+  selectedItemsIds,
+  detallesRequerimiento,
   onSuccess,
   onCancel,
 }: RegistrarEntregaProps) => {
   const {
     loading,
-    itemData,
-    historial,
+    selectedDetalles,
+    lotesPorProducto,
     entregaCantidades,
+    empleados,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     error,
     isProcessing,
-    empleados,
-    totalEntregaBase,
-    equivReq,
-    stockDisponibleBase,
+    totalEntregaGeneralBase,
     handleCantChange,
     handleConfirmar,
-  } = useRegistrarEntrega({
+  } = useRegistrarEntregaBatch({
     idRequerimiento,
-    idRequerimientoDetalle,
-    idProducto,
     idAlmacen,
+    selectedItemsIds,
+    detallesRequerimiento,
     onSuccess,
   });
 
@@ -76,520 +68,401 @@ export const RegistrarEntrega = ({
         <Loader color="indigo" size="lg" />
       </div>
     );
-  if (!itemData) return <Text c="red">Error al cargar datos del ítem</Text>;
+
+  if (selectedDetalles.length === 0)
+    return <Text c="red">No hay ítems seleccionados o válidos.</Text>;
 
   return (
     <Stack gap="lg" className="font-sans">
-      {/* 1. CABECERA: PRODUCTO Y MÉTRICAS (Estilo Refinado) */}
+      {/* 1. SELECCIÓN RECEPTOR Y OBSERVACIÓN */}
       <Paper
-        p="lg"
+        p="md"
         radius="lg"
-        className="bg-zinc-900/40 border border-zinc-800 shadow-sm overflow-hidden relative"
+        className="bg-zinc-900/40 border border-zinc-800 shadow-sm"
       >
-        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <Group gap="md">
-            <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-              <CubeIcon className="w-6 h-6 text-indigo-400" />
-            </div>
-            <div>
-              <Text
-                size="xs"
-                c="indigo.4"
-                fw={800}
-                className="uppercase tracking-widest mb-0.5 opacity-80"
-              >
-                Producto Solicitado
-              </Text>
-              <Text
-                size="xl"
-                fw={900}
-                className="text-white leading-tight mb-1"
-              >
-                {itemData.producto}
-              </Text>
-              <Group gap="xs">
-                <Text size="sm" fw={800} c="indigo.3">
-                  {Number(itemData.cantidad_solicitada).toFixed(2)}{" "}
-                  {itemData.unidad_medida}
-                </Text>
-                <Text size="xs" c="zinc-5" fw={700}>
-                  Equivale a:
-                </Text>
-                <Text size="xs" c="zinc.3" fw={800}>
-                  {Number(itemData.cantidad_solicitada_base).toFixed(2)}{" "}
-                  {itemData.unidad_medida_base}
-                </Text>
-                <Text size="10px" c="zinc.6" fw={700} className="italic">
-                  ({Number(equivReq).toFixed(2)} {itemData.unidad_medida_base}/
-                  {itemData.unidad_medida})
-                </Text>
-              </Group>
-            </div>
-          </Group>
-
-          <div className="flex gap-2">
-            <div className="text-right px-5 py-1.5 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
-              <Text
-                size="9px"
-                c="green.5"
-                fw={900}
-                className="uppercase tracking-widest mb-1"
-              >
-                Stock Disp.
-              </Text>
-              <Group gap={4} justify="flex-end" align="baseline">
-                <Text
-                  size="lg"
-                  fw={900}
-                  className="text-green-500 font-mono leading-none"
-                >
-                  {Number(stockDisponibleBase).toFixed(2)}
-                </Text>
-                <Text size="10px" fw={800} c="zinc.5" className="uppercase">
-                  {itemData.unidad_medida_base}
-                </Text>
-              </Group>
-            </div>
-            <div className="text-right px-5 py-1.5 bg-pink-500/5 rounded-xl border border-pink-500/10">
-              <Text
-                size="9px"
-                c="pink.5"
-                fw={900}
-                className="uppercase tracking-widest mb-1"
-              >
-                Pendiente
-              </Text>
-              <Group gap={4} justify="flex-end" align="baseline">
-                <Text
-                  size="lg"
-                  fw={900}
-                  className="text-pink-500 font-mono leading-none"
-                >
-                  {Number(itemData.pendiente_base || 0).toFixed(2)}
-                </Text>
-                <Text size="10px" fw={800} c="zinc.5" className="uppercase">
-                  {itemData.unidad_medida_base}
-                </Text>
-              </Group>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select
+            label="¿Quién recibe los materiales?"
+            placeholder="Buscar por Nombre"
+            data={empleados}
+            searchable
+            required
+            withAsterisk
+            value={idEmpleadoRecibe}
+            onChange={setIdEmpleadoRecibe}
+            size="sm"
+            radius="lg"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-300 mb-1 font-medium text-sm",
+            }}
+          />
+          <Textarea
+            label="Observación"
+            placeholder="Escriba detalles adicionales si es necesario..."
+            value={observacion}
+            onChange={(e) => setObservacion(e.currentTarget.value)}
+            size="sm"
+            radius="lg"
+            minRows={1}
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 py-2",
+              label: "text-zinc-300 mb-1 font-medium text-sm",
+            }}
+          />
         </div>
       </Paper>
 
-      {/* 2. FORMULARIO SELECCIÓN RECEPTOR */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-1">
-        <Select
-          label="¿Quién recibe el material?"
-          placeholder="Buscar por Nombre"
-          data={empleados}
-          searchable
-          required
-          withAsterisk
-          value={idEmpleadoRecibe}
-          onChange={setIdEmpleadoRecibe}
-          size="sm"
-          radius="lg"
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            label: "text-zinc-300 mb-1 font-medium text-sm",
-          }}
-        />
-        <Textarea
-          label="Observación de la Entrega"
-          placeholder="Escriba detalles adicionales si es necesario..."
-          value={observacion}
-          onChange={(e) => setObservacion(e.currentTarget.value)}
-          size="sm"
-          radius="lg"
-          minRows={1}
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 py-2",
-            label: "text-zinc-300 mb-1 font-medium text-sm",
-          }}
-        />
-      </div>
+      {/* 2. PRODUCTOS Y LOTES */}
+      <Stack gap="xl">
+        {selectedDetalles.map((detalle_req: DetalleRequerimientoExtendido) => {
+          const lotes = lotesPorProducto[detalle_req.id_producto] || [];
+          const pendienteBase = Number(
+            detalle_req.cantidad_solicitada_base -
+              detalle_req.cantidad_entregada_base || 0,
+          );
 
-      {/* 4. TABLA DE LOTES (Ajustada al estilo ordenado) */}
-      <div className="space-y-4">
-        <Group gap="xs" px={4} align="center">
-          <BarsArrowDownIcon className="w-5 h-5 text-indigo-400" />
-          <Text
-            fw={900}
-            size="sm"
-            className="text-white uppercase tracking-widest"
-          >
-            Lotes Disponibles para Entrega
-          </Text>
-        </Group>
+          const tEntregadoProductoActualBase = lotes.reduce(
+            (acc, l) => acc + (entregaCantidades[l.id_lote] || 0),
+            0,
+          );
 
-        <div className="overflow-hidden border border-zinc-800 rounded-3xl bg-zinc-950/40 shadow-2xl">
-          <Table
-            verticalSpacing="lg"
-            horizontalSpacing="xl"
-            className="border-collapse"
-          >
-            <thead className="bg-zinc-900/80 text-zinc-400 text-[11px] font-bold border-b border-zinc-800">
-              <tr>
-                <th className="py-4 pl-8" style={{ width: "18%" }}>
-                  Cód. Lote
-                </th>
-                <th className="text-left" style={{ width: "18%" }}>
-                  Vencimiento
-                </th>
-                <th className="text-right" style={{ width: "22%" }}>
-                  Stock Disponible
-                </th>
-                <th className="text-center w-40">Cant. a Despachar</th>
-                <th className="text-right pr-8" style={{ width: "18%" }}>
-                  Nuevo Saldo
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/50">
-              {!itemData.lotes || itemData.lotes.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="py-20 text-center text-zinc-600 italic"
+          return (
+            <Paper
+              key={detalle_req.id_requerimiento_almacen_detalle}
+              p="lg"
+              radius="lg"
+              className={`border transition-all overflow-hidden relative shadow-sm hover:shadow-md ${tEntregadoProductoActualBase > 0 ? "bg-indigo-900/10 border-indigo-500/30" : "bg-zinc-900/40 border-zinc-800"}`}
+            >
+              <div
+                className={`absolute top-0 left-0 w-1 h-full ${tEntregadoProductoActualBase > 0 ? "bg-indigo-500" : "bg-zinc-700"}`}
+              />
+
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <Group gap="md">
+                  <div
+                    className={`p-3 rounded-xl border ${tEntregadoProductoActualBase > 0 ? "bg-indigo-500/20 border-indigo-500/20" : "bg-zinc-800/50 border-zinc-700/30"}`}
                   >
-                    No hay lotes con stock disponible en este almacén.
-                  </td>
-                </tr>
-              ) : (
-                itemData.lotes.map((lote) => {
-                  const idLoteProd = lote.id_lote!; // Assert as mapped
-                  const cant = entregaCantidades[idLoteProd] || 0;
-                  const saldo = (lote.stock_actual_base || 0) - cant;
-                  const equivLote =
-                    Number(lote.contenido_por_presentacion) || 1;
-
-                  // Cálculo de vencimiento
-                  const fechaVenc = lote.fecha_vencimiento
-                    ? dayjs(lote.fecha_vencimiento)
-                    : null;
-                  const hoy = dayjs().startOf("day");
-                  const diasRestantes = fechaVenc
-                    ? fechaVenc.diff(hoy, "day")
-                    : null;
-                  const esCritico =
-                    diasRestantes !== null && diasRestantes <= 5; // Valor por defecto o configurable
-                  const esVencido = diasRestantes !== null && diasRestantes < 0;
-
-                  return (
-                    <tr
-                      key={lote.id_lote}
-                      className="hover:bg-zinc-900/40 transition-all group border-b border-zinc-800/30"
+                    <CubeIcon
+                      className={`w-5 h-5 ${tEntregadoProductoActualBase > 0 ? "text-indigo-400" : "text-zinc-400"}`}
+                    />
+                  </div>
+                  <div>
+                    <Text
+                      size="md"
+                      fw={900}
+                      className="text-white leading-tight mb-1"
                     >
-                      <td className="py-5 pl-8 text-left">
-                        <Badge
-                          variant="light"
-                          color="violet"
-                          radius="sm"
-                          size="sm"
-                          className="font-black"
-                        >
-                          {lote.correlativo}
-                        </Badge>
-                      </td>
-                      <td className="text-left">
-                        {lote.fecha_vencimiento ? (
-                          <div className="flex flex-col gap-1">
-                            <Text
-                              size="11px"
-                              fw={800}
-                              className="text-zinc-200"
-                            >
-                              {dayjs(lote.fecha_vencimiento).format(
-                                "DD/MM/YYYY",
-                              )}
-                            </Text>
-                            <Badge
-                              variant="dot"
-                              size="xs"
-                              color={
-                                esVencido
-                                  ? "red"
-                                  : esCritico
-                                    ? "orange"
-                                    : "teal"
-                              }
-                              className="px-0 font-bold"
-                            >
-                              {esVencido
-                                ? "Vencido"
-                                : `${diasRestantes} días por vencer`}
-                            </Badge>
-                          </div>
-                        ) : (
-                          <Text
-                            size="11px"
-                            fw={700}
-                            c="zinc.7"
-                            className="italic"
-                          >
-                            No aplica
-                          </Text>
-                        )}
-                      </td>
-                      <td className="text-right">
-                        <div className="flex flex-col gap-1.5 items-end">
-                          <Group gap="xs" wrap="nowrap" justify="flex-end">
-                            <Badge
-                              variant="filled"
-                              color="cyan"
-                              radius="sm"
-                              size="sm"
-                              className="text-white fw-bold shadow-xs"
-                            >
-                              {Number(lote.stock_actual).toFixed(2)}{" "}
-                              {lote.unidad_medida}
-                            </Badge>
-                            <div className="w-px h-8 bg-zinc-800" />
-                            <Badge
-                              variant="filled"
-                              color="pink"
-                              radius="sm"
-                              size="sm"
-                              className="text-white fw-bold shadow-xs"
-                            >
-                              {Number(lote.stock_actual_base).toFixed(2)}{" "}
-                              {itemData.unidad_medida_base}
-                            </Badge>
-                          </Group>
-                          <Text
-                            size="10px"
-                            fw={700}
-                            c="zinc.5"
-                            className="italic opacity-80 mr-1"
-                          >
-                            ({Number(equivLote).toFixed(2)}{" "}
-                            {itemData.unidad_medida_base}/{lote.unidad_medida})
-                          </Text>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <div className="flex justify-center">
-                          <NumberInput
-                            size="sm"
-                            radius="md"
-                            min={0}
-                            max={lote.stock_actual_base}
-                            value={cant}
-                            onChange={(val) =>
-                              handleCantChange(lote.id_lote, Number(val))
-                            }
-                            placeholder="0.00"
-                            className="w-32"
-                            classNames={{
-                              input:
-                                "bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-white text-center font-black text-sm h-10 shadow-sm",
-                            }}
-                          />
-                        </div>
-                      </td>
-                      <td className="text-right pr-8">
-                        <div className="flex flex-col items-end">
-                          <Text
-                            size="lg"
-                            fw={900}
-                            c={saldo < 0 ? "red.5" : "white"}
-                            className="font-mono tracking-tighter leading-none"
-                          >
-                            {Number(saldo).toFixed(2)}
-                          </Text>
-                          <Text
-                            size="10px"
-                            fw={800}
-                            c="zinc.5"
-                            className="font-bold opacity-80"
-                          >
-                            {itemData.unidad_medida_base}
-                          </Text>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </Table>
-        </div>
-      </div>
-
-      {/* MENSAJE INFORMATIVO (BlackcitoLogo) */}
-      <div className="bg-indigo-500/5 p-5 rounded-2xl border border-indigo-500/10 flex gap-6 items-center">
-        <img
-          src={BlackcitoLogo}
-          alt="Blackcito"
-          className="w-14 h-14 animate-bounce object-contain"
-        />
-        <Text size="sm" c="zinc.3" fw={600} className="leading-relaxed italic">
-          Al confirmar, se descontará el stock de los lotes seleccionados y se
-          registrará el movimiento en el Kardex.
-        </Text>
-      </div>
-
-      {/* 5. HISTORIAL DE ENTREGAS (Rediseño) */}
-      <div className="space-y-4">
-        <Group gap="xs" px={4} align="center">
-          <ClockIcon className="w-5 h-5 text-zinc-500" />
-          <Text fw={900} size="sm" className="text-zinc-400">
-            Historial de Entregas
-          </Text>
-        </Group>
-
-        <div className="overflow-hidden border border-zinc-800 rounded-3xl bg-zinc-950/20 max-h-64 overflow-y-auto shadow-sm">
-          <Table
-            verticalSpacing="md"
-            horizontalSpacing="xl"
-            className="border-collapse"
-          >
-            <thead className="bg-zinc-900/50 text-zinc-400 text-[11px] font-bold border-b border-zinc-800">
-              <tr>
-                <th className="py-4 pl-8" style={{ width: "18%" }}>
-                  Cod. Entrega
-                </th>
-                <th className="text-left" style={{ width: "18%" }}>
-                  Fecha
-                </th>
-                <th className="text-left">Entregado a</th>
-                <th className="text-right" style={{ width: "20%" }}>
-                  Cantidad ({itemData.unidad_medida_base})
-                </th>
-                <th className="text-center" style={{ width: "12%" }}>
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/20">
-              {historial.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="py-12 text-center text-zinc-700 italic text-sm"
-                  >
-                    No registra entregas previas para este ítem.
-                  </td>
-                </tr>
-              ) : (
-                historial.map((h) => (
-                  <tr
-                    key={h.id_requerimiento_almacen_entrega}
-                    className="text-zinc-400 hover:bg-zinc-900/40 transition-all group"
-                  >
-                    <td className="py-4 pl-8">
-                      <Badge
-                        variant="light"
-                        color="violet"
-                        radius="sm"
-                        size="sm"
-                        className="font-black"
-                      >
-                        {h.correlativo}
-                      </Badge>
-                    </td>
-                    <td className="text-left">
-                      <div className="flex flex-col">
-                        <Text size="11px" fw={700} className="text-zinc-300">
-                          {dayjs(h.fecha_hora_entrega * 1000).format(
-                            "DD/MM/YYYY",
-                          )}
-                        </Text>
-                        <Text
-                          size="10px"
-                          fw={600}
-                          c="zinc.6"
-                          className="uppercase"
-                        >
-                          {dayjs(h.fecha_hora_entrega * 1000).format("HH:mm A")}
-                        </Text>
-                      </div>
-                    </td>
-                    <td>
-                      <Text size="sm" fw={700} className="text-zinc-300">
-                        {h.empleado_recibe}
+                      {detalle_req.producto}
+                    </Text>
+                    <Group gap="xs">
+                      <Text size="sm" fw={800} c="zinc.3">
+                        {Number(detalle_req.cantidad_solicitada).toFixed(2)}{" "}
+                        {detalle_req.unidad_medida_base_abv}
                       </Text>
-                    </td>
-                    <td className="text-right pr-6">
-                      <div className="flex flex-col items-end">
-                        <Text
-                          size="md"
-                          fw={900}
-                          className="text-emerald-500 font-mono tracking-tighter leading-none"
-                        >
-                          +{Number(h.cantidad).toFixed(2)}
-                        </Text>
+                      {detalle_req.unidad_medida_abv !==
+                        detalle_req.unidad_medida_base_abv && (
                         <Text
                           size="10px"
-                          fw={800}
-                          c="zinc.6"
-                          className="font-bold opacity-80"
+                          c="zinc.5"
+                          fw={700}
+                          className="italic"
                         >
-                          {itemData.unidad_medida_base}
+                          (Eqv:{" "}
+                          {Number(detalle_req.cantidad_solicitada_base).toFixed(
+                            2,
+                          )}{" "}
+                          {detalle_req.unidad_medida_base_abv})
                         </Text>
-                      </div>
-                    </td>
-                    <td className="text-center">
-                      <Button
-                        variant="subtle"
-                        size="compact-xs"
-                        color="zinc"
-                        radius="md"
-                        className="font-bold text-[10px] hover:bg-zinc-800 text-zinc-500"
-                      >
-                        Ver detalle
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </div>
-      </div>
+                      )}
+                      <Text size="10px" c="zinc.5" fw={700} className="italic">
+                        (Stock minimo:{" "}
+                        {Number(detalle_req.stock_minimo).toFixed(2)}{" "}
+                        {detalle_req.unidad_medida_base_abv})
+                      </Text>
+                    </Group>
+                  </div>
+                </Group>
 
-      {/* 6. PIE DE FORMULARIO */}
+                <div className="flex gap-2">
+                  <div className="text-right px-4 py-1.5 bg-pink-500/5 rounded-xl border border-pink-500/10">
+                    <Text
+                      size="9px"
+                      c="pink.5"
+                      fw={900}
+                      className="uppercase tracking-widest mb-1"
+                    >
+                      Pendiente
+                    </Text>
+                    <Group gap={4} justify="flex-end" align="baseline">
+                      <Text
+                        size="md"
+                        fw={900}
+                        className="text-pink-500 font-mono leading-none"
+                      >
+                        {pendienteBase.toFixed(2)}
+                      </Text>
+                      <Text
+                        size="9px"
+                        fw={800}
+                        c="zinc.5"
+                        className="uppercase"
+                      >
+                        {detalle_req.unidad_medida_base_abv}
+                      </Text>
+                    </Group>
+                  </div>
+                  <div
+                    className={`text-right px-4 py-1.5 rounded-xl border ${tEntregadoProductoActualBase > 0 ? "bg-indigo-500/10 border-indigo-500/30" : "bg-zinc-800/20 border-zinc-800"}`}
+                  >
+                    <Text
+                      size="9px"
+                      c={
+                        tEntregadoProductoActualBase > 0 ? "indigo.3" : "zinc.5"
+                      }
+                      fw={900}
+                      className="uppercase tracking-widest mb-1"
+                    >
+                      A Entregar
+                    </Text>
+                    <Group gap={4} justify="flex-end" align="baseline">
+                      <Text
+                        size="md"
+                        fw={900}
+                        className={`font-mono leading-none ${tEntregadoProductoActualBase > 0 ? "text-indigo-400" : "text-zinc-500"}`}
+                      >
+                        {tEntregadoProductoActualBase.toFixed(2)}
+                      </Text>
+                      <Text
+                        size="9px"
+                        fw={800}
+                        c="zinc.5"
+                        className="uppercase"
+                      >
+                        {detalle_req.unidad_medida_base_abv}
+                      </Text>
+                    </Group>
+                  </div>
+                </div>
+              </div>
+
+              {/* Lotes Table */}
+              <div className="overflow-hidden border border-zinc-800/50 rounded-xl bg-zinc-950/40">
+                <Table
+                  verticalSpacing="sm"
+                  horizontalSpacing="md"
+                  className="border-collapse"
+                >
+                  <thead className="bg-zinc-900/60 text-zinc-400 text-xs font-bold border-b border-zinc-800/50">
+                    <tr>
+                      <th className="py-3 pl-6" style={{ width: "25%" }}>
+                        Lote
+                      </th>
+                      <th className="" style={{ width: "20%" }}>
+                        Vencimiento
+                      </th>
+                      <th className="" style={{ width: "25%" }}>
+                        Stock Disponible
+                      </th>
+                      <th className="pr-6 text-right" style={{ width: "30%" }}>
+                        Cant. a Despachar
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/30">
+                    {lotes.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="py-6 text-center text-zinc-600 italic text-xs"
+                        >
+                          No hay lotes con stock disponible para este producto.
+                        </td>
+                      </tr>
+                    ) : (
+                      lotes.map((lote) => {
+                        const cant = entregaCantidades[lote.id_lote] || 0;
+                        const esCritico =
+                          lote.dias_para_vencer !== null &&
+                          lote.dias_para_vencer <= 5;
+                        const esVencido =
+                          lote.dias_para_vencer !== null &&
+                          lote.dias_para_vencer < 0;
+
+                        return (
+                          <tr
+                            key={lote.id_lote}
+                            className={`${cant > 0 ? "bg-indigo-950/20" : "hover:bg-zinc-900/30"} transition-all`}
+                          >
+                            <td className="py-3 pl-6 text-center">
+                              <Badge
+                                variant="light"
+                                color={cant > 0 ? "indigo" : "violet"}
+                                radius="sm"
+                                size="sm"
+                                className="font-black"
+                              >
+                                {lote.correlativo}
+                              </Badge>
+                            </td>
+                            <td className="text-center">
+                              {lote.fecha_vencimiento ? (
+                                <div className="flex flex-col gap-0.5">
+                                  <Text
+                                    size="10px"
+                                    fw={800}
+                                    className="text-zinc-300"
+                                  >
+                                    {dayjs(lote.fecha_vencimiento).format(
+                                      "DD/MM/YYYY",
+                                    )}
+                                  </Text>
+                                  <Badge
+                                    variant="dot"
+                                    size="xs"
+                                    color={
+                                      esVencido
+                                        ? "red"
+                                        : esCritico
+                                          ? "orange"
+                                          : "teal"
+                                    }
+                                    className="px-0 font-bold scale-90 origin-left"
+                                  >
+                                    {esVencido
+                                      ? "Vencido"
+                                      : `${lote.dias_para_vencer} d.`}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <Text
+                                  size="10px"
+                                  fw={700}
+                                  c="zinc.7"
+                                  className="italic"
+                                >
+                                  No aplica
+                                </Text>
+                              )}
+                            </td>
+                            <td className="text-center flex flex-row gap-2 py-2 justify-center">
+                              {lote.unidad_medida_abv !==
+                                detalle_req.unidad_medida_base_abv && (
+                                <Text
+                                  size="sm"
+                                  fw={800}
+                                  className="text-green-500/80 font-mono"
+                                  component="div"
+                                >
+                                  <div className="flex flex-row items-center justify-center gap-1.5">
+                                    <Badge
+                                      variant="filled"
+                                      color="teal.9"
+                                      radius="md"
+                                      className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
+                                    >
+                                      {lote.stock_actual}{" "}
+                                      {lote.unidad_medida_abv}
+                                    </Badge>
+
+                                    <div className="flex items-center gap-1 mt-1 px-1">
+                                      {/* Verificamos que las unidades sean distintas antes de renderizar el texto */}
+
+                                      <Text size="10px" c="white" fw={800}>
+                                        {lote.contenido_por_presentacion}
+                                        {
+                                          detalle_req.unidad_medida_base_abv
+                                        } x {lote.unidad_medida_abv}
+                                      </Text>
+                                    </div>
+                                  </div>
+                                </Text>
+                              )}
+
+                              <div className="flex flex-row items-center justify-center gap-1.5">
+                                <Badge
+                                  variant="light"
+                                  color="pink.6"
+                                  radius="md"
+                                  className="font-bold h-7 px-3 border border-pink-500/20"
+                                >
+                                  {lote.stock_actual_base}{" "}
+                                  {detalle_req.unidad_medida_base_abv}
+                                </Badge>
+                              </div>
+                            </td>
+                            <td className="text-center pr-6">
+                              <NumberInput
+                                size="xs"
+                                radius="md"
+                                min={0}
+                                max={lote.stock_actual_base}
+                                value={cant}
+                                onChange={(val) =>
+                                  handleCantChange(
+                                    lote.id_lote,
+                                    detalle_req.id_producto,
+                                    Number(val),
+                                  )
+                                }
+                                placeholder="0.00"
+                                className="w-28 ml-auto"
+                                classNames={{
+                                  input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-center font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"}`,
+                                }}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </Table>
+              </div>
+            </Paper>
+          );
+        })}
+      </Stack>
+
+      {/* 3. PIE DE FORMULARIO */}
       <Group
         justify="flex-end"
         gap="md"
-        className="pt-8 border-t border-zinc-800 mt-4"
+        className="pt-6 border-t border-zinc-800 mt-2"
       >
         <Button
           variant="subtle"
           radius="lg"
-          size="md"
+          size="sm"
           onClick={onCancel}
           className="text-zinc-400 hover:text-white px-8 font-bold"
         >
           Cancelar
         </Button>
         <Button
-          size="md"
+          size="sm"
           radius="lg"
           leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
           disabled={
-            !idEmpleadoRecibe ||
-            totalEntregaBase <= 0 ||
-            totalEntregaBase > (itemData.pendiente_base || 0) ||
-            isProcessing
+            !idEmpleadoRecibe || totalEntregaGeneralBase <= 0 || isProcessing
           }
           loading={isProcessing}
           onClick={handleConfirmar}
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-10"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
         >
-          Guardar
+          Guardar Entrega
         </Button>
       </Group>
+
       {error && (
         <Text
           c="red"
           size="xs"
           ta="center"
           fw={800}
-          className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide mt-2"
+          className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide"
         >
           {error}
         </Text>

@@ -29,8 +29,9 @@ export interface RES_DetalleRequerimiento {
     id_producto: number;
     empleado_atencion: string | null;
     producto: string;
-    unidad_medida_base: string;
-    unidad_medida: string;
+    stock_minimo: number;
+    unidad_medida_base_abv: string;
+    unidad_medida_abv: string;
     contenido_por_presentacion: number;
     cantidad_solicitada: number;
     cantidad_solicitada_base: number;
@@ -40,6 +41,14 @@ export interface RES_DetalleRequerimiento {
     comentario: string | null;
     comentario_decision: string | null;
     estado: EstadoDetalleRequerimiento;
+}
+
+/**
+ * Representa un item de detalle con campos adicionales calculados para la UI
+ */
+export interface DetalleRequerimientoExtendido extends RES_DetalleRequerimiento {
+    pendiente_base: number;
+    equivReq: number;
 }
 
 /**
@@ -91,6 +100,7 @@ export interface RES_DetalleEntrega {
  */
 export interface RES_Lote {
     id_lote: number;
+    id_producto: number;
     correlativo: string;
     stock_actual: number;
     stock_actual_base: number;

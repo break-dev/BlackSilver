@@ -39,7 +39,7 @@ export const AtencionService = {
     return res.data;
   },
 
-  obtenerLotesDisponibles: async (idProducto: number, idAlmacen: number) => {
+  obtenerLotesDisponibles: async (idProducto: number | number[], idAlmacen: number) => {
     const res = await api.get<IRespuesta<RES_Lote[]>>(`${path}/lotes`, {
       params: { id_producto: idProducto, id_almacen: idAlmacen },
     });
@@ -51,9 +51,9 @@ export const AtencionService = {
     return res.data;
   },
 
-  obtenerHistorialEntregas: async (idDetalle: number) => {
+  obtenerHistorialEntregas: async (idRequerimiento: number) => {
     const res = await api.get<IRespuesta<RES_Entrega[]>>(`${path}/entregas`, {
-      params: { id_requerimiento_almacen_detalle: idDetalle },
+      params: { id_requerimiento: idRequerimiento },
     });
     return res.data;
   },

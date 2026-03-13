@@ -10,6 +10,7 @@ import {
   Tooltip,
   Button,
   Textarea,
+  Checkbox,
 } from "@mantine/core";
 import {
   ClockIcon,
@@ -29,10 +30,13 @@ import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 import { ReqDetalleTrazabilidad } from "./req-detalle-trazabilidad";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistrarEntrega } from "./registrar-entrega";
-import type { RES_DetalleRequerimiento } from "../service/atencion.responses";
+import { HistorialEntregasRequerimiento } from "./historial-entregas-requerimiento";
 import { useGestionAtencion } from "../hooks/useGestionAtencion";
-
-import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
+import { HeaderCard, InfoItem } from "./components/detail-elements";
+import type { 
+  RES_RequerimientoAlmacen, 
+  DetalleRequerimientoExtendido 
+} from "../service/atencion.responses";
 
 interface GestionAtencionProps {
   requerimiento: RES_RequerimientoAlmacen;
@@ -49,26 +53,27 @@ export const DetalleRequerimiento = ({
 }: GestionAtencionProps) => {
   const {
     loading,
-    detalle,
+    detalles,
     eventos,
     loadingTrazabilidad,
     openedTrace,
     openTrace,
     closeTrace,
-    openedEntrega,
-    openEntrega,
-    closeEntrega,
     openedRechazo,
     openRechazo,
     closeRechazo,
+    openedEntregaBatch,
+    openEntregaBatch,
+    closeEntregaBatch,
+    openedHistorialGlobal,
+    openHistorialGlobal,
+    closeHistorialGlobal,
+    selectedItemsIds,
+    toggleItemSelection,
     selectedItemId,
     setSelectedItemId,
     selectedItemName,
     setSelectedItemName,
-    selectedItemSolicitado,
-    setSelectedItemSolicitado,
-    selectedItemAtendido,
-    setSelectedItemAtendido,
     comentarioAccion,
     setComentarioAccion,
     openedAprobar,
@@ -93,7 +98,7 @@ export const DetalleRequerimiento = ({
     );
   }
 
-  if (!detalle) return null;
+  if (!detalles) return null;
 
   return (
     <Stack gap="xl" className="pb-10">
@@ -198,10 +203,30 @@ export const DetalleRequerimiento = ({
               Items Solicitados
             </Text>
           </Group>
-          <Badge variant="light" color="indigo" radius="md">
-            {detalle.detalles.length}{" "}
-            {detalle.detalles.length === 1 ? "Producto" : "Productos"}
-          </Badge>
+          <Group gap="sm">
+            <Button
+              variant="light"
+              color="indigo"
+              size="xs"
+              leftSection={<ClockIcon className="w-4 h-4" />}
+              onClick={openHistorialGlobal}
+            >
+              Historial de Entregas
+            </Button>
+            <Button
+              color="indigo"
+              size="xs"
+              leftSection={<TruckIcon className="w-4 h-4" />}
+              disabled={selectedItemsIds.length === 0}
+              onClick={openEntregaBatch}
+            >
+              Nueva Entrega
+            </Button>
+            <Badge variant="light" color="indigo" radius="md">
+              {detalles.length}{" "}
+              {detalles.length === 1 ? "Producto" : "Productos"}
+            </Badge>
+          </Group>
         </Group>
 
         <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
@@ -209,6 +234,7 @@ export const DetalleRequerimiento = ({
             <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4 text-center w-12">#</th>
+                <th className="px-4 py-4 text-center w-10"></th>
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-right">Cant. Solic.</th>
                 <th className="px-6 py-4 text-center w-40">Progreso</th>
@@ -219,14 +245,35 @@ export const DetalleRequerimiento = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {detalle.detalles.map(
-                (item: RES_DetalleRequerimiento, idx: number) => (
+              {detalles.map(
+                (item: DetalleRequerimientoExtendido, idx: number) => (
                   <tr
                     key={item.id_requerimiento_almacen_detalle}
                     className="hover:bg-zinc-900/40 transition-colors group"
                   >
                     <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
                       {idx + 1}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <Checkbox
+                        checked={selectedItemsIds.includes(
+                          item.id_requerimiento_almacen_detalle,
+                        )}
+                        onChange={() =>
+                          toggleItemSelection(
+                            item.id_requerimiento_almacen_detalle,
+                          )
+                        }
+                        disabled={
+                          item.estado !==
+                            EstadoDetalleRequerimiento.Aprobado.toString() &&
+                          item.estado !==
+                            EstadoDetalleRequerimiento.EnDespacho.toString()
+                        }
+                        color="indigo"
+                        size="sm"
+                        className="cursor-pointer"
+                      />
                     </td>
                     <td className="px-6 py-4">
                       <Text
@@ -246,7 +293,7 @@ export const DetalleRequerimiento = ({
                         className="font-black px-4"
                       >
                         {Number(item.cantidad_solicitada || 0).toFixed(2)}{" "}
-                        {item.unidad_medida}
+                        {item.unidad_medida_base_abv}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -277,7 +324,7 @@ export const DetalleRequerimiento = ({
                         className="font-black px-4"
                       >
                         {Number(item.cantidad_solicitada_base || 0).toFixed(2)}{" "}
-                        {item.unidad_medida_base}
+                        {item.unidad_medida_base_abv}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -360,36 +407,6 @@ export const DetalleRequerimiento = ({
                               </ActionIcon>
                             </Tooltip>
                           </>
-                        )}
-
-                        {item.estado ==
-                          EstadoDetalleRequerimiento.Aprobado.toString() && (
-                          <Tooltip
-                            label="Ver / Registrar Entrega"
-                            position="top"
-                            withArrow
-                          >
-                            <ActionIcon
-                              variant="filled"
-                              color="indigo"
-                              onClick={() => {
-                                setSelectedItemId(
-                                  item.id_requerimiento_almacen_detalle,
-                                );
-                                setSelectedItemName(item.producto);
-                                setSelectedItemSolicitado(
-                                  item.cantidad_solicitada || 0,
-                                );
-                                setSelectedItemAtendido(
-                                  item.cantidad_entregada || 0,
-                                );
-                                openEntrega();
-                              }}
-                              className="shadow-lg shadow-indigo-900/20"
-                            >
-                              <TruckIcon className="w-4 h-4 text-white" />
-                            </ActionIcon>
-                          </Tooltip>
                         )}
                       </Group>
                     </td>
@@ -496,164 +513,35 @@ export const DetalleRequerimiento = ({
       </ModalEstandar>
 
       <ModalEstandar
-        opened={openedEntrega}
-        close={closeEntrega}
-        title="Registrar Entrega de Material"
-        size="80%"
+        opened={openedEntregaBatch}
+        close={closeEntregaBatch}
+        title="Nueva Entrega de Materiales"
+        size="90%"
       >
-        {selectedItemId && (
-          <RegistrarEntrega
-            idRequerimiento={requerimiento.id_requerimiento}
-            idRequerimientoDetalle={selectedItemId}
-            idProducto={
-              detalle.detalles.find(
-                (d) => d.id_requerimiento_almacen_detalle === selectedItemId,
-              )?.id_producto || 0
-            }
-            idAlmacen={idAlmacen}
-            productoNombre={selectedItemName}
-            cantidadSolicitada={selectedItemSolicitado}
-            cantidadAtendida={selectedItemAtendido}
-            onSuccess={() => {
-              closeEntrega();
-              loadData(true);
-              onSuccess();
-            }}
-            onCancel={closeEntrega}
-          />
-        )}
+        <RegistrarEntrega
+          idRequerimiento={requerimiento.id_requerimiento}
+          idAlmacen={idAlmacen}
+          selectedItemsIds={selectedItemsIds}
+          detallesRequerimiento={detalles}
+          onSuccess={() => {
+            closeEntregaBatch();
+            loadData(true);
+            onSuccess();
+          }}
+          onCancel={closeEntregaBatch}
+        />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedHistorialGlobal}
+        close={closeHistorialGlobal}
+        title="Historial de Entregas"
+        size="70%"
+      >
+        <HistorialEntregasRequerimiento
+          idRequerimiento={requerimiento.id_requerimiento}
+        />
       </ModalEstandar>
     </Stack>
   );
 };
-
-interface HeaderCardProps {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  color: "indigo" | "violet" | "amber" | "emerald";
-}
-
-const colorMap: Record<
-  HeaderCardProps["color"],
-  {
-    bg: string;
-    border: string;
-    hover: string;
-    icon: string;
-    text: string;
-    subText: string;
-  }
-> = {
-  indigo: {
-    bg: "bg-indigo-500/10",
-    border: "border-indigo-500/20",
-    hover: "hover:bg-indigo-500/20",
-    icon: "text-indigo-400",
-    text: "text-indigo-400/20",
-    subText: "indigo.3",
-  },
-  violet: {
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    hover: "hover:bg-violet-500/20",
-    icon: "text-violet-400",
-    text: "text-violet-400/20",
-    subText: "violet.3",
-  },
-  amber: {
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/20",
-    hover: "hover:bg-amber-500/20",
-    icon: "text-amber-400",
-    text: "text-amber-400/20",
-    subText: "amber.5",
-  },
-  emerald: {
-    bg: "bg-emerald-500/10",
-    border: "border-emerald-500/20",
-    hover: "hover:bg-emerald-500/20",
-    icon: "text-emerald-400",
-    text: "text-emerald-400/20",
-    subText: "emerald.5",
-  },
-};
-
-const HeaderCard = ({ icon: Icon, label, value, color }: HeaderCardProps) => {
-  const styles = colorMap[color];
-  return (
-    <Paper
-      p="md"
-      radius="lg"
-      className={`${styles.bg} ${styles.border} relative overflow-hidden group ${styles.hover} transition-all`}
-    >
-      <Icon
-        className={`absolute -right-2 -bottom-2 w-16 h-16 ${styles.text} rotate-12 group-hover:scale-110 transition-transform`}
-      />
-      <Stack gap={2} className="relative z-10">
-        <Group gap={6}>
-          <Icon className={`w-4 h-4 ${styles.icon}`} />
-          <Text
-            size="xs"
-            c={styles.subText}
-            fw={800}
-            className="uppercase tracking-widest"
-          >
-            {label}
-          </Text>
-        </Group>
-        <Text size="md" fw={900} className="text-white tracking-tight">
-          {value}
-        </Text>
-      </Stack>
-    </Paper>
-  );
-};
-
-interface InfoItemProps {
-  label: string;
-  value: string | number;
-  color?: string;
-  icon?: React.ElementType;
-  iconColor?: string; // Tailwind class name
-  isMono?: boolean;
-}
-
-const InfoItem = ({
-  label,
-  value,
-  color,
-  icon: Icon,
-  iconColor,
-  isMono,
-}: InfoItemProps) => (
-  <Stack gap={4}>
-    <div className="flex items-center gap-1.5 font-bold">
-      {Icon && (
-        <Icon className={`w-3.5 h-3.5 ${iconColor || "text-zinc-500"}`} />
-      )}
-      <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">
-        {label}
-      </Text>
-    </div>
-    {color ? (
-      <Badge
-        color={color}
-        variant="light"
-        size="sm"
-        radius="sm"
-        className="font-bold"
-      >
-        {value}
-      </Badge>
-    ) : (
-      <Text
-        size="sm"
-        fw={isMono ? 400 : 800}
-        className={`${isMono ? "font-mono text-zinc-400" : "text-zinc-100 italic"}`}
-      >
-        {value}
-      </Text>
-    )}
-  </Stack>
-);

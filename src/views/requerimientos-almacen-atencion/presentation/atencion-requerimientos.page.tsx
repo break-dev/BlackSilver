@@ -29,10 +29,15 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DetalleRequerimiento } from "./detalle-requerimiento.tsx";
 import { MESES } from "../../../presentation/variables/meses.ts";
+import { useDisclosure } from "@mantine/hooks";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
   const [errorLocal, setErrorLocal] = useState("");
+
+  const [openedGestion, { open: openGestion, close: closeGestion }] =
+    useDisclosure(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const {
     idAlmacen,
@@ -49,11 +54,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
     almacenes,
     loadingAlmacenes,
     updateRequirementLocal,
-    openedGestion,
-    openGestion,
-    closeGestion,
-    selectedId,
-    setSelectedId,
   } = useEntregas({ setError: setErrorLocal });
 
   useEffect(() => {
@@ -311,11 +311,11 @@ export const RequerimientosAlmacenAtencionPage = () => {
             <CheckBadgeIcon className="w-12 h-12 text-zinc-600" />
           </div>
           <Text size="lg" fw={600} className="text-zinc-400">
-            Panel de Gestión de Almacén
+            Panel de Requerimientos de Almacén
           </Text>
           <Text className="text-zinc-500 text-center max-w-sm mt-1">
-            Seleccione el almacén que desea gestionar para visualizar las
-            solicitudes pendientes de atención.
+            Seleccione el almacén para visualizar los requerimientos pendientes
+            de atención.
           </Text>
         </div>
       ) : (

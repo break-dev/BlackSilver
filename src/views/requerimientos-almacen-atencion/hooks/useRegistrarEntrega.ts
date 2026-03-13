@@ -2,128 +2,132 @@ import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import type { 
   RES_DetalleRequerimiento, 
-  RES_Entrega, 
   RES_Lote,
-  RES_Empleado
+  RES_Empleado,
+  DetalleRequerimientoExtendido
 } from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
-import type { AxiosError } from "axios";
-interface UseRegistrarEntregaProps {
+import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
+
+interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;
-  idRequerimientoDetalle: number;
-  idProducto: number;
   idAlmacen: number;
+  selectedItemsIds: number[];
+  detallesRequerimiento: RES_DetalleRequerimiento[];
   onSuccess: () => void;
 }
 
-export const useRegistrarEntrega = ({
+export const useRegistrarEntregaBatch = ({
   idRequerimiento,
-  idRequerimientoDetalle,
-  idProducto,
   idAlmacen,
+  selectedItemsIds,
+  detallesRequerimiento,
   onSuccess,
-}: UseRegistrarEntregaProps) => {
+}: UseRegistrarEntregaBatchProps) => {
   const [loading, setLoading] = useState(true);
-  const [itemData, setItemData] = useState<RES_DetalleRequerimiento & { pendiente_base: number; lotes: RES_Lote[] } | null>(null);
-  const [historial, setHistorial] = useState<RES_Entrega[]>([]);
+  const [lotes, setLotes] = useState<RES_Lote[]>([]);
+  const [empleados, setEmpleados] = useState<{ value: string; label: string }[]>([]);
+  
   const [entregaCantidades, setEntregaCantidades] = useState<Record<number, number>>({});
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [empleados, setEmpleados] = useState<{ value: string; label: string }[]>([]);
+
+  const selectedDetalles = useMemo<DetalleRequerimientoExtendido[]>(() => {
+    return detallesRequerimiento
+      .filter((d) =>
+        selectedItemsIds.includes(d.id_requerimiento_almacen_detalle),
+      )
+      .map((d) => {
+        const cSolicitada = Number(d.cantidad_solicitada || 0);
+        const cSolicitadaBase = Number(d.cantidad_solicitada_base || 0);
+        const cEntregadaBase = Number(d.cantidad_entregada_base || 0);
+        const pendienteBase = cSolicitadaBase - cEntregadaBase;
+
+        return {
+          ...d,
+          cantidad_solicitada: cSolicitada,
+          cantidad_solicitada_base: cSolicitadaBase,
+          cantidad_entregada_base: cEntregadaBase,
+          pendiente_base: Math.max(0, pendienteBase),
+          equivReq: cSolicitada > 0 ? cSolicitadaBase / cSolicitada : 1,
+        };
+      });
+  }, [detallesRequerimiento, selectedItemsIds]);
+
+  const idsProductos = useMemo(() => {
+      const ids = selectedDetalles.map(d => d.id_producto);
+      return Array.from(new Set(ids));
+  }, [selectedDetalles]);
 
   useEffect(() => {
     let cancelled = false;
     const loadInitialData = async () => {
+      if (idsProductos.length === 0) return;
       setLoading(true);
       setError("");
       try {
-        const [resDetalles, resHistorial, resEmps, resLotes] = await Promise.all([
-          AtencionService.obtenerDetallesRequerimiento(idRequerimiento),
-          AtencionService.obtenerHistorialEntregas(idRequerimientoDetalle),
+        const [resEmps, resLotes] = await Promise.all([
           AtencionService.obtenerEmpleados(),
-          AtencionService.obtenerLotesDisponibles(idProducto, idAlmacen),
+          AtencionService.obtenerLotesDisponibles(idsProductos, idAlmacen),
         ]);
 
         if (cancelled) return;
 
-        const dataDetalles = resDetalles.success ? resDetalles.data : [];
-        const dataHistorial = resHistorial.success ? resHistorial.data : [];
-        const dataEmps = resEmps.success ? resEmps.data : [];
-        const dataLotes = resLotes.success ? resLotes.data : [];
+        if (resLotes.success) {
+            const castedLotes = resLotes.data.map((l: RES_Lote) => ({
+                ...l,
+                stock_actual: Number(l.stock_actual),
+                stock_actual_base: Number(l.stock_actual_base),
+                contenido_por_presentacion: Number(l.contenido_por_presentacion)
+            }));
+            setLotes(castedLotes);
 
-        const found = dataDetalles.find(
-          (d: RES_DetalleRequerimiento) => d.id_requerimiento_almacen_detalle === idRequerimientoDetalle,
-        );
-        if (found) {
-          const cSolicitada = Number(found.cantidad_solicitada);
-          const cSolicitadaBase = Number(found.cantidad_solicitada_base);
-          const cEntregadaBase = Number(found.cantidad_entregada_base);
-          
-          const pendienteBase = cSolicitadaBase - cEntregadaBase;
-          
-          const castedLotes = dataLotes.map((l: RES_Lote) => ({
-            ...l,
-            stock_actual: Number(l.stock_actual),
-            stock_actual_base: Number(l.stock_actual_base),
-            contenido_por_presentacion: Number(l.contenido_por_presentacion)
-          }));
-
-          setItemData({
-            ...found,
-            cantidad_solicitada: cSolicitada,
-            cantidad_solicitada_base: cSolicitadaBase,
-            cantidad_entregada_base: cEntregadaBase,
-            pendiente_base: pendienteBase,
-            lotes: castedLotes
-          });
+            // Initialize quantities
+            const initial: Record<number, number> = {};
+            castedLotes.forEach((l) => {
+              initial[l.id_lote] = 0;
+            });
+            setEntregaCantidades(initial);
         }
 
-        setHistorial(dataHistorial);
-        setEmpleados(
-          dataEmps.map((e: RES_Empleado) => ({
-            value: e.id_empleado?.toString() || "",
-            label: e.nombre_completo,
-          })),
-        );
+        if (resEmps.success) {
+            setEmpleados(
+                resEmps.data.map((e: RES_Empleado) => ({
+                  value: e.id_empleado?.toString() || "",
+                  label: e.nombre_completo,
+                }))
+            );
+        }
+      } catch (err) {
+        if (!cancelled) setError("Error al cargar datos necesarios");
+        console.error(err);
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
 
     loadInitialData();
-    return () => {
-      cancelled = true;
-    };
-  }, [idRequerimiento, idRequerimientoDetalle, idProducto, idAlmacen]);
+    return () => { cancelled = true; };
+  }, [idsProductos, idAlmacen]);
 
-  const totalEntregaBase = useMemo(() => {
-    return Object.values(entregaCantidades).reduce(
-      (acc, curr) => acc + (curr || 0),
-      0,
-    );
-  }, [entregaCantidades]);
-
-  useEffect(() => {
-    if (!itemData || !itemData.lotes) return;
-    const initial: Record<number, number> = {};
-    itemData.lotes.forEach((l) => {
-      initial[l.id_lote] = 0;
-    });
-    setEntregaCantidades(initial);
-  }, [itemData]);
-
-  const handleCantChange = (idLote: number, val: number) => {
-    if (!itemData || !itemData.lotes) return;
-    const lote = itemData.lotes.find((l) => l.id_lote === idLote);
+  const handleCantChange = (idLote: number, idProducto: number, val: number) => {
+    const lote = lotes.find((l) => l.id_lote === idLote);
     if (!lote) return;
 
-    const currentTotalExcludingThisLote =
-      totalEntregaBase - (entregaCantidades[idLote] || 0);
+    // Validar maximo (stock del lote vs pendiente del requerimiento detalle de ese producto)
+    const detalleRelacionado = selectedDetalles.find(d => d.id_producto === idProducto);
+    if (!detalleRelacionado) return;
+
+    // Cuanto de los lotes de este producto se esta entregando (excluyendo el actual editado)
+    const currentTotalExcludingThisLoteParaProducto = lotes
+        .filter(l => l.id_producto === idProducto && l.id_lote !== idLote)
+        .reduce((sum, l) => sum + (entregaCantidades[l.id_lote] || 0), 0);
+        
     const maxAllowedForThisLote = Math.min(
       lote.stock_actual_base || 0,
-      (itemData.pendiente_base || 0) - currentTotalExcludingThisLote,
+      (detalleRelacionado.cantidad_solicitada_base - detalleRelacionado.cantidad_entregada_base) - currentTotalExcludingThisLoteParaProducto
     );
 
     const newValue = Math.max(0, Math.min(val, maxAllowedForThisLote));
@@ -134,93 +138,91 @@ export const useRegistrarEntrega = ({
     }));
   };
 
+  const lotesPorProducto = useMemo(() => {
+     const agrupado: Record<number, RES_Lote[]> = {};
+     lotes.forEach(l => {
+         if (!agrupado[l.id_producto]) agrupado[l.id_producto] = [];
+         agrupado[l.id_producto].push(l);
+     });
+     return agrupado;
+  }, [lotes]);
+
+  const totalEntregaGeneralBase = useMemo(() => {
+    return Object.values(entregaCantidades).reduce((acc, val) => acc + (val || 0), 0);
+  }, [entregaCantidades]);
+
   const handleConfirmar = async () => {
     if (!idEmpleadoRecibe) {
-      setError("Debe seleccionar quién recibe el material");
-      return;
+        setError("Debe seleccionar quién recibe los materiales");
+        return;
+    }
+    setError("");
+
+    const detallesParaApi: DTO_RegistrarEntregaDetalle[] = [];
+
+    for (const [idLote, cant] of Object.entries(entregaCantidades)) {
+        if (cant > 0) {
+            const numIdLote = Number(idLote);
+            const lote = lotes.find(l => l.id_lote === numIdLote);
+            if(!lote) continue;
+            
+            const detalleReq = selectedDetalles.find(d => d.id_producto === lote.id_producto);
+            if(!detalleReq) continue;
+
+            const equivLote = lote.contenido_por_presentacion || 1;
+            const cBase = cant;
+            const cLote = cBase / equivLote;
+            const cReq = cBase / detalleReq.equivReq;
+
+            detallesParaApi.push({
+                id_requerimiento_almacen_detalle: detalleReq.id_requerimiento_almacen_detalle,
+                id_lote: numIdLote,
+                cantidad_base: cBase,
+                cantidad_lote: cLote,
+                cantidad_requerimiento: cReq,
+            });
+        }
     }
 
-    if (!itemData || !itemData.lotes) return;
-
-    const equivReq =
-      itemData.cantidad_solicitada > 0
-        ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada
-        : 1;
-
-    const detalles = Object.entries(entregaCantidades)
-      .filter(([, cant]) => cant > 0)
-      .map(([idLote, cant]) => {
-        const lote = itemData.lotes!.find(
-          (l) => l.id_lote === Number(idLote),
-        )!;
-        const equivLote = lote.contenido_por_presentacion || 1;
-        const cBase = cant;
-        const cLote = cBase / equivLote;
-        const cReq = cBase / equivReq;
-
-        return {
-          id_requerimiento_almacen_detalle: idRequerimientoDetalle,
-          id_lote: Number(idLote),
-          cantidad_base: cBase,
-          cantidad_lote: cLote,
-          cantidad_requerimiento: cReq,
-        };
-      });
-
-    if (detalles.length === 0) return;
+    if (detallesParaApi.length === 0) {
+        setError("Debe entregar al menos 1 producto");
+        return;
+    }
 
     setIsProcessing(true);
-    setError("");
     try {
       const res = await AtencionService.registrarEntrega({
         id_requerimiento: idRequerimiento,
         id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
-        detalles,
+        detalles: detallesParaApi,
       });
 
       if (res.success) {
         onSuccess();
       } else {
-        setError(res.message || "Error al registrar entrega");
+        setError(res.message || "Error al registrar entrega batch");
       }
     } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      setError(axiosError.response?.data?.message || "Error de conexión");
+      console.error(err);
+      setError("Error de conexión");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const equivReq = useMemo(() => {
-    if (!itemData) return 1;
-    return itemData.cantidad_solicitada > 0
-      ? itemData.cantidad_solicitada_base / itemData.cantidad_solicitada
-      : 1;
-  }, [itemData]);
-
-  const stockDisponibleBase = useMemo(() => {
-    if (!itemData || !itemData.lotes) return 0;
-    return (itemData.lotes || []).reduce(
-      (sum: number, l: RES_Lote) => sum + Number(l.stock_actual_base || 0),
-      0,
-    );
-  }, [itemData]);
-
   return {
     loading,
-    itemData,
-    historial,
+    selectedDetalles,
+    lotesPorProducto,
     entregaCantidades,
+    empleados,
     idEmpleadoRecibe, setIdEmpleadoRecibe,
     observacion, setObservacion,
-    error, setError,
+    error,
     isProcessing,
-    empleados,
-    totalEntregaBase,
-    equivReq,
-    stockDisponibleBase,
+    totalEntregaGeneralBase,
     handleCantChange,
     handleConfirmar
   };
