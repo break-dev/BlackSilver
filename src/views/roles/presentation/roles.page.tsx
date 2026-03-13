@@ -4,7 +4,6 @@ import {
   Text,
   Badge,
   Group,
-  ActionIcon,
   Tooltip,
 } from "@mantine/core";
 import {
@@ -31,12 +30,16 @@ export const RolesPage = () => {
     openedCreate,
     openCreate,
     closeCreate,
+    selectedRol,
+    handleOpenEdit,
     onRolCreado,
   } = useRoles();
 
   const registro = useRegistroRol({
     onSuccess: onRolCreado,
+    onUpdateSuccess: () => {}, 
     onClose: closeCreate,
+    rolEdicion: selectedRol,
   });
 
   return (
@@ -125,14 +128,21 @@ export const RolesPage = () => {
                 {/* Footer Section */}
                 <div className="mt-2 pt-3 border-t border-zinc-800/50 flex justify-between items-center">
                   <Group gap={6}>
-                    <Tooltip label="Editar Rol">
-                      <ActionIcon variant="subtle" color="gray" size="sm">
-                        <PencilSquareIcon className="w-4 h-4" />
-                      </ActionIcon>
+                    <Tooltip label="Editar Permisos">
+                      <Button
+                        variant="subtle"
+                        color="indigo"
+                        size="xs"
+                        leftSection={<PencilSquareIcon className="w-4 h-4" />}
+                        className="hover:bg-indigo-500/10"
+                        onClick={() => handleOpenEdit(rol)}
+                      >
+                        Editar Permisos
+                      </Button>
                     </Tooltip>
                   </Group>
                   <Text size="xs" className="text-zinc-600 font-mono">
-                    ID: {rol.id.toString().padStart(4, '0')}
+                    ID: {rol.id.toString().padStart(4, "0")}
                   </Text>
                 </div>
               </div>
@@ -141,11 +151,11 @@ export const RolesPage = () => {
         </div>
       )}
 
-      {/* Creation Modal */}
+      {/* Creation/Edition Modal */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Crear Nuevo Rol"
+        title={selectedRol ? `Editar Permisos: ${selectedRol.nombre}` : "Crear Nuevo Rol"}
         size="lg"
       >
         <RegistroRol
@@ -162,6 +172,7 @@ export const RolesPage = () => {
           onCancel={closeCreate}
           loading={registro.loading}
           error={registro.error}
+          isEdit={!!selectedRol}
         />
       </ModalEstandar>
     </div>

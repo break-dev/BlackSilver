@@ -9,10 +9,17 @@ import type {
 
 interface UseRegistroRolProps {
   onSuccess?: (nuevo: RES_Rol) => void;
+  onUpdateSuccess?: () => void;
   onClose: () => void;
+  rolEdicion?: RES_Rol | null;
 }
 
-export const useRegistroRol = ({ onSuccess, onClose }: UseRegistroRolProps) => {
+export const useRegistroRol = ({
+  onSuccess,
+  onUpdateSuccess,
+  onClose,
+  rolEdicion,
+}: UseRegistroRolProps) => {
   const { notify } = useNotify();
 
   // Estructura de permisos (Catálogo)
@@ -47,12 +54,36 @@ export const useRegistroRol = ({ onSuccess, onClose }: UseRegistroRolProps) => {
     cargarEstructura();
   }, [cargarEstructura]);
 
+  const cargarPermisosRol = useCallback(async (id: number) => {
+    setLoading(true);
+    try {
+      const result = await RolesService.get_permisos_rol(id);
+      if (result.success) {
+        setSeccionesSeleccionadas(result.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const reset = useCallback(() => {
     setNombre("");
     setDescripcion("");
     setSeccionesSeleccionadas([]);
     setError("");
   }, []);
+
+  useEffect(() => {
+    if (rolEdicion) {
+      setNombre(rolEdicion.nombre);
+      setDescripcion(rolEdicion.descripcion || "");
+      cargarPermisosRol(rolEdicion.id);
+    } else {
+      reset();
+    }
+  }, [rolEdicion, cargarPermisosRol, reset]);
 
   const handleToggleSeccion = (idSeccion: number) => {
     setSeccionesSeleccionadas((prev) =>
@@ -94,20 +125,40 @@ export const useRegistroRol = ({ onSuccess, onClose }: UseRegistroRolProps) => {
 
     setLoading(true);
     try {
-      const result = await RolesService.crear_rol(validation.data);
-      if (result.success) {
-        notify({
-          type: "success",
-          content: "Rol registrado correctamente",
-        });
-        onSuccess?.(result.data);
-        onClose();
-        reset();
+      if (rolEdicion) {
+        // MODO EDICIÓN: Solo actualiza permisos
+        const result = await RolesService.actualizar_permisos_rol(
+          rolEdicion.id,
+          seccionesSeleccionadas,
+        );
+        if (result.success) {
+          notify({
+            type: "success",
+            content: "Permisos actualizados correctamente",
+          });
+          onUpdateSuccess?.();
+          onClose();
+          reset();
+        } else {
+          setError(result.message);
+        }
       } else {
-        setError(result.message);
+        // MODO CREACIÓN
+        const result = await RolesService.crear_rol(validation.data);
+        if (result.success) {
+          notify({
+            type: "success",
+            content: "Rol registrado correctamente",
+          });
+          onSuccess?.(result.data);
+          onClose();
+          reset();
+        } else {
+          setError(result.message);
+        }
       }
     } catch (err) {
-      setError("Error inesperado al registrar el rol");
+      setError("Error inesperado al procesar el rol");
       console.error(err);
     } finally {
       setLoading(false);

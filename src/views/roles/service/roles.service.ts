@@ -24,4 +24,21 @@ export class RolesService {
     const { data } = await api.post(`${this.PATH}`, dto);
     return data;
   };
+
+  public static get_permisos_rol = async (
+    id_rol: number,
+  ): Promise<IRespuesta<number[]>> => {
+    const { data } = await api.get(`${this.PATH}/permisos/${id_rol}`);
+    return data;
+  };
+
+  public static actualizar_permisos_rol = async (
+    id_rol: number,
+    secciones: number[],
+  ): Promise<IRespuesta<null>> => {
+    const { data } = await api.patch(`${this.PATH}/permisos/${id_rol}`, {
+      secciones,
+    });
+    return data;
+  };
 }

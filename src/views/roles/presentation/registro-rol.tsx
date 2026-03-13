@@ -28,6 +28,7 @@ interface RegistroRolProps {
   onCancel: () => void;
   loading: boolean;
   error: string;
+  isEdit?: boolean;
 }
 
 export const RegistroRol = ({
@@ -44,6 +45,7 @@ export const RegistroRol = ({
   onCancel,
   loading,
   error,
+  isEdit = false,
 }: RegistroRolProps) => {
   return (
     <Stack gap="md">
@@ -65,6 +67,7 @@ export const RegistroRol = ({
         onChange={(e) => setNombre(e.currentTarget.value)}
         required
         radius="md"
+        disabled={isEdit}
         classNames={{
           input: "bg-zinc-900/50 border-zinc-800 text-white focus:border-indigo-500",
           label: "text-zinc-400 mb-1",
@@ -78,6 +81,7 @@ export const RegistroRol = ({
         onChange={(e) => setDescripcion(e.currentTarget.value)}
         radius="md"
         rows={2}
+        disabled={isEdit}
         classNames={{
           input: "bg-zinc-900/50 border-zinc-800 text-white focus:border-indigo-500",
           label: "text-zinc-400 mb-1",
@@ -175,7 +179,7 @@ export const RegistroRol = ({
           radius="md"
           className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 px-8"
         >
-          Registrar Rol
+          {isEdit ? "Guardar Cambios" : "Registrar Rol"}
         </Button>
       </Group>
     </Stack>

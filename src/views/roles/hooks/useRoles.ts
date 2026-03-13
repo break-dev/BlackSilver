@@ -14,6 +14,18 @@ export const useRoles = () => {
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
 
+  const [selectedRol, setSelectedRol] = useState<RES_Rol | null>(null);
+
+  const handleOpenEdit = (rol: RES_Rol) => {
+    setSelectedRol(rol);
+    openCreate();
+  };
+
+  const handleCloseModal = () => {
+    setSelectedRol(null);
+    closeCreate();
+  };
+
   const listar = useCallback(async () => {
     setLoading(true);
     try {
@@ -56,7 +68,9 @@ export const useRoles = () => {
     setBusqueda,
     openedCreate,
     openCreate,
-    closeCreate,
+    closeCreate: handleCloseModal,
+    selectedRol,
+    handleOpenEdit,
     onRolCreado,
     recargar: listar,
   };
