@@ -32,6 +32,7 @@ import { LotesPage } from "../../views/lotes-productos/presentation/lotes.page";
 import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
 import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
 import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
+import { RolesPage } from "../../views/roles/presentation/roles.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 
 export const App = () => {
@@ -85,7 +86,7 @@ export const App = () => {
 
           {/* Usuarios */}
           <Route path="usuarios" element={<UsuariosLayout />}>
-            <Route path="roles" element={<PlaceholderPage titulo="Roles" />} />
+            <Route path="roles" element={<RolesPage />} />
             <Route
               path="cuentas"
               element={<PlaceholderPage titulo="Cuentas" />}
