@@ -33,9 +33,9 @@ import { RegistrarEntrega } from "./registrar-entrega";
 import { HistorialEntregasRequerimiento } from "./historial-entregas-requerimiento";
 import { useGestionAtencion } from "../hooks/useGestionAtencion";
 import { HeaderCard, InfoItem } from "./components/detail-elements";
-import type { 
-  RES_RequerimientoAlmacen, 
-  DetalleRequerimientoExtendido 
+import type {
+  RES_RequerimientoAlmacen,
+  DetalleRequerimientoExtendido,
 } from "../service/atencion.responses";
 
 interface GestionAtencionProps {
@@ -237,9 +237,8 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-center w-12">#</th>
                 <th className="px-4 py-4 text-center w-10"></th>
                 <th className="px-6 py-4 text-left">Producto</th>
-                <th className="px-6 py-4 text-right">Cant. Solic.</th>
-                <th className="px-6 py-4 text-center w-40">Progreso</th>
-                <th className="px-6 py-4 text-center">En Kilos (Base)</th>
+                <th className="px-6 py-4 text-center">Cantidad solicitada</th>
+                <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center w-36">Acciones</th>
@@ -285,7 +284,7 @@ export const DetalleRequerimiento = ({
                         {item.producto}
                       </Text>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4 text-center flex flex-row gap-2.5 justify-center">
                       <Badge
                         variant="filled"
                         color="cyan.7"
@@ -296,6 +295,21 @@ export const DetalleRequerimiento = ({
                         {Number(item.cantidad_solicitada || 0).toFixed(2)}{" "}
                         {item.unidad_medida_base_abv}
                       </Badge>
+                      {item.unidad_medida_base_abv !==
+                        item.unidad_medida_abv && (
+                        <Badge
+                          variant="filled"
+                          color="pink.7"
+                          radius="sm"
+                          size="sm"
+                          className="font-black px-4"
+                        >
+                          {Number(item.cantidad_solicitada_base || 0).toFixed(
+                            2,
+                          )}{" "}
+                          {item.unidad_medida_base_abv}
+                        </Badge>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
@@ -316,18 +330,7 @@ export const DetalleRequerimiento = ({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <Badge
-                        variant="filled"
-                        color="pink.7"
-                        radius="sm"
-                        size="sm"
-                        className="font-black px-4"
-                      >
-                        {Number(item.cantidad_solicitada_base || 0).toFixed(2)}{" "}
-                        {item.unidad_medida_base_abv}
-                      </Badge>
-                    </td>
+
                     <td className="px-6 py-4">
                       <Text
                         size="xs"

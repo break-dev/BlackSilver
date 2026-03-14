@@ -317,9 +317,8 @@ export const DetalleRequerimiento = ({
               <tr>
                 <th className="px-6 py-4 text-center w-12">#</th>
                 <th className="px-6 py-4 text-left">Producto</th>
-                <th className="px-6 py-4 text-right">Cant. Solic.</th>
-                <th className="px-6 py-4 text-center w-40">Progreso</th>
-                <th className="px-6 py-4 text-center">Equivalencia</th>
+                <th className="px-6 py-4 text-center">Cantidad solicitada</th>
+                <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center w-20">Acciones</th>
@@ -358,7 +357,7 @@ export const DetalleRequerimiento = ({
                         </Text>
                       </Group>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-center flex flex-row gap-2.5 justify-center">
                       <Badge
                         variant="filled"
                         color="cyan"
@@ -367,7 +366,20 @@ export const DetalleRequerimiento = ({
                       >
                         {Number(item.cantidad_solicitada || 0).toFixed(0)}{" "}
                         {item.unidad_medida}
-                      </Badge>
+                      </Badge>{" "}
+                      {item.unidad_medida_base !== item.unidad_medida && (
+                        <Badge
+                          variant="filled"
+                          color="pink"
+                          radius="sm"
+                          className="font-bold shadow-xs whitespace-nowrap"
+                        >
+                          {Number(item.cantidad_solicitada_base || 0).toFixed(
+                            0,
+                          )}{" "}
+                          {item.unidad_medida_base}
+                        </Badge>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
@@ -395,17 +407,6 @@ export const DetalleRequerimiento = ({
                           />
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Badge
-                        variant="filled"
-                        color="pink"
-                        radius="sm"
-                        className="font-bold shadow-xs whitespace-nowrap"
-                      >
-                        {Number(item.cantidad_solicitada_base || 0).toFixed(0)}{" "}
-                        {item.unidad_medida_base}
-                      </Badge>
                     </td>
                     <td className="px-6 py-4">
                       <Text
