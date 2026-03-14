@@ -5,6 +5,7 @@ import type {
   RES_RequerimientoDetalle,
   RES_TrazabilidadEvento,
 } from "../services/requerimientos.responses";
+import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 
 export const useRequerimientosPage = () => {
   const [loading, setLoading] = useState(false);
@@ -99,6 +100,31 @@ export const useRequerimientosPage = () => {
     );
   }, [requerimientos, search]);
 
+  const progresoGeneral = useMemo(() => {
+    if (!detalles || detalles.length === 0) return 0;
+
+    const itemsAtendibles = detalles.filter(
+      (item) =>
+        item.estado !== EstadoDetalleRequerimiento.Rechazado &&
+        item.estado !== EstadoDetalleRequerimiento.EsperandoAprobacion &&
+        (item.estado as string) !== "Anulado"
+    );
+
+    if (itemsAtendibles.length === 0) return 0;
+
+    const sumaProgreso = itemsAtendibles.reduce((acc, item) => {
+      const solicitadoBase = Number(item.cantidad_solicitada_base || 1);
+      const atendidoBase = Number(item.cantidad_entregada_base || 0);
+      const progresoItem = Math.min(
+        100,
+        Math.round((atendidoBase / solicitadoBase) * 100)
+      );
+      return acc + progresoItem;
+    }, 0);
+
+    return Math.round(sumaProgreso / itemsAtendibles.length);
+  }, [detalles]);
+
   return {
     requerimientos,
     filteredRecords,
@@ -129,6 +155,7 @@ export const useRequerimientosPage = () => {
       setSelectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
+      progresoGeneral,
     },
   };
 };

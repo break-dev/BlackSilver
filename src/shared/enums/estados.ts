@@ -16,10 +16,13 @@ export enum EstadoDetalleRequerimiento {
   EsperandoAprobacion = "Esperando aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",
-  EnDespacho = "En Despacho",
-  NuevaEntrega = "Nueva Entrega",
+  ConsultaLogistica = "Consultando a Logística",
+  RechazadoLogistica = "Rechazado por Logística",
+  AprobadoLogistica = "Aprobado por Logística",
   Completado = "Completado",
   Cerrado = "Cerrado",
+  EnDespacho = "En Despacho",
+  NuevaEntrega = "Nueva Entrega",
 }
 
 export enum EstadoVencimiento {

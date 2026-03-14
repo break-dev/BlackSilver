@@ -170,10 +170,13 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const progresoGeneral = useMemo(() => {
     if (detalles.length === 0) return 0;
 
-    const itemsAtendibles = detalles.filter(item => 
-      item.estado !== EstadoDetalleRequerimiento.Rechazado.toString() &&
-      item.estado !== EstadoDetalleRequerimiento.EsperandoAprobacion.toString() &&
-      (item.estado as string) !== "Anulado"
+    const itemsAtendibles = detalles.filter(
+      (item) =>
+        item.estado !== EstadoDetalleRequerimiento.Rechazado.toString() &&
+        item.estado !== EstadoDetalleRequerimiento.RechazadoLogistica.toString() &&
+        item.estado !==
+          EstadoDetalleRequerimiento.EsperandoAprobacion.toString() &&
+        (item.estado as string) !== "Anulado",
     );
 
     if (itemsAtendibles.length === 0) return 0;

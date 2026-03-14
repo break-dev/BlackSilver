@@ -54,6 +54,7 @@ export const RequerimientosAlmacenPage = () => {
       selectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
+      progresoGeneral,
     },
   } = useRequerimientosPage();
 
@@ -322,6 +323,7 @@ export const RequerimientosAlmacenPage = () => {
             detalles={detalles}
             laboresVinculadas={selectedReq?.labores || []}
             loading={loadingDetalle}
+            progresoGeneral={progresoGeneral}
             onOpenTrazabilidad={(det) => {
               verTrazabilidad(det);
               openTrace();
