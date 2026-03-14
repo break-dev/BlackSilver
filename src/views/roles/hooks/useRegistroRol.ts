@@ -34,7 +34,6 @@ export const useRegistroRol = ({
   );
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const cargarEstructura = useCallback(async () => {
     setLoadingEstructura(true);
@@ -72,7 +71,6 @@ export const useRegistroRol = ({
     setNombre("");
     setDescripcion("");
     setSeccionesSeleccionadas([]);
-    setError("");
   }, []);
 
   useEffect(() => {
@@ -110,7 +108,6 @@ export const useRegistroRol = ({
   };
 
   const handleGuardar = async () => {
-    setError("");
     const data = {
       nombre,
       descripcion,
@@ -119,7 +116,10 @@ export const useRegistroRol = ({
 
     const validation = Schema_RegistroRol.safeParse(data);
     if (!validation.success) {
-      setError(validation.error.issues[0].message);
+      notify({
+        type: "error",
+        content: validation.error.issues[0].message,
+      });
       return;
     }
 
@@ -140,7 +140,10 @@ export const useRegistroRol = ({
           onClose();
           reset();
         } else {
-          setError(result.message);
+          notify({
+            type: "error",
+            content: result.message,
+          });
         }
       } else {
         // MODO CREACIÓN
@@ -154,11 +157,17 @@ export const useRegistroRol = ({
           onClose();
           reset();
         } else {
-          setError(result.message);
+          notify({
+            type: "error",
+            content: result.message,
+          });
         }
       }
     } catch (err) {
-      setError("Error inesperado al procesar el rol");
+      notify({
+        type: "error",
+        content: "Error inesperado al procesar el rol",
+      });
       console.error(err);
     } finally {
       setLoading(false);
@@ -177,7 +186,6 @@ export const useRegistroRol = ({
     handleToggleSubmodulo,
     handleGuardar,
     loading,
-    error,
     reset,
   };
 };
