@@ -132,3 +132,5 @@ export interface RES_Empleado {
     dni: string;
     path_foto: string | null;
 }
+
+

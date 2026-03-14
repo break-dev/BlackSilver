@@ -330,7 +330,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
       <ModalEstandar
         opened={openedGestion}
         close={closeGestion}
-        title="Atender Solicitud de Materiales"
+        title={`Atender Requerimiento de Almacén`}
         size="95%"
       >
         {selectedId && (

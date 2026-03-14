@@ -21,3 +21,19 @@ export interface DTO_RegistrarEntregaDetalle {
     cantidad_lote: number; 
     cantidad_requerimiento: number; 
 }
+
+export interface DTO_CrearSolicitudLogistica {
+    id_requerimiento: number;
+    observacion?: string;
+    premura: string;
+    fecha_entrega_requerida: string;
+    detalles: {
+        id_requerimiento_almacen_detalle: number;
+        id_producto: number;
+        id_unidad_medida: number;
+        cantidad_solicitada: number;
+        contenido_por_presentacion: number;
+        cantidad_solicitada_base: number;
+        comentario?: string;
+    }[];
+}

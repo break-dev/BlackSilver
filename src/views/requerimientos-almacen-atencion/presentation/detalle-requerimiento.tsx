@@ -21,6 +21,7 @@ import {
   MapPinIcon,
   CheckBadgeIcon,
   ExclamationTriangleIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
@@ -29,6 +30,7 @@ import { ReqDetalleTrazabilidad } from "./req-detalle-trazabilidad";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistrarEntrega } from "./registrar-entrega";
 import { HistorialEntregasRequerimiento } from "./historial-entregas-requerimiento";
+import { RegistrarSolicitudLogistica } from "./registrar-solicitud-logistica";
 import { useGestionAtencion } from "../hooks/useGestionAtencion";
 import { HeaderCard, InfoItem } from "./components/detail-elements";
 import type {
@@ -82,6 +84,7 @@ export const DetalleRequerimiento = ({
     handleRechazar,
     getStatusColor,
     loadData,
+    logistica,
   } = useGestionAtencion({
     idRequerimiento: requerimiento.id_requerimiento,
     onSuccess,
@@ -144,7 +147,9 @@ export const DetalleRequerimiento = ({
                 className="text-zinc-100 tracking-tight leading-tight font-mono"
               >
                 {requerimiento.fecha_entrega_requerida
-                  ? dayjs(requerimiento.fecha_entrega_requerida).format("DD/MM/YYYY")
+                  ? dayjs(requerimiento.fecha_entrega_requerida).format(
+                      "DD/MM/YYYY",
+                    )
                   : "No especificada"}
               </Text>
             </div>
@@ -259,6 +264,22 @@ export const DetalleRequerimiento = ({
               onClick={openEntregaBatch}
             >
               Nueva Entrega
+            </Button>
+            <Button
+              color="blue"
+              variant="light"
+              size="xs"
+              leftSection={<PaperAirplaneIcon className="w-4 h-4" />}
+              disabled={
+                !detalles.some(
+                  (d) =>
+                    d.estado ===
+                    EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+                )
+              }
+              onClick={logistica.open}
+            >
+              Consultar con Logística
             </Button>
             <Badge variant="light" color="indigo" radius="md">
               {detalles.length}{" "}
@@ -432,6 +453,7 @@ export const DetalleRequerimiento = ({
                                 <CheckCircleIcon className="w-5 h-5 text-white" />
                               </ActionIcon>
                             </Tooltip>
+
                             <Tooltip label="Rechazar" position="top" withArrow>
                               <ActionIcon
                                 variant="filled"
@@ -584,6 +606,25 @@ export const DetalleRequerimiento = ({
           idRequerimiento={requerimiento.id_requerimiento}
         />
       </ModalEstandar>
+
+      <ModalEstandar
+        opened={logistica.isOpen}
+        close={logistica.close}
+        title="Consultar con Logística"
+        size="90%"
+      >
+        <RegistrarSolicitudLogistica
+          idRequerimiento={requerimiento.id_requerimiento}
+          detalles={detalles}
+          onSuccess={() => {
+            logistica.onSuccess();
+            onSuccess();
+          }}
+          onCancel={logistica.close}
+        />
+      </ModalEstandar>
+
+
     </Stack>
   );
 };

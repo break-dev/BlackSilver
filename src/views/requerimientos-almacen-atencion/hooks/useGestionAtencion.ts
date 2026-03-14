@@ -26,6 +26,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [openedAprobar, { open: openAprobar, close: closeAprobar }] = useDisclosure(false);
   const [openedEntregaBatch, { open: openEntregaBatch, close: closeEntregaBatch }] = useDisclosure(false);
   const [openedHistorialGlobal, { open: openHistorialGlobal, close: closeHistorialGlobal }] = useDisclosure(false);
+  const [isLogisticaModalOpen, setIsLogisticaModalOpen] = useState(false);
 
   // Selected Data
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -45,6 +46,20 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const deselectAllItems = useCallback(() => {
     setSelectedItemsIds([]);
   }, []);
+
+  const onConsultarLogisticaClick = () => {
+      setIsLogisticaModalOpen(true);
+  };
+
+  const handleCloseLogisticaModal = () => {
+      setIsLogisticaModalOpen(false);
+      deselectAllItems();
+  };
+
+  const onSuccessLogistica = () => {
+      loadData(true);
+      handleCloseLogisticaModal();
+  };
 
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
@@ -208,6 +223,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     handleAprobar,
     handleRechazar,
     getStatusColor,
-    loadData
+    loadData,
+    logistica: {
+        isOpen: isLogisticaModalOpen,
+        open: onConsultarLogisticaClick,
+        close: handleCloseLogisticaModal,
+        onSuccess: onSuccessLogistica
+    }
   };
 };

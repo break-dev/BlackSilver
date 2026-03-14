@@ -6,19 +6,22 @@ import type {
   RES_Entrega,
   RES_Empleado,
   RES_Lote,
-  RES_Trazabilidad
+  RES_Trazabilidad,
 } from "./atencion.responses";
 
 import type {
   DTO_AtencionCambiarEstado,
   DTO_RegistrarEntrega,
+  DTO_CrearSolicitudLogistica,
 } from "./atencion.requests";
 
 const path = "/requerimientos-atencion";
 
 export const AtencionService = {
   obtenerAlmacenesAutorizados: async () => {
-    const res = await api.get<IRespuesta<{ id_almacen: number; nombre: string }[]>>(`${path}/almacenes-autorizados`);
+    const res = await api.get<
+      IRespuesta<{ id_almacen: number; nombre: string }[]>
+    >(`${path}/almacenes-autorizados`);
     return res.data;
   },
 
@@ -28,18 +31,27 @@ export const AtencionService = {
   },
 
   cambiarEstadoDetalle: async (dto: DTO_AtencionCambiarEstado) => {
-    const res = await api.put<IRespuesta<null>>(`${path}/save-decision-detalle`, dto);
+    const res = await api.put<IRespuesta<null>>(
+      `${path}/save-decision-detalle`,
+      dto,
+    );
     return res.data;
   },
 
   obtenerDetallesRequerimiento: async (idRequerimiento: number) => {
-    const res = await api.get<IRespuesta<RES_DetalleRequerimiento[]>>(`${path}/detalles-by-requerimiento`, {
-      params: { id_requerimiento: idRequerimiento },
-    });
+    const res = await api.get<IRespuesta<RES_DetalleRequerimiento[]>>(
+      `${path}/detalles-by-requerimiento`,
+      {
+        params: { id_requerimiento: idRequerimiento },
+      },
+    );
     return res.data;
   },
 
-  obtenerLotesDisponibles: async (idProducto: number | number[], idAlmacen: number) => {
+  obtenerLotesDisponibles: async (
+    idProducto: number | number[],
+    idAlmacen: number,
+  ) => {
     const res = await api.get<IRespuesta<RES_Lote[]>>(`${path}/lotes`, {
       params: { id_producto: idProducto, id_almacen: idAlmacen },
     });
@@ -59,16 +71,34 @@ export const AtencionService = {
   },
 
   obtenerTrazabilidad: async (idDetalle: number) => {
-    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(`${path}/trazabilidad`, {
-      params: { id_requerimiento_almacen_detalle: idDetalle },
-    });
+    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
+      `${path}/trazabilidad`,
+      {
+        params: { id_requerimiento_almacen_detalle: idDetalle },
+      },
+    );
     return res.data;
   },
 
-  obtenerRequerimientos: async (idAlmacen: string, mes: string, yearcito: string) => {
-    const res = await api.get<IRespuesta<RES_RequerimientoAlmacen[]>>(`${path}/requerimientos`, {
-      params: { id_almacen: idAlmacen, mes, yearcito }
-    });
+  obtenerRequerimientos: async (
+    idAlmacen: string,
+    mes: string,
+    yearcito: string,
+  ) => {
+    const res = await api.get<IRespuesta<RES_RequerimientoAlmacen[]>>(
+      `${path}/requerimientos`,
+      {
+        params: { id_almacen: idAlmacen, mes, yearcito },
+      },
+    );
     return res.data;
-  }
+  },
+
+  registrarSolicitudLogistica: async (dto: DTO_CrearSolicitudLogistica) => {
+    const res = await api.post<IRespuesta<null>>(
+      `${path}/save-solicitud-logistica`,
+      dto,
+    );
+    return res.data;
+  },
 };
