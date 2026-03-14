@@ -338,10 +338,6 @@ export const RequerimientosAlmacenAtencionPage = () => {
             requerimiento={
               filteredRecords.find((r) => r.id_requerimiento === selectedId)!
             }
-            almacenNombre={
-              almacenes.find((a) => String(a.id_almacen) === idAlmacen)
-                ?.nombre || "Almacén Seleccionado"
-            }
             idAlmacen={Number(idAlmacen)}
             onSuccess={() => {
               // Actualizamos localmente el estado a 'En Proceso' para evitar re-fetch de la lista general

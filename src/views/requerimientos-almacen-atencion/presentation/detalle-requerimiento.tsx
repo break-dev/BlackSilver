@@ -19,8 +19,6 @@ import {
   TruckIcon,
   UserIcon,
   MapPinIcon,
-  BuildingStorefrontIcon,
-  CalendarDaysIcon,
   CheckBadgeIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
@@ -40,14 +38,12 @@ import type {
 
 interface GestionAtencionProps {
   requerimiento: RES_RequerimientoAlmacen;
-  almacenNombre: string;
   idAlmacen: number;
   onSuccess: () => void;
 }
 
 export const DetalleRequerimiento = ({
   requerimiento,
-  almacenNombre,
   idAlmacen,
   onSuccess,
 }: GestionAtencionProps) => {
@@ -123,12 +119,37 @@ export const DetalleRequerimiento = ({
           value={requerimiento.mina}
           color="amber"
         />
-        <HeaderCard
-          icon={BuildingStorefrontIcon}
-          label="Almacén"
-          value={almacenNombre}
-          color="emerald"
-        />
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-zinc-500/10 border border-zinc-500/20 relative overflow-hidden group hover:bg-zinc-500/20 transition-all"
+        >
+          <ClockIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-zinc-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10 w-full h-full">
+            <Group gap={6} className="shrink-0">
+              <ClockIcon className="w-4 h-4 text-zinc-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Fecha Requerida
+              </Text>
+            </Group>
+            <div className="flex-1 flex items-center min-h-[24px]">
+              <Text
+                size="md"
+                fw={800}
+                className="text-zinc-100 tracking-tight leading-tight font-mono"
+              >
+                {requerimiento.fecha_entrega_requerida
+                  ? dayjs(requerimiento.fecha_entrega_requerida).format("DD/MM/YYYY")
+                  : "No especificada"}
+              </Text>
+            </div>
+          </Stack>
+        </Paper>
       </div>
 
       {/* Sub-header: Estados, Fechas */}
@@ -144,18 +165,34 @@ export const DetalleRequerimiento = ({
             color="orange"
           />
           <InfoItem label="Estado" value={requerimiento.estado} color="green" />
-          <InfoItem
-            label="Fecha Requerida"
-            value={
-              requerimiento.fecha_entrega_requerida
-                ? dayjs(requerimiento.fecha_entrega_requerida).format(
-                    "DD/MM/YYYY",
-                  )
-                : "No especificada"
-            }
-            icon={CalendarDaysIcon}
-            iconColor="text-rose-400"
-          />
+          <Stack gap={4} className="lg:col-span-1">
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest"
+            >
+              Labores Destino
+            </Text>
+            <Group gap={4}>
+              {requerimiento.labores && requerimiento.labores.length > 0 ? (
+                requerimiento.labores.map((l) => (
+                  <Badge
+                    key={l.id_labor}
+                    variant="outline"
+                    color="indigo"
+                    size="sm"
+                  >
+                    ({l.correlativo}) {l.nombre}
+                  </Badge>
+                ))
+              ) : (
+                <Text size="xs" c="zinc.6" fs="italic">
+                  Sin labores asignadas
+                </Text>
+              )}
+            </Group>
+          </Stack>
           <InfoItem
             label="Fecha de Registro"
             value={dayjs(requerimiento.created_at).format("DD/MM/YYYY HH:mm")}

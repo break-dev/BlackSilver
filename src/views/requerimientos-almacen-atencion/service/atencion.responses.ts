@@ -5,6 +5,12 @@ import {
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
 
+export interface RES_LaborRelacionada {
+    id_labor: number;
+    nombre: string;
+    correlativo: string;
+}
+
 /**
  * Representa un requerimiento en el resumen de atención
  */
@@ -19,6 +25,7 @@ export interface RES_RequerimientoAlmacen {
     fecha_entrega_requerida: string | null;
     estado: EstadoRequerimiento;
     created_at: string;
+    labores?: RES_LaborRelacionada[];
 }
 
 /**
