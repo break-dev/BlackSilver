@@ -33,6 +33,7 @@ import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/pr
 import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
 import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 import { RolesPage } from "../../views/roles/presentation/roles.page";
+import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
 
 export const App = () => {
@@ -87,10 +88,7 @@ export const App = () => {
           {/* Usuarios */}
           <Route path="usuarios" element={<UsuariosLayout />}>
             <Route path="roles" element={<RolesPage />} />
-            <Route
-              path="cuentas"
-              element={<PlaceholderPage titulo="Cuentas" />}
-            />
+            <Route path="cuentas" element={<CuentasPage />} />
           </Route>
         </Route>
 
