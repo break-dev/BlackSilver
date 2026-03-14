@@ -68,12 +68,13 @@ export const DetalleRequerimiento = ({
     openedHistorialGlobal,
     openHistorialGlobal,
     closeHistorialGlobal,
-    selectedItemsIds,
-    toggleItemSelection,
     selectedItemId,
     setSelectedItemId,
     selectedItemName,
     setSelectedItemName,
+    selectedItemsIds,
+    toggleItemSelection,
+    deselectAllItems,
     comentarioAccion,
     setComentarioAccion,
     openedAprobar,
@@ -334,7 +335,7 @@ export const DetalleRequerimiento = ({
                         className="max-w-[200px] italic leading-tight"
                       >
                         {item.comentario || (
-                          <span className="text-zinc-800/50">
+                          <span className="text-gray-500">
                             Sin observaciones
                           </span>
                         )}
@@ -525,6 +526,7 @@ export const DetalleRequerimiento = ({
           detallesRequerimiento={detalles}
           onSuccess={() => {
             closeEntregaBatch();
+            deselectAllItems();
             loadData(true);
             onSuccess();
           }}

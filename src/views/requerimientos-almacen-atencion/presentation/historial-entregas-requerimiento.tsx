@@ -1,19 +1,47 @@
+import { useState } from "react";
 import {
   Loader,
   Stack,
-  Table,
   Text,
   Badge,
+  Paper,
+  Group,
+  Collapse,
+  UnstyledButton,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import { useHistorialEntregasRequerimiento } from "../hooks/useHistorialEntregasRequerimiento";
+import {
+  TruckIcon,
+  CalendarDaysIcon,
+  UserIcon,
+  ClipboardDocumentCheckIcon,
+  CubeIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/outline";
 
 interface HistorialProps {
   idRequerimiento: number;
 }
 
-export const HistorialEntregasRequerimiento = ({ idRequerimiento }: HistorialProps) => {
-  const { loading, historial, error } = useHistorialEntregasRequerimiento(idRequerimiento);
+export const HistorialEntregasRequerimiento = ({
+  idRequerimiento,
+}: HistorialProps) => {
+  const { loading, historial, error } =
+    useHistorialEntregasRequerimiento(idRequerimiento);
+
+  // Mantiene el estado de qué entregas están expandidas. Por defecto, expandir la primera.
+  const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+
+  const toggleExpand = (id: number) => {
+    setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const isExpanded = (id: number, index: number) => {
+    if (expandedIds[id] !== undefined) return expandedIds[id];
+    return index === 0; // Abre la primera por defecto
+  };
 
   if (loading)
     return (
@@ -22,82 +50,263 @@ export const HistorialEntregasRequerimiento = ({ idRequerimiento }: HistorialPro
       </div>
     );
 
-  if (error) return <Text c="red" ta="center">{error}</Text>;
+  if (error)
+    return (
+      <Text c="red" ta="center">
+        {error}
+      </Text>
+    );
 
   if (historial.length === 0)
     return (
-      <div className="py-12 text-center">
-        <Text c="zinc.5">No registra entregas previas para este requerimiento.</Text>
+      <div className="py-12 text-center flex flex-col items-center gap-3">
+        <div className="p-4 bg-zinc-900/30 rounded-full border border-zinc-800/50">
+          <TruckIcon className="w-8 h-8 text-zinc-600" />
+        </div>
+        <Text c="zinc.5" size="sm" fw={600}>
+          No se han registrado entregas para este requerimiento.
+        </Text>
       </div>
     );
 
   return (
-    <Stack gap="lg" className="font-sans">
-      <div className="space-y-4">
-        <div className="overflow-hidden border border-zinc-800 rounded-2xl bg-zinc-950/20 shadow-sm max-h-[60vh] overflow-y-auto">
-          <Table verticalSpacing="md" horizontalSpacing="xl" className="border-collapse">
-            <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold border-b border-zinc-800 sticky top-0 z-10">
-              <tr>
-                <th className="py-4 pl-8" style={{ width: "15%" }}>Cod. Entrega</th>
-                <th className="text-left" style={{ width: "15%" }}>Fecha</th>
-                <th className="text-left" style={{ width: "20%" }}>Entregado a</th>
-                <th className="text-left" style={{ width: "50%" }}>Productos Entregados</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800/20">
-              {historial.map((h) => (
-                <tr key={h.id_requerimiento_almacen_entrega} className="text-zinc-400 hover:bg-zinc-900/40 transition-all group align-top">
-                  <td className="py-4 pl-8">
-                    <Badge variant="light" color="violet" radius="sm" size="sm" className="font-black">
-                      {h.correlativo}
-                    </Badge>
-                  </td>
-                  <td className="text-left py-4">
-                    <div className="flex flex-col">
-                      <Text size="sm" fw={700} className="text-zinc-300">
-                        {dayjs(h.fecha_hora_entrega * 1000).format("DD/MM/YYYY")}
+    <Stack
+      gap="xl"
+      className="font-sans pt-2 pb-6 max-h-[70vh] overflow-y-auto px-2"
+    >
+      {historial.map((h, index) => {
+        const expanded = isExpanded(h.id_requerimiento_almacen_entrega, index);
+
+        return (
+          <Paper
+            key={h.id_requerimiento_almacen_entrega}
+            radius="xl"
+            className="bg-zinc-900/30 border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all hover:bg-zinc-900/50 hover:border-indigo-500/20 group relative overflow-hidden p-4 shrink-0"
+          >
+            {/* Elemento decorativo superior */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-violet-500/20 via-indigo-500/40 to-indigo-500/5 group-hover:from-violet-500/40 group-hover:via-indigo-500/60 transition-colors" />
+
+            <UnstyledButton
+              className="w-full p-5 sm:p-6"
+              onClick={() => toggleExpand(h.id_requerimiento_almacen_entrega)}
+            >
+              <Group
+                justify="space-between"
+                align="center"
+                wrap="nowrap"
+                gap="xl"
+              >
+                <Group gap="md" wrap="nowrap" className="shrink-0">
+                  <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors shrink-0">
+                    <TruckIcon className="w-6 h-6 text-indigo-400" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Group gap="xs">
+                      <Text
+                        size="sm"
+                        fw={900}
+                        className="text-white tracking-wide"
+                      >
+                        {h.correlativo}
                       </Text>
-                      <Text size="xs" fw={600} c="zinc.6" className="uppercase">
-                        {dayjs(h.fecha_hora_entrega * 1000).format("HH:mm A")}
-                      </Text>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <Text size="sm" fw={700} className="text-zinc-300">
+                      <Badge
+                        variant="light"
+                        color={h.estado === "Procesado" ? "teal" : "violet"}
+                        radius="sm"
+                        className="font-bold"
+                        size="xs"
+                      >
+                        {h.estado}
+                      </Badge>
+                    </Group>
+                    <Group gap="xs" className="text-zinc-400" wrap="nowrap">
+                      <Group gap="xs" wrap="nowrap">
+                        <CalendarDaysIcon className="w-4 h-4 shrink-0 text-indigo-400/70" />
+                        <Text size="xs" fw={600} className="whitespace-nowrap">
+                          {dayjs(h.fecha_hora_entrega).format(
+                            "DD/MM/YYYY hh:mm A",
+                          )}
+                        </Text>
+                      </Group>
+                      <Group
+                        gap="xs"
+                        className="bg-zinc-950/50 px-2.5 py-1 rounded-md border border-zinc-800/60 ml-1 shrink-0"
+                        wrap="nowrap"
+                      >
+                        <UserIcon className="w-3 h-3 text-zinc-400" />
+                        <Text
+                          size="10px"
+                          fw={700}
+                          c="zinc.4"
+                          className="whitespace-nowrap"
+                        >
+                          Por:{" "}
+                          <span className="text-zinc-300">
+                            {h.empleado_entrega}
+                          </span>
+                        </Text>
+                      </Group>
+                    </Group>
+                  </div>
+                </Group>
+
+                <Group
+                  gap="lg"
+                  wrap="nowrap"
+                  justify="flex-end"
+                  className="flex-1 min-w-0"
+                >
+                  <div className="text-right hidden md:flex flex-col items-end gap-0.5 truncate shrink">
+                    <Text
+                      size="9px"
+                      c="zinc.5"
+                      fw={800}
+                      className="uppercase tracking-widest"
+                    >
+                      Entregado a
+                    </Text>
+                    <Text
+                      size="sm"
+                      fw={800}
+                      className="text-zinc-200 truncate max-w-[200px] lg:max-w-[300px]"
+                    >
                       {h.empleado_recibe}
                     </Text>
-                    <Text size="xs" c="zinc.5" mt={4} className="italic max-w-xs truncate" title={h.observacion || ""}>
-                      {h.observacion || "Sin observaciones"}
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0 border border-zinc-700/50 group-hover:bg-zinc-800/80 transition-colors">
+                    {expanded ? (
+                      <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
+                    ) : (
+                      <ChevronDownIcon className="w-4 h-4 text-zinc-400" />
+                    )}
+                  </div>
+                </Group>
+              </Group>
+            </UnstyledButton>
+
+            <Collapse in={expanded}>
+              <div className="px-6 pt-2 border-t border-zinc-800/30">
+                <div className="mb-6 bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40 flex gap-3 items-start shadow-inner">
+                  <ClipboardDocumentCheckIcon className="w-5 h-5 text-indigo-400/50 mt-0.5 shrink-0" />
+                  <div>
+                    <Text
+                      size="10px"
+                      fw={800}
+                      c="zinc.5"
+                      className="uppercase tracking-widest mb-1.5"
+                    >
+                      Observaciones de la Entrega
                     </Text>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-col gap-2">
-                       {h.detalles && h.detalles.length > 0 ? h.detalles.map((d) => (
-                          <div key={d.id_entrega_detalle} className="flex justify-between items-center bg-zinc-900/30 p-2 rounded-md border border-zinc-800/50">
-                             <div className="flex flex-col">
-                                <Text size="xs" fw={800} c="zinc.3">{d.producto}</Text>
-                                <Text size="9px" fw={700} c="zinc.5">Lote: {d.correlativo}</Text>
-                             </div>
-                             <div className="text-right flex items-center gap-1">
-                                <Text size="sm" fw={900} className="text-emerald-500 font-mono leading-none">
-                                  +{Number(d.cantidad_base).toFixed(2)}
-                                </Text>
-                                <Text size="9px" fw={800} c="zinc.6" className="uppercase">
-                                  {d.unidad_lote_abv || "UNI"}
-                                </Text>
-                             </div>
-                          </div>
-                       )) : (
-                         <Text size="xs" c="zinc.6">Sin detalles</Text>
-                       )}
+                    <Text
+                      size="sm"
+                      c="zinc.3"
+                      className="italic max-w-2xl leading-relaxed"
+                    >
+                      {h.observacion ||
+                        "Sin observaciones adicionales reportadas durante esta entrega operativa."}
+                    </Text>
+                  </div>
+                </div>
+
+                <Group gap="xs" mb="md" mt="md" className="pl-1">
+                  <CubeIcon className="w-4 h-4 text-zinc-500" />
+                  <Text
+                    size="xs"
+                    fw={800}
+                    c="zinc.4"
+                    className="uppercase tracking-widest"
+                  >
+                    Productos Despachados ({h.detalles?.length || 0})
+                  </Text>
+                </Group>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-2">
+                  {h.detalles?.map((d) => (
+                    <div
+                      key={d.id_entrega_detalle}
+                      className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
+                    >
+                      {/* Highlight lateral en hover item */}
+                      <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
+
+                      <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                        <Text
+                          size="sm"
+                          fw={900}
+                          className="text-white leading-tight"
+                        >
+                          {d.producto}
+                        </Text>
+
+                        <Group gap="xs" wrap="nowrap" align="center">
+                          <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                          <Text
+                            size="11px"
+                            fw={800}
+                            c="zinc.4"
+                            className="uppercase tracking-widest leading-none"
+                          >
+                            Lote:
+                          </Text>
+                          <Badge
+                            variant="light"
+                            color="indigo"
+                            size="sm"
+                            className="font-bold tracking-wider"
+                          >
+                            {d.correlativo}
+                          </Badge>
+                        </Group>
+                      </div>
+
+                      <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
+                        <Group gap="xs" wrap="nowrap" align="center">
+                          <Text
+                            size="md"
+                            fw={900}
+                            className="text-emerald-400 font-mono leading-none"
+                          >
+                            +{Number(d.cantidad_lote).toFixed(2)}
+                          </Text>
+                          <Text
+                            size="12px"
+                            fw={800}
+                            c="zinc.5"
+                            className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
+                          >
+                            {d.unidad_lote_abv || "UNI"}
+                          </Text>
+
+                          {d.unidad_lote_abv !== d.unidad_base_abv && (
+                            <>
+                              <div className="w-px h-6 bg-zinc-800/80 mx-1"></div>
+                              <Text
+                                size="md"
+                                fw={700}
+                                className="text-emerald-500/70 font-mono leading-none"
+                              >
+                                +{Number(d.cantidad_base).toFixed(2)}
+                              </Text>
+                              <Text
+                                size="12px"
+                                fw={800}
+                                c="zinc.5"
+                                className="uppercase tracking-widest bg-zinc-900/50 px-1.5 py-0.5 rounded-md inline-block"
+                              >
+                                {d.unidad_base_abv}
+                              </Text>
+                            </>
+                          )}
+                        </Group>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-      </div>
+                  ))}
+                </div>
+              </div>
+            </Collapse>
+          </Paper>
+        );
+      })}
     </Stack>
   );
 };

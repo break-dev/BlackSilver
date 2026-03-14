@@ -23,7 +23,10 @@ interface RegistroProductoProps {
   onCancel?: () => void;
 }
 
-export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps) => {
+export const RegistroProducto = ({
+  onSuccess,
+  onCancel,
+}: RegistroProductoProps) => {
   const {
     form,
     setField,
@@ -36,7 +39,8 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
     handleSubmit,
   } = useRegistroProducto(onSuccess);
 
-  const [openedAddCat, { open: openAddCat, close: closeAddCat }] = useDisclosure(false);
+  const [openedAddCat, { open: openAddCat, close: closeAddCat }] =
+    useDisclosure(false);
 
   const registroCat = useRegistroCategoria({
     onSuccess: (nueva) => {
@@ -50,15 +54,26 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
     if (!form.tiempo_espera_vencimiento) return 0;
     const qty = form.tiempo_espera_vencimiento;
     switch (form.periodo_espera_vencimiento) {
-      case Periodo.Diario: return qty;
-      case Periodo.Semanal: return qty * 7;
-      case Periodo.Mensual: return qty * 30;
-      case Periodo.Anual: return qty * 365;
-      default: return 0;
+      case Periodo.Diario:
+        return qty;
+      case Periodo.Semanal:
+        return qty * 7;
+      case Periodo.Mensual:
+        return qty * 30;
+      case Periodo.Anual:
+        return qty * 365;
+      default:
+        return 0;
     }
   };
 
-  const LabelForm = ({ text, required = false }: { text: string; required?: boolean }) => (
+  const LabelForm = ({
+    text,
+    required = false,
+  }: {
+    text: string;
+    required?: boolean;
+  }) => (
     <Text size="sm" fw={500} className="text-zinc-300 mb-1.5 font-medium">
       {text} {required && <span className="text-red-500">*</span>}
     </Text>
@@ -71,21 +86,29 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
         <div className="flex gap-2 items-center">
           <Select
             placeholder={
-              loadingCategorias ? "Cargando..." : "Seleccione categoría de bienes"
+              loadingCategorias
+                ? "Cargando..."
+                : "Seleccione categoría de bienes"
             }
             data={categorias.map((c) => ({
               value: c.id_categoria.toString(),
               label: c.nombre,
             }))}
-            value={form.id_categoria === 0 ? null : form.id_categoria.toString()}
+            value={
+              form.id_categoria === 0 ? null : form.id_categoria.toString()
+            }
             onChange={(val) => setField("id_categoria", Number(val))}
             classNames={{
-              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
             }}
             radius="lg"
             searchable
             clearable
-            comboboxProps={{ withinPortal: true, transitionProps: { transition: 'pop', duration: 200 } }}
+            comboboxProps={{
+              withinPortal: true,
+              transitionProps: { transition: "pop", duration: 200 },
+            }}
             disabled={loadingCategorias}
             className="flex-1"
           />
@@ -104,7 +127,9 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
 
       <Select
         label={<LabelForm text="Unidad de Medida" required />}
-        placeholder={loadingUnidades ? "Cargando..." : "Seleccione Unidad de Medida"}
+        placeholder={
+          loadingUnidades ? "Cargando..." : "Seleccione Unidad de Medida"
+        }
         data={unidades.map((u) => ({
           value: u.id_unidad_medida.toString(),
           label: `${u.nombre} (${u.abreviatura})`,
@@ -116,12 +141,16 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
         }
         onChange={(val) => setField("id_unidad_medida_base", Number(val))}
         classNames={{
-          input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          input:
+            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
         }}
         radius="lg"
         searchable
         clearable
-        comboboxProps={{ withinPortal: true, transitionProps: { transition: 'pop', duration: 200 } }}
+        comboboxProps={{
+          withinPortal: true,
+          transitionProps: { transition: "pop", duration: 200 },
+        }}
         disabled={loadingUnidades}
       />
 
@@ -131,7 +160,8 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
         value={form.nombre}
         onChange={(e) => setField("nombre", e.currentTarget.value)}
         classNames={{
-          input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          input:
+            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
         }}
         radius="lg"
       />
@@ -142,25 +172,32 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
         </Text>
         <div className="flex flex-col">
           <NumberInput
-            placeholder="0.00"
+            placeholder="0"
             value={form.stock_minimo}
             onChange={(val) => setField("stock_minimo", Number(val))}
             classNames={{
-              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 text-center",
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 text-center",
             }}
             radius="lg"
             min={0}
-            decimalScale={2}
             className="w-32"
           />
-          <Text size="xs" className="text-zinc-600 mt-1 italic w-full text-center">
+          <Text
+            size="xs"
+            className="text-zinc-600 mt-1 italic w-full text-center"
+          >
             Límite para alertas de reposición
           </Text>
         </div>
       </Group>
 
       <div className="border border-zinc-800/80 rounded-2xl p-5 space-y-6 mt-2 bg-zinc-950/20">
-        <Text size="xs" fw={700} className="text-zinc-300 tracking-widest uppercase">
+        <Text
+          size="xs"
+          fw={700}
+          className="text-zinc-300 tracking-widest uppercase"
+        >
           Indicadores del Producto
         </Text>
 
@@ -169,12 +206,15 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
             label="Producto Fiscalizado (IQBF)"
             description="Requiere control y reporte a SUCAMEC"
             checked={form.es_fiscalizado}
-            onChange={(e) => setField("es_fiscalizado", e.currentTarget.checked)}
+            onChange={(e) =>
+              setField("es_fiscalizado", e.currentTarget.checked)
+            }
             color="red"
             radius="sm"
             size="sm"
             classNames={{
-              label: "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
+              label:
+                "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
               description: "text-zinc-600 text-[11px] mt-0.5",
             }}
           />
@@ -188,18 +228,20 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
             radius="sm"
             size="sm"
             classNames={{
-              label: "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
+              label:
+                "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
               description: "text-zinc-600 text-[11px] mt-0.5",
             }}
           />
         </Stack>
-        
+
         {form.es_perecible && (
           <div className="pt-2 border-t border-zinc-800/80 space-y-5 animate-fade-in">
             <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-xl p-4 flex gap-3">
               <InformationCircleIcon className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
               <Text size="sm" className="text-indigo-100 font-medium">
-                Define con cuánta antelación deseas recibir avisos antes del vencimiento real.
+                Define con cuánta antelación deseas recibir avisos antes del
+                vencimiento real.
               </Text>
             </div>
 
@@ -208,9 +250,12 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
                 label={<LabelForm text="Anticipar alerta por" required />}
                 placeholder="Ej. 2"
                 value={form.tiempo_espera_vencimiento || undefined}
-                onChange={(val) => setField("tiempo_espera_vencimiento", Number(val))}
+                onChange={(val) =>
+                  setField("tiempo_espera_vencimiento", Number(val))
+                }
                 classNames={{
-                  input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
                 }}
                 radius="lg"
                 min={1}
@@ -228,10 +273,14 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
                 value={form.periodo_espera_vencimiento}
                 onChange={(val) => setField("periodo_espera_vencimiento", val)}
                 classNames={{
-                  input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
                 }}
                 radius="lg"
-                comboboxProps={{ withinPortal: true, transitionProps: { transition: 'pop', duration: 200 } }}
+                comboboxProps={{
+                  withinPortal: true,
+                  transitionProps: { transition: "pop", duration: 200 },
+                }}
                 withAsterisk={false}
               />
             </Group>
@@ -241,7 +290,15 @@ export const RegistroProducto = ({ onSuccess, onCancel }: RegistroProductoProps)
                 Resumen de la Configuración:
               </Text>
               <Text size="sm" className="text-zinc-300 mt-0.5">
-                Se avisará el vencimiento de <span className="text-indigo-400 font-medium">este producto</span> con <span className="text-indigo-400 font-medium">{getDiasVencimiento()} días</span> de anticipación.
+                Se avisará el vencimiento de{" "}
+                <span className="text-indigo-400 font-medium">
+                  este producto
+                </span>{" "}
+                con{" "}
+                <span className="text-indigo-400 font-medium">
+                  {getDiasVencimiento()} días
+                </span>{" "}
+                de anticipación.
               </Text>
             </div>
           </div>

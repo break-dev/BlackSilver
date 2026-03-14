@@ -16,7 +16,7 @@ export interface DTO_RegistrarEntrega {
 
 export interface DTO_RegistrarEntregaDetalle {
     id_requerimiento_almacen_detalle: number; 
-    id_lote: number; 
+    id_lote_producto: number; 
     cantidad_base: number; 
     cantidad_lote: number; 
     cantidad_requerimiento: number; 

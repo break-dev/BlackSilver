@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
-import type { 
-  RES_DetalleRequerimiento, 
+import type {
+  RES_DetalleRequerimiento,
   RES_Lote,
   RES_Empleado,
-  DetalleRequerimientoExtendido
+  DetalleRequerimientoExtendido,
 } from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
 import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
+import { useAuthUser } from "../../../hooks/useAuthUser";
 
 interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;
@@ -24,11 +25,18 @@ export const useRegistrarEntregaBatch = ({
   detallesRequerimiento,
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
+  const authUser = useAuthUser();
+  const loggedEmployeeId = authUser?.id_empleado;
+
   const [loading, setLoading] = useState(true);
   const [lotes, setLotes] = useState<RES_Lote[]>([]);
-  const [empleados, setEmpleados] = useState<{ value: string; label: string }[]>([]);
-  
-  const [entregaCantidades, setEntregaCantidades] = useState<Record<number, number>>({});
+  const [empleados, setEmpleados] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const [entregaCantidades, setEntregaCantidades] = useState<
+    Record<number, number>
+  >({});
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [error, setError] = useState("");
@@ -57,8 +65,8 @@ export const useRegistrarEntregaBatch = ({
   }, [detallesRequerimiento, selectedItemsIds]);
 
   const idsProductos = useMemo(() => {
-      const ids = selectedDetalles.map(d => d.id_producto);
-      return Array.from(new Set(ids));
+    const ids = selectedDetalles.map((d) => d.id_producto);
+    return Array.from(new Set(ids));
   }, [selectedDetalles]);
 
   useEffect(() => {
@@ -76,29 +84,32 @@ export const useRegistrarEntregaBatch = ({
         if (cancelled) return;
 
         if (resLotes.success) {
-            const castedLotes = resLotes.data.map((l: RES_Lote) => ({
-                ...l,
-                stock_actual: Number(l.stock_actual),
-                stock_actual_base: Number(l.stock_actual_base),
-                contenido_por_presentacion: Number(l.contenido_por_presentacion)
-            }));
-            setLotes(castedLotes);
+          const castedLotes = resLotes.data.map((l: RES_Lote) => ({
+            ...l,
+            stock_actual: Number(l.stock_actual),
+            stock_actual_base: Number(l.stock_actual_base),
+            contenido_por_presentacion: Number(l.contenido_por_presentacion),
+          }));
+          setLotes(castedLotes);
 
-            // Initialize quantities
-            const initial: Record<number, number> = {};
-            castedLotes.forEach((l) => {
-              initial[l.id_lote] = 0;
-            });
-            setEntregaCantidades(initial);
+          // Initialize quantities
+          const initial: Record<number, number> = {};
+          castedLotes.forEach((l) => {
+            initial[l.id_lote] = 0;
+          });
+          setEntregaCantidades(initial);
         }
 
         if (resEmps.success) {
-            setEmpleados(
-                resEmps.data.map((e: RES_Empleado) => ({
-                  value: e.id_empleado?.toString() || "",
-                  label: e.nombre_completo,
-                }))
-            );
+          const exceptLogged = resEmps.data.filter(
+            (e: RES_Empleado) => e.id_empleado !== loggedEmployeeId,
+          );
+          setEmpleados(
+            exceptLogged.map((e: RES_Empleado) => ({
+              value: e.id_empleado?.toString() || "",
+              label: e.nombre_completo,
+            })),
+          );
         }
       } catch (err) {
         if (!cancelled) setError("Error al cargar datos necesarios");
@@ -109,25 +120,35 @@ export const useRegistrarEntregaBatch = ({
     };
 
     loadInitialData();
-    return () => { cancelled = true; };
-  }, [idsProductos, idAlmacen]);
+    return () => {
+      cancelled = true;
+    };
+  }, [idsProductos, idAlmacen, loggedEmployeeId]);
 
-  const handleCantChange = (idLote: number, idProducto: number, val: number) => {
+  const handleCantChange = (
+    idLote: number,
+    idProducto: number,
+    val: number,
+  ) => {
     const lote = lotes.find((l) => l.id_lote === idLote);
     if (!lote) return;
 
     // Validar maximo (stock del lote vs pendiente del requerimiento detalle de ese producto)
-    const detalleRelacionado = selectedDetalles.find(d => d.id_producto === idProducto);
+    const detalleRelacionado = selectedDetalles.find(
+      (d) => d.id_producto === idProducto,
+    );
     if (!detalleRelacionado) return;
 
     // Cuanto de los lotes de este producto se esta entregando (excluyendo el actual editado)
     const currentTotalExcludingThisLoteParaProducto = lotes
-        .filter(l => l.id_producto === idProducto && l.id_lote !== idLote)
-        .reduce((sum, l) => sum + (entregaCantidades[l.id_lote] || 0), 0);
-        
+      .filter((l) => l.id_producto === idProducto && l.id_lote !== idLote)
+      .reduce((sum, l) => sum + (entregaCantidades[l.id_lote] || 0), 0);
+
     const maxAllowedForThisLote = Math.min(
       lote.stock_actual_base || 0,
-      (detalleRelacionado.cantidad_solicitada_base - detalleRelacionado.cantidad_entregada_base) - currentTotalExcludingThisLoteParaProducto
+      detalleRelacionado.cantidad_solicitada_base -
+        detalleRelacionado.cantidad_entregada_base -
+        currentTotalExcludingThisLoteParaProducto,
     );
 
     const newValue = Math.max(0, Math.min(val, maxAllowedForThisLote));
@@ -138,55 +159,73 @@ export const useRegistrarEntregaBatch = ({
     }));
   };
 
+  const handleCantLoteChange = (
+    idLote: number,
+    idProducto: number,
+    valLote: number,
+  ) => {
+    const lote = lotes.find((l) => l.id_lote === idLote);
+    if (!lote) return;
+    const equiv = Number(lote.contenido_por_presentacion) || 1;
+    const valBase = Number((valLote * equiv).toFixed(4));
+    handleCantChange(idLote, idProducto, valBase);
+  };
+
   const lotesPorProducto = useMemo(() => {
-     const agrupado: Record<number, RES_Lote[]> = {};
-     lotes.forEach(l => {
-         if (!agrupado[l.id_producto]) agrupado[l.id_producto] = [];
-         agrupado[l.id_producto].push(l);
-     });
-     return agrupado;
+    const agrupado: Record<number, RES_Lote[]> = {};
+    lotes.forEach((l) => {
+      if (!agrupado[l.id_producto]) agrupado[l.id_producto] = [];
+      agrupado[l.id_producto].push(l);
+    });
+    return agrupado;
   }, [lotes]);
 
   const totalEntregaGeneralBase = useMemo(() => {
-    return Object.values(entregaCantidades).reduce((acc, val) => acc + (val || 0), 0);
+    return Object.values(entregaCantidades).reduce(
+      (acc, val) => acc + (val || 0),
+      0,
+    );
   }, [entregaCantidades]);
 
   const handleConfirmar = async () => {
     if (!idEmpleadoRecibe) {
-        setError("Debe seleccionar quién recibe los materiales");
-        return;
+      setError("Debe seleccionar quién recibe los materiales");
+      return;
     }
     setError("");
 
     const detallesParaApi: DTO_RegistrarEntregaDetalle[] = [];
 
     for (const [idLote, cant] of Object.entries(entregaCantidades)) {
-        if (cant > 0) {
-            const numIdLote = Number(idLote);
-            const lote = lotes.find(l => l.id_lote === numIdLote);
-            if(!lote) continue;
-            
-            const detalleReq = selectedDetalles.find(d => d.id_producto === lote.id_producto);
-            if(!detalleReq) continue;
+      if (cant > 0) {
+        const numIdLote = Number(idLote);
+        const lote = lotes.find((l) => l.id_lote === numIdLote);
+        if (!lote) continue;
 
-            const equivLote = lote.contenido_por_presentacion || 1;
-            const cBase = cant;
-            const cLote = cBase / equivLote;
-            const cReq = cBase / detalleReq.equivReq;
+        const detalleReq = selectedDetalles.find(
+          (d) => d.id_producto === lote.id_producto,
+        );
+        if (!detalleReq) continue;
 
-            detallesParaApi.push({
-                id_requerimiento_almacen_detalle: detalleReq.id_requerimiento_almacen_detalle,
-                id_lote: numIdLote,
-                cantidad_base: cBase,
-                cantidad_lote: cLote,
-                cantidad_requerimiento: cReq,
-            });
-        }
+        const equivLote = lote.contenido_por_presentacion || 1;
+        const cBase = cant;
+        const cLote = cBase / equivLote;
+        const cReq = cBase / detalleReq.equivReq;
+
+        detallesParaApi.push({
+          id_requerimiento_almacen_detalle:
+            detalleReq.id_requerimiento_almacen_detalle,
+          id_lote_producto: numIdLote,
+          cantidad_base: cBase,
+          cantidad_lote: cLote,
+          cantidad_requerimiento: cReq,
+        });
+      }
     }
 
     if (detallesParaApi.length === 0) {
-        setError("Debe entregar al menos 1 producto");
-        return;
+      setError("Debe entregar al menos 1 producto");
+      return;
     }
 
     setIsProcessing(true);
@@ -218,12 +257,15 @@ export const useRegistrarEntregaBatch = ({
     lotesPorProducto,
     entregaCantidades,
     empleados,
-    idEmpleadoRecibe, setIdEmpleadoRecibe,
-    observacion, setObservacion,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
+    observacion,
+    setObservacion,
     error,
     isProcessing,
     totalEntregaGeneralBase,
     handleCantChange,
-    handleConfirmar
+    handleCantLoteChange,
+    handleConfirmar,
   };
 };

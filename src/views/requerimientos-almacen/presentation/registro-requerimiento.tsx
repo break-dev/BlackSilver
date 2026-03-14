@@ -287,11 +287,10 @@ export const RegistroRequerimiento = ({
               <div className="md:col-span-2">
                 <NumberInput
                   label={`Cantidad`}
-                  placeholder="0.00"
+                  placeholder="0"
                   value={cantidad}
                   onChange={(val) => setCantidad(Number(val))}
                   min={0}
-                  decimalScale={2}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -306,7 +305,6 @@ export const RegistroRequerimiento = ({
                   value={contenido}
                   onChange={(val) => setContenido(Number(val))}
                   min={0.01}
-                  decimalScale={2}
                   disabled={sonUnidadesIdenticas}
                   classNames={inputClasses}
                   radius="lg"

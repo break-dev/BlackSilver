@@ -174,7 +174,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         />
         <TextInput
           label="Ancho (m)"
-          placeholder="0.00"
+          placeholder="0"
           type="number"
           step="0.01"
           radius="lg"
@@ -184,7 +184,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         />
         <TextInput
           label="Alto (m)"
-          placeholder="0.00"
+          placeholder="0"
           type="number"
           step="0.01"
           radius="lg"

@@ -85,6 +85,7 @@ export interface RES_DetalleEntrega {
     id_entrega_detalle: number;
     id_requerimiento_almacen_detalle: number;
     correlativo: string; // del lote
+    producto: string;
     fecha_vencimiento: string | null;
     dias_para_vencer: number | null;
     estado_vencimiento: EstadoVencimiento;
@@ -93,6 +94,8 @@ export interface RES_DetalleEntrega {
     cantidad_requerimiento: number;
     unidad_lote: string;
     unidad_lote_abv: string;
+    unidad_base: string;
+    unidad_base_abv: string;
 }
 
 /**

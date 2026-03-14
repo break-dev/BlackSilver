@@ -72,7 +72,11 @@ export const AjusteStockModal = ({
             >
               Lote Seleccionado
             </Text>
-            <Text fw={800} size="md" className="text-zinc-100 uppercase tracking-tight">
+            <Text
+              fw={800}
+              size="md"
+              className="text-zinc-100 uppercase tracking-tight"
+            >
               {lote.producto}
             </Text>
           </Stack>
@@ -92,8 +96,7 @@ export const AjusteStockModal = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <NumberInput
           label={`Stock (${lote.unidad_medida})`}
-          placeholder="0.00"
-          decimalScale={2}
+          placeholder="0"
           min={0}
           value={nuevoStock}
           onChange={handleStockChange}
@@ -103,8 +106,7 @@ export const AjusteStockModal = ({
 
         <NumberInput
           label={`Nuevo Stock Total (${lote.unidad_medida_base})`}
-          placeholder="0.00"
-          decimalScale={4}
+          placeholder="0"
           min={0}
           value={nuevoStockBase}
           onChange={handleBaseStockChange}
@@ -138,7 +140,11 @@ export const AjusteStockModal = ({
         <Group justify="center" gap="xl">
           <div
             className={`p-2 rounded-full w-10 h-10 flex items-center justify-center transition-colors ${
-              isSame ? "bg-zinc-800" : diff > 0 ? "bg-teal-500/10" : "bg-red-500/10"
+              isSame
+                ? "bg-zinc-800"
+                : diff > 0
+                  ? "bg-teal-500/10"
+                  : "bg-red-500/10"
             }`}
           >
             {isSame ? (
@@ -166,7 +172,11 @@ export const AjusteStockModal = ({
                 c={isSame ? "zinc.5" : diff > 0 ? "teal" : "red"}
                 className="leading-none"
               >
-                {isSame ? "0.00" : diff > 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2)}
+                {isSame
+                  ? "0.00"
+                  : diff > 0
+                    ? `+${diff.toFixed(2)}`
+                    : diff.toFixed(2)}
               </Text>
               <Text size="xs" c="zinc.4" fw={600} className="italic opacity-80">
                 {lote.unidad_medida_base}
@@ -203,8 +213,8 @@ export const AjusteStockModal = ({
         <div className="flex items-center gap-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-xl">
           <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0" />
           <Text size="xs" c="amber.5" fw={600}>
-            Aviso: No has realizado ningún cambio. Ingresa una cantidad diferente para
-            aplicar el ajuste.
+            Aviso: No has realizado ningún cambio. Ingresa una cantidad
+            diferente para aplicar el ajuste.
           </Text>
         </div>
       )}
@@ -216,7 +226,12 @@ export const AjusteStockModal = ({
       )}
 
       {/* Footer Buttons */}
-      <Group justify="flex-end" mt="md" gap="md" className="pt-6 border-t border-zinc-800/50">
+      <Group
+        justify="flex-end"
+        mt="md"
+        gap="md"
+        className="pt-6 border-t border-zinc-800/50"
+      >
         <Button
           variant="subtle"
           onClick={onCancel}

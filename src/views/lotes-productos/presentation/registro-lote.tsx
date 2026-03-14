@@ -134,9 +134,8 @@ export const RegistroLote = ({
 
         <NumberInput
           label={`Cantidad de ${pluralizar(derived.unidadSeleccionada?.nombre) || "---"}`}
-          placeholder="0.00"
           min={0}
-          decimalScale={2}
+          placeholder="0"
           fixedDecimalScale
           withAsterisk
           value={stockInicial}
@@ -147,14 +146,13 @@ export const RegistroLote = ({
 
         <NumberInput
           label="Contenido"
-          placeholder="1.00"
+          placeholder="1.0"
           description={
             derived.sonUnidadesIdenticas
               ? "Misma unidad que la base (Bloqueado)"
               : `Indique cuánt@s ${pluralizar(derived.unidadBase?.nombre) || "unidades"} contiene cada ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
           }
-          min={0.01}
-          decimalScale={4}
+          min={0.1}
           fixedDecimalScale
           withAsterisk
           disabled={derived.sonUnidadesIdenticas}

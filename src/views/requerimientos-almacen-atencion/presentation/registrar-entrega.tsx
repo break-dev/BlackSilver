@@ -53,6 +53,7 @@ export const RegistrarEntrega = ({
     isProcessing,
     totalEntregaGeneralBase,
     handleCantChange,
+    handleCantLoteChange,
     handleConfirmar,
   } = useRegistrarEntregaBatch({
     idRequerimiento,
@@ -150,6 +151,7 @@ export const RegistrarEntrega = ({
                     />
                   </div>
                   <div>
+                    {/* nombre del producto */}
                     <Text
                       size="md"
                       fw={900}
@@ -158,9 +160,10 @@ export const RegistrarEntrega = ({
                       {detalle_req.producto}
                     </Text>
                     <Group gap="xs">
+                      {/* cantidad solicitada */}
                       <Text size="sm" fw={800} c="zinc.3">
                         {Number(detalle_req.cantidad_solicitada).toFixed(2)}{" "}
-                        {detalle_req.unidad_medida_base_abv}
+                        {detalle_req.unidad_medida_abv}
                       </Text>
                       {detalle_req.unidad_medida_abv !==
                         detalle_req.unidad_medida_base_abv && (
@@ -266,7 +269,7 @@ export const RegistrarEntrega = ({
                       <th className="" style={{ width: "25%" }}>
                         Stock Disponible
                       </th>
-                      <th className="pr-6 text-right" style={{ width: "30%" }}>
+                      <th className="pr-6 text-center" style={{ width: "30%" }}>
                         Cant. a Despachar
                       </th>
                     </tr>
@@ -394,25 +397,63 @@ export const RegistrarEntrega = ({
                               </div>
                             </td>
                             <td className="text-center pr-6">
-                              <NumberInput
-                                size="xs"
-                                radius="md"
-                                min={0}
-                                max={lote.stock_actual_base}
-                                value={cant}
-                                onChange={(val) =>
-                                  handleCantChange(
-                                    lote.id_lote,
-                                    detalle_req.id_producto,
-                                    Number(val),
-                                  )
-                                }
-                                placeholder="0.00"
-                                className="w-28 ml-auto"
-                                classNames={{
-                                  input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-center font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"}`,
-                                }}
-                              />
+                              <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                {/* Input para Unidad de Lote */}
+                                {lote.unidad_medida_abv !== detalle_req.unidad_medida_base_abv && (
+                                  <NumberInput
+                                    size="xs"
+                                    radius="md"
+                                    min={0}
+                                    max={lote.stock_actual}
+                                    value={cant > 0 ? Number((cant / (lote.contenido_por_presentacion || 1)).toFixed(4)) : ""}
+                                    onChange={(val) =>
+                                      handleCantLoteChange(
+                                        lote.id_lote,
+                                        detalle_req.id_producto,
+                                        Number(val),
+                                      )
+                                    }
+                                    placeholder="0"
+                                    rightSection={
+                                      <Text size="10px" fw={800} c="zinc.5" className="mr-2">
+                                        {lote.unidad_medida_abv}
+                                      </Text>
+                                    }
+                                    rightSectionWidth={40}
+                                    className="w-28"
+                                    classNames={{
+                                      input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"} text-right pr-12`,
+                                    }}
+                                  />
+                                )}
+
+                                {/* Input para Unidad Base */}
+                                <NumberInput
+                                  size="xs"
+                                  radius="md"
+                                  min={0}
+                                  max={lote.stock_actual_base}
+                                  value={cant || ""}
+                                  onChange={(val) =>
+                                    handleCantChange(
+                                      lote.id_lote,
+                                      detalle_req.id_producto,
+                                      Number(val),
+                                    )
+                                  }
+                                  placeholder="0"
+                                  rightSection={
+                                    <Text size="10px" fw={800} c="zinc.5" className="mr-2">
+                                      {detalle_req.unidad_medida_base_abv}
+                                    </Text>
+                                  }
+                                  rightSectionWidth={40}
+                                  className="w-28 ml-auto"
+                                  classNames={{
+                                    input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"} text-right pr-12`,
+                                  }}
+                                />
+                              </Group>
                             </td>
                           </tr>
                         );

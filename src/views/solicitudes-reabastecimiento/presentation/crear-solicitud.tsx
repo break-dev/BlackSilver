@@ -478,9 +478,8 @@ export const SolicitudReabastecimientoForm = ({
               <div className="md:col-span-2 text-center">
                 <NumberInput
                   label={`Cantidad de ${unidadAbbr ? unidadAbbr : "-"}`}
-                  placeholder="0.00"
+                  placeholder="0"
                   min={0}
-                  decimalScale={2}
                   decimalSeparator="."
                   hideControls
                   key={formItem.key("cantidad_solicitada")}
@@ -496,7 +495,6 @@ export const SolicitudReabastecimientoForm = ({
                   label={`${baseAbbr} x ${unidadAbbr ? unidadAbbr : "-"}`}
                   placeholder="1.00"
                   min={0.01}
-                  decimalScale={2}
                   decimalSeparator="."
                   hideControls
                   disabled={esUnidadBase}
