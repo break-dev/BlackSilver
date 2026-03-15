@@ -428,8 +428,8 @@ export const DetalleRequerimiento = ({
                         className="max-w-[200px] italic leading-tight"
                       >
                         {item.comentario || (
-                          <span className="text-gray-500">
-                            Sin observaciones
+                          <span className="text-zinc-400">
+                            Sin comentarios
                           </span>
                         )}
                       </Text>
