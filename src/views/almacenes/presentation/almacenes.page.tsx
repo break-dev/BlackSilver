@@ -128,32 +128,44 @@ export const AlmacenesPage = () => {
       accessor: "responsable_actual",
       title: "Responsable",
       width: 200,
-      render: (record) => (
-        <Group gap="xs">
-          {record.responsable_actual ? (
-            <>
-              <UserCircleIcon className="w-5 h-5 text-emerald-500" />
-              <Text size="sm" className="text-zinc-200">
-                {record.responsable_actual}
-              </Text>
-            </>
-          ) : (
+      render: (record) => {
+        const isPrincipal = Number(record.es_principal) === 1;
+
+        if (isPrincipal) {
+          return (
             <Badge variant="outline" color="gray" size="sm">
-              Sin Asignar
+              No aplica
             </Badge>
-          )}
-          <Tooltip label="Ver Responsables">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={() => handleOpenResponsables(record)}
-            >
-              <PencilSquareIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
+          );
+        }
+
+        return (
+          <Group gap="xs">
+            {record.responsable_actual ? (
+              <>
+                <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+                <Text size="sm" className="text-zinc-200">
+                  {record.responsable_actual}
+                </Text>
+              </>
+            ) : (
+              <Badge variant="outline" color="gray" size="sm">
+                Sin Asignar
+              </Badge>
+            )}
+            <Tooltip label="Ver Responsables">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={() => handleOpenResponsables(record)}
+              >
+                <PencilSquareIcon className="w-4 h-4" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        );
+      },
     },
 
     {
