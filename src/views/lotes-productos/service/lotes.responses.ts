@@ -17,8 +17,8 @@ export interface RES_Lote {
   fecha_hora_ingreso: string;
   fecha_vencimiento: string | null;
   estado: string;
-  es_perecible: number | boolean;
-  es_fiscalizado: number | boolean;
+  es_perecible: boolean;
+  es_fiscalizado: boolean;
   stock_minimo: number;
   dias_espera_vencimiento: number | null;
   dias_para_vencer: number | null;

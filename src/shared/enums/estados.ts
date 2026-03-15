@@ -38,8 +38,8 @@ export enum EstadoSolicitudDetalle {
 
 export enum EstadoVencimiento {
   NA = "N/A",
-  SinFecha = "Sin Fecha",
+  SinFecha = "Sin fecha",
   Vigente = "Vigente",
-  PorVencer = "Por Vencer",
+  PorVencer = "Por vencer",
   Vencido = "Vencido",
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useMemo } from "react";
 import { DataTable, type DataTableColumn } from "mantine-datatable";
 
@@ -7,6 +8,7 @@ interface DataTableEstandarProps {
   records: any[];
   initialPageSize?: number;
   loading: boolean;
+  [key: string]: any;
 }
 
 export const DataTableEstandar = ({
@@ -15,6 +17,7 @@ export const DataTableEstandar = ({
   records,
   initialPageSize = 25,
   loading,
+  ...props
 }: DataTableEstandarProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -60,6 +63,7 @@ export const DataTableEstandar = ({
         totalRecords={records.length}
         recordsPerPage={pageSize}
         page={page}
+        minHeight={300}
         onPageChange={setPage}
         recordsPerPageOptions={[10, 25, 50, 100]}
         onRecordsPerPageChange={setPageSize}
@@ -69,7 +73,6 @@ export const DataTableEstandar = ({
         idAccessor={idAccessor}
         noRecordsText="No se encontraron registros..."
         loadingText="Cargando..."
-        minHeight={300}
         paginationText={({ from, to, totalRecords }) =>
           `${from} - ${to} de ${totalRecords}`
         }
@@ -84,6 +87,7 @@ export const DataTableEstandar = ({
             "--mantine-color-text": "var(--mantine-color-zinc-3, #d4d4d8)",
           },
         }}
+        {...props}
       />
     </div>
   );

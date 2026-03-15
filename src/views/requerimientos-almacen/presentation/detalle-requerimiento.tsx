@@ -443,8 +443,8 @@ export const DetalleRequerimiento = ({
                         className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
                       >
                         {item.comentario || (
-                          <span className="text-zinc-800/50">
-                            Sin observaciones
+                          <span className="text-zinc-400">
+                            Sin comentarios
                           </span>
                         )}
                       </Text>
