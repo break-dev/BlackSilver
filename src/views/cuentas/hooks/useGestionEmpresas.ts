@@ -7,6 +7,7 @@ export const useGestionEmpresas = (id_usuario: number, refreshParent: () => void
     const [asignadas, setAsignadas] = useState<RES_EmpresaAcceso[]>([]);
     const [todas, setTodas] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingId, setLoadingId] = useState<number | null>(null);
     const { notify } = useNotify();
 
     const cargarEmpresas = async () => {
@@ -43,6 +44,7 @@ export const useGestionEmpresas = (id_usuario: number, refreshParent: () => void
     };
 
     const handleDesvincular = async (id_empresa: number) => {
+        setLoadingId(id_empresa);
         try {
             const res = await CuentasRequests.desvincularEmpresa(id_usuario, id_empresa);
             if (res.success) {
@@ -54,6 +56,8 @@ export const useGestionEmpresas = (id_usuario: number, refreshParent: () => void
             }
         } catch (error) {
             notify({ type: 'error', content: 'Error de conexión' });
+        } finally {
+            setLoadingId(null);
         }
     };
 
@@ -61,6 +65,7 @@ export const useGestionEmpresas = (id_usuario: number, refreshParent: () => void
         asignadas,
         todas,
         loading,
+        loadingId,
         handleVincular,
         handleDesvincular
     };

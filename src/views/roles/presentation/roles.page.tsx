@@ -19,7 +19,7 @@ import { useRegistroRol } from "../hooks/useRegistroRol";
 import { RegistroRol } from "./registro-rol";
 
 export const RolesPage = () => {
-    useTitlePage("Gestión de Roles");
+    useTitlePage("Roles y Permisos");
 
     const {
         rolesFiltrados,

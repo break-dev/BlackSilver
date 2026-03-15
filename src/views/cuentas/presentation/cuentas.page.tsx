@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, TextInput, Avatar, Text, Stack } from '@mantine/core';
+import { ActionIcon, Badge, Button, Group, TextInput, Tooltip, Avatar, Text, Stack } from '@mantine/core';
 import {
     PlusIcon,
     MagnifyingGlassIcon,
@@ -15,7 +15,7 @@ import { RegistroCuenta } from './registro-cuenta';
 import { GestionEmpresas } from './gestion-empresas';
 
 export const CuentasPage = () => {
-    useTitlePage("Gestión de Cuentas");
+    useTitlePage("Usuarios y Cuentas");
 
     const {
         cuentasFiltradas,
@@ -90,8 +90,9 @@ export const CuentasPage = () => {
                                     <Badge
                                         size="xs"
                                         variant="filled"
+                                        color="pink"
                                         radius="sm"
-                                        className="bg-indigo-500/20 text-indigo-300 font-bold border-none"
+                                        className="text-white font-bold border-none"
                                     >
                                         {cuenta.empresa_pertenece}
                                     </Badge>
@@ -122,40 +123,43 @@ export const CuentasPage = () => {
                                         <Badge
                                             size="xs"
                                             variant="filled"
+                                            color="grape"
                                             radius="sm"
-                                            className="bg-zinc-800 text-zinc-400 font-bold border-none w-fit"
+                                            className="text-white font-bold border-none w-fit"
                                         >
                                             {cuenta.nombre_rol}
                                         </Badge>
                                     </Stack>
                                 </div>
 
-                                {/* Row 2: Account Details */}
+                                {/* Row 2.5: Datos de Acceso */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
-                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-1">Usuario</Text>
-                                        <Group gap={6}>
+                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-2.5 italic">Usuario</Text>
+                                        <Group gap="xs">
                                             <UserIcon className="w-3.5 h-3.5 text-indigo-400" />
-                                            <Text size="xs" fw={700} className="text-zinc-200">{cuenta.username}</Text>
+                                            <Text size="xs" fw={700} className="text-white truncate">{cuenta.username}</Text>
                                         </Group>
                                     </div>
-                                    <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 relative group/pwd">
-                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-1">Contraseña</Text>
-                                        <Group justify="space-between">
-                                            <Group gap={6}>
+                                    <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
+                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-2.5 italic">Contraseña</Text>
+                                        <div className="flex items-center justify-between">
+                                            <Group gap="xs">
                                                 <KeyIcon className="w-3.5 h-3.5 text-amber-400" />
                                                 <Text size="xs" fw={700} className="text-zinc-200 italic">••••••••</Text>
                                             </Group>
-                                            <ActionIcon
-                                                variant="subtle"
-                                                size="xs"
-                                                color="zinc"
-                                                onClick={() => handleOpenEdit(cuenta)}
-                                                className="hover:bg-zinc-800"
-                                            >
-                                                <PencilSquareIcon className="w-3.5 h-3.5 text-zinc-500 hover:text-white" />
-                                            </ActionIcon>
-                                        </Group>
+                                            <Tooltip label="Cambiar Contraseña" position="top" withArrow radius="md">
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="xs"
+                                                    color="zinc"
+                                                    onClick={() => handleOpenEdit(cuenta)}
+                                                    className="hover:bg-zinc-800"
+                                                >
+                                                    <PencilSquareIcon className="w-3.5 h-3.5" />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -194,7 +198,7 @@ export const CuentasPage = () => {
             <ModalEstandar
                 opened={openedCreate}
                 close={closeCreate}
-                title={selectedCuenta ? `Cambiar Contraseña: ${selectedCuenta.username}` : "Registrar Nueva Cuenta"}
+                title={selectedCuenta ? "Cambiar Contraseña" : "Registrar Nueva Cuenta"}
                 size="md"
             >
                 <RegistroCuenta

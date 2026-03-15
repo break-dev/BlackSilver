@@ -73,7 +73,11 @@ export const RegistroCuenta = ({ cuentaEdit, onClose, refresh }: RegistroCuentaP
                 required={!isEdit}
                 withAsterisk={!isEdit}
                 leftSection={<KeyIcon className="w-4 h-4 text-zinc-500" />}
-                classNames={fieldClasses}
+                classNames={{
+                    ...fieldClasses,
+                    innerInput: "text-white placeholder:text-zinc-500",
+                    visibilityToggle: "text-zinc-500 hover:text-zinc-300 transition-colors"
+                }}
                 disabled={loading}
             />
 
