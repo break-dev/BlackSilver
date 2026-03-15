@@ -2,6 +2,7 @@ import {
   Button,
   TextInput,
   Badge,
+  Skeleton,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -85,11 +86,27 @@ export const OrganigramaPage = () => {
       {/* Grid de Tarjetas de Áreas — RESTAURADO AL DISEÑO APROBADO */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-24 rounded-xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
-            />
+              className="flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-4"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3 flex-1">
+                  <Skeleton height={32} width={32} radius="lg" />
+                  <Skeleton height={18} width="60%" radius="sm" />
+                </div>
+                <Skeleton height={16} width={40} radius="sm" />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+                <div className="space-y-1.5 flex-1">
+                  <Skeleton height={8} width={80} radius="xs" />
+                  <Skeleton height={12} width={120} radius="xs" />
+                </div>
+                <Skeleton height={28} width={70} radius="md" />
+              </div>
+            </div>
           ))}
         </div>
       ) : areasFiltradas.length === 0 ? (

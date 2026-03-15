@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Group, TextInput, Tooltip, Avatar, Text, Stack } from '@mantine/core';
+import { ActionIcon, Badge, Button, Group, TextInput, Tooltip, Avatar, Text, Stack, Skeleton } from '@mantine/core';
 import {
     PlusIcon,
     MagnifyingGlassIcon,
@@ -65,7 +65,42 @@ export const CuentasPage = () => {
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="h-48 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50" />
+                        <div key={i} className="flex flex-col bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-5 gap-4">
+                            <div className="flex justify-between items-center">
+                                <Skeleton height={16} width={100} radius="sm" />
+                                <Skeleton height={16} width={60} radius="md" />
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <Skeleton height={56} width={56} circle />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton height={14} width="80%" radius="sm" />
+                                    <Skeleton height={16} width="40%" radius="sm" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
+                                    <Skeleton height={8} width="40%" radius="xs" />
+                                    <Skeleton height={12} width="100%" radius="xs" />
+                                </div>
+                                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
+                                    <Skeleton height={8} width="40%" radius="xs" />
+                                    <Skeleton height={12} width="100%" radius="xs" />
+                                </div>
+                            </div>
+
+                            <div className="bg-cyan-500/[0.03] rounded-2xl p-3 border border-cyan-500/10 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Skeleton height={32} width={32} radius="lg" />
+                                    <div className="space-y-1">
+                                        <Skeleton height={12} width={120} radius="xs" />
+                                        <Skeleton height={8} width={150} radius="xs" />
+                                    </div>
+                                </div>
+                                <Skeleton height={32} width={32} radius="lg" />
+                            </div>
+                        </div>
                     ))}
                 </div>
             ) : cuentasFiltradas.length === 0 ? (

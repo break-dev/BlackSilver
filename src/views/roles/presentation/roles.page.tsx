@@ -4,6 +4,7 @@ import {
     Badge,
     Group,
     Tooltip,
+    Skeleton,
 } from "@mantine/core";
 import {
     MagnifyingGlassIcon,
@@ -74,11 +75,26 @@ export const RolesPage = () => {
             {/* Roles Cards Grid */}
             {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2, 3].map((i) => (
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
                         <div
                             key={i}
-                            className="h-32 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
-                        />
+                            className="flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 gap-4"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3 flex-1">
+                                    <Skeleton height={40} width={40} radius="xl" />
+                                    <div className="space-y-2 flex-1">
+                                        <Skeleton height={14} width="50%" radius="sm" />
+                                        <Skeleton height={10} width="80%" radius="sm" />
+                                    </div>
+                                </div>
+                                <Skeleton height={16} width={45} radius="sm" />
+                            </div>
+
+                            <div className="mt-2 pt-3 border-t border-zinc-800/50 flex justify-start">
+                                <Skeleton height={24} width={100} radius="sm" />
+                            </div>
+                        </div>
                     ))}
                 </div>
             ) : rolesFiltrados.length === 0 ? (
