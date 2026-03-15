@@ -1,0 +1,12 @@
+export interface RES_Perfil {
+    username: string;
+    nombre: string;
+    apellido: string;
+    dni: string;
+    path_foto: string | null;
+    nombre_rol: string;
+    nombre_cargo: string | null;
+    nombre_area: string | null;
+    empresa_nombre: string | null;
+    empresa_ruc: string | null;
+}

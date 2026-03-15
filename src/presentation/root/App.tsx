@@ -35,6 +35,7 @@ import { KardexProductosPage } from "../../views/kardex-productos/presentation/k
 import { RolesPage } from "../../views/roles/presentation/roles.page";
 import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
 // import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
+import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 
 export const App = () => {
   return (
@@ -66,7 +67,7 @@ export const App = () => {
         {/* Perfil */}
         <Route
           path="/perfil"
-          element={<PlaceholderPage titulo="Mi Perfil" />}
+          element={<PerfilPage />}
         />
 
         {/* Configuracion */}
