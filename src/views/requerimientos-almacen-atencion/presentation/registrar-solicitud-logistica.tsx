@@ -19,12 +19,16 @@ import {
 import { useRegistrarSolicitudLogistica } from "../hooks/useRegistrarSolicitudLogistica";
 import { Premura } from "../../../shared/enums/otros";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import type { DetalleRequerimientoExtendido } from "../service/atencion.responses";
+import type {
+  DetalleRequerimientoExtendido,
+  RES_RequerimientoAlmacen,
+} from "../service/atencion.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface RegistrarSolicitudLogisticaProps {
-  idRequerimiento: number;
+  requerimiento: RES_RequerimientoAlmacen;
   detalles: DetalleRequerimientoExtendido[];
-  onSuccess: () => void;
+  onSuccess: (ids?: number[]) => void;
   onCancel: () => void;
 }
 
@@ -51,7 +55,7 @@ const SectionHeader = ({ icon: Icon, title }: { icon: any; title: string }) => (
 );
 
 export const RegistrarSolicitudLogistica = ({
-  idRequerimiento,
+  requerimiento,
   detalles,
   onSuccess,
   onCancel,
@@ -65,6 +69,8 @@ export const RegistrarSolicitudLogistica = ({
       fechaEntrega,
       comentarios,
       cantidades,
+      factores,
+      cantidadesBase,
       itemsPendientes,
       itemsSeleccionados,
     },
@@ -74,11 +80,12 @@ export const RegistrarSolicitudLogistica = ({
       setFechaEntrega,
       setComentarios,
       setCantidades,
+      setCantidadesBase,
       toggleSelection,
       toggleAll,
       handleConsultar,
     },
-  } = useRegistrarSolicitudLogistica({ idRequerimiento, detalles, onSuccess });
+  } = useRegistrarSolicitudLogistica({ requerimiento, detalles, onSuccess });
 
   return (
     <Stack gap={32} p="md">
@@ -99,7 +106,7 @@ export const RegistrarSolicitudLogistica = ({
           />
 
           <TextInput
-            label="Detalles adicionales"
+            label="Observación"
             placeholder="Algún motivo o comentario general..."
             value={observacion}
             onChange={(e) => setObservacion(e.currentTarget.value)}
@@ -184,10 +191,10 @@ export const RegistrarSolicitudLogistica = ({
                   />
                 </th>
                 <th className="px-4 py-3 text-left min-w-[220px]">Producto</th>
-                <th className="px-4 py-3 text-right w-32 font-semibold">
-                  Cant. Orig.
+                <th className="px-4 py-3 text-center w-32 font-semibold whitespace-nowrap">
+                  Cant. Requerida
                 </th>
-                <th className="px-4 py-3 text-center w-40 font-semibold">
+                <th className="px-4 py-3 text-center min-w-[320px] font-semibold">
                   Cant. a Solicitar
                 </th>
                 <th className="px-4 py-3 text-left min-w-[280px] font-semibold">
@@ -210,72 +217,134 @@ export const RegistrarSolicitudLogistica = ({
                   const isSelected = localSelectedIds.includes(
                     item.id_requerimiento_almacen_detalle,
                   );
+                  const idDetalle = item.id_requerimiento_almacen_detalle;
+                  const canSolicitada = cantidades[idDetalle] || 0;
+                  const canBase = cantidadesBase[idDetalle] || 0;
+                  const factorVal = factores[idDetalle] || 1;
+                  const isDifferentUnit =
+                    item.unidad_medida_abv !== item.unidad_medida_base_abv;
+
                   return (
                     <tr
-                      key={item.id_requerimiento_almacen_detalle}
+                      key={idDetalle}
                       className={`${isSelected ? "hover:bg-white/5" : "opacity-40"} transition-colors`}
                     >
                       <td className="px-4 py-3 text-center">
                         <Checkbox
                           size="xs"
                           checked={isSelected}
-                          onChange={() =>
-                            toggleSelection(
-                              item.id_requerimiento_almacen_detalle,
-                            )
-                          }
+                          onChange={() => toggleSelection(idDetalle)}
                           color="indigo"
                         />
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-zinc-100">
-                        {item.producto}
+                      <td className="px-4 py-3">
+                        <Text size="sm" fw={700} className="text-zinc-100">
+                          {item.producto}
+                        </Text>
                       </td>
-                      <td className="px-4 py-3 text-sm text-right">
+                      <td className="px-2 py-3 text-sm text-cente flex flex-col justify-center items-center gap-0.5">
+                        <Badge
+                          variant="filled"
+                          color="teal.9"
+                          radius="sm"
+                          className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
+                        >
+                          {formatNumber(item.cantidad_solicitada)}{" "}
+                          {item.unidad_medida_abv}
+                        </Badge>
                         <Badge
                           variant="light"
                           color="zinc"
                           radius="sm"
                           size="sm"
-                          className="font-bold whitespace-nowrap"
+                          className="font-medium whitespace-nowrap"
                         >
-                          {Number(item.cantidad_solicitada).toFixed(2)}{" "}
+                          {formatNumber(item.contenido_por_presentacion)}{" "}
+                          {item.unidad_medida_base_abv}{" "}
+                          <span className="lowercase">x</span>{" "}
                           {item.unidad_medida_abv}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <NumberInput
-                          size="sm"
-                          radius="lg"
-                          disabled={!isSelected}
-                          value={
-                            cantidades[item.id_requerimiento_almacen_detalle]
-                          }
-                          onChange={(val) =>
-                            setCantidades((prev) => ({
-                              ...prev,
-                              [item.id_requerimiento_almacen_detalle]:
-                                Number(val),
-                            }))
-                          }
-                          min={0.01}
-                          decimalSeparator="."
-                          hideControls
-                          rightSection={
-                            <Text
-                              size="xs"
-                              fw={700}
-                              c="zinc.5"
-                              className="mr-3"
-                            >
-                              {item.unidad_medida_abv}
-                            </Text>
-                          }
-                          rightSectionWidth={50}
-                          classNames={{
-                            input:
-                              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 h-10 text-right font-bold transition-all pr-12",
-                          }}
-                        />
+                        <Group gap="xs" justify="center" wrap="nowrap">
+                          {isDifferentUnit && (
+                            <>
+                              {/* Cantidad en Unidad Elegida */}
+                              <NumberInput
+                                size="xs"
+                                radius="md"
+                                disabled={!isSelected}
+                                value={canSolicitada || ""}
+                                onChange={(val) => {
+                                  const num = Number(val);
+                                  setCantidades((prev) => ({
+                                    ...prev,
+                                    [idDetalle]: num,
+                                  }));
+                                  setCantidadesBase((prev) => ({
+                                    ...prev,
+                                    [idDetalle]: Number(
+                                      (num * (factorVal || 1)).toFixed(4),
+                                    ),
+                                  }));
+                                }}
+                                min={0}
+                                placeholder="0"
+                                rightSection={
+                                  <Text size="9px" fw={800} c="zinc.5">
+                                    {item.unidad_medida_abv}
+                                  </Text>
+                                }
+                                rightSectionWidth={35}
+                                className="w-24"
+                                classNames={{
+                                  input:
+                                    "bg-zinc-900 border-zinc-800 text-right pr-9 font-bold text-xs h-9",
+                                }}
+                              />
+                            </>
+                          )}
+
+                          {/* Cantidad Base */}
+                          <NumberInput
+                            size="xs"
+                            radius="md"
+                            disabled={!isSelected}
+                            value={canBase || ""}
+                            onChange={(val) => {
+                              const num = Number(val);
+                              setCantidadesBase((prev) => ({
+                                ...prev,
+                                [idDetalle]: num,
+                              }));
+                              if (isDifferentUnit) {
+                                setCantidades((prev) => ({
+                                  ...prev,
+                                  [idDetalle]: Number(
+                                    (num / (factorVal || 1)).toFixed(4),
+                                  ),
+                                }));
+                              } else {
+                                setCantidades((prev) => ({
+                                  ...prev,
+                                  [idDetalle]: num,
+                                }));
+                              }
+                            }}
+                            min={0}
+                            placeholder="0"
+                            rightSection={
+                              <Text size="9px" fw={800} c="indigo.4">
+                                {item.unidad_medida_base_abv}
+                              </Text>
+                            }
+                            rightSectionWidth={35}
+                            className={`${isDifferentUnit ? "w-24" : "w-32 mx-auto"}`}
+                            classNames={{
+                              input: `bg-zinc-900 border-zinc-800 text-right pr-9 font-bold text-xs h-9 ${!isDifferentUnit ? "border-indigo-500/30 ring-1 ring-indigo-500/20" : ""}`,
+                            }}
+                          />
+                        </Group>
                       </td>
                       <td className="px-4 py-3">
                         <TextInput
@@ -283,16 +352,11 @@ export const RegistrarSolicitudLogistica = ({
                           size="sm"
                           radius="lg"
                           disabled={!isSelected}
-                          value={
-                            comentarios[
-                              item.id_requerimiento_almacen_detalle
-                            ] || ""
-                          }
+                          value={comentarios[idDetalle] || ""}
                           onChange={(e) =>
                             setComentarios((prev) => ({
                               ...prev,
-                              [item.id_requerimiento_almacen_detalle]:
-                                e.target.value,
+                              [idDetalle]: e.target.value,
                             }))
                           }
                           classNames={inputClasses}

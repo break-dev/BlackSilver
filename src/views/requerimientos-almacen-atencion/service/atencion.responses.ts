@@ -37,6 +37,7 @@ export interface RES_DetalleRequerimiento {
     empleado_atencion: string | null;
     producto: string;
     stock_minimo: number;
+    stock_disponible: number;
     unidad_medida_base_abv: string;
     unidad_medida_abv: string;
     contenido_por_presentacion: number;

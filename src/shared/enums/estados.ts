@@ -25,8 +25,8 @@ export enum EstadoDetalleRequerimiento {
   NuevaEntrega = "Nueva Entrega",
 }
 
-// Sincronizado con PHP: SolicitudDetalleEstado
-export enum SolicitudDetalleEstado {
+// Sincronizado con PHP: EstadoSolicitudDetalle
+export enum EstadoSolicitudDetalle {
   EsperandoAprobacion = "Esperando aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",

@@ -10,7 +10,7 @@ import type { AxiosError } from "axios";
 
 interface UseGestionAtencionProps {
   idRequerimiento: number;
-  onSuccess: () => void;
+  onSuccess: (ids?: number[]) => void;
 }
 
 export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAtencionProps) => {
@@ -56,9 +56,20 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
       deselectAllItems();
   };
 
-  const onSuccessLogistica = () => {
-      loadData(true);
-      handleCloseLogisticaModal();
+  const onSuccessLogistica = (ids?: number[]) => {
+    if (!ids) return;
+    setDetalles((prev) =>
+      prev.map((item) =>
+        ids.includes(item.id_requerimiento_almacen_detalle)
+          ? {
+              ...item,
+              estado: EstadoDetalleRequerimiento.ConsultaLogistica,
+            }
+          : item,
+      ),
+    );
+    handleCloseLogisticaModal();
+    onSuccess(ids);
   };
 
   const loadData = useCallback(async (isSilent = false) => {
@@ -127,7 +138,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
                 : item
             )
         );
-        onSuccess();
+        onSuccess([selectedItemId]);
       } else {
         setError(res.message || "Error al aprobar");
       }
@@ -160,7 +171,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
                 : item
             )
         );
-        onSuccess();
+        onSuccess([selectedItemId]);
       } else {
         setError(res.message || "Error al rechazar");
       }

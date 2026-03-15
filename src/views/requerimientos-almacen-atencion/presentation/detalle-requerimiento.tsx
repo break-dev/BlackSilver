@@ -22,6 +22,7 @@ import {
   CheckBadgeIcon,
   ExclamationTriangleIcon,
   PaperAirplaneIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
@@ -37,11 +38,12 @@ import type {
   RES_RequerimientoAlmacen,
   DetalleRequerimientoExtendido,
 } from "../service/atencion.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface GestionAtencionProps {
   requerimiento: RES_RequerimientoAlmacen;
   idAlmacen: number;
-  onSuccess: () => void;
+  onSuccess: (ids?: number[]) => void;
 }
 
 export const DetalleRequerimiento = ({
@@ -313,36 +315,67 @@ export const DetalleRequerimiento = ({
                       {idx + 1}
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <Checkbox
-                        checked={selectedItemsIds.includes(
-                          item.id_requerimiento_almacen_detalle,
-                        )}
-                        onChange={() =>
-                          toggleItemSelection(
+                      {item.estado ===
+                        EstadoDetalleRequerimiento.Aprobado.toString() ||
+                      item.estado ===
+                        EstadoDetalleRequerimiento.EnDespacho.toString() ? (
+                        <Checkbox
+                          checked={selectedItemsIds.includes(
                             item.id_requerimiento_almacen_detalle,
-                          )
-                        }
-                        disabled={
-                          item.estado !==
-                            EstadoDetalleRequerimiento.Aprobado.toString() &&
-                          item.estado !==
-                            EstadoDetalleRequerimiento.EnDespacho.toString()
-                        }
-                        color="indigo"
-                        size="sm"
-                        className="cursor-pointer"
-                      />
+                          )}
+                          onChange={() =>
+                            toggleItemSelection(
+                              item.id_requerimiento_almacen_detalle,
+                            )
+                          }
+                          color="indigo"
+                          size="sm"
+                          className="cursor-pointer"
+                        />
+                      ) : (
+                        <div className="flex justify-center" title="No se puede despachar este producto">
+                          <NoSymbolIcon className="w-5 h-5 text-gray-500" />
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
-                      <Text
-                        size="sm"
-                        fw={800}
-                        className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight"
-                      >
-                        {item.producto}
-                      </Text>
+                      <Stack gap={4}>
+                        <Text
+                          size="sm"
+                          fw={800}
+                          className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight"
+                        >
+                          {item.producto}
+                        </Text>
+                        {(() => {
+                          const stock = Number(item.stock_disponible || 0);
+                          const pendiente = item.pendiente_base;
+                          
+                          if (stock <= 0) {
+                            return (
+                              <Badge variant="light" color="red" size="xs" radius="sm">
+                                Sin stock
+                              </Badge>
+                            );
+                          }
+                          
+                          if (stock < pendiente) {
+                            return (
+                              <Badge variant="light" color="orange" size="xs" radius="sm">
+                                Stock insuficiente
+                              </Badge>
+                            );
+                          }
+                          
+                          return (
+                            <Badge variant="light" color="green" size="xs" radius="sm">
+                              Stock disponible
+                            </Badge>
+                          );
+                        })()}
+                      </Stack>
                     </td>
-                    <td className="px-6 py-4 text-center flex flex-row gap-2.5 justify-center">
+                    <td className="px-6 py-4 text-center flex flex-col gap-0.5 justify-center items-center">
                       <Badge
                         variant="filled"
                         color="cyan.7"
@@ -350,22 +383,22 @@ export const DetalleRequerimiento = ({
                         size="sm"
                         className="font-black px-4"
                       >
-                        {Number(item.cantidad_solicitada || 0).toFixed(2)}{" "}
-                        {item.unidad_medida_base_abv}
+                        {formatNumber(item.cantidad_solicitada)}{" "}
+                        {item.unidad_medida_abv}
                       </Badge>
                       {item.unidad_medida_base_abv !==
                         item.unidad_medida_abv && (
                         <Badge
                           variant="filled"
-                          color="pink.7"
+                          color="zinc"
                           radius="sm"
                           size="sm"
                           className="font-black px-4"
                         >
-                          {Number(item.cantidad_solicitada_base || 0).toFixed(
-                            2,
-                          )}{" "}
-                          {item.unidad_medida_base_abv}
+                          {formatNumber(item.contenido_por_presentacion)}{" "}
+                          {item.unidad_medida_base_abv}{" "}
+                          <span className="lowercase">x</span>{" "}
+                          {item.unidad_medida_abv}
                         </Badge>
                       )}
                     </td>
@@ -373,8 +406,7 @@ export const DetalleRequerimiento = ({
                       <div className="flex flex-col gap-1.5 w-full">
                         <div className="flex justify-between items-center px-1">
                           <Text size="10px" fw={800} c="zinc.5">
-                            Atendido:{" "}
-                            {Number(item.cantidad_entregada || 0).toFixed(2)}
+                            Atendido: {formatNumber(item.cantidad_entregada)}
                           </Text>
                           <Text size="10px" fw={900} c="indigo.4">
                             {item.porcentaje_progreso}%
@@ -590,7 +622,7 @@ export const DetalleRequerimiento = ({
             closeEntregaBatch();
             deselectAllItems();
             loadData(true);
-            onSuccess();
+            onSuccess([]);
           }}
           onCancel={closeEntregaBatch}
         />
@@ -614,17 +646,14 @@ export const DetalleRequerimiento = ({
         size="90%"
       >
         <RegistrarSolicitudLogistica
-          idRequerimiento={requerimiento.id_requerimiento}
+          requerimiento={requerimiento}
           detalles={detalles}
-          onSuccess={() => {
-            logistica.onSuccess();
-            onSuccess();
+          onSuccess={(ids?: number[]) => {
+            logistica.onSuccess(ids);
           }}
           onCancel={logistica.close}
         />
       </ModalEstandar>
-
-
     </Stack>
   );
 };

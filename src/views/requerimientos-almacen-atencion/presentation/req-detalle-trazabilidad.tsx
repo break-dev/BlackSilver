@@ -16,6 +16,7 @@ import {
   XCircleIcon,
   CheckCircleIcon,
   CubeIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
@@ -149,6 +150,8 @@ const getStatusStyles = (status: string) => {
   switch (status) {
     case EstadoDetalleRequerimiento.EsperandoAprobacion:
       return { color: "blue", variant: "light" as const };
+    case EstadoDetalleRequerimiento.ConsultaLogistica:
+      return { color: "gray", variant: "light" as const };
     case EstadoDetalleRequerimiento.Aprobado:
       return { color: "violet", variant: "light" as const };
     case EstadoDetalleRequerimiento.EnDespacho:
@@ -170,6 +173,8 @@ const getStatusIcon = (status: string) => {
   switch (status) {
     case EstadoDetalleRequerimiento.EsperandoAprobacion:
       return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
+    case EstadoDetalleRequerimiento.ConsultaLogistica:
+      return <PaperAirplaneIcon className="w-4 h-4 text-white" />;
     case EstadoDetalleRequerimiento.Aprobado:
       return <CheckBadgeIcon className="w-4 h-4 text-white" />;
     case EstadoDetalleRequerimiento.EnDespacho:

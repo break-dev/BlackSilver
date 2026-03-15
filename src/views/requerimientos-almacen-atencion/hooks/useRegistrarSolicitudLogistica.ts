@@ -4,55 +4,85 @@ import { AtencionService } from "../service/atencion.service";
 import { Premura } from "../../../shared/enums/otros";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 import type { DTO_CrearSolicitudLogistica } from "../service/atencion.requests";
-import type { DetalleRequerimientoExtendido } from "../service/atencion.responses";
+import type {
+  DetalleRequerimientoExtendido,
+  RES_RequerimientoAlmacen,
+} from "../service/atencion.responses";
 
 interface UseRegistrarSolicitudLogisticaProps {
-  idRequerimiento: number;
+  requerimiento: RES_RequerimientoAlmacen;
   detalles: DetalleRequerimientoExtendido[];
-  onSuccess: () => void;
+  onSuccess: (ids?: number[]) => void;
 }
 
 export const useRegistrarSolicitudLogistica = ({
-  idRequerimiento,
+  requerimiento,
   detalles,
   onSuccess,
 }: UseRegistrarSolicitudLogisticaProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [localSelectedIds, setLocalSelectedIds] = useState<number[]>([]);
-  
-  // Campos generales
+
+  // Campos generales - Heredados del requerimiento
   const [observacion, setObservacion] = useState("");
-  const [premura, setPremura] = useState<string>(Premura.Normal);
-  const [fechaEntrega, setFechaEntrega] = useState<Date | null>(new Date());
+  const [premura, setPremura] = useState<string>(
+    requerimiento.premura || Premura.Normal,
+  );
+  const [fechaEntrega, setFechaEntrega] = useState<Date | null>(
+    requerimiento.fecha_entrega_requerida
+      ? dayjs(requerimiento.fecha_entrega_requerida).toDate()
+      : new Date(),
+  );
 
   // Campos por ítem
   const [comentarios, setComentarios] = useState<Record<number, string>>({});
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
+  const [factores, setFactores] = useState<Record<number, number>>({});
+  const [cantidadesBase, setCantidadesBase] = useState<Record<number, number>>(
+    {},
+  );
 
   const itemsPendientes = detalles.filter(
-    (d) => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()
+    (d) =>
+      d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
   );
 
   const itemsSeleccionados = itemsPendientes.filter((d) =>
-    localSelectedIds.includes(d.id_requerimiento_almacen_detalle)
+    localSelectedIds.includes(d.id_requerimiento_almacen_detalle),
   );
 
   useEffect(() => {
     const initCants: Record<number, number> = {};
+    const initFactores: Record<number, number> = {};
+    const initCantsBase: Record<number, number> = {};
+
     itemsPendientes.forEach((d) => {
-      initCants[d.id_requerimiento_almacen_detalle] = Number(d.cantidad_solicitada);
+      // Si la unidad es diferente, la "cantidad" es la de la presentación (cajas)
+      // Si son iguales, es la base.
+      initCants[d.id_requerimiento_almacen_detalle] = Number(
+        d.cantidad_solicitada,
+      );
+      initFactores[d.id_requerimiento_almacen_detalle] =
+        d.contenido_por_presentacion || 1;
+      initCantsBase[d.id_requerimiento_almacen_detalle] = Number(
+        d.cantidad_solicitada_base,
+      );
     });
+
     setCantidades(initCants);
+    setFactores(initFactores);
+    setCantidadesBase(initCantsBase);
+
     // Seleccionamos todos por defecto
     setLocalSelectedIds(
-      itemsPendientes.map((i) => i.id_requerimiento_almacen_detalle)
+      itemsPendientes.map((i) => i.id_requerimiento_almacen_detalle),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detalles]);
 
   const toggleSelection = (id: number) => {
     setLocalSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -61,7 +91,7 @@ export const useRegistrarSolicitudLogistica = ({
       setLocalSelectedIds([]);
     } else {
       setLocalSelectedIds(
-        itemsPendientes.map((i) => i.id_requerimiento_almacen_detalle)
+        itemsPendientes.map((i) => i.id_requerimiento_almacen_detalle),
       );
     }
   };
@@ -70,28 +100,35 @@ export const useRegistrarSolicitudLogistica = ({
     setSubmitting(true);
     try {
       const dto: DTO_CrearSolicitudLogistica = {
-        id_requerimiento: idRequerimiento,
+        id_requerimiento: requerimiento.id_requerimiento,
         observacion,
         premura,
-        fecha_entrega_requerida: fechaEntrega ? dayjs(fechaEntrega).format("YYYY-MM-DD") : "",
+        fecha_entrega_requerida: fechaEntrega
+          ? dayjs(fechaEntrega).format("YYYY-MM-DD")
+          : "",
         detalles: itemsSeleccionados.map((item) => {
-          const cantS = cantidades[item.id_requerimiento_almacen_detalle] || item.cantidad_solicitada;
-          const cantB = cantS * (item.contenido_por_presentacion || 1);
+          const idDetalle = item.id_requerimiento_almacen_detalle;
+          const cantS = cantidades[idDetalle] || 0;
+          const factor = factores[idDetalle] || 1;
+          const cantB = cantidadesBase[idDetalle] || 0;
+
           return {
-            id_requerimiento_almacen_detalle: item.id_requerimiento_almacen_detalle,
+            id_requerimiento_almacen_detalle: idDetalle,
             id_producto: item.id_producto,
-            id_unidad_medida: item.unidad_medida_abv === item.unidad_medida_base_abv ? 1 : 2, // 1: Base, 2: Presentación (Según lógica previa)
+            // id_unidad_medida: 1: Base (Si son iguales), 2: Presentación (Si son distintas)
+            id_unidad_medida:
+              item.unidad_medida_abv === item.unidad_medida_base_abv ? 1 : 2,
             cantidad_solicitada: cantS,
-            contenido_por_presentacion: item.contenido_por_presentacion,
+            contenido_por_presentacion: factor,
             cantidad_solicitada_base: cantB,
-            comentario: comentarios[item.id_requerimiento_almacen_detalle] || "",
+            comentario: comentarios[idDetalle] || "",
           };
         }),
       };
 
       const res = await AtencionService.registrarSolicitudLogistica(dto);
       if (res.success) {
-        onSuccess();
+        onSuccess(localSelectedIds);
       }
     } catch (error) {
       console.error(error);
@@ -109,6 +146,8 @@ export const useRegistrarSolicitudLogistica = ({
       fechaEntrega,
       comentarios,
       cantidades,
+      factores,
+      cantidadesBase,
       itemsPendientes,
       itemsSeleccionados,
     },
@@ -118,6 +157,8 @@ export const useRegistrarSolicitudLogistica = ({
       setFechaEntrega,
       setComentarios,
       setCantidades,
+      setFactores,
+      setCantidadesBase,
       toggleSelection,
       toggleAll,
       handleConsultar,
