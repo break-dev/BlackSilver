@@ -8,7 +8,6 @@ interface DataTableEstandarProps {
   records: any[];
   initialPageSize?: number;
   loading: boolean;
-  minHeight?: number | string;
   [key: string]: any;
 }
 
@@ -18,7 +17,6 @@ export const DataTableEstandar = ({
   records,
   initialPageSize = 25,
   loading,
-  minHeight = 150,
   ...props
 }: DataTableEstandarProps) => {
   const [page, setPage] = useState(1);
@@ -65,6 +63,7 @@ export const DataTableEstandar = ({
         totalRecords={records.length}
         recordsPerPage={pageSize}
         page={page}
+        minHeight={300}
         onPageChange={setPage}
         recordsPerPageOptions={[10, 25, 50, 100]}
         onRecordsPerPageChange={setPageSize}
@@ -74,7 +73,6 @@ export const DataTableEstandar = ({
         idAccessor={idAccessor}
         noRecordsText="No se encontraron registros..."
         loadingText="Cargando..."
-        minHeight={minHeight}
         paginationText={({ from, to, totalRecords }) =>
           `${from} - ${to} de ${totalRecords}`
         }

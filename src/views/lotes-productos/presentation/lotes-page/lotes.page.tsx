@@ -20,6 +20,7 @@ import { LotesFilter } from "./lotes-filter";
 import { ProductGroupCard } from "./product-group-card";
 import type { GroupedProduct } from "./types";
 import { EstadoVencimiento } from "../../../../shared/enums/estados";
+import { formatNumber } from "../../../../presentation/functions/formatNumber";
 
 export const LotesPage = () => {
   const {
@@ -65,15 +66,19 @@ export const LotesPage = () => {
           por_vencer: 0,
           vencidos: 0,
           es_perecible: lote.es_perecible,
+          es_fiscalizado: lote.es_fiscalizado,
         };
       }
       const group = groups[lote.id_producto];
       group.lotes.push(lote);
       group.total_stock_base += Number(lote.stock_actual_base || 0);
 
-      if (lote.estado_vencimiento == EstadoVencimiento.Vencido) group.vencidos++;
-      else if (lote.estado_vencimiento == EstadoVencimiento.PorVencer) group.por_vencer++;
-      else if (lote.estado_vencimiento == EstadoVencimiento.Vigente) group.vigentes++;
+      if (lote.estado_vencimiento == EstadoVencimiento.Vencido)
+        group.vencidos++;
+      else if (lote.estado_vencimiento == EstadoVencimiento.PorVencer)
+        group.por_vencer++;
+      else if (lote.estado_vencimiento == EstadoVencimiento.Vigente)
+        group.vigentes++;
     });
 
     return Object.values(groups).sort((a, b) =>
@@ -122,14 +127,14 @@ export const LotesPage = () => {
                     radius="md"
                     className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
                   >
-                    {record.stock_actual} {record.unidad_medida}
+                    {formatNumber(record.stock_actual)} {record.unidad_medida}
                   </Badge>
 
                   <div className="flex items-center gap-1 mt-1 px-1">
                     {/* Verificamos que las unidades sean distintas antes de renderizar el texto */}
 
                     <Text size="10px" c="white" fw={800}>
-                      {record.contenido_por_presentacion}{" "}
+                      {formatNumber(record.contenido_por_presentacion)}{" "}
                       {record.unidad_medida_base} x {record.unidad_medida}
                     </Text>
                   </div>

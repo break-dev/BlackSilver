@@ -12,4 +12,5 @@ export interface GroupedProduct {
   por_vencer: number;
   vencidos: number;
   es_perecible: boolean;
+  es_fiscalizado: boolean;
 }

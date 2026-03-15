@@ -1,4 +1,4 @@
-import { Badge, Paper, Stack, Text } from "@mantine/core";
+import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { InboxStackIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
@@ -42,6 +42,18 @@ export const ProductGroupCard = ({
               {product.producto}
             </Text>
           </Stack>
+          <Group gap={4} className="flex flex-row self-end mb-1">
+            {product.es_fiscalizado && (
+              <Badge color="yellow" variant="light" size="xs">
+                Fiscalizado
+              </Badge>
+            )}
+            {product.es_perecible && (
+              <Badge color="red" variant="light" size="xs">
+                Perecible
+              </Badge>
+            )}
+          </Group>
         </div>
 
         <div className="flex items-center gap-6">
@@ -122,9 +134,10 @@ export const ProductGroupCard = ({
           columns={columns}
           records={product.lotes}
           loading={loading}
+          initialPageSize={5}
           minHeight={0} // Allows shrinking
           // Using a style for max height control
-          style={{ maxHeight: 350 }}
+          // style={{ maxHeight: 350 }}
         />
       </div>
     </Paper>
