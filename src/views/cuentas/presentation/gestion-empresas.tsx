@@ -115,7 +115,7 @@ export const GestionEmpresas = ({ id_usuario, id_empresa_pertenece, nombre_emple
                             return (
                                 <div 
                                     key={emp.id_empresa}
-                                    className={`flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 ${
+                                    className={`flex items-center gap-3 p-3 border rounded-lg transition-all duration-300 overflow-hidden ${
                                         isDeleting 
                                         ? "opacity-50 scale-[0.99] border-red-500/20 bg-red-900/5" 
                                         : "bg-zinc-900/30 border-zinc-800/50"
@@ -125,16 +125,16 @@ export const GestionEmpresas = ({ id_usuario, id_empresa_pertenece, nombre_emple
                                         <BuildingOffice2Icon className="w-5 h-5" />
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                                            <Text className="text-sm font-bold text-white truncate">
+                                    <div className="flex-1 min-w-0 w-0">
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <Text className="text-sm font-bold text-white line-clamp-1">
                                                 {emp.nombre_comercial || emp.razon_social}
                                             </Text>
-                                            <Badge color="indigo" size="sm" variant="light">
+                                            <Badge color="indigo" size="sm" variant="light" className="shrink-0">
                                                 ACTIVO
                                             </Badge>
                                         </div>
-                                        <Text size="xs" color="dimmed" className="truncate">
+                                        <Text size="xs" color="dimmed" className="truncate italic">
                                             {emp.razon_social}
                                         </Text>
                                     </div>

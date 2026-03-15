@@ -66,28 +66,28 @@ export const EmpresasEjecutoras = ({ idMina, idConcesion }: Props) => {
 
       {/* Lista de empresas */}
       {!loading && ejecutoras.length > 0 && (
-        <div className="grid gap-3">
+        <Stack gap="sm">
           {ejecutoras.map((emp) => (
             <div
               key={emp.id_empresa_mina}
-              className="flex items-center gap-4 p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl hover:bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-200"
+              className="flex items-center gap-4 p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-xl hover:bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-200 overflow-hidden"
             >
               <div className="w-11 h-11 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20 shrink-0">
                 <BriefcaseIcon className="w-5 h-5" />
               </div>
 
-              <div className="flex-1 min-w-0">
-                <Text className="text-sm font-bold text-white truncate">
+              <div className="flex-1 min-w-0 w-0">
+                <Text size="sm" fw={700} className="text-white line-clamp-1">
                   {emp.razon_social}
                 </Text>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-zinc-500 font-medium">
-                  <IdentificationIcon className="w-3.5 h-3.5 text-zinc-600" />
-                  <span>RUC: {emp.ruc}</span>
+                <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-zinc-500 font-medium whitespace-nowrap overflow-hidden">
+                  <IdentificationIcon className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                  <span className="truncate">RUC: {emp.ruc}</span>
                 </div>
               </div>
             </div>
           ))}
-        </div>
+        </Stack>
       )}
     </div>
   );

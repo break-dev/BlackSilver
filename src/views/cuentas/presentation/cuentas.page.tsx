@@ -212,7 +212,7 @@ export const CuentasPage = () => {
                 opened={openedEmpresas}
                 close={closeEmpresas}
                 title="Empresas con Acceso"
-                size="sm"
+                size="md"
             >
                 {selectedCuenta && (
                     <GestionEmpresas
