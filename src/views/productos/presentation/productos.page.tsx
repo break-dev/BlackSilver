@@ -27,6 +27,7 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useProductos } from "../hooks/useProductos";
 import { RegistroProducto } from "./registro-producto";
 import type { RES_Producto } from "../service/productos.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 export const ProductosPage = () => {
   useTitlePage("Catálogo de Productos");
@@ -106,7 +107,7 @@ export const ProductosPage = () => {
       textAlign: "right",
       render: (r) => (
         <Text size="sm" fw={500} className="text-right text-zinc-300">
-          {(Number(r.stock_minimo) || 0).toFixed(2)}
+          {formatNumber(r.stock_minimo)}
         </Text>
       ),
     },

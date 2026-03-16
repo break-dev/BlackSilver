@@ -56,6 +56,7 @@ export const SolicitudesReabastecimientoPage = () => {
       selectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
+      progresoGeneral,
     },
   } = useSolicitudesPage();
 
@@ -320,6 +321,7 @@ export const SolicitudesReabastecimientoPage = () => {
             headerData={selectedReq}
             detalles={detalles}
             loading={loadingDetalle}
+            progresoGeneral={progresoGeneral}
             onOpenTrazabilidad={(det: RES_SolicitudDetalle) => {
               verTrazabilidad(det);
               openTrace();

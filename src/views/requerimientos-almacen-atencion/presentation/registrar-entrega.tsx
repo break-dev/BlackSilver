@@ -21,6 +21,7 @@ import type {
   RES_DetalleRequerimiento,
   DetalleRequerimientoExtendido,
 } from "../service/atencion.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
@@ -162,7 +163,7 @@ export const RegistrarEntrega = ({
                     <Group gap="xs">
                       {/* cantidad solicitada */}
                       <Text size="sm" fw={800} c="zinc.3">
-                        {Number(detalle_req.cantidad_solicitada).toFixed(2)}{" "}
+                        {formatNumber(detalle_req.cantidad_solicitada)}{" "}
                         {detalle_req.unidad_medida_abv}
                       </Text>
                       {detalle_req.unidad_medida_abv !==
@@ -174,15 +175,12 @@ export const RegistrarEntrega = ({
                           className="italic"
                         >
                           (Eqv:{" "}
-                          {Number(detalle_req.cantidad_solicitada_base).toFixed(
-                            2,
-                          )}{" "}
+                          {formatNumber(detalle_req.cantidad_solicitada_base)}{" "}
                           {detalle_req.unidad_medida_base_abv})
                         </Text>
                       )}
                       <Text size="10px" c="zinc.5" fw={700} className="italic">
-                        (Stock minimo:{" "}
-                        {Number(detalle_req.stock_minimo).toFixed(2)}{" "}
+                        (Stock minimo: {formatNumber(detalle_req.stock_minimo)}{" "}
                         {detalle_req.unidad_medida_base_abv})
                       </Text>
                     </Group>
@@ -205,7 +203,7 @@ export const RegistrarEntrega = ({
                         fw={900}
                         className="text-pink-500 font-mono leading-none"
                       >
-                        {pendienteBase.toFixed(2)}
+                        {formatNumber(pendienteBase)}
                       </Text>
                       <Text
                         size="9px"
@@ -236,7 +234,7 @@ export const RegistrarEntrega = ({
                         fw={900}
                         className={`font-mono leading-none ${tEntregadoProductoActualBase > 0 ? "text-indigo-400" : "text-zinc-500"}`}
                       >
-                        {tEntregadoProductoActualBase.toFixed(2)}
+                        {formatNumber(tEntregadoProductoActualBase)}
                       </Text>
                       <Text
                         size="9px"
@@ -399,13 +397,22 @@ export const RegistrarEntrega = ({
                             <td className="text-center pr-6">
                               <Group gap="xs" justify="flex-end" wrap="nowrap">
                                 {/* Input para Unidad de Lote */}
-                                {lote.unidad_medida_abv !== detalle_req.unidad_medida_base_abv && (
+                                {lote.unidad_medida_abv !==
+                                  detalle_req.unidad_medida_base_abv && (
                                   <NumberInput
                                     size="xs"
                                     radius="md"
                                     min={0}
                                     max={lote.stock_actual}
-                                    value={cant > 0 ? Number((cant / (lote.contenido_por_presentacion || 1)).toFixed(4)) : ""}
+                                    value={
+                                      cant > 0
+                                        ? formatNumber(
+                                            cant /
+                                              (lote.contenido_por_presentacion ||
+                                                1),
+                                          )
+                                        : ""
+                                    }
                                     onChange={(val) =>
                                       handleCantLoteChange(
                                         lote.id_lote,
@@ -415,7 +422,12 @@ export const RegistrarEntrega = ({
                                     }
                                     placeholder="0"
                                     rightSection={
-                                      <Text size="10px" fw={800} c="zinc.5" className="mr-2">
+                                      <Text
+                                        size="10px"
+                                        fw={800}
+                                        c="zinc.5"
+                                        className="mr-2"
+                                      >
                                         {lote.unidad_medida_abv}
                                       </Text>
                                     }
@@ -443,7 +455,12 @@ export const RegistrarEntrega = ({
                                   }
                                   placeholder="0"
                                   rightSection={
-                                    <Text size="10px" fw={800} c="zinc.5" className="mr-2">
+                                    <Text
+                                      size="10px"
+                                      fw={800}
+                                      c="zinc.5"
+                                      className="mr-2"
+                                    >
                                       {detalle_req.unidad_medida_base_abv}
                                     </Text>
                                   }

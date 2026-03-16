@@ -87,6 +87,19 @@ export const useSolicitudesPage = () => {
     }
   };
 
+  const progresoGeneral = useMemo(() => {
+    if (!detalles || detalles.length === 0) return 0;
+    const totalSolicitado = detalles.reduce(
+      (acc, d) => acc + Number(d.cantidad_solicitada_base || 1),
+      0,
+    );
+    const totalEntregado = detalles.reduce(
+      (acc, d) => acc + Number(d.cantidad_entregada_base || 0),
+      0,
+    );
+    return Math.min(100, Math.round((totalEntregado / totalSolicitado) * 100));
+  }, [detalles]);
+
   const filteredRecords = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return solicitudes;
@@ -127,6 +140,7 @@ export const useSolicitudesPage = () => {
       setSelectedDetalle,
       trazabilidad,
       loadingTrazabilidad,
+      progresoGeneral,
     },
   };
 };

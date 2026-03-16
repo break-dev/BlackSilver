@@ -17,8 +17,8 @@ export interface RES_SolicitudReabastecimiento {
 export interface RES_SolicitudDetalle {
   id_solicitud_detalle: number;
   producto: string;
-  unidad_medida_base_abreviatura: string;
-  unidad_medida_solicitud_abreviatura: string;
+  unidad_medida_base_abv: string;
+  unidad_medida_solicitud_abv: string;
   es_fiscalizado: number;
   es_perecible: number;
   cantidad_solicitada: number;

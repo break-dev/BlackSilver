@@ -26,6 +26,7 @@ import type {
   RES_RequerimientoDetalle,
   RES_LaborRelacionada,
 } from "../services/requerimientos.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface DetalleRequerimientoProps {
   headerData: RES_RequerimientoAlmacen;
@@ -392,21 +393,33 @@ export const DetalleRequerimiento = ({
                         radius="sm"
                         className="font-bold shadow-xs whitespace-nowrap"
                       >
-                        {Number(item.cantidad_solicitada || 0).toFixed(0)}{" "}
+                        {formatNumber(item.cantidad_solicitada)}{" "}
                         {item.unidad_medida}
                       </Badge>{" "}
                       {item.unidad_medida_base !== item.unidad_medida && (
-                        <Badge
-                          variant="filled"
-                          color="pink"
-                          radius="sm"
-                          className="font-bold shadow-xs whitespace-nowrap"
-                        >
-                          {Number(item.cantidad_solicitada_base || 0).toFixed(
-                            0,
-                          )}{" "}
-                          {item.unidad_medida_base}
-                        </Badge>
+                        <>
+                          <Badge
+                            variant="filled"
+                            color="zinc"
+                            radius="sm"
+                            size="sm"
+                            className="font-black px-4"
+                          >
+                            {formatNumber(item.contenido_por_presentacion)}{" "}
+                            {item.unidad_medida_base}{" "}
+                            <span className="lowercase">x</span>{" "}
+                            {item.unidad_medida}
+                          </Badge>
+                          <Badge
+                            variant="filled"
+                            color="pink"
+                            radius="sm"
+                            className="font-bold shadow-xs whitespace-nowrap"
+                          >
+                            {formatNumber(item.cantidad_solicitada_base)}{" "}
+                            {item.unidad_medida_base}
+                          </Badge>
+                        </>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -420,7 +433,7 @@ export const DetalleRequerimiento = ({
                           >
                             <span>Atendido: </span>
                             <span>
-                              {Number(item.cantidad_entregada || 0).toFixed(0)}
+                              {formatNumber(item.cantidad_entregada)}
                             </span>
                             <span>{item.unidad_medida}</span>
                           </Text>
@@ -443,9 +456,7 @@ export const DetalleRequerimiento = ({
                         className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
                       >
                         {item.comentario || (
-                          <span className="text-zinc-400">
-                            Sin comentarios
-                          </span>
+                          <span className="text-zinc-400">Sin comentarios</span>
                         )}
                       </Text>
                     </td>

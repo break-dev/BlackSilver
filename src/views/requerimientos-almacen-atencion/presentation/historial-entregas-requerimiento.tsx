@@ -20,6 +20,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface HistorialProps {
   idRequerimiento: number;
@@ -266,7 +267,7 @@ export const HistorialEntregasRequerimiento = ({
                             fw={900}
                             className="text-emerald-400 font-mono leading-none"
                           >
-                            +{Number(d.cantidad_lote).toFixed(2)}
+                            +{formatNumber(d.cantidad_lote)}
                           </Text>
                           <Text
                             size="12px"
@@ -285,7 +286,7 @@ export const HistorialEntregasRequerimiento = ({
                                 fw={700}
                                 className="text-emerald-500/70 font-mono leading-none"
                               >
-                                +{Number(d.cantidad_base).toFixed(2)}
+                                +{formatNumber(d.cantidad_base)}
                               </Text>
                               <Text
                                 size="12px"

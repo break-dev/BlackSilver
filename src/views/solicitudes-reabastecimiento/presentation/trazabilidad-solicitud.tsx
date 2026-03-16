@@ -1,10 +1,25 @@
-import { Group, Stack, Text, Timeline, Paper, Loader } from "@mantine/core";
 import {
-  ClockIcon,
+  Badge,
+  Group,
+  Loader,
+  Paper,
+  Stack,
+  Text,
+  Timeline,
+  ThemeIcon,
+} from "@mantine/core";
+import {
+  ClipboardDocumentListIcon,
+  CheckBadgeIcon,
+  TruckIcon,
+  ArchiveBoxArrowDownIcon,
+  XCircleIcon,
   CheckCircleIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
+  CubeIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
+import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import type { RES_TrazabilidadEvento } from "../service/reabastecimiento.responses";
 
 interface TrazabilidadSolicitudProps {
@@ -18,101 +33,157 @@ export const TrazabilidadSolicitud = ({
   eventos,
   loading,
 }: TrazabilidadSolicitudProps) => {
-  return (
-    <Stack gap="xl" p="xs" className="animate-fade-in">
-      <Paper
-        bg="indigo.9/10"
-        p="md"
-        radius="lg"
-        className="border border-indigo-500/20"
-      >
-        <Stack gap={4}>
-          <Text
-            size="xs"
-            fw={700}
-            className="text-zinc-500 uppercase tracking-widest"
-          >
-            Seguimiento de Item
-          </Text>
-          <Text size="md" fw={900} className="text-white italic">
-            {productoNombre}
-          </Text>
-        </Stack>
-      </Paper>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader color="indigo" size="lg" />
+      </div>
+    );
+  }
 
-      {loading ? (
-        <Group justify="center" py="xl">
-          <Loader color="indigo" size="sm" variant="dots" />
-          <Text size="sm" c="zinc.5">
-            Cargando historial...
-          </Text>
-        </Group>
-      ) : eventos.length === 0 ? (
-        <Paper
-          p="xl"
-          radius="md"
-          bg="zinc.9/30"
-          className="border border-zinc-800 border-dashed text-center"
+  return (
+    <Stack gap="xl" className="animate-fade-in p-2">
+      <div className="px-4 py-3 border-l-4 border-indigo-500 bg-zinc-900/50 rounded-r-xl shadow-sm">
+        <Text
+          size="xs"
+          c="dimmed"
+          fw={700}
+          className="uppercase tracking-widest mb-1"
         >
-          <Text size="sm" c="zinc.5" fs="italic">
-            No se registra trazabilidad para este item.
+          Producto:
+        </Text>
+        <Text size="lg" fw={800} className="text-white tracking-tight">
+          {productoNombre}
+        </Text>
+      </div>
+
+      {eventos.length === 0 ? (
+        <div className="text-center py-16 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
+          <CubeIcon className="w-12 h-12 text-zinc-700 mx-auto mb-3 opacity-20" />
+          <Text c="dimmed" fs="italic" size="sm">
+            No hay eventos registrados para este producto.
           </Text>
-        </Paper>
+        </div>
       ) : (
         <Timeline
-          active={eventos.length - 1}
-          bulletSize={24}
+          active={eventos.length + 1}
+          bulletSize={32}
           lineWidth={2}
-          color="indigo"
-          classNames={{
-            itemBullet: "bg-zinc-900 border-zinc-800",
-            itemTitle: "text-zinc-100 font-bold text-sm mb-1",
-          }}
+          className="px-4"
         >
-          {eventos.map((ev, index) => (
-            <Timeline.Item
-              key={ev.id_trazabilidad}
-              bullet={
-                index === eventos.length - 1 ? (
-                  <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
-                ) : (
-                  <ClockIcon className="w-4 h-4 text-zinc-500" />
-                )
-              }
-              title={ev.estado}
-            >
-              <Stack gap={4} mt={6}>
-                <Text size="xs" className="text-zinc-300">
-                  {ev.descripcion}
-                </Text>
-                <Group gap="xs" wrap="nowrap">
-                  <UserIcon className="w-3 h-3 text-zinc-500" />
-                  <Text
-                    size="11px"
-                    fw={600}
-                    className="text-zinc-500 uppercase"
+          {[...eventos].reverse().map((evento) => {
+            const style = getStatusStyles(evento.estado);
+
+            return (
+              <Timeline.Item
+                key={evento.id_trazabilidad}
+                color={style.color}
+                bullet={
+                  <ThemeIcon
+                    size={32}
+                    radius="xl"
+                    color={style.color}
+                    variant="filled"
+                    className="shadow-lg transform transition-transform hover:scale-110"
                   >
-                    {ev.empleado || "Sistema"}
+                    {getStatusIcon(evento.estado)}
+                  </ThemeIcon>
+                }
+                title={
+                  <Group justify="space-between" align="center" mb={6}>
+                    <Badge
+                      color={style.color}
+                      variant={style.variant}
+                      radius="xl"
+                      size="sm"
+                      className={`font-bold border px-3 py-2 ${
+                        style.variant === "light"
+                          ? "border-current/20"
+                          : "border-transparent"
+                      }`}
+                    >
+                      {evento.estado}
+                    </Badge>
+                    <Text size="11px" c="zinc.5" fw={700} className="font-mono">
+                      {dayjs(evento.created_at).format("DD/MM/YYYY HH:mm")}
+                    </Text>
+                  </Group>
+                }
+              >
+                <Paper
+                  p="md"
+                  radius="lg"
+                  className="bg-zinc-900/40 border border-zinc-800/50 shadow-sm transition-colors hover:bg-zinc-900/60"
+                >
+                  <Text
+                    size="sm"
+                    fw={500}
+                    c="zinc.2"
+                    className="leading-relaxed"
+                  >
+                    {evento.descripcion}
                   </Text>
-                  <Text size="11px" className="text-zinc-600 font-mono ml-auto">
-                    {dayjs(ev.created_at).format("DD MMM, YYYY HH:mm")}
-                  </Text>
-                </Group>
-              </Stack>
-            </Timeline.Item>
-          ))}
+                  <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <Text size="10px" fw={800} c="zinc.5">
+                        {evento.empleado?.charAt(0) || "S"}
+                      </Text>
+                    </div>
+                    <Text size="xs" c="zinc.5" fw={500}>
+                      Registrado por:
+                    </Text>
+                    <Text size="xs" fw={700} c="zinc.3" className="italic">
+                      {evento.empleado || "Sistema"}
+                    </Text>
+                  </div>
+                </Paper>
+              </Timeline.Item>
+            );
+          })}
         </Timeline>
       )}
-
-      <div className="bg-zinc-900/40 p-3 rounded-lg border border-zinc-800/50 mt-4">
-        <Group gap="xs" align="flex-start" wrap="nowrap">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 animate-pulse" />
-          <Text size="xs" className="text-zinc-500 font-medium italic">
-            Los eventos se ordenan cronológicamente para mostrar el flujo de
-            atención del producto desde su solicitud.
-          </Text>
-        </Group>
-      </div>
     </Stack>
   );
+};
+
+const getStatusStyles = (status: string) => {
+  switch (status) {
+    case EstadoSolicitudDetalle.EsperandoAprobacion:
+      return { color: "blue", variant: "light" as const };
+    case EstadoSolicitudDetalle.Aprobado:
+      return { color: "violet", variant: "light" as const };
+    case EstadoSolicitudDetalle.EnDespacho:
+      return { color: "orange", variant: "light" as const };
+    case EstadoSolicitudDetalle.NuevaEntrega:
+      return { color: "green", variant: "light" as const };
+    case EstadoSolicitudDetalle.Rechazado:
+      return { color: "red", variant: "filled" as const };
+    case EstadoSolicitudDetalle.Completado:
+      return { color: "cyan", variant: "light" as const };
+    case EstadoSolicitudDetalle.Cerrado:
+      return { color: "zinc", variant: "filled" as const };
+    default:
+      return { color: "gray", variant: "light" as const };
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case EstadoSolicitudDetalle.EsperandoAprobacion:
+      return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.Aprobado:
+      return <CheckBadgeIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.EnDespacho:
+      return <TruckIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.NuevaEntrega:
+      return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.Rechazado:
+      return <XCircleIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.Completado:
+      return <CheckCircleIcon className="w-4 h-4 text-white" />;
+    case "Atención":
+      return <PaperAirplaneIcon className="w-4 h-4 text-white" />;
+    default:
+      return <CubeIcon className="w-4 h-4 text-white" />;
+  }
 };

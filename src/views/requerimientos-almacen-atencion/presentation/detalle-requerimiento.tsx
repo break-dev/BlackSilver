@@ -333,7 +333,10 @@ export const DetalleRequerimiento = ({
                           className="cursor-pointer"
                         />
                       ) : (
-                        <div className="flex justify-center" title="No se puede despachar este producto">
+                        <div
+                          className="flex justify-center"
+                          title="No se puede despachar este producto"
+                        >
                           <NoSymbolIcon className="w-5 h-5 text-gray-500" />
                         </div>
                       )}
@@ -350,32 +353,47 @@ export const DetalleRequerimiento = ({
                         {(() => {
                           const stock = Number(item.stock_disponible || 0);
                           const pendiente = item.pendiente_base;
-                          
+
                           if (stock <= 0) {
                             return (
-                              <Badge variant="light" color="red" size="xs" radius="sm">
+                              <Badge
+                                variant="light"
+                                color="red"
+                                size="xs"
+                                radius="sm"
+                              >
                                 Sin stock
                               </Badge>
                             );
                           }
-                          
+
                           if (stock < pendiente) {
                             return (
-                              <Badge variant="light" color="orange" size="xs" radius="sm">
+                              <Badge
+                                variant="light"
+                                color="orange"
+                                size="xs"
+                                radius="sm"
+                              >
                                 Stock insuficiente
                               </Badge>
                             );
                           }
-                          
+
                           return (
-                            <Badge variant="light" color="green" size="xs" radius="sm">
+                            <Badge
+                              variant="light"
+                              color="green"
+                              size="xs"
+                              radius="sm"
+                            >
                               Stock disponible
                             </Badge>
                           );
                         })()}
                       </Stack>
                     </td>
-                    <td className="px-6 py-4 text-center flex flex-col gap-0.5 justify-center items-center">
+                    <td className="px-6 py-4 text-center flex flex-row gap-0.5 justify-center items-center">
                       <Badge
                         variant="filled"
                         color="cyan.7"
@@ -388,18 +406,30 @@ export const DetalleRequerimiento = ({
                       </Badge>
                       {item.unidad_medida_base_abv !==
                         item.unidad_medida_abv && (
-                        <Badge
-                          variant="filled"
-                          color="zinc"
-                          radius="sm"
-                          size="sm"
-                          className="font-black px-4"
-                        >
-                          {formatNumber(item.contenido_por_presentacion)}{" "}
-                          {item.unidad_medida_base_abv}{" "}
-                          <span className="lowercase">x</span>{" "}
-                          {item.unidad_medida_abv}
-                        </Badge>
+                        <>
+                          <Badge
+                            variant="filled"
+                            color="zinc"
+                            radius="sm"
+                            size="sm"
+                            className="font-black px-4"
+                          >
+                            {formatNumber(item.contenido_por_presentacion)}{" "}
+                            {item.unidad_medida_base_abv}{" "}
+                            <span className="lowercase">x</span>{" "}
+                            {item.unidad_medida_abv}
+                          </Badge>
+
+                          <Badge
+                            variant="filled"
+                            color="pink"
+                            radius="sm"
+                            className="font-bold shadow-xs whitespace-nowrap"
+                          >
+                            {formatNumber(item.cantidad_solicitada_base)}{" "}
+                            {item.unidad_medida_base_abv}
+                          </Badge>
+                        </>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -428,9 +458,7 @@ export const DetalleRequerimiento = ({
                         className="max-w-[200px] italic leading-tight"
                       >
                         {item.comentario || (
-                          <span className="text-zinc-400">
-                            Sin comentarios
-                          </span>
+                          <span className="text-zinc-400">Sin comentarios</span>
                         )}
                       </Text>
                     </td>

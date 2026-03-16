@@ -5,208 +5,453 @@ import {
   Table,
   Text,
   Paper,
-  Divider,
+  Tooltip,
+  Loader,
+  ActionIcon,
 } from "@mantine/core";
 import {
   BuildingStorefrontIcon,
   CalendarDaysIcon,
   UserIcon,
+  CheckBadgeIcon,
+  ClockIcon,
+  ListBulletIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
+import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import type {
   RES_SolicitudReabastecimiento,
   RES_SolicitudDetalle,
 } from "../service/reabastecimiento.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface DetalleSolicitudProps {
   headerData: RES_SolicitudReabastecimiento;
   detalles: RES_SolicitudDetalle[];
   loading: boolean;
+  progresoGeneral: number;
   onOpenTrazabilidad: (detalle: RES_SolicitudDetalle) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const InfoCard = ({ icon: Icon, label, value, color = "zinc" }: any) => (
-  <Paper
-    bg="zinc.9"
-    p="md"
-    radius="lg"
-    className="border border-zinc-800/50 flex flex-col gap-1 shadow-sm"
-  >
-    <Group gap="xs">
-      <Icon className={`w-4 h-4 text-${color}-500`} />
-      <Text
-        size="xs"
-        fw={700}
-        className="text-zinc-500 uppercase tracking-widest"
-      >
-        {label}
-      </Text>
-    </Group>
-    <Text size="sm" fw={600} className="text-zinc-100 italic">
-      {value}
-    </Text>
-  </Paper>
-);
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case EstadoSolicitudDetalle.EsperandoAprobacion:
+      return "blue";
+    case EstadoSolicitudDetalle.Aprobado:
+      return "violet";
+    case EstadoSolicitudDetalle.EnDespacho:
+      return "orange";
+    case EstadoSolicitudDetalle.NuevaEntrega:
+      return "green";
+    case EstadoSolicitudDetalle.Completado:
+      return "emerald";
+    case EstadoSolicitudDetalle.Cerrado:
+      return "zinc";
+    case EstadoSolicitudDetalle.Rechazado:
+      return "red";
+    default:
+      return "gray";
+  }
+};
 
 export const DetalleSolicitud = ({
   headerData,
   detalles,
   loading,
+  progresoGeneral,
   onOpenTrazabilidad,
 }: DetalleSolicitudProps) => {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader color="indigo" size="lg" />
+      </div>
+    );
+  }
+
   return (
     <Stack gap="xl" className="animate-fade-in p-2">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <InfoCard
-          icon={BuildingStorefrontIcon}
-          label="Almacén Solicitante"
-          value={headerData.almacen_solicitante}
-          color="indigo"
-        />
-        <InfoCard
-          icon={UserIcon}
-          label="Solicitante"
-          value={headerData.empleado_solicitante}
-          color="violet"
-        />
-        <InfoCard
-          icon={CalendarDaysIcon}
-          label="Fecha de Creación"
-          value={dayjs(headerData.created_at).format("DD/MM/YYYY HH:mm")}
-          color="cyan"
-        />
-      </div>
-
-      <Paper
-        bg="zinc.9/50"
-        p="lg"
-        radius="xl"
-        className="border border-zinc-800/30"
-      >
-        <Stack gap="md">
-          <Group justify="space-between" align="flex-start">
-            <Stack gap={4}>
-              <Text fw={800} size="xl" className="text-zinc-100">
-                Items Solicitados
-              </Text>
+      {/* Header: Datos Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-indigo-500/6 border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/10 transition-all"
+        >
+          <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <CheckBadgeIcon className="w-4 h-4 text-indigo-400" />
               <Text
                 size="xs"
+                c="indigo.3"
                 fw={800}
-                className="text-zinc-500 uppercase tracking-widest"
+                className="uppercase tracking-widest"
               >
-                Lista detallada de productos
+                Correlativo
               </Text>
-            </Stack>
-            <Badge
-              size="lg"
-              color="indigo"
-              variant="light"
-              radius="sm"
-              className="font-bold py-4"
+            </Group>
+            <Text
+              size="md"
+              fw={900}
+              className="text-zinc-100 tracking-tight leading-tight"
             >
-              SOLICITUD: {headerData.correlativo}
+              {headerData.correlativo}
+            </Text>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-violet-500/6 border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/10 transition-all"
+        >
+          <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <UserIcon className="w-4 h-4 text-violet-400" />
+              <Text
+                size="xs"
+                c="violet.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Solicitante
+              </Text>
+            </Group>
+            <Text
+              size="md"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight"
+            >
+              {headerData.empleado_solicitante}
+            </Text>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-emerald-500/6 border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/10 transition-all"
+        >
+          <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-emerald-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <BuildingStorefrontIcon className="w-4 h-4 text-emerald-500" />
+              <Text
+                size="xs"
+                c="emerald.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Almacén Origen
+              </Text>
+            </Group>
+            <Text
+              size="md"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight italic"
+            >
+              {headerData.almacen_solicitante}
+            </Text>
+          </Stack>
+        </Paper>
+      </div>
+
+      {/* Sub-header: Tiempos y Prioridad */}
+      <Paper
+        p="md"
+        radius="lg"
+        bg="transparent"
+        className="border border-zinc-800/50"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Stack gap={4}>
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest"
+            >
+              {" "}
+              Prioridad{" "}
+            </Text>
+            <Badge
+              color="orange"
+              variant="light"
+              size="sm"
+              radius="sm"
+              className="border border-orange-900/30 font-bold"
+            >
+              {headerData.premura}
             </Badge>
+          </Stack>
+
+          <Stack gap={4}>
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest"
+            >
+              {" "}
+              Estado{" "}
+            </Text>
+            <Badge
+              color="green"
+              variant="light"
+              size="sm"
+              radius="sm"
+              className="border border-green-900/30 font-bold"
+            >
+              {headerData.estado}
+            </Badge>
+          </Stack>
+
+          <Stack gap={4}>
+            <div className="flex items-center gap-1.5 font-bold">
+              <CalendarDaysIcon className="w-3.5 h-3.5 text-rose-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                {" "}
+                Registro{" "}
+              </Text>
+            </div>
+            <Text size="sm" fw={800} className="text-zinc-100 italic">
+              {dayjs(headerData.created_at).format("DD/MM/YYYY")}
+            </Text>
+          </Stack>
+
+          <Stack gap={4}>
+            <div className="flex items-center gap-1.5 font-bold">
+              <ClockIcon className="w-3.5 h-3.5 text-cyan-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                {" "}
+                Fecha Requerida{" "}
+              </Text>
+            </div>
+            <Text size="sm" fw={800} className="text-zinc-100 font-mono">
+              {dayjs(headerData.fecha_entrega_requerida).format("DD/MM/YYYY")}
+            </Text>
+          </Stack>
+        </div>
+      </Paper>
+
+      {/* Barra de Progreso General */}
+      <Paper
+        p="md"
+        radius="xl"
+        className="bg-zinc-900/50 border border-zinc-800"
+      >
+        <Group justify="space-between" mb={8} px={4}>
+          <Text
+            size="xs"
+            fw={800}
+            className="text-zinc-400 tracking-tighter uppercase"
+          >
+            Progreso General de Atención
+          </Text>
+          <Text size="sm" fw={900} c="indigo.4">
+            {progresoGeneral}%
+          </Text>
+        </Group>
+        <div className="relative h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
+            style={{ width: `${progresoGeneral}%` }}
+          />
+        </div>
+      </Paper>
+
+      {/* Tabla de Items */}
+      <div className="space-y-4">
+        <Group justify="space-between" align="center" px={4}>
+          <Group gap="xs">
+            <div className="p-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/10">
+              <ListBulletIcon className="w-5 h-5 text-indigo-400" />
+            </div>
+            <Text
+              fw={800}
+              className="text-zinc-100 italic tracking-tight text-lg"
+            >
+              Items Solicitados
+            </Text>
           </Group>
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="md"
+            size="sm"
+            className="font-bold py-3 px-4 uppercase tracking-widest"
+          >
+            {detalles.length} Productos
+          </Badge>
+        </Group>
 
-          <Divider color="zinc.8" />
-
-          <div className="overflow-x-auto">
-            <Table variant="unstyled" verticalSpacing="md">
-              <thead>
-                <tr className="text-zinc-500 text-xs uppercase tracking-widest border-b border-zinc-800/50">
-                  <th className="py-4 px-2">Producto</th>
-                  <th className="py-4 px-2 text-right">Cant. Solicitada</th>
-                  <th className="py-4 px-2 text-right">Cant. Entregada</th>
-                  <th className="py-4 px-2">Estado</th>
-                  <th className="py-4 px-2 text-center">Acción</th>
+        <div className="overflow-hidden border border-zinc-800 rounded-2xl bg-zinc-950/20 shadow-2xl">
+          <Table verticalSpacing="md" horizontalSpacing="xl">
+            <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
+              <tr>
+                <th className="px-6 py-4 text-center w-12">#</th>
+                <th className="px-6 py-4 text-left">Producto</th>
+                <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+                <th className="px-6 py-4 text-center w-44">Progreso</th>
+                <th className="px-6 py-4 text-center">Estado</th>
+                <th className="px-6 py-4 text-center w-20">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/50">
+              {detalles.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="py-20 text-center text-zinc-600 italic"
+                  >
+                    No se encontraron productos en esta solicitud
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td
-                        colSpan={5}
-                        className="py-8 bg-zinc-800/10 rounded-lg mb-2"
-                      ></td>
-                    </tr>
-                  ))
-                ) : detalles.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="py-8 text-center text-zinc-600 italic"
-                    >
-                      No se encontraron detalles
-                    </td>
-                  </tr>
-                ) : (
-                  detalles.map((det) => (
+              ) : (
+                detalles.map((det, index) => {
+                  const progresoItem = Math.min(
+                    100,
+                    Math.round(
+                      (Number(det.cantidad_entregada_base || 0) /
+                        Number(det.cantidad_solicitada_base || 1)) *
+                        100,
+                    ),
+                  );
+
+                  return (
                     <tr
                       key={det.id_solicitud_detalle}
-                      className="hover:bg-zinc-800/20 transition-colors border-b border-zinc-800/30"
+                      className="hover:bg-zinc-900/40 transition-colors group"
                     >
-                      <td className="py-4 px-2">
-                        <Text size="sm" fw={600} className="text-zinc-100">
-                          {det.producto}
-                        </Text>
-                        <Text
-                          size="10px"
-                          className="text-zinc-500 uppercase tracking-wider"
-                        >
-                          Presentación: {det.contenido_por_presentacion}{" "}
-                          {det.unidad_medida_base_abreviatura} /{" "}
-                          {det.unidad_medida_solicitud_abreviatura}
-                        </Text>
+                      <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">
+                        {String(index + 1).padStart(2, "0")}
                       </td>
-                      <td className="py-4 px-2 text-right">
-                        <Badge variant="light" color="indigo" radius="sm">
-                          {det.cantidad_solicitada}{" "}
-                          {det.unidad_medida_solicitud_abreviatura}
-                        </Badge>
+                      <td className="px-6 py-4">
+                        <Group gap="sm">
+                          <div className="w-9 h-9 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-indigo-500/50 transition-all">
+                            <CubeIcon className="w-4.5 h-4.5 text-zinc-400 group-hover:text-indigo-400" />
+                          </div>
+                          <div>
+                            <Text
+                              size="sm"
+                              fw={800}
+                              className="text-zinc-100 group-hover:text-white transition-colors"
+                            >
+                              {det.producto}
+                            </Text>
+                          </div>
+                        </Group>
                       </td>
-                      <td className="py-4 px-2 text-right">
+                      <td className="px-6 py-4 text-center">
+                        <Group justify="center" gap={4}>
+                          <Badge
+                            variant="filled"
+                            color="indigo"
+                            radius="sm"
+                            className="font-bold shadow-xs whitespace-nowrap"
+                          >
+                            {formatNumber(det.cantidad_solicitada)}{" "}
+                            {det.unidad_medida_solicitud_abv}
+                          </Badge>
+                          {det.unidad_medida_base_abv !==
+                            det.unidad_medida_solicitud_abv && (
+                            <>
+                              <Badge
+                                variant="filled"
+                                color="zinc"
+                                radius="sm"
+                                size="sm"
+                                className="font-black px-4"
+                              >
+                                {formatNumber(det.contenido_por_presentacion)}{" "}
+                                {det.unidad_medida_base_abv}{" "}
+                                <span className="lowercase">x</span>{" "}
+                                {det.unidad_medida_solicitud_abv}
+                              </Badge>
+
+                              <Badge
+                                variant="filled"
+                                color="pink"
+                                radius="sm"
+                                className="font-bold shadow-xs whitespace-nowrap"
+                              >
+                                {formatNumber(det.cantidad_solicitada_base)}{" "}
+                                {det.unidad_medida_base_abv}
+                              </Badge>
+                            </>
+                          )}
+                        </Group>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex flex-col gap-1.5 w-full">
+                          <div className="flex justify-between items-center px-1">
+                            <Text size="10px" fw={800} c="zinc.5">
+                              Entregado: {formatNumber(det.cantidad_entregada)}{" "}
+                              {det.unidad_medida_solicitud_abv}
+                            </Text>
+                            <Text size="10px" fw={900} c="indigo.4">
+                              {progresoItem}%
+                            </Text>
+                          </div>
+                          <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/30">
+                            <div
+                              className="h-full bg-linear-to-r from-indigo-600 to-indigo-400 transition-all duration-700 shadow-[0_0_10px_rgba(99,102,241,0.3)]"
+                              style={{ width: `${progresoItem}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <Badge
+                          color={getStatusColor(det.estado)}
                           variant="light"
-                          color={
-                            det.cantidad_entregada > 0 ? "emerald" : "zinc"
-                          }
-                          radius="sm"
-                        >
-                          {det.cantidad_entregada}{" "}
-                          {det.unidad_medida_solicitud_abreviatura}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-2">
-                        <Badge
-                          variant="dot"
-                          color="blue"
                           size="sm"
-                          radius="xs"
-                          className="uppercase font-bold tracking-wider"
+                          radius="md"
+                          className="font-bold px-3 py-2.5"
                         >
                           {det.estado}
                         </Badge>
                       </td>
-                      <td className="py-4 px-2 text-center">
-                        <Text
-                          size="xs"
-                          fw={700}
-                          className="text-indigo-400 hover:text-indigo-300 cursor-pointer underline underline-offset-4"
-                          onClick={() => onOpenTrazabilidad(det)}
-                        >
-                          Ver Historial
-                        </Text>
+                      <td className="px-6 py-4 text-center">
+                        <Group gap={8} justify="center" wrap="nowrap">
+                          <Tooltip
+                            label="Ver Seguimiento"
+                            position="top"
+                            withArrow
+                          >
+                            <ActionIcon
+                              variant="subtle"
+                              color="zinc"
+                              onClick={() => {
+                                onOpenTrazabilidad(det);
+                              }}
+                            >
+                              <ClockIcon className="w-4 h-4" />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Group>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </Table>
-          </div>
-        </Stack>
-      </Paper>
+                  );
+                })
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </div>
     </Stack>
   );
 };

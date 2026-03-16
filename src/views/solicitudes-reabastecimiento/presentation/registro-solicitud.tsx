@@ -92,7 +92,7 @@ export const RegistroSolicitud = ({
 
   const inputClasses = {
     input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 text-white placeholder:text-zinc-500 transition-all",
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
     dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl ",
     option:
       "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
@@ -326,7 +326,7 @@ export const RegistroSolicitud = ({
                         fw={700}
                         className="uppercase"
                       >
-                        En {pluralizar(unidadNombre || "---")}
+                        En {unidadNombre ? pluralizar(unidadNombre) : "---"}
                       </Text>
                       <div className="flex items-baseline gap-1.5">
                         <Text
@@ -361,9 +361,9 @@ export const RegistroSolicitud = ({
                         className="uppercase"
                       >
                         En{" "}
-                        {pluralizar(
-                          productoSeleccionado?.unidad_medida_base || "---",
-                        )}
+                        {productoSeleccionado?.unidad_medida_base
+                          ? pluralizar(productoSeleccionado?.unidad_medida_base)
+                          : "---"}
                       </Text>
                       <div className="flex items-baseline gap-1.5">
                         <Text

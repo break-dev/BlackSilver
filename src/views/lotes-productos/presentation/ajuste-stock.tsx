@@ -16,6 +16,7 @@ import {
 
 import { useAjusteStock } from "../hooks/useAjusteStock";
 import type { RES_Lote } from "../service/lotes.responses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 interface AjusteStockModalProps {
   lote: RES_Lote;
@@ -175,8 +176,8 @@ export const AjusteStockModal = ({
                 {isSame
                   ? "0.00"
                   : diff > 0
-                    ? `+${diff.toFixed(2)}`
-                    : diff.toFixed(2)}
+                    ? `+${formatNumber(diff)}`
+                    : formatNumber(diff)}
               </Text>
               <Text size="xs" c="zinc.4" fw={600} className="italic opacity-80">
                 {lote.unidad_medida_base}

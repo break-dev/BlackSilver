@@ -27,6 +27,7 @@ import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { TipoMovimiento } from "../../../shared/enums/tipos";
 import { MESES } from "../../../presentation/variables/meses";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 export const KardexProductosPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -158,7 +159,7 @@ export const KardexProductosPage = () => {
                   className="font-bold shadow-md"
                 >
                   {isIngreso ? "+" : "-"}{" "}
-                  {Number(record.cantidad_movimiento).toFixed(2)}{" "}
+                  {formatNumber(record.cantidad_movimiento)}{" "}
                   {record.unidad_lote_abv}
                 </Badge>
               )}
@@ -169,7 +170,7 @@ export const KardexProductosPage = () => {
                 className="italic pr-1 opacity-90"
               >
                 ({isIngreso ? "+" : "-"}{" "}
-                {Number(record.cantidad_movimiento_base).toFixed(2)}{" "}
+                {formatNumber(record.cantidad_movimiento_base)}{" "}
                 {record.unidad_base_abv})
               </Text>
             </div>
@@ -191,7 +192,7 @@ export const KardexProductosPage = () => {
                 size="sm"
                 className="font-bold border border-cyan-500/30"
               >
-                {Number(record.stock_resultante).toFixed(2)}{" "}
+                {formatNumber(record.stock_resultante)}{" "}
                 {record.unidad_lote_abv}
               </Badge>
             )}
@@ -202,7 +203,7 @@ export const KardexProductosPage = () => {
               size="sm"
               className="font-bold border border-pink-500/30"
             >
-              {Number(record.stock_resultante_base).toFixed(2)}{" "}
+              {formatNumber(record.stock_resultante_base)}{" "}
               {record.unidad_base_abv}
             </Badge>
           </div>
