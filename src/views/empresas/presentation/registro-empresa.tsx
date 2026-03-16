@@ -1,4 +1,5 @@
-import { Button, Group, TextInput, Stack } from "@mantine/core";
+import { Button, Group, TextInput, Stack, Avatar, FileButton, Text } from "@mantine/core";
+import { PhotoIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 interface RegistroEmpresaProps {
   ruc: string;
@@ -9,8 +10,8 @@ interface RegistroEmpresaProps {
   setNombreComercial: (val: string) => void;
   abreviatura: string;
   setAbreviatura: (val: string) => void;
-  pathLogo: string;
-  setPathLogo: (val: string) => void;
+  logoFile: File | null;
+  setLogoFile: (file: File | null) => void;
   error: string;
   loading: boolean;
   onSave: () => void;
@@ -26,8 +27,8 @@ export const RegistroEmpresa = ({
   setNombreComercial,
   abreviatura,
   setAbreviatura,
-  pathLogo,
-  setPathLogo,
+  logoFile,
+  setLogoFile,
   error,
   loading,
   onSave,
@@ -39,20 +40,65 @@ export const RegistroEmpresa = ({
     label: "text-zinc-300 mb-1 font-medium",
   };
 
+  // Generar preview local
+  const logoPreview = logoFile ? URL.createObjectURL(logoFile) : null;
+
   return (
     <Stack gap="md">
-      <TextInput
-        label="RUC"
-        placeholder="Ej. 20123456789"
-        required
-        withAsterisk
-        disabled={loading}
-        radius="lg"
-        maxLength={11}
-        classNames={inputClasses}
-        value={ruc}
-        onChange={(e) => setRuc(e.currentTarget.value)}
-      />
+      {/* Selector de Logo Circular con Lápiz */}
+      {/* Selector de Logo Circular con Efecto Hover Nítido */}
+      <div className="flex flex-col items-center justify-center py-6">
+        <FileButton onChange={setLogoFile} accept="image/png,image/jpeg,image/jpg">
+          {(props) => (
+            <div 
+              {...props}
+              className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
+              style={{ width: 120, height: 120 }}
+            >
+              <Avatar
+                src={logoPreview}
+                size={120}
+                radius={100}
+                className="bg-transparent"
+              >
+                <PhotoIcon className="w-12 h-12 text-indigo-400/40" />
+              </Avatar>
+
+              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
+                <PencilIcon className="w-6 h-6 text-white mb-2 drop-shadow-md" />
+                <Text size="11px" fw={700} className="text-white leading-tight">
+                  Subir logo de la empresa
+                </Text>
+              </div>
+            </div>
+          )}
+        </FileButton>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <TextInput
+          label="RUC"
+          placeholder="Ej. 20123456789"
+          required
+          withAsterisk
+          disabled={loading}
+          radius="lg"
+          maxLength={11}
+          classNames={inputClasses}
+          value={ruc}
+          onChange={(e) => setRuc(e.currentTarget.value)}
+        />
+
+        <TextInput
+          label="Abreviatura"
+          placeholder="Ej. BS"
+          disabled={loading}
+          radius="lg"
+          classNames={inputClasses}
+          value={abreviatura}
+          onChange={(e) => setAbreviatura(e.currentTarget.value)}
+        />
+      </div>
 
       <TextInput
         label="Razón Social"
@@ -78,28 +124,8 @@ export const RegistroEmpresa = ({
         onChange={(e) => setNombreComercial(e.currentTarget.value)}
       />
 
-      <TextInput
-        label="Abreviatura"
-        placeholder="Ej. BS"
-        disabled={loading}
-        radius="lg"
-        classNames={inputClasses}
-        value={abreviatura}
-        onChange={(e) => setAbreviatura(e.currentTarget.value)}
-      />
-
-      <TextInput
-        label="Logo URL"
-        placeholder="Ej. https://misitio.com/logo.png"
-        disabled={loading}
-        radius="lg"
-        classNames={inputClasses}
-        value={pathLogo}
-        onChange={(e) => setPathLogo(e.currentTarget.value)}
-      />
-
       {error && (
-        <div className="text-red-500 text-sm font-medium px-1">{error}</div>
+        <div className="text-red-500 text-sm font-medium px-1 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{error}</div>
       )}
 
       <Group justify="flex-end" gap="md" mt="xl">
@@ -119,11 +145,9 @@ export const RegistroEmpresa = ({
           onClick={onSave}
           radius="lg"
           size="sm"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 
-          text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 
-          shadow-lg border-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 border-0 px-8"
         >
-          Guardar
+          Registrar Empresa
         </Button>
       </Group>
     </Stack>

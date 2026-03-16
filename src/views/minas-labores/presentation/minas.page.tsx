@@ -4,6 +4,7 @@ import {
   Button,
   TextInput,
   Tooltip,
+  Skeleton,
 } from "@mantine/core";
 import {
   PlusIcon,
@@ -83,8 +84,37 @@ export const MinasPage = () => {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
-            />
+              className="flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-4"
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 flex-1">
+                  <Skeleton height={14} width="30%" radius="sm" />
+                  <Skeleton height={18} width="70%" radius="sm" />
+                  <Skeleton height={12} width="50%" radius="sm" />
+                </div>
+                <Skeleton height={16} width={45} radius="sm" />
+              </div>
+
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+                <Skeleton height={28} width={28} circle />
+                <div className="space-y-1 fex-1">
+                  <Skeleton height={8} width={60} radius="xs" />
+                  <Skeleton height={12} width={100} radius="xs" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-800/50">
+                <div className="flex gap-2">
+                  <Skeleton height={12} width={50} radius="xs" />
+                  <Skeleton height={12} width={50} radius="xs" />
+                </div>
+                <div className="flex gap-1.5">
+                  <Skeleton height={26} width={26} radius="md" />
+                  <Skeleton height={26} width={26} radius="md" />
+                  <Skeleton height={26} width={26} radius="md" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : minasFiltradas.length === 0 ? (

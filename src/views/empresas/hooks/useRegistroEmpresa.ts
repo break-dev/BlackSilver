@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
-import { Schema_RegistroEmpresa } from "../service/empresas.requests";
 import type { RES_Empresa } from "../service/empresas.responses";
 
 interface UseRegistroEmpresaProps {
@@ -20,7 +19,7 @@ export const useRegistroEmpresa = ({
   const [razonSocial, setRazonSocial] = useState("");
   const [nombreComercial, setNombreComercial] = useState("");
   const [abreviatura, setAbreviatura] = useState("");
-  const [pathLogo, setPathLogo] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,29 +29,41 @@ export const useRegistroEmpresa = ({
     setRazonSocial("");
     setNombreComercial("");
     setAbreviatura("");
-    setPathLogo("");
+    setLogoFile(null);
     setError("");
   }, []);
 
   const handleGuardar = async () => {
     setError("");
-    const data = {
-      ruc,
-      razon_social: razonSocial,
-      nombre_comercial: nombreComercial,
-      abreviatura,
-      path_logo: pathLogo,
-    };
-
-    const validation = Schema_RegistroEmpresa.safeParse(data);
-    if (!validation.success) {
-      setError(validation.error.issues[0].message);
+    
+    if (!ruc || ruc.length !== 11) {
+      setError("El RUC debe tener 11 dígitos");
       return;
+    }
+
+    if (!razonSocial) {
+      setError("La razón social es obligatoria");
+      return;
+    }
+
+    if (!nombreComercial) {
+      setError("El nombre comercial es obligatorio");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("ruc", ruc);
+    formData.append("razon_social", razonSocial);
+    formData.append("nombre_comercial", nombreComercial);
+    formData.append("abreviatura", abreviatura);
+    
+    if (logoFile) {
+      formData.append("path_logo", logoFile);
     }
 
     setLoading(true);
     try {
-      const result = await EmpresasService.crear_empresa(validation.data);
+      const result = await EmpresasService.crear_empresa(formData);
       if (result.success) {
         notify({
           type: "success",
@@ -81,8 +92,8 @@ export const useRegistroEmpresa = ({
     setNombreComercial,
     abreviatura,
     setAbreviatura,
-    pathLogo,
-    setPathLogo,
+    logoFile,
+    setLogoFile,
     error,
     loading,
     handleGuardar,
