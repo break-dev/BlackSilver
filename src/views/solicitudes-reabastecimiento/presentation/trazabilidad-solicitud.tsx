@@ -5,7 +5,7 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import type { RES_TrazabilidadEvento } from "../services/reabastecimiento.responses";
+import type { RES_TrazabilidadEvento } from "../service/reabastecimiento.responses";
 
 interface TrazabilidadSolicitudProps {
   productoNombre: string;

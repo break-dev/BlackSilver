@@ -16,7 +16,7 @@ import dayjs from "dayjs";
 import type {
   RES_SolicitudReabastecimiento,
   RES_SolicitudDetalle,
-} from "../services/reabastecimiento.responses";
+} from "../service/reabastecimiento.responses";
 
 interface DetalleSolicitudProps {
   headerData: RES_SolicitudReabastecimiento;

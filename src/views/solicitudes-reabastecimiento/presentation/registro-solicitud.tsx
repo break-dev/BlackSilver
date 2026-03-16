@@ -25,7 +25,7 @@ import { useRegistroSolicitud } from "../hooks/useRegistroSolicitud";
 import { Premura } from "../../../shared/enums/otros";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { pluralizar } from "../../../presentation/functions/pluralizar";
-import type { RES_SolicitudReabastecimiento } from "../services/reabastecimiento.responses";
+import type { RES_SolicitudReabastecimiento } from "../service/reabastecimiento.responses";
 
 interface RegistroSolicitudProps {
   onSuccess: (item: RES_SolicitudReabastecimiento) => void;
@@ -87,7 +87,7 @@ export const RegistroSolicitud = ({
 
   useEffect(() => {
     cargarCatalogos();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const inputClasses = {

@@ -33,7 +33,7 @@ import { TrazabilidadSolicitud } from "./trazabilidad-solicitud";
 import type {
   RES_SolicitudReabastecimiento,
   RES_SolicitudDetalle,
-} from "../services/reabastecimiento.responses";
+} from "../service/reabastecimiento.responses";
 import { MESES } from "../../../presentation/variables/meses";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
@@ -47,14 +47,7 @@ export const SolicitudesReabastecimientoPage = () => {
   const {
     filteredRecords,
     loading,
-    filters: {
-      mes,
-      setMes,
-      yearcito,
-      setYearcito,
-      search,
-      setSearch,
-    },
+    filters: { mes, setMes, yearcito, setYearcito, search, setSearch },
     actions: { addRecord, verDetalles, verTrazabilidad },
     ui: {
       selectedReq,

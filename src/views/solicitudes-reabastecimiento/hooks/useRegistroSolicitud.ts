@@ -1,17 +1,17 @@
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
-import { ReabastecimientoService } from "../services/reabastecimiento.service";
+import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import type {
   DTO_CrearSolicitud,
   DTO_SolicitudDetalle,
-} from "../services/reabastecimiento.requests";
+} from "../service/reabastecimiento.requests";
 import type {
   RES_Almacen_Local,
   RES_Producto_Local,
   RES_Unidad_Local,
   RES_SolicitudReabastecimiento,
-} from "../services/reabastecimiento.responses";
+} from "../service/reabastecimiento.responses";
 import { Premura } from "../../../shared/enums/otros";
 
 interface Props {
@@ -31,7 +31,8 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   // Estado Formulario Cabecera
   const [idAlmacenSolicitante, setIdAlmacenSolicitante] = useState<number>(0);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
-  const [fechaEntregaRequerida, setFechaEntregaRequerida] = useState<Date | null>(null);
+  const [fechaEntregaRequerida, setFechaEntregaRequerida] =
+    useState<Date | null>(null);
   const [observacion, setObservacion] = useState("");
 
   // Estado Formulario Detalle (Item actual)
@@ -54,7 +55,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
         setAlmacenes(res.data.almacenes);
         setProductos(res.data.productos);
         setUnidades(res.data.unidades_medida);
-        
+
         if (res.data.almacenes.length > 0) {
           setIdAlmacenSolicitante(res.data.almacenes[0].id_almacen);
         }
@@ -67,12 +68,17 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   }, [almacenes.length]);
 
   // 2. Lógica de Unidades
-  const productoSeleccionado = productos.find((p) => p.id_producto === idProducto);
-  const unidadSeleccionada = unidades.find((u) => u.id_unidad_medida === idUnidadMedida);
+  const productoSeleccionado = productos.find(
+    (p) => p.id_producto === idProducto,
+  );
+  const unidadSeleccionada = unidades.find(
+    (u) => u.id_unidad_medida === idUnidadMedida,
+  );
   const sonUnidadesIdenticas =
     productoSeleccionado &&
     unidadSeleccionada &&
-    productoSeleccionado.id_unidad_medida_base === unidadSeleccionada.id_unidad_medida;
+    productoSeleccionado.id_unidad_medida_base ===
+      unidadSeleccionada.id_unidad_medida;
 
   useEffect(() => {
     if (sonUnidadesIdenticas) {
@@ -81,7 +87,9 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   }, [sonUnidadesIdenticas]);
 
   const productosFiltrados = useMemo(() => {
-    return productos.filter((p) => !detalles.some((d) => d.id_producto === p.id_producto));
+    return productos.filter(
+      (p) => !detalles.some((d) => d.id_producto === p.id_producto),
+    );
   }, [productos, detalles]);
 
   const agregarItem = useCallback(() => {
@@ -113,11 +121,15 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!idAlmacenSolicitante || !fechaEntregaRequerida || detalles.length === 0) {
-        setError("Faltan campos obligatorios");
-        return;
+    if (
+      !idAlmacenSolicitante ||
+      !fechaEntregaRequerida ||
+      detalles.length === 0
+    ) {
+      setError("Faltan campos obligatorios");
+      return;
     }
-    
+
     setSubmitting(true);
     setError(null);
 
@@ -125,7 +137,9 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
       id_almacen_solicitante: idAlmacenSolicitante,
       premura,
       observacion: observacion || undefined,
-      fecha_entrega_requerida: dayjs(fechaEntregaRequerida).format("YYYY-MM-DD"),
+      fecha_entrega_requerida: dayjs(fechaEntregaRequerida).format(
+        "YYYY-MM-DD",
+      ),
       detalles,
     };
 
@@ -147,7 +161,14 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     } finally {
       setSubmitting(false);
     }
-  }, [idAlmacenSolicitante, premura, observacion, fechaEntregaRequerida, detalles, onSuccess]);
+  }, [
+    idAlmacenSolicitante,
+    premura,
+    observacion,
+    fechaEntregaRequerida,
+    detalles,
+    onSuccess,
+  ]);
 
   return {
     state: {
