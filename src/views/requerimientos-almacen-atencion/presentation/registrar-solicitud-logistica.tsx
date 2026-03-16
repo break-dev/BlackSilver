@@ -190,11 +190,11 @@ export const RegistrarSolicitudLogistica = ({
                     color="indigo"
                   />
                 </th>
-                <th className="px-4 py-3 text-left min-w-[220px]">Producto</th>
-                <th className="px-4 py-3 text-center w-32 font-semibold whitespace-nowrap">
+                <th className="px-4 py-3 text-left min-w-[180px]">Producto</th>
+                <th className="px-4 py-3 text-center min-w-[200px] font-semibold whitespace-nowrap">
                   Cant. Requerida
                 </th>
-                <th className="px-4 py-3 text-center min-w-[320px] font-semibold">
+                <th className="px-4 py-3 text-center min-w-[200px] font-semibold">
                   Cant. a Solicitar
                 </th>
                 <th className="px-4 py-3 text-left min-w-[280px] font-semibold">
@@ -242,7 +242,7 @@ export const RegistrarSolicitudLogistica = ({
                           {item.producto}
                         </Text>
                       </td>
-                      <td className="px-2 py-3 text-sm text-cente flex flex-col justify-center items-center gap-0.5">
+                      <td className="px-2 py-3 text-sm text-cente flex flex-row justify-center items-center gap-0.5">
                         <Badge
                           variant="filled"
                           color="teal.9"
@@ -252,18 +252,32 @@ export const RegistrarSolicitudLogistica = ({
                           {formatNumber(item.cantidad_solicitada)}{" "}
                           {item.unidad_medida_abv}
                         </Badge>
-                        <Badge
-                          variant="light"
-                          color="zinc"
-                          radius="sm"
-                          size="sm"
-                          className="font-medium whitespace-nowrap"
-                        >
-                          {formatNumber(item.contenido_por_presentacion)}{" "}
-                          {item.unidad_medida_base_abv}{" "}
-                          <span className="lowercase">x</span>{" "}
-                          {item.unidad_medida_abv}
-                        </Badge>
+                        {item.id_unidad_medida_req !=
+                          item.id_unidad_medida_base && (
+                          <>
+                            <Badge
+                              variant="light"
+                              color="zinc"
+                              radius="sm"
+                              size="sm"
+                              className="font-medium whitespace-nowrap"
+                            >
+                              {formatNumber(item.contenido_por_presentacion)}{" "}
+                              {item.unidad_medida_base_abv}{" "}
+                              <span className="lowercase">x</span>{" "}
+                              {item.unidad_medida_abv}
+                            </Badge>
+                            <Badge
+                              variant="filled"
+                              color="pink"
+                              radius="sm"
+                              className="font-bold shadow-xs whitespace-nowrap"
+                            >
+                              {formatNumber(item.cantidad_solicitada_base)}{" "}
+                              {item.unidad_medida_base_abv}
+                            </Badge>
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <Group gap="xs" justify="center" wrap="nowrap">
@@ -291,7 +305,7 @@ export const RegistrarSolicitudLogistica = ({
                                 min={0}
                                 placeholder="0"
                                 rightSection={
-                                  <Text size="9px" fw={800} c="zinc.5">
+                                  <Text size="10px" fw={800} c="zinc.5">
                                     {item.unidad_medida_abv}
                                   </Text>
                                 }
@@ -334,7 +348,7 @@ export const RegistrarSolicitudLogistica = ({
                             min={0}
                             placeholder="0"
                             rightSection={
-                              <Text size="9px" fw={800} c="indigo.4">
+                              <Text size="10px" fw={800} c="indigo.4">
                                 {item.unidad_medida_base_abv}
                               </Text>
                             }
