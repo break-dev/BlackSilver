@@ -3,6 +3,10 @@ export interface RES_Perfil {
     nombre: string;
     apellido: string;
     dni: string;
+    ruc?: string;
+    carnet_extranjeria?: string;
+    pasaporte?: string;
+    fecha_nacimiento?: string;
     path_foto: string | null;
     nombre_rol: string;
     nombre_cargo: string | null;
