@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useAuthStore } from "../../../../stores/auth.store";
 import { useMenuNavegacionStore } from "../../../../stores/menu.store";
+import { usePerfilStore } from "../../../../views/perfil/hooks/usePerfilStore";
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,7 @@ export const UserMenu = () => {
   const logout = () => {
     useAuthStore.getState().clearAuth();
     useMenuNavegacionStore.getState().clearMenu();
+    usePerfilStore.getState().reset();
     navigate("/login");
   };
 

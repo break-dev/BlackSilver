@@ -40,7 +40,7 @@ export const Schema_CrearEmpleado = z.object({
       if (val instanceof Date) return val.toISOString().split("T")[0];
       return val;
     }),
-  path_foto: z.string().nullable().optional(),
+  path_foto: z.any().nullable().optional(),
 });
 
 export type DTO_CrearEmpleado = z.infer<typeof Schema_CrearEmpleado>;

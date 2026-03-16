@@ -66,6 +66,25 @@ export const useEmpleados = () => {
     }
   };
 
+  const actualizarEmpleadoEnLista = (editado: RES_Empleado) => {
+    setEmpleados((prev) =>
+      prev.map((e) => (e.id_empleado === editado.id_empleado ? editado : e)),
+    );
+  };
+
+  const actualizarFoto = async (idEmpleado: number, file: File) => {
+    try {
+      const resp = await EmpleadosService.actualizar_foto(idEmpleado, file);
+      if (resp.success) {
+        actualizarEmpleadoEnLista(resp.data);
+        return true;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    return false;
+  };
+
   return {
     empresas,
     idEmpresa,
@@ -77,5 +96,6 @@ export const useEmpleados = () => {
     setBusqueda,
     recargar: () => idEmpresa && listar(idEmpresa),
     pushNuevoEmpleado,
+    actualizarFoto,
   };
 };

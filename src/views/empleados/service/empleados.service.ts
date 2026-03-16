@@ -40,7 +40,27 @@ export class EmpleadosService {
   public static crear_empleado = async (
     dto: DTO_CrearEmpleado,
   ): Promise<IRespuesta<RES_Empleado>> => {
-    const { data } = await api.post(this.PATH, dto);
+    const formData = new FormData();
+    Object.entries(dto).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
+    const { data } = await api.post(this.PATH, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  };
+  public static actualizar_foto = async (
+    idEmpleado: number,
+    file: File,
+  ): Promise<IRespuesta<RES_Empleado>> => {
+    const formData = new FormData();
+    formData.append("path_foto", file);
+    const { data } = await api.post(`${this.PATH}/foto/${idEmpleado}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return data;
   };
 }

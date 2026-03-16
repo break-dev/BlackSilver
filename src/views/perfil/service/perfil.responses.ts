@@ -1,4 +1,5 @@
 export interface RES_Perfil {
+    id_usuario: number;
     username: string;
     nombre: string;
     apellido: string;

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth.store";
 import { useMenuNavegacionStore } from "../stores/menu.store";
+import { usePerfilStore } from "../views/perfil/hooks/usePerfilStore";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -44,6 +45,7 @@ api.interceptors.response.use(
       useAuthStore.getState().clearAuth();
       // Tambien limpiamos el menu para evitar inconsistencias
       useMenuNavegacionStore.getState().clearMenu();
+      usePerfilStore.getState().reset();
     }
 
     return Promise.reject(error);

@@ -1,9 +1,10 @@
-import { Stack, Group, TextInput, Select, Button } from "@mantine/core";
+import { Stack, Group, TextInput, Select, Button, Avatar, FileButton, Text } from "@mantine/core";
 import {
   UserIcon,
   IdentificationIcon,
   BuildingOfficeIcon,
   BriefcaseIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
 import type { RES_Empleado } from "../service/empleados.responses";
@@ -41,8 +42,41 @@ export const RegistroEmpleado = ({
     label: "text-zinc-300 mb-1 font-medium",
   };
 
+  const photoPreview = form.path_foto instanceof File ? URL.createObjectURL(form.path_foto) : null;
+
   return (
     <Stack gap="md">
+      {/* Selector de Foto Circular */}
+      <div className="flex flex-col items-center justify-center py-4">
+        <FileButton 
+          onChange={(file) => setField("path_foto", file)} 
+          accept="image/png,image/jpeg,image/jpg"
+        >
+          {(props) => (
+            <div 
+              {...props}
+              className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
+              style={{ width: 110, height: 110 }}
+            >
+              <Avatar
+                src={photoPreview}
+                size={110}
+                radius={100}
+                className="bg-transparent"
+              >
+                <UserIcon className="w-10 h-10 text-indigo-400/40" />
+              </Avatar>
+
+              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
+                <PencilIcon className="w-5 h-5 text-white mb-1 drop-shadow-md" />
+                <Text size="10px" fw={700} className="text-white leading-tight">
+                  {form.path_foto ? 'Cambiar imagen' : 'Subir imagen'}
+                </Text>
+              </div>
+            </div>
+          )}
+        </FileButton>
+      </div>
       <Select
         label="Empresa"
         placeholder={

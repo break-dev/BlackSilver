@@ -8,7 +8,9 @@ import {
   Avatar,
   Select,
   Menu,
+  FileButton,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import {
   MagnifyingGlassIcon,
   InformationCircleIcon,
@@ -17,6 +19,7 @@ import {
   BuildingOfficeIcon,
   EllipsisVerticalIcon,
   TrashIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -42,7 +45,26 @@ export const EmpleadosPage = () => {
     busqueda,
     setBusqueda,
     pushNuevoEmpleado,
+    actualizarFoto,
   } = useEmpleados();
+
+  const handleUpdateFoto = async (id: number, file: File | null) => {
+    if (!file) return;
+    const ok = await actualizarFoto(id, file);
+    if (ok) {
+      notifications.show({
+        title: "Éxito",
+        message: "Foto de perfil actualizada correctamente",
+        color: "green",
+      });
+    } else {
+      notifications.show({
+        title: "Error",
+        message: "No se pudo actualizar la foto de perfil",
+        color: "red",
+      });
+    }
+  };
 
   const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
     useDisclosure(false);
@@ -60,10 +82,28 @@ export const EmpleadosPage = () => {
       title: "Empleado",
       render: (r) => (
         <Group gap="sm">
-          <Avatar src={r.path_foto} radius="xl" color="cyan" variant="light">
-            {r.nombre[0]}
-            {r.apellido[0]}
-          </Avatar>
+          <div className="relative group overflow-hidden rounded-full w-10 h-10 border border-zinc-800">
+            <FileButton onChange={(file) => handleUpdateFoto(r.id_empleado, file)} accept="image/png,image/jpeg,image/jpg">
+              {(props) => (
+                <div {...props} className="cursor-pointer">
+                  <Avatar 
+                    src={r.path_foto} 
+                    radius="xl" 
+                    color="indigo" 
+                    variant="light"
+                    className="w-full h-full"
+                  >
+                    {r.nombre[0]}{r.apellido[0]}
+                  </Avatar>
+                  
+                  {/* Overlay con Lápiz */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <PencilIcon className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              )}
+            </FileButton>
+          </div>
           <div>
             <Text size="sm" fw={500} className="text-zinc-200">
               {r.nombre} {r.apellido}
