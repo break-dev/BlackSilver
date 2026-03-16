@@ -1,381 +1,212 @@
-import { Badge, Group, Loader, Paper, Stack, Table, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
 import {
-  ClockIcon,
-  CubeIcon,
-  ListBulletIcon,
-  UserIcon,
+  Badge,
+  Group,
+  Stack,
+  Table,
+  Text,
+  Paper,
+  Divider,
+} from "@mantine/core";
+import {
   BuildingStorefrontIcon,
   CalendarDaysIcon,
-  CheckBadgeIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-
-import { useSolicitudesReabastecimiento } from "../../../../services/solicitudes-reabastecimiento/useSolicitudesReabastecimiento";
 import type {
   RES_SolicitudReabastecimiento,
-  RES_SolicitudReabastecimientoDetalle,
-} from "../../service/solicitudes-reabastecimiento.requests";
+  RES_SolicitudDetalle,
+} from "../services/reabastecimiento.responses";
 
-interface DetalleSolicitudReabastecimientoProps {
-  solicitud: RES_SolicitudReabastecimiento;
+interface DetalleSolicitudProps {
+  headerData: RES_SolicitudReabastecimiento;
+  detalles: RES_SolicitudDetalle[];
+  loading: boolean;
+  onOpenTrazabilidad: (detalle: RES_SolicitudDetalle) => void;
 }
 
-export const DetalleSolicitudReabastecimiento = ({
-  solicitud,
-}: DetalleSolicitudReabastecimientoProps) => {
-  const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<RES_SolicitudReabastecimientoDetalle[]>(
-    [],
-  );
-  const [, setError] = useState("");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const InfoCard = ({ icon: Icon, label, value, color = "zinc" }: any) => (
+  <Paper
+    bg="zinc.9"
+    p="md"
+    radius="lg"
+    className="border border-zinc-800/50 flex flex-col gap-1 shadow-sm"
+  >
+    <Group gap="xs">
+      <Icon className={`w-4 h-4 text-${color}-500`} />
+      <Text
+        size="xs"
+        fw={700}
+        className="text-zinc-500 uppercase tracking-widest"
+      >
+        {label}
+      </Text>
+    </Group>
+    <Text size="sm" fw={600} className="text-zinc-100 italic">
+      {value}
+    </Text>
+  </Paper>
+);
 
-  const { obtenerDetallesSoloLista } = useSolicitudesReabastecimiento({
-    setError,
-  });
-
-  useEffect(() => {
-    setLoading(true);
-    obtenerDetallesSoloLista(solicitud.id_solicitud_reabastecimiento)
-      .then((res) => setItems(res ?? []))
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [solicitud.id_solicitud_reabastecimiento]);
-
+export const DetalleSolicitud = ({
+  headerData,
+  detalles,
+  loading,
+  onOpenTrazabilidad,
+}: DetalleSolicitudProps) => {
   return (
-    <Stack gap="xl" className="animate-fade-in">
-      {/* Header: Datos Principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-2">
-        <Paper
-          p="md"
-          radius="lg"
-          className="bg-indigo-500/6 border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/10 transition-all"
-        >
-          <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
-          <Stack gap={2} className="relative z-10">
-            <Group gap={6}>
-              <UserIcon className="w-4 h-4 text-indigo-400" />
-              <Text
-                size="xs"
-                c="indigo.3"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Solicitante
-              </Text>
-            </Group>
-            <Text
-              size="md"
-              fw={900}
-              className="text-white tracking-tight leading-tight"
-            >
-              {solicitud.empleado_solicitante}
-            </Text>
-          </Stack>
-        </Paper>
-
-        <Paper
-          p="md"
-          radius="lg"
-          className="bg-violet-500/6 border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/10 transition-all"
-        >
-          <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
-          <Stack gap={2} className="relative z-10">
-            <Group gap={6}>
-              <CheckBadgeIcon className="w-4 h-4 text-violet-400" />
-              <Text
-                size="xs"
-                c="violet.3"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Correlativo
-              </Text>
-            </Group>
-            <Text
-              size="md"
-              fw={900}
-              className="text-zinc-100 tracking-tight leading-tight"
-            >
-              {solicitud.correlativo}
-            </Text>
-          </Stack>
-        </Paper>
-
-        <Paper
-          p="md"
-          radius="lg"
-          className="bg-emerald-500/6 border border-emerald-500/20 relative overflow-hidden group hover:bg-emerald-500/10 transition-all"
-        >
-          <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-emerald-400/10 rotate-12 group-hover:scale-110 transition-transform" />
-          <Stack gap={2} className="relative z-10">
-            <Group gap={6}>
-              <BuildingStorefrontIcon className="w-4 h-4 text-emerald-500" />
-              <Text
-                size="xs"
-                c="emerald.5"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Almacén Solicitante
-              </Text>
-            </Group>
-            <Text
-              size="md"
-              fw={800}
-              className="text-zinc-100 tracking-tight leading-tight italic"
-            >
-              {solicitud.almacen_solicitante}
-            </Text>
-          </Stack>
-        </Paper>
+    <Stack gap="xl" className="animate-fade-in p-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <InfoCard
+          icon={BuildingStorefrontIcon}
+          label="Almacén Solicitante"
+          value={headerData.almacen_solicitante}
+          color="indigo"
+        />
+        <InfoCard
+          icon={UserIcon}
+          label="Solicitante"
+          value={headerData.empleado_solicitante}
+          color="violet"
+        />
+        <InfoCard
+          icon={CalendarDaysIcon}
+          label="Fecha de Creación"
+          value={dayjs(headerData.created_at).format("DD/MM/YYYY HH:mm")}
+          color="cyan"
+        />
       </div>
 
-      {/* Sub-header: Estados, Fechas */}
       <Paper
-        p="md"
-        radius="lg"
-        bg="transparent"
-        className="border border-zinc-800/50 mx-2"
+        bg="zinc.9/50"
+        p="lg"
+        radius="xl"
+        className="border border-zinc-800/30"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Stack gap={4}>
-            <Text
-              size="xs"
-              c="zinc.5"
-              fw={800}
-              className="uppercase tracking-widest"
-            >
-              Prioridad
-            </Text>
-            <Badge
-              color="orange"
-              variant="light"
-              size="sm"
-              radius="sm"
-              className="border border-orange-900/30 font-bold"
-            >
-              {solicitud.premura}
-            </Badge>
-          </Stack>
-
-          <Stack gap={4}>
-            <Text
-              size="xs"
-              c="zinc.5"
-              fw={800}
-              className="uppercase tracking-widest"
-            >
-              Estado
-            </Text>
-            <Badge
-              color="green"
-              variant="light"
-              size="sm"
-              radius="sm"
-              className="border border-green-900/30 font-bold"
-            >
-              {solicitud.estado}
-            </Badge>
-          </Stack>
-
-          <Stack gap={4}>
-            <div className="flex items-center gap-1.5 font-bold">
-              <CalendarDaysIcon className="w-3.5 h-3.5 text-rose-500" />
+        <Stack gap="md">
+          <Group justify="space-between" align="flex-start">
+            <Stack gap={4}>
+              <Text fw={800} size="xl" className="text-zinc-100">
+                Items Solicitados
+              </Text>
               <Text
                 size="xs"
-                c="zinc.5"
                 fw={800}
-                className="uppercase tracking-widest"
+                className="text-zinc-500 uppercase tracking-widest"
               >
-                Fecha Requerida
+                Lista detallada de productos
               </Text>
-            </div>
-            <Text size="sm" fw={800} className="text-zinc-100 italic">
-              {solicitud.fecha_hora_entrega_requerida
-                ? dayjs(solicitud.fecha_hora_entrega_requerida).format(
-                    "DD/MM/YYYY",
-                  )
-                : "No especificada"}
-            </Text>
-          </Stack>
-
-          <Stack gap={4}>
-            <div className="flex items-center gap-1.5 font-bold">
-              <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
-              <Text
-                size="xs"
-                c="zinc.5"
-                fw={800}
-                className="uppercase tracking-widest"
-              >
-                Fecha de Registro
-              </Text>
-            </div>
-            <Text size="sm" fw={400} className="text-zinc-400 font-mono">
-              {dayjs(solicitud.created_at).format("DD/MM/YYYY HH:mm")}
-            </Text>
-          </Stack>
-        </div>
-      </Paper>
-
-      {/* Tabla de Items */}
-      <div className="space-y-4">
-        <Group justify="space-between" align="center" px={4}>
-          <Group gap="xs">
-            <div className="p-1.5 bg-indigo-500/10 rounded-lg shadow-sm border border-indigo-500/10">
-              <ListBulletIcon className="w-5 h-5 text-indigo-400" />
-            </div>
-            <Text
-              fw={800}
-              className="text-zinc-100 italic tracking-tight text-lg"
+            </Stack>
+            <Badge
+              size="lg"
+              color="indigo"
+              variant="light"
+              radius="sm"
+              className="font-bold py-4"
             >
-              Items Solicitados
-            </Text>
+              SOLICITUD: {headerData.correlativo}
+            </Badge>
           </Group>
-          <Badge
-            variant="light"
-            color="indigo"
-            radius="md"
-            size="sm"
-            className="font-bold py-3 px-4 uppercase tracking-widest"
-          >
-            {items.length} {items.length === 1 ? "Producto" : "Productos"}
-          </Badge>
-        </Group>
 
-        <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20 overflow-x-auto">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader color="violet" size="md" />
-            </div>
-          ) : (
-            <Table
-              verticalSpacing="md"
-              horizontalSpacing="xl"
-              className="min-w-[800px]"
-            >
-              <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
-                <tr>
-                  <th className="px-6 py-4 text-center w-12">#</th>
-                  <th className="px-6 py-4 text-left">Producto</th>
-                  <th className="px-6 py-4 text-right">Cant. Solic.</th>
-                  <th className="px-6 py-4 text-center">Equivalencia</th>
-                  <th className="px-6 py-4 text-left">Comentario</th>
-                  <th className="px-6 py-4 text-center">Estado</th>
+          <Divider color="zinc.8" />
+
+          <div className="overflow-x-auto">
+            <Table variant="unstyled" verticalSpacing="md">
+              <thead>
+                <tr className="text-zinc-500 text-xs uppercase tracking-widest border-b border-zinc-800/50">
+                  <th className="py-4 px-2">Producto</th>
+                  <th className="py-4 px-2 text-right">Cant. Solicitada</th>
+                  <th className="py-4 px-2 text-right">Cant. Entregada</th>
+                  <th className="py-4 px-2">Estado</th>
+                  <th className="py-4 px-2 text-center">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50">
-                {items.length === 0 ? (
+              <tbody>
+                {loading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td
+                        colSpan={5}
+                        className="py-8 bg-zinc-800/10 rounded-lg mb-2"
+                      ></td>
+                    </tr>
+                  ))
+                ) : detalles.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
-                      className="px-6 py-8 text-center text-zinc-500 italic"
+                      colSpan={5}
+                      className="py-8 text-center text-zinc-600 italic"
                     >
-                      No hay detalles registrados
+                      No se encontraron detalles
                     </td>
                   </tr>
                 ) : (
-                  items.map((item, index) => (
+                  detalles.map((det) => (
                     <tr
-                      key={index}
-                      className="hover:bg-zinc-900/40 transition-colors group"
+                      key={det.id_solicitud_detalle}
+                      className="hover:bg-zinc-800/20 transition-colors border-b border-zinc-800/30"
                     >
-                      <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">
-                        {String(index + 1).padStart(2, "0")}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Group gap="sm">
-                          <div className="w-9 h-9 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-800 shadow-sm group-hover:border-indigo-500/50 group-hover:bg-indigo-500/5 transition-all duration-300">
-                            <CubeIcon className="w-4 h-4 text-zinc-400 group-hover:text-indigo-400 transition-colors" />
-                          </div>
-                          <Text
-                            size="sm"
-                            fw={800}
-                            className="text-zinc-100 group-hover:text-white transition-colors tracking-tight"
-                          >
-                            {(item as any).producto_nombre ??
-                              (item as any).producto}
-                          </Text>
-                        </Group>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Badge
-                          variant="filled"
-                          color="cyan"
-                          radius="sm"
-                          className="font-bold shadow-xs whitespace-nowrap"
-                        >
-                          {Number(item.cantidad_solicitada || 0).toFixed(2)}{" "}
-                          {(item as any).unidad_medida_abreviatura ??
-                            (item as any).unidad_medida}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <Badge
-                          variant="filled"
-                          color="pink"
-                          radius="sm"
-                          className="font-bold shadow-xs whitespace-nowrap"
-                        >
-                          {Number(item.cantidad_solicitada_base || 0).toFixed(
-                            2,
-                          )}{" "}
-                          {(item as any).unidad_medida_base_abreviatura ??
-                            "Ud. Base"}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
+                      <td className="py-4 px-2">
+                        <Text size="sm" fw={600} className="text-zinc-100">
+                          {det.producto}
+                        </Text>
                         <Text
-                          size="xs"
-                          c="zinc.5"
-                          className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
+                          size="10px"
+                          className="text-zinc-500 uppercase tracking-wider"
                         >
-                          {item.comentario || (
-                            <span className="text-zinc-400">
-                              Sin observaciones
-                            </span>
-                          )}
+                          Presentación: {det.contenido_por_presentacion}{" "}
+                          {det.unidad_medida_base_abreviatura} /{" "}
+                          {det.unidad_medida_solicitud_abreviatura}
                         </Text>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <Badge
-                          color={getStatusColor(item.estado)}
-                          variant="light"
-                          size="sm"
-                          radius="md"
-                          className="font-bold px-3 py-2.5"
-                        >
-                          {item.estado}
+                      <td className="py-4 px-2 text-right">
+                        <Badge variant="light" color="indigo" radius="sm">
+                          {det.cantidad_solicitada}{" "}
+                          {det.unidad_medida_solicitud_abreviatura}
                         </Badge>
+                      </td>
+                      <td className="py-4 px-2 text-right">
+                        <Badge
+                          variant="light"
+                          color={
+                            det.cantidad_entregada > 0 ? "emerald" : "zinc"
+                          }
+                          radius="sm"
+                        >
+                          {det.cantidad_entregada}{" "}
+                          {det.unidad_medida_solicitud_abreviatura}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-2">
+                        <Badge
+                          variant="dot"
+                          color="blue"
+                          size="sm"
+                          radius="xs"
+                          className="uppercase font-bold tracking-wider"
+                        >
+                          {det.estado}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-2 text-center">
+                        <Text
+                          size="xs"
+                          fw={700}
+                          className="text-indigo-400 hover:text-indigo-300 cursor-pointer underline underline-offset-4"
+                          onClick={() => onOpenTrazabilidad(det)}
+                        >
+                          Ver Historial
+                        </Text>
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </Table>
-          )}
-        </div>
-      </div>
+          </div>
+        </Stack>
+      </Paper>
     </Stack>
   );
-};
-
-const getStatusColor = (status: string) => {
-  switch (status?.toUpperCase()) {
-    case "PENDIENTE":
-      return "blue";
-    case "EN PROCESO":
-      return "violet";
-    case "ATENDIDO":
-      return "green";
-    case "RECHAZADO":
-      return "red";
-    case "COMPLETADO":
-      return "cyan";
-    case "CERRADO":
-      return "dark";
-    default:
-      return "gray";
-  }
 };

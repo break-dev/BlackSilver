@@ -175,7 +175,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                       className={`w-4 h-4 transition-all duration-300 ${
                         isModExpanded
                           ? "rotate-90 text-blue-400"
-                          : "text-zinc-600"
+                          : "text-zinc-500"
                       }`}
                     />
                   </button>
@@ -231,7 +231,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                 className={`w-3.5 h-3.5 transition-all duration-300 ${
                                   isSubExpanded
                                     ? "rotate-90 text-blue-400/70"
-                                    : "text-zinc-700"
+                                    : "text-zinc-500"
                                 }`}
                               />
                             </button>

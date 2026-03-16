@@ -115,9 +115,7 @@ export const useRegistrarSolicitudLogistica = ({
           return {
             id_requerimiento_almacen_detalle: idDetalle,
             id_producto: item.id_producto,
-            // id_unidad_medida: 1: Base (Si son iguales), 2: Presentación (Si son distintas)
-            id_unidad_medida:
-              item.unidad_medida_abv === item.unidad_medida_base_abv ? 1 : 2,
+            id_unidad_medida: item.id_unidad_medida_req,
             cantidad_solicitada: cantS,
             contenido_por_presentacion: factor,
             cantidad_solicitada_base: cantB,

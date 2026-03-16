@@ -34,6 +34,8 @@ export interface RES_RequerimientoAlmacen {
 export interface RES_DetalleRequerimiento {
     id_requerimiento_almacen_detalle: number;
     id_producto: number;
+    id_unidad_medida_base: number;
+    id_unidad_medida_req: number;
     empleado_atencion: string | null;
     producto: string;
     stock_minimo: number;

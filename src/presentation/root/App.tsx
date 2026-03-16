@@ -15,7 +15,7 @@ import {
   LogisticaLayout,
   InventarioLayout,
   RequerimientoAlmacenLayout,
-  // SolicitudReabastecimientoLayout,
+  SolicitudReabastecimientoLayout,
 } from "../layouts/logistica.layout";
 // Vistas
 import { LoginPage } from "../../views/login/presentation/login.page";
@@ -34,7 +34,7 @@ import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-al
 import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
 import { RolesPage } from "../../views/roles/presentation/roles.page";
 import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
-// import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes.page";
+import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
 import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 
 export const App = () => {
@@ -123,7 +123,7 @@ export const App = () => {
           </Route>
 
           {/* Solicitudes de Reabastecimiento */}
-          {/* <Route
+          <Route
             path="solicitud_reabastecimiento"
             element={<SolicitudReabastecimientoLayout />}
           >
@@ -131,7 +131,7 @@ export const App = () => {
               path="solicitudes"
               element={<SolicitudesReabastecimientoPage />}
             />
-          </Route> */}
+          </Route>
         </Route>
 
         {/* Redireccion */}
