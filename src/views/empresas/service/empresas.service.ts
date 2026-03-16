@@ -20,4 +20,23 @@ export class EmpresasService {
     });
     return response;
   };
+
+  public static actualizar_logo = async (
+    id_empresa: number,
+    logo: File,
+  ): Promise<IRespuesta<RES_Empresa>> => {
+    const formData = new FormData();
+    formData.append("path_logo", logo);
+
+    const { data: response } = await api.post(
+      `${this.PATH}/${id_empresa}/logo`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return response;
+  };
 }

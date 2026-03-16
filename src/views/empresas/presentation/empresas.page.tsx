@@ -6,6 +6,8 @@ import {
   TextInput,
   Text,
   Menu,
+  Avatar,
+  FileButton,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -36,6 +38,7 @@ export const EmpresasPage = () => {
     openCreate,
     closeCreate,
     onEmpresaCreada,
+    handleUpdateLogo,
   } = useEmpresas();
 
   const registro = useRegistroEmpresa({
@@ -55,36 +58,40 @@ export const EmpresasPage = () => {
       accessor: "nombre_comercial",
       title: "Empresa",
       width: 250,
-      render: (record) => {
-        return (
-          <Group gap="xs">
-            <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${record.path_logo
-                  ? "bg-indigo-600/10 border-indigo-500/30 overflow-hidden shadow-inner"
-                  : "bg-zinc-800/50 border-zinc-700/50"
-                }`}
-            >
-              {record.path_logo ? (
-                <img 
-                  src={record.path_logo} 
-                  alt={record.nombre_comercial} 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <BuildingOffice2Icon className="w-5 h-5 text-zinc-500" />
+      render: (r) => (
+        <Group gap="sm">
+          <div className="relative group overflow-hidden rounded-full w-10 h-10 border border-zinc-800">
+            <FileButton onChange={(file: File | null) => file && handleUpdateLogo(r.id_empresa, file)} accept="image/png,image/jpeg,image/jpg">
+              {(props: any) => (
+                <div {...props} className="cursor-pointer">
+                  <Avatar 
+                    src={r.path_logo} 
+                    radius="xl" 
+                    color="indigo" 
+                    variant="light"
+                    className="w-full h-full"
+                  >
+                    <BuildingOffice2Icon className="w-5 h-5 text-zinc-500" />
+                  </Avatar>
+                  
+                  {/* Overlay con Lápiz */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <PencilSquareIcon className="w-4 h-4 text-white" />
+                  </div>
+                </div>
               )}
-            </div>
-            <div>
-              <Text size="sm" fw={500} className="text-zinc-200">
-                {record.nombre_comercial}
-              </Text>
-              <Text size="xs" className="text-zinc-500">
-                {record.razon_social}
-              </Text>
-            </div>
-          </Group>
-        );
-      },
+            </FileButton>
+          </div>
+          <div>
+            <Text size="sm" fw={500} className="text-zinc-200">
+              {r.nombre_comercial}
+            </Text>
+            <Text size="xs" className="text-zinc-500">
+              {r.razon_social}
+            </Text>
+          </div>
+        </Group>
+      ),
     },
     {
       accessor: "ruc",

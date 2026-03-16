@@ -48,6 +48,29 @@ export const useEmpresas = () => {
     );
   }, [empresas, busqueda]);
 
+  const handleUpdateLogo = async (id: number, file: File) => {
+    try {
+      const result = await EmpresasService.actualizar_logo(id, file);
+      if (result.success) {
+        setEmpresas((prev) =>
+          prev.map((emp) => (emp.id_empresa === id ? result.data : emp)),
+        );
+        notify({
+          type: "success",
+          content: "Logo de empresa actualizado correctamente",
+        });
+        return true;
+      } else {
+        notify({ type: "error", content: result.message });
+        return false;
+      }
+    } catch (error) {
+      notify({ type: "error", content: "Error al actualizar el logo" });
+      console.error(error);
+      return false;
+    }
+  };
+
   const onEmpresaCreada = (nueva: RES_Empresa) => {
     setEmpresas((prev) => [nueva, ...prev]);
   };
@@ -66,6 +89,7 @@ export const useEmpresas = () => {
 
     // Handlers
     onEmpresaCreada,
+    handleUpdateLogo,
     recargar: listar,
   };
 };
