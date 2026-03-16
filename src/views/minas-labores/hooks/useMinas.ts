@@ -99,6 +99,16 @@ export const useMinas = () => {
     openLabores();
   };
 
+  const handleLaborRegistrada = (id_mina: number) => {
+    setMinas((prev) =>
+      prev.map((m) =>
+        m.id_mina === id_mina
+          ? { ...m, cantidad_labores: m.cantidad_labores + 1 }
+          : m,
+      ),
+    );
+  };
+
   const handleResponsableAsignado = (
     id_mina: number,
     nuevoNombreResponsable: string,
@@ -141,5 +151,6 @@ export const useMinas = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
+    handleLaborRegistrada,
   };
 };

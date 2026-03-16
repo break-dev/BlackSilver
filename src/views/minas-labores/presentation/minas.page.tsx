@@ -46,6 +46,7 @@ export const MinasPage = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
+    handleLaborRegistrada,
   } = useMinas();
 
   return (
@@ -192,11 +193,11 @@ export const MinasPage = () => {
                   <div className="flex items-center gap-3 text-xs text-zinc-600">
                     <span className="flex items-center gap-1">
                       <Squares2X2Icon className="w-3.5 h-3.5" />
-                      {mina.cantidad_labores} labores
+                      {mina.cantidad_labores} {mina.cantidad_labores === 1 ? 'labor' : 'labores'}
                     </span>
                     <span className="flex items-center gap-1">
                       <BuildingOffice2Icon className="w-3.5 h-3.5" />
-                      {mina.cantidad_empresas_ejecutoras} empresas
+                      {mina.cantidad_empresas_ejecutoras} {mina.cantidad_empresas_ejecutoras === 1 ? 'empresa' : 'empresas'}
                     </span>
                   </div>
 
@@ -296,7 +297,12 @@ export const MinasPage = () => {
         title="Labores"
         size="90%"
       >
-        {selectedMina && <GestionLabores mina={selectedMina} />}
+        {selectedMina && (
+          <GestionLabores 
+            mina={selectedMina} 
+            onLaborCreada={handleLaborRegistrada} 
+          />
+        )}
       </ModalEstandar>
     </div>
   );
