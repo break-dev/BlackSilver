@@ -20,8 +20,8 @@ export const PerfilPage = () => {
 
     if (loading && !perfil) {
         return (
-            <Stack gap={30} className="animate-fade-in p-6 mb-20 max-w-2xl mx-auto">
-                {/* Skeleton Avatar Alineado a la Izquierda */}
+            <Stack gap={30} className="animate-fade-in py-10 px-0 mb-20 w-fit max-w-2xl mx-auto">
+                {/* Skeleton Avatar */}
                 <Group gap="lg" className="w-full justify-start">
                     <Skeleton height={80} width={80} radius="md" />
                     <Stack gap={8}>
@@ -49,8 +49,8 @@ export const PerfilPage = () => {
     if (!perfil) return null;
 
     return (
-        <Stack gap={40} className="animate-fade-in p-6 mb-20 max-w-2xl mx-auto">
-            {/* Header / Avatar Alineado a la Izquierda */}
+        <Stack gap={45} className="animate-fade-in py-10 px-0 mb-20 w-fit max-w-2xl mx-auto">
+            {/* Header / Avatar */}
             <Group gap="xl" justify="flex-start" align="center" className="w-full">
                 <Avatar
                     src={perfil.path_foto}
@@ -67,7 +67,7 @@ export const PerfilPage = () => {
                             variant="light"
                             color="indigo"
                             radius="sm"
-                            size="md"
+                            size="sm"
                             className="font-bold border border-indigo-500/20"
                         >
                             {perfil.nombre_rol}
@@ -77,7 +77,7 @@ export const PerfilPage = () => {
                                 variant="light"
                                 color="pink"
                                 radius="sm"
-                                size="md"
+                                size="sm"
                                 className="font-bold border border-pink-500/20"
                             >
                                 {perfil.nombre_cargo}
@@ -87,33 +87,53 @@ export const PerfilPage = () => {
                 </Stack>
             </Group>
 
-            {/* Grid Único de Información Centrado */}
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={35} className="w-full">
-                <DataField label="Nombres" value={perfil.nombre} />
-                <DataField label="Apellidos" value={perfil.apellido} />
-                <DataField label="Documento de Identidad (DNI)" value={perfil.dni} />
-                <DataField label="RUC de Persona" value={perfil.ruc || 'No registrado'} />
-                <DataField label="Carnet de Extranjería" value={perfil.carnet_extranjeria || 'No registrado'} />
-                <DataField label="Pasaporte" value={perfil.pasaporte || 'No registrado'} />
-                <DataField label="Fecha de Nacimiento" value={perfil.fecha_nacimiento || 'No registrado'} />
-                <DataField label="Empresa / Institución" value={perfil.empresa_nombre || 'Corporativo'} />
-                <DataField label="RUC de la Empresa" value={perfil.empresa_ruc || 'No registrado'} />
-                <DataField label="Área o Departamento" value={perfil.nombre_area || 'No registrado'} />
-                <DataField label="Cargo Desempeñado" value={perfil.nombre_cargo || 'No registrado'} />
-                <DataField label="Nivel de Acceso (Rol)" value={perfil.nombre_rol} />
-            </SimpleGrid>
+            {/* SECCIÓN PERSONAL */}
+            <Stack gap={25} className="w-full">
+                <SectionTitle title="Información Personal" />
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={35} className="w-full">
+                    <DataField label="Nombres" value={perfil.nombre} />
+                    <DataField label="Apellidos" value={perfil.apellido} />
+                    <DataField label="Documento de Identidad (DNI)" value={perfil.dni} />
+                    <DataField label="RUC de Persona" value={perfil.ruc || 'No registrado'} />
+                    <DataField label="Carnet de Extranjería" value={perfil.carnet_extranjeria || 'No registrado'} />
+                    <DataField label="Pasaporte" value={perfil.pasaporte || 'No registrado'} />
+                    <DataField label="Fecha de Nacimiento" value={perfil.fecha_nacimiento || 'No registrado'} />
+                </SimpleGrid>
+            </Stack>
+
+            {/* SECCIÓN LABORAL */}
+            <Stack gap={25} className="w-full">
+                <SectionTitle title="Información Laboral" />
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={35} className="w-full">
+                    <DataField label="Empresa / Institución" value={perfil.empresa_nombre || 'Corporativo'} />
+                    <DataField label="RUC de la Empresa" value={perfil.empresa_ruc || 'No registrado'} />
+                    <DataField label="Área o Departamento" value={perfil.nombre_area || 'No registrado'} />
+                    <DataField label="Cargo Desempeñado" value={perfil.nombre_cargo || 'No registrado'} />
+                    <DataField label="Nivel de Acceso (Rol)" value={perfil.nombre_rol} />
+                </SimpleGrid>
+            </Stack>
         </Stack>
     );
 };
 
+// Subtítulos con línea decorativa
+const SectionTitle = ({ title }: { title: string }) => (
+    <Group gap="md" wrap="nowrap" className="w-full mb-2">
+        <Text size="xs" fw={800} tt="uppercase" className="text-zinc-500 tracking-[0.15em] whitespace-nowrap">
+            {title}
+        </Text>
+        <div className="h-[1px] w-full bg-zinc-800/50" />
+    </Group>
+);
+
 // Campo de Datos Estilizado (Minimalista - Sin Inputs)
 const DataField = ({ label, value, subValue }: { label: string, value: string, subValue?: string }) => (
     <Stack gap={6} className="group">
-        <Text size="13px" fw={700} className="text-zinc-50 transition-colors group-hover:text-indigo-400">
+        <Text size="13px" fw={700} className="text-zinc-500 transition-colors group-hover:text-indigo-400">
             {label}
         </Text>
         <Box className="ml-6">
-            <Text size="12.5px" fw={400} className="text-zinc-500 leading-relaxed italic">
+            <Text size="12.5px" fw={400} className="text-zinc-400 leading-relaxed">
                 {value}
             </Text>
             {subValue && (
