@@ -6,5 +6,9 @@ export const useNotify = () => {
 
   return {
     notify: (message: IMessage) => notify(message),
+    notifySuccess: (content: string) => notify({ type: "success", content }),
+    notifyError: (content: string) => notify({ type: "error", content }),
+    notifyInfo: (content: string) => notify({ type: "info", content }),
+    clearNotify: () => notify({ type: "", content: "" }),
   };
 };
