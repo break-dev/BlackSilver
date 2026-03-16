@@ -50,7 +50,7 @@ export const RegistroEmpresa = ({
       <div className="flex flex-col items-center justify-center py-6">
         <FileButton onChange={setLogoFile} accept="image/png,image/jpeg,image/jpg">
           {(props) => (
-            <div 
+            <div
               {...props}
               className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
               style={{ width: 120, height: 120 }}
@@ -67,7 +67,7 @@ export const RegistroEmpresa = ({
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
                 <PencilIcon className="w-6 h-6 text-white mb-2 drop-shadow-md" />
                 <Text size="11px" fw={700} className="text-white leading-tight">
-                  Subir logo de la empresa
+                  {logoFile ? 'Cambiar imagen' : 'Subir imagen'}
                 </Text>
               </div>
             </div>
