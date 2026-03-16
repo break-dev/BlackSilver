@@ -1,5 +1,5 @@
 import { Badge, Button, Group, Paper, Stack, Text, TextInput } from "@mantine/core";
-import { PlusIcon, MagnifyingGlassIcon, BriefcaseIcon, MapIcon, BoltIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, BriefcaseIcon, MapIcon, BoltIcon, CalendarDaysIcon, InboxStackIcon } from "@heroicons/react/24/outline";
 import { useMemo } from "react";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
@@ -191,7 +191,23 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
           <h3 className="text-lg font-bold text-white leading-tight">
             Labores Operativas
           </h3>
-          <p className="text-zinc-500 text-sm">{mina.nombre}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <Text size="xs" color="dimmed" fw={500}>{mina.nombre}</Text>
+            {mina.almacenes_suministradores && (
+              <>
+                <div className="w-1 h-1 rounded-full bg-zinc-700" />
+                <Badge 
+                  variant="transparent" 
+                  color="cyan" 
+                  size="xs" 
+                  className="p-0 h-auto font-bold lowercase italic text-zinc-500"
+                  leftSection={<InboxStackIcon className="w-3 h-3" />}
+                >
+                  abastecido por: {mina.almacenes_suministradores}
+                </Badge>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex w-full sm:w-auto items-center gap-3">

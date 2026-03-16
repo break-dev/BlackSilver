@@ -19,6 +19,8 @@ export const AbastecerMina = ({
     loading,
     idMina,
     setIdMina,
+    searchValue,
+    setSearchValue,
     formError,
     isAssigning,
     handleAsignar,
@@ -60,6 +62,8 @@ export const AbastecerMina = ({
           leftSection={<CubeIcon className="w-4 h-4 text-zinc-400" />}
           value={idMina}
           onChange={(val) => setIdMina(val || "")}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
           error={formError}
           radius="lg"
           size="sm"

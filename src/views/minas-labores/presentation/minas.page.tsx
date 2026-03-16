@@ -13,6 +13,7 @@ import {
   BriefcaseIcon,
   Squares2X2Icon,
   BuildingOffice2Icon,
+  InboxStackIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useMinas } from "../hooks/useMinas";
@@ -159,6 +160,20 @@ export const MinasPage = () => {
                         {mina.concesion}
                       </Badge>
                     </Tooltip>
+                    {mina.almacenes_suministradores && (
+                      <Tooltip label={`Almacenes: ${mina.almacenes_suministradores}`}>
+                        <Badge
+                          size="xs"
+                          variant="light"
+                          color="cyan"
+                          radius="sm"
+                          className="font-bold border-cyan-500/20"
+                          leftSection={<InboxStackIcon className="w-3.5 h-3.5" />}
+                        >
+                          Abastecido
+                        </Badge>
+                      </Tooltip>
+                    )}
                   </div>
                   <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
                     {mina.nombre}

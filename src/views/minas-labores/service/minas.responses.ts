@@ -17,6 +17,7 @@ export interface RES_ResumenMina {
   fecha_inicio_responsabilidad: string | null;
   cantidad_labores: number;
   cantidad_empresas_ejecutoras: number;
+  almacenes_suministradores: string | null;
   estado: string;
 }
 

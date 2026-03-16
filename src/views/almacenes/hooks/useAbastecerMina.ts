@@ -17,6 +17,7 @@ export const useAbastecerMina = (id_almacen: number) => {
 
   // Formulario
   const [idMina, setIdMina] = useState<string>("");
+  const [searchValue, setSearchValue] = useState("");
   const [formError, setFormError] = useState("");
   const [isAssigning, setIsAssigning] = useState(false);
 
@@ -68,7 +69,11 @@ export const useAbastecerMina = (id_almacen: number) => {
           content: result.message || "Mina vinculada",
         });
         onSuccess?.(result.data);
+        setMinasDisponibles((prev) =>
+          prev.filter((m) => String(m.id_mina) !== idMina)
+        );
         setIdMina("");
+        setSearchValue("");
       } else {
         notify({ type: "error", content: result.message });
       }
@@ -100,6 +105,8 @@ export const useAbastecerMina = (id_almacen: number) => {
     // Formulario
     idMina,
     setIdMina,
+    searchValue,
+    setSearchValue,
     formError,
     isAssigning,
     handleAsignar,
