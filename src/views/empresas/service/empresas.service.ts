@@ -1,6 +1,5 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
-import type { DTO_RegistroEmpresa } from "./empresas.requests";
 import type { RES_Empresa } from "./empresas.responses";
 
 export class EmpresasService {
@@ -12,9 +11,13 @@ export class EmpresasService {
   };
 
   public static crear_empresa = async (
-    dto: DTO_RegistroEmpresa,
+    data: FormData,
   ): Promise<IRespuesta<RES_Empresa>> => {
-    const { data } = await api.post(`${this.PATH}`, dto);
-    return data;
+    const { data: response } = await api.post(`${this.PATH}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response;
   };
 }

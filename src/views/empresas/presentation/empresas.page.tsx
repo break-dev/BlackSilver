@@ -56,19 +56,23 @@ export const EmpresasPage = () => {
       title: "Empresa",
       width: 250,
       render: (record) => {
-        const hasLogo = !!record.path_logo;
         return (
           <Group gap="xs">
             <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${hasLogo
-                  ? "bg-indigo-600/20 border-indigo-500/50 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
+              className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${record.path_logo
+                  ? "bg-indigo-600/10 border-indigo-500/30 overflow-hidden shadow-inner"
                   : "bg-zinc-800/50 border-zinc-700/50"
                 }`}
             >
-              <BuildingOffice2Icon
-                className={`w-5 h-5 transition-colors ${hasLogo ? "text-indigo-400" : "text-zinc-500"
-                  }`}
-              />
+              {record.path_logo ? (
+                <img 
+                  src={record.path_logo} 
+                  alt={record.nombre_comercial} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <BuildingOffice2Icon className="w-5 h-5 text-zinc-500" />
+              )}
             </div>
             <div>
               <Text size="sm" fw={500} className="text-zinc-200">
@@ -187,8 +191,8 @@ export const EmpresasPage = () => {
           setNombreComercial={registro.setNombreComercial}
           abreviatura={registro.abreviatura}
           setAbreviatura={registro.setAbreviatura}
-          pathLogo={registro.pathLogo}
-          setPathLogo={registro.setPathLogo}
+          logoFile={registro.logoFile}
+          setLogoFile={registro.setLogoFile}
           error={registro.error}
           loading={registro.loading}
           onSave={registro.handleGuardar}
