@@ -5,28 +5,27 @@ import {
   Select,
   Text,
   TextInput,
-  Stack,
-  Divider,
   Paper,
-  Loader,
-  Center,
+  Divider,
 } from "@mantine/core";
 import { ArchiveBoxIcon, ScaleIcon } from "@heroicons/react/24/outline";
 import { pluralizar } from "../../../presentation/functions/pluralizar";
 import { useRegistroLote } from "../hooks/useRegistroLote";
-import type { RES_Lote } from "../service/lotes.responses";
+import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroLoteProps {
   onSuccess: (lote: RES_Lote) => void;
   onCancel: () => void;
   initialAlmacenId?: number | null;
+  almacenes: RES_Almacen[];
 }
 
 export const RegistroLote = ({
   onSuccess,
   onCancel,
   initialAlmacenId,
+  almacenes,
 }: RegistroLoteProps) => {
   const {
     idAlmacen,
@@ -45,13 +44,14 @@ export const RegistroLote = ({
     setFechaVencimiento,
     descripcion,
     setDescripcion,
-    loading,
+    loadingProductos,
+    loadingUnidades,
     submitting,
     error,
     catalogs,
     derived,
     handleSubmit,
-  } = useRegistroLote({ initialAlmacenId, onSuccess });
+  } = useRegistroLote({ initialAlmacenId, almacenes, onSuccess });
 
   const inputClasses = {
     input:
@@ -64,23 +64,6 @@ export const RegistroLote = ({
     description: "text-zinc-500 text-[10px] italic mt-1",
   };
 
-  if (loading) {
-    return (
-      <Center p="xl">
-        <Stack align="center" gap="sm">
-          <Loader color="indigo" size="sm" />
-          <Text
-            size="xs"
-            c="dimmed"
-            fw={700}
-            className="uppercase tracking-widest"
-          >
-            Cargando catálogos...
-          </Text>
-        </Stack>
-      </Center>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
@@ -89,7 +72,7 @@ export const RegistroLote = ({
           label="Almacén de Destino"
           placeholder="Seleccione almacén"
           withAsterisk
-          data={catalogs.almacenes.map((a) => ({
+          data={almacenes.map((a) => ({
             value: String(a.id_almacen),
             label: a.nombre,
           }))}
@@ -110,6 +93,7 @@ export const RegistroLote = ({
           }))}
           searchable
           withAsterisk
+          disabled={loadingProductos}
           value={idProducto ? String(idProducto) : null}
           onChange={(val) => setIdProducto(Number(val))}
           classNames={inputClasses}
@@ -127,6 +111,7 @@ export const RegistroLote = ({
           }))}
           searchable
           withAsterisk
+          disabled={loadingUnidades}
           value={idUnidadMedida ? String(idUnidadMedida) : null}
           onChange={(val) => setIdUnidadMedida(Number(val))}
           classNames={inputClasses}

@@ -2,12 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type {
   RES_Login,
-  RES_LoginUsuario,
+  RES_Usuario,
 } from "../views/login/service/login.responses";
 
 export interface IAuthStore {
   token: string;
-  usuario: RES_LoginUsuario | null;
+  usuario: RES_Usuario | null;
   isAuthenticated: boolean;
   updateAuth: (auth: RES_Login) => void;
   clearAuth: () => void;

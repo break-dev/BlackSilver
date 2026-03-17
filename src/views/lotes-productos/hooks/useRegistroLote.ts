@@ -11,21 +11,23 @@ import type {
 
 interface UseRegistroLoteProps {
   initialAlmacenId?: number | null;
+  almacenes: RES_Almacen[];
   onSuccess: (lote: RES_Lote) => void;
 }
 
 export const useRegistroLote = ({
   initialAlmacenId,
+  almacenes,
   onSuccess,
 }: UseRegistroLoteProps) => {
-  const [loading, setLoading] = useState(false);
+  const [loadingProductos, setLoadingProductos] = useState(false);
+  const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Catalogs
   const [productos, setProductos] = useState<RES_ProductoDisponible[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
 
   // Form State
   const [idAlmacen, setIdAlmacen] = useState<number>(initialAlmacenId || 0);
@@ -42,32 +44,43 @@ export const useRegistroLote = ({
 
   // Load catalogs
   useEffect(() => {
-    const loadCatalogs = async () => {
-      setLoading(true);
+    const loadProductos = async () => {
+      setLoadingProductos(true);
       try {
-        const [resProds, resUnits, resAlms] = await Promise.all([
-          LotesService.listarProductos(),
-          LotesService.listarUnidades(),
-          LotesService.listarAlmacenes(),
-        ]);
-
-        if (resProds.success) {
-          setProductos(resProds.data);
-        }
-        if (resUnits.success) {
-          setUnidades(resUnits.data);
-        }
-        if (resAlms.success) {
-          setAlmacenes(resAlms.data);
-        }
+        const res = await LotesService.listarProductos();
+        if (res.success) setProductos(res.data);
       } catch (err) {
         setError(String(err));
       } finally {
-        setLoading(false);
+        setLoadingProductos(false);
       }
     };
-    loadCatalogs();
+
+    const loadUnidades = async () => {
+      setLoadingUnidades(true);
+      try {
+        const res = await LotesService.listarUnidades();
+        if (res.success) setUnidades(res.data);
+      } catch (err) {
+        setError(String(err));
+      } finally {
+        setLoadingUnidades(false);
+      }
+    };
+
+    loadProductos();
+    loadUnidades();
   }, []);
+
+  // Auto-set unit of measure when product changes
+  useEffect(() => {
+    if (idProducto && !loadingUnidades && productos.length > 0) {
+      const prod = productos.find((p) => p.id_producto === idProducto);
+      if (prod) {
+        setIdUnidadMedida(prod.id_unidad_medida_base);
+      }
+    }
+  }, [idProducto, loadingUnidades, productos]);
 
   // Derived state
   const productoSeleccionado = productos.find(
@@ -165,7 +178,8 @@ export const useRegistroLote = ({
     setDescripcion,
 
     // Status
-    loading,
+    loadingProductos,
+    loadingUnidades,
     submitting,
     error,
 

@@ -66,7 +66,7 @@ export const LaboresRequerimiento = ({
                     </Text>
                   </Group>
                   <Text size="sm" c="dimmed" className="line-clamp-2 italic">
-                    {labor.descripcion || "Sin descripción adicional"}
+                    {labor.nombre || "Sin descripción adicional"}
                   </Text>
                 </Stack>
               </Group>

@@ -4,6 +4,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import type { RES_Lote } from "../../service/lotes.responses";
 import type { GroupedProduct } from "./types";
+import { formatNumber } from "../../../../presentation/functions/formatNumber";
 
 interface ProductGroupCardProps {
   product: GroupedProduct;
@@ -38,22 +39,36 @@ export const ProductGroupCard = ({
             >
               {product.categoria || "S/C"}
             </Text>
-            <Text size="md" fw={900} className="text-white tracking-tight">
-              {product.producto}
-            </Text>
+            <div className="flex flex-row gap-3">
+              <Text size="md" fw={900} className="text-white tracking-tight">
+                {product.producto}
+              </Text>
+              <Group gap={4} className="flex flex-row self-end gap-3 mb-0.5">
+                {product.es_fiscalizado && (
+                  <Badge color="yellow" variant="light" size="xs">
+                    Fiscalizado
+                  </Badge>
+                )}
+                {product.es_perecible && (
+                  <Badge color="red" variant="light" size="xs">
+                    Perecible
+                  </Badge>
+                )}
+                {isBajoStock && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded py-0.5 px-2 w-fit animate-pulse">
+                    <Text
+                      size="9px"
+                      c="red.4"
+                      fw={900}
+                      className="uppercase tracking-widest leading-none"
+                    >
+                      Stock crítico
+                    </Text>
+                  </div>
+                )}
+              </Group>
+            </div>
           </Stack>
-          <Group gap={4} className="flex flex-row self-end mb-1">
-            {product.es_fiscalizado && (
-              <Badge color="yellow" variant="light" size="xs">
-                Fiscalizado
-              </Badge>
-            )}
-            {product.es_perecible && (
-              <Badge color="red" variant="light" size="xs">
-                Perecible
-              </Badge>
-            )}
-          </Group>
         </div>
 
         <div className="flex items-center gap-6">
@@ -101,27 +116,14 @@ export const ProductGroupCard = ({
                 {product.total_stock_base} {product.unidad_medida_base}
               </Text>
             </Badge>
-            <div className="flex flex-row gap-1.5">
-              <div className="flex items-center gap-1 px-1">
-                <Text size="10px" c="zinc.5" fw={700}>
-                  Mínimo:
-                </Text>
-                <Text size="10px" c="pink.5" fw={800}>
-                  {product.stock_minimo} {product.unidad_medida_base}
-                </Text>
-              </div>
-              {isBajoStock && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded py-0.5 px-2 w-fit animate-pulse">
-                  <Text
-                    size="9px"
-                    c="red.4"
-                    fw={900}
-                    className="uppercase tracking-widest leading-none"
-                  >
-                    Stock crítico
-                  </Text>
-                </div>
-              )}
+            <div className="flex items-center gap-1 px-1">
+              <Text size="10px" c="zinc.5" fw={700}>
+                Mínimo:
+              </Text>
+              <Text size="10px" c="pink.5" fw={800}>
+                {formatNumber(product.stock_minimo)}{" "}
+                {product.unidad_medida_base}
+              </Text>
             </div>
           </div>
         </div>

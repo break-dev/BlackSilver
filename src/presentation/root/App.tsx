@@ -36,6 +36,7 @@ import { RolesPage } from "../../views/roles/presentation/roles.page";
 import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
 import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
 import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
+import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
 
 export const App = () => {
   return (
@@ -65,10 +66,7 @@ export const App = () => {
         <Route path="/home" element={<HomePage />} />
 
         {/* Perfil */}
-        <Route
-          path="/perfil"
-          element={<PerfilPage />}
-        />
+        <Route path="/perfil" element={<PerfilPage />} />
 
         {/* Configuracion */}
         <Route path="/configuracion" element={<ConfiguracionLayout />}>
@@ -130,6 +128,10 @@ export const App = () => {
             <Route
               path="solicitudes"
               element={<SolicitudesReabastecimientoPage />}
+            />
+            <Route
+              path="atencion_solicitudes"
+              element={<SolicitudesReabastecimientoAtencionPage />}
             />
           </Route>
         </Route>

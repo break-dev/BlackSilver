@@ -31,7 +31,7 @@ import { DetalleSolicitud } from "./detalle-solicitud.tsx";
 import { MESES } from "../../../presentation/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
 
-export const AtencionSolicitudesPage = () => {
+export const SolicitudesReabastecimientoAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
   const [openedDetalle, { open: openDetalle, close: closeDetalle }] =

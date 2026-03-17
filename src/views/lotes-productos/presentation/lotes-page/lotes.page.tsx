@@ -358,6 +358,7 @@ export const LotesPage = () => {
       >
         <RegistroLote
           initialAlmacenId={idAlmacen ? Number(idAlmacen) : null}
+          almacenes={almacenes}
           onSuccess={(nuevoLote) => {
             closeCreate();
             addLote(nuevoLote);
