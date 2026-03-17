@@ -2,7 +2,7 @@ export interface DTO_CrearSolicitud {
   id_almacen_solicitante: number;
   premura: string;
   observacion?: string;
-  fecha_entrega_requerida: string;
+  fecha_entrega_requerida: string | null;
   detalles: DTO_SolicitudDetalle[];
 }
 

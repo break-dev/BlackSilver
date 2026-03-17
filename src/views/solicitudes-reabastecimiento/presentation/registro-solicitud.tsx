@@ -135,9 +135,8 @@ export const RegistroSolicitud = ({
           />
 
           <CustomDatePicker
-            label="Fecha Requerida de Entrega"
+            label="Fecha de Entrega (opcional)"
             placeholder="Seleccione fecha"
-            withAsterisk
             value={fechaEntregaRequerida}
             onChange={(val) => setFechaEntregaRequerida(val as Date | null)}
             radius="lg"
@@ -499,6 +498,16 @@ export const RegistroSolicitud = ({
       </div>
 
       <Group justify="flex-end" mt="md">
+        {error && (
+          <Text
+            c="red"
+            size="sm"
+            fw={600}
+            className="text-center animate-pulse"
+          >
+            {error}
+          </Text>
+        )}
         <Button
           variant="subtle"
           onClick={onCancel}
@@ -518,12 +527,6 @@ export const RegistroSolicitud = ({
           Guardar Solicitud
         </Button>
       </Group>
-
-      {error && (
-        <Text c="red" size="sm" fw={600} className="text-center animate-pulse">
-          {error}
-        </Text>
-      )}
     </Stack>
   );
 };

@@ -74,6 +74,15 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   const unidadSeleccionada = unidades.find(
     (u) => u.id_unidad_medida === idUnidadMedida,
   );
+  useEffect(() => {
+    if (idProducto > 0 && productos.length > 0) {
+      const prod = productos.find((p) => p.id_producto === idProducto);
+      if (prod) {
+        setIdUnidadMedida(prod.id_unidad_medida_base);
+      }
+    }
+  }, [idProducto, productos]);
+
   const sonUnidadesIdenticas =
     productoSeleccionado &&
     unidadSeleccionada &&
@@ -123,7 +132,6 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   const handleSubmit = useCallback(async () => {
     if (
       !idAlmacenSolicitante ||
-      !fechaEntregaRequerida ||
       detalles.length === 0
     ) {
       setError("Faltan campos obligatorios");
@@ -137,9 +145,9 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
       id_almacen_solicitante: idAlmacenSolicitante,
       premura,
       observacion: observacion || undefined,
-      fecha_entrega_requerida: dayjs(fechaEntregaRequerida).format(
-        "YYYY-MM-DD",
-      ),
+      fecha_entrega_requerida: fechaEntregaRequerida
+        ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
+        : null,
       detalles,
     };
 

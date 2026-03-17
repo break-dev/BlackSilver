@@ -241,7 +241,9 @@ export const DetalleSolicitud = ({
               </Text>
             </div>
             <Text size="sm" fw={800} className="text-zinc-100 font-mono">
-              {dayjs(headerData.fecha_entrega_requerida).format("DD/MM/YYYY")}
+              {headerData.fecha_entrega_requerida || (
+                <span className="text-zinc-500 italic font-normal">Sin fecha</span>
+              )}
             </Text>
           </Stack>
         </div>
