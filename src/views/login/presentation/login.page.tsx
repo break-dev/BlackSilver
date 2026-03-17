@@ -1,7 +1,8 @@
+import { useState, useRef } from "react";
 import { TextInput, PasswordInput, Button } from "@mantine/core";
 import {
-  Wallpapers,
   BlackcitoLogo,
+  LoginVideo,
 } from "../../../presentation/assets/imports";
 import { useLogin } from "../hooks/useLogin";
 
@@ -13,31 +14,54 @@ export const LoginPage = () => {
     setUsername,
     password,
     setPassword,
-    currentImageIndex,
     handleSubmit,
   } = useLogin();
+
+  const [isVideoEnding, setIsVideoEnding] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    // Iniciar transición suave 1 segundo antes de que termine
+    const duration = videoRef.current.duration;
+    const currentTime = videoRef.current.currentTime;
+    if (duration - currentTime < 1 && !isVideoEnding) {
+      setIsVideoEnding(true);
+    }
+  };
+
+  const handleEnded = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play();
+      setIsVideoEnding(false);
+    }
+  };
 
   return (
     <div
       className="relative min-h-screen w-full flex items-center 
       justify-center p-4 overflow-hidden bg-black"
     >
-      {/* Background Images */}
-      {Wallpapers.map((bg: string, index: number) => (
-        <div
-          key={index}
-          className={`absolute inset-0 w-full h-full transition-opacity 
-          duration-1000 ease-in-out ${
-            index === currentImageIndex ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <img
-            src={bg}
-            alt={`Background ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ))}
+      {/* Background Video */}
+      <div
+        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+          isVideoEnding ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        <video
+          ref={videoRef}
+          src={LoginVideo}
+          autoPlay
+          muted
+          playsInline
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      {/* Black background to show during transition opacity 0 */}
+      <div className="absolute inset-0 bg-black -z-10"></div>
 
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/50 z-0"></div>
@@ -45,9 +69,9 @@ export const LoginPage = () => {
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md mb-8 sm:mb-20">
         <div
-          className="glass rounded-3xl p-8 shadow-2xl shadow-cyan-900/20 
-          border border-cyan-500/20 backdrop-blur-2xl py-12 sm:py-16 
-          bg-zinc-950/50"
+          className=" rounded-3xl p-8 shadow-2xl shadow-cyan-900/20 
+          border border-cyan-500/20 py-12 sm:py-16 
+          bg-zinc-900/70"
         >
           {/* Logo and Title */}
           <div className="text-center mb-8">

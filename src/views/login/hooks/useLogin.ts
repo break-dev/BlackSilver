@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../../stores/auth.store";
 import { LoginService } from "../service/login.service";
 import { Schema_Login } from "../service/login.requests";
-import { Wallpapers } from "../../../presentation/assets/imports";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 
 export const useLogin = () => {
@@ -13,15 +12,6 @@ export const useLogin = () => {
   const [error, setError] = useState<string>("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    if (Wallpapers.length === 0) return;
-    const intervalId = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % Wallpapers.length);
-    }, 5000);
-    return () => clearInterval(intervalId);
-  }, []);
 
   const handleSubmit = async () => {
     const validation = Schema_Login.safeParse({ username, password });
@@ -57,7 +47,6 @@ export const useLogin = () => {
     setUsername,
     password,
     setPassword,
-    currentImageIndex,
     handleSubmit,
   };
 };
