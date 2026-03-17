@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ActionIcon,
   Badge,
@@ -5,6 +6,10 @@ import {
   TextInput,
   Menu,
   Tooltip,
+  Text,
+  Stack,
+  Group,
+  Select,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -14,12 +19,17 @@ import {
   EllipsisVerticalIcon,
   Squares2X2Icon,
   ClipboardDocumentCheckIcon,
+  TruckIcon,
+  FireIcon,
+  RectangleGroupIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
 import { useCategorias } from "../hooks/useCategorias";
 import { useRegistroCategoria } from "../hooks/useRegistroCategoria";
+import { useDisclosure } from "@mantine/hooks";
 
 export const CategoriasPage = () => {
   useTitlePage("Categorías");
@@ -33,14 +43,19 @@ export const CategoriasPage = () => {
     openCreate,
     closeCreate,
     onCategoriaCreada,
+    categorias,
   } = useCategorias();
+
+  const [openedDestinos, { open: openDestinos, close: closeDestinos }] = useDisclosure(false);
+
+  const categoriasParaConsumo = useMemo(() => 
+    categorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })),
+  [categorias]);
 
   const registro = useRegistroCategoria({
     onSuccess: onCategoriaCreada,
     onClose: closeCreate,
   });
-
-  // Eliminamos const columns -> pasamos a vista Card
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -98,7 +113,6 @@ export const CategoriasPage = () => {
                 key={cat.id_categoria}
                 className="group relative flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-3 hover:border-zinc-700/80 hover:bg-zinc-900/50 transition-all duration-200"
               >
-                {/* Badge de estado en la esquina */}
                 <Badge
                   size="xs"
                   variant="light"
@@ -109,7 +123,6 @@ export const CategoriasPage = () => {
                   {cat.estado}
                 </Badge>
 
-                {/* Header: Titulo + Clasificación */}
                 <div className="pr-14">
                   <div className="flex items-center gap-2 mb-1">
                     <Tooltip label="Tipo de Requerimiento">
@@ -132,16 +145,38 @@ export const CategoriasPage = () => {
                   </p>
                 </div>
 
-                {/* Footer: Stats/Clasificación y Acciones */}
                 <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-auto">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-600 font-medium">
+                  <div className="flex items-center gap-1 overflow-hidden">
+                    {cat.para_mina && (
+                      <Tooltip label="Área: Mina" position="top">
+                         <div className="p-1 rounded bg-zinc-800 border border-zinc-700">
+                          <TruckIcon className="w-3.5 h-3.5 text-blue-400" />
+                        </div>
+                      </Tooltip>
+                    )}
+                    {cat.para_cocina && (
+                      <Tooltip label="Área: Cocina" position="top">
+                         <div className="p-1 rounded bg-zinc-800 border border-zinc-700">
+                          <FireIcon className="w-3.5 h-3.5 text-orange-400" />
+                        </div>
+                      </Tooltip>
+                    )}
+                    {cat.es_consumible && (
+                      <Tooltip label={`Abastece a: ${cat.nombres_consumidoras || "Pendiente definir"}`} position="top" multiline w={220}>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-900/30 border border-indigo-500/30 text-[10px] text-indigo-300 font-bold uppercase tracking-wider">
+                          <RectangleGroupIcon className="w-3 h-3" />
+                          Consumible
+                        </div>
+                      </Tooltip>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-600 font-medium ml-auto">
                     <ClipboardDocumentCheckIcon className="w-4 h-4" />
-                    <span className="truncate max-w-[120px]">
-                      {cat.clasificacion_bien || "Sin Clasificar"}
+                    <span className="truncate max-w-[80px]">
+                      {cat.clasificacion_bien || "S.C."}
                     </span>
                   </div>
 
-                  {/* Acciones 3 dots */}
                   <Menu shadow="md" width={150} position="bottom-end">
                     <Menu.Target>
                       <ActionIcon variant="subtle" color="gray" size="sm">
@@ -188,6 +223,15 @@ export const CategoriasPage = () => {
           setTipoRequerimiento={registro.setTipoRequerimiento}
           clasificacionBien={registro.clasificacionBien}
           setClasificacionBien={registro.setClasificacionBien}
+          esConsumible={registro.esConsumible}
+          setEsConsumible={registro.setEsConsumible}
+          paraCocina={registro.paraCocina}
+          setParaCocina={registro.setParaCocina}
+          paraMina={registro.paraMina}
+          setParaMina={registro.setParaMina}
+          idsConsumidoras={registro.idsConsumidoras}
+          setIdsConsumidoras={registro.setIdsConsumidoras}
+          onOpenDestinos={openDestinos}
           error={registro.error}
           loading={registro.loading}
           onSave={registro.handleGuardar}
@@ -196,6 +240,91 @@ export const CategoriasPage = () => {
             registro.reset();
           }}
         />
+      </ModalEstandar>
+
+      {/* MODAL GESTIÓN DE DESTINOS (Como en Organigrama) */}
+      <ModalEstandar
+        opened={openedDestinos}
+        close={closeDestinos}
+        title="Gestión de Destinos de Consumo"
+        size="md"
+      >
+        <Stack gap="md">
+          <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
+             <Group gap="sm" align="center" mb="md">
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                <RectangleGroupIcon className="w-4 h-4 text-indigo-400" />
+              </div>
+              <Stack gap={0}>
+                <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+                  Vincular Categoría
+                </Text>
+                <Text size="xs" className="text-zinc-500">
+                  Seleccione a quién abastece esta categoría
+                </Text>
+              </Stack>
+            </Group>
+
+            <Select
+              placeholder="Buscar categoría..."
+              data={categoriasParaConsumo.filter(c => !registro.idsConsumidoras.includes(Number(c.value)))}
+              searchable
+              nothingFoundMessage="No se encontraron más categorías"
+              radius="lg"
+              classNames={{
+                input: "bg-zinc-900/50 border-zinc-800 text-white",
+              }}
+              onChange={(val) => {
+                if (val) {
+                  registro.setIdsConsumidoras([...registro.idsConsumidoras, Number(val)]);
+                }
+              }}
+            />
+          </div>
+
+          <Stack gap="xs">
+            <Text size="xs" fw={700} className="text-zinc-500 uppercase tracking-widest px-1">
+              Destinos Seleccionados ({registro.idsConsumidoras.length})
+            </Text>
+            
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+              {registro.idsConsumidoras.length === 0 ? (
+                <div className="py-8 text-center bg-zinc-900/20 rounded-xl border border-dashed border-zinc-800">
+                  <Text size="xs" className="text-zinc-600 italic">No hay destinos seleccionados</Text>
+                </div>
+              ) : (
+                registro.idsConsumidoras.map(id => {
+                  const cat = categorias.find(c => c.id_categoria === id);
+                  return (
+                    <Group key={id} justify="space-between" className="p-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
+                      <div className="flex items-center gap-3">
+                         <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                         <Text size="sm" fw={600} className="text-zinc-300">{cat?.nombre || 'Categoría Desconocida'}</Text>
+                      </div>
+                      <ActionIcon 
+                         variant="subtle" 
+                         color="red" 
+                         size="sm"
+                         onClick={() => registro.setIdsConsumidoras(registro.idsConsumidoras.filter(cid => cid !== id))}
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Group>
+                  )
+                })
+              )}
+            </div>
+          </Stack>
+
+          <Button 
+            fullWidth 
+            onClick={closeDestinos} 
+            radius="lg"
+            className="bg-zinc-200 text-zinc-900 hover:bg-white"
+          >
+            Aceptar
+          </Button>
+        </Stack>
       </ModalEstandar>
     </div>
   );

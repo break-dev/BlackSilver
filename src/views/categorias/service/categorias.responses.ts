@@ -5,4 +5,9 @@ export interface RES_Categoria {
   tipo_requerimiento: string;
   clasificacion_bien: string | null;
   estado: string;
+  es_consumible: boolean;
+  para_cocina: boolean;
+  para_mina: boolean;
+  nombres_consumidoras: string | null;
+  ids_consumidoras: string | null;
 }

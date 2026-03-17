@@ -24,6 +24,10 @@ export const useRegistroCategoria = ({
   const [clasificacionBien, setClasificacionBien] = useState<string | null>(
     null,
   );
+  const [esConsumible, setEsConsumible] = useState(false);
+  const [paraCocina, setParaCocina] = useState(false);
+  const [paraMina, setParaMina] = useState(true);
+  const [idsConsumidoras, setIdsConsumidoras] = useState<number[]>([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +37,10 @@ export const useRegistroCategoria = ({
     setDescripcion("");
     setTipoRequerimiento(null);
     setClasificacionBien(null);
+    setEsConsumible(false);
+    setParaCocina(false);
+    setParaMina(true);
+    setIdsConsumidoras([]);
     setError("");
   }, []);
 
@@ -43,6 +51,10 @@ export const useRegistroCategoria = ({
       descripcion,
       tipo_requerimiento: tipoRequerimiento || "",
       clasificacion_bien: clasificacionBien || "",
+      es_consumible: esConsumible,
+      para_cocina: paraCocina,
+      para_mina: paraMina,
+      ids_consumidoras: idsConsumidoras,
     };
 
     const validation = Schema_RegistroCategoria.safeParse(data);
@@ -80,6 +92,14 @@ export const useRegistroCategoria = ({
     setTipoRequerimiento,
     clasificacionBien,
     setClasificacionBien,
+    esConsumible,
+    setEsConsumible,
+    paraCocina,
+    setParaCocina,
+    paraMina,
+    setParaMina,
+    idsConsumidoras,
+    setIdsConsumidoras,
     error,
     loading,
     handleGuardar,

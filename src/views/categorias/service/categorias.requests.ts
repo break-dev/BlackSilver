@@ -12,6 +12,10 @@ export const Schema_RegistroCategoria = z.object({
     (val) => (val === "" ? null : val),
     z.nativeEnum(TipoBien).nullable().optional(),
   ),
+  es_consumible: z.boolean().default(false),
+  para_cocina: z.boolean().default(false),
+  para_mina: z.boolean().default(false),
+  ids_consumidoras: z.array(z.number()).default([]),
 });
 
 export type DTO_RegistroCategoria = z.infer<typeof Schema_RegistroCategoria>;
