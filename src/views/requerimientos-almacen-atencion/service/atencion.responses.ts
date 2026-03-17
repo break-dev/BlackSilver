@@ -15,17 +15,18 @@ export interface RES_LaborRelacionada {
  * Representa un requerimiento en el resumen de atención
  */
 export interface RES_RequerimientoAlmacen {
-    id_requerimiento: number;
-    id_almacen_destino: number;
-    correlativo: string;
-    observacion: string | null;
-    mina: string;
-    solicitante: string;
-    premura: Premura;
-    fecha_entrega_requerida: string | null;
-    estado: EstadoRequerimiento;
-    created_at: string;
-    labores?: RES_LaborRelacionada[];
+  id_requerimiento: number;
+  id_almacen_destino: number;
+  correlativo: string;
+  observacion: string | null;
+  mina: string;
+  id_empleado_solicitante: number;
+  solicitante: string;
+  premura: Premura;
+  fecha_entrega_requerida: string | null;
+  estado: EstadoRequerimiento;
+  created_at: string;
+  labores?: RES_LaborRelacionada[];
 }
 
 /**

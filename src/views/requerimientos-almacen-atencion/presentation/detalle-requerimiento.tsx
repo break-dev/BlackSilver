@@ -85,8 +85,8 @@ export const DetalleRequerimiento = ({
     handleAprobar,
     handleRechazar,
     getStatusColor,
-    loadData,
     logistica,
+    patchDetallesLocales,
   } = useGestionAtencion({
     idRequerimiento: requerimiento.id_requerimiento,
     onSuccess,
@@ -297,7 +297,7 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-center w-12">#</th>
                 <th className="px-4 py-4 text-center w-10"></th>
                 <th className="px-6 py-4 text-left">Producto</th>
-                <th className="px-6 py-4 text-center">Cantidad solicitada</th>
+                <th className="px-6 py-4 text-center min-w-[180px]">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
@@ -646,11 +646,11 @@ export const DetalleRequerimiento = ({
           idAlmacen={idAlmacen}
           selectedItemsIds={selectedItemsIds}
           detallesRequerimiento={detalles}
-          onSuccess={() => {
+          idEmpleadoSolicitante={requerimiento.id_empleado_solicitante}
+          onSuccess={(entregados) => {
             closeEntregaBatch();
             deselectAllItems();
-            loadData(true);
-            onSuccess([]);
+            patchDetallesLocales(entregados);
           }}
           onCancel={closeEntregaBatch}
         />

@@ -28,7 +28,8 @@ interface RegistrarEntregaProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  onSuccess: () => void;
+  idEmpleadoSolicitante: number;
+  onSuccess: (entregados: Record<number, number>) => void;
   onCancel: () => void;
 }
 
@@ -37,6 +38,7 @@ export const RegistrarEntrega = ({
   idAlmacen,
   selectedItemsIds,
   detallesRequerimiento,
+  idEmpleadoSolicitante,
   onSuccess,
   onCancel,
 }: RegistrarEntregaProps) => {
@@ -61,7 +63,10 @@ export const RegistrarEntrega = ({
     idAlmacen,
     selectedItemsIds,
     detallesRequerimiento,
-    onSuccess,
+    idEmpleadoSolicitante,
+    onSuccess: (entregados) => {
+      onSuccess(entregados);
+    },
   });
 
   if (loading)
@@ -292,6 +297,13 @@ export const RegistrarEntrega = ({
                           lote.dias_para_vencer !== null &&
                           lote.dias_para_vencer < 0;
 
+                        const maxBase = Math.min(
+                          lote.stock_actual_base,
+                          pendienteBase - (tEntregadoProductoActualBase - cant),
+                        );
+                        const maxLote =
+                          maxBase / (lote.contenido_por_presentacion || 1);
+
                         return (
                           <tr
                             key={lote.id_lote}
@@ -310,9 +322,9 @@ export const RegistrarEntrega = ({
                             </td>
                             <td className="text-center">
                               {lote.fecha_vencimiento ? (
-                                <div className="flex flex-col gap-0.5">
+                                <div className="flex flex-row gap-1.5 justify-center items-center">
                                   <Text
-                                    size="10px"
+                                    size="11px"
                                     fw={800}
                                     className="text-zinc-300"
                                   >
@@ -322,7 +334,6 @@ export const RegistrarEntrega = ({
                                   </Text>
                                   <Badge
                                     variant="dot"
-                                    size="xs"
                                     color={
                                       esVencido
                                         ? "red"
@@ -330,7 +341,7 @@ export const RegistrarEntrega = ({
                                           ? "orange"
                                           : "teal"
                                     }
-                                    className="px-0 font-bold scale-90 origin-left"
+                                    className="px-0 font-bold scale-90 origin-left text-[11px!]"
                                   >
                                     {esVencido
                                       ? "Vencido"
@@ -394,66 +405,37 @@ export const RegistrarEntrega = ({
                                 </Badge>
                               </div>
                             </td>
-                            <td className="text-center pr-6">
-                              <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                {/* Input para Unidad de Lote */}
-                                {lote.unidad_medida_abv !==
-                                  detalle_req.unidad_medida_base_abv && (
-                                  <NumberInput
-                                    size="xs"
-                                    radius="md"
-                                    min={0}
-                                    max={lote.stock_actual}
-                                    value={
-                                      cant > 0
-                                        ? formatNumber(
-                                            cant /
-                                              (lote.contenido_por_presentacion ||
-                                                1),
-                                          )
-                                        : ""
-                                    }
-                                    onChange={(val) =>
-                                      handleCantLoteChange(
-                                        lote.id_lote,
-                                        detalle_req.id_producto,
-                                        Number(val),
-                                      )
-                                    }
-                                    placeholder="0"
-                                    rightSection={
-                                      <Text
-                                        size="10px"
-                                        fw={800}
-                                        c="zinc.5"
-                                        className="mr-2"
-                                      >
-                                        {lote.unidad_medida_abv}
-                                      </Text>
-                                    }
-                                    rightSectionWidth={40}
-                                    className="w-28"
-                                    classNames={{
-                                      input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"} text-right pr-12`,
-                                    }}
-                                  />
-                                )}
-
-                                {/* Input para Unidad Base */}
+                            <td>
+                              {/* Input para Unidad de Lote */}
+                              {lote.unidad_medida_abv !==
+                                detalle_req.unidad_medida_base_abv && (
                                 <NumberInput
                                   size="xs"
                                   radius="md"
                                   min={0}
-                                  max={lote.stock_actual_base}
-                                  value={cant || ""}
+                                  max={maxLote}
+                                  value={
+                                    cant > 0
+                                      ? Number(
+                                          (
+                                            cant /
+                                            (lote.contenido_por_presentacion ||
+                                              1)
+                                          ).toFixed(4),
+                                        )
+                                      : ""
+                                  }
                                   onChange={(val) =>
-                                    handleCantChange(
+                                    handleCantLoteChange(
                                       lote.id_lote,
                                       detalle_req.id_producto,
                                       Number(val),
                                     )
                                   }
                                   placeholder="0"
+                                  decimalScale={4}
+                                  clampBehavior="strict"
+                                  allowNegative={false}
                                   rightSection={
                                     <Text
                                       size="10px"
@@ -461,16 +443,51 @@ export const RegistrarEntrega = ({
                                       c="zinc.5"
                                       className="mr-2"
                                     >
-                                      {detalle_req.unidad_medida_base_abv}
+                                      {lote.unidad_medida_abv}
                                     </Text>
                                   }
                                   rightSectionWidth={40}
-                                  className="w-28 ml-auto"
+                                  className="w-24 justify-self-center"
                                   classNames={{
                                     input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"} text-right pr-12`,
                                   }}
                                 />
-                              </Group>
+                              )}
+
+                              {/* Input para Unidad Base */}
+                              <NumberInput
+                                size="xs"
+                                radius="md"
+                                min={0}
+                                max={maxBase}
+                                value={cant || ""}
+                                onChange={(val) =>
+                                  handleCantChange(
+                                    lote.id_lote,
+                                    detalle_req.id_producto,
+                                    Number(val),
+                                  )
+                                }
+                                placeholder="0"
+                                decimalScale={4}
+                                clampBehavior="strict"
+                                allowNegative={false}
+                                rightSection={
+                                  <Text
+                                    size="10px"
+                                    fw={800}
+                                    c="zinc.5"
+                                    className="mr-2"
+                                  >
+                                    {detalle_req.unidad_medida_base_abv}
+                                  </Text>
+                                }
+                                rightSectionWidth={40}
+                                className="w-24 justify-self-center"
+                                classNames={{
+                                  input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-sm h-8 shadow-sm ${cant > 0 ? "text-indigo-400 border-indigo-500/50" : "text-white"} text-right pr-12`,
+                                }}
+                              />
                             </td>
                           </tr>
                         );

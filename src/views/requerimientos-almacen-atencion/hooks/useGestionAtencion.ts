@@ -182,6 +182,47 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
       setIsProcessing(null);
     }
   }, [selectedItemId, comentarioAccion, closeRechazo, onSuccess]);
+  
+  const patchDetallesLocales = useCallback((entregados: Record<string | number, number>) => {
+    setDetalles((prevDetails) => {
+      const newDetails = prevDetails.map((item) => {
+        const idKey = item.id_requerimiento_almacen_detalle;
+        // Buscamos el monto entregado asegurando que el ID coincida (como número o string)
+        const amountDelivered = Number(entregados[idKey] ?? entregados[idKey.toString()] ?? 0);
+        
+        if (amountDelivered > 0) {
+          const currentDeliveredBase = Number(item.cantidad_entregada_base || 0);
+          const reqRequestedBase = Number(item.cantidad_solicitada_base || 0);
+          const equiv = Number(item.equivReq || 1);
+          
+          const nuevaCantidadBase = currentDeliveredBase + amountDelivered;
+          const nuevaCantidad = nuevaCantidadBase / equiv;
+          const nuevoProgreso = Math.min(100, Math.round((nuevaCantidadBase / reqRequestedBase) * 100));
+          
+          let nuevoEstado = item.estado;
+          if (nuevoProgreso >= 100) {
+            nuevoEstado = EstadoDetalleRequerimiento.Completado;
+          } else if (nuevaCantidadBase > 0) {
+            nuevoEstado = EstadoDetalleRequerimiento.EnDespacho;
+          }
+
+          return {
+            ...item,
+            cantidad_entregada_base: nuevaCantidadBase,
+            cantidad_entregada: nuevaCantidad,
+            pendiente_base: Math.max(0, reqRequestedBase - nuevaCantidadBase),
+            porcentaje_progreso: nuevoProgreso,
+            estado: nuevoEstado
+          };
+        }
+        return item;
+      });
+      return newDetails;
+    });
+    
+    // Notificar al padre después de planificar el despacho local
+    onSuccess(Object.keys(entregados).map(Number));
+  }, [onSuccess]);
 
   const getStatusColor = (status: string) => {
     if (status === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) return "blue";
@@ -240,6 +281,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
         open: onConsultarLogisticaClick,
         close: handleCloseLogisticaModal,
         onSuccess: onSuccessLogistica
-    }
+    },
+    patchDetallesLocales
   };
 };

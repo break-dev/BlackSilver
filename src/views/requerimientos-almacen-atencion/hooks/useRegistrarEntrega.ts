@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import type {
   RES_DetalleRequerimiento,
@@ -15,7 +15,8 @@ interface UseRegistrarEntregaBatchProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  onSuccess: () => void;
+  idEmpleadoSolicitante: number;
+  onSuccess: (entregados: Record<number, number>) => void;
 }
 
 export const useRegistrarEntregaBatch = ({
@@ -23,6 +24,7 @@ export const useRegistrarEntregaBatch = ({
   idAlmacen,
   selectedItemsIds,
   detallesRequerimiento,
+  idEmpleadoSolicitante,
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
@@ -125,51 +127,72 @@ export const useRegistrarEntregaBatch = ({
     };
   }, [idsProductos, idAlmacen, loggedEmployeeId]);
 
-  const handleCantChange = (
-    idLote: number,
-    idProducto: number,
-    val: number,
-  ) => {
-    const lote = lotes.find((l) => l.id_lote === idLote);
-    if (!lote) return;
+  // Auto-seleccionar receptor basado en el solicitante
+  useEffect(() => {
+    if (idEmpleadoSolicitante && empleados.length > 0 && !idEmpleadoRecibe) {
+      const exists = empleados.some(
+        (e) => e.value === idEmpleadoSolicitante.toString(),
+      );
+      if (exists) {
+        setIdEmpleadoRecibe(idEmpleadoSolicitante.toString());
+      }
+    }
+  }, [idEmpleadoSolicitante, empleados, idEmpleadoRecibe]);
 
-    // Validar maximo (stock del lote vs pendiente del requerimiento detalle de ese producto)
-    const detalleRelacionado = selectedDetalles.find(
-      (d) => d.id_producto === idProducto,
-    );
-    if (!detalleRelacionado) return;
+  const handleCantChange = useCallback(
+    (idLote: number, idProducto: number, val: number) => {
+      setEntregaCantidades((prev) => {
+        const lote = lotes.find((l) => l.id_lote === idLote);
+        if (!lote) return prev;
 
-    // Cuanto de los lotes de este producto se esta entregando (excluyendo el actual editado)
-    const currentTotalExcludingThisLoteParaProducto = lotes
-      .filter((l) => l.id_producto === idProducto && l.id_lote !== idLote)
-      .reduce((sum, l) => sum + (entregaCantidades[l.id_lote] || 0), 0);
+        const detalleRelacionado = selectedDetalles.find(
+          (d) => d.id_producto === idProducto,
+        );
+        if (!detalleRelacionado) return prev;
 
-    const maxAllowedForThisLote = Math.min(
-      lote.stock_actual_base || 0,
-      detalleRelacionado.cantidad_solicitada_base -
-        detalleRelacionado.cantidad_entregada_base -
-        currentTotalExcludingThisLoteParaProducto,
-    );
+        // Suma de lo entregado en OTROS lotes para este mismo producto
+        const totalOtrosLotesParaEsteProducto = lotes
+          .filter((l) => l.id_producto === idProducto && l.id_lote !== idLote)
+          .reduce((sum, l) => sum + (prev[l.id_lote] || 0), 0);
 
-    const newValue = Math.max(0, Math.min(val, maxAllowedForThisLote));
+        const pendienteMaxProducto =
+          detalleRelacionado.cantidad_solicitada_base -
+          detalleRelacionado.cantidad_entregada_base;
 
-    setEntregaCantidades((p) => ({
-      ...p,
-      [idLote]: newValue,
-    }));
-  };
+        // Máximo que puede aportar este lote:
+        // El menor entre (su stock) y (lo que falta por entregar - lo que ya aportan otros lotes)
+        const maxAllowedForThisLote = Math.max(
+          0,
+          Math.min(
+            lote.stock_actual_base || 0,
+            pendienteMaxProducto - totalOtrosLotesParaEsteProducto,
+          ),
+        );
 
-  const handleCantLoteChange = (
-    idLote: number,
-    idProducto: number,
-    valLote: number,
-  ) => {
-    const lote = lotes.find((l) => l.id_lote === idLote);
-    if (!lote) return;
-    const equiv = Number(lote.contenido_por_presentacion) || 1;
-    const valBase = Number((valLote * equiv).toFixed(4));
-    handleCantChange(idLote, idProducto, valBase);
-  };
+        const finalValue = Math.max(0, Math.min(val || 0, maxAllowedForThisLote));
+
+        if (prev[idLote] === finalValue) return prev;
+
+        return {
+          ...prev,
+          [idLote]: finalValue,
+        };
+      });
+    },
+    [lotes, selectedDetalles],
+  );
+
+  const handleCantLoteChange = useCallback(
+    (idLote: number, idProducto: number, valLote: number) => {
+      const lote = lotes.find((l) => l.id_lote === idLote);
+      if (!lote) return;
+      const equiv = Number(lote.contenido_por_presentacion) || 1;
+      // Usamos toFixed para redondear a la precisión de base y evitar errores de punto flotante
+      const valBase = Number((valLote * equiv).toFixed(4));
+      handleCantChange(idLote, idProducto, valBase);
+    },
+    [lotes, handleCantChange],
+  );
 
   const lotesPorProducto = useMemo(() => {
     const agrupado: Record<number, RES_Lote[]> = {};
@@ -239,7 +262,14 @@ export const useRegistrarEntregaBatch = ({
       });
 
       if (res.success) {
-        onSuccess();
+        // Calcular totales entregados por id_requerimiento_almacen_detalle
+        const entregados: Record<number, number> = {};
+        detallesParaApi.forEach((ent) => {
+          const id = ent.id_requerimiento_almacen_detalle;
+          entregados[id] = (entregados[id] || 0) + ent.cantidad_base;
+        });
+
+        onSuccess(entregados);
       } else {
         setError(res.message || "Error al registrar entrega batch");
       }

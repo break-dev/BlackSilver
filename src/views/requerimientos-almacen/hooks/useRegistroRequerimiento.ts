@@ -109,6 +109,16 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     }
   }, [sonUnidadesIdenticas]);
 
+  // Auto-selección de unidad al elegir producto
+  useEffect(() => {
+    if (idProducto && !loadingCatalogs && productos.length > 0) {
+      const prod = productos.find((p) => p.id_producto === idProducto);
+      if (prod) {
+        setIdUnidadMedida(prod.id_unidad_medida_base);
+      }
+    }
+  }, [idProducto, loadingCatalogs, productos]);
+
   // Filtrar productos que ya están presentes en la lista de detalles
   const productosFiltrados = useMemo(() => {
     return productos.filter(

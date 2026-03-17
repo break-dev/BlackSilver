@@ -26,6 +26,7 @@ import { useRegistroRequerimiento } from "../hooks/useRegistroRequerimiento";
 import { Premura } from "../../../shared/enums/otros";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { pluralizar } from "../../../presentation/functions/pluralizar";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 import type { RES_RequerimientoAlmacen } from "../services/requerimientos.responses";
 
@@ -439,16 +440,13 @@ export const RegistroRequerimiento = ({
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
             <tr>
               <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
+              <th className="px-4 py-3 text-left font-semibold min-w-[150px]">
                 Producto
               </th>
-              <th className="px-4 py-3 text-right font-semibold w-32">
-                Cant. Solicitada
+              <th className="px-6 py-4 text-center min-w-[200px]">
+                Cantidad solicitada
               </th>
-              <th className="px-4 py-3 text-right font-semibold w-32">
-                Equivalencia
-              </th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[280px]">
+              <th className="px-4 py-3 text-left font-semibold min-w-[200px]">
                 Comentario
               </th>
               <th className="px-4 py-3 text-center w-16"></th>
@@ -484,36 +482,49 @@ export const RegistroRequerimiento = ({
                     <td className="px-4 py-3 text-sm font-medium text-zinc-100">
                       {prod?.nombre}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      <Badge
-                        variant="filled"
-                        color="cyan"
-                        radius="sm"
-                        size="sm"
-                        className="font-bold shadow-xs whitespace-nowrap"
-                      >
-                        {det.cantidad_solicitada.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}{" "}
-                        {uni?.abreviatura}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      <Badge
-                        variant="filled"
-                        color="pink"
-                        radius="sm"
-                        size="sm"
-                        className="font-bold shadow-xs whitespace-nowrap"
-                      >
-                        {(
-                          det.cantidad_solicitada *
-                          det.contenido_por_presentacion
-                        ).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}{" "}
-                        {prod?.unidad_medida_base}
-                      </Badge>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-row gap-1 justify-center items-center">
+                        <Badge
+                          variant="filled"
+                          color="cyan.7"
+                          radius="sm"
+                          size="sm"
+                          className="font-black px-4"
+                        >
+                          {formatNumber(det.cantidad_solicitada)}{" "}
+                          {uni?.abreviatura}
+                        </Badge>
+                        {uni?.id_unidad_medida !==
+                          prod?.id_unidad_medida_base && (
+                          <>
+                            <Badge
+                              variant="filled"
+                              color="zinc"
+                              radius="sm"
+                              size="sm"
+                              className="font-black px-4"
+                            >
+                              {formatNumber(det.contenido_por_presentacion)}{" "}
+                              {prod?.unidad_medida_base_abv}{" "}
+                              <span className="lowercase">x</span>{" "}
+                              {uni?.abreviatura}
+                            </Badge>
+
+                            <Badge
+                              variant="filled"
+                              color="pink"
+                              radius="sm"
+                              className="font-bold shadow-xs whitespace-nowrap"
+                            >
+                              {formatNumber(
+                                det.cantidad_solicitada *
+                                  det.contenido_por_presentacion,
+                              )}{" "}
+                              {prod?.unidad_medida_base_abv}
+                            </Badge>
+                          </>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
                       {det.comentario || "-"}
@@ -538,6 +549,16 @@ export const RegistroRequerimiento = ({
       </div>
 
       <Group justify="flex-end" mt="md">
+        {error && (
+          <Text
+            c="red"
+            size="sm"
+            fw={600}
+            className="text-center animate-pulse"
+          >
+            {error}
+          </Text>
+        )}
         <Button
           variant="subtle"
           onClick={onCancel}
@@ -557,12 +578,6 @@ export const RegistroRequerimiento = ({
           Guardar Requerimiento
         </Button>
       </Group>
-
-      {error && (
-        <Text c="red" size="sm" fw={600} className="text-center animate-pulse">
-          {error}
-        </Text>
-      )}
     </Stack>
   );
 };
