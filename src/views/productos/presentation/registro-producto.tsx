@@ -17,6 +17,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "../../categorias/presentation/registro-categoria";
 import { useRegistroCategoria } from "../../categorias/hooks/useRegistroCategoria";
+import { LabelForm } from "./components/label-form";
 
 interface RegistroProductoProps {
   onSuccess: (nuevo: RES_Producto) => void;
@@ -67,18 +68,6 @@ export const RegistroProducto = ({
     }
   };
 
-  const LabelForm = ({
-    text,
-    required = false,
-  }: {
-    text: string;
-    required?: boolean;
-  }) => (
-    <Text size="sm" fw={500} className="text-zinc-300 mb-1.5 font-medium">
-      {text} {required && <span className="text-red-500">*</span>}
-    </Text>
-  );
-
   return (
     <Stack gap="lg" mt="xs">
       <div className="flex flex-col gap-1 w-full">
@@ -125,6 +114,18 @@ export const RegistroProducto = ({
         </div>
       </div>
 
+      <TextInput
+        label={<LabelForm text="Nombre del Producto" required />}
+        placeholder="Ej: Dinamita 7/8 Famesa"
+        value={form.nombre}
+        onChange={(e) => setField("nombre", e.currentTarget.value)}
+        classNames={{
+          input:
+            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+        }}
+        radius="lg"
+      />
+
       <Select
         label={<LabelForm text="Unidad de Medida" required />}
         placeholder={
@@ -154,43 +155,19 @@ export const RegistroProducto = ({
         disabled={loadingUnidades}
       />
 
-      <TextInput
-        label={<LabelForm text="Nombre del Producto" required />}
-        placeholder="Ej: Dinamita 7/8 Famesa"
-        value={form.nombre}
-        onChange={(e) => setField("nombre", e.currentTarget.value)}
+      <NumberInput
+        label="Stock mínimo"
+        placeholder="0"
+        value={form.stock_minimo}
+        onChange={(val) => setField("stock_minimo", Number(val))}
         classNames={{
           input:
-            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 text-center",
         }}
         radius="lg"
+        min={0}
+        className="w-32"
       />
-
-      <Group justify="flex-start" align="flex-start" gap="xl">
-        <Text size="sm" fw={500} className="text-zinc-300 mt-2">
-          Stock Mínimo
-        </Text>
-        <div className="flex flex-col">
-          <NumberInput
-            placeholder="0"
-            value={form.stock_minimo}
-            onChange={(val) => setField("stock_minimo", Number(val))}
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 text-center",
-            }}
-            radius="lg"
-            min={0}
-            className="w-32"
-          />
-          <Text
-            size="xs"
-            className="text-zinc-600 mt-1 italic w-full text-center"
-          >
-            Límite para alertas de reposición
-          </Text>
-        </div>
-      </Group>
 
       <div className="border border-zinc-800/80 rounded-2xl p-5 space-y-6 mt-2 bg-zinc-950/20">
         <Text
@@ -201,7 +178,7 @@ export const RegistroProducto = ({
           Indicadores del Producto
         </Text>
 
-        <Stack gap="md">
+        <Stack gap="md" mt={"12px"}>
           <Checkbox
             label="Producto Fiscalizado (IQBF)"
             description="Requiere control y reporte a SUCAMEC"
