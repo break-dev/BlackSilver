@@ -63,7 +63,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
       onClick={onClose}
     >
       <nav
-        className="absolute left-4 top-4 bottom-4 w-80 max-w-[85vw] 
+        className="absolute left-4 top-4 bottom-4 w-[350px] max-w-[85vw] 
           bg-zinc-950/90 backdrop-blur-2xl rounded-3xl border border-white/10 
           shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden 
           animate-slideInLeft ring-1 ring-white/5"

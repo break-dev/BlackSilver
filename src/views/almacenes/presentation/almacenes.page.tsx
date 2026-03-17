@@ -105,23 +105,35 @@ export const AlmacenesPage = () => {
       title: "Minas",
       width: 130,
       textAlign: "center",
-      render: (record) => (
-        <Group gap={6} justify="center">
-          <Badge variant="light" color="cyan" size="sm" radius="sm">
-            {record.minas_count || 0} Minas
-          </Badge>
-          <Tooltip label="Ver Minas">
-            <ActionIcon
-              variant="subtle"
-              color="cyan"
-              size="sm"
-              onClick={() => handleOpenAlcance(record)}
-            >
-              <RectangleStackIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
+      render: (record) => {
+        const isPrincipal = Number(record.es_principal) === 1;
+
+        if (isPrincipal) {
+          return (
+            <Badge variant="outline" color="gray" size="sm">
+              No aplica
+            </Badge>
+          );
+        }
+
+        return (
+          <Group gap={6} justify="center">
+            <Badge variant="light" color="cyan" size="sm" radius="sm">
+              {record.minas_count || 0} Minas
+            </Badge>
+            <Tooltip label="Ver Minas">
+              <ActionIcon
+                variant="subtle"
+                color="cyan"
+                size="sm"
+                onClick={() => handleOpenAlcance(record)}
+              >
+                <RectangleStackIcon className="w-4 h-4" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        );
+      },
     },
 
     {
