@@ -143,9 +143,13 @@ export const DetalleSolicitud = ({
               fw={800}
               className="text-zinc-100 tracking-tight leading-tight font-mono"
             >
-              {solicitud.fecha_entrega_requerida
-                ? dayjs(solicitud.fecha_entrega_requerida).format("DD/MM/YYYY")
-                : "No especificada"}
+              {solicitud.fecha_entrega_requerida ? (
+                dayjs(solicitud.fecha_entrega_requerida).format("DD/MM/YYYY")
+              ) : (
+                <span className="text-zinc-500 text-sm font-normal italic">
+                  No especificada
+                </span>
+              )}
             </Text>
           </Stack>
         </Paper>
@@ -169,10 +173,10 @@ export const DetalleSolicitud = ({
             icon={ClockIcon}
             isMono
           />
-          {solicitud.id_requerimiento_almacen && (
+          {solicitud.correlativo_requerimiento && (
             <InfoItem
               label="Ref. Requerimiento"
-              value={`REQ-${solicitud.id_requerimiento_almacen}`}
+              value={`${solicitud.correlativo_requerimiento}`}
               color="indigo"
             />
           )}
@@ -237,7 +241,7 @@ export const DetalleSolicitud = ({
               Registrar Entrega
             </Button>
             <Badge variant="light" color="indigo" radius="md">
-              {detalles.length} Items
+              {detalles.length} Productos
             </Badge>
           </Group>
         </Group>
@@ -305,25 +309,43 @@ export const DetalleSolicitud = ({
                     </Stack>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <Stack gap={2} align="center">
+                    <Group justify="center" gap={4}>
                       <Badge
                         variant="filled"
-                        color="cyan.7"
+                        color="cyan"
                         radius="sm"
-                        size="sm"
-                        className="font-black"
+                        className="font-bold shadow-xs whitespace-nowrap"
                       >
                         {formatNumber(item.cantidad_solicitada)}{" "}
                         {item.unidad_medida_sol_abv}
-                      </Badge>
+                      </Badge>{" "}
                       {item.unidad_medida_base_abv !==
                         item.unidad_medida_sol_abv && (
-                        <Text size="10px" c="dimmed">
-                          {formatNumber(item.cantidad_solicitada_base)}{" "}
-                          {item.unidad_medida_base_abv}
-                        </Text>
+                        <>
+                          <Badge
+                            variant="filled"
+                            color="zinc"
+                            radius="sm"
+                            size="sm"
+                            className="font-black px-4"
+                          >
+                            {formatNumber(item.contenido_por_presentacion)}{" "}
+                            {item.unidad_medida_base_abv}{" "}
+                            <span className="lowercase">x</span>{" "}
+                            {item.unidad_medida_sol_abv}
+                          </Badge>
+                          <Badge
+                            variant="filled"
+                            color="pink"
+                            radius="sm"
+                            className="font-bold shadow-xs whitespace-nowrap"
+                          >
+                            {formatNumber(item.cantidad_solicitada_base)}{" "}
+                            {item.unidad_medida_base_abv}
+                          </Badge>
+                        </>
                       )}
-                    </Stack>
+                    </Group>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col gap-1.5 w-full">

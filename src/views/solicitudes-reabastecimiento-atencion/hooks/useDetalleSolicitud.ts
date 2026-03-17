@@ -2,10 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type {
-  RES_DetalleLog,
-  DetalleSolicitudExtendido,
-} from "../service/solicitudes-atencion.responses";
+import type { DetalleSolicitudExtendido } from "../service/solicitudes-atencion.responses";
 import type { AxiosError } from "axios";
 import { useNotify } from "../../../hooks/useNotify";
 
@@ -21,8 +18,6 @@ export const useDetalleSolicitud = ({
   const [loading, setLoading] = useState(true);
   const [detalles, setDetalles] = useState<DetalleSolicitudExtendido[]>([]);
   const [error, setError] = useState("");
-  const [eventos, setEventos] = useState<RES_DetalleLog[]>([]);
-  const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   // Modal Control
   const [openedTrace, { open: openTrace, close: closeTrace }] =
@@ -77,29 +72,6 @@ export const useDetalleSolicitud = ({
     loadData();
   }, [idSolicitud, loadData]);
 
-  useEffect(() => {
-    if (openedTrace && selectedItemId) {
-      const loadTrace = async () => {
-        setLoadingTrazabilidad(true);
-        try {
-          const res =
-            await SolicitudesAtencionService.obtenerTrazabilidad(
-              selectedItemId,
-            );
-          if (res.success) {
-            setEventos(res.data);
-          } else {
-            setEventos([]);
-          }
-        } catch {
-          setEventos([]);
-        }
-        setLoadingTrazabilidad(false);
-      };
-      loadTrace();
-    }
-  }, [openedTrace, selectedItemId]);
-
   const handleAprobar = useCallback(async () => {
     if (!selectedItemId) return;
     setIsProcessing(selectedItemId);
@@ -107,7 +79,7 @@ export const useDetalleSolicitud = ({
     const motivo = comentarioAccion;
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
-        id_detalle: selectedItemId,
+        id_solicitud_detalle: selectedItemId,
         nuevo_estado: EstadoSolicitudDetalle.Aprobado,
         comentario_decision: motivo,
       });
@@ -151,7 +123,7 @@ export const useDetalleSolicitud = ({
     const motivo = comentarioAccion;
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
-        id_detalle: selectedItemId,
+        id_solicitud_detalle: selectedItemId,
         nuevo_estado: EstadoSolicitudDetalle.Rechazado,
         comentario_decision: motivo,
       });
@@ -226,8 +198,6 @@ export const useDetalleSolicitud = ({
     loading,
     detalles,
     error,
-    eventos,
-    loadingTrazabilidad,
     openedTrace,
     openTrace,
     closeTrace,

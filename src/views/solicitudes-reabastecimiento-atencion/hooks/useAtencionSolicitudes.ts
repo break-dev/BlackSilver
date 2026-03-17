@@ -27,8 +27,9 @@ export const useAtencionSolicitudes = () => {
       const resp = await SolicitudesAtencionService.obtenerAlmacenes(false);
       if (resp.success) {
         setAlmacenes(resp.data);
-        if (resp.data.length > 0 && !idAlmacen) {
-          setIdAlmacen(resp.data[0].id.toString());
+        // Solo auto-seleccionar si no hay nada seleccionado aún
+        if (resp.data.length > 0) {
+          setIdAlmacen((prev) => prev || resp.data[0].id?.toString() || null);
         }
       }
     } catch (error) {
@@ -36,14 +37,16 @@ export const useAtencionSolicitudes = () => {
     } finally {
       setLoadingAlmacenes(false);
     }
-  }, [idAlmacen]);
+  }, []);
 
   const loadSolicitudes = useCallback(async () => {
-    if (!idAlmacen) return;
+    const idVal = Number(idAlmacen);
+    if (!idAlmacen || isNaN(idVal) || idVal <= 0) return;
+
     setLoading(true);
     try {
       const resp = await SolicitudesAtencionService.obtenerSolicitudes(
-        Number(idAlmacen),
+        idVal,
         mes,
         yearcito,
       );

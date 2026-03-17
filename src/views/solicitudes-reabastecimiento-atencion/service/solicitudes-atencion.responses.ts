@@ -11,6 +11,7 @@ export interface RES_SolicitudReabastecimiento {
   id_requerimiento_almacen: number | null;
   almacen_solicitante: string;
   correlativo: string;
+  correlativo_requerimiento: string | null;
   observacion: string | null;
   solicitante: string;
   premura: Premura;

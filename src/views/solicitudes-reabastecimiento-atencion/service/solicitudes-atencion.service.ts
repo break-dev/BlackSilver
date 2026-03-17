@@ -49,8 +49,8 @@ export const SolicitudesAtencionService = {
     const res = await api.get<IRespuesta<RES_DetalleLog[]>>(
       `${path}/trazabilidad`,
       {
-        params: { id_detalle: idDetalle },
-      }
+        params: { id_solicitud_detalle: idDetalle },
+      },
     );
     return res.data;
   },

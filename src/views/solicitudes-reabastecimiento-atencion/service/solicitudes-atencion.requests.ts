@@ -1,7 +1,7 @@
 import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 
 export interface DTO_DecisionDetalle {
-  id_detalle: number;
+  id_solicitud_detalle: number;
   nuevo_estado: EstadoSolicitudDetalle;
   comentario_decision?: string;
 }
