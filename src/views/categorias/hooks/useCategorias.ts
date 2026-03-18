@@ -47,8 +47,16 @@ export const useCategorias = () => {
     );
   }, [categorias, busqueda]);
 
-  const onCategoriaCreada = (nueva: RES_Categoria) => {
-    setCategorias((prev) => [nueva, ...prev]);
+  const onCategoriaGuardada = (nueva: RES_Categoria) => {
+    setCategorias((prev) => {
+      const index = prev.findIndex((c) => c.id_categoria === nueva.id_categoria);
+      if (index !== -1) {
+        const actualizadas = [...prev];
+        actualizadas[index] = nueva;
+        return actualizadas;
+      }
+      return [nueva, ...prev];
+    });
   };
 
   return {
@@ -64,7 +72,7 @@ export const useCategorias = () => {
     closeCreate,
 
     // Handlers
-    onCategoriaCreada,
+    onCategoriaGuardada,
     recargar: listar,
   };
 };

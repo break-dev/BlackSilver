@@ -1,38 +1,33 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  ActionIcon,
   Badge,
   Button,
   TextInput,
-  Menu,
   Tooltip,
-  Text,
-  Stack,
   Group,
-  Select,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  TrashIcon,
-  PencilSquareIcon,
-  EllipsisVerticalIcon,
   Squares2X2Icon,
   ClipboardDocumentCheckIcon,
   TruckIcon,
   FireIcon,
-  RectangleGroupIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
+import { CategoriasDestinos } from "./categorias-destinos";
 import { useCategorias } from "../hooks/useCategorias";
 import { useRegistroCategoria } from "../hooks/useRegistroCategoria";
 import { useDisclosure } from "@mantine/hooks";
+import { CategoriasService } from "../service/categorias.service";
+import { useNotify } from "../../../hooks/useNotify";
+import type { RES_Categoria } from "../service/categorias.responses";
 
 export const CategoriasPage = () => {
   useTitlePage("Categorías");
+  const { notify } = useNotify();
 
   const {
     loading,
@@ -42,39 +37,79 @@ export const CategoriasPage = () => {
     openedCreate,
     openCreate,
     closeCreate,
-    onCategoriaCreada,
+    onCategoriaGuardada,
     categorias,
   } = useCategorias();
 
+  // Estados para la gestión de destinos (al estilo Organigrama)
   const [openedDestinos, { open: openDestinos, close: closeDestinos }] = useDisclosure(false);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<RES_Categoria | null>(null);
+  const [idsDestinosTemp, setIdsDestinosTemp] = useState<number[]>([]);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-  const categoriasParaConsumo = useMemo(() => 
+  const categoriasParaConsumo = useMemo(() =>
     categorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })),
-  [categorias]);
+    [categorias]);
 
   const registro = useRegistroCategoria({
-    onSuccess: onCategoriaCreada,
+    onSuccess: onCategoriaGuardada,
     onClose: closeCreate,
   });
 
+  const handleOpenGestionDestinos = (cat: RES_Categoria) => {
+    setCategoriaSeleccionada(cat);
+    // Parseamos los IDs que vienen de la BD ("1,2,3" -> [1,2,3])
+    const ids = cat.ids_consumidoras
+      ? cat.ids_consumidoras.split(',').map(Number)
+      : [];
+    setIdsDestinosTemp(ids);
+    openDestinos();
+  };
+
+  const handleGuardarDestinos = async () => {
+    // Si categoriaSeleccionada es null, estamos en modo creación
+    if (!categoriaSeleccionada) {
+      registro.setIdsConsumidoras(idsDestinosTemp);
+      closeDestinos();
+      return;
+    }
+
+    setLoadingUpdate(true);
+    try {
+      const res = await CategoriasService.actualizar_consumidoras(
+        categoriaSeleccionada.id_categoria,
+        idsDestinosTemp
+      );
+      if (res.success) {
+        notify({ type: 'success', content: 'Destinos de consumo actualizados' });
+        onCategoriaGuardada(res.data);
+        closeDestinos();
+      } else {
+        notify({ type: 'error', content: res.message });
+      }
+    } catch (error) {
+      notify({ type: 'error', content: 'Error al actualizar destinos' });
+    } finally {
+      setLoadingUpdate(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header — Buscador y Nueva Categoría */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <TextInput
-          placeholder="Buscar categorías..."
+          placeholder="Buscar categorías por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
           }
           value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.currentTarget.value);
-          }}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
           className="flex-1 min-w-64"
           radius="lg"
           size="sm"
           classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
           }}
         />
         <Button
@@ -82,7 +117,7 @@ export const CategoriasPage = () => {
           onClick={openCreate}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
         >
           Nueva Categoría
         </Button>
@@ -93,7 +128,7 @@ export const CategoriasPage = () => {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="h-32 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
+              className="h-44 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
             />
           ))}
         </div>
@@ -124,84 +159,74 @@ export const CategoriasPage = () => {
                 </Badge>
 
                 <div className="pr-14">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Tooltip label="Tipo de Requerimiento">
-                      <Badge
-                        size="xs"
-                        variant="light"
-                        color="indigo"
-                        radius="sm"
-                        className="font-bold border-indigo-500/20"
-                      >
-                        {cat.tipo_requerimiento || "Sin Tipo"}
+                  {/* Áreas Operativas Arriba */}
+                  <Group gap={6} mb={8}>
+                    {cat.para_mina && (
+                      <Badge variant="light" color="blue" size="xs" radius="sm" leftSection={<TruckIcon className="w-3 h-3" />}>
+                        Mina
                       </Badge>
-                    </Tooltip>
-                  </div>
-                  <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors">
+                    )}
+                    {cat.para_cocina && (
+                      <Badge variant="light" color="orange" size="xs" radius="sm" leftSection={<FireIcon className="w-3 h-3" />}>
+                        Cocina
+                      </Badge>
+                    )}
+                  </Group>
+
+                  <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors uppercase tracking-tight">
                     {cat.nombre}
                   </h3>
-                  <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
-                    {cat.descripcion || "Sin descripción"}
+                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
+                    {cat.descripcion || "Sin descripción proporcionada"}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-auto">
-                  <div className="flex items-center gap-1 overflow-hidden">
-                    {cat.para_mina && (
-                      <Tooltip label="Área: Mina" position="top">
-                         <div className="p-1 rounded bg-zinc-800 border border-zinc-700">
-                          <TruckIcon className="w-3.5 h-3.5 text-blue-400" />
-                        </div>
-                      </Tooltip>
-                    )}
-                    {cat.para_cocina && (
-                      <Tooltip label="Área: Cocina" position="top">
-                         <div className="p-1 rounded bg-zinc-800 border border-zinc-700">
-                          <FireIcon className="w-3.5 h-3.5 text-orange-400" />
-                        </div>
-                      </Tooltip>
-                    )}
-                    {cat.es_consumible && (
-                      <Tooltip label={`Abastece a: ${cat.nombres_consumidoras || "Pendiente definir"}`} position="top" multiline w={220}>
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-900/30 border border-indigo-500/30 text-[10px] text-indigo-300 font-bold uppercase tracking-wider">
-                          <RectangleGroupIcon className="w-3 h-3" />
-                          Consumible
-                        </div>
-                      </Tooltip>
-                    )}
+                {/* Control Logístico (Pattern Organigrama) */}
+                {cat.es_consumible && (
+                  <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 group-hover:border-indigo-400/40 transition-all duration-200 mt-1">
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block leading-none mb-0.5">
+                        Consumo Logístico
+                      </span>
+                      <span className="text-xs font-semibold text-zinc-300 truncate block">
+                        {(cat.ids_consumidoras?.split(',').filter(Boolean).length || 0)} Destinos
+                      </span>
+                    </div>
+
+                    <Button
+                      variant="filled"
+                      color="indigo"
+                      size="xs"
+                      leftSection={<PlusIcon className="w-3 h-3" />}
+                      radius="md"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 h-7 shrink-0"
+                      onClick={() => handleOpenGestionDestinos(cat)}
+                    >
+                      Añadir
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-600 font-medium ml-auto">
-                    <ClipboardDocumentCheckIcon className="w-4 h-4" />
-                    <span className="truncate max-w-[80px]">
-                      {cat.clasificacion_bien || "S.C."}
+                )}
+
+                {/* Footer Reorganizado: Clasificación Izquierda, Tipo Requerimiento Derecha */}
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-auto">
+                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-600 font-bold uppercase tracking-wider">
+                    <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
+                    <span className="text-zinc-500 italic truncate max-w-[120px]">
+                      {cat.clasificacion_bien || "No proporcionado"}
                     </span>
                   </div>
 
-                  <Menu shadow="md" width={150} position="bottom-end">
-                    <Menu.Target>
-                      <ActionIcon variant="subtle" color="gray" size="sm">
-                        <EllipsisVerticalIcon className="w-5 h-5" />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-                      <Menu.Label className="text-zinc-500">
-                        Acciones
-                      </Menu.Label>
-                      <Menu.Item
-                        leftSection={<PencilSquareIcon className="w-4 h-4" />}
-                        className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                      >
-                        Editar Info
-                      </Menu.Item>
-                      <Menu.Item
-                        leftSection={<TrashIcon className="w-4 h-4" />}
-                        color="red"
-                        className="hover:bg-red-900/20"
-                      >
-                        Eliminar
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
+                  <Tooltip label="Tipo de Requerimiento">
+                    <Badge
+                      size="xs"
+                      variant="filled"
+                      color="pink"
+                      radius="md"
+                      className="font-bold px-2.5 h-5 text-white shadow-sm shadow-pink-900/20"
+                    >
+                      {cat.tipo_requerimiento || "S.T."}
+                    </Badge>
+                  </Tooltip>
                 </div>
               </div>
             );
@@ -209,6 +234,7 @@ export const CategoriasPage = () => {
         </div>
       )}
 
+      {/* MODAL CREAR CATEGORÍA */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
@@ -231,7 +257,11 @@ export const CategoriasPage = () => {
           setParaMina={registro.setParaMina}
           idsConsumidoras={registro.idsConsumidoras}
           setIdsConsumidoras={registro.setIdsConsumidoras}
-          onOpenDestinos={openDestinos}
+          onOpenDestinos={() => {
+            setCategoriaSeleccionada(null); // NULL indica que estamos creando
+            setIdsDestinosTemp(registro.idsConsumidoras);
+            openDestinos();
+          }}
           error={registro.error}
           loading={registro.loading}
           onSave={registro.handleGuardar}
@@ -242,89 +272,26 @@ export const CategoriasPage = () => {
         />
       </ModalEstandar>
 
-      {/* MODAL GESTIÓN DE DESTINOS (Como en Organigrama) */}
+      {/* MODAL GESTIÓN DE DESTINOS*/}
       <ModalEstandar
         opened={openedDestinos}
         close={closeDestinos}
-        title="Gestión de Destinos de Consumo"
+        title={categoriaSeleccionada ? `${categoriaSeleccionada.nombre}` : "Categorías de Destino"}
         size="md"
       >
-        <Stack gap="md">
-          <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
-             <Group gap="sm" align="center" mb="md">
-              <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                <RectangleGroupIcon className="w-4 h-4 text-indigo-400" />
-              </div>
-              <Stack gap={0}>
-                <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
-                  Vincular Categoría
-                </Text>
-                <Text size="xs" className="text-zinc-500">
-                  Seleccione a quién abastece esta categoría
-                </Text>
-              </Stack>
-            </Group>
-
-            <Select
-              placeholder="Buscar categoría..."
-              data={categoriasParaConsumo.filter(c => !registro.idsConsumidoras.includes(Number(c.value)))}
-              searchable
-              nothingFoundMessage="No se encontraron más categorías"
-              radius="lg"
-              classNames={{
-                input: "bg-zinc-900/50 border-zinc-800 text-white",
-              }}
-              onChange={(val) => {
-                if (val) {
-                  registro.setIdsConsumidoras([...registro.idsConsumidoras, Number(val)]);
-                }
-              }}
-            />
-          </div>
-
-          <Stack gap="xs">
-            <Text size="xs" fw={700} className="text-zinc-500 uppercase tracking-widest px-1">
-              Destinos Seleccionados ({registro.idsConsumidoras.length})
-            </Text>
-            
-            <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-              {registro.idsConsumidoras.length === 0 ? (
-                <div className="py-8 text-center bg-zinc-900/20 rounded-xl border border-dashed border-zinc-800">
-                  <Text size="xs" className="text-zinc-600 italic">No hay destinos seleccionados</Text>
-                </div>
-              ) : (
-                registro.idsConsumidoras.map(id => {
-                  const cat = categorias.find(c => c.id_categoria === id);
-                  return (
-                    <Group key={id} justify="space-between" className="p-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-colors">
-                      <div className="flex items-center gap-3">
-                         <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                         <Text size="sm" fw={600} className="text-zinc-300">{cat?.nombre || 'Categoría Desconocida'}</Text>
-                      </div>
-                      <ActionIcon 
-                         variant="subtle" 
-                         color="red" 
-                         size="sm"
-                         onClick={() => registro.setIdsConsumidoras(registro.idsConsumidoras.filter(cid => cid !== id))}
-                      >
-                        <XMarkIcon className="w-4 h-4" />
-                      </ActionIcon>
-                    </Group>
-                  )
-                })
-              )}
-            </div>
-          </Stack>
-
-          <Button 
-            fullWidth 
-            onClick={closeDestinos} 
-            radius="lg"
-            className="bg-zinc-200 text-zinc-900 hover:bg-white"
-          >
-            Aceptar
-          </Button>
-        </Stack>
+        <CategoriasDestinos
+          categoriaNombre={categoriaSeleccionada?.nombre || ""}
+          idsDestinosTemp={idsDestinosTemp}
+          setIdsDestinosTemp={setIdsDestinosTemp}
+          categoriasParaConsumo={categoriasParaConsumo.filter(c =>
+            categoriaSeleccionada ? Number(c.value) !== categoriaSeleccionada.id_categoria : true
+          )}
+          todasCategorias={categorias}
+          onSave={handleGuardarDestinos}
+          onClose={closeDestinos}
+          loading={loadingUpdate}
+          isCreationMode={!categoriaSeleccionada}
+        />
       </ModalEstandar>
     </div>
   );

@@ -19,4 +19,15 @@ export class CategoriasService {
     const { data } = await api.post(`${this.PATH}`, dto);
     return data;
   };
+
+  public static actualizar_consumidoras = async (
+    id_categoria: number,
+    ids_consumidoras: number[],
+  ): Promise<IRespuesta<RES_Categoria>> => {
+    const { data } = await api.post(`${this.PATH}/actualizar-consumidoras`, {
+      id_categoria,
+      ids_consumidoras,
+    });
+    return data;
+  };
 }
