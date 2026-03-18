@@ -16,8 +16,10 @@ import { Periodo } from "../../../shared/enums/otros";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "../../categorias/presentation/registro-categoria";
+import { CategoriasDestinos } from "../../categorias/presentation/categorias-destinos";
 import { useRegistroCategoria } from "../../categorias/hooks/useRegistroCategoria";
 import { LabelForm } from "./components/label-form";
+import { useMemo } from "react";
 
 interface RegistroProductoProps {
   onSuccess: (nuevo: RES_Producto) => void;
@@ -43,6 +45,10 @@ export const RegistroProducto = ({
   const [openedAddCat, { open: openAddCat, close: closeAddCat }] =
     useDisclosure(false);
 
+  // Nuevo estado para el modal de destinos (dentro de la creación de categoría)
+  const [openedDestinos, { open: openDestinos, close: closeDestinos }] =
+    useDisclosure(false);
+
   const registroCat = useRegistroCategoria({
     onSuccess: (nueva) => {
       cargarCategorias();
@@ -50,6 +56,10 @@ export const RegistroProducto = ({
     },
     onClose: closeAddCat,
   });
+
+  const categoriasParaConsumo = useMemo(() =>
+    categorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })),
+    [categorias]);
 
   const getDiasVencimiento = () => {
     if (!form.tiempo_espera_vencimiento) return 0;
@@ -180,8 +190,8 @@ export const RegistroProducto = ({
 
         <Stack gap="md" mt={"12px"}>
           <Checkbox
-            label="Producto Fiscalizado (IQBF)"
-            description="Requiere control y reporte a SUCAMEC"
+            label="Producto Fiscalizado"
+            description="Requiere control y reporte"
             checked={form.es_fiscalizado}
             onChange={(e) =>
               setField("es_fiscalizado", e.currentTarget.checked)
@@ -303,6 +313,8 @@ export const RegistroProducto = ({
           Registrar Producto
         </Button>
       </Group>
+
+      {/* MODAL CREAR CATEGORÍA */}
       <ModalEstandar
         opened={openedAddCat}
         close={closeAddCat}
@@ -319,6 +331,15 @@ export const RegistroProducto = ({
           setTipoRequerimiento={registroCat.setTipoRequerimiento}
           clasificacionBien={registroCat.clasificacionBien}
           setClasificacionBien={registroCat.setClasificacionBien}
+          esConsumible={registroCat.esConsumible}
+          setEsConsumible={registroCat.setEsConsumible}
+          paraCocina={registroCat.paraCocina}
+          setParaCocina={registroCat.setParaCocina}
+          paraMina={registroCat.paraMina}
+          setParaMina={registroCat.setParaMina}
+          idsConsumidoras={registroCat.idsConsumidoras}
+          setIdsConsumidoras={registroCat.setIdsConsumidoras}
+          onOpenDestinos={openDestinos}
           error={registroCat.error}
           loading={registroCat.loading}
           onSave={registroCat.handleGuardar}
@@ -326,6 +347,27 @@ export const RegistroProducto = ({
             closeAddCat();
             registroCat.reset();
           }}
+        />
+      </ModalEstandar>
+
+      {/* MODAL GESTIÓN DE DESTINOS (Para la creación de categoría) */}
+      <ModalEstandar
+        opened={openedDestinos}
+        close={closeDestinos}
+        title="Categorías de Destino"
+        size="md"
+        zIndex={1002} // Por encima de todo
+      >
+        <CategoriasDestinos
+          categoriaNombre=""
+          idsDestinosTemp={registroCat.idsConsumidoras}
+          setIdsDestinosTemp={registroCat.setIdsConsumidoras}
+          categoriasParaConsumo={categoriasParaConsumo}
+          todasCategorias={categorias}
+          onSave={closeDestinos}
+          onClose={closeDestinos}
+          loading={false}
+          isCreationMode={true}
         />
       </ModalEstandar>
     </Stack>

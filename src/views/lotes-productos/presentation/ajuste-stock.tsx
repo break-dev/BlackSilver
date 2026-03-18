@@ -44,13 +44,10 @@ export const AjusteStockModal = ({
   } = useAjusteStock({ lote, onSuccess });
 
   const inputClasses = {
-    input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-    dropdown: "bg-zinc-900 border-zinc-800",
-    option:
-      "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
-    label:
-      "text-zinc-300 mb-1.5 font-bold uppercase tracking-widest text-[11px]!",
+    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+    dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+    option: "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+    label: "text-zinc-300 mb-1 font-medium",
     description: "text-zinc-500 text-[10px] italic mt-1",
   };
 
@@ -66,10 +63,10 @@ export const AjusteStockModal = ({
         <Group justify="space-between">
           <Stack gap={2}>
             <Text
-              size="xs"
-              fw={700}
+              size="10px"
+              fw={800}
               c="zinc.5"
-              className="uppercase tracking-widest leading-none mb-1"
+              className="uppercase tracking-[0.2em] leading-none mb-1 text-zinc-500"
             >
               Lote Seleccionado
             </Text>
@@ -102,16 +99,18 @@ export const AjusteStockModal = ({
           value={nuevoStock}
           onChange={handleStockChange}
           radius="lg"
+          size="sm"
           classNames={inputClasses}
         />
 
         <NumberInput
-          label={`Nuevo Stock Total (${lote.unidad_medida_base})`}
+          label={`Nuevo stock total (${lote.unidad_medida_base})`}
           placeholder="0"
           min={0}
           value={nuevoStockBase}
           onChange={handleBaseStockChange}
           radius="lg"
+          size="sm"
           classNames={inputClasses}
         />
 
@@ -121,6 +120,7 @@ export const AjusteStockModal = ({
           readOnly
           disabled
           radius="lg"
+          size="sm"
           classNames={inputClasses}
         />
       </div>
@@ -162,7 +162,7 @@ export const AjusteStockModal = ({
               size="10px"
               c="zinc.5"
               fw={800}
-              className="uppercase tracking-widest leading-none mb-1"
+              className="uppercase tracking-[0.2em] leading-none mb-1 text-zinc-500"
             >
               Variación
             </Text>
@@ -200,12 +200,14 @@ export const AjusteStockModal = ({
 
       {/* 3. Motivo (Full Width al fondo) */}
       <Textarea
-        label="Motivo del Ajuste"
+        label="Motivo del ajuste"
         placeholder="Ej: Error de digitación, merma por derrame, etc."
         minRows={3}
+        withAsterisk
         value={motivo}
         onChange={(e) => setMotivo(e.currentTarget.value)}
         radius="lg"
+        size="sm"
         classNames={inputClasses}
       />
 
@@ -221,9 +223,11 @@ export const AjusteStockModal = ({
       )}
 
       {error && (
-        <Text c="red" size="sm" ta="center" fw={600} className="italic">
-          {error}
-        </Text>
+        <div className="p-3 bg-red-950/20 border border-red-900/40 rounded-xl">
+           <Text c="red.5" size="xs" ta="center" fw={700}>
+             {error}
+           </Text>
+        </div>
       )}
 
       {/* Footer Buttons */}
@@ -231,13 +235,14 @@ export const AjusteStockModal = ({
         justify="flex-end"
         mt="md"
         gap="md"
-        className="pt-6 border-t border-zinc-800/50"
+        className="pt-6 border-t border-zinc-800/40"
       >
         <Button
           variant="subtle"
           onClick={onCancel}
           disabled={submitting}
           radius="lg"
+          size="sm"
           className="text-zinc-500 hover:text-white font-bold"
         >
           Cancelar
@@ -246,6 +251,7 @@ export const AjusteStockModal = ({
           type="submit"
           loading={submitting}
           radius="lg"
+          size="sm"
           className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-bold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
           disabled={isSame || submitting}
         >

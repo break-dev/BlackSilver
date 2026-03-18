@@ -73,12 +73,20 @@ export const LotesPage = () => {
       group.lotes.push(lote);
       group.total_stock_base += Number(lote.stock_actual_base || 0);
 
-      if (lote.estado_vencimiento == EstadoVencimiento.Vencido)
-        group.vencidos++;
-      else if (lote.estado_vencimiento == EstadoVencimiento.PorVencer)
-        group.por_vencer++;
-      else if (lote.estado_vencimiento == EstadoVencimiento.Vigente)
-        group.vigentes++;
+      // Solo contabilizamos si el lote tiene stock positivo
+      if (Number(lote.stock_actual_base) > 0) {
+        if (lote.estado_vencimiento === EstadoVencimiento.Vencido) {
+          group.vencidos++;
+        } else if (lote.estado_vencimiento === EstadoVencimiento.PorVencer) {
+          group.por_vencer++;
+        } else if (
+          lote.estado_vencimiento === EstadoVencimiento.Vigente ||
+          lote.estado_vencimiento === EstadoVencimiento.NA ||
+          lote.estado_vencimiento === EstadoVencimiento.SinFecha
+        ) {
+          group.vigentes++;
+        }
+      }
     });
 
     return Object.values(groups).sort((a, b) =>

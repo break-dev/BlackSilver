@@ -93,8 +93,8 @@ export const RegistroCategoria = ({
       />
 
       <Select
-        label="Clasificación del Bien"
-        placeholder="Seleccione una clasificación (Opcional)..."
+        label="Clasificación del Bien (Opcional)"
+        placeholder="Seleccione una clasificación ..."
         disabled={loading}
         radius="lg"
         classNames={inputClasses}
@@ -175,7 +175,7 @@ export const RegistroCategoria = ({
       </div>
 
       <Textarea
-        label="Descripción"
+        label="Descripción (Opcional)"
         placeholder="Detalles adicionales sobre esta categoría..."
         radius="lg"
         minRows={3}

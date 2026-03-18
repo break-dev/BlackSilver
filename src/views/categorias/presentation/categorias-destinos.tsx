@@ -10,14 +10,18 @@ import {
     RectangleGroupIcon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
-import type { RES_Categoria } from "../service/categorias.responses";
+
+interface CategoriaMinima {
+    id_categoria: number;
+    nombre: string;
+}
 
 interface CategoriasDestinosProps {
     categoriaNombre: string;
     idsDestinosTemp: number[];
     setIdsDestinosTemp: (ids: number[]) => void;
     categoriasParaConsumo: { value: string; label: string }[];
-    todasCategorias: RES_Categoria[];
+    todasCategorias: CategoriaMinima[];
     onSave: () => void;
     onClose: () => void;
     loading: boolean;
