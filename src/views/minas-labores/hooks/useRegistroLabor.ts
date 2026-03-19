@@ -30,7 +30,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   const [idTipoLabor, setIdTipoLabor] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [tipoSostenimiento, setTipoSostenimiento] = useState("");
+  const [tipoSostenimiento, setTipoSostenimiento] = useState("Convencional");
   const [veta, setVeta] = useState("");
   const [ancho, setAncho] = useState<string>("");
   const [alto, setAlto] = useState<string>("");
@@ -45,7 +45,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setIdTipoLabor(null);
     setNombre("");
     setDescripcion("");
-    setTipoSostenimiento("");
+    setTipoSostenimiento("Convencional");
     setVeta("");
     setAncho("");
     setAlto("");
