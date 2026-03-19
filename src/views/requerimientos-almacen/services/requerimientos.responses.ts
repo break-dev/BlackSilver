@@ -67,6 +67,7 @@ export interface RES_Almacen_Local {
 export interface RES_Labor_Local {
   id_labor: number;
   nombre: string;
+  correlativo: string;
   estado: string;
 }
 

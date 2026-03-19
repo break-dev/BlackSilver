@@ -195,7 +195,7 @@ export const DetalleRequerimiento = ({
                     color="indigo"
                     size="sm"
                   >
-                    ({l.correlativo}) {l.nombre}
+                    {l.correlativo} {l.nombre ? `(${l.nombre})` : ""}
                   </Badge>
                 ))
               ) : (

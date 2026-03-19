@@ -172,7 +172,7 @@ export const RegistroRequerimiento = ({
               description="Seleccione las labores donde se emplearán estos materiales"
               data={labores.map((l) => ({
                 value: String(l.id_labor),
-                label: l.nombre,
+                label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
               }))}
               value={idLabores.map(String)}
               onChange={(vals) => setIdLabores(vals.map(Number))}
