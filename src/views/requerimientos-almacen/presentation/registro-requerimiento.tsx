@@ -64,6 +64,7 @@ export const RegistroRequerimiento = ({
       labores,
       productos,
       productosFiltrados,
+      destinosDisponibles,
       unidades,
       idMina,
       setIdMina,
@@ -85,11 +86,13 @@ export const RegistroRequerimiento = ({
       setContenido,
       comentarioItem,
       setComentarioItem,
+      idProductoDestino,
+      setIdProductoDestino,
       detalles,
     },
     derived: { sonUnidadesIdenticas, productoSeleccionado, canAdd },
     status: { submitting, loadingCatalogs, error },
-    actions: { agregarItem, eliminarItem, handleSubmit },
+    actions: { agregarItem, eliminarItem, actualizarCantidadItem, handleSubmit },
   } = useRegistroRequerimiento({ onSuccess });
 
   const inputClasses = {
@@ -314,16 +317,35 @@ export const RegistroRequerimiento = ({
               </div>
 
               <div className="md:col-span-6 mb-10">
-                <TextInput
-                  label="Comentario"
-                  placeholder="Detalles adicionales..."
-                  value={comentarioItem}
-                  onChange={(e) => setComentarioItem(e.target.value)}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                  mt="0"
-                />
+                {productoSeleccionado?.es_consumible ? (
+                  <Select
+                    label="Destino del producto"
+                    placeholder="Seleccione maquinaria o activo..."
+                    description="Especifique a qué equipo se asignará este insumo"
+                    withAsterisk
+                    data={destinosDisponibles.map((p) => ({
+                      value: String(p.id_producto),
+                      label: p.nombre,
+                    }))}
+                    value={idProductoDestino ? String(idProductoDestino) : null}
+                    onChange={(val) => setIdProductoDestino(Number(val))}
+                    searchable
+                    classNames={inputClasses}
+                    radius="lg"
+                    size="sm"
+                  />
+                ) : (
+                  <TextInput
+                    label="Comentario"
+                    placeholder="Detalles adicionales..."
+                    value={comentarioItem}
+                    onChange={(e) => setComentarioItem(e.target.value)}
+                    classNames={inputClasses}
+                    radius="lg"
+                    size="sm"
+                    mt="0"
+                  />
+                )}
               </div>
 
               <div className="md:col-span-2 mb-10">
@@ -443,11 +465,11 @@ export const RegistroRequerimiento = ({
               <th className="px-4 py-3 text-left font-semibold min-w-[150px]">
                 Producto
               </th>
-              <th className="px-6 py-4 text-center min-w-[200px]">
-                Cantidad solicitada
+              <th className="px-1 py-3 text-center w-[130px]">
+                Cant.
               </th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[200px]">
-                Comentario
+              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
+                Destino / Comentario
               </th>
               <th className="px-4 py-3 text-center w-16"></th>
             </tr>
@@ -470,6 +492,10 @@ export const RegistroRequerimiento = ({
                 const uni = unidades.find(
                   (u) => u.id_unidad_medida === det.id_unidad_medida,
                 );
+                const dest = productos.find(
+                  (p) => p.id_producto === det.id_producto_destino,
+                );
+                const conError = det.cantidad_solicitada <= 0;
 
                 return (
                   <tr
@@ -482,52 +508,58 @@ export const RegistroRequerimiento = ({
                     <td className="px-4 py-3 text-sm font-medium text-zinc-100">
                       {prod?.nombre}
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex flex-row gap-1 justify-center items-center">
-                        <Badge
-                          variant="filled"
-                          color="cyan.7"
-                          radius="sm"
-                          size="sm"
-                          className="font-black px-4"
-                        >
-                          {formatNumber(det.cantidad_solicitada)}{" "}
-                          {uni?.abreviatura}
-                        </Badge>
-                        {uni?.id_unidad_medida !==
-                          prod?.id_unidad_medida_base && (
-                          <>
+                    <td className="px-1 py-3 text-center">
+                      <div className="flex flex-col gap-1 items-center">
+                        <Group gap={4} wrap="nowrap" justify="center" className={`px-2 py-0.5 rounded-lg border w-fit transition-all ${conError ? "bg-red-900/30 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]" : "bg-zinc-800/40 border-zinc-800"}`}>
+                          <NumberInput
+                            variant="unstyled"
+                            value={det.cantidad_solicitada}
+                            onChange={(val) => actualizarCantidadItem(index, Number(val))}
+                            size="xs"
+                            hideControls
+                            classNames={{
+                                input: `w-12 text-center font-bold text-sm h-5 transition-colors ${conError ? "text-red-400" : "text-cyan-400"}`
+                            }}
+                          />
+                          <Text size="9px" fw={800} className={`uppercase transition-colors ${conError ? "text-red-500" : "text-zinc-500"}`}>
+                            {uni?.abreviatura}
+                          </Text>
+                        </Group>
+                        
+                        {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
+                          <div className="flex gap-1 justify-center">
                             <Badge
-                              variant="filled"
-                              color="zinc"
-                              radius="sm"
-                              size="sm"
-                              className="font-black px-4"
-                            >
-                              {formatNumber(det.contenido_por_presentacion)}{" "}
-                              {prod?.unidad_medida_base_abv}{" "}
-                              <span className="lowercase">x</span>{" "}
-                              {uni?.abreviatura}
-                            </Badge>
-
-                            <Badge
-                              variant="filled"
+                              variant="transparent"
                               color="pink"
                               radius="sm"
-                              className="font-bold shadow-xs whitespace-nowrap"
+                              size="xs"
+                              className="font-black text-[9px] lowercase p-0"
                             >
-                              {formatNumber(
-                                det.cantidad_solicitada *
-                                  det.contenido_por_presentacion,
-                              )}{" "}
-                              {prod?.unidad_medida_base_abv}
+                              T: {formatNumber(det.cantidad_solicitada * det.contenido_por_presentacion)} {prod?.unidad_medida_base_abv}
                             </Badge>
-                          </>
+                          </div>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
-                      {det.comentario || "-"}
+                      {dest ? (
+                        <div className="flex flex-col gap-1">
+                          <Badge 
+                            size="xs" 
+                            variant="filled" 
+                            color="pink"
+                            className="w-fit font-bold tracking-tight px-3"
+                            style={{ color: "white" }}
+                          >
+                            PARA: {dest.nombre}
+                          </Badge>
+                          {det.comentario && (
+                            <Text size="10px" c="dimmed" mt={2}>{det.comentario}</Text>
+                          )}
+                        </div>
+                      ) : (
+                        det.comentario || "-"
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <ActionIcon
@@ -550,14 +582,17 @@ export const RegistroRequerimiento = ({
 
       <Group justify="flex-end" mt="md">
         {error && (
-          <Text
-            c="red"
-            size="sm"
-            fw={600}
-            className="text-center animate-pulse"
-          >
-            {error}
-          </Text>
+          <div className="px-4 py-2 bg-red-900/20 border border-red-500/50 rounded-xl animate-pulse">
+            <Text
+                c="red.5"
+                size="sm"
+                fw={700}
+                className="flex items-center gap-2"
+            >
+                <BoltIcon className="w-4 h-4" />
+                {error}
+            </Text>
+          </div>
         )}
         <Button
           variant="subtle"
@@ -573,7 +608,11 @@ export const RegistroRequerimiento = ({
           loading={submitting}
           disabled={detalles.length === 0}
           radius="lg"
-          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
+          className={`font-semibold shadow-lg border-0 px-8 transition-all ${
+            detalles.some(d => d.cantidad_solicitada <= 0) 
+            ? "bg-red-900/50 text-red-200 cursor-not-allowed border border-red-500/50" 
+            : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200"
+          }`}
         >
           Guardar Requerimiento
         </Button>

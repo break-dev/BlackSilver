@@ -40,6 +40,8 @@ export interface RES_RequerimientoDetalle {
   comentario?: string;
   comentario_decision?: string;
   empleado_atencion?: string;
+  id_producto_destino?: number | null;
+  producto_destino?: string | null;
 }
 
 export interface RES_TrazabilidadEvento {
@@ -74,6 +76,9 @@ export interface RES_Producto_Local {
   nombre: string;
   unidad_medida_base_abv: string;
   unidad_medida_base: string;
+  id_categoria: number;
+  es_consumible: boolean;
+  ids_consumidoras: string | null; // Viene como "1,2,3" desde PHP GROUP_CONCAT
 }
 
 export interface RES_Unidad_Local {

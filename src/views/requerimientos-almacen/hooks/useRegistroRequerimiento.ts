@@ -48,6 +48,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
   const [cantidad, setCantidad] = useState<number>(0);
   const [contenido, setContenido] = useState<number>(1);
   const [comentarioItem, setComentarioItem] = useState("");
+  const [idProductoDestino, setIdProductoDestino] = useState<number>(0);
 
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
@@ -117,14 +118,47 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
         setIdUnidadMedida(prod.id_unidad_medida_base);
       }
     }
+    // Al cambiar de producto, reseteamos el destino y comentario
+    setIdProductoDestino(0);
+    setComentarioItem("");
   }, [idProducto, loadingCatalogs, productos]);
 
   // Filtrar productos que ya están presentes en la lista de detalles
   const productosFiltrados = useMemo(() => {
-    return productos.filter(
-      (p) => !detalles.some((d) => d.id_producto === p.id_producto),
-    );
+    return productos.filter((p) => {
+        // Los productos consumibles pueden agregarse múltiples veces 
+        // mientras tengan destinos diferentes aún disponibles
+        if (p.es_consumible) return true;
+
+        // Los productos regulares solo se agregan una vez
+        return !detalles.some((d) => d.id_producto === p.id_producto);
+    });
   }, [productos, detalles]);
+
+  // Destinos disponibles para el producto consumible seleccionado
+  const destinosDisponibles = useMemo(() => {
+    if (!productoSeleccionado || !productoSeleccionado.es_consumible || !productoSeleccionado.ids_consumidoras) {
+      return [];
+    }
+
+    const idsPermitidosStr = productoSeleccionado.ids_consumidoras.split(",");
+    const idsPermitidos = idsPermitidosStr.map(Number);
+
+    return productos.filter((p) => {
+      // 1. Debe pertenecer a una categoría consumidora permitida
+      const esCategoriaPermitida = idsPermitidos.includes(p.id_categoria);
+      if (!esCategoriaPermitida) return false;
+
+      // 2. No debe haber sido ya elegido para este mismo producto consumible en este formulario
+      const yaElegido = detalles.some(
+        (d) => 
+          d.id_producto === productoSeleccionado.id_producto && 
+          d.id_producto_destino === p.id_producto
+      );
+
+      return !yaElegido;
+    });
+  }, [productoSeleccionado, productos, detalles]);
 
   // Agregar item a la lista
   const agregarItem = useCallback(() => {
@@ -136,24 +170,49 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       });
       return;
     }
+
+    // Validación adicional para consumibles
+    if (productoSeleccionado?.es_consumible && !idProductoDestino) {
+        notifications.show({
+            title: "Campo requerido",
+            message: "Debe seleccionar un equipo de destino para este producto consumible",
+            color: "red",
+        });
+        return;
+    }
+
     const nuevoItem: DTO_CrearRequerimientoDetalle = {
       id_producto: idProducto,
       id_unidad_medida: idUnidadMedida,
       cantidad_solicitada: cantidad,
       contenido_por_presentacion: contenido,
       comentario: comentarioItem,
+      id_producto_destino: idProductoDestino > 0 ? idProductoDestino : null,
     };
+
     setDetalles((prev) => [...prev, nuevoItem]);
+
     // Limpiar item
     setIdProducto(0);
     setIdUnidadMedida(0);
     setCantidad(0);
     setContenido(1);
     setComentarioItem("");
-  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem]);
+    setIdProductoDestino(0);
+  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem, idProductoDestino, productoSeleccionado]);
 
   const eliminarItem = useCallback((index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const actualizarCantidadItem = useCallback((index: number, nvaCantidad: number) => {
+    setDetalles((prev) => {
+        const nvaLista = [...prev];
+        if (nvaLista[index]) {
+            nvaLista[index].cantidad_solicitada = nvaCantidad;
+        }
+        return nvaLista;
+    });
   }, []);
 
   // Submit Final
@@ -177,6 +236,14 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       setError(validation.error.issues[0].message);
       setSubmitting(false);
       return;
+    }
+
+    // Validación manual de ítems con cantidad 0
+    const tieneItemsEnCero = detalles.some(d => d.cantidad_solicitada <= 0);
+    if (tieneItemsEnCero) {
+        setError("Hay productos con cantidad igual o menor a 0 en la lista");
+        setSubmitting(false);
+        return;
     }
 
     try {
@@ -214,6 +281,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       labores,
       productos,
       productosFiltrados,
+      destinosDisponibles,
       unidades,
       idMina,
       setIdMina,
@@ -238,6 +306,8 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       setContenido,
       comentarioItem,
       setComentarioItem,
+      idProductoDestino,
+      setIdProductoDestino,
       detalles,
     },
     derived: {
@@ -253,6 +323,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     actions: {
       agregarItem,
       eliminarItem,
+      actualizarCantidadItem,
       handleSubmit,
     },
   };
