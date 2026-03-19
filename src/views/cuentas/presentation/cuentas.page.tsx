@@ -245,7 +245,7 @@ export const CuentasPage = () => {
         opened={openedCreate}
         close={closeCreate}
         title={selectedCuenta ? "Cambiar Contraseña" : "Registrar Nueva Cuenta"}
-        size="md"
+        size="lg"
       >
         <RegistroCuenta
           cuentaEdit={selectedCuenta}

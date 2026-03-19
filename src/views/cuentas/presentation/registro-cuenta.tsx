@@ -44,45 +44,32 @@ export const RegistroCuenta = ({
 
   return (
     <Stack gap="md">
-      <Select
-        label="Empleado"
-        placeholder="Seleccione un empleado"
-        data={
-          isEdit && cuentaEdit
-            ? [
-                {
-                  value: cuentaEdit.id_empleado.toString(),
-                  label: `${cuentaEdit.nombre_empleado} ${cuentaEdit.apellido_empleado}`,
-                },
-              ]
-            : empleadosSinCuenta.map((e) => ({
-                value: e.id.toString(),
-                label: `${e.apellido}, ${e.nombre}`,
-              }))
-        }
-        value={form.id_empleado ? form.id_empleado.toString() : null}
-        onChange={(val) => setForm({ id_empleado: Number(val) })}
-        disabled={isEdit || loading}
-        radius="lg"
-        required
-        withAsterisk
-        leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={fieldClasses}
-        searchable
-      />
-
       <Group grow>
-        <TextInput
-          label="Nombre de Usuario"
-          placeholder="Ej: jdoe"
-          value={form.username}
-          onChange={(e) => setForm({ username: e.currentTarget.value })}
+        <Select
+          label="Empleado"
+          placeholder="Seleccione un empleado"
+          data={
+            isEdit && cuentaEdit
+              ? [
+                  {
+                    value: cuentaEdit.id_empleado.toString(),
+                    label: `${cuentaEdit.nombre_empleado} ${cuentaEdit.apellido_empleado}`,
+                  },
+                ]
+              : empleadosSinCuenta.map((e) => ({
+                  value: e.id.toString(),
+                  label: `${e.apellido}, ${e.nombre}`,
+                }))
+          }
+          value={form.id_empleado ? form.id_empleado.toString() : null}
+          onChange={(val) => setForm({ id_empleado: Number(val) })}
+          disabled={isEdit || loading}
           radius="lg"
           required
           withAsterisk
-          leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
+          leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
-          disabled={isEdit || loading}
+          searchable
         />
 
         <Select
@@ -100,23 +87,38 @@ export const RegistroCuenta = ({
         />
       </Group>
 
-      <PasswordInput
-        label={isEdit ? "Nueva Contraseña" : "Contraseña"}
-        placeholder={isEdit ? "Nueva contraseña..." : "Mínimo 6 caracteres"}
-        value={form.password}
-        onChange={(e) => setForm({ password: e.currentTarget.value })}
-        radius="lg"
-        required={!isEdit}
-        withAsterisk={!isEdit}
-        leftSection={<KeyIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={{
-          ...fieldClasses,
-          innerInput: "text-white placeholder:text-zinc-500",
-          visibilityToggle:
-            "text-zinc-500 hover:text-zinc-300 transition-colors",
-        }}
-        disabled={loading}
-      />
+      <Group grow>
+        <TextInput
+          label="Nombre de Usuario"
+          placeholder="Ej: jdoe"
+          value={form.username}
+          onChange={(e) => setForm({ username: e.currentTarget.value })}
+          radius="lg"
+          required
+          withAsterisk
+          leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          disabled={isEdit || loading}
+        />
+
+        <PasswordInput
+          label={isEdit ? "Nueva Contraseña" : "Contraseña"}
+          placeholder={isEdit ? "Nueva contraseña..." : "Mínimo 6 caracteres"}
+          value={form.password}
+          onChange={(e) => setForm({ password: e.currentTarget.value })}
+          radius="lg"
+          required={!isEdit}
+          withAsterisk={!isEdit}
+          leftSection={<KeyIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={{
+            ...fieldClasses,
+            innerInput: "text-white placeholder:text-zinc-500",
+            visibilityToggle:
+              "text-zinc-500 hover:text-zinc-300 transition-colors",
+          }}
+          disabled={loading}
+        />
+      </Group>
 
       <Group justify="flex-end" gap="md" mt="xl">
         <Button
