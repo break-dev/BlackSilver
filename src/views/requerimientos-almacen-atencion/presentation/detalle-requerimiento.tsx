@@ -87,8 +87,6 @@ export const DetalleRequerimiento = ({
     handleDecisionMasiva,
     idsParaAccionMasiva,
     toggleSeleccionMasiva,
-    isAllPendingSelected,
-    seleccionarTodoLoPendiente,
     getStatusColor,
     logistica,
     patchDetallesLocales,
@@ -336,21 +334,7 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Destino / Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center w-48">
-                  <Stack gap={2} align="center">
-                    <Text size="xs" fw={800}>Acciones</Text>
-                    {detalles.some(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) && (
-                      <Group gap={4} wrap="nowrap" title="Seleccionar todos los pendientes">
-                        <Checkbox 
-                          size="xs" 
-                          checked={isAllPendingSelected} 
-                          onChange={seleccionarTodoLoPendiente}
-                        />
-                        <Text size="10px" fw={800} c="zinc.5">Marcar Pend.</Text>
-                      </Group>
-                    )}
-                  </Stack>
-                </th>
+                <th className="px-6 py-4 text-center w-48">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -540,16 +524,6 @@ export const DetalleRequerimiento = ({
                     </td>
                     <td className="px-6 py-4">
                       <Group gap={8} justify="center" wrap="nowrap">
-                        {item.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
-                          <Tooltip label="Seleccionar para acción masiva" position="top" withArrow>
-                            <Checkbox 
-                              size="xs"
-                              color="indigo"
-                              checked={idsParaAccionMasiva.includes(item.id_requerimiento_almacen_detalle)}
-                              onChange={() => toggleSeleccionMasiva(item.id_requerimiento_almacen_detalle)}
-                            />
-                          </Tooltip>
-                        )}
                         <Tooltip
                           label="Ver Seguimiento"
                           position="top"
@@ -605,6 +579,18 @@ export const DetalleRequerimiento = ({
                               </ActionIcon>
                             </Tooltip>
                           </>
+                        )}
+
+                        {item.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
+                          <Tooltip label="Seleccionar para acción masiva" position="top" withArrow>
+                            <Checkbox 
+                              size="xs"
+                              color="indigo"
+                              checked={idsParaAccionMasiva.includes(item.id_requerimiento_almacen_detalle)}
+                              onChange={() => toggleSeleccionMasiva(item.id_requerimiento_almacen_detalle)}
+                              className="ml-1"
+                            />
+                          </Tooltip>
                         )}
                       </Group>
                     </td>
