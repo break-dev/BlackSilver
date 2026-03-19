@@ -109,6 +109,16 @@ export const useMinas = () => {
     );
   };
 
+  const handleLaborFinalizada = (id_mina: number) => {
+    setMinas((prev) =>
+      prev.map((m) =>
+        m.id_mina === id_mina
+          ? { ...m, cantidad_labores: Math.max(0, m.cantidad_labores - 1) }
+          : m,
+      ),
+    );
+  };
+
   const handleEmpresaAsignada = (id_mina: number) => {
     setMinas((prev) =>
       prev.map((m) =>
@@ -165,6 +175,7 @@ export const useMinas = () => {
     handleOpenLabores,
     handleResponsableAsignado,
     handleLaborRegistrada,
+    handleLaborFinalizada,
     handleEmpresaAsignada,
   };
 };

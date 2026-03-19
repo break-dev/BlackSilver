@@ -48,6 +48,12 @@ export const Schema_CrearLabor = z.object({
   alto: z.coerce.number().optional().nullable(),
   nivel: z.string().optional().nullable(),
   fecha_inicio: z.string().optional().nullable(),
-  fecha_fin: z.string().optional().nullable(),
+  fecha_fin_estimada: z.string().optional().nullable(),
 });
 export type DTO_CrearLabor = z.infer<typeof Schema_CrearLabor>;
+
+export const Schema_FinalizarLabor = z.object({
+  id_labor: z.number().int().positive(),
+  fecha_cierre: z.string().min(1, "La fecha de cierre es requerida"),
+});
+export type DTO_FinalizarLabor = z.infer<typeof Schema_FinalizarLabor>;

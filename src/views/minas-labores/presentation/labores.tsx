@@ -1,6 +1,20 @@
 import { Badge, Button, Group, Paper, Stack, Text, TextInput } from "@mantine/core";
-import { PlusIcon, MagnifyingGlassIcon, BriefcaseIcon, MapIcon, BoltIcon, InboxStackIcon } from "@heroicons/react/24/outline";
-import { useMemo } from "react";
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  BriefcaseIcon, 
+  MapIcon, 
+  BoltIcon, 
+  InboxStackIcon, 
+  FlagIcon, 
+  CheckCircleIcon, 
+  ClockIcon 
+} from "@heroicons/react/24/outline";
+import { useState, useMemo } from "react";
+import dayjs from "dayjs";
+import { useNotify } from "../../../hooks/useNotify";
+import { MinasService } from "../service/minas.service";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -17,9 +31,10 @@ interface GroupedLaborEmpresa {
 interface Props {
   mina: RES_ResumenMina;
   onLaborCreada?: (id_mina: number) => void;
+  onLaborFinalizada?: (id_mina: number) => void;
 }
 
-export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
+export const GestionLabores = ({ mina, onLaborCreada, onLaborFinalizada }: Props) => {
   const {
     laboresFiltradas,
     loading,
@@ -29,7 +44,45 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
     openCreate,
     closeCreate,
     handleLaborCreada,
+    handleLaborFinalizada,
   } = useLabores({ idMina: mina.id_mina });
+
+  const { notify } = useNotify();
+
+  // Estado para finalizar labor
+  const [laborAFinalizar, setLaborAFinalizar] = useState<RES_Labor | null>(null);
+  const [fechaCierre, setFechaCierre] = useState<Date | null>(new Date());
+  const [isCerrando, setIsCerrando] = useState(false);
+
+  const handleOpenFinalizar = (labor: RES_Labor) => {
+    setLaborAFinalizar(labor);
+    setFechaCierre(new Date());
+  };
+
+  const handleConfirmarCierre = async () => {
+    if (!laborAFinalizar || !fechaCierre) return;
+
+    setIsCerrando(true);
+    try {
+      const { data: res } = await MinasService.finalizarLabor({
+        id_labor: laborAFinalizar.id_labor,
+        fecha_cierre: dayjs(fechaCierre).format("YYYY-MM-DD"),
+      });
+
+      if (res.success) {
+        notify({ type: "success", content: res.message });
+        handleLaborFinalizada(res.data);
+        if (onLaborFinalizada) onLaborFinalizada(mina.id_mina);
+        setLaborAFinalizar(null);
+      } else {
+        notify({ type: "error", content: res.message });
+      }
+    } catch {
+      notify({ type: "error", content: "Error al finalizar la labor" });
+    } finally {
+      setIsCerrando(false);
+    }
+  };
 
   // Lógica de agrupación por empresa
   const groupedLabores = useMemo(() => {
@@ -57,6 +110,7 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
       title: "#",
       textAlign: "center",
       width: 50,
+      render: (_, index) => index + 1,
     },
     {
       accessor: "correlativo",
@@ -77,7 +131,7 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
     {
       accessor: "nombre",
       title: "Labor",
-      width: 280,
+      width: 260,
       render: (r) => (
         <div className="flex flex-col gap-1.5 py-2">
           {r.nombre && (
@@ -114,8 +168,8 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
     },
     {
       accessor: "operacion",
-      title: "Tipo y Operación",
-      width: 200,
+      title: "Tipo / Op.",
+      width: 150,
       render: (r) => (
         <div className="flex flex-col gap-1.5 py-2">
           <Badge variant="filled" color="cyan.9" size="xs" className="font-black px-2 shadow-sm w-fit uppercase tracking-wider">
@@ -132,23 +186,66 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
     {
       accessor: "fecha_inicio",
       title: "Período Operativo",
-      width: 180,
+      width: 210,
       render: (r) => (
         <Group gap={8} wrap="nowrap" justify="center">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
               <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-tighter w-12">Desde:</Text>
               <Text size="xs" fw={700} className="text-zinc-200">
-                {r.fecha_inicio ? new Date(r.fecha_inicio).toLocaleDateString("es-PE", { day: '2-digit', month: 'short', year: 'numeric' }) : "—"}
+                {r.fecha_inicio ? dayjs(r.fecha_inicio).format("DD MMM YYYY") : "—"}
               </Text>
             </div>
             <div className="flex items-center gap-1.5">
-              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-tighter w-12">Hasta:</Text>
-              <Text size="xs" fw={700} className={r.fecha_fin ? "text-zinc-300" : "text-emerald-500 font-bold"}>
-                {r.fecha_fin ? new Date(r.fecha_fin).toLocaleDateString("es-PE", { day: '2-digit', month: 'short', year: 'numeric' }) : "En curso"}
+              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-tighter w-12">Estimado:</Text>
+              <Text size="xs" fw={700} className="text-zinc-400">
+                {r.fecha_fin_estimada ? dayjs(r.fecha_fin_estimada).format("DD MMM YYYY") : "—"}
               </Text>
             </div>
+            {r.fecha_cierre && (
+              <div className="flex items-center gap-1.5 mt-0.5 pt-0.5 border-t border-zinc-800/50">
+                <Text size="9px" fw={900} className="text-indigo-500 uppercase tracking-tighter w-12 text-right">Cierre:</Text>
+                <Text size="xs" fw={900} className="text-indigo-400">
+                  {dayjs(r.fecha_cierre).format("DD MMM YYYY")}
+                </Text>
+              </div>
+            )}
+            {!r.fecha_cierre && (
+              <div className="flex items-center gap-1.5 mt-0.5 opacity-50">
+                <Text size="9px" fw={900} className="text-zinc-600 uppercase tracking-tighter w-12">Real:</Text>
+                <Text size="xs" fw={700} className="text-emerald-500 italic">En curso</Text>
+              </div>
+            )}
           </div>
+        </Group>
+      ),
+    },
+    {
+      accessor: "acciones",
+      title: "Acciones",
+      textAlign: "right",
+      width: 130,
+      render: (r) => (
+        <Group gap={6} justify="flex-end" wrap="nowrap">
+          {r.estado === "Activo" && (
+            <Button
+              variant="light"
+              color="indigo"
+              size="compact-xs"
+              radius="md"
+              leftSection={<FlagIcon className="w-3.5 h-3.5" />}
+              onClick={() => handleOpenFinalizar(r)}
+              className="font-bold border border-indigo-500/10 hover:border-indigo-500/30 transition-all"
+            >
+              Finalizar
+            </Button>
+          )}
+          {r.estado === "Inactivo" && (
+             <div className="flex items-center gap-1 text-emerald-500/80 bg-emerald-500/5 px-2 py-1 rounded-lg border border-emerald-500/10">
+                <CheckCircleIcon className="w-4 h-4" />
+                <Text size="10px" fw={900} className="uppercase tracking-widest">Finalizada</Text>
+             </div>
+          )}
         </Group>
       ),
     },
@@ -252,6 +349,7 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
         )}
       </Stack>
 
+      {/* Modal para Crear Labor */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
@@ -263,6 +361,72 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
           onSuccess={handleLocalLaborCreada}
           onCancel={closeCreate}
         />
+      </ModalEstandar>
+
+      {/* Modal para Finalizar Labor */}
+      <ModalEstandar
+        opened={!!laborAFinalizar}
+        close={() => setLaborAFinalizar(null)}
+        title="Finalizar Labor Operativa"
+        size="md"
+      >
+        <Stack gap="xl" className="py-2">
+          <div className="p-4 bg-zinc-900/40 border border-zinc-800 rounded-2xl">
+            <Text size="xs" fw={800} className="uppercase tracking-widest text-zinc-500 mb-1">Labor a cerrar</Text>
+            <Group gap={8}>
+               <Badge variant="light" color="indigo" radius="md" className="font-bold border border-indigo-500/20 py-3">
+                 {laborAFinalizar?.correlativo}
+               </Badge>
+               <Text fw={800} className="text-white">{laborAFinalizar?.nombre || "Sin nombre"}</Text>
+            </Group>
+          </div>
+
+          <div className="space-y-4">
+             <CustomDatePicker
+               label="Fecha de Cierre (Real)"
+               placeholder="Seleccione fecha real de término"
+               value={fechaCierre}
+               onChange={(val: any) => setFechaCierre(val)}
+               required
+               withAsterisk
+             />
+
+             {laborAFinalizar?.fecha_fin_estimada && fechaCierre && (
+                <div className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${
+                  dayjs(fechaCierre).isAfter(laborAFinalizar.fecha_fin_estimada, 'day')
+                  ? "bg-red-500/5 border-red-500/20 text-red-400"
+                  : "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                }`}>
+                  <ClockIcon className="w-5 h-5 shrink-0" />
+                  <div className="flex-1">
+                     <Text size="xs" fw={800} className="uppercase tracking-widest leading-tight">Estado de cumplimiento</Text>
+                     <Text size="sm" fw={700}>
+                       {dayjs(fechaCierre).isAfter(laborAFinalizar.fecha_fin_estimada, 'day')
+                         ? `Retraso de ${dayjs(fechaCierre).diff(laborAFinalizar.fecha_fin_estimada, 'day')} días`
+                         : dayjs(fechaCierre).isBefore(laborAFinalizar.fecha_fin_estimada, 'day')
+                           ? `Adelantado por ${dayjs(laborAFinalizar.fecha_fin_estimada).diff(fechaCierre, 'day')} días`
+                           : "Finalizado a tiempo (según plan)"}
+                     </Text>
+                  </div>
+                </div>
+             )}
+          </div>
+
+          <Group justify="flex-end" gap="md">
+            <Button variant="subtle" color="gray" onClick={() => setLaborAFinalizar(null)} radius="lg">
+              Cancelar
+            </Button>
+            <Button 
+              className="bg-indigo-600 hover:bg-indigo-700" 
+              loading={isCerrando} 
+              onClick={handleConfirmarCierre}
+              radius="lg"
+              leftSection={<CheckCircleIcon className="w-5 h-5" />}
+            >
+              Confirmar Cierre
+            </Button>
+          </Group>
+        </Stack>
       </ModalEstandar>
     </div>
   );
@@ -333,4 +497,3 @@ const EmpresaLaborGroup = ({ group, columns, loading }: EmpresaLaborGroupProps) 
     </Paper>
   );
 };
-

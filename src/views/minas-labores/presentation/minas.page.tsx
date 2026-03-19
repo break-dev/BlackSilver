@@ -48,6 +48,7 @@ export const MinasPage = () => {
     handleOpenLabores,
     handleResponsableAsignado,
     handleLaborRegistrada,
+    handleLaborFinalizada,
     handleEmpresaAsignada,
   } = useMinas();
 
@@ -319,6 +320,7 @@ export const MinasPage = () => {
           <GestionLabores 
             mina={selectedMina} 
             onLaborCreada={handleLaborRegistrada} 
+            onLaborFinalizada={handleLaborFinalizada}
           />
         )}
       </ModalEstandar>

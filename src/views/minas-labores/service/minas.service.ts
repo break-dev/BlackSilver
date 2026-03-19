@@ -89,4 +89,7 @@ export const MinasService = {
 
   crearLabor: (dto: DTO_CrearLabor) =>
     api.post<IRespuesta<RES_Labor>>(`${BASE_MINAS}/labores`, dto),
+
+  finalizarLabor: (dto: { id_labor: number; fecha_cierre: string }) =>
+    api.post<IRespuesta<RES_Labor>>(`${BASE_MINAS}/labores/finalizar`, dto),
 };

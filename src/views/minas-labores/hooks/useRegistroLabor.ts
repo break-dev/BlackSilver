@@ -36,7 +36,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   const [alto, setAlto] = useState<string>("");
   const [nivel, setNivel] = useState("");
   const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
-  const [fechaFin, setFechaFin] = useState<Date | null>(null);
+  const [fechaFinEstimada, setFechaFinEstimada] = useState<Date | null>(null);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,7 +51,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setAlto("");
     setNivel("");
     setFechaInicio(null);
-    setFechaFin(null);
+    setFechaFinEstimada(null);
     setFormError("");
   }, []);
 
@@ -99,7 +99,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
       alto: alto ? parseFloat(alto) : null,
       nivel: nivel || null,
       fecha_inicio: fechaInicio ? dayjs(fechaInicio).format("YYYY-MM-DD") : null,
-      fecha_fin: fechaFin ? dayjs(fechaFin).format("YYYY-MM-DD") : null,
+      fecha_fin_estimada: fechaFinEstimada ? dayjs(fechaFinEstimada).format("YYYY-MM-DD") : null,
     });
 
     if (!validation.success) {
@@ -158,8 +158,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setNivel,
     fechaInicio,
     setFechaInicio,
-    fechaFin,
-    setFechaFin,
+    fechaFinEstimada,
+    setFechaFinEstimada,
     formError,
     isSubmitting,
     handleSubmit,

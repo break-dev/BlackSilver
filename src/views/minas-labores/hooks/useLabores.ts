@@ -43,11 +43,11 @@ export const useLabores = ({ idMina }: Props) => {
     if (!q) return labores;
     return labores.filter(
       (l) =>
-        l.nombre.toLowerCase().includes(q) ||
-        l.correlativo?.toLowerCase().includes(q) ||
-        l.empresa?.toLowerCase().includes(q) ||
-        l.veta?.toLowerCase().includes(q) ||
-        l.nivel?.toLowerCase().includes(q),
+        (l.nombre?.toLowerCase()?.includes(q) ?? false) ||
+        (l.correlativo?.toLowerCase()?.includes(q) ?? false) ||
+        (l.empresa?.toLowerCase()?.includes(q) ?? false) ||
+        (l.veta?.toLowerCase()?.includes(q) ?? false) ||
+        (l.nivel?.toLowerCase()?.includes(q) ?? false),
     );
   }, [labores, busqueda]);
 
@@ -55,6 +55,12 @@ export const useLabores = ({ idMina }: Props) => {
     setLabores((prev) => [nueva, ...prev]);
     closeCreate();
     notify({ type: "success", content: "Labor creada correctamente" });
+  };
+
+  const handleLaborFinalizada = (actualizada: RES_Labor) => {
+    setLabores((prev) =>
+      prev.map((l) => (l.id_labor === actualizada.id_labor ? actualizada : l))
+    );
   };
 
   return {
@@ -66,5 +72,6 @@ export const useLabores = ({ idMina }: Props) => {
     openCreate,
     closeCreate,
     handleLaborCreada,
+    handleLaborFinalizada,
   };
 };

@@ -53,8 +53,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setNivel,
     fechaInicio,
     setFechaInicio,
-    fechaFin,
-    setFechaFin,
+    fechaFinEstimada,
+    setFechaFinEstimada,
     formError,
     isSubmitting,
     handleSubmit,
@@ -145,10 +145,10 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           withAsterisk
         />
         <CustomDatePicker
-          label="Fecha Fin (Opcional)"
-          placeholder="Seleccione fecha de término"
-          value={fechaFin}
-          onChange={(val: any) => setFechaFin(val)}
+          label="Fecha Est. Término (Referencial)"
+          placeholder="Seleccione fecha estimada"
+          value={fechaFinEstimada}
+          onChange={(val: any) => setFechaFinEstimada(val)}
           disabled={isSubmitting}
         />
       </div>

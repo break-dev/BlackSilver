@@ -70,7 +70,8 @@ export interface RES_Labor {
   alto: number | null;
   nivel: string | null;
   fecha_inicio: string | null;
-  fecha_fin: string | null;
+  fecha_fin_estimada: string | null;
+  fecha_cierre: string | null;
   created_at: string;
   estado: string;
 }
