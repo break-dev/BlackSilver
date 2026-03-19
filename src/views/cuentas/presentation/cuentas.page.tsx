@@ -1,263 +1,258 @@
-import { ActionIcon, Badge, Button, Group, TextInput, Tooltip, Avatar, Text, Stack, Skeleton } from '@mantine/core';
 import {
-    PlusIcon,
-    MagnifyingGlassIcon,
-    UserIcon,
-    KeyIcon,
-    BuildingOffice2Icon,
-    PencilSquareIcon,
-    Squares2X2Icon
-} from '@heroicons/react/24/outline';
-import { useTitlePage } from '../../../hooks/useTitlePage';
-import { useCuentas } from '../hooks/useCuentas';
-import { ModalEstandar } from '../../../presentation/utils/modal-estandar';
-import { RegistroCuenta } from './registro-cuenta';
-import { GestionEmpresas } from './gestion-empresas';
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  TextInput,
+  Tooltip,
+  Avatar,
+  Text,
+  Stack,
+  Skeleton,
+} from "@mantine/core";
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  UserIcon,
+  KeyIcon,
+  PencilSquareIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/24/outline";
+import { useTitlePage } from "../../../hooks/useTitlePage";
+import { useCuentas } from "../hooks/useCuentas";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroCuenta } from "./registro-cuenta";
 
 export const CuentasPage = () => {
-    useTitlePage("Usuarios y Cuentas");
+  useTitlePage("Usuarios y Cuentas");
 
-    const {
-        cuentasFiltradas,
-        loading,
-        busqueda,
-        setBusqueda,
-        openedCreate,
-        openCreate,
-        closeCreate,
-        openedEmpresas,
-        closeEmpresas,
-        selectedCuenta,
-        setSelectedCuenta,
-        handleOpenEmpresas,
-        handleOpenEdit,
-        refresh
-    } = useCuentas();
+  const {
+    cuentasFiltradas,
+    loading,
+    busqueda,
+    setBusqueda,
+    openedCreate,
+    openCreate,
+    closeCreate,
+    selectedCuenta,
+    setSelectedCuenta,
+    handleOpenEdit,
+    refresh,
+  } = useCuentas();
 
-    return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <TextInput
-                    placeholder="Buscar por usuario, empleado o rol..."
-                    leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.currentTarget.value)}
-                    className="flex-1 min-w-64"
-                    radius="lg"
-                    size="sm"
-                    classNames={{
-                        input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-                    }}
-                />
-                <Button
-                    leftSection={<PlusIcon className="w-5 h-5" />}
-                    onClick={() => { setSelectedCuenta(null); openCreate(); }}
-                    radius="lg"
-                    size="sm"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
-                >
-                    Nueva Cuenta
-                </Button>
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <TextInput
+          placeholder="Buscar por usuario, empleado o rol..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
+          className="flex-1 min-w-64"
+          radius="lg"
+          size="sm"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+          }}
+        />
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={() => {
+            setSelectedCuenta(null);
+            openCreate();
+          }}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+        >
+          Nueva Cuenta
+        </Button>
+      </div>
+
+      {/* Grid de Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="flex flex-col bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-5 gap-4"
+            >
+              <div className="flex justify-between items-center">
+                <Skeleton height={16} width={100} radius="sm" />
+                <Skeleton height={16} width={60} radius="md" />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Skeleton height={56} width={56} circle />
+                <div className="space-y-2 flex-1">
+                  <Skeleton height={14} width="80%" radius="sm" />
+                  <Skeleton height={16} width="40%" radius="sm" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
+                  <Skeleton height={8} width="40%" radius="xs" />
+                  <Skeleton height={12} width="100%" radius="xs" />
+                </div>
+                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
+                  <Skeleton height={8} width="40%" radius="xs" />
+                  <Skeleton height={12} width="100%" radius="xs" />
+                </div>
+              </div>
             </div>
-
-            {/* Grid de Cards */}
-            {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="flex flex-col bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-5 gap-4">
-                            <div className="flex justify-between items-center">
-                                <Skeleton height={16} width={100} radius="sm" />
-                                <Skeleton height={16} width={60} radius="md" />
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                                <Skeleton height={56} width={56} circle />
-                                <div className="space-y-2 flex-1">
-                                    <Skeleton height={14} width="80%" radius="sm" />
-                                    <Skeleton height={16} width="40%" radius="sm" />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
-                                    <Skeleton height={8} width="40%" radius="xs" />
-                                    <Skeleton height={12} width="100%" radius="xs" />
-                                </div>
-                                <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40 space-y-2">
-                                    <Skeleton height={8} width="40%" radius="xs" />
-                                    <Skeleton height={12} width="100%" radius="xs" />
-                                </div>
-                            </div>
-
-                            <div className="bg-cyan-500/[0.03] rounded-2xl p-3 border border-cyan-500/10 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <Skeleton height={32} width={32} radius="lg" />
-                                    <div className="space-y-1">
-                                        <Skeleton height={12} width={120} radius="xs" />
-                                        <Skeleton height={8} width={150} radius="xs" />
-                                    </div>
-                                </div>
-                                <Skeleton height={32} width={32} radius="lg" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : cuentasFiltradas.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
-                    <Squares2X2Icon className="w-10 h-10 text-zinc-700 mb-3" />
-                    <p className="text-zinc-500 text-sm font-medium">No se encontraron cuentas registradas</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {cuentasFiltradas.map((cuenta) => {
-                        const isActive = cuenta.estado === "Activo";
-                        return (
-                            <div
-                                key={cuenta.id_usuario}
-                                className="group flex flex-col bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-5 gap-4 hover:border-indigo-500/30 hover:bg-zinc-900/60 transition-all duration-300 relative overflow-hidden"
-                            >
-                                {/* Decorative Gradient */}
-                                <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/5 blur-3xl group-hover:bg-indigo-500/10 transition-colors" />
-
-                                {/* Row 1: Badges superiores (Empresa y Estado) */}
-                                <div className="flex items-center justify-between mb-1">
-                                    <Badge
-                                        size="xs"
-                                        variant="filled"
-                                        color="pink"
-                                        radius="sm"
-                                        className="text-white font-bold border-none"
-                                    >
-                                        {cuenta.empresa_pertenece}
-                                    </Badge>
-                                    <Badge
-                                        color={isActive ? "green" : "gray"}
-                                        variant="light"
-                                        radius="md"
-                                        size="sm"
-                                    >
-                                        {cuenta.estado}
-                                    </Badge>
-                                </div>
-
-                                {/* Row 2: Employee Avatar & Identity */}
-                                <div className="flex items-center gap-4">
-                                    <Avatar
-                                        src={cuenta.path_foto}
-                                        size="xl"
-                                        radius="xl"
-                                        className="border-2 border-zinc-800 group-hover:border-indigo-500/40 transition-colors"
-                                    >
-                                        <UserIcon className="w-8 h-8 text-zinc-700" />
-                                    </Avatar>
-                                    <Stack gap={2}>
-                                        <Text size="sm" fw={800} className="text-white line-clamp-1 group-hover:text-indigo-200 transition-colors">
-                                            {cuenta.apellido_empleado}, {cuenta.nombre_empleado}
-                                        </Text>
-                                        <Badge
-                                            size="xs"
-                                            variant="filled"
-                                            color="grape"
-                                            radius="sm"
-                                            className="text-white font-bold border-none w-fit"
-                                        >
-                                            {cuenta.nombre_rol}
-                                        </Badge>
-                                    </Stack>
-                                </div>
-
-                                {/* Row 2.5: Datos de Acceso */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
-                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-2.5 italic">Usuario</Text>
-                                        <Group gap="xs">
-                                            <UserIcon className="w-3.5 h-3.5 text-indigo-400" />
-                                            <Text size="xs" fw={700} className="text-white truncate">{cuenta.username}</Text>
-                                        </Group>
-                                    </div>
-                                    <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
-                                        <Text size="10px" fw={800} color="dimmed" className="uppercase tracking-widest mb-2.5 italic">Contraseña</Text>
-                                        <div className="flex items-center justify-between">
-                                            <Group gap="xs">
-                                                <KeyIcon className="w-3.5 h-3.5 text-amber-400" />
-                                                <Text size="xs" fw={700} className="text-zinc-200 italic">••••••••</Text>
-                                            </Group>
-                                            <Tooltip label="Cambiar Contraseña" position="top" withArrow radius="md">
-                                                <ActionIcon
-                                                    variant="subtle"
-                                                    size="xs"
-                                                    color="zinc"
-                                                    onClick={() => handleOpenEdit(cuenta)}
-                                                    className="hover:bg-zinc-800"
-                                                >
-                                                    <PencilSquareIcon className="w-3.5 h-3.5" />
-                                                </ActionIcon>
-                                            </Tooltip>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Row 3: Acción de Accesos a Empresas */}
-                                <div className="bg-cyan-500/[0.03] rounded-2xl p-3 border border-cyan-500/10 flex items-center justify-between group/access hover:bg-cyan-500/[0.06] transition-colors cursor-pointer" onClick={() => handleOpenEmpresas(cuenta)}>
-                                    <Group gap="xs" className="min-w-0 flex-1">
-                                        <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 group-hover/access:border-cyan-500/40 transition-colors">
-                                            <BuildingOffice2Icon className="w-4 h-4 text-cyan-400" />
-                                        </div>
-                                        <div>
-                                            <Text size="xs" fw={700} className="text-cyan-200">
-                                                Empresas Asignadas
-                                            </Text>
-                                            <Text size="10px" color="dimmed" className="line-clamp-1">
-                                                Asignar acceso a otras empresas
-                                            </Text>
-                                        </div>
-                                    </Group>
-                                    <ActionIcon
-                                        variant="filled"
-                                        color="cyan"
-                                        size="md"
-                                        radius="lg"
-                                        className="shadow-lg shadow-cyan-900/20"
-                                    >
-                                        <PlusIcon className="w-4 h-4" />
-                                    </ActionIcon>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* Modales */}
-            <ModalEstandar
-                opened={openedCreate}
-                close={closeCreate}
-                title={selectedCuenta ? "Cambiar Contraseña" : "Registrar Nueva Cuenta"}
-                size="md"
-            >
-                <RegistroCuenta
-                    cuentaEdit={selectedCuenta}
-                    onClose={closeCreate}
-                    refresh={refresh}
-                />
-            </ModalEstandar>
-
-            <ModalEstandar
-                opened={openedEmpresas}
-                close={closeEmpresas}
-                title="Empresas con Acceso"
-                size="md"
-            >
-                {selectedCuenta && (
-                    <GestionEmpresas
-                        id_usuario={selectedCuenta.id_usuario}
-                        id_empresa_pertenece={selectedCuenta.id_empresa_pertenece}
-                        nombre_empleado={`${selectedCuenta.nombre_empleado} ${selectedCuenta.apellido_empleado}`}
-                        refreshParent={refresh}
-                    />
-                )}
-            </ModalEstandar>
+          ))}
         </div>
-    );
+      ) : cuentasFiltradas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
+          <Squares2X2Icon className="w-10 h-10 text-zinc-700 mb-3" />
+          <p className="text-zinc-500 text-sm font-medium">
+            No se encontraron cuentas registradas
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {cuentasFiltradas.map((cuenta) => {
+            const isActive = cuenta.estado === "Activo";
+            return (
+              <div
+                key={cuenta.id_usuario}
+                className="group flex flex-col bg-zinc-900/40 border border-zinc-800/60 rounded-3xl p-5 gap-4 hover:border-indigo-500/30 hover:bg-zinc-900/60 transition-all duration-300 relative overflow-hidden"
+              >
+                {/* Decorative Gradient */}
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-indigo-500/5 blur-3xl group-hover:bg-indigo-500/10 transition-colors" />
+
+                {/* Row 1: Badges superiores (Empresa y Estado) */}
+                <div className="flex items-center justify-between mb-1">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="pink"
+                    radius="sm"
+                    className="text-white font-bold border-none"
+                  >
+                    {cuenta.empresa_pertenece}
+                  </Badge>
+                  <Badge
+                    color={isActive ? "green" : "gray"}
+                    variant="light"
+                    radius="md"
+                    size="sm"
+                  >
+                    {cuenta.estado}
+                  </Badge>
+                </div>
+
+                {/* Row 2: Employee Avatar & Identity */}
+                <div className="flex items-center gap-4">
+                  <Avatar
+                    src={cuenta.path_foto}
+                    size="xl"
+                    radius="xl"
+                    className="border-2 border-zinc-800 group-hover:border-indigo-500/40 transition-colors"
+                  >
+                    <UserIcon className="w-8 h-8 text-zinc-700" />
+                  </Avatar>
+                  <Stack gap={2}>
+                    <Text
+                      size="sm"
+                      fw={800}
+                      className="text-white line-clamp-1 group-hover:text-indigo-200 transition-colors"
+                    >
+                      {cuenta.apellido_empleado}, {cuenta.nombre_empleado}
+                    </Text>
+                    <Badge
+                      size="xs"
+                      variant="filled"
+                      color="grape"
+                      radius="sm"
+                      className="text-white font-bold border-none w-fit"
+                    >
+                      {cuenta.nombre_rol}
+                    </Badge>
+                  </Stack>
+                </div>
+
+                {/* Row 2.5: Datos de Acceso */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
+                    <Text
+                      size="10px"
+                      fw={800}
+                      color="dimmed"
+                      className="uppercase tracking-widest mb-2.5 italic"
+                    >
+                      Usuario
+                    </Text>
+                    <Group gap="xs">
+                      <UserIcon className="w-3.5 h-3.5 text-indigo-400" />
+                      <Text size="xs" fw={700} className="text-white truncate">
+                        {cuenta.username}
+                      </Text>
+                    </Group>
+                  </div>
+                  <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/40">
+                    <Text
+                      size="10px"
+                      fw={800}
+                      color="dimmed"
+                      className="uppercase tracking-widest mb-2.5 italic"
+                    >
+                      Contraseña
+                    </Text>
+                    <div className="flex items-center justify-between">
+                      <Group gap="xs">
+                        <KeyIcon className="w-3.5 h-3.5 text-amber-400" />
+                        <Text
+                          size="xs"
+                          fw={700}
+                          className="text-zinc-200 italic"
+                        >
+                          ••••••••
+                        </Text>
+                      </Group>
+                      <Tooltip
+                        label="Cambiar Contraseña"
+                        position="top"
+                        withArrow
+                        radius="md"
+                      >
+                        <ActionIcon
+                          variant="subtle"
+                          size="xs"
+                          color="zinc"
+                          onClick={() => handleOpenEdit(cuenta)}
+                          className="hover:bg-zinc-800"
+                        >
+                          <PencilSquareIcon className="w-3.5 h-3.5" />
+                        </ActionIcon>
+                      </Tooltip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modales */}
+      <ModalEstandar
+        opened={openedCreate}
+        close={closeCreate}
+        title={selectedCuenta ? "Cambiar Contraseña" : "Registrar Nueva Cuenta"}
+        size="md"
+      >
+        <RegistroCuenta
+          cuentaEdit={selectedCuenta}
+          onClose={closeCreate}
+          refresh={refresh}
+        />
+      </ModalEstandar>
+    </div>
+  );
 };

@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useCuentasStore } from '../service/cuentas.service';
 import { CuentasRequests } from '../service/cuentas.requests';
 import { useDisclosure } from '@mantine/hooks';
+import type { RES_Cuenta } from '../service/cuentas.responses';
 
 export const useCuentas = () => {
     const { setCuentas, setRoles, setEmpleadosSinCuenta, setLoading, loading, cuentas } = useCuentasStore();
@@ -9,11 +10,10 @@ export const useCuentas = () => {
     
     // Modales
     const [openedCreate, { open: openCreate, close: closeCreate }] = useDisclosure(false);
-    const [openedEmpresas, { open: openEmpresas, close: closeEmpresas }] = useDisclosure(false);
     
-    const [selectedCuenta, setSelectedCuenta] = useState<any>(null);
+    const [selectedCuenta, setSelectedCuenta] = useState<RES_Cuenta | null>(null);
 
-    const cargarDatos = async () => {
+    const cargarDatos = useCallback(async () => {
         setLoading(true);
         try {
             const [resCuentas, resRoles, resEmpleados] = await Promise.all([
@@ -29,11 +29,11 @@ export const useCuentas = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [setCuentas, setRoles, setEmpleadosSinCuenta, setLoading]);
 
     useEffect(() => {
         cargarDatos();
-    }, []);
+    }, [cargarDatos]);
 
     const cuentasFiltradas = useMemo(() => {
         return cuentas.filter(c => 
@@ -44,12 +44,7 @@ export const useCuentas = () => {
         );
     }, [cuentas, busqueda]);
 
-    const handleOpenEmpresas = (cuenta: any) => {
-        setSelectedCuenta(cuenta);
-        openEmpresas();
-    };
-
-    const handleOpenEdit = (cuenta: any) => {
+    const handleOpenEdit = (cuenta: RES_Cuenta) => {
         setSelectedCuenta(cuenta);
         openCreate();
     };
@@ -62,11 +57,8 @@ export const useCuentas = () => {
         openedCreate,
         openCreate,
         closeCreate,
-        openedEmpresas,
-        closeEmpresas,
         selectedCuenta,
         setSelectedCuenta,
-        handleOpenEmpresas,
         handleOpenEdit,
         refresh: cargarDatos
     };
