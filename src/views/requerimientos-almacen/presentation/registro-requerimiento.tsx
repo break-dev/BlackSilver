@@ -92,7 +92,7 @@ export const RegistroRequerimiento = ({
     },
     derived: { sonUnidadesIdenticas, productoSeleccionado, canAdd },
     status: { submitting, loadingCatalogs, error },
-    actions: { agregarItem, eliminarItem, actualizarCantidadItem, handleSubmit },
+    actions: { agregarItem, eliminarItem, actualizarCantidadItem, actualizarContenidoItem, handleSubmit },
   } = useRegistroRequerimiento({ onSuccess });
 
   const inputClasses = {
@@ -465,8 +465,8 @@ export const RegistroRequerimiento = ({
               <th className="px-4 py-3 text-left font-semibold min-w-[150px]">
                 Producto
               </th>
-              <th className="px-1 py-3 text-center w-[130px]">
-                Cant.
+              <th className="px-4 py-3 text-center min-w-[300px]">
+                Cant. / Desglose
               </th>
               <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
                 Destino / Comentario
@@ -508,38 +508,58 @@ export const RegistroRequerimiento = ({
                     <td className="px-4 py-3 text-sm font-medium text-zinc-100">
                       {prod?.nombre}
                     </td>
-                    <td className="px-1 py-3 text-center">
-                      <div className="flex flex-col gap-1 items-center">
-                        <Group gap={4} wrap="nowrap" justify="center" className={`px-2 py-0.5 rounded-lg border w-fit transition-all ${conError ? "bg-red-900/30 border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]" : "bg-zinc-800/40 border-zinc-800"}`}>
-                          <NumberInput
-                            variant="unstyled"
-                            value={det.cantidad_solicitada}
-                            onChange={(val) => actualizarCantidadItem(index, Number(val))}
-                            size="xs"
-                            hideControls
-                            classNames={{
-                                input: `w-12 text-center font-bold text-sm h-5 transition-colors ${conError ? "text-red-400" : "text-cyan-400"}`
-                            }}
-                          />
-                          <Text size="9px" fw={800} className={`uppercase transition-colors ${conError ? "text-red-500" : "text-zinc-500"}`}>
-                            {uni?.abreviatura}
-                          </Text>
-                        </Group>
-                        
-                        {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
-                          <div className="flex gap-1 justify-center">
-                            <Badge
-                              variant="transparent"
-                              color="pink"
-                              radius="sm"
+                    <td className="px-4 py-3 text-center">
+                      <Stack gap={4} align="center">
+                        <Group gap={8} justify="center" wrap="nowrap" className="w-fit">
+                          {/* Bloque Cantidad */}
+                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}>
+                            <NumberInput
+                              variant="unstyled"
+                              value={det.cantidad_solicitada}
+                              onChange={(val) => actualizarCantidadItem(index, Number(val))}
                               size="xs"
-                              className="font-black text-[9px] lowercase p-0"
-                            >
-                              T: {formatNumber(det.cantidad_solicitada * det.contenido_por_presentacion)} {prod?.unidad_medida_base_abv}
-                            </Badge>
+                              hideControls
+                              classNames={{
+                                  input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`
+                              }}
+                            />
+                            <Text size="9px" fw={900} className={`uppercase whitespace-nowrap ${conError ? "text-red-400" : "text-zinc-500"}`}>
+                              {uni?.abreviatura}
+                            </Text>
+                          </div>
+
+                          {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
+                            <>
+                              {/* Bloque Contenido */}
+                              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${det.contenido_por_presentacion <= 0 ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}>
+                                <NumberInput
+                                  variant="unstyled"
+                                  value={det.contenido_por_presentacion}
+                                  onChange={(val) => actualizarContenidoItem(index, Number(val))}
+                                  size="xs"
+                                  hideControls
+                                  classNames={{
+                                      input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-indigo-400"}`
+                                  }}
+                                />
+                                <Text size="9px" fw={900} className={`uppercase whitespace-nowrap ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-zinc-500"}`}>
+                                  {prod?.unidad_medida_base_abv} x {uni?.abreviatura}
+                                </Text>
+                              </div>
+                            </>
+                          )}
+                        </Group>
+
+                        {/* Total Bottom */}
+                        {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
+                          <div className="flex items-center gap-1.5 group">
+                             <Text size="9px" fw={900} variant="gradient" gradient={{ from: 'pink.4', to: 'pink.6' }} className="uppercase tracking-widest">
+                                Total: {formatNumber(det.cantidad_solicitada * det.contenido_por_presentacion)} {prod?.unidad_medida_base_abv}
+                             </Text>
+                             <div className="h-px w-8 bg-linear-to-r from-pink-500/50 to-transparent group-hover:w-12 transition-all" />
                           </div>
                         )}
-                      </div>
+                      </Stack>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
                       {dest ? (
@@ -609,7 +629,7 @@ export const RegistroRequerimiento = ({
           disabled={detalles.length === 0}
           radius="lg"
           className={`font-semibold shadow-lg border-0 px-8 transition-all ${
-            detalles.some(d => d.cantidad_solicitada <= 0) 
+            detalles.some(d => d.cantidad_solicitada <= 0 || d.contenido_por_presentacion <= 0) 
             ? "bg-red-900/50 text-red-200 cursor-not-allowed border border-red-500/50" 
             : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200"
           }`}

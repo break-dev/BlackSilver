@@ -215,6 +215,16 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     });
   }, []);
 
+  const actualizarContenidoItem = useCallback((index: number, nvoContenido: number) => {
+    setDetalles((prev) => {
+        const nvaLista = [...prev];
+        if (nvaLista[index]) {
+            nvaLista[index].contenido_por_presentacion = nvoContenido;
+        }
+        return nvaLista;
+    });
+  }, []);
+
   // Submit Final
   const handleSubmit = useCallback(async () => {
     setSubmitting(true);
@@ -239,9 +249,9 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     }
 
     // Validación manual de ítems con cantidad 0
-    const tieneItemsEnCero = detalles.some(d => d.cantidad_solicitada <= 0);
+    const tieneItemsEnCero = detalles.some(d => d.cantidad_solicitada <= 0 || d.contenido_por_presentacion <= 0);
     if (tieneItemsEnCero) {
-        setError("Hay productos con cantidad igual o menor a 0 en la lista");
+        setError("Hay productos con cantidad o contenido igual o menor a 0 en la lista");
         setSubmitting(false);
         return;
     }
@@ -324,6 +334,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
       agregarItem,
       eliminarItem,
       actualizarCantidadItem,
+      actualizarContenidoItem,
       handleSubmit,
     },
   };
