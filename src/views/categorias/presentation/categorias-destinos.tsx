@@ -75,7 +75,7 @@ export const CategoriasDestinos = ({
 
             <Stack gap="xs">
                 <Text size="xs" fw={700} className="text-zinc-500 uppercase tracking-widest px-1">
-                    Categorías Consumidoras ({idsDestinosTemp.length})
+                    Destinos de consumo ({idsDestinosTemp.length})
                 </Text>
 
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">

@@ -15,9 +15,7 @@ export const useAtencionSolicitudes = () => {
   >([]);
 
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
-  const [mes, setMes] = useState<string>(
-    (dayjs().month() + 1).toString().padStart(2, "0"),
-  );
+  const [mes, setMes] = useState<string>(String(new Date().getMonth() + 1));
   const [yearcito, setYearcito] = useState<string>(dayjs().year().toString());
   const [busqueda, setBusqueda] = useState("");
 

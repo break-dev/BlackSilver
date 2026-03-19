@@ -466,7 +466,7 @@ export const RegistroRequerimiento = ({
                 Producto
               </th>
               <th className="px-4 py-3 text-center min-w-[300px]">
-                Cant. / Desglose
+                Cantidad
               </th>
               <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
                 Destino / Comentario
@@ -574,7 +574,7 @@ export const RegistroRequerimiento = ({
                             PARA: {dest.nombre}
                           </Badge>
                           {det.comentario && (
-                            <Text size="10px" c="dimmed" mt={2}>{det.comentario}</Text>
+                            <Text size="xs" c="dimmed" mt={2}>{det.comentario}</Text>
                           )}
                         </div>
                       ) : (

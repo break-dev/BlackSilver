@@ -1,11 +1,4 @@
-import { useMemo, useState } from "react";
-import {
-  Badge,
-  Button,
-  TextInput,
-  Tooltip,
-  Group,
-} from "@mantine/core";
+import { Badge, Button, TextInput, Tooltip, Group } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -14,21 +7,12 @@ import {
   TruckIcon,
   FireIcon,
 } from "@heroicons/react/24/outline";
-import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
 import { CategoriasDestinos } from "./categorias-destinos";
-import { useCategorias } from "../hooks/useCategorias";
-import { useRegistroCategoria } from "../hooks/useRegistroCategoria";
-import { useDisclosure } from "@mantine/hooks";
-import { CategoriasService } from "../service/categorias.service";
-import { useNotify } from "../../../hooks/useNotify";
-import type { RES_Categoria } from "../service/categorias.responses";
+import { useCategoriasPage } from "../hooks/useCategoriasPage";
 
 export const CategoriasPage = () => {
-  useTitlePage("Categorías");
-  const { notify } = useNotify();
-
   const {
     loading,
     busqueda,
@@ -37,62 +21,20 @@ export const CategoriasPage = () => {
     openedCreate,
     openCreate,
     closeCreate,
-    onCategoriaGuardada,
     categorias,
-  } = useCategorias();
-
-  // Estados para la gestión de destinos (al estilo Organigrama)
-  const [openedDestinos, { open: openDestinos, close: closeDestinos }] = useDisclosure(false);
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<RES_Categoria | null>(null);
-  const [idsDestinosTemp, setIdsDestinosTemp] = useState<number[]>([]);
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-
-  const categoriasParaConsumo = useMemo(() =>
-    categorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })),
-    [categorias]);
-
-  const registro = useRegistroCategoria({
-    onSuccess: onCategoriaGuardada,
-    onClose: closeCreate,
-  });
-
-  const handleOpenGestionDestinos = (cat: RES_Categoria) => {
-    setCategoriaSeleccionada(cat);
-    // Parseamos los IDs que vienen de la BD ("1,2,3" -> [1,2,3])
-    const ids = cat.ids_consumidoras
-      ? cat.ids_consumidoras.split(',').map(Number)
-      : [];
-    setIdsDestinosTemp(ids);
-    openDestinos();
-  };
-
-  const handleGuardarDestinos = async () => {
-    // Si categoriaSeleccionada es null, estamos en modo creación
-    if (!categoriaSeleccionada) {
-      registro.setIdsConsumidoras(idsDestinosTemp);
-      closeDestinos();
-      return;
-    }
-
-    setLoadingUpdate(true);
-    try {
-      const res = await CategoriasService.actualizar_consumidoras(
-        categoriaSeleccionada.id_categoria,
-        idsDestinosTemp
-      );
-      if (res.success) {
-        notify({ type: 'success', content: 'Destinos de consumo actualizados' });
-        onCategoriaGuardada(res.data);
-        closeDestinos();
-      } else {
-        notify({ type: 'error', content: res.message });
-      }
-    } catch (error) {
-      notify({ type: 'error', content: 'Error al actualizar destinos' });
-    } finally {
-      setLoadingUpdate(false);
-    }
-  };
+    openedDestinos,
+    closeDestinos,
+    categoriaSeleccionada,
+    setCategoriaSeleccionada,
+    idsDestinosTemp,
+    setIdsDestinosTemp,
+    loadingUpdate,
+    categoriasParaConsumo,
+    handleOpenGestionDestinos,
+    handleGuardarDestinos,
+    registro,
+    openDestinos,
+  } = useCategoriasPage();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -109,7 +51,8 @@ export const CategoriasPage = () => {
           radius="lg"
           size="sm"
           classNames={{
-            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
           }}
         />
         <Button
@@ -162,12 +105,24 @@ export const CategoriasPage = () => {
                   {/* Áreas Operativas Arriba */}
                   <Group gap={6} mb={8}>
                     {cat.para_mina && (
-                      <Badge variant="light" color="blue" size="xs" radius="sm" leftSection={<TruckIcon className="w-3 h-3" />}>
+                      <Badge
+                        variant="light"
+                        color="blue"
+                        size="xs"
+                        radius="sm"
+                        leftSection={<TruckIcon className="w-3 h-3" />}
+                      >
                         Mina
                       </Badge>
                     )}
                     {cat.para_cocina && (
-                      <Badge variant="light" color="orange" size="xs" radius="sm" leftSection={<FireIcon className="w-3 h-3" />}>
+                      <Badge
+                        variant="light"
+                        color="orange"
+                        size="xs"
+                        radius="sm"
+                        leftSection={<FireIcon className="w-3 h-3" />}
+                      >
                         Cocina
                       </Badge>
                     )}
@@ -186,10 +141,12 @@ export const CategoriasPage = () => {
                   <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 group-hover:border-indigo-400/40 transition-all duration-200 mt-1">
                     <div className="min-w-0">
                       <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block leading-none mb-0.5">
-                        Consumo Logístico
+                        Destinos de Consumo
                       </span>
                       <span className="text-xs font-semibold text-zinc-300 truncate block">
-                        {(cat.ids_consumidoras?.split(',').filter(Boolean).length || 0)} Destinos
+                        {cat.ids_consumidoras?.split(",").filter(Boolean)
+                          .length || 0}{" "}
+                        Destinos
                       </span>
                     </div>
 
@@ -211,8 +168,8 @@ export const CategoriasPage = () => {
                 <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50 mt-auto">
                   <div className="flex items-center gap-1.5 text-[10px] text-zinc-600 font-bold uppercase tracking-wider">
                     <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
-                    <span className="text-zinc-500 italic truncate max-w-[120px]">
-                      {cat.clasificacion_bien || "No proporcionado"}
+                    <span className="text-zinc-400 italic truncate max-w-[120px]">
+                      {cat.clasificacion_bien || <span className="text-zinc-600">Sin Clasificación</span>}
                     </span>
                   </div>
 
@@ -276,15 +233,21 @@ export const CategoriasPage = () => {
       <ModalEstandar
         opened={openedDestinos}
         close={closeDestinos}
-        title={categoriaSeleccionada ? `${categoriaSeleccionada.nombre}` : "Categorías de Destino"}
+        title={
+          categoriaSeleccionada
+            ? `${categoriaSeleccionada.nombre}`
+            : "Categorías de Destino"
+        }
         size="md"
       >
         <CategoriasDestinos
           categoriaNombre={categoriaSeleccionada?.nombre || ""}
           idsDestinosTemp={idsDestinosTemp}
           setIdsDestinosTemp={setIdsDestinosTemp}
-          categoriasParaConsumo={categoriasParaConsumo.filter(c =>
-            categoriaSeleccionada ? Number(c.value) !== categoriaSeleccionada.id_categoria : true
+          categoriasParaConsumo={categoriasParaConsumo.filter((c) =>
+            categoriaSeleccionada
+              ? Number(c.value) !== categoriaSeleccionada.id_categoria
+              : true,
           )}
           todasCategorias={categorias}
           onSave={handleGuardarDestinos}
