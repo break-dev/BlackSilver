@@ -62,7 +62,7 @@ export interface RES_Labor {
   tipo_labor: string;
   es_de_produccion: 0 | 1;
   correlativo: string;
-  nombre: string;
+  nombre: string | null;
   descripcion: string | null;
   tipo_sostenimiento: string;
   veta: string | null;

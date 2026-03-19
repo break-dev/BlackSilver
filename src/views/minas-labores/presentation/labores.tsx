@@ -1,5 +1,5 @@
 import { Badge, Button, Group, Paper, Stack, Text, TextInput } from "@mantine/core";
-import { PlusIcon, MagnifyingGlassIcon, BriefcaseIcon, MapIcon, BoltIcon, CalendarDaysIcon, InboxStackIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, BriefcaseIcon, MapIcon, BoltIcon, InboxStackIcon } from "@heroicons/react/24/outline";
 import { useMemo } from "react";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
@@ -80,12 +80,12 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
       width: 280,
       render: (r) => (
         <div className="flex flex-col gap-1.5 py-2">
-          <Text size="sm" fw={800} className="text-white tracking-tight leading-none">
-            {r.nombre}
-          </Text>
+          {r.nombre && (
+            <Text size="sm" fw={800} className="text-white tracking-tight leading-none mb-1">
+              {r.nombre}
+            </Text>
+          )}
           
-
-
           {/* Detalles técnicos mejorados y más grandes */}
           {(r.veta || r.nivel || r.ancho || r.alto) && (
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 bg-zinc-950/30 p-2 rounded-xl border border-zinc-800/50 w-fit">
@@ -126,11 +126,6 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
               PRODUCCIÓN
             </Badge>
           )}
-          {r.tipo_sostenimiento && (
-            <Badge variant="outline" color="white" size="xs" className="font-bold border-zinc-200/50 text-white px-2 w-fit uppercase bg-white/5 shadow-sm">
-              {r.tipo_sostenimiento}
-            </Badge>
-          )}
         </div>
       ),
     },
@@ -140,9 +135,6 @@ export const GestionLabores = ({ mina, onLaborCreada }: Props) => {
       width: 180,
       render: (r) => (
         <Group gap={8} wrap="nowrap" justify="center">
-          <div className="p-1.5 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
-            <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-          </div>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
               <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-tighter w-12">Desde:</Text>

@@ -111,10 +111,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <TextInput
-          label="Nombre de la Labor"
+          label="Nombre de la Labor (opcional)"
           placeholder="Ej. Tajo Esperanza Nivel 1"
-          required
-          withAsterisk
           disabled={isSubmitting}
           radius="lg"
           classNames={fieldClasses}

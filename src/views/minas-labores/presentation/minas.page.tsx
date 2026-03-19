@@ -48,6 +48,7 @@ export const MinasPage = () => {
     handleOpenLabores,
     handleResponsableAsignado,
     handleLaborRegistrada,
+    handleEmpresaAsignada,
   } = useMinas();
 
   return (
@@ -218,17 +219,6 @@ export const MinasPage = () => {
 
                   {/* Acciones */}
                   <div className="flex items-center gap-1.5">
-                    <Tooltip label="Gestionar Labores">
-                      <ActionIcon
-                        variant="filled"
-                        color="pink"
-                        size="sm"
-                        radius="md"
-                        onClick={() => handleOpenLabores(mina)}
-                      >
-                        <Squares2X2Icon className="w-4 h-4" />
-                      </ActionIcon>
-                    </Tooltip>
                     <Tooltip label="Ver Responsables">
                       <ActionIcon
                         variant="filled"
@@ -249,6 +239,17 @@ export const MinasPage = () => {
                         onClick={() => handleOpenEmpresas(mina)}
                       >
                         <BriefcaseIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Gestionar Labores">
+                      <ActionIcon
+                        variant="filled"
+                        color="pink"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenLabores(mina)}
+                      >
+                        <Squares2X2Icon className="w-4 h-4" />
                       </ActionIcon>
                     </Tooltip>
                   </div>
@@ -284,6 +285,8 @@ export const MinasPage = () => {
           <EmpresasEjecutoras
             idMina={selectedMina.id_mina}
             idConcesion={selectedMina.id_concesion}
+            minaNombre={selectedMina.nombre}
+            onEmpresasActualizadas={() => handleEmpresaAsignada(selectedMina.id_mina)}
           />
         )}
       </ModalEstandar>

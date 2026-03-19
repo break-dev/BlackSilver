@@ -109,6 +109,19 @@ export const useMinas = () => {
     );
   };
 
+  const handleEmpresaAsignada = (id_mina: number) => {
+    setMinas((prev) =>
+      prev.map((m) =>
+        m.id_mina === id_mina
+          ? {
+            ...m,
+            cantidad_empresas_ejecutoras: m.cantidad_empresas_ejecutoras + 1,
+          }
+          : m,
+      ),
+    );
+  };
+
   const handleResponsableAsignado = (
     id_mina: number,
     nuevoNombreResponsable: string,
@@ -152,5 +165,6 @@ export const useMinas = () => {
     handleOpenLabores,
     handleResponsableAsignado,
     handleLaborRegistrada,
+    handleEmpresaAsignada,
   };
 };

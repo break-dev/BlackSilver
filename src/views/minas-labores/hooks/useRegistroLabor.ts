@@ -91,7 +91,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
       id_mina: idMina,
       id_empresa: idEmpresa,
       id_tipo_labor: idTipoLabor,
-      nombre,
+      nombre: nombre || null,
       descripcion: descripcion || null,
       tipo_sostenimiento: tipoSostenimiento,
       veta: veta || null,

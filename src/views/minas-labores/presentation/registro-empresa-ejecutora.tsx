@@ -7,6 +7,7 @@ import type { RES_EmpresaEjecutora } from "../service/minas.responses";
 interface Props {
   idMina: number;
   idConcesion: number;
+  minaNombre: string;
   onSuccess: (nueva: RES_EmpresaEjecutora) => void;
 }
 
@@ -22,6 +23,7 @@ const inputClasses = {
 export const RegistroEmpresaEjecutora = ({
   idMina,
   idConcesion,
+  minaNombre,
   onSuccess,
 }: Props) => {
   const { notify } = useNotify();
@@ -59,15 +61,11 @@ export const RegistroEmpresaEjecutora = ({
           <BriefcaseIcon className="w-4 h-4 text-cyan-400" />
         </Box>
         <Stack gap={0}>
-          <Text
-            size="xs"
-            fw={700}
-            className="text-zinc-300 uppercase tracking-wider"
-          >
-            Vincular Empresa
+          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-tight">
+            Vincular Contratista
           </Text>
-          <Text size="xs" className="text-zinc-500">
-            Asignar contratista a la mina
+          <Text size="xs" className="text-zinc-500 leading-tight">
+            Asignar empresa a la mina <span className="text-pink-500 font-bold">{minaNombre}</span>
           </Text>
         </Stack>
       </Group>

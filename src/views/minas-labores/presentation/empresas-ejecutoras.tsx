@@ -6,12 +6,19 @@ import { useEmpresasEjecutoras } from "../hooks/useEmpresasEjecutoras";
 interface Props {
   idMina: number;
   idConcesion: number;
+  minaNombre: string;
+  onEmpresasActualizadas: () => void;
 }
 
-export const EmpresasEjecutoras = ({ idMina, idConcesion }: Props) => {
-  const { ejecutoras, loading, handleEmpresaAsignada } = useEmpresasEjecutoras({
+export const EmpresasEjecutoras = ({ idMina, idConcesion, minaNombre, onEmpresasActualizadas }: Props) => {
+  const { ejecutoras, loading, handleEmpresaAsignada: onAsignadaSuccess } = useEmpresasEjecutoras({
     idMina,
   });
+
+  const handleEmpresaAsignada = (nueva: any) => {
+    onAsignadaSuccess(nueva);
+    onEmpresasActualizadas();
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -19,6 +26,7 @@ export const EmpresasEjecutoras = ({ idMina, idConcesion }: Props) => {
       <RegistroEmpresaEjecutora
         idMina={idMina}
         idConcesion={idConcesion}
+        minaNombre={minaNombre}
         onSuccess={handleEmpresaAsignada}
       />
 

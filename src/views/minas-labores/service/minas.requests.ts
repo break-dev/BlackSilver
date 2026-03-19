@@ -38,7 +38,7 @@ export const Schema_CrearLabor = z.object({
     .number()
     .int()
     .positive({ message: "El tipo de labor es obligatorio" }),
-  nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  nombre: z.string().max(128).optional().nullable(),
   descripcion: z.string().optional().nullable(),
   tipo_sostenimiento: z
     .string()
