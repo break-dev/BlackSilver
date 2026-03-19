@@ -84,6 +84,11 @@ export const DetalleRequerimiento = ({
     progresoGeneral,
     handleAprobar,
     handleRechazar,
+    handleDecisionMasiva,
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
     getStatusColor,
     logistica,
     patchDetallesLocales,
@@ -267,6 +272,36 @@ export const DetalleRequerimiento = ({
             >
               Nueva Entrega
             </Button>
+            {detalles.some(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) && (
+              <>
+                <Button
+                  color="green"
+                  variant="outline"
+                  size="xs"
+                  leftSection={<CheckCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null); 
+                    openAprobar();
+                  }}
+                >
+                  Aprobar Marcados ({idsParaAccionMasiva.length})
+                </Button>
+                <Button
+                  color="red"
+                  variant="outline"
+                  size="xs"
+                  leftSection={<XCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null);
+                    openRechazo();
+                  }}
+                >
+                  Rechazar Marcados ({idsParaAccionMasiva.length})
+                </Button>
+              </>
+            )}
             <Button
               color="blue"
               variant="light"
@@ -299,9 +334,23 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-center min-w-[180px]">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
-                <th className="px-6 py-4 text-left">Comentario</th>
+                <th className="px-6 py-4 text-left">Destino / Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center w-36">Acciones</th>
+                <th className="px-6 py-4 text-center w-48">
+                  <Stack gap={2} align="center">
+                    <Text size="xs" fw={800}>Acciones</Text>
+                    {detalles.some(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) && (
+                      <Group gap={4} wrap="nowrap" title="Seleccionar todos los pendientes">
+                        <Checkbox 
+                          size="xs" 
+                          checked={isAllPendingSelected} 
+                          onChange={seleccionarTodoLoPendiente}
+                        />
+                        <Text size="10px" fw={800} c="zinc.5">Marcar Pend.</Text>
+                      </Group>
+                    )}
+                  </Stack>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -452,15 +501,31 @@ export const DetalleRequerimiento = ({
                     </td>
 
                     <td className="px-6 py-4">
-                      <Text
-                        size="xs"
-                        c="zinc.5"
-                        className="max-w-[200px] italic leading-tight"
-                      >
-                        {item.comentario || (
-                          <span className="text-zinc-400">Sin comentarios</span>
-                        )}
-                      </Text>
+                      {item.producto_destino ? (
+                        <div className="flex flex-col gap-0.5">
+                          <Badge 
+                            variant="filled" 
+                            color="pink"
+                            className="w-fit font-black tracking-tighter px-1.5 h-3.5"
+                            style={{ color: "white", fontSize: '7px' }}
+                          >
+                            PARA: {item.producto_destino}
+                          </Badge>
+                          {item.comentario && (
+                            <Text size="9px" c="zinc.5" className="italic leading-tight line-clamp-2">{item.comentario}</Text>
+                          )}
+                        </div>
+                      ) : (
+                         <Text
+                            size="9px"
+                            c="zinc.5"
+                            className="max-w-[180px] italic leading-tight line-clamp-2"
+                          >
+                            {item.comentario || (
+                              <span className="text-zinc-600">Sin comentarios</span>
+                            )}
+                          </Text>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Badge
@@ -475,6 +540,16 @@ export const DetalleRequerimiento = ({
                     </td>
                     <td className="px-6 py-4">
                       <Group gap={8} justify="center" wrap="nowrap">
+                        {item.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
+                          <Tooltip label="Seleccionar para acción masiva" position="top" withArrow>
+                            <Checkbox 
+                              size="xs"
+                              color="indigo"
+                              checked={idsParaAccionMasiva.includes(item.id_requerimiento_almacen_detalle)}
+                              onChange={() => toggleSeleccionMasiva(item.id_requerimiento_almacen_detalle)}
+                            />
+                          </Tooltip>
+                        )}
                         <Tooltip
                           label="Ver Seguimiento"
                           position="top"
@@ -588,7 +663,7 @@ export const DetalleRequerimiento = ({
               color="red"
               disabled={!comentarioAccion.trim() || isProcessing !== null}
               loading={isProcessing !== null}
-              onClick={handleRechazar}
+              onClick={selectedItemId ? handleRechazar : () => handleDecisionMasiva(EstadoDetalleRequerimiento.Rechazado)}
             >
               Rechazar
             </Button>
@@ -627,7 +702,7 @@ export const DetalleRequerimiento = ({
             <Button
               color="green"
               loading={isProcessing !== null}
-              onClick={handleAprobar}
+              onClick={selectedItemId ? handleAprobar : () => handleDecisionMasiva(EstadoDetalleRequerimiento.Aprobado)}
             >
               Aprobar
             </Button>

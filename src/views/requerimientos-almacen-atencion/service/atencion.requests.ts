@@ -1,7 +1,8 @@
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 
 export interface DTO_AtencionCambiarEstado {
-    id_requerimiento_almacen_detalle: number;
+    id_requerimiento_almacen_detalle?: number;
+    ids_detalles?: number[];
     nuevo_estado: EstadoDetalleRequerimiento;
     comentario_decision?: string; 
 }

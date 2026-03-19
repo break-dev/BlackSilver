@@ -34,14 +34,41 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
-  // Batch Selection
+  // Batch Selection (para entrega/despacho - NO TOCAR)
   const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
+
+  // Batch Pendientes (para aprobar/rechazar masivamente de forma independiente)
+  const [idsParaAccionMasiva, setIdsParaAccionMasiva] = useState<number[]>([]);
 
   const toggleItemSelection = useCallback((id: number) => {
     setSelectedItemsIds(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   }, []);
+
+  const toggleSeleccionMasiva = useCallback((id: number) => {
+    setIdsParaAccionMasiva(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  }, []);
+
+  const deseleccionarMasivos = useCallback(() => {
+    setIdsParaAccionMasiva([]);
+  }, []);
+
+  const isAllPendingSelected = useMemo(() => {
+    const pendientes = detalles.filter(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString());
+    return pendientes.length > 0 && idsParaAccionMasiva.length === pendientes.length;
+  }, [detalles, idsParaAccionMasiva]);
+
+  const seleccionarTodoLoPendiente = useCallback(() => {
+    if (isAllPendingSelected) {
+      setIdsParaAccionMasiva([]);
+    } else {
+      const pendientes = detalles.filter(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString());
+      setIdsParaAccionMasiva(pendientes.map(d => d.id_requerimiento_almacen_detalle));
+    }
+  }, [detalles, isAllPendingSelected]);
 
   const deselectAllItems = useCallback(() => {
     setSelectedItemsIds([]);
@@ -182,6 +209,43 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
       setIsProcessing(null);
     }
   }, [selectedItemId, comentarioAccion, closeRechazo, onSuccess]);
+
+  const handleDecisionMasiva = useCallback(async (estado: EstadoDetalleRequerimiento) => {
+    if (idsParaAccionMasiva.length === 0) return;
+    setIsProcessing(-1); // -1 para batch
+    setError("");
+    try {
+      const res = await AtencionService.cambiarEstadoDetalle({
+        ids_detalles: idsParaAccionMasiva,
+        nuevo_estado: estado,
+        comentario_decision: comentarioAccion,
+      });
+      if (res.success) {
+        if (estado === EstadoDetalleRequerimiento.Aprobado) closeAprobar();
+        else closeRechazo();
+
+        const ids = [...idsParaAccionMasiva];
+        const motivo = comentarioAccion;
+        setComentarioAccion("");
+        deseleccionarMasivos();
+        setDetalles((prev) => 
+            prev.map(item => 
+              ids.includes(item.id_requerimiento_almacen_detalle) 
+                ? { ...item, estado, comentario_decision: motivo } 
+                : item
+            )
+        );
+        onSuccess(ids);
+      } else {
+        setError(res.message || "Error al procesar la acción masiva");
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || "Error de conexión");
+    } finally {
+      setIsProcessing(null);
+    }
+  }, [idsParaAccionMasiva, comentarioAccion, closeAprobar, closeRechazo, onSuccess, deseleccionarMasivos]);
   
   const patchDetallesLocales = useCallback((entregados: Record<string | number, number>) => {
     setDetalles((prevDetails) => {
@@ -269,11 +333,13 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     selectedItemId, setSelectedItemId,
     selectedItemName, setSelectedItemName,
     selectedItemsIds, toggleItemSelection, deselectAllItems,
+    idsParaAccionMasiva, toggleSeleccionMasiva, isAllPendingSelected, seleccionarTodoLoPendiente,
     comentarioAccion, setComentarioAccion,
     isProcessing,
     progresoGeneral,
     handleAprobar,
     handleRechazar,
+    handleDecisionMasiva,
     getStatusColor,
     loadData,
     logistica: {

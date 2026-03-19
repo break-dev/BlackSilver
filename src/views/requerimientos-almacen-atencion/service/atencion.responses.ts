@@ -49,6 +49,8 @@ export interface RES_DetalleRequerimiento {
     cantidad_entregada: number;
     cantidad_entregada_base: number;
     porcentaje_progreso: number;
+    id_producto_destino: number | null;
+    producto_destino: string | null;
     comentario: string | null;
     comentario_decision: string | null;
     estado: EstadoDetalleRequerimiento;
