@@ -213,7 +213,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
                 )
               }
               data={almacenes.map((a) => ({
-                value: String(a.id),
+                value: String(a.id_almacen),
                 label: a.nombre,
               }))}
               value={idAlmacen}

@@ -106,14 +106,14 @@ export interface RES_LoteReabastecimiento {
 }
 
 export interface RES_Almacen {
-  id: number;
+  id_almacen: number;
   nombre: string;
   es_principal: number | boolean;
 }
 
 export interface RES_Empleado {
-  id: number;
+  id_empleado: number;
   nombre_completo: string;
   dni: string;
-  cargo: string;
+  path_foto: string | null;
 }

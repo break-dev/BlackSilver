@@ -350,7 +350,7 @@ export const DetalleRequerimiento = ({
                         onChange={toggleSelectAllEligible}
                         color="indigo"
                         size="xs"
-                        className="cursor-pointer translate-y-[1px]"
+                        className="cursor-pointer translate-y-px"
                       />
                     </div>
                   )}

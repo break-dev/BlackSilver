@@ -27,8 +27,8 @@ export const useRegistroEntrega = ({
   selectedDetalles: baseDetalles,
   onSuccess,
 }: UseRegistroEntregaProps) => {
-  const authUser = useAuthUser();
-  const loggedEmployeeId = authUser?.id_empleado;
+  const { usuario } = useAuthUser();
+  const loggedEmployeeId = usuario?.id_empleado;
   const { notifySuccess } = useNotify();
 
   const [loadingInitial, setLoadingInitial] = useState(true);
@@ -75,7 +75,9 @@ export const useRegistroEntrega = ({
         ]);
         if (resAlm.success) setAlmacenesPrincipales(resAlm.data);
         if (resEmp.success) {
-          setEmpleados(resEmp.data.filter((e) => e.id !== loggedEmployeeId));
+          setEmpleados(
+            resEmp.data.filter((e) => e.id_empleado !== loggedEmployeeId),
+          );
         }
       } catch (err) {
         console.error(err);

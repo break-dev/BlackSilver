@@ -297,15 +297,47 @@ export const DetalleSolicitud = ({
                       >
                         {item.producto}
                       </Text>
-                      {item.stock_disponible > 0 ? (
-                        <Badge variant="light" color="green" size="xs">
-                          Disponibilidad Almacen
-                        </Badge>
-                      ) : (
-                        <Badge variant="light" color="red" size="xs">
-                          Sin Stock
-                        </Badge>
-                      )}
+                      {(() => {
+                        const stock = Number(item.stock_disponible || 0);
+                        const pendiente = item.pendiente_base;
+
+                        if (stock <= 0) {
+                          return (
+                            <Badge
+                              variant="light"
+                              color="red"
+                              size="xs"
+                              radius="sm"
+                            >
+                              Sin stock
+                            </Badge>
+                          );
+                        }
+
+                        if (stock < pendiente) {
+                          return (
+                            <Badge
+                              variant="light"
+                              color="orange"
+                              size="xs"
+                              radius="sm"
+                            >
+                              Stock insuficiente
+                            </Badge>
+                          );
+                        }
+
+                        return (
+                          <Badge
+                            variant="light"
+                            color="green"
+                            size="xs"
+                            radius="sm"
+                          >
+                            Stock disponible
+                          </Badge>
+                        );
+                      })()}
                     </Stack>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -546,6 +578,7 @@ export const DetalleSolicitud = ({
             loadData(true);
             onSuccess();
           }}
+          onCancel={closeEntrega}
         />
       </ModalEstandar>
 
