@@ -6,41 +6,33 @@ import type {
 } from "./organigrama.requests";
 import type { RES_Area, RES_Cargo } from "./organigrama.responses";
 
-export class OrganigramaService {
-  private static PATH = "/organigrama";
+const PATH = "/organigrama";
 
+export const OrganigramaService = {
   // ÁREAS
-  public static get_areas = async (): Promise<IRespuesta<RES_Area[]>> => {
-    const { data } = await api.get(`${this.PATH}/areas`);
+  get_areas: async (): Promise<IRespuesta<RES_Area[]>> => {
+    const { data } = await api.get(`${PATH}/areas`);
     return data;
-  };
+  },
 
-  public static crear_area = async (
-    dto: DTO_RegistroArea,
-  ): Promise<IRespuesta<RES_Area>> => {
-    const { data } = await api.post(`${this.PATH}/areas`, dto);
+  crear_area: async (dto: DTO_RegistroArea): Promise<IRespuesta<RES_Area>> => {
+    const { data } = await api.post(`${PATH}/areas`, dto);
     return data;
-  };
+  },
 
   // CARGOS
-  public static get_cargos = async (
-    id_area: number,
-  ): Promise<IRespuesta<RES_Cargo[]>> => {
-    const { data } = await api.get(`${this.PATH}/cargos/${id_area}`);
+  get_cargos: async (id_area: number): Promise<IRespuesta<RES_Cargo[]>> => {
+    const { data } = await api.get(`${PATH}/cargos/${id_area}`);
     return data;
-  };
+  },
 
-  public static crear_cargo = async (
-    dto: DTO_RegistroCargo,
-  ): Promise<IRespuesta<RES_Cargo>> => {
-    const { data } = await api.post(`${this.PATH}/cargos`, dto);
+  crear_cargo: async (dto: DTO_RegistroCargo): Promise<IRespuesta<RES_Cargo>> => {
+    const { data } = await api.post(`${PATH}/cargos`, dto);
     return data;
-  };
+  },
 
-  public static cambiar_estado_cargo = async (
-    id_cargo: number,
-  ): Promise<IRespuesta<null>> => {
-    const { data } = await api.patch(`${this.PATH}/cargos/${id_cargo}/estado`);
+  cambiar_estado_cargo: async (id_cargo: number): Promise<IRespuesta<null>> => {
+    const { data } = await api.patch(`${PATH}/cargos/${id_cargo}/estado`);
     return data;
-  };
-}
+  },
+};
