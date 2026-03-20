@@ -24,6 +24,7 @@ import type {
   RES_SolicitudReabastecimiento,
   RES_Prestamo
 } from "../service/solicitudes-atencion.responses";
+import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { useEffect } from "react";
 
@@ -105,7 +106,14 @@ export const RegistrarPrestamoAlmacen = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {detalles.map((item) => {
+              {detalles
+                .filter(
+                  (item) =>
+                    item.estado !== EstadoSolicitudDetalle.Rechazado &&
+                    item.estado !== EstadoSolicitudDetalle.Completado &&
+                    item.estado !== EstadoSolicitudDetalle.Cerrado
+                )
+                .map((item) => {
                 const isSelected = selectedItemIds.includes(item.id_solicitud_detalle);
                 return (
                   <tr key={item.id_solicitud_detalle} className={`${isSelected ? "bg-amber-500/5" : "opacity-50"} transition-all`}>
