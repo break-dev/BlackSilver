@@ -1,13 +1,15 @@
-import { Paper, Select, Textarea } from "@mantine/core";
+import { Loader, Paper, Select, Textarea } from "@mantine/core";
 import { MapPinIcon } from "@heroicons/react/24/outline";
 
 interface ReceptorInfoProps {
   almacenesPrincipales: { value: string; label: string }[];
   idAlmacenEntrega: string | null;
   setIdAlmacenEntrega: (val: string | null) => void;
+  loadingAlmacenes: boolean;
   empleados: { value: string; label: string }[];
   idEmpleadoRecibe: string | null;
   setIdEmpleadoRecibe: (val: string | null) => void;
+  loadingEmpleados: boolean;
   observacion: string;
   setObservacion: (val: string) => void;
 }
@@ -16,9 +18,11 @@ export const ReceptorInfo = ({
   almacenesPrincipales,
   idAlmacenEntrega,
   setIdAlmacenEntrega,
+  loadingAlmacenes,
   empleados,
   idEmpleadoRecibe,
   setIdEmpleadoRecibe,
+  loadingEmpleados,
   observacion,
   setObservacion,
 }: ReceptorInfoProps) => {
@@ -35,6 +39,10 @@ export const ReceptorInfo = ({
           data={almacenesPrincipales}
           value={idAlmacenEntrega}
           onChange={setIdAlmacenEntrega}
+          disabled={loadingAlmacenes}
+          rightSection={
+            loadingAlmacenes ? <Loader size="xs" color="indigo" /> : undefined
+          }
           required
           withAsterisk
           size="sm"
@@ -55,6 +63,10 @@ export const ReceptorInfo = ({
           withAsterisk
           value={idEmpleadoRecibe}
           onChange={setIdEmpleadoRecibe}
+          disabled={loadingEmpleados}
+          rightSection={
+            loadingEmpleados ? <Loader size="xs" color="indigo" /> : undefined
+          }
           size="sm"
           radius="lg"
           classNames={{

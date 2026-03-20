@@ -10,14 +10,18 @@ interface DetalleEntregaSectionProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteReabastecimiento[];
   entregaCantidades: Record<number, number>;
+  loadingLotes: boolean;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
 }
 
 export const DetalleEntregaSection = ({
   detalle,
   lotes,
   entregaCantidades,
+  loadingLotes,
   handleCantChange,
+  handleCantLoteChange,
 }: DetalleEntregaSectionProps) => {
   const tEntregadoDetalleActualBase = lotes.reduce(
     (acc, l) => acc + (entregaCantidades[l.id_lote] || 0),
@@ -108,7 +112,11 @@ export const DetalleEntregaSection = ({
         idProducto={detalle.id_producto}
         unidadMedidaBaseAbv={detalle.unidad_medida_base_abv}
         entregaCantidades={entregaCantidades}
+        pendienteBase={detalle.pendiente_base}
+        tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
+        loadingLotes={loadingLotes}
         handleCantChange={handleCantChange}
+        handleCantLoteChange={handleCantLoteChange}
       />
     </div>
   );

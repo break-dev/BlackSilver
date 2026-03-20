@@ -8,6 +8,7 @@ import {
   Group,
   Collapse,
   UnstyledButton,
+  Button,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import { useHistorialEntregas } from "../hooks/useHistorialEntregas";
@@ -18,19 +19,35 @@ import {
   CubeIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
+import type { RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroRecepcion } from "./registro-recepcion";
 
 interface HistorialProps {
   idSolicitud: number;
 }
 
 export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
-  const { loading, entregas, error } = useHistorialEntregas(idSolicitud);
+  const { loading, entregas, error, reload } = useHistorialEntregas(idSolicitud);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
 
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const [recepcionData, setRecepcionData] = useState<{
+    idEntrega: number;
+    detallesPendientes: RES_DetalleEntregaReabastecimiento[];
+  } | null>(null);
+
+  const handleOpenRecepcion = (
+    idEntrega: number,
+    detallesPendientes: RES_DetalleEntregaReabastecimiento[],
+  ) => {
+    setRecepcionData({ idEntrega, detallesPendientes });
   };
 
   if (loading)
@@ -69,6 +86,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
             className="bg-zinc-900/30 border border-zinc-800/80 transition-all hover:bg-zinc-900/50 relative overflow-hidden p-4"
           >
             <UnstyledButton
+              component="div"
               className="w-full"
               onClick={() => toggleExpand(h.id_reabastecimiento_entrega)}
             >
@@ -94,13 +112,31 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                     </Group>
                   </Stack>
                 </Group>
-                <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center border border-zinc-700/50">
-                  {expanded ? (
-                    <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronDownIcon className="w-4 h-4 text-zinc-400" />
+                <Group gap="xs">
+                  {h.detalles?.some((d) => d.estado_entrega_detalle === "Entregado") && (
+                    <Button
+                      size="xs"
+                      color="indigo"
+                      variant="filled"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenRecepcion(
+                          h.id_reabastecimiento_entrega,
+                          (h.detalles || []).filter((d) => d.estado_entrega_detalle === "Entregado")
+                        );
+                      }}
+                    >
+                      Recibir Pendientes
+                    </Button>
                   )}
-                </div>
+                  <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center border border-zinc-700/50">
+                    {expanded ? (
+                      <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
+                    ) : (
+                      <ChevronDownIcon className="w-4 h-4 text-zinc-400" />
+                    )}
+                  </div>
+                </Group>
               </Group>
             </UnstyledButton>
             <Collapse in={expanded}>
@@ -157,7 +193,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       key={d.id_entrega_detalle}
                       className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-800/40 flex justify-between items-center group/item hover:border-indigo-500/30 transition-colors"
                     >
-                      <Stack gap={1}>
+                      <Stack gap={2}>
                         <Text size="sm" fw={900} className="text-zinc-100">
                           {d.producto}
                         </Text>
@@ -168,11 +204,23 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                             color="indigo"
                             className="font-bold"
                           >
-                            {d.correlativo}
+                            Lote: {d.correlativo}
                           </Badge>
+                          {d.estado_entrega_detalle === "Recibido" && (
+                            <Badge
+                              size="xs"
+                              variant="light"
+                              color="teal"
+                              leftSection={
+                                <CheckBadgeIcon className="w-3 h-3" />
+                              }
+                            >
+                              Recibido
+                            </Badge>
+                          )}
                         </Group>
                       </Stack>
-                      <Stack gap={0} align="flex-end">
+                      <Stack gap={1} align="flex-end">
                         <Text
                           size="md"
                           fw={900}
@@ -183,11 +231,15 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                             {d.unidad_lote_abv}
                           </span>
                         </Text>
-                        {d.unidad_lote_abv !== d.unidad_base_abv && (
-                          <Text size="xs" c="dimmed" className="font-mono">
-                            ({formatNumber(d.cantidad_base)} {d.unidad_base_abv}
-                            )
-                          </Text>
+                        {d.estado_entrega_detalle === "Entregado" && (
+                          <Badge
+                            size="md"
+                            variant="dot"
+                            color="orange"
+                            className="mt-1"
+                          >
+                            Pendiente
+                          </Badge>
                         )}
                       </Stack>
                     </div>
@@ -198,6 +250,24 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
           </Paper>
         );
       })}
+      {/* Modal de Recepción de Entregas */}
+      <ModalEstandar
+        opened={!!recepcionData}
+        close={() => setRecepcionData(null)}
+        title="Recepción de Productos"
+        size="70%"
+      >
+        {recepcionData && (
+          <RegistroRecepcion
+            idEntrega={recepcionData.idEntrega}
+            detalles={recepcionData.detallesPendientes}
+            onSuccess={() => {
+              setRecepcionData(null);
+              reload();
+            }}
+          />
+        )}
+      </ModalEstandar>
     </Stack>
   );
 };

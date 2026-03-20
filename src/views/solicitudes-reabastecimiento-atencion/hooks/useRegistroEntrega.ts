@@ -14,6 +14,7 @@ import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
+  idEmpleadoSolicitante: number;
   selectedDetalles: RES_DetalleSolicitud[];
   onSuccess: () => void;
 }
@@ -24,6 +25,7 @@ interface DetalleExt extends DetalleSolicitudExtendido {
 
 export const useRegistroEntrega = ({
   idSolicitud,
+  idEmpleadoSolicitante,
   selectedDetalles: baseDetalles,
   onSuccess,
 }: UseRegistroEntregaProps) => {
@@ -31,7 +33,8 @@ export const useRegistroEntrega = ({
   const loggedEmployeeId = usuario?.id_empleado;
   const { notifySuccess } = useNotify();
 
-  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [loadingAlmacenes, setLoadingAlmacenes] = useState(true);
+  const [loadingEmpleados, setLoadingEmpleados] = useState(true);
   const [loadingLotes, setLoadingLotes] = useState(false);
 
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
@@ -66,27 +69,49 @@ export const useRegistroEntrega = ({
   }, [selectedDetalles]);
 
   useEffect(() => {
-    const loadInitial = async () => {
-      setLoadingInitial(true);
+    const loadAlmacenes = async () => {
+      setLoadingAlmacenes(true);
       try {
-        const [resAlm, resEmp] = await Promise.all([
-          SolicitudesAtencionService.obtenerAlmacenes(true),
-          SolicitudesAtencionService.obtenerEmpleados(),
-        ]);
+        const resAlm = await SolicitudesAtencionService.obtenerAlmacenes(true);
         if (resAlm.success) setAlmacenesPrincipales(resAlm.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingAlmacenes(false);
+      }
+    };
+
+    const loadEmpleados = async () => {
+      setLoadingEmpleados(true);
+      try {
+        const resEmp = await SolicitudesAtencionService.obtenerEmpleados();
         if (resEmp.success) {
-          setEmpleados(
-            resEmp.data.filter((e) => e.id_empleado !== loggedEmployeeId),
+          const filtered = resEmp.data.filter(
+            (e) => e.id_empleado !== loggedEmployeeId,
           );
+          setEmpleados(filtered);
+
+          // Auto-seleccionamos al empleado solicitante si está en la lista y no hay selección previa
+          if (idEmpleadoSolicitante && !idEmpleadoRecibe) {
+            const solicitante = filtered.find(
+              (e) => e.id_empleado === idEmpleadoSolicitante,
+            );
+            if (solicitante) {
+              setIdEmpleadoRecibe(String(solicitante.id_empleado));
+            }
+          }
         }
       } catch (err) {
         console.error(err);
       } finally {
-        setLoadingInitial(false);
+        setLoadingEmpleados(false);
       }
     };
-    loadInitial();
-  }, [loggedEmployeeId]);
+
+    loadAlmacenes();
+    loadEmpleados();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loggedEmployeeId, idEmpleadoSolicitante]);
 
   useEffect(() => {
     if (idAlmacenEntrega && idsProductos.length > 0) {
@@ -137,6 +162,17 @@ export const useRegistroEntrega = ({
       setEntregaCantidades((prev) => ({ ...prev, [idLote]: newValue }));
     },
     [lotes, selectedDetalles, entregaCantidades],
+  );
+
+  const handleCantLoteChange = useCallback(
+    (idLote: number, idProducto: number, val: number) => {
+      const lote = lotes.find((l) => l.id_lote === idLote);
+      if (!lote) return;
+      
+      const newBaseValue = val * (lote.contenido_por_presentacion || 1);
+      handleCantChange(idLote, idProducto, newBaseValue);
+    },
+    [lotes, handleCantChange],
   );
 
   const lotesPorProducto = useMemo(() => {
@@ -205,7 +241,8 @@ export const useRegistroEntrega = ({
   };
 
   return {
-    loadingInitial,
+    loadingAlmacenes,
+    loadingEmpleados,
     loadingLotes,
     almacenesPrincipales,
     empleados,
@@ -218,6 +255,7 @@ export const useRegistroEntrega = ({
     setObservacion,
     entregaCantidades,
     handleCantChange,
+    handleCantLoteChange,
     handleConfirmar,
     isProcessing,
     errorLocal,

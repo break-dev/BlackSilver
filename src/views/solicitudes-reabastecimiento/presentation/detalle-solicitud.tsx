@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Badge,
   Group,
@@ -8,6 +9,7 @@ import {
   Tooltip,
   Loader,
   ActionIcon,
+  Button,
 } from "@mantine/core";
 import {
   BuildingStorefrontIcon,
@@ -19,6 +21,8 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
+import { HistorialEntregas } from "./historial-entregas";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import type {
   RES_SolicitudReabastecimiento,
@@ -62,6 +66,11 @@ export const DetalleSolicitud = ({
   progresoGeneral,
   onOpenTrazabilidad,
 }: DetalleSolicitudProps) => {
+  const [openedHistorial, setOpenedHistorial] = useState(false);
+
+  const handleOpenHistorial = () => setOpenedHistorial(true);
+  const handleCloseHistorial = () => setOpenedHistorial(false);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -289,15 +298,26 @@ export const DetalleSolicitud = ({
               Items Solicitados
             </Text>
           </Group>
-          <Badge
-            variant="light"
-            color="indigo"
-            radius="md"
-            size="sm"
-            className="font-bold py-3 px-4 uppercase tracking-widest"
-          >
-            {detalles.length} Productos
-          </Badge>
+          <Group gap="sm">
+            <Button
+              variant="light"
+              color="indigo"
+              size="xs"
+              leftSection={<ClockIcon className="w-4 h-4" />}
+              onClick={handleOpenHistorial}
+            >
+              Historial de Entregas
+            </Button>
+            <Badge
+              variant="light"
+              color="indigo"
+              radius="md"
+              size="sm"
+              className="font-bold py-3 px-4 uppercase tracking-widest"
+            >
+              {detalles.length} Productos
+            </Badge>
+          </Group>
         </Group>
 
         <div className="overflow-hidden border border-zinc-800 rounded-2xl bg-zinc-950/20 shadow-2xl">
@@ -454,6 +474,15 @@ export const DetalleSolicitud = ({
           </Table>
         </div>
       </div>
+
+      <ModalEstandar
+        opened={openedHistorial}
+        close={handleCloseHistorial}
+        title="Historial de Entregas Recibidas"
+        size="70%"
+      >
+        <HistorialEntregas idSolicitud={headerData.id_solicitud} />
+      </ModalEstandar>
     </Stack>
   );
 };

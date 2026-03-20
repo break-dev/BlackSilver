@@ -1,4 +1,4 @@
-import { Badge, NumberInput, Stack, Text, Tooltip } from "@mantine/core";
+import { Badge, NumberInput, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-atencion.responses";
@@ -8,7 +8,11 @@ interface LoteRowProps {
   cant: number;
   idProducto: number;
   unidadMedidaBaseAbv: string;
+  maxBase: number;
+  maxLote: number;
+  stockAsignable: number;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
 }
 
 export const LoteRow = ({
@@ -16,91 +20,130 @@ export const LoteRow = ({
   cant,
   idProducto,
   unidadMedidaBaseAbv,
+  maxBase,
+  maxLote,
+  stockAsignable,
   handleCantChange,
+  handleCantLoteChange,
 }: LoteRowProps) => {
-  const isExpired = lote.fecha_vencimiento && dayjs(lote.fecha_vencimiento).isBefore(dayjs());
-  const isCritical = lote.dias_para_vencer !== null && lote.dias_para_vencer <= 30;
+  const esCritico =
+    lote.dias_para_vencer !== null && lote.dias_para_vencer <= 30;
+  const esVencido = lote.dias_para_vencer !== null && lote.dias_para_vencer < 0;
 
   return (
     <tr
-      className={`transition-all duration-300 ${
-        cant > 0 ? "bg-indigo-500/5" : "hover:bg-zinc-800/20"
-      }`}
+      className={`${cant > 0 ? "bg-indigo-500/5" : "hover:bg-zinc-800/20"} transition-colors`}
     >
-      <td className="py-3.5 pl-6">
-        <Stack gap={1}>
-          <div className="flex items-center gap-2">
+      <td className="py-3 text-center">
+        <Badge
+          variant="light"
+          color="indigo"
+          radius="sm"
+          className="font-bold border border-indigo-500/20 py-3"
+        >
+          {lote.correlativo}
+        </Badge>
+      </td>
+      <td className="text-center">
+        {lote.fecha_vencimiento ? (
+          <div className="flex flex-col gap-1 items-center">
+            <Text size="xs" fw={800} className="text-zinc-300 font-mono">
+              {dayjs(lote.fecha_vencimiento).format("DD MMM YYYY")}
+            </Text>
             <Badge
-              variant="filled"
-              color={cant > 0 ? "indigo" : "zinc"}
-              radius="md"
-              size="sm"
-              className="font-black px-2.5 h-6 tracking-tight shadow-sm"
+              variant="dot"
+              color={esVencido ? "red" : esCritico ? "orange" : "teal"}
+              size="xs"
+              className="font-bold py-1.5"
             >
-              {lote.correlativo}
+              {esVencido ? "CADUCADO" : `${lote.dias_para_vencer} DÍAS`}
             </Badge>
-            {isExpired && (
-                <Tooltip label="Lote Vencido">
-                    <Badge variant="filled" color="red" size="xs" radius="sm">EXP</Badge>
-                </Tooltip>
-            )}
-            {!isExpired && isCritical && (
-                <Tooltip label="Próximo a Vencer">
-                    <Badge variant="filled" color="orange" size="xs" radius="sm">CRIT</Badge>
-                </Tooltip>
-            )}
           </div>
-        </Stack>
+        ) : (
+          <Text size="10px" fw={700} className="italic text-zinc-500!">
+            SIN VENCIMIENTO
+          </Text>
+        )}
       </td>
-
-      <td className="text-center py-3.5">
-        <div className="flex flex-col items-center">
-            <Text size="xs" fw={800} className={isExpired ? "text-red-400" : "text-zinc-300"}>
-                {lote.fecha_vencimiento ? dayjs(lote.fecha_vencimiento).format("DD/MM/YYYY") : "S.V."}
-            </Text>
-            {lote.dias_para_vencer !== null && !isExpired && (
-                <Text size="9px" fw={700} c={isCritical ? "orange.5" : "zinc.5"} className="opacity-80">
-                    en {lote.dias_para_vencer} días
-                </Text>
-            )}
-        </div>
-      </td>
-
-      <td className="text-center py-3.5">
-        <Stack gap={0} align="center">
-          <div className="flex items-baseline gap-1">
-            <Text size="sm" fw={900} className="text-zinc-100 font-mono tracking-tighter">
-              {formatNumber(lote.stock_actual_base)}
-            </Text>
-            <Text size="10px" fw={800} c="zinc.6" className="uppercase opacity-70">
-              {unidadMedidaBaseAbv}
-            </Text>
-          </div>
+      <td className="text-center">
+        <div className="flex flex-col gap-1 items-center justify-center">
+          <Badge
+            variant="light"
+            color="zinc.4"
+            className="bg-zinc-800/30 font-black h-7"
+          >
+            {formatNumber(stockAsignable)} {unidadMedidaBaseAbv}
+          </Badge>
           {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
-            <Text size="10px" c="zinc.5" fw={700} className="tracking-tight italic mt-[-2px]">
-              {formatNumber(lote.stock_actual)} {lote.unidad_medida_abv}
+            <Text size="10px" c="teal.4" fw={800} className="font-mono">
+              (
+              {formatNumber(
+                stockAsignable / (lote.contenido_por_presentacion || 1),
+              )}{" "}
+              {lote.unidad_medida_abv})
             </Text>
           )}
-        </Stack>
+        </div>
       </td>
+      <td className="pr-8">
+        <div className="flex items-center justify-center gap-3">
+          {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+            <NumberInput
+              size="sm"
+              radius="xl"
+              min={0}
+              max={maxLote}
+              value={
+                cant > 0
+                  ? Number(
+                      (cant / (lote.contenido_por_presentacion || 1)).toFixed(
+                        4,
+                      ),
+                    )
+                  : ""
+              }
+              onChange={(val) =>
+                handleCantLoteChange(lote.id_lote, idProducto, Number(val))
+              }
+              placeholder="0"
+              decimalScale={4}
+              clampBehavior="strict"
+              hideControls
+              rightSection={
+                <Text size="xs" fw={900} c="zinc.5" className="mr-3">
+                  {lote.unidad_medida_abv}
+                </Text>
+              }
+              rightSectionWidth={60}
+              className="w-32"
+              classNames={{
+                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
+              }}
+            />
+          )}
 
-      <td className="text-right py-3.5 pr-8">
-        <div className="flex justify-center ml-auto w-32">
           <NumberInput
             size="sm"
             radius="xl"
             min={0}
-            max={lote.stock_actual_base}
-            placeholder="0"
+            max={maxBase}
             value={cant || ""}
             onChange={(val) =>
               handleCantChange(lote.id_lote, idProducto, Number(val))
             }
+            placeholder="0"
+            decimalScale={4}
+            clampBehavior="strict"
             hideControls
+            rightSection={
+              <Text size="xs" fw={900} c="zinc.5" className="mr-3">
+                {unidadMedidaBaseAbv}
+              </Text>
+            }
+            rightSectionWidth={60}
+            className="w-32"
             classNames={{
-              input: `bg-zinc-900 border-zinc-800 focus:border-indigo-500 font-black text-center transition-all duration-300 ${
-                cant > 0 ? "text-indigo-400 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.1)]" : "text-zinc-400 group-hover:border-zinc-700"
-              }`,
+              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
             }}
           />
         </div>

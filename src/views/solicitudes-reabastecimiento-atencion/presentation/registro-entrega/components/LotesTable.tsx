@@ -1,4 +1,4 @@
-import { Table } from "@mantine/core";
+import { Table, Text } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
 import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-atencion.responses";
 
@@ -7,7 +7,11 @@ interface LotesTableProps {
   idProducto: number;
   unidadMedidaBaseAbv: string;
   entregaCantidades: Record<number, number>;
+  pendienteBase: number;
+  tEntregadoDetalleActualBase: number;
+  loadingLotes: boolean;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
 }
 
 export const LotesTable = ({
@@ -15,48 +19,86 @@ export const LotesTable = ({
   idProducto,
   unidadMedidaBaseAbv,
   entregaCantidades,
+  pendienteBase,
+  tEntregadoDetalleActualBase,
+  loadingLotes,
   handleCantChange,
+  handleCantLoteChange,
 }: LotesTableProps) => {
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-2xl bg-zinc-950/30 shadow-inner">
-      <Table verticalSpacing="sm" horizontalSpacing="lg" className="border-collapse">
+      <Table
+        verticalSpacing="sm"
+        horizontalSpacing="lg"
+        className="border-collapse"
+      >
         <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800/60">
           <tr>
-            <th className="py-4 pl-6" style={{ width: "25%" }}>
+            <th className="py-4" style={{ width: "25%" }}>
               Lote
             </th>
             <th className="text-center" style={{ width: "20%" }}>
               Vencimiento
             </th>
             <th className="text-center" style={{ width: "25%" }}>
-              Stock Almacén
+              Stock Disponible
             </th>
             <th className="pr-8 text-center" style={{ width: "30%" }}>
               Cant. a Despachar
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-800/40">
-          {lotes.length === 0 ? (
+        <tbody className="divide-y divide-zinc-800/40 relative">
+          {loadingLotes ? (
+            <tr>
+              <td colSpan={4} className="py-20 text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-indigo-500/10 animate-pulse" />
+                    </div>
+                  </div>
+                  <Text size="xs" fw={800} className="text-indigo-400 uppercase tracking-widest animate-pulse">
+                    Buscando Lotes...
+                  </Text>
+                </div>
+              </td>
+            </tr>
+          ) : lotes.length === 0 ? (
             <tr>
               <td
                 colSpan={4}
                 className="py-10 text-center text-zinc-600 italic text-sm font-medium tracking-tight"
               >
-                No hay lotes disponibles en este almacén.
+                No se encontraron lotes disponibles en este almacén.
               </td>
             </tr>
           ) : (
-            lotes.map((lote) => (
-              <LoteRow
-                key={lote.id_lote}
-                lote={lote}
-                cant={entregaCantidades[lote.id_lote] || 0}
-                idProducto={idProducto}
-                unidadMedidaBaseAbv={unidadMedidaBaseAbv}
-                handleCantChange={handleCantChange}
-              />
-            ))
+            lotes.map((lote) => {
+              const cant = entregaCantidades[lote.id_lote] || 0;
+              const stockAsignable = lote.stock_actual_base;
+              const maxBase = Math.min(
+                stockAsignable,
+                pendienteBase - (tEntregadoDetalleActualBase - cant),
+              );
+              const maxLote = maxBase / (lote.contenido_por_presentacion || 1);
+
+              return (
+                <LoteRow
+                  key={lote.id_lote}
+                  lote={lote}
+                  cant={cant}
+                  idProducto={idProducto}
+                  unidadMedidaBaseAbv={unidadMedidaBaseAbv}
+                  maxBase={maxBase}
+                  maxLote={maxLote}
+                  stockAsignable={stockAsignable}
+                  handleCantChange={handleCantChange}
+                  handleCantLoteChange={handleCantLoteChange}
+                />
+              );
+            })
           )}
         </tbody>
       </Table>

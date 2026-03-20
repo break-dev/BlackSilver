@@ -37,7 +37,78 @@ export const useDetalleSolicitud = ({
   const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
 
+  // Batch Selection (para entrega/despacho)
+  const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
+
+  // Batch Pendientes (para aprobar/rechazar masivamente)
+  const [idsParaAccionMasiva, setIdsParaAccionMasiva] = useState<number[]>([]);
+
   const { notifySuccess } = useNotify();
+
+  const toggleItemSelection = useCallback((id: number) => {
+    setSelectedItemsIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  }, []);
+
+  const toggleSeleccionMasiva = useCallback((id: number) => {
+    setIdsParaAccionMasiva((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  }, []);
+
+  const deseleccionarMasivos = useCallback(() => {
+    setIdsParaAccionMasiva([]);
+  }, []);
+
+  const isAllPendingSelected = useMemo(() => {
+    const pendientes = detalles.filter(
+      (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+    );
+    return (
+      pendientes.length > 0 &&
+      idsParaAccionMasiva.length === pendientes.length
+    );
+  }, [detalles, idsParaAccionMasiva]);
+
+  const seleccionarTodoLoPendiente = useCallback(() => {
+    if (isAllPendingSelected) {
+      setIdsParaAccionMasiva([]);
+    } else {
+      const pendientes = detalles.filter(
+        (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+      );
+      setIdsParaAccionMasiva(pendientes.map((d) => d.id_solicitud_detalle));
+    }
+  }, [detalles, isAllPendingSelected]);
+
+  const eligibleForDelivery = useMemo(() => {
+    return detalles.filter(
+      (d) =>
+        d.estado === EstadoSolicitudDetalle.Aprobado ||
+        d.estado === EstadoSolicitudDetalle.EnDespacho ||
+        d.estado === EstadoSolicitudDetalle.NuevaEntrega,
+    );
+  }, [detalles]);
+
+  const isAllEligibleSelected = useMemo(() => {
+    return (
+      eligibleForDelivery.length > 0 &&
+      eligibleForDelivery.every((d) =>
+        selectedItemsIds.includes(d.id_solicitud_detalle),
+      )
+    );
+  }, [eligibleForDelivery, selectedItemsIds]);
+
+  const toggleSelectAllEligible = useCallback(() => {
+    if (isAllEligibleSelected) {
+      setSelectedItemsIds([]);
+    } else {
+      setSelectedItemsIds(
+        eligibleForDelivery.map((d) => d.id_solicitud_detalle),
+      );
+    }
+  }, [eligibleForDelivery, isAllEligibleSelected]);
 
   const loadData = useCallback(
     async (isSilent = false) => {
@@ -73,22 +144,25 @@ export const useDetalleSolicitud = ({
   }, [idSolicitud, loadData]);
 
   const handleAprobar = useCallback(async () => {
-    if (!selectedItemId) return;
-    setIsProcessing(selectedItemId);
+    const ids = selectedItemId ? [selectedItemId] : idsParaAccionMasiva;
+    if (ids.length === 0) return;
+
+    setIsProcessing(selectedItemId || -1);
     setError("");
     const motivo = comentarioAccion;
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
-        id_solicitud_detalle: selectedItemId,
+        ids_detalles: ids,
         nuevo_estado: EstadoSolicitudDetalle.Aprobado,
         comentario_decision: motivo,
       });
       if (res.success) {
         closeAprobar();
         setComentarioAccion("");
+        deseleccionarMasivos();
         setDetalles((prev) =>
           prev.map((item) =>
-            item.id_solicitud_detalle === selectedItemId
+            ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
                   estado: EstadoSolicitudDetalle.Aprobado,
@@ -98,7 +172,11 @@ export const useDetalleSolicitud = ({
           ),
         );
         onSuccess();
-        notifySuccess("Ítem aprobado correctamente");
+        notifySuccess(
+          ids.length > 1
+            ? "Ítems aprobados correctamente"
+            : "Ítem aprobado correctamente",
+        );
       } else {
         setError(res.message || "Error al aprobar");
       }
@@ -110,29 +188,34 @@ export const useDetalleSolicitud = ({
     }
   }, [
     selectedItemId,
+    idsParaAccionMasiva,
     comentarioAccion,
     closeAprobar,
     onSuccess,
     notifySuccess,
+    deseleccionarMasivos,
   ]);
 
   const handleRechazar = useCallback(async () => {
-    if (!selectedItemId) return;
-    setIsProcessing(selectedItemId);
+    const ids = selectedItemId ? [selectedItemId] : idsParaAccionMasiva;
+    if (ids.length === 0) return;
+
+    setIsProcessing(selectedItemId || -1);
     setError("");
     const motivo = comentarioAccion;
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
-        id_solicitud_detalle: selectedItemId,
+        ids_detalles: ids,
         nuevo_estado: EstadoSolicitudDetalle.Rechazado,
         comentario_decision: motivo,
       });
       if (res.success) {
         closeRechazo();
         setComentarioAccion("");
+        deseleccionarMasivos();
         setDetalles((prev) =>
           prev.map((item) =>
-            item.id_solicitud_detalle === selectedItemId
+            ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
                   estado: EstadoSolicitudDetalle.Rechazado,
@@ -142,7 +225,11 @@ export const useDetalleSolicitud = ({
           ),
         );
         onSuccess();
-        notifySuccess("Ítem rechazado");
+        notifySuccess(
+          ids.length > 1
+            ? "Ítems rechazados correctamente"
+            : "Ítem rechazado",
+        );
       } else {
         setError(res.message || "Error al rechazar");
       }
@@ -154,10 +241,12 @@ export const useDetalleSolicitud = ({
     }
   }, [
     selectedItemId,
+    idsParaAccionMasiva,
     comentarioAccion,
     closeRechazo,
     onSuccess,
     notifySuccess,
+    deseleccionarMasivos,
   ]);
 
   const getStatusColor = (status: string) => {
@@ -217,6 +306,15 @@ export const useDetalleSolicitud = ({
     setSelectedItemId,
     selectedItemName,
     setSelectedItemName,
+    selectedItemsIds,
+    setSelectedItemsIds,
+    toggleItemSelection,
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
+    isAllEligibleSelected,
+    toggleSelectAllEligible,
     comentarioAccion,
     setComentarioAccion,
     isProcessing,

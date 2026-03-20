@@ -62,3 +62,62 @@ export interface RES_DataRegistroSolicitud {
   productos: RES_Producto_Local[];
   unidades_medida: RES_Unidad_Local[];
 }
+
+export interface RES_EntregaReabastecimiento {
+  id_reabastecimiento_entrega: number;
+  id_almacen_entrega: number;
+  almacen_entrega: string;
+  empleado_entrega: string;
+  empleado_recibe: string;
+  correlativo: string;
+  fecha_hora_entrega: string;
+  observacion: string | null;
+  evidencias: string | null;
+  created_at: string;
+  estado: string;
+  detalles?: RES_DetalleEntregaReabastecimiento[];
+}
+
+export interface RES_DetalleEntregaReabastecimiento {
+  id_entrega_detalle: number;
+  id_solicitud_reabastecimiento_detalle: number;
+  correlativo: string; // del lote
+  fecha_vencimiento: string | null;
+  producto: string;
+  id_producto: number;
+  id_unidad_medida: number; // para lote
+  cantidad_base: number;
+  cantidad_lote: number;
+  cantidad_solicitud: number;
+  unidad_lote_abv: string;
+  unidad_base_abv: string;
+  estado_entrega_detalle: string;
+}
+
+export interface RES_LoteRecepcion {
+  id_lote: number;
+  id_producto: number;
+  correlativo: string;
+  stock_actual: number;
+  stock_actual_base: number;
+  contenido_por_presentacion: number | null;
+  id_unidad_medida: number;
+  id_unidad_medida_base: number;
+  unidad_medida: string;
+  unidad_medida_abv: string;
+  fecha_hora_ingreso: string;
+  fecha_vencimiento: string | null;
+  dias_para_vencer: number | null;
+}
+
+export interface DTO_RecibirEntregaItem {
+  id_solicitud_reabastecimiento_detalle: number;
+  es_nuevo_lote: boolean;
+  id_lote_existente?: number | null;
+  fecha_vencimiento?: string | null;
+}
+
+export interface DTO_RecibirEntregas {
+  id_reabastecimiento_entrega: number;
+  items: DTO_RecibirEntregaItem[];
+}
