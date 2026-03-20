@@ -118,3 +118,52 @@ export interface RES_Empleado {
   dni: string;
   path_foto: string | null;
 }
+
+export interface RES_Prestamo {
+  id: number;
+  id_solicitud_reabastecimiento: number;
+  id_almacen_prestamista: number;
+  correlativo: string;
+  numero_correlativo: number;
+  fecha_hora_prestamo: string;
+  fecha_limite_devolucion: string;
+  created_at: string;
+  estado: string;
+  almacen_prestamista: string;
+  registrado_por: string;
+  detalles?: RES_DetallePrestamo[];
+}
+
+export interface RES_DetallePrestamo {
+  id: number;
+  id_prestamo_almacen: number;
+  id_solicitud_reabastecimiento_detalle: number;
+  cantidad_solicitada: number;
+  cantidad_solicitada_base: number;
+  cantidad_prestada: number;
+  cantidad_prestada_base: number;
+  cantidad_repuesta: number;
+  cantidad_repuesta_base: number;
+  comentario: string | null;
+  estado: string;
+  producto: string;
+  unidad_medida: string;
+}
+
+export interface RES_AlmacenConStock {
+  id_almacen: number;
+  nombre_almacen: string;
+  stock_actual_base: number;
+  unidad_medida_base: string;
+}
+
+export interface RES_LoteDisponiblePrestamo {
+  id_lote: number;
+  lote: string;
+  correlativo: string;
+  numero_correlativo: number;
+  stock_actual: number;
+  stock_actual_base: number;
+  unidad_medida: string;
+  fecha_vencimiento: string | null;
+}

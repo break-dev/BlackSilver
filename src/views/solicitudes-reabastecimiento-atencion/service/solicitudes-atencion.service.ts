@@ -8,10 +8,14 @@ import type {
   RES_LoteReabastecimiento,
   RES_Almacen,
   RES_Empleado,
+  RES_Prestamo,
+  RES_AlmacenConStock,
+  RES_LoteDisponiblePrestamo,
 } from "./solicitudes-atencion.responses";
 import type {
   DTO_DecisionDetalle,
   DTO_RegistrarEntregaReabastecimiento,
+  DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
 
 const path = "/solicitudes-atencion";
@@ -95,6 +99,45 @@ export const SolicitudesAtencionService = {
       `${path}/auxiliares/lotes`,
       {
         params: { ids_productos: idsProductos, id_almacen: idAlmacen },
+      }
+    );
+    return res.data;
+  },
+
+  /* --- PRÉSTAMOS --- */
+  obtenerPrestamosPorSolicitud: async (idSolicitud: number) => {
+    const res = await api.get<IRespuesta<RES_Prestamo[]>>(
+      `${path}/prestamos/por-solicitud`,
+      {
+        params: { id_solicitud: idSolicitud },
+      }
+    );
+    return res.data;
+  },
+
+  crearPrestamo: async (dto: DTO_CrearPrestamo) => {
+    const res = await api.post<IRespuesta<RES_Prestamo>>(
+      `${path}/prestamos/nuevo`,
+      dto
+    );
+    return res.data;
+  },
+
+  obtenerAlmacenesConStock: async (idProducto: number, idAlmacenExcluido: number) => {
+    const res = await api.get<IRespuesta<RES_AlmacenConStock[]>>(
+      `${path}/prestamos/almacenes-con-stock`,
+      {
+        params: { id_producto: idProducto, id_almacen_excluido: idAlmacenExcluido },
+      }
+    );
+    return res.data;
+  },
+
+  obtenerLotesDisponiblesPrestamo: async (idProducto: number, idAlmacen: number) => {
+    const res = await api.get<IRespuesta<RES_LoteDisponiblePrestamo[]>>(
+      `${path}/prestamos/lotes-disponibles`,
+      {
+        params: { id_producto: idProducto, id_almacen: idAlmacen },
       }
     );
     return res.data;

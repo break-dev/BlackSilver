@@ -23,3 +23,16 @@ export interface DTO_EntregasDetalleReabastecimiento {
   cantidad_lote: number;
   cantidad_solicitud: number;
 }
+
+export interface DTO_CrearPrestamo {
+  id_solicitud_reabastecimiento: number;
+  id_almacen_prestamista: number;
+  fecha_limite_devolucion: string;
+  detalles: DTO_DetallePrestamo[];
+}
+
+export interface DTO_DetallePrestamo {
+  id_solicitud_reabastecimiento_detalle: number;
+  cantidad_solicitada: number;
+  comentario?: string;
+}

@@ -39,6 +39,8 @@ import {
 import { RegistroEntrega } from "./registro-entrega/registro-entrega";
 import { HistorialEntregas } from "./historial-entregas";
 import { TrazabilidadDetalle } from "./trazabilidad-detalle";
+import { RegistrarPrestamoAlmacen } from "./registrar-prestamo-almacen";
+import { HandRaisedIcon } from "@heroicons/react/24/outline";
 
 interface DetalleSolicitudProps {
   solicitud: RES_SolicitudReabastecimiento;
@@ -88,6 +90,9 @@ export const DetalleSolicitud = ({
     seleccionarTodoLoPendiente,
     isAllEligibleSelected,
     toggleSelectAllEligible,
+    openedPrestamo,
+    openPrestamo,
+    closePrestamo,
   } = useDetalleSolicitud({
     idSolicitud: solicitud.id_solicitud,
     onSuccess,
@@ -232,6 +237,15 @@ export const DetalleSolicitud = ({
               onClick={openHistorial}
             >
               Historial de Entregas
+            </Button>
+            <Button
+              variant="light"
+              color="orange"
+              size="xs"
+              leftSection={<HandRaisedIcon className="w-4 h-4" />}
+              onClick={openPrestamo}
+            >
+              Solicitar Préstamo
             </Button>
             <Button
               color="indigo"
@@ -680,6 +694,22 @@ export const DetalleSolicitud = ({
         size="70%"
       >
         <HistorialEntregas idSolicitud={solicitud.id_solicitud} />
+      </ModalEstandar>
+      <ModalEstandar
+        opened={openedPrestamo}
+        close={closePrestamo}
+        title="Crear Solicitud de Préstamo entre Almacenes"
+        size="75%"
+      >
+        <RegistrarPrestamoAlmacen
+          solicitud={solicitud}
+          detalles={detalles}
+          onSuccess={() => {
+            closePrestamo();
+            loadData(true);
+          }}
+          onCancel={closePrestamo}
+        />
       </ModalEstandar>
     </Stack>
   );

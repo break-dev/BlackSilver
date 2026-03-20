@@ -30,6 +30,8 @@ export const useDetalleSolicitud = ({
     useDisclosure(false);
   const [openedHistorial, { open: openHistorial, close: closeHistorial }] =
     useDisclosure(false);
+  const [openedPrestamo, { open: openPrestamo, close: closePrestamo }] =
+    useDisclosure(false);
 
   // Selected Data
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -302,6 +304,9 @@ export const useDetalleSolicitud = ({
     openedHistorial,
     openHistorial,
     closeHistorial,
+    openedPrestamo,
+    openPrestamo,
+    closePrestamo,
     selectedItemId,
     setSelectedItemId,
     selectedItemName,
