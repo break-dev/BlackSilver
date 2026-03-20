@@ -90,6 +90,8 @@ export const DetalleRequerimiento = ({
     handleDecisionMasiva,
     idsParaAccionMasiva,
     toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
     getStatusColor,
     logistica,
     patchDetallesLocales,
@@ -362,7 +364,25 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Destino / Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center w-48">Acciones</th>
+                <th className="px-6 py-4 text-center w-48">
+                  <Group gap={4} justify="center">
+                    <span>Acciones</span>
+                    {detalles.some(
+                      (d) =>
+                        d.estado ===
+                        EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+                    ) && (
+                      <Tooltip label="Seleccionar todos los pendientes">
+                        <Checkbox
+                          size="xs"
+                          color="indigo"
+                          checked={isAllPendingSelected}
+                          onChange={seleccionarTodoLoPendiente}
+                        />
+                      </Tooltip>
+                    )}
+                  </Group>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -619,11 +639,7 @@ export const DetalleRequerimiento = ({
 
                         {item.estado ===
                           EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
-                          <Tooltip
-                            label="Seleccionar para acción masiva"
-                            position="top"
-                            withArrow
-                          >
+                          <Tooltip label="Acción masiva" position="top" withArrow>
                             <Checkbox
                               size="xs"
                               color="indigo"
@@ -678,7 +694,9 @@ export const DetalleRequerimiento = ({
           >
             <ExclamationTriangleIcon className="w-8 h-8 text-red-400 mt-1" />
             <Text size="sm" className="text-red-100 italic">
-              Esta acción marcará el producto como rechazado.
+              {selectedItemId
+                ? "Esta acción marcará el producto como rechazado."
+                : `Esta acción marcará ${idsParaAccionMasiva.length} productos como rechazados.`}
             </Text>
           </Paper>
           <Textarea
@@ -722,8 +740,9 @@ export const DetalleRequerimiento = ({
           >
             <CheckCircleIcon className="w-8 h-8 text-green-400 mt-1" />
             <Text size="sm" className="text-green-100 italic">
-              ¿Desea aprobar este producto? Puede ingresar un comentario
-              opcional.
+              {selectedItemId
+                ? "¿Desea aprobar este producto? Puede ingresar un comentario opcional."
+                : `¿Desea aprobar ${idsParaAccionMasiva.length} productos? Puede ingresar un comentario opcional.`}
             </Text>
           </Paper>
           <Textarea
