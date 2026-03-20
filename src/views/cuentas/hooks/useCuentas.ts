@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useCuentasStore } from '../service/cuentas.service';
-import { CuentasRequests } from '../service/cuentas.requests';
+import { useCuentasStore, CuentasService } from '../service/cuentas.service';
 import { useDisclosure } from '@mantine/hooks';
 import type { RES_Cuenta } from '../service/cuentas.responses';
 
@@ -17,13 +16,14 @@ export const useCuentas = () => {
         setLoading(true);
         try {
             const [resCuentas, resRoles, resEmpleados] = await Promise.all([
-                CuentasRequests.fetchCuentas(),
-                CuentasRequests.fetchRolesDisponibles(),
-                CuentasRequests.fetchEmpleadosSinCuenta()
+                CuentasService.fetchCuentas(),
+                CuentasService.fetchRolesDisponibles(),
+                CuentasService.fetchEmpleadosSinCuenta()
             ]);
-            setCuentas(resCuentas);
-            setRoles(resRoles);
-            setEmpleadosSinCuenta(resEmpleados);
+            
+            if (resCuentas.success) setCuentas(resCuentas.data);
+            if (resRoles.success) setRoles(resRoles.data);
+            if (resEmpleados.success) setEmpleadosSinCuenta(resEmpleados.data);
         } catch (error) {
             console.error('Error cargando datos de cuentas:', error);
         } finally {

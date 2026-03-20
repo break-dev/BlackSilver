@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useCuentasStore } from "../service/cuentas.service";
-import { CuentasRequests } from "../service/cuentas.requests";
+import { useCuentasStore, CuentasService } from "../service/cuentas.service";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Cuenta } from "../service/cuentas.responses";
 
@@ -46,13 +45,13 @@ export const useRegistroCuenta = (
     try {
       let res;
       if (cuentaEdit) {
-        res = await CuentasRequests.actualizarCuenta(cuentaEdit.id_usuario, {
+        res = await CuentasService.actualizarCuenta(cuentaEdit.id_usuario, {
           id_rol: form.id_rol,
           username: form.username,
           password: form.password,
         });
       } else {
-        res = await CuentasRequests.crearCuenta({
+        res = await CuentasService.crearCuenta({
           id_rol: form.id_rol,
           id_empleado: form.id_empleado,
           username: form.username,
