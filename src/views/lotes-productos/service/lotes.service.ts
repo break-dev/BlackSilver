@@ -10,12 +10,14 @@ import type {
 import dayjs from "dayjs";
 
 export class LotesService {
+  private static PATH = "/lotes-productos";
+
   /**
    * Obtener almacenes (para el filtro y creación).
    */
   static async listarAlmacenes() {
     const response = await api.get<IRespuesta<RES_Almacen[]>>(
-      `/lotes-productos/almacenes`,
+      `${this.PATH}/aux/almacenes`,
     );
     return response.data;
   }
@@ -46,7 +48,7 @@ export class LotesService {
     };
 
     const response = await api.post<IRespuesta<RES_Lote>>(
-      `/lotes-productos`,
+      `${this.PATH}`,
       payload,
     );
     return response.data;
@@ -57,7 +59,7 @@ export class LotesService {
    */
   static async listarProductos() {
     const response = await api.get<IRespuesta<RES_ProductoDisponible[]>>(
-      `/lotes-productos/productos`,
+      `${this.PATH}/aux/productos`,
     );
     return response.data;
   }
@@ -67,7 +69,7 @@ export class LotesService {
    */
   static async listarUnidades() {
     const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      `/lotes-productos/unidades`,
+      `${this.PATH}/aux/unidades`,
     );
     return response.data;
   }
@@ -77,7 +79,7 @@ export class LotesService {
    */
   static async ajustarStock(dto: DTO_AjustarStock) {
     const response = await api.post<IRespuesta<RES_Lote>>(
-      `/lotes-productos/ajustar-stock`,
+      `${this.PATH}/ajustar-stock`,
       dto,
     );
     return response.data;
