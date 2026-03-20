@@ -123,14 +123,15 @@ export const SolicitudesAtencionService = {
     return res.data;
   },
 
-  obtenerAlmacenesConStock: async (idProducto: number, idAlmacenExcluido: number) => {
-    const res = await api.get<IRespuesta<RES_AlmacenConStock[]>>(
-      `${path}/prestamos/almacenes-con-stock`,
-      {
-        params: { id_producto: idProducto, id_almacen_excluido: idAlmacenExcluido },
-      }
+  getAlmacenesConStock: async (ids_productos: number[], id_almacen_excluido: number) => {
+    const params = new URLSearchParams();
+    ids_productos.forEach(id => params.append('ids_productos[]', id.toString()));
+    params.append('id_almacen_excluido', id_almacen_excluido.toString());
+
+    const resp = await api.get<IRespuesta<RES_AlmacenConStock[]>>(
+      `${path}/prestamos/almacenes-con-stock?${params.toString()}`
     );
-    return res.data;
+    return resp.data;
   },
 
   obtenerLotesDisponiblesPrestamo: async (idProducto: number, idAlmacen: number) => {

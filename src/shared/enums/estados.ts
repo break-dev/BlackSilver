@@ -43,6 +43,7 @@ export enum EstadoSolicitudDetalle {
   NuevaEntrega = "Nueva entrega",
   Completado = "Completado",
   Cerrado = "Cerrado",
+  SolicitandoPrestamo = "Solicitando préstamo",
 }
 
 export enum EstadoVencimiento {
