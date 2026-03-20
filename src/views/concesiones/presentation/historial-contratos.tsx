@@ -33,7 +33,7 @@ export const HistorialContratos = ({
     loading,
     loadingIdContrato,
     handleTerminarContrato,
-    recargar,
+    pushNuevoContrato,
   } = useGestionContratos(idConcesion);
 
   const empresasConContratoActivo = contratos
@@ -47,8 +47,8 @@ export const HistorialContratos = ({
         idConcesion={idConcesion}
         nombreConcesion={nombreConcesion}
         empresasConContratoActivo={empresasConContratoActivo}
-        onSuccess={() => {
-          recargar();
+        onSuccess={(nuevo) => {
+          pushNuevoContrato(nuevo);
           onContratoCreado?.();
         }}
       />

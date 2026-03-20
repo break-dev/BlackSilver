@@ -28,6 +28,13 @@ export const useGestionContratos = (id_concesion?: number) => {
   }, [listar]);
 
   /**
+   * Añade un nuevo contrato a la lista sin recargar.
+   */
+  const pushNuevoContrato = (nuevo: RES_Contrato) => {
+    setContratos((prev) => [nuevo, ...prev]);
+  };
+
+  /**
    * Termina un contrato y notifica el delta (-1) para actualizar el contador
    * en la tabla principal de concesiones.
    */
@@ -41,7 +48,15 @@ export const useGestionContratos = (id_concesion?: number) => {
       if (resp.success) {
         notify({ type: "success", content: "Contrato finalizado" });
         onContratoTerminado?.();
-        listar();
+        
+        // También podemos actualizar localmente el estado del contrato sin recargar todo
+        setContratos((prev) => 
+          prev.map((c) => 
+            c.id_contrato === id_contrato 
+              ? { ...c, estado: "Inactivo" as any } // Cast simple
+              : c
+          )
+        );
       }
     } catch {
       notify({ type: "error", content: "Error inesperado" });
@@ -55,6 +70,7 @@ export const useGestionContratos = (id_concesion?: number) => {
     loading,
     loadingIdContrato,
     handleTerminarContrato,
+    pushNuevoContrato,
     recargar: listar,
   };
 };

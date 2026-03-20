@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ConcesionesService } from "../service/concesiones.service";
 import { Schema_CrearContrato } from "../service/concesiones.requests";
-import type { RES_Empresa } from "../service/concesiones.responses";
+import type { RES_Empresa, RES_Contrato } from "../service/concesiones.responses";
 
 export const useNuevoContrato = (
   id_concesion: number,
-  onSuccess: () => void,
+  onSuccess: (nuevo: RES_Contrato) => void,
 ) => {
   const { notify } = useNotify();
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
@@ -46,7 +46,7 @@ export const useNuevoContrato = (
       const resp = await ConcesionesService.crear_contrato(validation.data);
       if (resp.success) {
         notify({ type: "success", content: resp.message });
-        onSuccess();
+        onSuccess(resp.data);
       } else {
         notify({ type: "error", content: resp.message });
       }

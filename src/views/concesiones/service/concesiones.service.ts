@@ -10,46 +10,38 @@ import type {
   RES_Empresa,
 } from "./concesiones.responses";
 
-export class ConcesionesService {
-  private static PATH = "/concesiones";
+const PATH = "/concesiones";
 
-  public static get_concesiones = async (): Promise<
-    IRespuesta<RES_Concesion[]>
-  > => {
-    const { data } = await api.get(`${this.PATH}`);
+export const ConcesionesService = {
+  get_concesiones: async (): Promise<IRespuesta<RES_Concesion[]>> => {
+    const { data } = await api.get(PATH);
     return data;
-  };
+  },
 
-  public static crear_concesion = async (
+  crear_concesion: async (
     dto: DTO_CrearConcesion,
   ): Promise<IRespuesta<RES_Concesion>> => {
-    const { data } = await api.post(`${this.PATH}`, dto);
+    const { data } = await api.post(PATH, dto);
     return data;
-  };
+  },
 
-  public static get_empresas = async (): Promise<IRespuesta<RES_Empresa[]>> => {
-    const { data } = await api.get(`${this.PATH}/contratos/empresas`);
+  get_empresas: async (): Promise<IRespuesta<RES_Empresa[]>> => {
+    const { data } = await api.get(`${PATH}/contratos/empresas`);
     return data;
-  };
+  },
 
-  public static get_contratos = async (
-    id_concesion: number,
-  ): Promise<IRespuesta<RES_Contrato[]>> => {
-    const { data } = await api.get(`${this.PATH}/contratos/${id_concesion}`);
+  get_contratos: async (id_concesion: number): Promise<IRespuesta<RES_Contrato[]>> => {
+    const { data } = await api.get(`${PATH}/contratos/${id_concesion}`);
     return data;
-  };
+  },
 
-  public static crear_contrato = async (
-    dto: DTO_CrearContrato,
-  ): Promise<IRespuesta<null>> => {
-    const { data } = await api.post(`${this.PATH}/contratos`, dto);
+  crear_contrato: async (dto: DTO_CrearContrato): Promise<IRespuesta<RES_Contrato>> => {
+    const { data } = await api.post(`${PATH}/contratos`, dto);
     return data;
-  };
+  },
 
-  public static terminar_contrato = async (
-    id_contrato: number,
-  ): Promise<IRespuesta<null>> => {
-    const { data } = await api.delete(`${this.PATH}/contratos/${id_contrato}`);
+  terminar_contrato: async (id_contrato: number): Promise<IRespuesta<null>> => {
+    const { data } = await api.delete(`${PATH}/contratos/${id_contrato}`);
     return data;
-  };
-}
+  },
+};

@@ -6,12 +6,13 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { useNuevoContrato } from "../hooks/useNuevoContrato";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import type { RES_Contrato } from "../service/concesiones.responses";
 
 interface NuevoContratoProps {
   idConcesion: number;
   nombreConcesion: string;
   empresasConContratoActivo: number[];
-  onSuccess: () => void;
+  onSuccess: (nuevo: RES_Contrato) => void;
 }
 
 export const NuevoContrato = ({
@@ -24,14 +25,14 @@ export const NuevoContrato = ({
     useNuevoContrato(idConcesion, onSuccess);
 
   const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
 
   const handleSubmit = async () => {
     if (!idEmpresa || !fechaInicio) return;
     const fechaStr = dayjs(fechaInicio).format("YYYY-MM-DD");
     await handleCrearContrato(parseInt(idEmpresa), fechaStr);
     setIdEmpresa(null);
-    setFechaInicio(null);
+    setFechaInicio(new Date());
   };
 
   const selectData = empresas.map((e) => ({
