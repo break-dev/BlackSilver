@@ -1,4 +1,4 @@
-import { Button, Group } from "@mantine/core";
+import { Button, Group, Text } from "@mantine/core";
 import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
 
 interface FormActionsProps {
@@ -6,6 +6,7 @@ interface FormActionsProps {
   onSubmit: () => void;
   isProcessing: boolean;
   canSubmit: boolean;
+  errorLocal: string;
 }
 
 export const FormActions = ({
@@ -13,20 +14,35 @@ export const FormActions = ({
   onSubmit,
   isProcessing,
   canSubmit,
+  errorLocal,
 }: FormActionsProps) => {
   return (
-    <Group justify="flex-end" gap="lg" className="pt-10 mt-6 border-t border-zinc-800/60">
+    <Group
+      justify="flex-end"
+      gap="lg"
+      className="pt-10 mt-6 border-t border-zinc-800/60"
+    >
+      {errorLocal && (
+        <Text
+          c="red.4"
+          size="sm"
+          fw={800}
+          className="italic text-center tracking-tight"
+        >
+          {errorLocal}
+        </Text>
+      )}
       <Button
         variant="subtle"
         radius="xl"
-        size="md"
+        size="sm"
         className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 font-bold px-8 transition-colors"
         onClick={onCancel}
       >
         Cancelar
       </Button>
       <Button
-        size="md"
+        size="sm"
         radius="xl"
         leftSection={<ClipboardDocumentCheckIcon className="w-6 h-6" />}
         disabled={!canSubmit || isProcessing}

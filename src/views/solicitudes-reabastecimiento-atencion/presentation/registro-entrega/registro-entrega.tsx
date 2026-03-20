@@ -1,14 +1,15 @@
-import { Loader, Paper, Stack, Text } from "@mantine/core";
-import { useRegistroEntrega } from "../hooks/useRegistroEntrega";
-import type { RES_DetalleSolicitud } from "../service/solicitudes-atencion.responses";
+import { Stack } from "@mantine/core";
+import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
+import type { RES_DetalleSolicitud } from "../../service/solicitudes-atencion.responses";
 import {
   ReceptorInfo,
   ProductoEntregaCard,
   FormActions,
-} from "./registro-entrega/components";
+} from "../registro-entrega/components";
 
 interface RegistroEntregaProps {
   idSolicitud: number;
+  idEmpleadoSolicitante: number;
   selectedDetalles: RES_DetalleSolicitud[];
   onSuccess: () => void;
   onCancel?: () => void;
@@ -16,12 +17,14 @@ interface RegistroEntregaProps {
 
 export const RegistroEntrega = ({
   idSolicitud,
+  idEmpleadoSolicitante,
   selectedDetalles: baseDetalles,
   onSuccess,
   onCancel,
 }: RegistroEntregaProps) => {
   const {
-    loadingInitial,
+    loadingAlmacenes,
+    loadingEmpleados,
     loadingLotes,
     almacenesPrincipales,
     empleados,
@@ -34,23 +37,17 @@ export const RegistroEntrega = ({
     setObservacion,
     entregaCantidades,
     handleCantChange,
+    handleCantLoteChange,
     handleConfirmar,
     isProcessing,
     errorLocal,
     selectedDetalles,
   } = useRegistroEntrega({
     idSolicitud,
+    idEmpleadoSolicitante,
     selectedDetalles: baseDetalles,
     onSuccess,
   });
-
-  if (loadingInitial) {
-    return (
-      <div className="flex justify-center py-20">
-        <Loader color="indigo" size="lg" />
-      </div>
-    );
-  }
 
   const canSubmit = !!idAlmacenEntrega && !!idEmpleadoRecibe && !isProcessing;
 
@@ -63,56 +60,38 @@ export const RegistroEntrega = ({
         }))}
         idAlmacenEntrega={idAlmacenEntrega}
         setIdAlmacenEntrega={setIdAlmacenEntrega}
+        loadingAlmacenes={loadingAlmacenes}
         empleados={empleados.map((e) => ({
           value: String(e.id_empleado),
           label: e.nombre_completo,
         }))}
         idEmpleadoRecibe={idEmpleadoRecibe}
         setIdEmpleadoRecibe={setIdEmpleadoRecibe}
+        loadingEmpleados={loadingEmpleados}
         observacion={observacion}
         setObservacion={setObservacion}
       />
 
-      {loadingLotes ? (
-        <div className="flex justify-center py-20 bg-zinc-900/20 rounded-3xl border border-dashed border-zinc-800">
-          <Loader size="md" color="indigo" />
-        </div>
-      ) : (
-        <Stack gap="xl">
-          {selectedDetalles.map((detalle) => (
-            <ProductoEntregaCard
-              key={detalle.id_solicitud_detalle}
-              detalle={detalle}
-              lotes={lotesPorProducto[detalle.id_producto] || []}
-              entregaCantidades={entregaCantidades}
-              handleCantChange={handleCantChange}
-            />
-          ))}
-        </Stack>
-      )}
-
-      {errorLocal && (
-        <Paper
-          p="md"
-          radius="xl"
-          className="bg-red-500/5 border border-red-500/20 shadow-sm"
-        >
-          <Text
-            c="red.4"
-            size="sm"
-            fw={800}
-            className="italic text-center tracking-tight"
-          >
-            {errorLocal}
-          </Text>
-        </Paper>
-      )}
+      <Stack gap="xl">
+        {selectedDetalles.map((detalle) => (
+          <ProductoEntregaCard
+            key={detalle.id_solicitud_detalle}
+            detalle={detalle}
+            lotes={lotesPorProducto[detalle.id_producto] || []}
+            entregaCantidades={entregaCantidades}
+            loadingLotes={loadingLotes}
+            handleCantChange={handleCantChange}
+            handleCantLoteChange={handleCantLoteChange}
+          />
+        ))}
+      </Stack>
 
       <FormActions
         onCancel={onCancel || (() => {})}
         onSubmit={handleConfirmar}
         isProcessing={isProcessing}
         canSubmit={canSubmit}
+        errorLocal={errorLocal}
       />
     </Stack>
   );

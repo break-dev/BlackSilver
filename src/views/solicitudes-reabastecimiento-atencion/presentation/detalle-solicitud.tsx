@@ -33,11 +33,12 @@ import type {
   RES_SolicitudReabastecimiento,
   DetalleSolicitudExtendido,
 } from "../service/solicitudes-atencion.responses";
-import { formatNumber } from "../../../presentation/functions/formatNumber";
-import { RegistroEntrega } from "./registro-entrega";
+import {
+  formatNumber,
+} from "../../../presentation/functions/formatNumber";
+import { RegistroEntrega } from "./registro-entrega/registro-entrega";
 import { HistorialEntregas } from "./historial-entregas";
 import { TrazabilidadDetalle } from "./trazabilidad-detalle";
-import { useState } from "react";
 
 interface DetalleSolicitudProps {
   solicitud: RES_SolicitudReabastecimiento;
@@ -78,18 +79,19 @@ export const DetalleSolicitud = ({
     handleRechazar,
     getStatusColor,
     loadData,
+    selectedItemsIds,
+    setSelectedItemsIds,
+    toggleItemSelection,
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
+    isAllEligibleSelected,
+    toggleSelectAllEligible,
   } = useDetalleSolicitud({
     idSolicitud: solicitud.id_solicitud,
     onSuccess,
   });
-
-  const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
-
-  const toggleItemSelection = (id: number) => {
-    setSelectedItemsIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
 
   if (loading) {
     return (
@@ -238,8 +240,43 @@ export const DetalleSolicitud = ({
               disabled={selectedItemsIds.length === 0}
               onClick={openEntrega}
             >
-              Registrar Entrega
+              Registrar Entrega ({selectedItemsIds.length})
             </Button>
+
+            {detalles.some(
+              (d) =>
+                d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+            ) && (
+              <>
+                <Button
+                  color="green"
+                  variant="filled"
+                  size="xs"
+                  leftSection={<CheckCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null);
+                    openAprobar();
+                  }}
+                >
+                  Aprobar ({idsParaAccionMasiva.length})
+                </Button>
+                <Button
+                  color="red"
+                  variant="filled"
+                  size="xs"
+                  leftSection={<XCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null);
+                    openRechazo();
+                  }}
+                >
+                  Rechazar ({idsParaAccionMasiva.length})
+                </Button>
+              </>
+            )}
+
             <Badge variant="light" color="indigo" radius="md">
               {detalles.length} Productos
             </Badge>
@@ -251,12 +288,46 @@ export const DetalleSolicitud = ({
             <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4 text-center w-12">#</th>
-                <th className="px-4 py-4 text-center w-10"></th>
+                <th className="px-4 py-4 text-center w-10">
+                  {detalles.some(
+                    (d) =>
+                      d.estado === EstadoSolicitudDetalle.Aprobado ||
+                      d.estado === EstadoSolicitudDetalle.EnDespacho ||
+                      d.estado === EstadoSolicitudDetalle.NuevaEntrega,
+                  ) && (
+                    <div className="flex justify-center">
+                      <Checkbox
+                        checked={isAllEligibleSelected}
+                        onChange={toggleSelectAllEligible}
+                        color="indigo"
+                        size="xs"
+                        className="cursor-pointer translate-y-px"
+                      />
+                    </div>
+                  )}
+                </th>
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-center">Cantidad Solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center w-36">Acciones</th>
+                <th className="px-6 py-4 text-center w-36">
+                  <Group gap={4} justify="center">
+                    <span>Acciones</span>
+                    {detalles.some(
+                      (d) =>
+                        d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+                    ) && (
+                      <Tooltip label="Seleccionar todos los pendientes">
+                        <Checkbox
+                          size="xs"
+                          color="indigo"
+                          checked={isAllPendingSelected}
+                          onChange={seleccionarTodoLoPendiente}
+                        />
+                      </Tooltip>
+                    )}
+                  </Group>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -458,6 +529,22 @@ export const DetalleSolicitud = ({
                               <XCircleIcon className="w-5 h-5" />
                             </ActionIcon>
                           </Tooltip>
+
+                          <Tooltip label="Acción masiva">
+                            <Checkbox
+                              size="xs"
+                              color="indigo"
+                              checked={idsParaAccionMasiva.includes(
+                                item.id_solicitud_detalle,
+                              )}
+                              onChange={() =>
+                                toggleSeleccionMasiva(
+                                  item.id_solicitud_detalle,
+                                )
+                              }
+                              className="ml-1"
+                            />
+                          </Tooltip>
                         </>
                       )}
                     </Group>
@@ -496,7 +583,9 @@ export const DetalleSolicitud = ({
           >
             <ExclamationTriangleIcon className="w-8 h-8 text-red-400 mt-1" />
             <Text size="sm" className="text-red-100 italic">
-              Esta acción marcará el producto como rechazado.
+              {selectedItemId
+                ? "Esta acción marcará el producto como rechazado."
+                : `Esta acción marcará ${idsParaAccionMasiva.length} productos como rechazados.`}
             </Text>
           </Paper>
           <Textarea
@@ -535,8 +624,9 @@ export const DetalleSolicitud = ({
           >
             <CheckCircleIcon className="w-8 h-8 text-green-400 mt-1" />
             <Text size="sm" className="text-green-100 italic">
-              ¿Desea aprobar este producto? Puede ingresar un comentario
-              opcional.
+              {selectedItemId
+                ? "¿Desea aprobar este producto? Puede ingresar un comentario opcional."
+                : `¿Desea aprobar ${idsParaAccionMasiva.length} productos? Puede ingresar un comentario opcional.`}
             </Text>
           </Paper>
           <Textarea
@@ -569,6 +659,7 @@ export const DetalleSolicitud = ({
       >
         <RegistroEntrega
           idSolicitud={solicitud.id_solicitud}
+          idEmpleadoSolicitante={solicitud.id_empleado_solicitante}
           selectedDetalles={detalles.filter((d) =>
             selectedItemsIds.includes(d.id_solicitud_detalle),
           )}

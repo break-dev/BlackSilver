@@ -108,13 +108,13 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                 <Group gap="sm" mb="md" px="md">
                   <UserIcon className="w-4 h-4 text-zinc-500" />
                   <Text size="xs" c="dimmed">
-                    Entregado por:{" "}
+                    Atendido por:{" "}
                     <span className="text-white">{h.empleado_entrega}</span>
                   </Text>
                   <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
                   <UserIcon className="w-4 h-4 text-zinc-500" />
                   <Text size="xs" c="dimmed">
-                    Recibido por:{" "}
+                    Entregado a:{" "}
                     <span className="text-white">{h.empleado_recibe}</span>
                   </Text>
                 </Group>

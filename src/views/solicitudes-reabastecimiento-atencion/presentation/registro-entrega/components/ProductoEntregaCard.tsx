@@ -11,14 +11,18 @@ interface ProductoEntregaCardProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteReabastecimiento[];
   entregaCantidades: Record<number, number>;
+  loadingLotes: boolean;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
 }
 
 export const ProductoEntregaCard = ({
   detalle,
   lotes,
   entregaCantidades,
+  loadingLotes,
   handleCantChange,
+  handleCantLoteChange,
 }: ProductoEntregaCardProps) => {
   return (
     <Paper
@@ -73,7 +77,9 @@ export const ProductoEntregaCard = ({
           detalle={detalle}
           lotes={lotes}
           entregaCantidades={entregaCantidades}
+          loadingLotes={loadingLotes}
           handleCantChange={handleCantChange}
+          handleCantLoteChange={handleCantLoteChange}
         />
       </Stack>
     </Paper>
