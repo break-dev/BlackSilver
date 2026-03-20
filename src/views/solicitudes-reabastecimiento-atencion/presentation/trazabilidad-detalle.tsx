@@ -19,6 +19,7 @@ import {
   CheckBadgeIcon,
   ArchiveBoxArrowDownIcon,
   CubeIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/solid";
 import { EstadoSolicitudDetalle, EstadoSolicitud } from "../../../shared/enums/estados";
 
@@ -165,6 +166,8 @@ const getStatusStyles = (status: string) => {
     case EstadoSolicitudDetalle.Cerrado:
     case EstadoSolicitud.Anulada:
       return { color: "zinc", variant: "filled" as const };
+    case EstadoSolicitudDetalle.SolicitandoPrestamo:
+      return { color: "pink", variant: "light" as const };
     default:
       return { color: "gray", variant: "light" as const };
   }
@@ -189,6 +192,8 @@ const getStatusIcon = (status: string) => {
     case EstadoSolicitudDetalle.Cerrado:
     case EstadoSolicitud.Anulada:
       return <CubeIcon className="w-4 h-4 text-white" />;
+    case EstadoSolicitudDetalle.SolicitandoPrestamo:
+      return <BuildingOffice2Icon className="w-4 h-4 text-white" />;
     default:
       return <ClockIcon className="w-4 h-4 text-white" />;
   }

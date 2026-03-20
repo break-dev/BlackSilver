@@ -258,6 +258,7 @@ export const useDetalleSolicitud = ({
     if (status === EstadoSolicitudDetalle.NuevaEntrega) return "green";
     if (status === EstadoSolicitudDetalle.Completado) return "teal";
     if (status === EstadoSolicitudDetalle.Rechazado) return "red";
+    if (status === EstadoSolicitudDetalle.SolicitandoPrestamo) return "pink";
     return "zinc";
   };
 

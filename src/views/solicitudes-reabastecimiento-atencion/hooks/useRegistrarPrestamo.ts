@@ -127,7 +127,7 @@ export const useRegistrarPrestamo = ({
   }, [selectedItemIds, detalles]);
 
   const handleRegistrar = async () => {
-    if (!idAlmacenPrestamista || !fechaLimiteDevolucion || selectedItemIds.length === 0) {
+    if (!idAlmacenPrestamista || selectedItemIds.length === 0) {
       notifyError("Complete todos los campos requeridos");
       return;
     }
@@ -137,7 +137,7 @@ export const useRegistrarPrestamo = ({
       const resp = await SolicitudesAtencionService.crearPrestamo({
         id_solicitud_reabastecimiento: solicitud.id_solicitud,
         id_almacen_prestamista: parseInt(idAlmacenPrestamista),
-        fecha_limite_devolucion: fechaLimiteDevolucion.toISOString().split('T')[0],
+        fecha_limite_devolucion: fechaLimiteDevolucion ? fechaLimiteDevolucion.toISOString().split('T')[0] : null,
         detalles: selectedItemIds.map((id) => ({
           id_solicitud_reabastecimiento_detalle: id,
           cantidad_solicitada: cantidades[id] || 0,
