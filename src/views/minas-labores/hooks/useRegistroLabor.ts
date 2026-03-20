@@ -62,9 +62,9 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         MinasService.getTiposLabor(),
         MinasService.getEmpresasEjecutoras(idMina),
       ]);
-      if (resTipos.data.success) setTiposLabor(resTipos.data.data);
-      if (resEmpresas.data.success)
-        setEmpresasEjecutoras(resEmpresas.data.data);
+      if (resTipos.success) setTiposLabor(resTipos.data);
+      if (resEmpresas.success)
+        setEmpresasEjecutoras(resEmpresas.data);
     } catch {
       notify({
         type: "error",
@@ -109,7 +109,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
 
     setIsSubmitting(true);
     try {
-      const { data: res } = await MinasService.crearLabor(validation.data);
+      const res = await MinasService.crearLabor(validation.data);
       if (res.success) {
         notify({
           type: "success",

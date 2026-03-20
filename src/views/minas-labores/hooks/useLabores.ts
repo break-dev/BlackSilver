@@ -21,7 +21,7 @@ export const useLabores = ({ idMina }: Props) => {
   const cargar = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: res } = await MinasService.getLabores(idMina);
+      const res = await MinasService.getLabores(idMina);
       if (res.success) {
         setLabores(res.data);
       } else {

@@ -31,7 +31,7 @@ export const useRegistroResponsable = ({
   const cargarDisponibles = useCallback(async () => {
     setLoadingDisponibles(true);
     try {
-      const { data: res } = await MinasService.getEmpleadosDisponibles(idMina);
+      const res = await MinasService.getEmpleadosDisponibles(idMina);
       if (res.success) setEmpleadosDisponibles(res.data);
     } finally {
       setLoadingDisponibles(false);
@@ -68,7 +68,7 @@ export const useRegistroResponsable = ({
 
     setIsSubmitting(true);
     try {
-      const { data: res } = await MinasService.asignarResponsable(
+      const res = await MinasService.asignarResponsable(
         validation.data,
       );
       if (res.success) {

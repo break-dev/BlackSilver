@@ -48,7 +48,7 @@ export const useRegistroMina = ({
 
     setIsSubmitting(true);
     try {
-      const { data: res } = await MinasService.crearMina(validation.data);
+      const res = await MinasService.crearMina(validation.data);
       if (res.success) {
         onSuccess(res.data);
         resetForm();

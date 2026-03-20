@@ -39,7 +39,7 @@ export const useMinas = () => {
   // Cargar concesiones (para el selector dentro del modal de crear)
   const cargarConcesiones = useCallback(async () => {
     try {
-      const { data: res } = await MinasService.getConcesionesSesion();
+      const res = await MinasService.getConcesionesSesion();
       if (res.success) {
         setConcesiones(res.data);
       } else {
@@ -54,7 +54,7 @@ export const useMinas = () => {
   const cargarMinas = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: res } = await MinasService.getMinasResumen();
+      const res = await MinasService.getMinasResumen();
       if (res.success) {
         setMinas(res.data);
       } else {

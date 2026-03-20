@@ -16,7 +16,7 @@ export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
   const cargarDisponibles = useCallback(async () => {
     setLoadingDisponibles(true);
     try {
-      const { data: res } = await MinasService.getEmpresasDisponibles(
+      const res = await MinasService.getEmpresasDisponibles(
         idConcesion,
         idMina,
       );
@@ -33,7 +33,7 @@ export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
   const asignarEmpresa = async (id_empresa: number) => {
     setIsSubmitting(true);
     try {
-      const { data: res } = await MinasService.asignarEmpresa({
+      const res = await MinasService.asignarEmpresa({
         id_mina: idMina,
         id_empresa,
       });

@@ -16,7 +16,7 @@ export const useEmpresasEjecutoras = ({ idMina }: Props) => {
   const cargar = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: res } = await MinasService.getEmpresasEjecutoras(idMina);
+      const res = await MinasService.getEmpresasEjecutoras(idMina);
       if (res.success) setEjecutoras(res.data);
     } catch {
       notify({ type: "error", content: "Error al cargar las empresas" });

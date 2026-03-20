@@ -22,7 +22,7 @@ export const useResponsablesMina = ({
   const cargar = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: res } = await MinasService.getHistorialResponsables(idMina);
+      const res = await MinasService.getHistorialResponsables(idMina);
       if (res.success) setHistorial(res.data);
     } catch {
       notify({ type: "error", content: "Error al cargar los responsables" });
