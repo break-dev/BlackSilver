@@ -74,6 +74,42 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     setSelectedItemsIds([]);
   }, []);
 
+  const eligibleForDelivery = useMemo(() => {
+    return detalles.filter(
+      (d) =>
+        d.estado === EstadoDetalleRequerimiento.Aprobado.toString() ||
+        d.estado === EstadoDetalleRequerimiento.EnDespacho.toString(),
+    );
+  }, [detalles]);
+
+  const isAllEligibleSelected = useMemo(() => {
+    return (
+      eligibleForDelivery.length > 0 &&
+      eligibleForDelivery.every((d) =>
+        selectedItemsIds.includes(d.id_requerimiento_almacen_detalle),
+      )
+    );
+  }, [eligibleForDelivery, selectedItemsIds]);
+
+  const hasPartialEligibleSelection = useMemo(() => {
+    return (
+      !isAllEligibleSelected &&
+      eligibleForDelivery.some((d) =>
+        selectedItemsIds.includes(d.id_requerimiento_almacen_detalle),
+      )
+    );
+  }, [eligibleForDelivery, selectedItemsIds, isAllEligibleSelected]);
+
+  const toggleSelectAllEligible = useCallback(() => {
+    if (isAllEligibleSelected) {
+      setSelectedItemsIds([]);
+    } else {
+      setSelectedItemsIds(
+        eligibleForDelivery.map((d) => d.id_requerimiento_almacen_detalle),
+      );
+    }
+  }, [eligibleForDelivery, isAllEligibleSelected]);
+
   const onConsultarLogisticaClick = () => {
       setIsLogisticaModalOpen(true);
   };
@@ -333,6 +369,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     selectedItemId, setSelectedItemId,
     selectedItemName, setSelectedItemName,
     selectedItemsIds, toggleItemSelection, deselectAllItems,
+    isAllEligibleSelected, hasPartialEligibleSelection, toggleSelectAllEligible,
     idsParaAccionMasiva, toggleSeleccionMasiva, isAllPendingSelected, seleccionarTodoLoPendiente,
     comentarioAccion, setComentarioAccion,
     isProcessing,

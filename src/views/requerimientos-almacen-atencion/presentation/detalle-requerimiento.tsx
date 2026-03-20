@@ -29,7 +29,7 @@ import dayjs from "dayjs";
 import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 import { ReqDetalleTrazabilidad } from "./req-detalle-trazabilidad";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistrarEntrega } from "./registrar-entrega";
+import { RegistrarEntrega } from "./registrar-entrega/registrar-entrega";
 import { HistorialEntregasRequerimiento } from "./historial-entregas-requerimiento";
 import { RegistrarSolicitudLogistica } from "./registrar-solicitud-logistica";
 import { useGestionAtencion } from "../hooks/useGestionAtencion";
@@ -75,6 +75,9 @@ export const DetalleRequerimiento = ({
     selectedItemsIds,
     toggleItemSelection,
     deselectAllItems,
+    isAllEligibleSelected,
+    hasPartialEligibleSelection,
+    toggleSelectAllEligible,
     comentarioAccion,
     setComentarioAccion,
     openedAprobar,
@@ -270,24 +273,28 @@ export const DetalleRequerimiento = ({
             >
               Nueva Entrega
             </Button>
-            {detalles.some(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) && (
+            {detalles.some(
+              (d) =>
+                d.estado ===
+                EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+            ) && (
               <>
                 <Button
                   color="green"
-                  variant="outline"
+                  variant="filled"
                   size="xs"
                   leftSection={<CheckCircleIcon className="w-4 h-4" />}
                   disabled={idsParaAccionMasiva.length === 0}
                   onClick={() => {
-                    setSelectedItemId(null); 
+                    setSelectedItemId(null);
                     openAprobar();
                   }}
                 >
-                  Aprobar Marcados ({idsParaAccionMasiva.length})
+                  Aprobar ({idsParaAccionMasiva.length})
                 </Button>
                 <Button
                   color="red"
-                  variant="outline"
+                  variant="filled"
                   size="xs"
                   leftSection={<XCircleIcon className="w-4 h-4" />}
                   disabled={idsParaAccionMasiva.length === 0}
@@ -296,7 +303,7 @@ export const DetalleRequerimiento = ({
                     openRechazo();
                   }}
                 >
-                  Rechazar Marcados ({idsParaAccionMasiva.length})
+                  Rechazar ({idsParaAccionMasiva.length})
                 </Button>
               </>
             )}
@@ -323,14 +330,35 @@ export const DetalleRequerimiento = ({
           </Group>
         </Group>
 
-        <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
+        <div className="overflow-x-auto border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
           <Table verticalSpacing="md" horizontalSpacing="xl">
             <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4 text-center w-12">#</th>
-                <th className="px-4 py-4 text-center w-10"></th>
+                <th className="px-4 py-4 text-center w-10">
+                  {detalles.some(
+                    (d) =>
+                      d.estado ===
+                        EstadoDetalleRequerimiento.Aprobado.toString() ||
+                      d.estado ===
+                        EstadoDetalleRequerimiento.EnDespacho.toString(),
+                  ) && (
+                    <div className="flex justify-center">
+                      <Checkbox
+                        checked={isAllEligibleSelected}
+                        indeterminate={hasPartialEligibleSelection}
+                        onChange={toggleSelectAllEligible}
+                        color="indigo"
+                        size="xs"
+                        className="cursor-pointer translate-y-[1px]"
+                      />
+                    </div>
+                  )}
+                </th>
                 <th className="px-6 py-4 text-left">Producto</th>
-                <th className="px-6 py-4 text-center min-w-[180px]">Cantidad solicitada</th>
+                <th className="px-6 py-4 text-center min-w-[180px]">
+                  Cantidad solicitada
+                </th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-left">Destino / Comentario</th>
                 <th className="px-6 py-4 text-center">Estado</th>
@@ -487,28 +515,36 @@ export const DetalleRequerimiento = ({
                     <td className="px-6 py-4">
                       {item.producto_destino ? (
                         <div className="flex flex-col gap-0.5">
-                          <Badge 
-                            variant="filled" 
+                          <Badge
+                            size="xs"
+                            variant="filled"
                             color="pink"
-                            className="w-fit font-black tracking-tighter px-1.5 h-3.5"
-                            style={{ color: "white", fontSize: '7px' }}
+                            className="w-fit font-black px-1.5 text-white"
                           >
                             PARA: {item.producto_destino}
                           </Badge>
                           {item.comentario && (
-                            <Text size="9px" c="zinc.5" className="italic leading-tight line-clamp-2">{item.comentario}</Text>
+                            <Text
+                              size="xs"
+                              c="zinc.5"
+                              className="italic leading-tight whitespace-pre-wrap"
+                            >
+                              {item.comentario}
+                            </Text>
                           )}
                         </div>
                       ) : (
-                         <Text
-                            size="9px"
-                            c="zinc.5"
-                            className="max-w-[180px] italic leading-tight line-clamp-2"
-                          >
-                            {item.comentario || (
-                              <span className="text-zinc-600">Sin comentarios</span>
-                            )}
-                          </Text>
+                        <Text
+                          size="xs"
+                          c="zinc.5"
+                          className="italic leading-tight whitespace-pre-wrap"
+                        >
+                          {item.comentario || (
+                            <span className="text-zinc-500">
+                              Sin comentarios
+                            </span>
+                          )}
+                        </Text>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -581,13 +617,24 @@ export const DetalleRequerimiento = ({
                           </>
                         )}
 
-                        {item.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
-                          <Tooltip label="Seleccionar para acción masiva" position="top" withArrow>
-                            <Checkbox 
+                        {item.estado ===
+                          EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
+                          <Tooltip
+                            label="Seleccionar para acción masiva"
+                            position="top"
+                            withArrow
+                          >
+                            <Checkbox
                               size="xs"
                               color="indigo"
-                              checked={idsParaAccionMasiva.includes(item.id_requerimiento_almacen_detalle)}
-                              onChange={() => toggleSeleccionMasiva(item.id_requerimiento_almacen_detalle)}
+                              checked={idsParaAccionMasiva.includes(
+                                item.id_requerimiento_almacen_detalle,
+                              )}
+                              onChange={() =>
+                                toggleSeleccionMasiva(
+                                  item.id_requerimiento_almacen_detalle,
+                                )
+                              }
                               className="ml-1"
                             />
                           </Tooltip>
@@ -649,7 +696,12 @@ export const DetalleRequerimiento = ({
               color="red"
               disabled={!comentarioAccion.trim() || isProcessing !== null}
               loading={isProcessing !== null}
-              onClick={selectedItemId ? handleRechazar : () => handleDecisionMasiva(EstadoDetalleRequerimiento.Rechazado)}
+              onClick={
+                selectedItemId
+                  ? handleRechazar
+                  : () =>
+                      handleDecisionMasiva(EstadoDetalleRequerimiento.Rechazado)
+              }
             >
               Rechazar
             </Button>
@@ -688,7 +740,12 @@ export const DetalleRequerimiento = ({
             <Button
               color="green"
               loading={isProcessing !== null}
-              onClick={selectedItemId ? handleAprobar : () => handleDecisionMasiva(EstadoDetalleRequerimiento.Aprobado)}
+              onClick={
+                selectedItemId
+                  ? handleAprobar
+                  : () =>
+                      handleDecisionMasiva(EstadoDetalleRequerimiento.Aprobado)
+              }
             >
               Aprobar
             </Button>

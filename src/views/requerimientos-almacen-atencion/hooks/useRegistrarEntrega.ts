@@ -28,7 +28,7 @@ export const useRegistrarEntregaBatch = ({
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
-  const loggedEmployeeId = authUser?.id_empleado;
+  const loggedEmployeeId = authUser.usuario?.id_empleado;
 
   const [loading, setLoading] = useState(true);
   const [lotes, setLotes] = useState<RES_Lote[]>([]);
@@ -37,7 +37,7 @@ export const useRegistrarEntregaBatch = ({
   >([]);
 
   const [entregaCantidades, setEntregaCantidades] = useState<
-    Record<number, number>
+    Record<number, Record<number, number>>
   >({});
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
@@ -94,10 +94,15 @@ export const useRegistrarEntregaBatch = ({
           }));
           setLotes(castedLotes);
 
-          // Initialize quantities
-          const initial: Record<number, number> = {};
-          castedLotes.forEach((l) => {
-            initial[l.id_lote] = 0;
+          // Initialize quantities per detail
+          const initial: Record<number, Record<number, number>> = {};
+          selectedDetalles.forEach((d) => {
+            initial[d.id_requerimiento_almacen_detalle] = {};
+            castedLotes
+              .filter((l) => l.id_producto === d.id_producto)
+              .forEach((l) => {
+                initial[d.id_requerimiento_almacen_detalle][l.id_lote] = 0;
+              });
           });
           setEntregaCantidades(initial);
         }
@@ -125,7 +130,7 @@ export const useRegistrarEntregaBatch = ({
     return () => {
       cancelled = true;
     };
-  }, [idsProductos, idAlmacen, loggedEmployeeId]);
+  }, [idsProductos, idAlmacen, loggedEmployeeId, selectedDetalles]);
 
   // Auto-seleccionar receptor basado en el solicitante
   useEffect(() => {
@@ -140,42 +145,63 @@ export const useRegistrarEntregaBatch = ({
   }, [idEmpleadoSolicitante, empleados, idEmpleadoRecibe]);
 
   const handleCantChange = useCallback(
-    (idLote: number, idProducto: number, val: number) => {
+    (idDetalleReq: number, idLote: number, val: number) => {
       setEntregaCantidades((prev) => {
         const lote = lotes.find((l) => l.id_lote === idLote);
         if (!lote) return prev;
 
-        const detalleRelacionado = selectedDetalles.find(
-          (d) => d.id_producto === idProducto,
+        const detail = selectedDetalles.find(
+          (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
         );
-        if (!detalleRelacionado) return prev;
+        if (!detail) return prev;
 
-        // Suma de lo entregado en OTROS lotes para este mismo producto
-        const totalOtrosLotesParaEsteProducto = lotes
-          .filter((l) => l.id_producto === idProducto && l.id_lote !== idLote)
-          .reduce((sum, l) => sum + (prev[l.id_lote] || 0), 0);
+        // Suma de lo entregado en OTROS lotes para ESTE MISMO requerimiento detalle
+        const prevCantidadesForThisItem = prev[idDetalleReq] || {};
+        const totalOtherLotsForThisItem = Object.entries(
+          prevCantidadesForThisItem,
+        ).reduce((sum, [lId, v]) => {
+          if (Number(lId) === idLote) return sum;
+          return sum + (v || 0);
+        }, 0);
 
-        const pendienteMaxProducto =
-          detalleRelacionado.cantidad_solicitada_base -
-          detalleRelacionado.cantidad_entregada_base;
+        // Suma de lo entregado en CUALQUIER requerimiento detalle para ESTE LOTE
+        const totalOtherItemsForThisLot = Object.entries(prev).reduce(
+          (sum, [dId, lotesMap]) => {
+            if (Number(dId) === idDetalleReq) return sum;
+            return sum + (lotesMap[idLote] || 0);
+          },
+          0,
+        );
 
-        // Máximo que puede aportar este lote:
-        // El menor entre (su stock) y (lo que falta por entregar - lo que ya aportan otros lotes)
-        const maxAllowedForThisLote = Math.max(
+        const pendienteMaxDetalle =
+          detail.cantidad_solicitada_base - detail.cantidad_entregada_base;
+
+        // Máximo que puede aportar este lote al ítem específico:
+        // El menor entre (su stock disponible REAL) y (lo que falta por entregar para el ítem)
+        const stockRealRestanteLote =
+          (lote.stock_actual_base || 0) - totalOtherItemsForThisLot;
+
+        const maxAllowedForThisLoteAndItem = Math.max(
           0,
           Math.min(
-            lote.stock_actual_base || 0,
-            pendienteMaxProducto - totalOtrosLotesParaEsteProducto,
+            stockRealRestanteLote,
+            pendienteMaxDetalle - totalOtherLotsForThisItem,
           ),
         );
 
-        const finalValue = Math.max(0, Math.min(val || 0, maxAllowedForThisLote));
+        const finalValue = Math.max(
+          0,
+          Math.min(val || 0, maxAllowedForThisLoteAndItem),
+        );
 
-        if (prev[idLote] === finalValue) return prev;
+        if (prevCantidadesForThisItem[idLote] === finalValue) return prev;
 
         return {
           ...prev,
-          [idLote]: finalValue,
+          [idDetalleReq]: {
+            ...prevCantidadesForThisItem,
+            [idLote]: finalValue,
+          },
         };
       });
     },
@@ -183,13 +209,13 @@ export const useRegistrarEntregaBatch = ({
   );
 
   const handleCantLoteChange = useCallback(
-    (idLote: number, idProducto: number, valLote: number) => {
+    (idDetalleReq: number, idLote: number, valLote: number) => {
       const lote = lotes.find((l) => l.id_lote === idLote);
       if (!lote) return;
       const equiv = Number(lote.contenido_por_presentacion) || 1;
       // Usamos toFixed para redondear a la precisión de base y evitar errores de punto flotante
       const valBase = Number((valLote * equiv).toFixed(4));
-      handleCantChange(idLote, idProducto, valBase);
+      handleCantChange(idDetalleReq, idLote, valBase);
     },
     [lotes, handleCantChange],
   );
@@ -204,10 +230,13 @@ export const useRegistrarEntregaBatch = ({
   }, [lotes]);
 
   const totalEntregaGeneralBase = useMemo(() => {
-    return Object.values(entregaCantidades).reduce(
-      (acc, val) => acc + (val || 0),
-      0,
-    );
+    let total = 0;
+    Object.values(entregaCantidades).forEach((lotesMap) => {
+      Object.values(lotesMap).forEach((val) => {
+        total += val || 0;
+      });
+    });
+    return total;
   }, [entregaCantidades]);
 
   const handleConfirmar = async () => {
@@ -219,32 +248,34 @@ export const useRegistrarEntregaBatch = ({
 
     const detallesParaApi: DTO_RegistrarEntregaDetalle[] = [];
 
-    for (const [idLote, cant] of Object.entries(entregaCantidades)) {
-      if (cant > 0) {
-        const numIdLote = Number(idLote);
-        const lote = lotes.find((l) => l.id_lote === numIdLote);
-        if (!lote) continue;
+    Object.entries(entregaCantidades).forEach(([idDet, lotesMap]) => {
+      const idDetalleReq = Number(idDet);
+      const detail = selectedDetalles.find(
+        (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+      );
+      if (!detail) return;
 
-        const detalleReq = selectedDetalles.find(
-          (d) => d.id_producto === lote.id_producto,
-        );
-        if (!detalleReq) continue;
+      Object.entries(lotesMap).forEach(([idLot, cant]) => {
+        if (cant > 0) {
+          const numIdLote = Number(idLot);
+          const lote = lotes.find((l) => l.id_lote === numIdLote);
+          if (!lote) return;
 
-        const equivLote = lote.contenido_por_presentacion || 1;
-        const cBase = cant;
-        const cLote = cBase / equivLote;
-        const cReq = cBase / detalleReq.equivReq;
+          const equivLote = lote.contenido_por_presentacion || 1;
+          const cBase = cant;
+          const cLote = cBase / equivLote;
+          const cReq = cBase / detail.equivReq;
 
-        detallesParaApi.push({
-          id_requerimiento_almacen_detalle:
-            detalleReq.id_requerimiento_almacen_detalle,
-          id_lote_producto: numIdLote,
-          cantidad_base: cBase,
-          cantidad_lote: cLote,
-          cantidad_requerimiento: cReq,
-        });
-      }
-    }
+          detallesParaApi.push({
+            id_requerimiento_almacen_detalle: idDetalleReq,
+            id_lote_producto: numIdLote,
+            cantidad_base: cBase,
+            cantidad_lote: cLote,
+            cantidad_requerimiento: cReq,
+          });
+        }
+      });
+    });
 
     if (detallesParaApi.length === 0) {
       setError("Debe entregar al menos 1 producto");

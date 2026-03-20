@@ -1,0 +1,103 @@
+import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
+import { CubeIcon } from "@heroicons/react/24/outline";
+import { formatNumber } from "../../../../../presentation/functions/formatNumber";
+import type {
+  DetalleRequerimientoExtendido,
+  RES_Lote,
+} from "../../../service/atencion.responses";
+import { DetalleEntregaSection } from "./DetalleEntregaSection";
+
+interface ProductoEntregaCardProps {
+  idProducto: number;
+  group: {
+    name: string;
+    stock_minimo: number;
+    stock_disponible: number;
+    unidad_medida_base_abv: string;
+    details: DetalleRequerimientoExtendido[];
+  };
+  lotesPorProducto: Record<number, RES_Lote[]>;
+  entregaCantidades: Record<number, Record<number, number>>;
+  handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
+  handleCantLoteChange: (
+    idDetalle: number,
+    idLote: number,
+    cant: number,
+  ) => void;
+}
+
+export const ProductoEntregaCard = ({
+  idProducto,
+  group,
+  lotesPorProducto,
+  entregaCantidades,
+  handleCantChange,
+  handleCantLoteChange,
+}: ProductoEntregaCardProps) => {
+  const lotes = lotesPorProducto[idProducto] || [];
+
+  return (
+    <Paper
+      shadow="md"
+      radius="lg"
+      className="bg-zinc-900/30 border border-zinc-800/80 overflow-hidden relative"
+    >
+      {/* Product Header Section */}
+      <div className="bg-zinc-900/60 border-b border-zinc-800/50 p-4 px-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
+              <CubeIcon className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div>
+              <Text
+                size="md"
+                fw={900}
+                className="text-white tracking-tight leading-tight"
+              >
+                {group.name}
+              </Text>
+            </div>
+          </div>
+
+          <Group gap="sm">
+            <Badge
+              variant="dot"
+              color="zinc.5"
+              size="sm"
+              className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
+            >
+              Min: {formatNumber(group.stock_minimo)}{" "}
+              {group.unidad_medida_base_abv}
+            </Badge>
+            <Badge
+              variant="dot"
+              color={
+                group.stock_disponible <= group.stock_minimo ? "orange" : "teal"
+              }
+              size="sm"
+              className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
+            >
+              Disponible: {formatNumber(group.stock_disponible)}{" "}
+              {group.unidad_medida_base_abv}
+            </Badge>
+          </Group>
+        </div>
+      </div>
+
+      <Stack gap="0">
+        {group.details.map((detalle_req, index) => (
+          <DetalleEntregaSection
+            key={detalle_req.id_requerimiento_almacen_detalle}
+            detalle_req={detalle_req}
+            lotes={lotes}
+            index={index}
+            entregaCantidades={entregaCantidades}
+            handleCantChange={handleCantChange}
+            handleCantLoteChange={handleCantLoteChange}
+          />
+        ))}
+      </Stack>
+    </Paper>
+  );
+};
