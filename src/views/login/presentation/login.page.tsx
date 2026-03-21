@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { TextInput, PasswordInput, Button } from "@mantine/core";
 import {
-  BlackcitoLogo,
   LoginVideo,
+  BlackcitoSinPatitas,
 } from "../../../presentation/assets/imports";
 import { useLogin } from "../hooks/useLogin";
 
@@ -81,7 +81,7 @@ export const LoginPage = () => {
               transition-transform duration-300"
             >
               <img
-                src={BlackcitoLogo}
+                src={BlackcitoSinPatitas}
                 alt="Black Silver Logo"
                 className="w-full h-full object-contain 
                 drop-shadow-[0_0_15px_rgba(27,205,219,0.4)]"

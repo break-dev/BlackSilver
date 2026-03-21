@@ -1,48 +1,27 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   UserIcon,
   ArrowLeftStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-import { useAuthStore } from "../../../../stores/auth.store";
-import { useMenuNavegacionStore } from "../../../../stores/menu.store";
-import { usePerfilStore } from "../../../../views/perfil/hooks/usePerfilStore";
+import { useNavigate } from "react-router-dom";
+import { useUserMenu } from "../hooks/useUserMenu";
 
 export const UserMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const usuario = useAuthStore((s) => s.usuario);
-
-  const logout = () => {
-    useAuthStore.getState().clearAuth();
-    useMenuNavegacionStore.getState().clearMenu();
-    usePerfilStore.getState().reset();
-    navigate("/login");
-  };
-
-  // cerrar menu cuando se hace click fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
+  const {
+    isOpen,
+    isClosing,
+    menuRef,
+    usuario,
+    logout,
+    handleToggle,
+    handleClose,
+  } = useUserMenu();
 
   return (
     <div className="relative" ref={menuRef}>
       {/* Boton del avatar */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="relative w-8 h-8 rounded-full bg-linear-to-br from-zinc-800 
         to-zinc-900 flex items-center justify-center text-sm font-bold 
         text-zinc-200 ring-1 ring-white/10 hover:ring-white/20 
@@ -57,9 +36,11 @@ export const UserMenu = () => {
       {/* Menu de usuario */}
       {isOpen && (
         <div
-          className="absolute right-0 top-12 w-52 bg-zinc-950/90 backdrop-blur-3xl 
+          className={`absolute right-0 top-12 w-52 bg-zinc-950/90 backdrop-blur-3xl 
           border border-white/10 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.6)] 
-          overflow-hidden animate-slideDown ring-1 ring-white/5 z-50"
+          overflow-hidden ring-1 ring-white/5 z-50 transition-all duration-200 transform origin-top-right ${
+            isClosing ? "opacity-0 scale-95 pointer-events-none" : "animate-slideDown"
+          }`}
         >
           {/* Informacion del usuario */}
           <div className="px-4 py-3 border-b border-white/5 bg-white/5">
@@ -73,8 +54,8 @@ export const UserMenu = () => {
             {/* Ver perfil */}
             <button
               onClick={() => {
-                setIsOpen(false);
-                navigate("/perfil");
+                handleClose();
+                setTimeout(() => navigate("/perfil"), 280);
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl 
               hover:bg-white/10 transition-colors group"
@@ -88,8 +69,8 @@ export const UserMenu = () => {
             {/* Cerrar sesión */}
             <button
               onClick={() => {
-                setIsOpen(false);
-                logout();
+                handleClose();
+                setTimeout(() => logout(), 280);
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl 
               hover:bg-rose-500/10 transition-colors group"
@@ -105,3 +86,4 @@ export const UserMenu = () => {
     </div>
   );
 };
+

@@ -1,18 +1,11 @@
-import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
-import { useMenuNav } from "../../../hooks/useMenuNav";
+import { useAuthLayout } from "./hooks/useAuthLayout";
 
 export const AuthLayout = () => {
-  const [open, setOpen] = useState(false);
-  const { getMenuNavegacion } = useMenuNav();
-
-  useEffect(() => {
-    getMenuNavegacion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { open, setOpen } = useAuthLayout();
 
   return (
     <div className="relative min-h-screen w-full bg-[#030303] text-zinc-100 flex flex-col overflow-hidden">

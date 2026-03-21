@@ -5,11 +5,10 @@ import {
   XCircleIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/solid";
-import { useUIStore } from "../../../../stores/ui.store";
+import { useNotify } from "../../../../hooks/useNotify";
 
 export const GlobalNotification = () => {
-  const message = useUIStore((state) => state.message);
-  const clearMessage = useUIStore((state) => state.clearMessage);
+  const { message, clearMessage } = useNotify();
 
   useEffect(() => {
     if (!message.type || !message.content) return;

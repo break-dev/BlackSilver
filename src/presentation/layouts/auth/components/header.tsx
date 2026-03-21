@@ -16,52 +16,41 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
       rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-40 
       transition-all duration-300"
     >
-      <div 
+      <div
         className="absolute inset-0 rounded-2xl pointer-events-none p-px overflow-hidden"
         style={{
-          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMask:
+            "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
           WebkitMaskComposite: "xor",
-          maskComposite: "exclude"
+          maskComposite: "exclude",
         }}
       >
-        <div 
+        <div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] aspect-square animate-[spin_12s_linear_infinite]"
           style={{
-            background: "conic-gradient(from 0deg, transparent 0%, rgba(139, 92, 246, 0.4) 15%, transparent 30%, transparent 50%, rgba(59, 130, 246, 0.4) 65%, transparent 80%, transparent 100%)"
+            background:
+              "conic-gradient(from 0deg, transparent 0%, rgba(139, 92, 246, 0.4) 15%, transparent 30%, transparent 50%, rgba(59, 130, 246, 0.4) 65%, transparent 80%, transparent 100%)",
           }}
         />
       </div>
-      {/* Icono de menu de navegacion */}
-      <button
-        onClick={onMenuToggle}
-        className="p-2 text-zinc-400 hover:text-white transition-all duration-300 
-        hover:bg-white/10 rounded-xl hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 relative z-10"
-        aria-label="Abrir menú"
-      >
-        <Bars3Icon className="w-5 h-5" />
-      </button>
-
-      {/* Logo/Brand */}
+      {/* Lado izquierdo (Menu + Logo) */}
       <div className="flex items-center gap-3 relative z-10">
-        <div
-          className="w-8 h-8 rounded-[10px] bg-linear-to-br from-blue-500 to-violet-500 
-          flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)]
-          border border-white/20 relative overflow-hidden"
+        {/* Icono de menu de navegacion */}
+        <button
+          onClick={onMenuToggle}
+          className="p-2 text-zinc-400 hover:text-white transition-all duration-300 
+          hover:bg-white/10 rounded-xl hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95"
+          aria-label="Abrir menú"
         >
-          <div
-            className="absolute inset-0 bg-white/20 blur-[2px] rounded-full top-[-50%] 
-            scale-150 rotate-45 transform origin-top-left pointer-events-none"
-          />
-          <span
-            className="text-[10px] font-black text-white relative z-10 tracking-widest 
-            drop-shadow-sm"
-          >
-            BS
-          </span>
-        </div>
+          <Bars3Icon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Título (Centrado Absoluto) */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none z-10">
         <span
-          className="text-[15px] font-semibold text-white tracking-wide 
-          hidden sm:block drop-shadow-md"
+          className="text-base font-extrabold text-white/85 tracking-wide 
+          drop-shadow-md"
         >
           {title ? title : "Black Silver"}
         </span>
