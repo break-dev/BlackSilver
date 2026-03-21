@@ -49,7 +49,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
       {/* Título (Centrado Absoluto) */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none z-10">
         <span
-          className="text-base font-extrabold text-white/85 tracking-wide 
+          className="text-sm font-bold text-white/85 tracking-wide 
           drop-shadow-md"
         >
           {title ? title : "Black Silver"}
