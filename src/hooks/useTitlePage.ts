@@ -7,7 +7,7 @@ export const useTitlePage = (title?: string) => {
   const setTitle = useUIStore((state) => state.setTitle);
 
   useEffect(() => {
-    if (title) {
+    if (title !== undefined) {
       setTitle(title);
     }
   }, [title, setTitle]);

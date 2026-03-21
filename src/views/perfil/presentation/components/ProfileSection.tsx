@@ -17,7 +17,7 @@ export const ProfileSection = ({ title, children }: ProfileSectionProps) => {
         >
           {title}
         </Text>
-        <div className="h-px w-full bg-zinc-800/50" />
+        <div className="h-px w-[40%] bg-zinc-700/50" />
       </Group>
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={35} className="w-full">
         {children}

@@ -11,39 +11,66 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
 
   return (
     <header
-      className="fixed top-4 left-4 right-4 flex items-center 
-      justify-between px-5 h-11 bg-zinc-900/80 backdrop-blur-xl 
-      rounded-xl border border-zinc-800/50 shadow-lg z-10"
+      className="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-7xl
+      flex items-center justify-between px-6 h-12 bg-white/3 backdrop-blur-2xl 
+      rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-40 
+      transition-all duration-300"
     >
+      <div 
+        className="absolute inset-0 rounded-2xl pointer-events-none p-px overflow-hidden"
+        style={{
+          WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude"
+        }}
+      >
+        <div 
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] aspect-square animate-[spin_12s_linear_infinite]"
+          style={{
+            background: "conic-gradient(from 0deg, transparent 0%, rgba(139, 92, 246, 0.4) 15%, transparent 30%, transparent 50%, rgba(59, 130, 246, 0.4) 65%, transparent 80%, transparent 100%)"
+          }}
+        />
+      </div>
       {/* Icono de menu de navegacion */}
       <button
         onClick={onMenuToggle}
-        className="p-1.5 text-zinc-400 hover:text-white transition-colors 
-        hover:bg-white/5 rounded-lg"
+        className="p-2 text-zinc-400 hover:text-white transition-all duration-300 
+        hover:bg-white/10 rounded-xl hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 relative z-10"
         aria-label="Abrir menú"
       >
         <Bars3Icon className="w-5 h-5" />
       </button>
 
       {/* Logo/Brand */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 relative z-10">
         <div
-          className="w-6 h-6 rounded-md bg-linear-to-br from-zinc-100 
-          to-zinc-300 flex items-center justify-center shadow-sm"
+          className="w-8 h-8 rounded-[10px] bg-linear-to-br from-blue-500 to-violet-500 
+          flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)]
+          border border-white/20 relative overflow-hidden"
         >
-          {/* Reducido de 10px a 8px */}
-          <span className="text-[8px] font-bold text-zinc-900">BS</span>
+          <div
+            className="absolute inset-0 bg-white/20 blur-[2px] rounded-full top-[-50%] 
+            scale-150 rotate-45 transform origin-top-left pointer-events-none"
+          />
+          <span
+            className="text-[10px] font-black text-white relative z-10 tracking-widest 
+            drop-shadow-sm"
+          >
+            BS
+          </span>
         </div>
         <span
-          className="text-sm font-semibold text-white tracking-wide 
-          hidden sm:block"
+          className="text-[15px] font-semibold text-white tracking-wide 
+          hidden sm:block drop-shadow-md"
         >
           {title ? title : "Black Silver"}
         </span>
       </div>
 
       {/* Menu de usuario */}
-      <UserMenu />
+      <div className="relative z-10">
+        <UserMenu />
+      </div>
     </header>
   );
 };

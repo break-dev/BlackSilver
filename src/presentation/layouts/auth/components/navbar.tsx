@@ -58,26 +58,29 @@ export const Navbar = ({ onClose }: NavbarProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md 
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm 
         animate-fadeIn transition-all duration-300"
       onClick={onClose}
     >
       <nav
-        className="absolute left-4 top-4 bottom-4 w-[350px] max-w-[85vw] 
-          bg-zinc-950/90 backdrop-blur-2xl rounded-3xl border border-white/10 
-          shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden 
-          animate-slideInLeft ring-1 ring-white/5"
+        className="absolute left-4 top-4 bottom-4 w-[320px] max-w-[85vw] 
+          bg-zinc-950/80 backdrop-blur-3xl rounded-4xl border border-white/10 
+          shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden 
+          animate-slideInLeft ring-1 ring-white/5 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header con gradiente sutil */}
         <div
-          className="relative flex items-center justify-between p-5 border-b 
-            border-white/5 bg-linear-to-b from-white/2 to-transparent"
+          className="relative flex items-center justify-between p-6 border-b 
+            border-white/5 bg-linear-to-b from-white/5 to-transparent shrink-0"
         >
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-            <span className="font-bold text-white text-sm tracking-tight uppercase">
-              Black Silver
+            <div
+              className="w-2 h-2 rounded-full bg-blue-500 
+              shadow-[0_0_12px_rgba(59,130,246,0.8)] animate-pulse"
+            />
+            <span className="font-bold text-white text-[15px] tracking-wide">
+              NAVEGACIÓN
             </span>
           </div>
           <button
@@ -86,7 +89,10 @@ export const Navbar = ({ onClose }: NavbarProps) => {
               rounded-xl transition-all duration-300 group"
             aria-label="Cerrar menú"
           >
-            <XMarkIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            <XMarkIcon
+              className="w-5 h-5 group-hover:rotate-90 transition-transform 
+              duration-300"
+            />
           </button>
         </div>
 
@@ -99,8 +105,8 @@ export const Navbar = ({ onClose }: NavbarProps) => {
           <Link
             to="/home"
             onClick={onClose}
-            className={`group w-full flex items-center gap-3 px-4 py-3 rounded-2xl 
-              transition-all duration-300 ${
+            className={`group w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl 
+              transition-all duration-300 relative ${
                 location.pathname === "/home"
                   ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] ring-1 ring-white/20"
                   : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
@@ -152,10 +158,10 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                       setExpanded(isModExpanded ? null : mod.nombre);
                       setExpandedSub(null);
                     }}
-                    className={`group w-full flex items-center justify-between px-4 py-3 
+                    className={`group w-full flex items-center justify-between px-4 py-3.5 
                       rounded-2xl transition-all duration-300 ${
                         isModExpanded
-                          ? "bg-white/3 text-white"
+                          ? "bg-white/5 text-white ring-1 ring-white/10"
                           : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
                       }`}
                   >

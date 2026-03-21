@@ -15,14 +15,47 @@ export const AuthLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 flex flex-col">
-      <GlobalNotification />
-      <Header onMenuToggle={() => setOpen(true)} />
-      {open && <Navbar onClose={() => setOpen(false)} />}
+    <div className="relative min-h-screen w-full bg-[#030303] text-zinc-100 flex flex-col overflow-hidden">
+      <style>
+        {`
+          @keyframes blob1 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30vw, -15vh) scale(1.1); }
+            66% { transform: translate(-20vw, 20vh) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          @keyframes blob2 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(-25vw, 25vh) scale(1.2); }
+            66% { transform: translate(20vw, -20vh) scale(0.8); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          @keyframes blob3 {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(25vw, -30vh) scale(0.9); }
+            66% { transform: translate(-25vw, 25vh) scale(1.1); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          .animate-blob1 { animation: blob1 25s infinite alternate ease-in-out; }
+          .animate-blob2 { animation: blob2 30s infinite alternate ease-in-out; }
+          .animate-blob3 { animation: blob3 35s infinite alternate ease-in-out; }
+        `}
+      </style>
+      {/* Background Mesh Gradients - Premium dark glassmorphism aesthetic */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob1" />
+      <div className="absolute top-[10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob2" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob3" />
 
-      <main className="flex-1 pt-24 px-4 pb-6">
-        <Outlet />
-      </main>
+      {/* Capa de contenido */}
+      <div className="relative z-10 flex flex-col flex-1">
+        <GlobalNotification />
+        <Header onMenuToggle={() => setOpen(true)} />
+        {open && <Navbar onClose={() => setOpen(false)} />}
+
+        <main className="flex-1 mx-auto w-full pt-28 px-4 pb-10">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

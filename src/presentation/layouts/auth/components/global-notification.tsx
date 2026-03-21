@@ -62,15 +62,15 @@ export const GlobalNotification = () => {
       withCloseButton: true,
       styles: () => ({
         root: {
-          backgroundColor: "rgba(9, 9, 11, 0.75)", // zinc-950 w/ opacity
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderColor: "rgba(255, 255, 255, 0.08)",
+          backgroundColor: "rgba(0, 0, 0, 0.4)", // Ultra transparent
+          backdropFilter: "blur(40px)",
+          WebkitBackdropFilter: "blur(40px)",
+          borderColor: "rgba(255, 255, 255, 0.1)",
           borderWidth: "1px",
           boxShadow:
-            "0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0,0,0,0.3) inset",
-          borderRadius: "20px",
-          padding: "12px 16px",
+            "0 20px 40px -12px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(255,255,255,0.05)",
+          borderRadius: "24px",
+          padding: "16px 20px",
           "&::before": { display: "none" }, // Remove default left color bar if present
         },
         title: {
