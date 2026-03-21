@@ -21,7 +21,15 @@ export const Navbar = ({ onClose }: NavbarProps) => {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
   const [syncedPath, setSyncedPath] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
   const { menu, loading } = useMenuNav();
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 280);
+  };
 
   // Sincronizar expansión con la ruta actual durante el renderizado (evita cascading renders en useEffect)
   if (
@@ -58,15 +66,17 @@ export const Navbar = ({ onClose }: NavbarProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm 
-        animate-fadeIn transition-all duration-300"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm 
+        transition-opacity duration-300 ${isClosing ? "opacity-0 pointer-events-none" : "animate-fadeIn"}`}
+      onClick={handleClose}
     >
       <nav
-        className="absolute left-4 top-4 bottom-4 w-[320px] max-w-[85vw] 
+        className={`absolute left-4 top-4 bottom-4 w-[350px] max-w-[85vw] 
           bg-zinc-950/80 backdrop-blur-3xl rounded-4xl border border-white/10 
           shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden 
-          animate-slideInLeft ring-1 ring-white/5 flex flex-col"
+          ring-1 ring-white/5 flex flex-col transition-all duration-300 ${
+            isClosing ? "opacity-0 -translate-x-[110%]" : "animate-slideInLeft"
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header con gradiente sutil */}
@@ -84,7 +94,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
             </span>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 text-zinc-500 hover:text-white hover:bg-white/10 
               rounded-xl transition-all duration-300 group"
             aria-label="Cerrar menú"
@@ -104,7 +114,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
           {/* Home */}
           <Link
             to="/home"
-            onClick={onClose}
+            onClick={handleClose}
             className={`group w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl 
               transition-all duration-300 relative ${
                 location.pathname === "/home"
@@ -249,7 +259,7 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                   <Link
                                     key={sec.id_seccion || sec.nombre}
                                     to={sec.url || "#"}
-                                    onClick={onClose}
+                                    onClick={handleClose}
                                     className={`flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
                                       location.pathname === sec.url
                                         ? "text-blue-400 bg-blue-400/10 font-medium"
