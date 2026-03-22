@@ -10,12 +10,14 @@ import {
   NumberInput,
   Tooltip,
   Paper,
+  ActionIcon,
 } from "@mantine/core";
 import {
   BuildingOffice2Icon,
   ArchiveBoxIcon,
   ClipboardDocumentListIcon,
   CheckCircleIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarPrestamo, type AlmacenAliado } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -150,41 +152,72 @@ export const RegistrarPrestamoAlmacen = ({
             <Group gap="sm">
                {almacenesAliados.map((aliado: AlmacenAliado) => {
                  const isPicked = idAlmacenPrestamista === String(aliado.id_almacen);
-                 const tooltipContent = aliado.items.map(i => {
-                    const detail = detalles.find(d => d.id_producto === i.id_producto);
-                    const convertedStock = i.stock_actual_base / (detail?.contenido_por_presentacion || 1);
-                    return `${i.nombre_producto}: ${formatNumber(convertedStock)} ${detail?.unidad_medida_sol_abv || 'UND'}`;
-                 }).join('\n');
+                  return (
+                    <Paper
+                      key={aliado.id_almacen}
+                      onClick={() =>
+                        setIdAlmacenPrestamista((prev) =>
+                          prev === String(aliado.id_almacen)
+                            ? null
+                            : String(aliado.id_almacen)
+                        )
+                      }
+                      p="xs"
+                      radius="md"
+                      className={`cursor-pointer border-2 transition-all flex items-center gap-3 pr-4 group relative
+                        ${
+                          isPicked
+                            ? "bg-indigo-500/20 border-indigo-400"
+                            : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                        }
+                      `}
+                    >
+                      <div
+                        className={`p-1.5 rounded-lg ${
+                          isPicked
+                            ? "bg-indigo-400 text-zinc-950"
+                            : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
+                        }`}
+                      >
+                        <BuildingOffice2Icon className="w-5 h-5" />
+                      </div>
+                      <Stack gap={0} className="flex-1">
+                        <Text size="sm" fw={800}>
+                          {aliado.nombre_almacen}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {aliado.items.length} productos disponibles
+                        </Text>
+                      </Stack>
 
-                 return (
-                   <Tooltip
-                    key={aliado.id_almacen}
-                    label={tooltipContent}
-                    withArrow
-                    position="top"
-                    multiline
-                    w={250}
-                    className="whitespace-pre-line bg-zinc-900 border-zinc-800 shadow-2xl"
-                   >
-                     <Paper
-                        onClick={() => setIdAlmacenPrestamista(String(aliado.id_almacen))}
-                        p="xs"
-                        radius="md"
-                        className={`cursor-pointer border-2 transition-all flex items-center gap-3 pr-4 group
-                          ${isPicked ? 'bg-indigo-500/20 border-indigo-400' : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'}
-                        `}
-                     >
-                        <div className={`p-1.5 rounded-lg ${isPicked ? 'bg-indigo-400 text-zinc-950' : 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200'}`}>
-                           <BuildingOffice2Icon className="w-5 h-5" />
-                        </div>
-                        <Stack gap={0}>
-                           <Text size="sm" fw={800}>{aliado.nombre_almacen}</Text>
-                           <Text size="xs" c="dimmed">{aliado.items.length} productos disponibles</Text>
-                        </Stack>
-                        {isPicked && <CheckCircleIcon className="w-5 h-5 text-indigo-400 ml-auto" />}
-                     </Paper>
-                   </Tooltip>
-                 );
+                      <Group gap={4}>
+                        <Tooltip
+                          label="Ir a Lotes (Ver información de stock detallado)"
+                          withArrow
+                          position="top"
+                        >
+                          <ActionIcon
+                            variant="subtle"
+                            color="indigo"
+                            radius="md"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Evitar seleccionar el almacén al ver lotes
+                              window.open(
+                                `/logistica/inventario/lotes?idAlmacen=${aliado.id_almacen}`,
+                                "_blank"
+                              );
+                            }}
+                            className="hover:bg-indigo-500/20"
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </ActionIcon>
+                        </Tooltip>
+                        {isPicked && (
+                          <CheckCircleIcon className="w-5 h-5 text-indigo-400" />
+                        )}
+                      </Group>
+                    </Paper>
+                  );
                })}
             </Group>
           ) : (

@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { LotesService } from "../service/lotes.service";
 import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
 import { useUIStore } from "../../../stores/ui.store";
 
 export const useLotesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
+
+  const [searchParams] = useSearchParams();
+  const initialAlmacenId = searchParams.get("idAlmacen");
 
   // States
   const [lotes, setLotes] = useState<RES_Lote[]>([]);
@@ -13,7 +17,7 @@ export const useLotesPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
+  const [idAlmacen, setIdAlmacen] = useState<string | null>(initialAlmacenId);
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
