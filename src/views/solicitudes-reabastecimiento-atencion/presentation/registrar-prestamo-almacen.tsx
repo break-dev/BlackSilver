@@ -49,17 +49,28 @@ const inputClasses = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SectionHeader = ({ icon: Icon, title, color = "amber" }: { icon: any; title: string, color?: string }) => (
-  <div className="flex flex-col gap-2 mb-4">
-    <div className="flex items-center gap-2">
-      <Icon className={`w-5 h-5 text-${color}-500`} />
-      <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">
-        {title}
-      </Text>
+const SectionHeader = ({ icon: Icon, title, color = "amber" }: { icon: any; title: string, color?: string }) => {
+  const colors: Record<string, { text: string; line: string }> = {
+    amber: { text: "text-amber-500", line: "from-amber-500/50" },
+    indigo: { text: "text-indigo-500", line: "from-indigo-500/50" },
+    emerald: { text: "text-emerald-500", line: "from-emerald-500/50" },
+    teal: { text: "text-teal-500", line: "from-teal-500/50" },
+  };
+
+  const activeColor = colors[color as keyof typeof colors] || colors.amber;
+
+  return (
+    <div className="flex flex-col gap-2 mb-4">
+      <div className="flex items-center gap-2">
+        <Icon className={`w-5 h-5 ${activeColor.text}`} />
+        <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">
+          {title}
+        </Text>
+      </div>
+      <div className={`h-0.5 w-full bg-gradient-to-r ${activeColor.line} to-transparent rounded-full`} />
     </div>
-    <div className={`h-0.5 w-full bg-gradient-to-r from-${color}-500/50 to-transparent rounded-full`} />
-  </div>
-);
+  );
+};
 
 export const RegistrarPrestamoAlmacen = ({
   solicitud,
@@ -158,7 +169,7 @@ export const RegistrarPrestamoAlmacen = ({
                   Solo se muestran almacenes que cuentan con disponibilidad para <b>todos</b> los productos que has seleccionado arriba. Esto asegura que el préstamo se realice de forma íntegra.
                 </Text>
               </div>
-              
+
               <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
                 {almacenesAliados.map((aliado: AlmacenAliado) => {
                   const isPicked = idAlmacenPrestamista === String(aliado.id_almacen);
@@ -185,13 +196,13 @@ export const RegistrarPrestamoAlmacen = ({
                         <Group gap="sm" wrap="nowrap" className="min-w-0 flex-1">
                           <div
                             className={`p-2 rounded-xl shrink-0 ${isPicked
-                                ? "bg-indigo-400 text-zinc-950"
-                                : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
+                              ? "bg-indigo-400 text-zinc-950"
+                              : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
                               }`}
                           >
                             <BuildingOffice2Icon className="w-5 h-5" />
                           </div>
-                          
+
                           <div className="min-w-0 flex-1">
                             <Text
                               size="sm"
@@ -243,9 +254,9 @@ export const RegistrarPrestamoAlmacen = ({
         </section>
       )}
 
-      {idAlmacenPrestamista && (
+      {idAlmacenPrestamista && selectedItemIds.length > 0 && (
         <section className="animate-in fade-in slide-in-from-top-4 duration-500">
-          <SectionHeader icon={ClipboardDocumentListIcon} title="3. Configurar Cantidades para el Préstamo" color="teal" />
+          <SectionHeader icon={ClipboardDocumentListIcon} title="3. Configurar Cantidades para el Préstamo" color="emerald" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <CustomDatePicker
               label="Fecha Límite de Devolución"
@@ -255,7 +266,7 @@ export const RegistrarPrestamoAlmacen = ({
               minDate={new Date()}
             />
             <Stack gap={2}>
-              <Text size="xs" fw={700} c="zinc.5" className="uppercase tracking-widest">Prestamista seleccionado:</Text>
+              <Text size="xs" fw={700} c="zinc.5" className="uppercase tracking-widest">Almacen Prestamista:</Text>
               <Text size="lg" fw={900} variant="gradient" gradient={{ from: 'indigo.4', to: 'indigo.6' }}>
                 {almacenesAliados.find(a => String(a.id_almacen) === idAlmacenPrestamista)?.nombre_almacen}
               </Text>
@@ -286,7 +297,7 @@ export const RegistrarPrestamoAlmacen = ({
                       </td>
                       <td className="px-4 py-3 text-center">
                         {/* Estilo inspirado en Nuevo Requerimiento */}
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 border-zinc-800 w-fit mx-auto transition-all focus-within:border-teal-500">
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 border-zinc-800 w-fit mx-auto transition-all focus-within:border-emerald-500">
                           <NumberInput
                             variant="unstyled"
                             value={cantidades[item.id_solicitud_detalle] || ""}
@@ -295,7 +306,7 @@ export const RegistrarPrestamoAlmacen = ({
                             hideControls
                             placeholder="0"
                             classNames={{
-                              input: "w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent text-teal-400"
+                              input: "w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent text-emerald-400"
                             }}
                           />
                           <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">

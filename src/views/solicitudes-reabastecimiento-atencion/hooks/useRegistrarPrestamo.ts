@@ -104,6 +104,8 @@ export const useRegistrarPrestamo = ({
   }, [solicitud.id_almacen_solicitante]);
 
   useEffect(() => {
+    setIdAlmacenPrestamista(null);
+    setStocksAlmacen({});
     const ids = detalles
       .filter(d => selectedItemIds.includes(d.id_solicitud_detalle))
       .map(d => d.id_producto);
