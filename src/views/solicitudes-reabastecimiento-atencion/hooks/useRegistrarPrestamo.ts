@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
 import type {
   RES_DetalleSolicitud,
@@ -50,10 +51,14 @@ export const useRegistrarPrestamo = ({
         if (isSelecting) {
             const item = detalles.find(d => d.id_solicitud_detalle === id);
             if (item) {
-                // Pre-llenar con la cantidad solicitada de la solicitud original
+                const pendiente = Number(item.cantidad_solicitada) - 
+                                 Number(item.cantidad_entregada || 0) - 
+                                 Number(item.cantidad_prestada_total || 0);
+                
+                // Pre-llenar con el pendiente real (o 0 si ya se cubrió todo)
                 setCantidades(c => ({ 
                    ...c, 
-                   [id]: Number(item.cantidad_solicitada) 
+                   [id]: Math.max(0, pendiente)
                 }));
             }
         }
@@ -139,7 +144,7 @@ export const useRegistrarPrestamo = ({
       const resp = await SolicitudesAtencionService.crearPrestamo({
         id_solicitud_reabastecimiento: solicitud.id_solicitud,
         id_almacen_prestamista: parseInt(idAlmacenPrestamista),
-        fecha_limite_devolucion: fechaLimiteDevolucion ? fechaLimiteDevolucion.toISOString().split('T')[0] : null,
+        fecha_limite_devolucion: fechaLimiteDevolucion ? dayjs(fechaLimiteDevolucion).format("YYYY-MM-DD") : null,
         detalles: selectedItemIds.map((id) => ({
           id_solicitud_reabastecimiento_detalle: id,
           cantidad_solicitada: cantidades[id] || 0,

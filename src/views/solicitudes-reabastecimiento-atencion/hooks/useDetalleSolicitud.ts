@@ -121,13 +121,15 @@ export const useDetalleSolicitud = ({
             idSolicitud,
           );
         if (resp.success) {
-          setDetalles(
-            resp.data.map((d) => ({
-              ...d,
-              pendiente_base:
-                d.cantidad_solicitada_base - d.cantidad_entregada_base,
-            })),
-          );
+            setDetalles(
+              resp.data.map((d) => ({
+                ...d,
+                pendiente_base:
+                  d.cantidad_solicitada_base -
+                  (Number(d.cantidad_entregada_base) +
+                    Number(d.cantidad_prestada_total_base)),
+              })),
+            );
         } else {
           setError(resp.message || "Error al obtener detalles");
         }

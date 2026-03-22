@@ -20,6 +20,7 @@ import {
   CheckCircleIcon,
   EyeIcon,
   InformationCircleIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarPrestamo, type AlmacenAliado } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -117,19 +118,34 @@ export const RegistrarPrestamoAlmacen = ({
               <tr>
                 <th className="px-4 py-2 text-center w-12">Seleccionar</th>
                 <th className="px-4 py-2 text-left">Producto</th>
-                <th className="px-4 py-2 text-center">Necesario (Solicitud)</th>
+                <th className="px-4 py-2 text-center">Necesario (Total)</th>
+                <th className="px-4 py-2 text-center">Pendiente</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
               {detalles
-                .filter(
-                  (item) =>
+                .filter((item) => {
+                  const pendiente =
+                    Number(item.cantidad_solicitada) -
+                    Number(item.cantidad_entregada || 0) -
+                    Number(item.cantidad_prestada_total || 0);
+
+                  return (
                     item.estado !== EstadoSolicitudDetalle.Rechazado &&
                     item.estado !== EstadoSolicitudDetalle.Completado &&
-                    item.estado !== EstadoSolicitudDetalle.Cerrado
-                )
+                    item.estado !== EstadoSolicitudDetalle.Cerrado &&
+                    pendiente > 0
+                  );
+                })
                 .map((item) => {
-                  const isSelected = selectedItemIds.includes(item.id_solicitud_detalle);
+                  const isSelected = selectedItemIds.includes(
+                    item.id_solicitud_detalle,
+                  );
+                  const pendiente =
+                    Number(item.cantidad_solicitada) -
+                    Number(item.cantidad_entregada || 0) -
+                    Number(item.cantidad_prestada_total || 0);
+
                   return (
                     <tr key={item.id_solicitud_detalle} className={`${isSelected ? "bg-amber-500/5" : "opacity-50"} transition-all`}>
                       <td className="px-4 py-2 text-center">
@@ -144,8 +160,13 @@ export const RegistrarPrestamoAlmacen = ({
                         {item.producto}
                       </td>
                       <td className="px-4 py-2 text-center">
-                        <Badge variant="light" color="amber" size="sm">
+                        <Text size="xs" c="dimmed">
                           {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}
+                        </Text>
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <Badge variant="light" color={pendiente > 0 ? "amber" : "gray"} size="sm">
+                          {formatNumber(Math.max(0, pendiente))} {item.unidad_medida_sol_abv}
                         </Badge>
                       </td>
                     </tr>
@@ -297,21 +318,42 @@ export const RegistrarPrestamoAlmacen = ({
                       </td>
                       <td className="px-4 py-3 text-center">
                         {/* Estilo inspirado en Nuevo Requerimiento */}
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 border-zinc-800 w-fit mx-auto transition-all focus-within:border-emerald-500">
-                          <NumberInput
-                            variant="unstyled"
-                            value={cantidades[item.id_solicitud_detalle] || ""}
-                            onChange={(val) => setCantidad(item.id_solicitud_detalle, Number(val))}
-                            size="xs"
-                            hideControls
-                            placeholder="0"
-                            classNames={{
-                              input: "w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent text-emerald-400"
-                            }}
-                          />
-                          <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">
-                            {item.unidad_medida_sol_abv}
-                          </Text>
+                        <div className="flex flex-col items-center gap-1">
+                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 w-fit mx-auto transition-all 
+                            ${(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0))
+                              ? "border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]"
+                              : "border-zinc-800 focus-within:border-emerald-500"
+                            }`}
+                          >
+                            <NumberInput
+                              variant="unstyled"
+                              value={cantidades[item.id_solicitud_detalle] || ""}
+                              onChange={(val) => setCantidad(item.id_solicitud_detalle, Number(val))}
+                              size="xs"
+                              hideControls
+                              placeholder="0"
+                              classNames={{
+                                input: `w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent 
+                                  ${(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0))
+                                    ? "text-orange-400"
+                                    : "text-emerald-400"
+                                  }`
+                              }}
+                            />
+                            <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">
+                              {item.unidad_medida_sol_abv}
+                            </Text>
+                          </div>
+
+                          {/* Alerta de exceso de pendiente */}
+                          {(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0)) && (
+                            <Tooltip label="Esta cantidad excede lo pendiente de la solicitud original" withArrow position="bottom">
+                              <div className="flex items-center gap-1 text-[9px] text-orange-400 font-bold uppercase animate-pulse">
+                                <ExclamationTriangleIcon className="w-3 h-3" />
+                                Exceso detectado
+                              </div>
+                            </Tooltip>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">

@@ -40,6 +40,8 @@ export interface RES_DetalleSolicitud {
   stock_disponible: number;
   comentario: string | null;
   comentario_decision: string | null;
+  cantidad_prestada_total: number;
+  cantidad_prestada_total_base: number;
   estado: EstadoSolicitudDetalle;
 }
 
