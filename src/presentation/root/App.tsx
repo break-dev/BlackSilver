@@ -19,7 +19,7 @@ import {
 } from "../layouts/logistica.layout";
 // Vistas
 import { LoginPage } from "../../views/login/presentation/login.page";
-import { HomePage } from "../pages/home.page";
+import { HomePage } from "../pages/home/home.page";
 import { ConcesionesPage } from "../../views/concesiones/presentation/concesiones.page";
 import { MinasPage } from "../../views/minas-labores/presentation/minas.page";
 import { EmpresasPage } from "../../views/empresas/presentation/empresas.page";

@@ -7,8 +7,10 @@ import bg6 from "./wallpapers/luz-ingresando.jpg";
 import bg7 from "./wallpapers/pala-sobre-cerro.jpg";
 import bg8 from "./wallpapers/pala-trabajando.jpg";
 import bg9 from "./wallpapers/persona-en-mina.jpg";
-import BlackcitoLogo from "./svg/blackcito.svg";
 import LoginVideo from "./videos/login-fondo.mp4";
+import Blackcito from "./png/blackcito.png";
+import BlackcitoSinPatitas from "./png/blackcito-sin-patitas.png";
 
 export const Wallpapers = [bg1, bg2, bg3, bg4, bg5, bg6, bg7, bg8, bg9];
-export { BlackcitoLogo, LoginVideo };
+
+export { Blackcito, BlackcitoSinPatitas, LoginVideo };
