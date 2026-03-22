@@ -11,6 +11,7 @@ import {
   Tooltip,
   Paper,
   ActionIcon,
+  SimpleGrid,
 } from "@mantine/core";
 import {
   BuildingOffice2Icon,
@@ -18,6 +19,7 @@ import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
   EyeIcon,
+  InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarPrestamo, type AlmacenAliado } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -89,9 +91,9 @@ export const RegistrarPrestamoAlmacen = ({
   } = useRegistrarPrestamo({ solicitud, detalles, onSuccess });
 
   useEffect(() => {
-     if (idAlmacenPrestamista) {
-        cargarStockPrestamista(parseInt(idAlmacenPrestamista));
-     }
+    if (idAlmacenPrestamista) {
+      cargarStockPrestamista(parseInt(idAlmacenPrestamista));
+    }
   }, [idAlmacenPrestamista, selectedItemIds.length, cargarStockPrestamista]);
 
   return (
@@ -116,28 +118,28 @@ export const RegistrarPrestamoAlmacen = ({
                     item.estado !== EstadoSolicitudDetalle.Cerrado
                 )
                 .map((item) => {
-                const isSelected = selectedItemIds.includes(item.id_solicitud_detalle);
-                return (
-                  <tr key={item.id_solicitud_detalle} className={`${isSelected ? "bg-amber-500/5" : "opacity-50"} transition-all`}>
-                    <td className="px-4 py-2 text-center">
-                      <Checkbox
-                        size="xs"
-                        checked={isSelected}
-                        onChange={() => toggleSelection(item.id_solicitud_detalle)}
-                        color="amber"
-                      />
-                    </td>
-                    <td className="px-4 py-2 font-semibold text-sm">
-                      {item.producto}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      <Badge variant="light" color="amber" size="sm">
-                        {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}
-                      </Badge>
-                    </td>
-                  </tr>
-                );
-              })}
+                  const isSelected = selectedItemIds.includes(item.id_solicitud_detalle);
+                  return (
+                    <tr key={item.id_solicitud_detalle} className={`${isSelected ? "bg-amber-500/5" : "opacity-50"} transition-all`}>
+                      <td className="px-4 py-2 text-center">
+                        <Checkbox
+                          size="xs"
+                          checked={isSelected}
+                          onChange={() => toggleSelection(item.id_solicitud_detalle)}
+                          color="amber"
+                        />
+                      </td>
+                      <td className="px-4 py-2 font-semibold text-sm">
+                        {item.producto}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        <Badge variant="light" color="amber" size="sm">
+                          {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}
+                        </Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </Table>
         </div>
@@ -145,13 +147,21 @@ export const RegistrarPrestamoAlmacen = ({
 
       {selectedItemIds.length > 0 && (
         <section className="animate-in fade-in slide-in-from-top-4 duration-500">
-          <SectionHeader icon={BuildingOffice2Icon} title="2. Almacenes Aliados con Disponibilidad" color="indigo" />
+          <SectionHeader icon={BuildingOffice2Icon} title="2. Almacenes con Disponibilidad" color="indigo" />
           {loadingAlmacenes ? (
-             <Text size="xs" c="dimmed" fs="italic">Buscando almacenes que puedan ayudarte...</Text>
+            <Text size="xs" c="dimmed" fs="italic">Buscando almacenes que puedan ayudarte...</Text>
           ) : almacenesAliados.length > 0 ? (
-            <Group gap="sm">
-               {almacenesAliados.map((aliado: AlmacenAliado) => {
-                 const isPicked = idAlmacenPrestamista === String(aliado.id_almacen);
+            <Stack gap="md">
+              <div className="flex items-start gap-2 bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl mb-1">
+                <InformationCircleIcon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                <Text size="xs" c="indigo.4" className="leading-relaxed">
+                  Solo se muestran almacenes que cuentan con disponibilidad para <b>todos</b> los productos que has seleccionado arriba. Esto asegura que el préstamo se realice de forma íntegra.
+                </Text>
+              </div>
+              
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+                {almacenesAliados.map((aliado: AlmacenAliado) => {
+                  const isPicked = idAlmacenPrestamista === String(aliado.id_almacen);
                   return (
                     <Paper
                       key={aliado.id_almacen}
@@ -162,64 +172,71 @@ export const RegistrarPrestamoAlmacen = ({
                             : String(aliado.id_almacen)
                         )
                       }
-                      p="xs"
-                      radius="md"
-                      className={`cursor-pointer border-2 transition-all flex items-center gap-3 pr-4 group relative
-                        ${
-                          isPicked
-                            ? "bg-indigo-500/20 border-indigo-400"
-                            : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                      p="md"
+                      radius="lg"
+                      className={`cursor-pointer border-2 transition-all group relative
+                        ${isPicked
+                          ? "bg-indigo-500/20 border-indigo-400 shadow-md shadow-indigo-500/10"
+                          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50"
                         }
                       `}
                     >
-                      <div
-                        className={`p-1.5 rounded-lg ${
-                          isPicked
-                            ? "bg-indigo-400 text-zinc-950"
-                            : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
-                        }`}
-                      >
-                        <BuildingOffice2Icon className="w-5 h-5" />
-                      </div>
-                      <Stack gap={0} className="flex-1">
-                        <Text size="sm" fw={800}>
-                          {aliado.nombre_almacen}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {aliado.items.length} productos disponibles
-                        </Text>
-                      </Stack>
-
-                      <Group gap={4}>
-                        <Tooltip
-                          label="Ir a Lotes (Ver información de stock detallado)"
-                          withArrow
-                          position="top"
-                        >
-                          <ActionIcon
-                            variant="subtle"
-                            color="indigo"
-                            radius="md"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Evitar seleccionar el almacén al ver lotes
-                              window.open(
-                                `/logistica/inventario/lotes?idAlmacen=${aliado.id_almacen}`,
-                                "_blank"
-                              );
-                            }}
-                            className="hover:bg-indigo-500/20"
+                      <Group justify="space-between" wrap="nowrap" align="center">
+                        <Group gap="sm" wrap="nowrap" className="min-w-0 flex-1">
+                          <div
+                            className={`p-2 rounded-xl shrink-0 ${isPicked
+                                ? "bg-indigo-400 text-zinc-950"
+                                : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
+                              }`}
                           >
-                            <EyeIcon className="w-4 h-4" />
-                          </ActionIcon>
-                        </Tooltip>
-                        {isPicked && (
-                          <CheckCircleIcon className="w-5 h-5 text-indigo-400" />
-                        )}
+                            <BuildingOffice2Icon className="w-5 h-5" />
+                          </div>
+                          
+                          <div className="min-w-0 flex-1">
+                            <Text
+                              size="sm"
+                              fw={800}
+                              truncate="end"
+                              className="tracking-tight text-white m-0"
+                            >
+                              {aliado.nombre_almacen}
+                            </Text>
+                          </div>
+                        </Group>
+
+                        <Group gap={6} wrap="nowrap" className="shrink-0 flex-none">
+                          <Tooltip
+                            label="Ver Lotes"
+                            withArrow
+                            position="top"
+                          >
+                            <ActionIcon
+                              variant="subtle"
+                              color="indigo"
+                              radius="md"
+                              size="md"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(
+                                  `/logistica/inventario/lotes?idAlmacen=${aliado.id_almacen}`,
+                                  "_blank"
+                                );
+                              }}
+                              className="hover:bg-indigo-500/20"
+                            >
+                              <EyeIcon className="w-4 h-4" />
+                            </ActionIcon>
+                          </Tooltip>
+                          {isPicked && (
+                            <CheckCircleIcon className="w-6 h-6 text-indigo-400" />
+                          )}
+                        </Group>
                       </Group>
                     </Paper>
                   );
-               })}
-            </Group>
+                })}
+              </SimpleGrid>
+            </Stack>
           ) : (
             <Text size="xs" c="red" fw={700}>Ningún otro almacén tiene stock de lo solicitado.</Text>
           )}
@@ -238,73 +255,73 @@ export const RegistrarPrestamoAlmacen = ({
               minDate={new Date()}
             />
             <Stack gap={2}>
-                 <Text size="xs" fw={700} c="zinc.5" className="uppercase tracking-widest">Prestamista seleccionado:</Text>
-                 <Text size="lg" fw={900} variant="gradient" gradient={{ from: 'indigo.4', to: 'indigo.6' }}>
-                    {almacenesAliados.find(a => String(a.id_almacen) === idAlmacenPrestamista)?.nombre_almacen}
-                 </Text>
+              <Text size="xs" fw={700} c="zinc.5" className="uppercase tracking-widest">Prestamista seleccionado:</Text>
+              <Text size="lg" fw={900} variant="gradient" gradient={{ from: 'indigo.4', to: 'indigo.6' }}>
+                {almacenesAliados.find(a => String(a.id_almacen) === idAlmacenPrestamista)?.nombre_almacen}
+              </Text>
             </Stack>
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-zinc-800 shadow-sm bg-zinc-950/10">
             <Table variant="unstyled" className="w-full text-zinc-300">
-               <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-black font-mono">
-                  <tr>
-                    <th className="px-4 py-3 text-left min-w-[150px]">Producto</th>
-                    <th className="px-4 py-3 text-center min-w-[200px]">Cantidad a Pedir</th>
-                    <th className="px-4 py-3 text-center">Disponible</th>
-                    <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Comentario</th>
-                  </tr>
-               </thead>
-               <tbody className="divide-y divide-zinc-800/50 bg-zinc-900/40">
-                  {detalles.filter(d => selectedItemIds.includes(d.id_solicitud_detalle)).map(item => {
-                     const stockExterno = stocksAlmacen[item.id_solicitud_detalle];
-                     const totalStockExternoBase = stockExterno?.reduce((acc, curr) => acc + Number(curr.stock_actual_base), 0) || 0;
-                     const totalStockExterno = totalStockExternoBase / (item.contenido_por_presentacion || 1);
+              <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-black font-mono">
+                <tr>
+                  <th className="px-4 py-3 text-left min-w-[150px]">Producto</th>
+                  <th className="px-4 py-3 text-center min-w-[200px]">Cantidad a Pedir</th>
+                  <th className="px-4 py-3 text-center">Disponible</th>
+                  <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Comentario</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/50 bg-zinc-900/40">
+                {detalles.filter(d => selectedItemIds.includes(d.id_solicitud_detalle)).map(item => {
+                  const stockExterno = stocksAlmacen[item.id_solicitud_detalle];
+                  const totalStockExternoBase = stockExterno?.reduce((acc, curr) => acc + Number(curr.stock_actual_base), 0) || 0;
+                  const totalStockExterno = totalStockExternoBase / (item.contenido_por_presentacion || 1);
 
-                     return (
-                       <tr key={item.id_solicitud_detalle} className="hover:bg-white/2 transition-colors">
-                          <td className="px-4 py-3">
-                             <Text size="sm" fw={800} c="white">{item.producto}</Text>
-                             <Text size="9px" c="dimmed" className="uppercase font-bold">Solicitado: {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}</Text>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                             {/* Estilo inspirado en Nuevo Requerimiento */}
-                             <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 border-zinc-800 w-fit mx-auto transition-all focus-within:border-teal-500">
-                                <NumberInput
-                                  variant="unstyled"
-                                  value={cantidades[item.id_solicitud_detalle] || ""}
-                                  onChange={(val) => setCantidad(item.id_solicitud_detalle, Number(val))}
-                                  size="xs"
-                                  hideControls
-                                  placeholder="0"
-                                  classNames={{
-                                      input: "w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent text-teal-400"
-                                  }}
-                                />
-                                <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">
-                                  {item.unidad_medida_sol_abv}
-                                </Text>
-                             </div>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                              <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
-                                 {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
-                              </Badge>
-                          </td>
-                          <td className="px-4 py-3">
-                             <TextInput
-                                placeholder="Nota opcional..."
-                                size="xs"
-                                radius="md"
-                                value={comentarios[item.id_solicitud_detalle] || ""}
-                                onChange={(e) => setComentario(item.id_solicitud_detalle, e.target.value)}
-                                classNames={inputClasses}
-                             />
-                          </td>
-                       </tr>
-                     );
-                  })}
-               </tbody>
+                  return (
+                    <tr key={item.id_solicitud_detalle} className="hover:bg-white/2 transition-colors">
+                      <td className="px-4 py-3">
+                        <Text size="sm" fw={800} c="white">{item.producto}</Text>
+                        <Text size="9px" c="dimmed" className="uppercase font-bold">Solicitado: {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}</Text>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {/* Estilo inspirado en Nuevo Requerimiento */}
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 border-zinc-800 w-fit mx-auto transition-all focus-within:border-teal-500">
+                          <NumberInput
+                            variant="unstyled"
+                            value={cantidades[item.id_solicitud_detalle] || ""}
+                            onChange={(val) => setCantidad(item.id_solicitud_detalle, Number(val))}
+                            size="xs"
+                            hideControls
+                            placeholder="0"
+                            classNames={{
+                              input: "w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent text-teal-400"
+                            }}
+                          />
+                          <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">
+                            {item.unidad_medida_sol_abv}
+                          </Text>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
+                          {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <TextInput
+                          placeholder="Nota opcional..."
+                          size="xs"
+                          radius="md"
+                          value={comentarios[item.id_solicitud_detalle] || ""}
+                          onChange={(e) => setComentario(item.id_solicitud_detalle, e.target.value)}
+                          classNames={inputClasses}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </Table>
           </div>
         </section>
