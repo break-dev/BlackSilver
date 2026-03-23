@@ -21,6 +21,7 @@ import {
   EyeIcon,
   InformationCircleIcon,
   ExclamationTriangleIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarPrestamo, type AlmacenAliado } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -107,6 +108,17 @@ export const RegistrarPrestamoAlmacen = ({
       cargarStockPrestamista(parseInt(idAlmacenPrestamista));
     }
   }, [idAlmacenPrestamista, selectedItemIds.length, cargarStockPrestamista]);
+
+  const hayExcesosStock = selectedItemIds.some((id) => {
+    const item = detalles.find((d) => d.id_solicitud_detalle === id);
+    if (!item) return false;
+    const stockEx = stocksAlmacen[id];
+    const totalStockExBase =
+      stockEx?.reduce((acc, curr) => acc + Number(curr.stock_actual_base), 0) || 0;
+    const divisor = Number(item.contenido_por_presentacion) || 1;
+    const totalStockEx = totalStockExBase / divisor;
+    return (cantidades[id] || 0) > totalStockEx;
+  });
 
   return (
     <Stack gap={24} p="md">
@@ -300,80 +312,189 @@ export const RegistrarPrestamoAlmacen = ({
                 <tr>
                   <th className="px-4 py-3 text-left min-w-[150px]">Producto</th>
                   <th className="px-4 py-3 text-center min-w-[200px]">Cantidad a Pedir</th>
-                  <th className="px-4 py-3 text-center">Disponible</th>
+                  <th className="px-4 py-3 text-center">Stock Disponible</th>
                   <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Comentario</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50 bg-zinc-900/40">
-                {detalles.filter(d => selectedItemIds.includes(d.id_solicitud_detalle)).map(item => {
-                  const stockExterno = stocksAlmacen[item.id_solicitud_detalle];
-                  const totalStockExternoBase = stockExterno?.reduce((acc, curr) => acc + Number(curr.stock_actual_base), 0) || 0;
-                  const totalStockExterno = totalStockExternoBase / (item.contenido_por_presentacion || 1);
+                {detalles
+                  .filter((d) => selectedItemIds.includes(d.id_solicitud_detalle))
+                  .map((item) => {
+                    const stockExterno = stocksAlmacen[item.id_solicitud_detalle];
+                    const totalStockExternoBase =
+                      stockExterno?.reduce(
+                        (acc, curr) => acc + Number(curr.stock_actual_base),
+                        0,
+                      ) || 0;
+                    const divisor = Number(item.contenido_por_presentacion) || 1;
+                    const totalStockExterno = totalStockExternoBase / divisor;
 
-                  return (
-                    <tr key={item.id_solicitud_detalle} className="hover:bg-white/2 transition-colors">
-                      <td className="px-4 py-3">
-                        <Text size="sm" fw={800} c="white">{item.producto}</Text>
-                        <Text size="9px" c="dimmed" className="uppercase font-bold">Solicitado: {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}</Text>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        {/* Estilo inspirado en Nuevo Requerimiento */}
-                        <div className="flex flex-col items-center gap-1">
-                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 w-fit mx-auto transition-all 
-                            ${(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0))
-                              ? "border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]"
-                              : "border-zinc-800 focus-within:border-emerald-500"
-                            }`}
+                    const cantidadPedida =
+                      cantidades[item.id_solicitud_detalle] || 0;
+                    const pendienteReal =
+                      Number(item.cantidad_solicitada) -
+                      Number(item.cantidad_entregada || 0) -
+                      Number(item.cantidad_prestada_total || 0);
+
+                    // Lógica de Stock Mínimo (advertencia)
+                    const stockMinimoBase = Number(item.stock_minimo || 0);
+                    const stockMinimoEnSol = stockMinimoBase / divisor;
+                    const stockResultante = totalStockExterno - cantidadPedida;
+
+                    // Estados de alerta
+                    const superaLoPendiente = cantidadPedida > pendienteReal;
+                    const superaStockDisponible =
+                      cantidadPedida > totalStockExterno;
+                    const dejaDebajoDelMinimo =
+                      stockResultante <= stockMinimoEnSol &&
+                      stockResultante > 0;
+                    const dejaSinStock =
+                      stockResultante === 0 && totalStockExterno > 0;
+
+                    // Prioridad de colores para el borde: Rojo (imposible) > Ámbar (inventario crítico/cero) > Naranja (exceso pedido)
+                    const colorBorde = superaStockDisponible
+                      ? "border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+                      : dejaDebajoDelMinimo || dejaSinStock
+                        ? "border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
+                        : superaLoPendiente
+                          ? "border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.1)]"
+                          : "border-zinc-800 focus-within:border-emerald-500";
+
+                    return (
+                      <tr
+                        key={item.id_solicitud_detalle}
+                        className="hover:bg-white/2 transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <Text size="sm" fw={800} c="white">
+                            {item.producto}
+                          </Text>
+                          <Text
+                            size="9px"
+                            c="dimmed"
+                            className="uppercase font-bold"
                           >
-                            <NumberInput
-                              variant="unstyled"
-                              value={cantidades[item.id_solicitud_detalle] || ""}
-                              onChange={(val) => setCantidad(item.id_solicitud_detalle, Number(val))}
-                              size="xs"
-                              hideControls
-                              placeholder="0"
-                              classNames={{
-                                input: `w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent 
-                                  ${(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0))
-                                    ? "text-orange-400"
-                                    : "text-emerald-400"
-                                  }`
-                              }}
-                            />
-                            <Text size="9px" fw={900} className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter">
-                              {item.unidad_medida_sol_abv}
-                            </Text>
-                          </div>
+                            Solicitado: {formatNumber(item.cantidad_solicitada)}{" "}
+                            {item.unidad_medida_sol_abv}
+                          </Text>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <div
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 w-fit mx-auto transition-all ${colorBorde}`}
+                            >
+                              <NumberInput
+                                variant="unstyled"
+                                value={
+                                  cantidades[item.id_solicitud_detalle] || ""
+                                }
+                                onChange={(val) =>
+                                  setCantidad(
+                                    item.id_solicitud_detalle,
+                                    Number(val),
+                                  )
+                                }
+                                size="xs"
+                                hideControls
+                                placeholder="0"
+                                classNames={{
+                                  input: `w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent 
+                                  ${
+                                    superaStockDisponible
+                                      ? "text-red-400"
+                                      : dejaDebajoDelMinimo || dejaSinStock
+                                        ? "text-amber-400"
+                                        : superaLoPendiente
+                                          ? "text-orange-400"
+                                          : "text-emerald-400"
+                                  }`,
+                                }}
+                              />
+                              <Text
+                                size="9px"
+                                fw={900}
+                                className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter"
+                              >
+                                {item.unidad_medida_sol_abv}
+                              </Text>
+                            </div>
 
-                          {/* Alerta de exceso de pendiente */}
-                          {(cantidades[item.id_solicitud_detalle] || 0) > (Number(item.cantidad_solicitada) - Number(item.cantidad_entregada || 0) - Number(item.cantidad_prestada_total || 0)) && (
-                            <Tooltip label="Esta cantidad excede lo pendiente de la solicitud original" withArrow position="bottom">
-                              <div className="flex items-center gap-1 text-[9px] text-orange-400 font-bold uppercase animate-pulse">
-                                <ExclamationTriangleIcon className="w-3 h-3" />
-                                Exceso detectado
-                              </div>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
-                          {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <TextInput
-                          placeholder="Nota opcional..."
-                          size="xs"
-                          radius="md"
-                          value={comentarios[item.id_solicitud_detalle] || ""}
-                          onChange={(e) => setComentario(item.id_solicitud_detalle, e.target.value)}
-                          classNames={inputClasses}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
+                            {/* Contenedor de Alertas dinámicas (apiladas) */}
+                            <div className="flex flex-col items-center gap-0.5 mt-0.5">
+                              {superaStockDisponible && (
+                                <Tooltip
+                                  label="No hay suficiente stock en el almacén de origen para cubrir esta cantidad"
+                                  withArrow
+                                  position="bottom"
+                                >
+                                  <div className="flex items-center gap-1 text-[9px] text-red-500 font-bold uppercase animate-pulse">
+                                    <NoSymbolIcon className="w-3 h-3" />
+                                    Excede disponible
+                                  </div>
+                                </Tooltip>
+                              )}
+
+                              {!superaStockDisponible &&
+                                dejaSinStock && (
+                                  <Tooltip
+                                    label="El almacén de origen se quedará completamente sin existencias de este producto"
+                                    withArrow
+                                    position="bottom"
+                                  >
+                                    <div className="flex items-center gap-1 text-[9px] text-amber-500 font-bold uppercase animate-pulse">
+                                      <ExclamationTriangleIcon className="w-3 h-3" />
+                                      Sin stock origen
+                                    </div>
+                                  </Tooltip>
+                                )}
+
+                              {!superaStockDisponible &&
+                                dejaDebajoDelMinimo && (
+                                  <Tooltip
+                                    label={`Almacén de origen quedará por debajo de su Stock Mínimo (${formatNumber(stockMinimoEnSol)} ${item.unidad_medida_sol_abv})`}
+                                    withArrow
+                                    position="bottom"
+                                  >
+                                    <div className="flex items-center gap-1 text-[9px] text-amber-500 font-bold uppercase animate-pulse">
+                                      <InformationCircleIcon className="w-3 h-3" />
+                                      Stock crítico origen
+                                    </div>
+                                  </Tooltip>
+                                )}
+
+                              {!superaStockDisponible && superaLoPendiente && (
+                                <Tooltip
+                                  label="Esta cantidad excede lo pendiente de la solicitud original"
+                                  withArrow
+                                  position="bottom"
+                                >
+                                  <div className="flex items-center gap-1 text-[9px] text-orange-400 font-bold uppercase animate-pulse">
+                                    <ExclamationTriangleIcon className="w-3 h-3" />
+                                    Exceso detectado
+                                  </div>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
+                            {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <TextInput
+                            placeholder="Nota opcional..."
+                            size="xs"
+                            radius="md"
+                            value={comentarios[item.id_solicitud_detalle] || ""}
+                            onChange={(e) => setComentario(item.id_solicitud_detalle, e.target.value)}
+                            classNames={inputClasses}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </Table>
           </div>
@@ -387,7 +508,7 @@ export const RegistrarPrestamoAlmacen = ({
         <Button
           onClick={handleRegistrar}
           loading={submitting}
-          disabled={!idAlmacenPrestamista || selectedItemIds.length === 0}
+          disabled={!idAlmacenPrestamista || selectedItemIds.length === 0 || hayExcesosStock}
           radius="xl"
           size="md"
           className="bg-zinc-100 text-zinc-900 font-black hover:bg-white px-10 shadow-indigo-500/20 shadow-xl transition-all active:scale-95"

@@ -64,7 +64,7 @@ export const GestionLabores = ({ mina, onLaborCreada, onLaborFinalizada }: Props
 
     setIsCerrando(true);
     try {
-      const { data: res } = await MinasService.finalizarLabor({
+      const res = await MinasService.finalizarLabor({
         id_labor: laborAFinalizar.id_labor,
         fecha_cierre: dayjs(fechaCierre).format("YYYY-MM-DD"),
       });
