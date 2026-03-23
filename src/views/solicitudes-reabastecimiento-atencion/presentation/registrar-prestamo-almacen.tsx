@@ -12,6 +12,7 @@ import {
   Paper,
   ActionIcon,
   SimpleGrid,
+  Loader,
 } from "@mantine/core";
 import {
   BuildingOffice2Icon,
@@ -90,6 +91,7 @@ export const RegistrarPrestamoAlmacen = ({
       comentarios,
       almacenesAliados,
       loadingAlmacenes,
+      loadingStocks,
       stocksAlmacen
     },
     actions: {
@@ -199,7 +201,7 @@ export const RegistrarPrestamoAlmacen = ({
               <div className="flex items-start gap-2 bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl mb-1">
                 <InformationCircleIcon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                 <Text size="xs" c="indigo.4" className="leading-relaxed">
-                  Solo se muestran almacenes que cuentan con disponibilidad para <b>todos</b> los productos que has seleccionado arriba. Esto asegura que el préstamo se realice de forma íntegra.
+                  Solo se muestran almacenes que cuentan con disponibilidad para <b>todos</b> los productos que has seleccionado previamente. Esto asegura que el préstamo se realice de forma íntegra.
                 </Text>
               </div>
 
@@ -374,7 +376,7 @@ export const RegistrarPrestamoAlmacen = ({
                             c="dimmed"
                             className="uppercase font-bold"
                           >
-                            Solicitado: {formatNumber(item.cantidad_solicitada)}{" "}
+                            Pendiente: {formatNumber(Math.max(0, pendienteReal - cantidadPedida))}{" "}
                             {item.unidad_medida_sol_abv}
                           </Text>
                         </td>
@@ -399,15 +401,14 @@ export const RegistrarPrestamoAlmacen = ({
                                 placeholder="0"
                                 classNames={{
                                   input: `w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent 
-                                  ${
-                                    superaStockDisponible
+                                  ${superaStockDisponible
                                       ? "text-red-400"
                                       : dejaDebajoDelMinimo || dejaSinStock
                                         ? "text-amber-400"
                                         : superaLoPendiente
                                           ? "text-orange-400"
                                           : "text-emerald-400"
-                                  }`,
+                                    }`,
                                 }}
                               />
                               <Text
@@ -478,9 +479,15 @@ export const RegistrarPrestamoAlmacen = ({
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
-                            {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
-                          </Badge>
+                          {loadingStocks ? (
+                            <div className="flex justify-center items-center py-1">
+                              <Loader size="sm" color="indigo" type="dots" />
+                            </div>
+                          ) : (
+                            <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
+                              {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
+                            </Badge>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <TextInput

@@ -41,6 +41,7 @@ export const useRegistrarPrestamo = ({
 
   const [almacenesAliados, setAlmacenesAliados] = useState<AlmacenAliado[]>([]);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
+  const [loadingStocks, setLoadingStocks] = useState(false);
   const [stocksAlmacen, setStocksAlmacen] = useState<Record<number, RES_LoteDisponiblePrestamo[]>>({});
 
   const { notifyError, notifySuccess } = useNotify();
@@ -118,6 +119,7 @@ export const useRegistrarPrestamo = ({
   }, [selectedItemIds, detalles, cargarAlmacenesAliados]);
 
   const cargarStockPrestamista = useCallback(async (almacenId: number) => {
+    setLoadingStocks(true);
     const newStocks: Record<number, RES_LoteDisponiblePrestamo[]> = {};
     const promises = selectedItemIds.map(async (idDetalle) => {
       const item = detalles.find((d) => d.id_solicitud_detalle === idDetalle);
@@ -131,6 +133,7 @@ export const useRegistrarPrestamo = ({
 
     await Promise.all(promises);
     setStocksAlmacen(newStocks);
+    setLoadingStocks(false);
   }, [selectedItemIds, detalles]);
 
   const handleRegistrar = async () => {
@@ -175,6 +178,7 @@ export const useRegistrarPrestamo = ({
       comentarios,
       almacenesAliados,
       loadingAlmacenes,
+      loadingStocks,
       stocksAlmacen
     },
     actions: {
