@@ -14,3 +14,7 @@ export const RequerimientoAlmacenLayout = () => {
 export const SolicitudReabastecimientoLayout = () => {
   return <Outlet />;
 };
+
+export const PrestamosAlmacenLayout = () => {
+  return <Outlet />;
+};

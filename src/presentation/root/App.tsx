@@ -16,6 +16,7 @@ import {
   InventarioLayout,
   RequerimientoAlmacenLayout,
   SolicitudReabastecimientoLayout,
+  PrestamosAlmacenLayout,
 } from "../layouts/logistica.layout";
 // Vistas
 import { LoginPage } from "../../views/login/presentation/login.page";
@@ -37,6 +38,7 @@ import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
 import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
 import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
+import { PrestamosAtencionPage } from "../../views/prestamos-almacen-atencion/presentation/prestamos-atencion.page";
 
 export const App = () => {
   return (
@@ -132,6 +134,17 @@ export const App = () => {
             <Route
               path="atencion_solicitudes"
               element={<SolicitudesReabastecimientoAtencionPage />}
+            />
+          </Route>
+
+          {/* Préstamos entre Almacenes */}
+          <Route
+            path="prestamos_almacen"
+            element={<PrestamosAlmacenLayout />}
+          >
+            <Route
+              path="atencion_prestamos"
+              element={<PrestamosAtencionPage />}
             />
           </Route>
         </Route>
