@@ -478,10 +478,14 @@ export const DetalleSolicitud = ({
       <ModalEstandar
         opened={openedHistorial}
         close={handleCloseHistorial}
-        title="Historial de Entregas Recibidas"
+        title="Historial de Entregas"
         size="70%"
       >
-        <HistorialEntregas idSolicitud={headerData.id_solicitud} />
+        <HistorialEntregas 
+            idSolicitud={headerData.id_solicitud} 
+            idAlmacenSolicitante={headerData.id_almacen_solicitante} 
+            almacenSolicitante={headerData.almacen_solicitante}
+        />
       </ModalEstandar>
     </Stack>
   );

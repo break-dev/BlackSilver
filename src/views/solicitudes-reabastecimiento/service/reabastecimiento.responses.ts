@@ -17,6 +17,7 @@ export interface RES_SolicitudReabastecimiento {
 export interface RES_SolicitudDetalle {
   id_solicitud_detalle: number;
   producto: string;
+  id_unidad_medida_sol: number;
   unidad_medida_base_abv: string;
   unidad_medida_solicitud_abv: string;
   es_fiscalizado: number;
@@ -80,10 +81,13 @@ export interface RES_EntregaReabastecimiento {
 
 export interface RES_DetalleEntregaReabastecimiento {
   id_entrega_detalle: number;
+  id_reabastecimiento_entrega: number;
   id_solicitud_reabastecimiento_detalle: number;
   correlativo: string; // del lote
   fecha_vencimiento: string | null;
   producto: string;
+  es_perecible: number;
+  id_unidad_medida_base: number;
   id_producto: number;
   id_unidad_medida: number; // para lote
   cantidad_base: number;
@@ -92,32 +96,28 @@ export interface RES_DetalleEntregaReabastecimiento {
   unidad_lote_abv: string;
   unidad_base_abv: string;
   estado_entrega_detalle: string;
+  id_unidad_medida_solicitada: number;
+  contenido_por_presentacion_solicitado: number;
+  unidad_medida_solicitud_abv: string;
 }
 
 export interface RES_LoteRecepcion {
   id_lote: number;
   id_producto: number;
+  id_unidad_medida_lote: number;
+  id_unidad_medida_base: number | null;
+  unidad_medida_base_abv: string | null;
+  unidad_medida_lote_abv: string | null;
+  descripcion: string | null;
   correlativo: string;
   stock_actual: number;
-  stock_actual_base: number;
   contenido_por_presentacion: number | null;
-  id_unidad_medida: number;
-  id_unidad_medida_base: number;
-  unidad_medida: string;
-  unidad_medida_abv: string;
+  stock_actual_base: number;
   fecha_hora_ingreso: string;
   fecha_vencimiento: string | null;
+  estado: string;
+  stock_minimo: number;
+  dias_espera_vencimiento: number;
   dias_para_vencer: number | null;
-}
-
-export interface DTO_RecibirEntregaItem {
-  id_solicitud_reabastecimiento_detalle: number;
-  es_nuevo_lote: boolean;
-  id_lote_existente?: number | null;
-  fecha_vencimiento?: string | null;
-}
-
-export interface DTO_RecibirEntregas {
-  id_reabastecimiento_entrega: number;
-  items: DTO_RecibirEntregaItem[];
+  estado_vencimiento: string;
 }

@@ -7,9 +7,8 @@ import type {
   RES_DataRegistroSolicitud,
   RES_EntregaReabastecimiento,
   RES_LoteRecepcion,
-  DTO_RecibirEntregas,
 } from "./reabastecimiento.responses";
-import type { DTO_CrearSolicitud } from "./reabastecimiento.requests";
+import type { DTO_CrearSolicitud, DTO_RecibirEntregas, DTO_RecibirEntregaItem } from "./reabastecimiento.requests";
 
 const path = "/solicitudes-reabastecimiento";
 
@@ -74,11 +73,14 @@ export const ReabastecimientoService = {
   /**
    * Obtiene los lotes disponibles en el almacen destino para una entrega
    */
-  getLotesDestino: async (idReabastecimientoEntrega: number) => {
+  getLotesDestino: async (idAlmacenSolicitante: number, idProductos: number[]) => {
     const res = await api.get<IRespuesta<RES_LoteRecepcion[]>>(
-      `${path}/lotes-destino`,
+      `${path}/catalogos/lotes-destino`,
       {
-        params: { id_reabastecimiento_entrega: idReabastecimientoEntrega },
+        params: { 
+          id_almacen_solicitante: idAlmacenSolicitante,
+          id_productos: idProductos
+        },
       },
     );
     return res.data;
@@ -87,6 +89,16 @@ export const ReabastecimientoService = {
   recibirEntregas: async (data: DTO_RecibirEntregas) => {
     const res = await api.post<IRespuesta<null>>(
       `${path}/recibir-entrega-item`,
+      data
+    );
+    return res.data;
+  },
+
+  recibirEntregaBulk: async (data: {
+    recepciones: { id_reabastecimiento_entrega: number; items: DTO_RecibirEntregaItem[] }[];
+  }) => {
+    const res = await api.post<IRespuesta<null>>(
+      `${path}/recibir-entrega-bulk`,
       data
     );
     return res.data;

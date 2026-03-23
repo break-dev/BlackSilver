@@ -86,7 +86,7 @@ export const LoginPage = () => {
                   0%, 100% { transform: translateY(0px); }
                   50% { transform: translateY(-8px); }
                 }
-                .animate-float { animation: float 3s ease-in-out infinite; }
+                .animate-float { animation: float 2.5s ease-in-out infinite; }
               `}
             </style>
             <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 flex items-center justify-center animate-float relative">
@@ -137,7 +137,7 @@ export const LoginPage = () => {
                 leftSection={<IconUser size={15} stroke={1.5} />}
                 styles={{
                   input: {
-                    backgroundColor: "rgba(0, 0, 0, 0.4)",
+                    backgroundColor: "rgba(0, 0, 0, 0.02)",
                     borderColor: "rgba(255, 255, 255, 0.15)",
                     color: "white",
                     backdropFilter: "blur(10px)",
@@ -168,7 +168,7 @@ export const LoginPage = () => {
                 leftSection={<IconLock size={15} stroke={1.5} />}
                 styles={{
                   input: {
-                    backgroundColor: "rgba(0, 0, 0, 0.4)",
+                    backgroundColor: "rgba(0, 0, 0, 0.02)",
                     borderColor: "rgba(255, 255, 255, 0.15)",
                     color: "white",
                     backdropFilter: "blur(10px)",

@@ -45,7 +45,7 @@ export const AuthLayout = () => {
         <Header onMenuToggle={() => setOpen(true)} />
         {open && <Navbar onClose={() => setOpen(false)} />}
 
-        <main className="flex-1 mx-auto w-full pt-28 px-4 pb-10">
+        <main className="flex-1 mx-auto w-full pt-[88px] px-4 pb-10">
           <Outlet />
         </main>
       </div>

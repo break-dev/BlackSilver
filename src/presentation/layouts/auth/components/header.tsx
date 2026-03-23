@@ -11,7 +11,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
 
   return (
     <header
-      className="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-7xl
+      className="fixed top-5 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)]
       flex items-center justify-between px-6 h-12 bg-white/3 backdrop-blur-2xl 
       rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-40 
       transition-all duration-300"
@@ -26,7 +26,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
         }}
       >
         <div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] aspect-square animate-[spin_12s_linear_infinite]"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] aspect-square animate-[spin_8s_linear_infinite]"
           style={{
             background:
               "conic-gradient(from 0deg, transparent 0%, rgba(139, 92, 246, 0.4) 15%, transparent 30%, transparent 50%, rgba(59, 130, 246, 0.4) 65%, transparent 80%, transparent 100%)",
