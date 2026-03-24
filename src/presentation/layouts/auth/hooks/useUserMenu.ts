@@ -15,7 +15,7 @@ export const useUserMenu = () => {
     useAuthStore.getState().clearAuth();
     useMenuNavegacionStore.getState().clearMenu();
     usePerfilStore.getState().reset();
-    navigate("/login");
+    navigate("/login", { viewTransition: true });
   };
 
   const handleToggle = () => {

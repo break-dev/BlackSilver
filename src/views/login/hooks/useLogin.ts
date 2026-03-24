@@ -28,7 +28,7 @@ export const useLogin = () => {
 
       if (result.success) {
         useAuthStore.getState().updateAuth(result.data);
-        navigate("/home");
+        navigate("/home", { viewTransition: true });
       } else {
         setError(result.message);
       }

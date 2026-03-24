@@ -1,4 +1,5 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import { motion } from "motion/react";
 import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
@@ -6,6 +7,7 @@ import { useAuthLayout } from "./hooks/useAuthLayout";
 
 export const AuthLayout = () => {
   const { open, setOpen } = useAuthLayout();
+  const { pathname } = useLocation();
 
   return (
     <div className="relative min-h-screen w-full bg-[#030303] text-zinc-100 flex flex-col overflow-hidden">
@@ -34,7 +36,7 @@ export const AuthLayout = () => {
           .animate-blob3 { animation: blob3 35s infinite alternate ease-in-out; }
         `}
       </style>
-      {/* Background Mesh Gradients - Premium dark glassmorphism aesthetic */}
+      {/* Background Mesh Gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob1" />
       <div className="absolute top-[10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob2" />
       <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob3" />
@@ -45,8 +47,16 @@ export const AuthLayout = () => {
         <Header onMenuToggle={() => setOpen(true)} />
         {open && <Navbar onClose={() => setOpen(false)} />}
 
-        <main className="flex-1 mx-auto w-full pt-[88px] px-4 pb-10">
-          <Outlet />
+        <main className="flex-1 mx-auto w-full pt-22 px-4 pb-10 overflow-hidden relative">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="w-full min-h-[calc(100vh-160px)]"
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>
