@@ -6,6 +6,7 @@ import type {
   RES_DetallePrestamoPorId,
   RES_LoteDisponibleDespacho,
   RES_EmpleadoPrestamo,
+  RES_TrazabilidadPrestamo,
 } from "./prestamos-atencion.responses";
 import type { DTO_RegistrarDespacho } from "./prestamos-atencion.requests";
 
@@ -54,6 +55,22 @@ export const PrestamosAtencionService = {
     const res = await api.post<IRespuesta<{ correlativo: string; id_entrega: number }>>(
       `${path}/despacho`,
       dto
+    );
+    return res.data;
+  },
+
+  cambiarEstadoDetalle: async (data: { id_prestamo_detalle: number; nuevo_estado: string; comentario?: string }) => {
+    const res = await api.post<IRespuesta<null>>(
+      `${path}/cambiar-estado`,
+      data
+    );
+    return res.data;
+  },
+
+  obtenerTrazabilidad: async (idPrestamoDetalle: number) => {
+    const res = await api.get<IRespuesta<RES_TrazabilidadPrestamo[]>>(
+      `${path}/trazabilidad`,
+      { params: { id_prestamo_detalle: idPrestamoDetalle } }
     );
     return res.data;
   },

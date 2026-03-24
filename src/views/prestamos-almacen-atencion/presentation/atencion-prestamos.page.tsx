@@ -9,6 +9,7 @@ import {
   Tooltip,
   Select,
   Loader,
+  Paper,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -20,13 +21,13 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
-import { usePrestamosAtencion } from "../hooks/usePrestamosAtencion";
+import { useAtencionPrestamos } from "../hooks/useAtencionPrestamos";
 import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { MESES } from "../../../presentation/variables/meses";
-import { DetallePrestamoPrestamista } from "./detalle-prestamo-prestamista.tsx";
+import { DetallePrestamo } from "./detalle-prestamo";
 
 const ESTADO_COLORS: Record<string, string> = {
   "Generado":   "blue",
@@ -36,7 +37,7 @@ const ESTADO_COLORS: Record<string, string> = {
   "Anulado":    "red",
 };
 
-export const PrestamosAtencionPage = () => {
+export const AtencionPrestamosPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
 
   const [openedDetalle, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
@@ -55,14 +56,12 @@ export const PrestamosAtencionPage = () => {
     setBusqueda,
     filteredRecords,
     loading,
-    obtenerAlmacenesAutorizados,
     cargarPrestamos,
-  } = usePrestamosAtencion();
+  } = useAtencionPrestamos();
 
   useEffect(() => {
     setTitle("Atención de Préstamos entre Almacenes");
-    obtenerAlmacenesAutorizados();
-  }, [setTitle, obtenerAlmacenesAutorizados]);
+  }, [setTitle]);
 
   const selectedPrestamo = useMemo(
     () => filteredRecords.find((p) => p.id_prestamo === selectedId) ?? null,
@@ -81,7 +80,7 @@ export const PrestamosAtencionPage = () => {
       {
         accessor: "correlativo",
         title: "Código",
-        width: 150,
+        width: 140,
         render: (item) => (
           <Badge variant="light" color="indigo" radius="sm" className="font-mono font-bold">
             {item.correlativo}
@@ -95,7 +94,7 @@ export const PrestamosAtencionPage = () => {
         render: (item) => (
           <Group gap="xs" wrap="nowrap">
             <BuildingOffice2Icon className="w-4 h-4 text-zinc-500 shrink-0" />
-            <Text size="sm" className="text-zinc-200">{item.almacen_solicitante}</Text>
+            <Text size="sm" fw={700} className="text-zinc-200">{item.almacen_solicitante}</Text>
           </Group>
         ),
       },
@@ -104,24 +103,24 @@ export const PrestamosAtencionPage = () => {
         title: "Registrado por",
         width: 180,
         render: (item) => (
-          <Text size="sm" className="text-zinc-300">{item.registrado_por}</Text>
+          <Text size="xs" fw={600} className="text-zinc-400">{item.registrado_por}</Text>
         ),
       },
       {
         accessor: "fechas",
         title: "Fechas",
-        width: 200,
+        width: 180,
         render: (item) => (
           <Stack gap={2}>
             <Group gap={6}>
               <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-              <Text size="xs" fw={600} className="text-zinc-200">
+              <Text size="xs" fw={800} className="text-zinc-200">
                 {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY HH:mm")}
               </Text>
             </Group>
             {item.fecha_limite_devolucion && (
-              <Text size="xs" c="dimmed" ml={22}>
-                Dev: {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
+              <Text size="10px" fw={900} color="orange.6" ml={22} className="uppercase tracking-tighter">
+                Devolver: {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
               </Text>
             )}
           </Stack>
@@ -135,9 +134,8 @@ export const PrestamosAtencionPage = () => {
           <Badge
             color={ESTADO_COLORS[item.estado] ?? "gray"}
             variant="light"
-            radius="sm"
-            size="sm"
-            className="font-semibold uppercase tracking-wider"
+            radius="md"
+            className="font-black uppercase tracking-widest px-2"
           >
             {item.estado}
           </Badge>
@@ -145,20 +143,21 @@ export const PrestamosAtencionPage = () => {
       },
       {
         accessor: "acciones",
-        title: "Acciones",
+        title: "Atención",
         textAlign: "center",
-        width: 80,
+        width: 100,
         render: (item) => (
-          <Tooltip label="Ver y Despachar" position="top" withArrow>
+          <Tooltip label="Gestionar Préstamo" position="top" withArrow>
             <ActionIcon
               variant="filled"
               color="indigo"
               radius="md"
+              size="lg"
               onClick={() => {
                 setSelectedId(item.id_prestamo);
                 openDetalle();
               }}
-              className="shadow-md hover:scale-105 transition-transform"
+              className="shadow-md hover:scale-105 transition-all"
             >
               <EyeIcon className="w-5 h-5 text-white" />
             </ActionIcon>
@@ -172,97 +171,76 @@ export const PrestamosAtencionPage = () => {
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
       {/* Filtros */}
-      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
-        <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
-          {/* Select de Almacén */}
-          <div className="w-full sm:w-72">
-            <Select
-              placeholder="Seleccione su Almacén"
-              leftSection={
-                loadingAlmacenes ? (
-                  <Loader size="xs" />
-                ) : (
-                  <BuildingOffice2Icon className="w-4 h-4 text-zinc-400" />
-                )
-              }
-              data={almacenes.map((a) => ({
-                value: String(a.id_almacen),
-                label: a.nombre,
-              }))}
-              value={idAlmacen}
-              onChange={setIdAlmacen}
-              radius="lg"
-              classNames={{
-                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+      <Paper p="lg" radius="xl" className="bg-zinc-900/40 border-zinc-800 border backdrop-blur-md">
+        <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
+            <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+            {/* Almacén */}
+            <div className="w-full sm:w-80">
+                <Select
+                    label="Punto de Atención"
+                    placeholder="Seleccione su Almacén"
+                    leftSection={loadingAlmacenes ? <Loader size="xs" /> : <BuildingOffice2Icon className="w-4 h-4" />}
+                    data={almacenes.map((a) => ({ value: String(a.id_almacen), label: a.nombre }))}
+                    value={idAlmacen}
+                    onChange={setIdAlmacen}
+                    radius="md"
+                />
+            </div>
 
-          {/* Mes */}
-          <div className="w-full sm:w-40">
-            <Select
-              placeholder="Mes"
-              leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
-              data={MESES}
-              value={mes}
-              onChange={(val) => setMes(val || "")}
-              radius="lg"
-              classNames={{
-                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+            {/* Mes */}
+            <div className="w-full sm:w-40">
+                <Select
+                    label="Mes"
+                    placeholder="Mes"
+                    leftSection={<CalendarDaysIcon className="w-4 h-4" />}
+                    data={MESES}
+                    value={mes}
+                    onChange={(val) => setMes(val || "")}
+                    radius="md"
+                />
+            </div>
 
-          {/* Año */}
-          <div className="w-full sm:w-32">
-            <Select
-              placeholder="Año"
-              data={Array.from({ length: 5 }, (_, i) => {
-                const y = (dayjs().year() - i).toString();
-                return { value: y, label: y };
-              })}
-              value={yearcito}
-              onChange={(val) => setYearcito(val || "")}
-              radius="lg"
-              classNames={{
-                input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+            {/* Año */}
+            <div className="w-full sm:w-32">
+                <Select
+                    label="Año"
+                    placeholder="Año"
+                    data={Array.from({ length: 5 }, (_, i) => {
+                        const y = (dayjs().year() - i).toString();
+                        return { value: y, label: y };
+                    })}
+                    value={yearcito}
+                    onChange={(val) => setYearcito(val || "")}
+                    radius="md"
+                />
+            </div>
 
-          {/* Búsqueda */}
-          <TextInput
-            placeholder="Buscar por código, almacén..."
-            leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            disabled={!idAlmacen}
-            className="flex-1 min-w-[200px]"
-            radius="lg"
-            classNames={{
-              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-          />
+            {/* Búsqueda */}
+            <TextInput
+                label="Búsqueda rápida"
+                placeholder="Código, solicitante..."
+                leftSection={<MagnifyingGlassIcon className="w-4 h-4" />}
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.currentTarget.value)}
+                disabled={!idAlmacen}
+                className="flex-1 min-w-[200px]"
+                radius="md"
+            />
+            </div>
         </div>
-      </div>
+      </Paper>
 
       {/* Estado: sin almacén seleccionado */}
       {!idAlmacen ? (
-        <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-zinc-800 rounded-3xl bg-zinc-900/10">
-          <div className="p-4 rounded-full bg-zinc-900/50 mb-4">
+        <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-zinc-800 rounded-3xl bg-zinc-900/10">
+          <div className="p-5 rounded-3xl bg-zinc-900/50 mb-4 shadow-xl border border-zinc-800">
             <ArchiveBoxArrowDownIcon className="w-12 h-12 text-zinc-600" />
           </div>
-          <Text size="lg" fw={600} className="text-zinc-400">
+          <Text size="xl" fw={900} className="text-zinc-200 tracking-tight">
             Panel de Atención de Préstamos
           </Text>
-          <Text className="text-zinc-500 text-center max-w-sm mt-1">
-            Seleccione el almacén del que es responsable para visualizar los préstamos recibidos.
+          <Text className="text-zinc-500 text-center max-w-sm mt-2 text-sm">
+            Para ver los préstamos pendientes, por favor seleccione el almacén del que es responsable en los filtros superiores.
           </Text>
         </div>
       ) : (
@@ -281,15 +259,16 @@ export const PrestamosAtencionPage = () => {
           closeDetalle();
           setTimeout(() => setSelectedId(null), 300);
         }}
-        title="Atender Préstamo de Almacén"
+        title="Gestión de Préstamo entre Almacenes"
         size="95%"
       >
         {selectedId && selectedPrestamo && (
-          <DetallePrestamoPrestamista
+          <DetallePrestamo
             prestamo={selectedPrestamo}
             idAlmacenPrestamista={Number(idAlmacen)}
             onDespachoRegistrado={() => {
-              closeDetalle();
+              // No cerramos el modal, solo refrescamos datos internos si es necesario
+              // o cerramos si el usuario prefiere
               cargarPrestamos();
             }}
           />

@@ -38,7 +38,7 @@ import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
 import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
 import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
-import { PrestamosAtencionPage } from "../../views/prestamos-almacen-atencion/presentation/prestamos-atencion.page";
+import { AtencionPrestamosPage } from "../../views/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
 
 export const App = () => {
   return (
@@ -144,7 +144,7 @@ export const App = () => {
           >
             <Route
               path="atencion_prestamos"
-              element={<PrestamosAtencionPage />}
+              element={<AtencionPrestamosPage />}
             />
           </Route>
         </Route>

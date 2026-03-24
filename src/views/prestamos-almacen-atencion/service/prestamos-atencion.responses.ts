@@ -21,13 +21,26 @@ export interface RES_DetallePrestamo {
   id_prestamo_detalle: number;
   id_producto: number;
   producto: string;
+  id_unidad_medida: number;
   unidad_medida: string;
   unidad_medida_abv: string;
+  unidad_medida_base_abv: string;
   contenido_por_presentacion: number;
   cantidad_solicitada: number;
   cantidad_solicitada_base: number;
+  cantidad_prestada: number;
+  cantidad_prestada_base: number;
   comentario: string | null;
   estado: string;
+}
+
+export interface RES_TrazabilidadPrestamo {
+  id: number;
+  estado: string;
+  comentario: string | null;
+  created_at: string;
+  nombre_empleado: string;
+  path_foto: string | null;
 }
 
 export interface RES_EntregaPrestamo {

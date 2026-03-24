@@ -4,27 +4,32 @@ import type {
   RES_DetallePrestamoPorId,
   RES_LoteDisponibleDespacho,
   RES_EmpleadoPrestamo,
+  RES_DetallePrestamo,
 } from "../service/prestamos-atencion.responses";
 import type { DTO_DetalleDespacho } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
 
-export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
+export const useRegistroEntrega = (idAlmacenPrestamista: number) => {
   const { notifySuccess, notifyError } = useNotify();
 
-  // -- Datos del préstamo seleccionado --
   const [detallePrestamo, setDetallePrestamo] = useState<RES_DetallePrestamoPorId | null>(null);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
 
-  // -- Catálogos --
   const [empleados, setEmpleados] = useState<RES_EmpleadoPrestamo[]>([]);
   const [lotesDisponibles, setLotesDisponibles] = useState<Record<number, RES_LoteDisponibleDespacho[]>>({});
   const [loadingLotes, setLoadingLotes] = useState<Record<number, boolean>>({});
 
-  // -- Form de despacho --
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [fechaEntrega, setFechaEntrega] = useState<Date | null>(new Date());
   const [observacion, setObservacion] = useState("");
-  const [seleccionLotes, setSeleccionLotes] = useState<Record<number, { id_lote_salida: number; cantidad: number; cantidad_base: number }>>({});
+  
+  // Guardamos: id_lote_salida, cantidad_lote, cantidad_base
+  const [seleccionLotes, setSeleccionLotes] = useState<Record<number, { 
+    id_lote_salida: number; 
+    cantidad_lote: number; 
+    cantidad_base: number;
+  }>>({});
+  
   const [submitting, setSubmitting] = useState(false);
 
   // --------------------------------------------------
@@ -69,13 +74,13 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
   // Seleccionar lote para un ítem del préstamo
   // --------------------------------------------------
   const seleccionarLote = useCallback(
-    (idDetallePrestamo: number, idLote: number, cantidad: number, contenidoPorPresentacion: number) => {
+    (idDetallePrestamo: number, idLote: number, cantidad: number, ratioLote: number) => {
       setSeleccionLotes((prev) => ({
         ...prev,
         [idDetallePrestamo]: {
           id_lote_salida: idLote,
-          cantidad,
-          cantidad_base: cantidad * contenidoPorPresentacion,
+          cantidad_lote: cantidad,
+          cantidad_base: cantidad * ratioLote,
         },
       }));
     },
@@ -83,7 +88,7 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
   );
 
   const setCantidadDespacho = useCallback(
-    (idDetallePrestamo: number, cantidad: number, contenidoPorPresentacion: number) => {
+    (idDetallePrestamo: number, cantidad: number, ratioLote: number) => {
       setSeleccionLotes((prev) => {
         const existing = prev[idDetallePrestamo];
         if (!existing) return prev;
@@ -91,8 +96,8 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
           ...prev,
           [idDetallePrestamo]: {
             ...existing,
-            cantidad,
-            cantidad_base: cantidad * contenidoPorPresentacion,
+            cantidad_lote: cantidad,
+            cantidad_base: cantidad * ratioLote,
           },
         };
       });
@@ -110,16 +115,25 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
         return;
       }
 
-      const detalles: DTO_DetalleDespacho[] = Object.entries(seleccionLotes).map(
-        ([idDetalle, sel]) => ({
-          id_prestamo_detalle: Number(idDetalle),
-          id_lote_salida: sel.id_lote_salida,
-          cantidad: sel.cantidad,
-          cantidad_base: sel.cantidad_base,
-        })
+      if (!detallePrestamo) return;
+
+      const itemsADespachar: DTO_DetalleDespacho[] = Object.entries(seleccionLotes).map(
+        ([idDetalle, sel]) => {
+          const det = (detallePrestamo.detalles as RES_DetallePrestamo[]).find(d => d.id_prestamo_detalle === Number(idDetalle));
+          const ratioItem = det?.contenido_por_presentacion || 1;
+          
+          return {
+            id_prestamo_detalle: Number(idDetalle),
+            id_lote_salida: sel.id_lote_salida,
+            cantidad_lote: sel.cantidad_lote,
+            cantidad_base: sel.cantidad_base,
+            // Convertimos la base a la unidad de la solicitud original
+            cantidad_solicitud: sel.cantidad_base / ratioItem
+          };
+        }
       );
 
-      if (detalles.length === 0) {
+      if (itemsADespachar.length === 0) {
         notifyError("Seleccione al menos un lote para despachar");
         return;
       }
@@ -131,11 +145,11 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
           id_empleado_recibe: Number(idEmpleadoRecibe),
           fecha_hora_entrega: fechaEntrega.toISOString(),
           observacion: observacion || undefined,
-          detalles,
+          detalles: itemsADespachar,
         });
 
         if (res.success) {
-          notifySuccess(`Despacho ${res.data.correlativo} registrado exitosamente`);
+          notifySuccess(`Despacho registrado correctamente`);
           onSuccess();
         } else {
           notifyError(res.message || "Error al registrar el despacho");
@@ -146,11 +160,10 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
         setSubmitting(false);
       }
     },
-    [idEmpleadoRecibe, fechaEntrega, observacion, seleccionLotes, notifySuccess, notifyError]
+    [idEmpleadoRecibe, fechaEntrega, observacion, seleccionLotes, detallePrestamo, notifySuccess, notifyError]
   );
 
   return {
-    // estado
     detallePrestamo,
     loadingDetalle,
     empleados,
@@ -164,7 +177,6 @@ export const useDespacharPrestamo = (idAlmacenPrestamista: number) => {
     setObservacion,
     seleccionLotes,
     submitting,
-    // acciones
     cargarDetallePrestamo,
     cargarLotesProducto,
     seleccionarLote,

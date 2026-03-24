@@ -9,6 +9,7 @@ export interface DTO_RegistrarDespacho {
 export interface DTO_DetalleDespacho {
   id_prestamo_detalle: number;
   id_lote_salida: number;
-  cantidad: number;
-  cantidad_base: number;
+  cantidad_lote: number; // Cantidad en la unidad del Lote
+  cantidad_base: number; // Cantidad en la unidad Base
+  cantidad_solicitud: number; // Cantidad en la unidad de la Solicitud Reabastecimiento
 }
