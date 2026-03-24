@@ -1,0 +1,149 @@
+import {
+  Badge,
+  Group,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core";
+import React from "react";
+
+interface HeaderCardProps {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  color: "indigo" | "violet" | "amber" | "emerald" | "zinc";
+}
+
+const colorMap: Record<
+  HeaderCardProps["color"],
+  {
+    bg: string;
+    border: string;
+    hover: string;
+    icon: string;
+    text: string;
+    subText: string;
+  }
+> = {
+  indigo: {
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/20",
+    hover: "hover:bg-indigo-500/20",
+    icon: "text-indigo-400",
+    text: "text-indigo-400/20",
+    subText: "indigo.3",
+  },
+  violet: {
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/20",
+    hover: "hover:bg-violet-500/20",
+    icon: "text-violet-400",
+    text: "text-violet-400/20",
+    subText: "violet.3",
+  },
+  amber: {
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+    hover: "hover:bg-amber-500/20",
+    icon: "text-amber-400",
+    text: "text-amber-400/20",
+    subText: "amber.5",
+  },
+  emerald: {
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+    hover: "hover:bg-emerald-500/20",
+    icon: "text-emerald-400",
+    text: "text-emerald-400/20",
+    subText: "emerald.5",
+  },
+  zinc: {
+    bg: "bg-zinc-500/10",
+    border: "border-zinc-500/20",
+    hover: "hover:bg-zinc-500/20",
+    icon: "text-zinc-500",
+    text: "text-zinc-400/10",
+    subText: "zinc.5",
+  },
+};
+
+export const HeaderCard = ({ icon: Icon, label, value, color }: HeaderCardProps) => {
+  const styles = colorMap[color];
+  return (
+    <Paper
+      p="md"
+      radius="lg"
+      className={`${styles.bg} ${styles.border} relative overflow-hidden group ${styles.hover} transition-all`}
+    >
+      <Icon
+        className={`absolute -right-2 -bottom-2 w-16 h-16 ${styles.text} rotate-12 group-hover:scale-110 transition-transform`}
+      />
+      <Stack gap={2} className="relative z-10 w-full h-full">
+        <Group gap={6} className="shrink-0">
+          <Icon className={`w-4 h-4 ${styles.icon}`} />
+          <Text
+            size="xs"
+            c={styles.subText}
+            fw={800}
+            className="uppercase tracking-widest"
+          >
+            {label}
+          </Text>
+        </Group>
+        <div className="flex-1 flex items-center min-h-[24px]">
+          <Text size="md" fw={900} className="text-white tracking-tight leading-tight">
+            {value}
+          </Text>
+        </div>
+      </Stack>
+    </Paper>
+  );
+};
+
+interface InfoItemProps {
+  label: string;
+  value: string | number;
+  color?: string;
+  icon?: React.ElementType;
+  iconColor?: string; // Tailwind class name
+  isMono?: boolean;
+}
+
+export const InfoItem = ({
+  label,
+  value,
+  color,
+  icon: Icon,
+  iconColor,
+  isMono,
+}: InfoItemProps) => (
+  <Stack gap={4}>
+    <div className="flex items-center gap-1.5 font-bold">
+      {Icon && (
+        <Icon className={`w-3.5 h-3.5 ${iconColor || "text-zinc-500"}`} />
+      )}
+      <Text size="xs" c="zinc.5" fw={800} className="uppercase tracking-widest">
+        {label}
+      </Text>
+    </div>
+    {color ? (
+      <Badge
+        color={color}
+        variant="light"
+        size="sm"
+        radius="sm"
+        className="font-bold"
+      >
+        {value}
+      </Badge>
+    ) : (
+      <Text
+        size="sm"
+        fw={isMono ? 400 : 800}
+        className={`${isMono ? "font-mono text-zinc-400" : "text-zinc-100 italic"}`}
+      >
+        {value}
+      </Text>
+    )}
+  </Stack>
+);

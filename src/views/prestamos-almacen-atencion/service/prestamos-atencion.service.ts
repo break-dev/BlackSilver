@@ -35,6 +35,14 @@ export const PrestamosAtencionService = {
     return res.data;
   },
 
+  obtenerLotesDisponiblesBatch: async (idsProductos: number[], idAlmacen: number) => {
+    const res = await api.get<IRespuesta<RES_LoteDisponibleDespacho[]>>(
+      `${path}/lotes-batch`,
+      { params: { ids_productos: idsProductos.join(','), id_almacen: idAlmacen } }
+    );
+    return res.data;
+  },
+
   obtenerPrestamos: async (idAlmacen: string, mes: string, yearcito: string) => {
     const res = await api.get<IRespuesta<RES_PrestamoAtencion[]>>(
       `${path}/prestamos`,

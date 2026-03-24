@@ -24,6 +24,8 @@ import {
   XCircleIcon,
   BuildingOffice2Icon,
   CheckBadgeIcon,
+  ScaleIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
@@ -34,27 +36,13 @@ import { HistorialEntregasPrestamo } from "./historial-entregas-prestamo";
 import { TrazabilidadPrestamo } from "./trazabilidad-prestamo";
 import { PrestamoStatusBadge } from "./components/prestamo-status-badge";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
+import { HeaderCard, InfoItem } from "./components/detail-elements";
 
 interface Props {
   prestamo: RES_PrestamoAtencion;
   idAlmacenPrestamista: number;
   onDespachoRegistrado: () => void;
 }
-
-const InfoCardDetalle = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800/50 relative overflow-hidden group">
-    <Icon className="absolute -right-2 -bottom-2 w-16 h-16 text-zinc-400/5 rotate-12 group-hover:scale-110 transition-transform" />
-    <Stack gap={2} className="relative z-10 w-full h-full">
-      <Group gap={6}>
-        <Icon className={`w-4 h-4 text-zinc-500`} />
-        <Text size="xs" fw={800} c="zinc.5" className="uppercase tracking-widest">{label}</Text>
-      </Group>
-      <div className="flex-1 flex items-center">
-        <Text size="md" fw={900} c="white" className="leading-tight tracking-tight">{value}</Text>
-      </div>
-    </Stack>
-  </Paper>
-);
 
 export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegistrado }: Props) => {
   const {
@@ -94,27 +82,73 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
   }
 
   return (
-    <Stack gap={24} className="pb-8">
-      {/* Resumen Principal */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-2">
-        <InfoCardDetalle icon={BuildingOffice2Icon} label="Hacia Almacén" value={prestamo.almacen_solicitante} />
-        <InfoCardDetalle icon={CheckBadgeIcon} label="Código Préstamo" value={prestamo.correlativo} />
-        <InfoCardDetalle icon={UserCircleIcon} label="Responsable Solicitante" value={prestamo.registrado_por} />
-        <InfoCardDetalle icon={CalendarDaysIcon} label="Solicitado el" value={dayjs(prestamo.fecha_hora_prestamo).format("DD/MM/YYYY")} />
+    <Stack gap="xl" className="pb-10 font-sans">
+      {/* Header: Datos Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+        <HeaderCard
+          icon={BuildingOffice2Icon}
+          label="Almacén Solicitante"
+          value={prestamo.almacen_solicitante}
+          color="indigo"
+        />
+        <HeaderCard
+          icon={CheckBadgeIcon}
+          label="Cód. Préstamo"
+          value={prestamo.correlativo}
+          color="violet"
+        />
+        <HeaderCard
+          icon={UserCircleIcon}
+          label="Responsable"
+          value={prestamo.registrado_por}
+          color="amber"
+        />
+        <HeaderCard
+          icon={CalendarDaysIcon}
+          label="Solicitado el"
+          value={dayjs(prestamo.fecha_hora_prestamo).format("DD/MM/YYYY")}
+          color="emerald"
+        />
       </div>
 
-      {/* Progreso General */}
-      <Paper p="lg" radius="xl" className="bg-zinc-900/60 border border-zinc-800 mx-2 shadow-2xl backdrop-blur-md">
-        <Group justify="space-between" mb={10} px={4}>
-          <Group gap={6}>
-            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            <Text size="xs" fw={900} className="text-zinc-500 tracking-wider uppercase">Estado de Atención del Préstamo</Text>
-          </Group>
-          <Text size="sm" fw={900} color="indigo.4" className="tabular-nums italic">{progresoGeneral}%</Text>
+      {/* Sub-header: Estados, Fechas */}
+      <Paper p="md" radius="lg" className="bg-transparent border border-zinc-800/50 mx-2 backdrop-blur-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <InfoItem
+            label="Estado del Préstamo"
+            value={prestamo.estado}
+            color="indigo"
+            icon={ExclamationCircleIcon}
+          />
+          <InfoItem
+            label="Límite Devolución"
+            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Indefinido"}
+            icon={ClockIcon}
+            iconColor="text-amber-500"
+          />
+          <InfoItem
+            label="Fecha Registro"
+            value={dayjs(prestamo.created_at).format("DD/MM/YYYY HH:mm")}
+            isMono
+            icon={CalendarDaysIcon}
+          />
+          <InfoItem
+            label="Total Ítems"
+            value={`${detalles.length} ${detalles.length === 1 ? 'Producto' : 'Productos'}`}
+            icon={ScaleIcon}
+          />
+        </div>
+      </Paper>
+
+      {/* Barra de Progreso */}
+      <Paper p="md" radius="xl" className="bg-zinc-900/50 border border-zinc-800 mx-2 shadow-inner">
+        <Group justify="space-between" mb={8} px={4}>
+          <Text size="xs" fw={800} className="text-zinc-500 tracking-tighter uppercase">Progreso General de Atención</Text>
+          <Text size="sm" fw={900} c="indigo.4">{progresoGeneral}%</Text>
         </Group>
-        <div className="h-3 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-700/20">
+        <div className="relative h-2 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-700/10">
           <div
-            className="h-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400 transition-all duration-1000 shadow-[0_0_15px_rgba(99,102,241,0.4)]"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-300 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
             style={{ width: `${progresoGeneral}%` }}
           />
         </div>
@@ -124,114 +158,118 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       <div className="space-y-4">
         <Group justify="space-between" px={4} align="center">
           <Group gap="xs">
-            <div className="p-2.5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
-              <ClipboardDocumentListIcon className="w-6 h-6 text-indigo-400" />
+            <div className="p-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+              <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
-            <Stack gap={0}>
-              <Text fw={900} className="text-2xl text-zinc-100 italic tracking-tighter leading-none font-black">Productos Solicitados</Text>
-              <Text size="xs" c="dimmed" className="tracking-widest uppercase font-black opacity-50">Gestión de stock y aprobación</Text>
-            </Stack>
+            <Text fw={800} className="text-lg text-zinc-100 italic tracking-tight">Items Solicitados</Text>
           </Group>
 
           <Group gap="sm">
             <Button
-              variant="outline"
+              variant="light"
               color="indigo"
-              size="sm"
-              radius="xl"
+              size="xs"
+              radius="md"
               leftSection={<ClockIcon className="w-4 h-4" />}
               onClick={openHistorial}
-              className="bg-zinc-900/50"
+              className="font-bold whitespace-nowrap"
             >
               Entregas Realizadas ({entregas.length})
             </Button>
             <Button
               color="indigo"
-              size="sm"
-              radius="xl"
+              size="xs"
+              radius="md"
               leftSection={<TruckIcon className="w-4 h-4" />}
               disabled={selectedItemsIds.length === 0}
               onClick={openNuevaEntrega}
-              className="shadow-indigo-500/30 shadow-xl border-indigo-400/50"
+              className="shadow-indigo-500/10 shadow-lg font-bold"
             >
               Procesar Despacho ({selectedItemsIds.length})
             </Button>
           </Group>
         </Group>
 
-        <div className="overflow-x-auto border border-zinc-800 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] bg-zinc-950/40 backdrop-blur-2xl">
+        <div className="overflow-x-auto border border-zinc-800/60 rounded-2xl shadow-2xl bg-zinc-950/20 backdrop-blur-md transition-all">
           <Table verticalSpacing="md" horizontalSpacing="xl">
-            <thead className="bg-zinc-900/80 text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-zinc-800/50">
+            <thead className="bg-zinc-900/80 text-zinc-400 text-[11px] uppercase font-bold tracking-wider border-b border-zinc-800/80">
               <tr>
-                <th className="px-6 py-5 text-center w-12 opacity-50">#</th>
-                <th className="px-4 py-5 text-center w-12">
+                <th className="px-6 py-4 text-center w-12 opacity-50">#</th>
+                <th className="px-4 py-4 text-center w-12">
                   <Tooltip label="Marcar para Despacho" position="top" withArrow>
-                    <ArchiveBoxIcon className="w-5 h-5 mx-auto text-zinc-600" />
+                    <ArchiveBoxIcon className="w-4 h-4 mx-auto text-zinc-500" />
                   </Tooltip>
                 </th>
-                <th className="px-6 py-5 text-left">Producto</th>
-                <th className="px-6 py-5 text-center">Cant. Solicitada</th>
-                <th className="px-6 py-5 text-center w-48">Entregado</th>
-                <th className="px-6 py-5 text-center">Estado</th>
-                <th className="px-6 py-5 text-center">Acciones</th>
+                <th className="px-6 py-4 text-left">Producto</th>
+                <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+                <th className="px-6 py-4 text-center w-44">Progreso</th>
+                <th className="px-6 py-4 text-center">Estado</th>
+                <th className="px-6 py-4 text-center w-36">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/20">
+            <tbody className="divide-y divide-zinc-800/30">
               {detalles.map((d, idx) => {
                 const isApprovedToDispatch = d.estado.toLowerCase().includes("aprobado") || d.estado.toLowerCase().includes("iniciado") || d.estado.toLowerCase().includes("entrega");
                 const porcentaje = Math.round((d.cantidad_prestada_base / d.cantidad_solicitada_base) * 100) || 0;
 
                 return (
-                  <tr key={idx} className="hover:bg-zinc-900/50 transition-all duration-300 group">
-                    <td className="px-6 py-5 text-center text-[10px] font-black text-zinc-700">{idx + 1}</td>
-                    <td className="px-4 py-5 text-center">
-                      <Checkbox
-                        checked={selectedItemsIds.includes(d.id_prestamo_detalle)}
-                        onChange={() => toggleItemSelection(d.id_prestamo_detalle)}
-                        disabled={!isApprovedToDispatch}
-                        color="indigo"
-                        size="sm"
-                        className="cursor-pointer flex justify-center translate-y-px"
-                      />
+                  <tr key={idx} className="hover:bg-zinc-900/40 transition-colors group">
+                    <td className="px-6 py-4 text-center text-[10px] font-mono font-black text-zinc-700">{idx + 1}</td>
+                    <td className="px-4 py-4 text-center">
+                      {porcentaje >= 100 ? (
+                        <CheckBadgeIcon className="w-5 h-5 mx-auto text-emerald-500/80" />
+                      ) : (
+                        <Checkbox
+                          checked={selectedItemsIds.includes(d.id_prestamo_detalle)}
+                          onChange={() => toggleItemSelection(d.id_prestamo_detalle)}
+                          disabled={!isApprovedToDispatch || d.estado.toLowerCase().includes("rechazado")}
+                          color="indigo"
+                          size="sm"
+                          className="cursor-pointer flex justify-center translate-y-px"
+                        />
+                      )}
                     </td>
-                    <td className="px-6 py-5">
+                    <td className="px-6 py-4">
                       <Stack gap={2}>
-                        <Text size="sm" fw={900} className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight">{d.producto}</Text>
+                        <Text size="sm" fw={800} className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight">{d.producto}</Text>
                         <Group gap={4}>
-                          <Text size="9px" fw={900} color="dimmed" className="uppercase tracking-[0.1em] opacity-40">{d.unidad_medida}</Text>
+                          <Text size="10px" fw={800} c="zinc.5" className="uppercase tracking-wider">{d.unidad_medida}</Text>
                           {d.comentario && <Tooltip label={d.comentario}><ActionIcon size="xs" variant="transparent" color="yellow"><ClockIcon className="w-3 h-3" /></ActionIcon></Tooltip>}
                         </Group>
                       </Stack>
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      <Group gap={4} justify="center">
-                        <Badge variant="filled" color="indigo.9" radius="sm" className="font-mono font-black py-3 px-3 shadow-inner">{formatNumber(d.cantidad_solicitada)} {d.unidad_medida_abv}</Badge>
+                    <td className="px-6 py-4 text-center">
+                      <Group gap={4} justify="center" wrap="nowrap">
+                        <Badge variant="filled" color="cyan.8" radius="sm" size="sm" className="font-black px-3">{formatNumber(d.cantidad_solicitada)} {d.unidad_medida_abv}</Badge>
                         {d.unidad_medida_base_abv !== d.unidad_medida_abv && (
-                          <Badge variant="dot" color="pink" size="xs" className="font-black italic opacity-70">{formatNumber(d.cantidad_solicitada_base)} {d.unidad_medida_base_abv}</Badge>
+                          <Badge variant="filled" color="pink.9" radius="sm" size="xs" className="font-black opacity-80">{formatNumber(d.cantidad_solicitada_base)} {d.unidad_medida_base_abv}</Badge>
                         )}
                       </Group>
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      <Stack gap={4}>
-                        <Group justify="space-between" px={2}>
-                          <Text size="10px" fw={900} className="text-zinc-500 tabular-nums uppercase">{formatNumber(d.cantidad_prestada)} <span className="text-[8px] opacity-40">{d.unidad_medida_abv}</span></Text>
-                          <Text size="10px" fw={900} color="indigo.4" className="italic font-mono">{porcentaje}%</Text>
-                        </Group>
-                        <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800/50">
-                          <div className="h-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.3)] transition-all duration-700" style={{ width: `${porcentaje}%` }} />
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col gap-1.5 w-full">
+                        <div className="flex justify-between items-center px-1">
+                          <Text size="9px" fw={800} c="zinc.5" className="tabular-nums">Atendido: {formatNumber(d.cantidad_prestada)}</Text>
+                          <Text size="10px" fw={900} c="indigo.4">{porcentaje}%</Text>
                         </div>
-                      </Stack>
+                        <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-700/20">
+                          <div
+                            className="h-full bg-linear-to-r from-indigo-600 via-indigo-500 to-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)] transition-all duration-700"
+                            style={{ width: `${porcentaje}%` }}
+                          />
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-5 text-center">
+                    <td className="px-6 py-4 text-center">
                       <PrestamoStatusBadge estado={d.estado} />
                     </td>
-                    <td className="px-6 py-5">
-                      <Group gap={8} justify="center">
-                        <Tooltip label="Línea de Vida / Seguimiento" withArrow>
+                    <td className="px-6 py-4">
+                      <Group gap={8} justify="center" wrap="nowrap">
+                        <Tooltip label="Ver Seguimiento" withArrow>
                           <ActionIcon
                             variant="subtle"
                             color="zinc"
-                            size="lg"
+                            size="md"
                             className="hover:bg-zinc-800/50"
                             onClick={() => {
                               setSelectedItemId(d.id_prestamo_detalle);
@@ -240,38 +278,36 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                               openTrace();
                             }}
                           >
-                            <ClockIcon className="w-5 h-5" />
+                            <ClockIcon className="w-4 h-4" />
                           </ActionIcon>
                         </Tooltip>
 
                         {d.estado.toLowerCase().includes("pendiente") && (
                           <>
-                            <Tooltip label="Dar Vía Libre (Aprobar)" withArrow>
+                            <Tooltip label="Aprobar Ítem" withArrow>
                               <ActionIcon
-                                variant="light"
+                                variant="filled"
                                 color="green"
-                                radius="lg"
-                                size="lg"
+                                radius="md"
                                 onClick={() => {
                                   setSelectedItemId(d.id_prestamo_detalle);
                                   openAprobar();
                                 }}
                               >
-                                <CheckCircleIcon className="w-5 h-5" />
+                                <CheckCircleIcon className="w-5 h-5 text-zinc-50" />
                               </ActionIcon>
                             </Tooltip>
-                            <Tooltip label="Impedir Préstamo (Rechazar)" withArrow>
+                            <Tooltip label="Rechazar Ítem" withArrow>
                               <ActionIcon
-                                variant="light"
+                                variant="filled"
                                 color="red"
-                                radius="lg"
-                                size="lg"
+                                radius="md"
                                 onClick={() => {
                                   setSelectedItemId(d.id_prestamo_detalle);
                                   openRechazo();
                                 }}
                               >
-                                <XCircleIcon className="w-5 h-5" />
+                                <XCircleIcon className="w-5 h-5 text-zinc-50" />
                               </ActionIcon>
                             </Tooltip>
                           </>
@@ -289,8 +325,8 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       {/* MODALES TÉCNICOS */}
 
       {/* Trazabilidad (Línea de vida) */}
-      <ModalEstandar opened={openedTrace} close={closeTrace} title="Seguimiento de Producto en Préstamo" size="md">
-        <TrazabilidadPrestamo eventos={trazabilidad} loading={loadingTrace} />
+      <ModalEstandar opened={openedTrace} close={closeTrace} title="Seguimiento del Préstamo" size="md">
+        <TrazabilidadPrestamo eventos={trazabilidad} loading={loadingTrace} productoNombre={selectedItemName} />
       </ModalEstandar>
 
       {/* Aprobación */}
@@ -313,9 +349,9 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               radius="xl"
               loading={isProcessing}
               onClick={() => handleCambiarEstado("Aprobado")}
-              className="px-8 shadow-green-500/20 shadow-lg"
+              className="px-8 shadow-green-500/20 shadow-lg font-bold"
             >
-              Confirmar Aprobación
+              Aprobar
             </Button>
           </Group>
         </Stack>
@@ -343,9 +379,9 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               disabled={!comentarioAccion.trim()}
               loading={isProcessing}
               onClick={() => handleCambiarEstado("Rechazado")}
-              className="px-8 shadow-red-500/20 shadow-lg"
+              className="px-8 shadow-red-500/20 shadow-lg font-bold"
             >
-              Confirmar Rechazo
+              Rechazar
             </Button>
           </Group>
         </Stack>

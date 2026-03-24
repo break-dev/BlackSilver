@@ -94,6 +94,20 @@ export interface RES_EmpleadoPrestamo {
   path_foto: string | null;
 }
 
+export interface RES_Lote_Atencion {
+  id_lote: number;
+  id_producto: number;
+  correlativo: string;
+  stock_actual: number;
+  stock_actual_base: number;
+  contenido_por_presentacion: number;
+  unidad_medida: string;
+  unidad_medida_abv: string;
+  presentacion_abv?: string; // Alias for UI if needed
+  fecha_vencimiento: string | null;
+  dias_para_vencer: number | null;
+}
+
 export interface RES_DetallePrestamoPorId {
   detalles: RES_DetallePrestamo[];
   entregas: RES_EntregaPrestamo[];

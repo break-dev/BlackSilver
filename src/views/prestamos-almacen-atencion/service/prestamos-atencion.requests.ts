@@ -1,7 +1,7 @@
 export interface DTO_RegistrarDespacho {
   id_prestamo: number;
   id_empleado_recibe: number;
-  fecha_hora_entrega: string;
+  fecha_hora_entrega?: string;
   observacion?: string;
   detalles: DTO_DetalleDespacho[];
 }

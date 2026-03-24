@@ -1,41 +1,30 @@
 import { Badge } from "@mantine/core";
-import { EstadoDetallePrestamo } from "../../../../shared/enums/estados";
 
 interface Props {
   estado: string;
 }
 
 export const PrestamoStatusBadge = ({ estado }: Props) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case EstadoDetallePrestamo.Pendiente:
-        return "blue";
-      case EstadoDetallePrestamo.Aprobado:
-        return "violet";
-      case EstadoDetallePrestamo.DespachoIniciado:
-        return "orange";
-      case EstadoDetallePrestamo.Completado:
-        return "teal";
-      case EstadoDetallePrestamo.DevolucionParcial:
-        return "cyan";
-      case EstadoDetallePrestamo.DevolucionTotal:
-        return "green";
-      case EstadoDetallePrestamo.Rechazado:
-        return "red";
-      case EstadoDetallePrestamo.Cerrado:
-        return "zinc";
-      default:
-        return "zinc";
-    }
+  const getStatusStyles = (status: string) => {
+    const s = status.toLowerCase();
+    if (s.includes("pendiente")) return { color: "blue", variant: "light" as const };
+    if (s.includes("aprobado")) return { color: "violet", variant: "light" as const };
+    if (s.includes("despacho") || s.includes("entregando")) return { color: "orange", variant: "light" as const };
+    if (s.includes("entrega") || s.includes("completad")) return { color: "emerald", variant: "light" as const };
+    if (s.includes("rechazado")) return { color: "red", variant: "filled" as const };
+    if (s.includes("cerrado")) return { color: "zinc", variant: "filled" as const };
+    return { color: "gray", variant: "light" as const };
   };
+
+  const style = getStatusStyles(estado);
 
   return (
     <Badge 
-      variant="light" 
-      color={getStatusColor(estado)} 
+      variant={style.variant} 
+      color={style.color} 
       radius="md" 
       size="sm"
-      className="font-bold tracking-wider uppercase px-2 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+      className={`font-black tracking-wider uppercase px-3 py-3 border ${style.variant === 'light' ? 'border-current/20' : 'border-transparent'}`}
     >
       {estado}
     </Badge>
