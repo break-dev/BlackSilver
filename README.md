@@ -38,9 +38,21 @@ El frontend sigue una estructura de tres capas para separar la interfaz de la l�
 
 ---
 
-## Lineamientos de Desarrollo
+## Lineamientos de Desarrollo (Frontend)
 
-1.  **Independencia:** Ninguna vista debe importar lógica, servicios o componentes de otra vista hermana.
-2.  **Abstracción:** La funcionalidad compartida debe abstraerse en el directorio `shared` (Front) o en `Models/Shared` (API).
-3.  **Tipado:** Se exige un uso estricto de TypeScript en el Frontend y tipos nativos en PHP 8.4 para asegurar la integridad de los datos. **NUNCA usar arreglos genéricos (como `array $data`) para pasar parámetros a los métodos de Controller/Service; cada parámetro debe estar definido explícitamente y tipado de manera individual.**
-4.  **Flujo de Datos:** El flujo de datos debe ser siempre: `Presentation -> Hook -> Service -> API`.
+1.  **Prioridad a la Legibilidad:** El código debe ser legible, elegante y simple. La claridad es más importante que la micro-optimización. Documenta el *porqué* de la lógica compleja, no el *qué*.
+
+2.  **Independencia y Abstracción:**
+    *   Ninguna vista debe importar lógica, servicios o componentes de otra vista hermana.
+    *   La funcionalidad compartida debe abstraerse en el directorio `src/shared`.
+
+3.  **Flujo y Responsabilidades:**
+    *   **Componentes (`Presentation`):** Su única responsabilidad es la UI/UX. Renderizan datos y emiten eventos de usuario. No deben contener lógica de negocio. Para evitar componentes saturados, crea sub-componentes y organízalos en carpetas dentro de la vista.
+    *   **Hooks (`hooks`):** Manejan toda la lógica de negocio, estado de la vista, efectos y transformaciones de datos. Deben proporcionar una interfaz sencilla para que los componentes los consuman, facilitando su implementación.
+    *   **Servicios (`service`):** Se dedican exclusivamente a la comunicación con la API. No deben contener lógica de estado ni de negocio.
+
+4.  **Tipado Estricto:**
+    *   **Todo tipado, siempre.** Todas las peticiones y respuestas de la API deben tener interfaces (`interfaces.ts`) definidas. Esto garantiza la integridad de los datos en toda la aplicación.
+
+5.  **Flujo de Datos:**
+    *   El flujo de datos debe ser siempre: `Componente -> Hook -> Servicio -> API`.
