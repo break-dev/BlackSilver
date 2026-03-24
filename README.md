@@ -1,58 +1,111 @@
-# Black Silver - Sistema de Gestión Minera (SaaS)
+# Black Silver - Frontend (React + Vite)
 
-Black Silver es una plataforma SaaS diseñada para la gestión integral de operaciones mineras. Este proyecto utiliza un stack moderno y una arquitectura diseñada para la escalabilidad y el mantenimiento independiente de módulos.
-
-## Stack Tecnológico
-
-- **Backend:** Laravel 12 (PHP 8.4)
-- **Frontend:** React.js + Zustand + Material UI
-- **Base de Datos:** MySQL
+Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS diseñada para la gestión integral de operaciones mineras. Este proyecto utiliza un stack moderno y una arquitectura de **Aislamiento por Vista** para garantizar la escalabilidad y mantenibilidad.
 
 ---
 
-## Arquitectura de Software: Aislamiento por Vista
+## 🛠️ Stack Tecnológico
 
-El proyecto sigue estrictamente el principio de **Aislamiento por Vista**. Cada módulo o vista debe ser autosuficiente, evitando acoplamientos innecesarios con otros módulos hermanos.
+- **Framework:** [React 19](https://react.dev/)
+- **Build Tool:** [Vite 7](https://vitejs.dev/)
+- **Languaje:** [TypeScript](https://www.typescriptlang.org/)
+- **UI Library:** [Mantine 8](https://mantine.dev/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
+- **State Management:** [Zustand 5](https://zustand-demo.pmnd.rs/) (Ligero y eficiente)
+- **Animations:** [Motion 12](https://motion.dev/) (Framer Motion)
+- **Forms & Validation:** [Zod](https://zod.dev/) + [Mantine Form](https://mantine.dev/form/use-form/)
+- **Routing:** [React Router 7](https://reactrouter.com/)
+- **HTTP Client:** [Axios](https://axios-http.com/)
 
-### 1. Backend (API)
-**Ubicación:** `BlackSilverAPI/app/Views/[NombreModulo]`
+---
 
-La lógica de la API se organiza por vistas para garantizar que cada sección del frontend tenga su contraparte específica en el backend. Cada módulo se divide en cuatro capas:
+## 🏗️ Arquitectura: Aislamiento por Vista
 
-*   **Endpoints:** Define las rutas específicas y accesibles para la vista.
-*   **Controller:** Actúa como un orquestador ligero. Valida la entrada y delega la ejecución al Service.
-*   **Service:** Contiene la lógica de negocio pura. Es el encargado de procesar la información y tomar decisiones.
-*   **Data:** Capa de acceso a datos. Contiene consultas optimizadas (SQL puro o Eloquent) para proveer información al Service.
+El proyecto sigue estrictamente el principio de **Aislamiento por Vista**. Cada módulo o funcionalidad importante reside en su propio directorio y debe ser autosuficiente.
+
+### Ubicación: `src/views/[nombre-modulo]`
+
+Cada vista se divide obligatoriamente en tres capas para separar responsabilidades:
+
+#### 1. Presentation (`components/` y `.page.tsx`)
+- **Responsabilidad:** UI/UX y renderizado.
+- **Regla:** No debe contener lógica compleja, cálculos pesados ni manejo de estado de negocio.
+- **Interacción:** Consume datos del **Hook** y emite eventos (clics, envíos).
+- **Archivos:** `Index.page.tsx` y sub-componentes en carpetas locales.
+
+#### 2. Hooks (`hooks/`)
+- **Responsabilidad:** El "Cerebro" de la vista. Maneja el estado local, efectos (`useEffect`), validaciones y **cálculos derivados** (usando `useMemo`).
+- **Regla:** Toda transformación de datos para la UI debe ocurrir aquí.
+- **Archivos:** `use[Modulo].ts`.
+
+#### 3. Service (`service/`)
+- **Responsabilidad:** Comunicación con la API y definición de modelos de datos.
+- **Regla:** Aquí se definen las **Interfaces** de TypeScript y los **Stores de Zustand** para estados globales (ej. formularios que persisten entre pasos).
+- **Archivos:** `[Modulo].service.ts`, `responses.ts`, `requests.ts`.
 
 > [!IMPORTANT]
-> **Regla de Oro:** Si dos vistas requieren datos similares, ambos archivos `Data` deben recurrir a métodos compartidos en los **Modelos de Eloquent** globales. No se permite comunicación directa entre Controllers o Services de distintas vistas.
-
-### 2. Frontend
-**Ubicación:** `blacksilver/src/views/[nombre-modulo]`
-
-El frontend sigue una estructura de tres capas para separar la interfaz de la lógica y el estado:
-
-*   **Presentation:** Contiene el archivo principal `.page.tsx` y sub-componentes visuales. No debe contener lógica compleja, cálculos, ni manejo de estados pesados; solo renderiza datos y emite eventos.
-*   **Hooks:** Centralizan la lógica de la interfaz, el manejo de estados locales, efectos (`useEffect`), validaciones de formularios, y **cualquier cálculo o transformación de datos derivado del estado (ej. `useMemo` para calcular progresos o totales)**.
-*   **Service:** Gestiona la comunicación con la API (Fetch/Axios). Define los **DTOs** (Data Transfer Objects) mediante Zustand para el manejo de estados globales de formularios e **Interfaces** para la comunicación de datos.
+> **Regla de Oro:** Ninguna vista debe importar lógica, servicios o componentes de otra vista hermana. Si necesitas algo compartido, debe moverse a `src/shared`.
 
 ---
 
-## Lineamientos de Desarrollo (Frontend)
+## 📂 Estructura de Directorios
 
-1.  **Prioridad a la Legibilidad:** El código debe ser legible, elegante y simple. La claridad es más importante que la micro-optimización. Documenta el *porqué* de la lógica compleja, no el *qué*.
+- `src/hooks`: Hooks de utilidad global (ej. `useAuth`, `useTheme`).
+- `src/presentation`: Componentes de UI globales y Layouts principales.
+- `src/service`: Instancia de Axios y servicios core del sistema.
+- `src/shared`: Constantes, utilidades, tipos globales y componentes reutilizables.
+- `src/stores`: Stores globales (ej. sesión de usuario, configuración).
+- `src/views`: Módulos de la aplicación organizados por funcionalidad.
 
-2.  **Independencia y Abstracción:**
-    *   Ninguna vista debe importar lógica, servicios o componentes de otra vista hermana.
-    *   La funcionalidad compartida debe abstraerse en el directorio `src/shared`.
+---
 
-3.  **Flujo y Responsabilidades:**
-    *   **Componentes (`Presentation`):** Su única responsabilidad es la UI/UX. Renderizan datos y emiten eventos de usuario. No deben contener lógica de negocio. Para evitar componentes saturados, crea sub-componentes y organízalos en carpetas dentro de la vista.
-    *   **Hooks (`hooks`):** Manejan toda la lógica de negocio, estado de la vista, efectos y transformaciones de datos. Deben proporcionar una interfaz sencilla para que los componentes los consuman, facilitando su implementación.
-    *   **Servicios (`service`):** Se dedican exclusivamente a la comunicación con la API. No deben contener lógica de estado ni de negocio.
+## 📝 Reglas de Desarrollo
 
-4.  **Tipado Estricto:**
-    *   **Todo tipado, siempre.** Todas las peticiones y respuestas de la API deben tener interfaces (`interfaces.ts`) definidas. Esto garantiza la integridad de los datos en toda la aplicación.
+### 1. Convenciones de Nombres
+- **Componentes:** `PascalCase.tsx` (ej. `BotonEnvio.tsx`).
+- **Hooks:** `camelCase.ts` empezando con 'use' (ej. `useFormulario.ts`).
+- **Servicios/Utilidades:** `camelCase.ts`.
+- **Carpetas:** `kebab-case`.
 
-5.  **Flujo de Datos:**
-    *   El flujo de datos debe ser siempre: `Componente -> Hook -> Servicio -> API`.
+### 2. Tipado Estrictamente Obligatorio
+Está prohibido el uso de `any`. Todas las respuestas y requests de la API deben tener una interfaz definida en el `service/responses.ts`, `service/requests.ts` del módulo.
+
+### 3. Flujo de Datos
+El flujo debe ser siempre unidireccional:
+`Componente (UI) -> Hook (Lógica) -> Service (API/Store) -> Backend`.
+
+---
+
+## 🚀 Workflow: Crear un Nuevo Módulo
+
+1. **Crear Carpeta:** En `src/views/nuevo-modulo`.
+2. **Definir Service:** Crea `responses.ts` y `requests.ts` con los tipos de la API y `nuevo-modulo.service.ts` para las peticiones.
+3. **Crear Hook:** Implementa `useNuevoModulo.ts` para manejar el estado y la lógica de negocio por cada componente que este modulo posea segun criterio propio.
+4. **Implementar Vista:** Crea `NuevoModulo.page.tsx` y sus componentes usando componentes de Mantine y Tailwind.
+5. **Registrar Ruta:** Añade la nueva ruta en el enrutador principal (usualmente en `App.tsx` o un archivo de rutas centralizado).
+
+---
+
+## 🔧 Comandos Disponibles
+
+```bash
+# Iniciar servidor de desarrollo
+npm run dev
+
+# Construir para producción
+npm run build
+
+# Ejecutar Linter
+npm run lint
+
+# Previsualizar build local
+npm run preview
+```
+
+---
+
+## 💎 Estética y Diseño
+- Mantén la consistencia visual usando los tokens de Mantine.
+- Usa **Motion** para transiciones suaves entre estados o navegación.
+- Prioriza la experiencia del usuario (UX) y el diseño (UI) con estados de carga (`Loader`) y notificaciones simples pero efectivas.
+ siempre: `Componente -> Hook -> Servicio -> API`.
