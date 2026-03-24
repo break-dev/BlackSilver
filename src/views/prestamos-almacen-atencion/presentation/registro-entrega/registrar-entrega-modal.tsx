@@ -28,7 +28,7 @@ export const RegistrarEntregaModal = ({
 }: Props) => {
   const {
     loading,
-    itemsADespachar,
+    itemsAEntregar,
     lotes,
     entregaCantidades,
     empleados,
@@ -41,7 +41,7 @@ export const RegistrarEntregaModal = ({
     totalEntregaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
-    registrarDespacho,
+    registrarEntrega,
   } = useRegistroEntrega({
     idAlmacenPrestamista,
     selectedItemsIds,
@@ -62,10 +62,10 @@ export const RegistrarEntregaModal = ({
     );
   }
 
-  if (itemsADespachar.length === 0) {
+  if (itemsAEntregar.length === 0) {
     return (
       <Stack align="center" py={30}>
-          <Text c="red" fw={900} className="italic">No hay items seleccionados para despachar.</Text>
+          <Text c="red" fw={900} className="italic">No hay items seleccionados para entregar.</Text>
       </Stack>
     );
   }
@@ -89,7 +89,7 @@ export const RegistrarEntregaModal = ({
         </div>
 
         <Stack gap="lg">
-          {itemsADespachar.map((detalle) => (
+          {itemsAEntregar.map((detalle) => (
             <ProductoEntregaCard
               key={detalle.id_prestamo_detalle}
               idDetalle={detalle.id_prestamo_detalle}
@@ -106,7 +106,7 @@ export const RegistrarEntregaModal = ({
       {/* Acciones del Formulario */}
       <FormActions
         onCancel={onCancel}
-        handleConfirmar={() => registrarDespacho(idPrestamo)}
+        handleConfirmar={() => registrarEntrega(idPrestamo)}
         isProcessing={submitting}
         canSave={!!idEmpleadoRecibe && totalEntregaGeneralBase > 0}
       />

@@ -24,7 +24,6 @@ import {
   XCircleIcon,
   BuildingOffice2Icon,
   CheckBadgeIcon,
-  ScaleIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
@@ -113,11 +112,11 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
 
       {/* Sub-header: Estados, Fechas */}
       <Paper p="md" radius="lg" className="bg-transparent border border-zinc-800/50 mx-2 backdrop-blur-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <InfoItem
             label="Estado del Préstamo"
             value={prestamo.estado}
-            color="indigo"
+            color="green"
             icon={ExclamationCircleIcon}
           />
           <InfoItem
@@ -131,11 +130,6 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             value={dayjs(prestamo.created_at).format("DD/MM/YYYY HH:mm")}
             isMono
             icon={CalendarDaysIcon}
-          />
-          <InfoItem
-            label="Total Ítems"
-            value={`${detalles.length} ${detalles.length === 1 ? 'Producto' : 'Productos'}`}
-            icon={ScaleIcon}
           />
         </div>
       </Paper>
@@ -174,7 +168,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               onClick={openHistorial}
               className="font-bold whitespace-nowrap"
             >
-              Entregas Realizadas ({entregas.length})
+              Historial de Entregas
             </Button>
             <Button
               color="indigo"
@@ -185,8 +179,11 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               onClick={openNuevaEntrega}
               className="shadow-indigo-500/10 shadow-lg font-bold"
             >
-              Procesar Despacho ({selectedItemsIds.length})
+              Nueva Entrega ({selectedItemsIds.length})
             </Button>
+            <Badge variant="light" color="indigo" radius="md" className="font-black px-3 py-3 border border-indigo-500/20">
+              {detalles.length} {detalles.length === 1 ? 'Producto' : 'Productos'}
+            </Badge>
           </Group>
         </Group>
 
@@ -196,7 +193,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               <tr>
                 <th className="px-6 py-4 text-center w-12 opacity-50">#</th>
                 <th className="px-4 py-4 text-center w-12">
-                  <Tooltip label="Marcar para Despacho" position="top" withArrow>
+                  <Tooltip label="Marcar para Entrega" position="top" withArrow>
                     <ArchiveBoxIcon className="w-4 h-4 mx-auto text-zinc-500" />
                   </Tooltip>
                 </th>
@@ -391,7 +388,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       <ModalEstandar
         opened={openedNuevaEntrega}
         close={closeNuevaEntrega}
-        title="Registrar Despacho de Materiales (Préstamo)"
+        title="Nueva Entrega de Materiales"
         size="80%"
       >
         <RegistrarEntregaModal
@@ -409,7 +406,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       </ModalEstandar>
 
       {/* Historial de Movimientos (Entregas) */}
-      <ModalEstandar opened={openedHistorial} close={closeHistorial} title="Historial Comercial de Despachos" size="70%">
+      <ModalEstandar opened={openedHistorial} close={closeHistorial} title="Historial de Entregas" size="70%">
         <HistorialEntregasPrestamo entregas={entregas} />
       </ModalEstandar>
     </Stack>

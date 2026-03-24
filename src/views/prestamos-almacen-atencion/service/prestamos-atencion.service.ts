@@ -8,7 +8,7 @@ import type {
   RES_EmpleadoPrestamo,
   RES_TrazabilidadPrestamo,
 } from "./prestamos-atencion.responses";
-import type { DTO_RegistrarDespacho } from "./prestamos-atencion.requests";
+import type { DTO_RegistrarEntrega } from "./prestamos-atencion.requests";
 
 const path = "/prestamos-atencion";
 
@@ -59,7 +59,7 @@ export const PrestamosAtencionService = {
     return res.data;
   },
 
-  registrarDespacho: async (dto: DTO_RegistrarDespacho) => {
+  registrarEntrega: async (dto: DTO_RegistrarEntrega) => {
     const res = await api.post<IRespuesta<{ correlativo: string; id_entrega: number }>>(
       `${path}/despacho`,
       dto

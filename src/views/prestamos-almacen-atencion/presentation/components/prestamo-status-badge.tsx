@@ -7,6 +7,7 @@ interface Props {
 export const PrestamoStatusBadge = ({ estado }: Props) => {
   const getStatusStyles = (status: string) => {
     const s = status.toLowerCase();
+    if (s.includes("generado")) return { color: "green", variant: "light" as const };
     if (s.includes("pendiente")) return { color: "blue", variant: "light" as const };
     if (s.includes("aprobado")) return { color: "violet", variant: "light" as const };
     if (s.includes("despacho") || s.includes("entregando")) return { color: "orange", variant: "light" as const };

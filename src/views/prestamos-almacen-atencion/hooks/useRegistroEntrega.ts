@@ -5,7 +5,7 @@ import type {
   RES_EmpleadoPrestamo,
   RES_DetallePrestamo,
 } from "../service/prestamos-atencion.responses";
-import type { DTO_DetalleDespacho } from "../service/prestamos-atencion.requests";
+import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistroEntregaProps {
@@ -35,13 +35,13 @@ export const useRegistroEntrega = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const itemsADespachar = useMemo(() => {
+  const itemsAEntregar = useMemo(() => {
     return detallesPrestamo.filter(d => selectedItemsIds.includes(d.id_prestamo_detalle));
   }, [detallesPrestamo, selectedItemsIds]);
 
   const idsProductos = useMemo(() => {
-    return Array.from(new Set(itemsADespachar.map(d => d.id_producto)));
-  }, [itemsADespachar]);
+    return Array.from(new Set(itemsAEntregar.map(d => d.id_producto)));
+  }, [itemsAEntregar]);
 
   // Cargar Empleados y Lotes iniciales
   const cargarDatosIniciales = useCallback(async () => {
@@ -72,7 +72,7 @@ export const useRegistroEntrega = ({
 
         // Inicializar cantidades
         const initial: Record<number, Record<number, number>> = {};
-        itemsADespachar.forEach(d => {
+        itemsAEntregar.forEach(d => {
           initial[d.id_prestamo_detalle] = {};
           castedLotes.filter((l: any) => l.id_producto === d.id_producto).forEach((l: any) => {
             initial[d.id_prestamo_detalle][l.id_lote] = 0;
@@ -85,14 +85,14 @@ export const useRegistroEntrega = ({
     } finally {
       setLoading(false);
     }
-  }, [idsProductos, idAlmacenPrestamista, itemsADespachar]);
+  }, [idsProductos, idAlmacenPrestamista, itemsAEntregar]);
 
   const handleCantLoteChange = useCallback((idDetalle: number, idLote: number, valLote: number) => {
     setEntregaCantidades(prev => {
       const lote = lotes.find(l => l.id_lote === idLote);
       if (!lote) return prev;
 
-      const detail = itemsADespachar.find(d => d.id_prestamo_detalle === idDetalle);
+      const detail = itemsAEntregar.find(d => d.id_prestamo_detalle === idDetalle);
       if (!detail) return prev;
 
       const equiv = lote.contenido_por_presentacion || 1;
@@ -124,7 +124,7 @@ export const useRegistroEntrega = ({
         }
       };
     });
-  }, [lotes, itemsADespachar]);
+  }, [lotes, itemsAEntregar]);
 
   const totalEntregaGeneralBase = useMemo(() => {
     let total = 0;
@@ -134,16 +134,16 @@ export const useRegistroEntrega = ({
     return total;
   }, [entregaCantidades]);
 
-  const registrarDespacho = async (idPrestamo: number) => {
+  const registrarEntrega = async (idPrestamo: number) => {
     if (!idEmpleadoRecibe) {
       notifyError("Debe seleccionar el receptor");
       return;
     }
 
-    const detallesParaApi: DTO_DetalleDespacho[] = [];
+    const detallesParaApi: DTO_DetalleEntrega[] = [];
     Object.entries(entregaCantidades).forEach(([idDet, lotesMap]) => {
       const idDetalle = Number(idDet);
-      const detail = itemsADespachar.find(d => d.id_prestamo_detalle === idDetalle);
+      const detail = itemsAEntregar.find(d => d.id_prestamo_detalle === idDetalle);
       if (!detail) return;
 
       Object.entries(lotesMap).forEach(([idLot, cantBase]) => {
@@ -167,13 +167,13 @@ export const useRegistroEntrega = ({
     });
 
     if (detallesParaApi.length === 0) {
-      notifyError("Seleccione al menos un lote para despachar");
+      notifyError("Seleccione al menos un lote para entregar");
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await PrestamosAtencionService.registrarDespacho({
+      const res = await PrestamosAtencionService.registrarEntrega({
         id_prestamo: idPrestamo,
         id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_hora_entrega: undefined, // Backend usará now()
@@ -182,10 +182,10 @@ export const useRegistroEntrega = ({
       });
 
       if (res.success) {
-        notifySuccess("Despacho registrado correctamente");
+        notifySuccess("Entrega registrada correctamente");
         onSuccess();
       } else {
-        notifyError(res.message || "Error al registrar el despacho");
+        notifyError(res.message || "Error al registrar la entrega");
       }
     } catch {
       notifyError("Error de conexión");
@@ -196,7 +196,7 @@ export const useRegistroEntrega = ({
 
   return {
     loading,
-    itemsADespachar,
+    itemsAEntregar,
     lotes,
     entregaCantidades,
     empleados,
@@ -209,6 +209,6 @@ export const useRegistroEntrega = ({
     totalEntregaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
-    registrarDespacho
+    registrarEntrega
   };
 };
