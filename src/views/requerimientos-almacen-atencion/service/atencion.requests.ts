@@ -12,6 +12,7 @@ export interface DTO_RegistrarEntrega {
     id_empleado_recibe: number;
     fecha_entrega: string;
     observacion?: string;
+    evidencias?: File[];
     detalles: DTO_RegistrarEntregaDetalle[];
 }
 

@@ -10,7 +10,7 @@ import {
   Menu,
   FileButton,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { useNotify } from "../../../hooks/useNotify";
 import {
   MagnifyingGlassIcon,
   InformationCircleIcon,
@@ -34,6 +34,7 @@ import type { RES_Empleado } from "../service/empleados.responses";
 
 export const EmpleadosPage = () => {
   useTitlePage("Personal / Empleados");
+  const { notifySuccess, notifyError } = useNotify();
 
   const {
     empresas,
@@ -52,17 +53,9 @@ export const EmpleadosPage = () => {
     if (!file) return;
     const ok = await actualizarFoto(id, file);
     if (ok) {
-      notifications.show({
-        title: "Éxito",
-        message: "Foto de perfil actualizada correctamente",
-        color: "green",
-      });
+      notifySuccess("Foto de perfil actualizada correctamente");
     } else {
-      notifications.show({
-        title: "Error",
-        message: "No se pudo actualizar la foto de perfil",
-        color: "red",
-      });
+      notifyError("No se pudo actualizar la foto de perfil");
     }
   };
 

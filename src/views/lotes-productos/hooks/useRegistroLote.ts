@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { notifications } from "@mantine/notifications";
+import { useNotify } from "../../../hooks/useNotify";
 import { LotesService } from "../service/lotes.service";
 import { Schema_CrearLote } from "../service/lotes.requests";
 import type {
@@ -20,6 +20,7 @@ export const useRegistroLote = ({
   almacenes,
   onSuccess,
 }: UseRegistroLoteProps) => {
+  const { notifySuccess } = useNotify();
   const [loadingProductos, setLoadingProductos] = useState(false);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -138,11 +139,7 @@ export const useRegistroLote = ({
     try {
       const result = await LotesService.crear(values);
       if (result.success) {
-        notifications.show({
-          title: "Registro Exitoso",
-          message: "El nuevo lote ha sido incorporado al inventario.",
-          color: "teal",
-        });
+        notifySuccess("El nuevo lote ha sido incorporado al inventario.");
         onSuccess(result.data);
       } else {
         setError(result.message);

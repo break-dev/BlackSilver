@@ -35,6 +35,8 @@ export const RegistrarEntrega = ({
     setIdEmpleadoRecibe,
     observacion,
     setObservacion,
+    evidencias,
+    setEvidencias,
     error,
     isProcessing,
     totalEntregaGeneralBase,
@@ -95,6 +97,8 @@ export const RegistrarEntrega = ({
         setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         observacion={observacion}
         setObservacion={setObservacion}
+        evidencias={evidencias}
+        setEvidencias={setEvidencias}
       />
 
       <Stack gap="xl">

@@ -7,7 +7,7 @@ import {
   Stack,
   Loader,
 } from "@mantine/core";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import dayjs from "dayjs";
 import {
   ArrowDownIcon,
@@ -23,14 +23,14 @@ import { type DataTableColumn } from "mantine-datatable";
 import { useKardex } from "../hooks/useKardex";
 import type { RES_MovimientoKardex } from "../service/kardex.responses";
 
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { TipoMovimiento } from "../../../shared/enums/tipos";
 import { MESES } from "../../../presentation/variables/meses";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 
 export const KardexProductosPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Kardex de Productos");
 
   const {
     idAlmacen,
@@ -55,10 +55,7 @@ export const KardexProductosPage = () => {
     error,
   } = useKardex();
 
-  // Title effect
-  useEffect(() => {
-    setTitle("Kardex de Productos");
-  }, [setTitle]);
+
 
   // Columns definition
   const columns: DataTableColumn<RES_MovimientoKardex>[] = useMemo(

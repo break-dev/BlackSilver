@@ -24,7 +24,7 @@ import { useEntregas } from "../hooks/useEntregas";
 import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
 import { EstadoRequerimiento } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros.ts";
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DetalleRequerimiento } from "./detalle-requerimiento.tsx";
@@ -32,7 +32,7 @@ import { MESES } from "../../../presentation/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
 
 export const RequerimientosAlmacenAtencionPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Atención de Requerimientos");
   const [errorLocal, setErrorLocal] = useState("");
 
   const [openedGestion, { open: openGestion, close: closeGestion }] =
@@ -56,10 +56,10 @@ export const RequerimientosAlmacenAtencionPage = () => {
     updateRequirementLocal,
   } = useEntregas({ setError: setErrorLocal });
 
+  // Use effect remains for fetching stores but title is managed by hook
   useEffect(() => {
-    setTitle("Atención de Requerimientos");
     obtenerAlmacenesAutorizados();
-  }, [setTitle, obtenerAlmacenesAutorizados]);
+  }, [obtenerAlmacenesAutorizados]);
 
   // Ya no manejamos 'page' localmente ni disclosures
 

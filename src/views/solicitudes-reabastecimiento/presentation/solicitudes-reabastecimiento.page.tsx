@@ -10,7 +10,7 @@ import {
   Select,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -24,7 +24,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { useSolicitudesPage } from "../hooks/useSolicitudesPage";
 import { Premura } from "../../../shared/enums/otros";
 import { EstadoSolicitud } from "../../../shared/enums/estados";
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroSolicitud } from "./registro-solicitud";
@@ -42,7 +42,7 @@ const YEARS = Array.from({ length: 5 }, (_, i) => {
 });
 
 export const SolicitudesReabastecimientoPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Solicitudes de Reabastecimiento");
 
   const {
     filteredRecords,
@@ -67,9 +67,7 @@ export const SolicitudesReabastecimientoPage = () => {
   const [openedTrace, { open: openTrace, close: closeTrace }] =
     useDisclosure(false);
 
-  useEffect(() => {
-    setTitle("Solicitudes de Reabastecimiento");
-  }, [setTitle]);
+
 
   const columns: DataTableColumn<RES_SolicitudReabastecimiento>[] = useMemo(
     () => [
