@@ -1,4 +1,5 @@
 import type { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
+import type { IArchivo } from "../../../shared/interfaces";
 
 export interface RES_SolicitudReabastecimiento {
   id_solicitud: number;
@@ -73,7 +74,7 @@ export interface RES_EntregaReabastecimiento {
   correlativo: string;
   fecha_hora_entrega: string;
   observacion: string | null;
-  evidencias: string | null;
+  evidencias: IArchivo[] | null;
   created_at: string;
   estado: string;
   detalles?: RES_DetalleEntregaReabastecimiento[];

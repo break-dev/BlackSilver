@@ -21,8 +21,10 @@ import {
   ChevronUpIcon,
   CheckBadgeIcon,
   BuildingStorefrontIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
+import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroRecepcion } from "./registro-recepcion/index";
@@ -120,7 +122,9 @@ export const HistorialEntregas = ({
             gradient={{ from: "indigo", to: "cyan" }}
             leftSection={<CheckBadgeIcon className="w-5 h-5" />}
             className="shadow-lg shadow-indigo-500/20"
-            onClick={() => handleOpenRecepcion(allDetallesPendientes, undefined, true)}
+            onClick={() =>
+              handleOpenRecepcion(allDetallesPendientes, undefined, true)
+            }
           >
             Recepción Global ({allDetallesPendientes.length} ítems)
           </Button>
@@ -235,6 +239,32 @@ export const HistorialEntregas = ({
                       {h.observacion}
                     </Text>
                   </Paper>
+                )}
+
+                {/* Sección de Evidencias */}
+                {h.evidencias && h.evidencias.length > 0 && (
+                  <div className="mt-4 px-4 pb-4">
+                    <Group gap="xs" mb="sm">
+                      <PaperClipIcon className="w-4 h-4 text-zinc-500" />
+                      <Text
+                        size="xs"
+                        fw={800}
+                        c="zinc.4"
+                        className="uppercase tracking-widest"
+                      >
+                        Evidencias ({h.evidencias.length})
+                      </Text>
+                    </Group>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {h.evidencias.map((ev, idx) => (
+                        <ArchivoCard
+                          key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
+                          archivo={ev}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 <Group gap="xs" mb="sm" mx="md">
