@@ -14,7 +14,6 @@ import {
   Center,
 } from "@mantine/core";
 import {
-  ArchiveBoxIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   ClipboardDocumentListIcon,
@@ -25,6 +24,7 @@ import {
   BuildingOffice2Icon,
   CheckBadgeIcon,
   ExclamationCircleIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
@@ -66,14 +66,19 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
     handleCambiarEstado,
     selectedItemsIds,
     toggleItemSelection,
-    cargarDatos
+    cargarDatos,
+    // Masivo
+    isAllEligibleSelected,
+    hasPartialEligibleSelection,
+    toggleSelectAllEligible,
+    itemsEligibleIds
   } = useDetallePrestamo({ idPrestamo: prestamo.id_prestamo, onSuccess: onDespachoRegistrado });
 
   if (loading) {
     return (
       <Center py={60}>
         <Stack gap="xs" align="center">
-          <Loader size="lg" color="indigo" type="dots" />
+          <Loader size="lg" color="indigo" />
           <Text size="xs" c="dimmed" className="uppercase tracking-widest animate-pulse font-black">Sincronizando préstamo...</Text>
         </Stack>
       </Center>
@@ -132,12 +137,12 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       <Paper p="md" radius="xl" className="bg-zinc-900/50 border border-zinc-800 mx-2 shadow-inner">
         <Group justify="space-between" mb={8} px={4}>
           <Text size="xs" fw={800} className="text-zinc-500 tracking-tighter uppercase">Progreso General de Atención</Text>
-          <Text size="sm" fw={900} c="indigo.4">{progresoGeneral}%</Text>
+          <Text size="sm" fw={900} c="indigo.4">{isNaN(progresoGeneral) ? 0 : progresoGeneral}%</Text>
         </Group>
         <div className="relative h-2 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-700/10">
           <div
             className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 via-indigo-400 to-indigo-300 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
-            style={{ width: `${progresoGeneral}%` }}
+            style={{ width: `${isNaN(progresoGeneral) ? 0 : progresoGeneral}%` }}
           />
         </div>
       </Paper>
@@ -149,7 +154,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             <div className="p-3.5 rounded-2xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
               <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
-            <Text fw={800} className="text-lg text-zinc-100 italic tracking-tight">Items Solicitados</Text>
+            <Text fw={800} className="text-lg text-zinc-100 italic tracking-tight">Items de la Solicitud</Text>
           </Group>
 
           <Group gap="sm">
@@ -183,16 +188,27 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
 
         <div className="overflow-x-auto border border-zinc-800/60 rounded-2xl shadow-2xl bg-zinc-950/20 backdrop-blur-md transition-all">
           <Table verticalSpacing="md" horizontalSpacing="xl">
-            <thead className="bg-zinc-900/80 text-zinc-400 text-[11px] uppercase font-bold tracking-wider border-b border-zinc-800/80">
+            <thead className="bg-zinc-900/50 text-zinc-400 text-xs font-bold border-b border-zinc-800/80">
               <tr>
                 <th className="px-6 py-4 text-center w-12 opacity-50">#</th>
                 <th className="px-4 py-4 text-center w-12">
-                  <Tooltip label="Marcar para Entrega" position="top" withArrow>
-                    <ArchiveBoxIcon className="w-4 h-4 mx-auto text-zinc-500" />
-                  </Tooltip>
+                  {itemsEligibleIds.length > 0 && (
+                    <div className="flex justify-center">
+                      <Tooltip label="Seleccionar todo lo apto para entrega" position="top" withArrow>
+                        <Checkbox
+                          checked={isAllEligibleSelected}
+                          indeterminate={hasPartialEligibleSelection}
+                          onChange={toggleSelectAllEligible}
+                          color="indigo"
+                          size="xs"
+                          className="cursor-pointer translate-y-px"
+                        />
+                      </Tooltip>
+                    </div>
+                  )}
                 </th>
                 <th className="px-6 py-4 text-left">Producto</th>
-                <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+                <th className="px-6 py-4 text-center">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center w-36">Acciones</th>
@@ -207,13 +223,14 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                   <tr key={idx} className="hover:bg-zinc-900/40 transition-colors group">
                     <td className="px-6 py-4 text-center text-[10px] font-mono font-black text-zinc-700">{idx + 1}</td>
                     <td className="px-4 py-4 text-center">
-                      {porcentaje >= 100 ? (
-                        <CheckBadgeIcon className="w-5 h-5 mx-auto text-emerald-500/80" />
+                      {(porcentaje >= 100 || !isApprovedToDispatch || d.estado.toLowerCase().includes("rechazado")) ? (
+                        <div className="flex justify-center opacity-40">
+                          <NoSymbolIcon className="w-5 h-5 text-zinc-600" />
+                        </div>
                       ) : (
                         <Checkbox
                           checked={selectedItemsIds.includes(d.id_prestamo_detalle)}
                           onChange={() => toggleItemSelection(d.id_prestamo_detalle)}
-                          disabled={!isApprovedToDispatch || d.estado.toLowerCase().includes("rechazado")}
                           color="indigo"
                           size="sm"
                           className="cursor-pointer flex justify-center translate-y-px"
@@ -229,13 +246,39 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                         </Group>
                       </Stack>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <Group gap={4} justify="center" wrap="nowrap">
-                        <Badge variant="filled" color="cyan.8" radius="sm" size="sm" className="font-black px-3">{formatNumber(d.cantidad_solicitada)} {d.unidad_medida_abv}</Badge>
-                        {d.unidad_medida_base_abv !== d.unidad_medida_abv && (
-                          <Badge variant="filled" color="pink.9" radius="sm" size="xs" className="font-black opacity-80">{formatNumber(d.cantidad_solicitada_base)} {d.unidad_medida_base_abv}</Badge>
-                        )}
-                      </Group>
+                    <td className="px-6 py-4 text-center flex flex-row gap-0.5 justify-center items-center">
+                      <Badge
+                        variant="filled"
+                        color="cyan.7"
+                        radius="sm"
+                        size="sm"
+                        className="font-black px-4"
+                      >
+                        {formatNumber(d.cantidad_solicitada)} {d.unidad_medida_abv}
+                      </Badge>
+                      {d.unidad_medida_base_abv !== d.unidad_medida_abv && (
+                        <>
+                          <Badge
+                            variant="filled"
+                            color="zinc"
+                            radius="sm"
+                            size="sm"
+                            className="font-black px-4"
+                          >
+                            {formatNumber(d.contenido_por_presentacion)} {d.unidad_medida_base_abv}{" "}
+                            <span className="lowercase font-bold">x</span> {d.unidad_medida_abv}
+                          </Badge>
+
+                          <Badge
+                            variant="filled"
+                            color="pink"
+                            radius="sm"
+                            className="font-bold shadow-xs whitespace-nowrap"
+                          >
+                            {formatNumber(d.cantidad_solicitada_base)} {d.unidad_medida_base_abv}
+                          </Badge>
+                        </>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">

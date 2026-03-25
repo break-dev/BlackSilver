@@ -44,8 +44,8 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
 
   const deselectAllItems = useCallback(() => setSelectedItemsIds([]), []);
 
-  const cargarDatos = useCallback(async () => {
-    setLoading(true);
+  const cargarDatos = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     try {
       const res = await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
       if (res.success) {
@@ -55,7 +55,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     } catch {
       notifyError("Error al cargar el detalle del préstamo");
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, [idPrestamo, notifyError]);
 
@@ -89,7 +89,16 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
         setComentarioAccion("");
         closeAprobar();
         closeRechazo();
-        cargarDatos();
+        
+        // Actualización local inmediata para feedback instantáneo
+        setDetalles(prev => prev.map(d => 
+          d.id_prestamo_detalle === selectedItemId 
+            ? { ...d, estado: nuevoEstado } 
+            : d
+        ));
+
+        // Refresco silencioso en background
+        cargarDatos(true);
         onSuccess?.();
       }
     } catch {
@@ -100,12 +109,64 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   }, [selectedItemId, comentarioAccion, cargarDatos, closeAprobar, closeRechazo, notifyError, notifySuccess, onSuccess]);
 
   const progresoGeneral = useMemo(() => {
-    if (detalles.length === 0) return 0;
-    const totalSolicitado = detalles.reduce((acc, d) => acc + (d.cantidad_solicitada_base || 0), 0);
-    const totalEntregado = detalles.reduce((acc, d) => acc + (d.cantidad_prestada_base || 0), 0);
-    if (totalSolicitado === 0) return 0;
-    return Math.round((totalEntregado / totalSolicitado) * 100);
+    if (!detalles || detalles.length === 0) return 0;
+    
+    // Solo contamos ítems que no estén rechazados o anulados para el progreso real de atención
+    const itemsAtendibles = detalles.filter(d => 
+      !d.estado.toLowerCase().includes("rechazado") && 
+      !d.estado.toLowerCase().includes("anulado") &&
+      !d.estado.toLowerCase().includes("pendiente") // Si está pendiente aún no cuenta para el progreso de 'atención'
+    );
+
+    if (itemsAtendibles.length === 0) return 0;
+    
+    let totalSolicitado = 0;
+    let totalEntregado = 0;
+
+    itemsAtendibles.forEach(d => {
+      totalSolicitado += Number(d.cantidad_solicitada_base || 0);
+      totalEntregado += Number(d.cantidad_prestada_base || 0);
+    });
+
+    if (totalSolicitado <= 0) return 0;
+    
+    const calculado = Math.round((totalEntregado / totalSolicitado) * 100);
+    return isNaN(calculado) ? 0 : calculado;
   }, [detalles]);
+
+  const isItemEligibleForDelivery = useCallback((d: RES_DetallePrestamo) => {
+    const isApprovedToDispatch = d.estado.toLowerCase().includes("aprobado") || 
+                                 d.estado.toLowerCase().includes("iniciado") || 
+                                 d.estado.toLowerCase().includes("entrega");
+    const isRejected = d.estado.toLowerCase().includes("rechazado");
+    const porcentaje = Math.round((Number(d.cantidad_prestada_base) / Number(d.cantidad_solicitada_base)) * 100) || 0;
+    const isFinished = porcentaje >= 100;
+
+    return isApprovedToDispatch && !isRejected && !isFinished;
+  }, []);
+
+  const itemsEligibleIds = useMemo(() => {
+    return detalles.filter(isItemEligibleForDelivery).map(d => d.id_prestamo_detalle);
+  }, [detalles, isItemEligibleForDelivery]);
+
+  const isAllEligibleSelected = useMemo(() => {
+    return itemsEligibleIds.length > 0 && itemsEligibleIds.every(id => selectedItemsIds.includes(id));
+  }, [itemsEligibleIds, selectedItemsIds]);
+
+  const hasPartialEligibleSelection = useMemo(() => {
+    return selectedItemsIds.length > 0 && !isAllEligibleSelected && itemsEligibleIds.some(id => selectedItemsIds.includes(id));
+  }, [selectedItemsIds, isAllEligibleSelected, itemsEligibleIds]);
+
+  const toggleSelectAllEligible = useCallback(() => {
+    if (isAllEligibleSelected) {
+      setSelectedItemsIds(prev => prev.filter(id => !itemsEligibleIds.includes(id)));
+    } else {
+      setSelectedItemsIds(prev => {
+        const others = prev.filter(id => !itemsEligibleIds.includes(id));
+        return [...others, ...itemsEligibleIds];
+      });
+    }
+  }, [isAllEligibleSelected, itemsEligibleIds]);
 
   return {
     loading,
@@ -131,6 +192,11 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     selectedItemsIds,
     toggleItemSelection,
     deselectAllItems,
-    cargarDatos
+    cargarDatos,
+    // Bulk select helpers
+    isAllEligibleSelected,
+    hasPartialEligibleSelection,
+    toggleSelectAllEligible,
+    itemsEligibleIds
   };
 };

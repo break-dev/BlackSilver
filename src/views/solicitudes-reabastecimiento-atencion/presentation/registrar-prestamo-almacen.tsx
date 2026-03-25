@@ -131,7 +131,7 @@ export const RegistrarPrestamoAlmacen = ({
               <tr>
                 <th className="px-4 py-2 text-center w-12">Seleccionar</th>
                 <th className="px-4 py-2 text-left">Producto</th>
-                <th className="px-4 py-2 text-center">Necesario (Total)</th>
+                <th className="px-4 py-2 text-center">Cantidad Solicitada</th>
                 <th className="px-4 py-2 text-center">Pendiente</th>
               </tr>
             </thead>
@@ -321,10 +321,10 @@ export const RegistrarPrestamoAlmacen = ({
             <Table variant="unstyled" className="w-full text-zinc-300">
               <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-black font-mono">
                 <tr>
-                  <th className="px-4 py-3 text-left min-w-[150px]">Producto</th>
+                  <th className="px-4 py-3 text-center min-w-[150px]">Producto</th>
                   <th className="px-4 py-3 text-center min-w-[120px]">Cantidad a Pedir</th>
                   <th className="px-4 py-3 text-center min-w-[150px]">Stock Disponible</th>
-                  <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Comentario</th>
+                  <th className="px-4 py-3 text-center font-semibold min-w-[300px]">Comentario</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50 bg-zinc-900/40">
@@ -376,16 +376,18 @@ export const RegistrarPrestamoAlmacen = ({
                         key={item.id_solicitud_detalle}
                         className="hover:bg-white/2 transition-colors"
                       >
-                        <td className="px-4 py-3">
-                          <Stack gap={4}>
-                            <Text size="sm" fw={800} c="white">
+                        <td className="px-4 py-3 text-center">
+                          <Stack gap={3} align="center">
+                            <Text size="sm" fw={800} c="white" className="italic tracking-tight">
                               {item.producto}
                             </Text>
-                            <Group gap={6}>
-                              <Badge color="pink" variant="light" size="xs" className="px-1.5 font-bold border border-pink-500/20">
-                                1 {item.unidad_medida_sol_abv} = {item.contenido_por_presentacion} {item.unidad_medida_base_abv}
-                              </Badge>
-                              <Text size="9px" c="dimmed" className="uppercase font-bold">
+                            <Group gap={6} justify="center">
+                              {item.unidad_medida_base_abv !== item.unidad_medida_sol_abv && (
+                                <Badge color="pink" variant="light" size="xs" className="px-1.5 font-bold border border-pink-500/20">
+                                  1 {item.unidad_medida_sol_abv} = {item.contenido_por_presentacion} {item.unidad_medida_base_abv}
+                                </Badge>
+                              )}
+                              <Text size="9px" c="zinc.5" className="uppercase font-bold bg-zinc-900/40 px-2 py-0.5 rounded-sm">
                                 Pendiente: {formatNumber(Math.max(0, pendienteReal - cantidadPedida))}{" "}
                                 {item.unidad_medida_sol_abv}
                               </Text>
@@ -397,7 +399,7 @@ export const RegistrarPrestamoAlmacen = ({
                             <Group gap={4} justify="center" wrap="nowrap" className="w-full">
                               {/* Entrada Principal (Presentación) */}
                               <div
-                                className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border bg-zinc-950/40 transition-all ${colorBorde}`}
+                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border bg-zinc-950/40 transition-all ${colorBorde}`}
                               >
                                 <NumberInput
                                   variant="unstyled"
@@ -427,35 +429,37 @@ export const RegistrarPrestamoAlmacen = ({
                                   }}
                                 />
                                 <Text
-                                  size="7px"
-                                  fw={900}
-                                  className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter"
+                                  size="9px"
+                                  fw={800}
+                                  className="uppercase whitespace-nowrap text-zinc-400/80 font-mono tracking-tighter"
                                 >
                                   {item.unidad_medida_sol_abv}
                                 </Text>
                               </div>
 
-                              {/* Entrada Alternativa (Unidad Base) */}
-                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg bg-zinc-800/20 border border-zinc-800/40 hover:border-emerald-500/30 transition-all group/base">
-                                <NumberInput
-                                  variant="unstyled"
-                                  value={Math.round(cantidadPedida * Number(item.contenido_por_presentacion)) || ""}
-                                  onChange={(val) => {
-                                    const baseVal = Number(val);
-                                    const divisor = Number(item.contenido_por_presentacion) || 1;
-                                    setCantidad(item.id_solicitud_detalle, baseVal / divisor);
-                                  }}
-                                  size="xs"
-                                  hideControls
-                                  placeholder="0"
-                                  classNames={{
-                                    input: "w-[28px] text-center font-bold text-[9px] h-4 bg-transparent text-zinc-500 group-hover/base:text-emerald-400",
-                                  }}
-                                />
-                                <Text size="7px" fw={900} c="zinc.6" className="uppercase group-hover/base:text-emerald-600/70">
-                                  {item.unidad_medida_base_abv}
-                                </Text>
-                              </div>
+                              {/* Entrada Alternativa (Unidad Base) - SOLO SI SON DIFERENTES */}
+                              {item.unidad_medida_base_abv !== item.unidad_medida_sol_abv && (
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-zinc-800/20 border border-zinc-800/40 hover:border-emerald-500/30 transition-all group/base">
+                                  <NumberInput
+                                    variant="unstyled"
+                                    value={Math.round(cantidadPedida * Number(item.contenido_por_presentacion)) || ""}
+                                    onChange={(val) => {
+                                      const baseVal = Number(val);
+                                      const divisor = Number(item.contenido_por_presentacion) || 1;
+                                      setCantidad(item.id_solicitud_detalle, baseVal / divisor);
+                                    }}
+                                    size="xs"
+                                    hideControls
+                                    placeholder="0"
+                                    classNames={{
+                                      input: "w-[28px] text-center font-bold text-[9px] h-4 bg-transparent text-zinc-500 group-hover/base:text-emerald-400",
+                                    }}
+                                  />
+                                  <Text size="9px" fw={800} c="zinc.5" className="uppercase group-hover/base:text-emerald-600/70">
+                                    {item.unidad_medida_base_abv}
+                                  </Text>
+                                </div>
+                              )}
                             </Group>
 
                             {/* Contenedor de Alertas dinámicas */}
@@ -522,17 +526,32 @@ export const RegistrarPrestamoAlmacen = ({
                               <Loader size="sm" color="indigo" type="dots" />
                             </div>
                           ) : (
-                            <Stack gap={2} align="center">
-                              <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
+                            <Stack gap={3} align="center">
+                              <Badge
+                                variant="light"
+                                color={totalStockExterno > 0 ? "indigo" : "red"}
+                                size="xs"
+                                radius="sm"
+                                className="font-bold px-1.5 py-1.5 border border-indigo-500/10"
+                              >
                                 {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
                               </Badge>
-                              <Text size="10px" c="zinc.5" fw={700}>
-                                {formatNumber(totalStockExternoBase)} {item.unidad_medida_base_abv}
-                              </Text>
+
+                              {item.unidad_medida_base_abv !== item.unidad_medida_sol_abv && (
+                                <Badge
+                                  variant="light"
+                                  color="pink"
+                                  size="xs"
+                                  radius="sm"
+                                  className="font-bold px-1.5 py-1.5 border border-pink-500/10 opacity-80"
+                                >
+                                  {formatNumber(totalStockExternoBase)} {item.unidad_medida_base_abv}
+                                </Badge>
+                              )}
                             </Stack>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           <TextInput
                             placeholder="Nota opcional..."
                             size="xs"
