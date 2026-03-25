@@ -112,7 +112,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
 
       {/* Sub-header: Estados, Fechas */}
       <Paper p="md" radius="lg" className="bg-transparent border border-zinc-800/50 mx-2 backdrop-blur-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InfoItem
             label="Estado del Préstamo"
             value={prestamo.estado}
@@ -120,16 +120,10 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             icon={ExclamationCircleIcon}
           />
           <InfoItem
-            label="Límite Devolución"
-            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Indefinido"}
-            icon={ClockIcon}
-            iconColor="text-amber-500"
-          />
-          <InfoItem
-            label="Fecha Registro"
-            value={dayjs(prestamo.created_at).format("DD/MM/YYYY HH:mm")}
-            isMono
+            label="Fecha de Devolución"
+            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Sin límite"}
             icon={CalendarDaysIcon}
+            iconColor="text-pink-500"
           />
         </div>
       </Paper>
