@@ -14,6 +14,7 @@ interface Props {
   idAlmacenPrestamista: number;
   selectedItemsIds: number[];
   detallesPrestamo: RES_DetallePrestamo[];
+  idEmpleadoDefault: number | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -23,6 +24,7 @@ export const RegistrarEntregaModal = ({
   idAlmacenPrestamista, 
   selectedItemsIds, 
   detallesPrestamo,
+  idEmpleadoDefault,
   onSuccess, 
   onCancel 
 }: Props) => {
@@ -46,6 +48,7 @@ export const RegistrarEntregaModal = ({
     idAlmacenPrestamista,
     selectedItemsIds,
     detallesPrestamo,
+    idEmpleadoDefault,
     onSuccess,
   });
 

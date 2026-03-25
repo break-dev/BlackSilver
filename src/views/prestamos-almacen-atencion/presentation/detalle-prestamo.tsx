@@ -390,6 +390,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
           idAlmacenPrestamista={idAlmacenPrestamista}
           selectedItemsIds={selectedItemsIds}
           detallesPrestamo={detalles}
+          idEmpleadoDefault={prestamo.id_empleado_recibe_default}
           onSuccess={() => {
             closeNuevaEntrega();
             cargarDatos();

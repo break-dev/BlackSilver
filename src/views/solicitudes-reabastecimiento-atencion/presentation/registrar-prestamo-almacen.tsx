@@ -51,8 +51,7 @@ const inputClasses = {
   label: "text-zinc-300 mb-1.5 font-semibold tracking-tight",
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SectionHeader = ({ icon: Icon, title, color = "amber" }: { icon: any; title: string, color?: string }) => {
+const SectionHeader = ({ icon: Icon, title, color = "amber" }: { icon: React.ElementType; title: string, color?: string }) => {
   const colors: Record<string, { text: string; line: string }> = {
     amber: { text: "text-amber-500", line: "from-amber-500/50" },
     indigo: { text: "text-indigo-500", line: "from-indigo-500/50" },
@@ -174,14 +173,24 @@ export const RegistrarPrestamoAlmacen = ({
                         {item.producto}
                       </td>
                       <td className="px-4 py-2 text-center">
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}
-                        </Text>
+                        <Stack gap={0} align="center">
+                          <Text size="xs" fw={700}>
+                            {formatNumber(item.cantidad_solicitada)} {item.unidad_medida_sol_abv}
+                          </Text>
+                          <Text size="10px" c="dimmed" className="italic">
+                            ({formatNumber(item.cantidad_solicitada_base)} {item.unidad_medida_base_abv})
+                          </Text>
+                        </Stack>
                       </td>
                       <td className="px-4 py-2 text-center">
-                        <Badge variant="light" color={pendiente > 0 ? "amber" : "gray"} size="sm">
-                          {formatNumber(Math.max(0, pendiente))} {item.unidad_medida_sol_abv}
-                        </Badge>
+                        <Stack gap={2} align="center">
+                          <Badge variant="light" color={pendiente > 0 ? "amber" : "gray"} size="sm">
+                            {formatNumber(Math.max(0, pendiente))} {item.unidad_medida_sol_abv}
+                          </Badge>
+                          <Text size="10px" c="zinc.5" fw={700}>
+                            {formatNumber(Math.max(0, pendiente * Number(item.contenido_por_presentacion)))} {item.unidad_medida_base_abv}
+                          </Text>
+                        </Stack>
                       </td>
                     </tr>
                   );
@@ -313,8 +322,8 @@ export const RegistrarPrestamoAlmacen = ({
               <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-black font-mono">
                 <tr>
                   <th className="px-4 py-3 text-left min-w-[150px]">Producto</th>
-                  <th className="px-4 py-3 text-center min-w-[200px]">Cantidad a Pedir</th>
-                  <th className="px-4 py-3 text-center">Stock Disponible</th>
+                  <th className="px-4 py-3 text-center min-w-[120px]">Cantidad a Pedir</th>
+                  <th className="px-4 py-3 text-center min-w-[150px]">Stock Disponible</th>
                   <th className="px-4 py-3 text-left font-semibold min-w-[220px]">Comentario</th>
                 </tr>
               </thead>
@@ -368,59 +377,88 @@ export const RegistrarPrestamoAlmacen = ({
                         className="hover:bg-white/2 transition-colors"
                       >
                         <td className="px-4 py-3">
-                          <Text size="sm" fw={800} c="white">
-                            {item.producto}
-                          </Text>
-                          <Text
-                            size="9px"
-                            c="dimmed"
-                            className="uppercase font-bold"
-                          >
-                            Pendiente: {formatNumber(Math.max(0, pendienteReal - cantidadPedida))}{" "}
-                            {item.unidad_medida_sol_abv}
-                          </Text>
+                          <Stack gap={4}>
+                            <Text size="sm" fw={800} c="white">
+                              {item.producto}
+                            </Text>
+                            <Group gap={6}>
+                              <Badge color="pink" variant="light" size="xs" className="px-1.5 font-bold border border-pink-500/20">
+                                1 {item.unidad_medida_sol_abv} = {item.contenido_por_presentacion} {item.unidad_medida_base_abv}
+                              </Badge>
+                              <Text size="9px" c="dimmed" className="uppercase font-bold">
+                                Pendiente: {formatNumber(Math.max(0, pendienteReal - cantidadPedida))}{" "}
+                                {item.unidad_medida_sol_abv}
+                              </Text>
+                            </Group>
+                          </Stack>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex flex-col items-center gap-1">
-                            <div
-                              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border bg-zinc-950/40 w-fit mx-auto transition-all ${colorBorde}`}
-                            >
-                              <NumberInput
-                                variant="unstyled"
-                                value={
-                                  cantidades[item.id_solicitud_detalle] || ""
-                                }
-                                onChange={(val) =>
-                                  setCantidad(
-                                    item.id_solicitud_detalle,
-                                    Number(val),
-                                  )
-                                }
-                                size="xs"
-                                hideControls
-                                placeholder="0"
-                                classNames={{
-                                  input: `w-fit min-w-[30px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent 
-                                  ${superaStockDisponible
-                                      ? "text-red-400"
-                                      : dejaDebajoDelMinimo || dejaSinStock
-                                        ? "text-amber-400"
-                                        : superaLoPendiente
-                                          ? "text-orange-400"
-                                          : "text-emerald-400"
-                                    }`,
-                                }}
-                              />
-                              <Text
-                                size="9px"
-                                fw={900}
-                                className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter"
+                            <Group gap={4} justify="center" wrap="nowrap" className="w-full">
+                              {/* Entrada Principal (Presentación) */}
+                              <div
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border bg-zinc-950/40 transition-all ${colorBorde}`}
                               >
-                                {item.unidad_medida_sol_abv}
-                              </Text>
-                            </div>
+                                <NumberInput
+                                  variant="unstyled"
+                                  value={
+                                    cantidades[item.id_solicitud_detalle] || ""
+                                  }
+                                  onChange={(val) =>
+                                    setCantidad(
+                                      item.id_solicitud_detalle,
+                                      Number(val),
+                                    )
+                                  }
+                                  size="xs"
+                                  hideControls
+                                  decimalScale={2}
+                                  placeholder="0"
+                                  classNames={{
+                                    input: `w-[35px] text-center font-black text-[10px] h-4 bg-transparent 
+                                    ${superaStockDisponible
+                                        ? "text-red-400"
+                                        : dejaDebajoDelMinimo || dejaSinStock
+                                          ? "text-amber-400"
+                                          : superaLoPendiente
+                                            ? "text-orange-400"
+                                            : "text-emerald-400"
+                                      }`,
+                                  }}
+                                />
+                                <Text
+                                  size="7px"
+                                  fw={900}
+                                  className="uppercase whitespace-nowrap text-zinc-500 font-mono tracking-tighter"
+                                >
+                                  {item.unidad_medida_sol_abv}
+                                </Text>
+                              </div>
 
-                            {/* Contenedor de Alertas dinámicas (apiladas) */}
+                              {/* Entrada Alternativa (Unidad Base) */}
+                              <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg bg-zinc-800/20 border border-zinc-800/40 hover:border-emerald-500/30 transition-all group/base">
+                                <NumberInput
+                                  variant="unstyled"
+                                  value={Math.round(cantidadPedida * Number(item.contenido_por_presentacion)) || ""}
+                                  onChange={(val) => {
+                                    const baseVal = Number(val);
+                                    const divisor = Number(item.contenido_por_presentacion) || 1;
+                                    setCantidad(item.id_solicitud_detalle, baseVal / divisor);
+                                  }}
+                                  size="xs"
+                                  hideControls
+                                  placeholder="0"
+                                  classNames={{
+                                    input: "w-[28px] text-center font-bold text-[9px] h-4 bg-transparent text-zinc-500 group-hover/base:text-emerald-400",
+                                  }}
+                                />
+                                <Text size="7px" fw={900} c="zinc.6" className="uppercase group-hover/base:text-emerald-600/70">
+                                  {item.unidad_medida_base_abv}
+                                </Text>
+                              </div>
+                            </Group>
+
+                            {/* Contenedor de Alertas dinámicas */}
                             <div className="flex flex-col items-center gap-0.5 mt-0.5">
                               {superaStockDisponible && (
                                 <Tooltip
@@ -484,9 +522,14 @@ export const RegistrarPrestamoAlmacen = ({
                               <Loader size="sm" color="indigo" type="dots" />
                             </div>
                           ) : (
-                            <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
-                              {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
-                            </Badge>
+                            <Stack gap={2} align="center">
+                              <Badge color={totalStockExterno > 0 ? "indigo" : "red"} variant="light" size="lg">
+                                {formatNumber(totalStockExterno)} {item.unidad_medida_sol_abv}
+                              </Badge>
+                              <Text size="10px" c="zinc.5" fw={700}>
+                                {formatNumber(totalStockExternoBase)} {item.unidad_medida_base_abv}
+                              </Text>
+                            </Stack>
                           )}
                         </td>
                         <td className="px-4 py-3">

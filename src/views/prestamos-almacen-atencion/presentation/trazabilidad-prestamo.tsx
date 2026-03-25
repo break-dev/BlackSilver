@@ -58,7 +58,7 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
       ) : (
         <ScrollArea h={450} type="hover" offsetScrollbars>
           <Timeline active={eventos.length + 1} bulletSize={32} lineWidth={2} className="px-4">
-            {[...eventos].reverse().map((evento, idx) => {
+            {eventos.map((evento, idx) => {
               const style = getStatusStyles(evento.estado);
               return (
                 <Timeline.Item
@@ -88,16 +88,18 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
                 >
                   <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800/50 shadow-sm transition-colors hover:bg-zinc-900/60">
                     <Text size="sm" fw={500} c="zinc.2" className="leading-relaxed">
-                      {evento.comentario || "Este movimiento se registró de forma automática al procesar la solicitud."}
+                      {evento.comentario || "⚠️ Acción registrada automáticamente por el sistema al procesar el cambio de estado."}
                     </Text>
                     <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
                         <Text size="10px" fw={900} c="zinc.5">{evento.nombre_empleado?.charAt(0) || "S"}</Text>
                       </div>
-                      <Text size="xs" c="zinc.5" fw={800}>Registrad por:</Text>
-                      <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
-                        {evento.nombre_empleado || "Sistema"}
-                      </Text>
+                      <div className="flex flex-col gap-0">
+                        <Text size="7px" c="zinc.5" fw={800} className="uppercase tracking-tighter">Registrado por:</Text>
+                        <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
+                          {evento.nombre_empleado || "Sistema Administrativo"}
+                        </Text>
+                      </div>
                     </div>
                   </Paper>
                 </Timeline.Item>

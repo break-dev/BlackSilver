@@ -13,6 +13,7 @@ export interface RES_PrestamoAtencion {
   estado: string;
   almacen_solicitante: string;
   id_almacen_solicitante: number;
+  id_empleado_recibe_default: number | null;
   registrado_por: string;
   detalles?: RES_DetallePrestamo[];
 }

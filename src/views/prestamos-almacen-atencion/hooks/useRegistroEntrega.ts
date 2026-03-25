@@ -13,6 +13,7 @@ interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
   selectedItemsIds: number[];
   detallesPrestamo: RES_DetallePrestamo[];
+  idEmpleadoDefault?: number | null;
   onSuccess: () => void;
 }
 
@@ -20,6 +21,7 @@ export const useRegistroEntrega = ({
   idAlmacenPrestamista,
   selectedItemsIds,
   detallesPrestamo,
+  idEmpleadoDefault,
   onSuccess,
 }: UseRegistroEntregaProps) => {
   const { notifySuccess, notifyError } = useNotify();
@@ -56,10 +58,19 @@ export const useRegistroEntrega = ({
       ]);
 
       if (resEmps.success) {
-        setEmpleados(resEmps.data.map((e: RES_EmpleadoPrestamo) => ({
+        const empsMapped = resEmps.data.map((e: RES_EmpleadoPrestamo) => ({
           value: String(e.id_empleado),
           label: `${e.nombre_completo} - ${e.dni}`
-        })));
+        }));
+        setEmpleados(empsMapped);
+
+        // AUTO-SELECCIÓN: Si tenemos un empleado por defecto, lo buscamos en la lista
+        if (idEmpleadoDefault) {
+           const exists = empsMapped.some((e: { value: string }) => e.value === String(idEmpleadoDefault));
+           if (exists) {
+             setIdEmpleadoRecibe(String(idEmpleadoDefault));
+           }
+        }
       }
 
       if (resLotes.success) {
@@ -86,7 +97,7 @@ export const useRegistroEntrega = ({
     } finally {
       setLoading(false);
     }
-  }, [idsProductos, idAlmacenPrestamista, itemsAEntregar]);
+  }, [idsProductos, idAlmacenPrestamista, itemsAEntregar, idEmpleadoDefault]);
 
   const handleCantLoteChange = useCallback((idDetalle: number, idLote: number, valLote: number) => {
     setEntregaCantidades(prev => {
