@@ -18,8 +18,10 @@ import {
   CubeIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
+import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -137,6 +139,32 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       {h.observacion}
                     </Text>
                   </Paper>
+                )}
+
+                {/* Sección de Evidencias */}
+                {h.evidencias && h.evidencias.length > 0 && (
+                  <div className="mt-4 px-4 pb-4">
+                    <Group gap="xs" mb="sm">
+                      <PaperClipIcon className="w-4 h-4 text-zinc-500" />
+                      <Text
+                        size="xs"
+                        fw={800}
+                        c="zinc.4"
+                        className="uppercase tracking-widest"
+                      >
+                        Evidencias ({h.evidencias.length})
+                      </Text>
+                    </Group>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {h.evidencias.map((ev, idx) => (
+                        <ArchivoCard
+                          key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
+                          archivo={ev}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 <Group gap="xs" mb="sm" mx="md">

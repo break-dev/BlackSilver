@@ -1,4 +1,4 @@
-import { Badge, NumberInput, Text } from "@mantine/core";
+import { Badge, Group, NumberInput, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-atencion.responses";
@@ -12,7 +12,11 @@ interface LoteRowProps {
   maxLote: number;
   stockAsignable: number;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (
+    idLote: number,
+    idProducto: number,
+    val: number,
+  ) => void;
 }
 
 export const LoteRow = ({
@@ -66,24 +70,38 @@ export const LoteRow = ({
         )}
       </td>
       <td className="text-center">
-        <div className="flex flex-col gap-1 items-center justify-center">
-          <Badge
-            variant="light"
-            color="zinc.4"
-            className="bg-zinc-800/30 font-black h-7"
-          >
-            {formatNumber(stockAsignable)} {unidadMedidaBaseAbv}
-          </Badge>
+        <Stack align="center" gap={10}>
+          <Group gap={4} wrap="nowrap" justify="center">
+            <Badge
+              variant="light"
+              color="zinc.4"
+              className="bg-zinc-800/30 font-black h-7"
+            >
+              {formatNumber(stockAsignable)} {unidadMedidaBaseAbv}
+            </Badge>
+            {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+              <Badge
+                variant="light"
+                color="indigo.4"
+                className="bg-zinc-800/30 font-black h-7"
+              >
+                {formatNumber(lote.stock_actual)} {lote.unidad_medida_abv}
+              </Badge>
+            )}
+          </Group>
+
           {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
-            <Text size="10px" c="teal.4" fw={800} className="font-mono">
-              (
-              {formatNumber(
-                stockAsignable / (lote.contenido_por_presentacion || 1),
-              )}{" "}
-              {lote.unidad_medida_abv})
+            <Text
+              size="9px"
+              c="zinc.5"
+              fw={700}
+              className="italic uppercase tracking-tight"
+            >
+              {formatNumber(lote.contenido_por_presentacion)}{" "}
+              {unidadMedidaBaseAbv} x {lote.unidad_medida_abv}
             </Text>
           )}
-        </div>
+        </Stack>
       </td>
       <td className="pr-8">
         <div className="flex items-center justify-center gap-3">
@@ -106,16 +124,15 @@ export const LoteRow = ({
                 handleCantLoteChange(lote.id_lote, idProducto, Number(val))
               }
               placeholder="0"
-              decimalScale={4}
               clampBehavior="strict"
               hideControls
               rightSection={
-                <Text size="xs" fw={900} c="zinc.5" className="mr-3">
+                <Text size="10px" fw={600} c="zinc.5" className="mr-3">
                   {lote.unidad_medida_abv}
                 </Text>
               }
               rightSectionWidth={60}
-              className="w-32"
+              className="w-28"
               classNames={{
                 input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
               }}
@@ -132,16 +149,15 @@ export const LoteRow = ({
               handleCantChange(lote.id_lote, idProducto, Number(val))
             }
             placeholder="0"
-            decimalScale={4}
             clampBehavior="strict"
             hideControls
             rightSection={
-              <Text size="xs" fw={900} c="zinc.5" className="mr-3">
+              <Text size="10px" fw={600} c="zinc.5" className="mr-2">
                 {unidadMedidaBaseAbv}
               </Text>
             }
             rightSectionWidth={60}
-            className="w-32"
+            className="w-28"
             classNames={{
               input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
             }}

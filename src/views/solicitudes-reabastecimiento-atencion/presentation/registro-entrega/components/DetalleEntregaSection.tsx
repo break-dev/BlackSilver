@@ -12,7 +12,11 @@ interface DetalleEntregaSectionProps {
   entregaCantidades: Record<number, number>;
   loadingLotes: boolean;
   handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantLoteChange: (
+    idLote: number,
+    idProducto: number,
+    val: number,
+  ) => void;
 }
 
 export const DetalleEntregaSection = ({
@@ -31,25 +35,40 @@ export const DetalleEntregaSection = ({
   return (
     <div className="p-5 space-y-5 transition-colors hover:bg-zinc-800/10">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
-        <Group gap="xs" className="pl-1 flex flex-row">
-          <div className="flex flex-row items-center gap-2.5">
-            <Text size="sm" fw={800} className="text-zinc-200">
-              <span className="text-white font-black">
-                {formatNumber(detalle.cantidad_solicitada)}{" "}
-                {detalle.unidad_medida_sol_abv}
-              </span>
-            </Text>
-          </div>
+        <Group gap="xs" wrap="nowrap" align="center" className="pl-1">
+          <Badge
+            variant="light"
+            color="zinc.4"
+            size="md"
+            className="font-black h-8 bg-zinc-800/30 border border-zinc-700/50"
+          >
+            {formatNumber(detalle.cantidad_solicitada)}{" "}
+            {detalle.unidad_medida_sol_abv}
+          </Badge>
+
           {detalle.unidad_medida_sol_abv !== detalle.unidad_medida_base_abv && (
-            <Badge
-              size="9px"
-              variant="transparent"
-              c="zinc.5"
-              className="font-bold italic"
-            >
-              Eqv: {formatNumber(detalle.cantidad_solicitada_base)}{" "}
-              {detalle.unidad_medida_base_abv}
-            </Badge>
+            <Group gap="xs" wrap="nowrap" className="items-center">
+              <div className="w-1 h-1 rounded-full bg-zinc-600" />
+              <Text
+                size="10px"
+                c="zinc.5"
+                fw={700}
+                className="italic uppercase tracking-tight opacity-60 ml-1"
+              >
+                ({formatNumber(detalle.contenido_por_presentacion)}{" "}
+                {detalle.unidad_medida_base_abv} x{" "}
+                {detalle.unidad_medida_sol_abv})
+              </Text>
+              <div className="w-1 h-1 rounded-full bg-zinc-600" />
+              <Badge
+                variant="light"
+                color="indigo.4"
+                className="bg-zinc-800/30 font-black h-7"
+              >
+                {formatNumber(detalle.cantidad_solicitada_base)}{" "}
+                {detalle.unidad_medida_base_abv}
+              </Badge>
+            </Group>
           )}
         </Group>
 
@@ -57,14 +76,28 @@ export const DetalleEntregaSection = ({
           {/* Pendiente */}
           <div className="flex-1 lg:flex-none flex items-center gap-3 bg-linear-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-2 px-4 shadow-sm min-w-[110px]">
             <div className="flex flex-row gap-1.5">
-              <Text size="9px" c="red.4" fw={900} className="uppercase self-center">
+              <Text
+                size="9px"
+                c="red.4"
+                fw={900}
+                className="uppercase self-center"
+              >
                 Pendiente
               </Text>
               <div className="flex items-baseline gap-1">
-                <Text size="xs" fw={900} className="text-red-500 font-mono tracking-tighter">
+                <Text
+                  size="xs"
+                  fw={900}
+                  className="text-red-500 font-mono tracking-tighter"
+                >
                   {formatNumber(detalle.pendiente_base)}
                 </Text>
-                <Text size="10px" fw={800} c="zinc.5" className="uppercase opacity-60">
+                <Text
+                  size="10px"
+                  fw={800}
+                  c="zinc.5"
+                  className="uppercase opacity-60"
+                >
                   {detalle.unidad_medida_base_abv}
                 </Text>
               </div>
@@ -93,12 +126,19 @@ export const DetalleEntregaSection = ({
                   size="sm"
                   fw={900}
                   className={`font-mono tracking-tighter ${
-                    tEntregadoDetalleActualBase > 0 ? "text-emerald-400" : "text-indigo-400/70"
+                    tEntregadoDetalleActualBase > 0
+                      ? "text-emerald-400"
+                      : "text-indigo-400/70"
                   }`}
                 >
                   {formatNumber(tEntregadoDetalleActualBase)}
                 </Text>
-                <Text size="10px" fw={800} c="zinc.5" className="uppercase opacity-60">
+                <Text
+                  size="10px"
+                  fw={800}
+                  c="zinc.5"
+                  className="uppercase opacity-60"
+                >
                   {detalle.unidad_medida_base_abv}
                 </Text>
               </div>

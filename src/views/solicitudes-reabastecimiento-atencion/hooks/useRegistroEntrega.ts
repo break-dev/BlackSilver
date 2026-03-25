@@ -46,6 +46,7 @@ export const useRegistroEntrega = ({
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
+  const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
     Record<number, number>
   >({});
@@ -73,7 +74,12 @@ export const useRegistroEntrega = ({
       setLoadingAlmacenes(true);
       try {
         const resAlm = await SolicitudesAtencionService.obtenerAlmacenes(true);
-        if (resAlm.success) setAlmacenesPrincipales(resAlm.data);
+        if (resAlm.success) {
+          setAlmacenesPrincipales(resAlm.data);
+          if (resAlm.data.length > 0 && !idAlmacenEntrega) {
+            setIdAlmacenEntrega(String(resAlm.data[0].id_almacen));
+          }
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -168,7 +174,7 @@ export const useRegistroEntrega = ({
     (idLote: number, idProducto: number, val: number) => {
       const lote = lotes.find((l) => l.id_lote === idLote);
       if (!lote) return;
-      
+
       const newBaseValue = val * (lote.contenido_por_presentacion || 1);
       handleCantChange(idLote, idProducto, newBaseValue);
     },
@@ -223,6 +229,7 @@ export const useRegistroEntrega = ({
         id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_hora_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
+        evidencias,
         detalles: detallesApi,
       });
 
@@ -253,6 +260,8 @@ export const useRegistroEntrega = ({
     setIdEmpleadoRecibe,
     observacion,
     setObservacion,
+    evidencias,
+    setEvidencias,
     entregaCantidades,
     handleCantChange,
     handleCantLoteChange,

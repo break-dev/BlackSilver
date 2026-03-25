@@ -42,6 +42,8 @@ export const RegistroEntrega = ({
     isProcessing,
     errorLocal,
     selectedDetalles,
+    evidencias,
+    setEvidencias,
   } = useRegistroEntrega({
     idSolicitud,
     idEmpleadoSolicitante,
@@ -70,6 +72,8 @@ export const RegistroEntrega = ({
         loadingEmpleados={loadingEmpleados}
         observacion={observacion}
         setObservacion={setObservacion}
+        evidencias={evidencias}
+        setEvidencias={setEvidencias}
       />
 
       <Stack gap="xl">

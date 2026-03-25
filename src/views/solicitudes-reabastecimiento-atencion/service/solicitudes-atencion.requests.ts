@@ -13,6 +13,7 @@ export interface DTO_RegistrarEntregaReabastecimiento {
   id_empleado_recibe: number;
   fecha_hora_entrega: string;
   observacion?: string;
+  evidencias?: File[];
   detalles: DTO_EntregasDetalleReabastecimiento[];
 }
 
