@@ -52,7 +52,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
         setDetalles(res.data.detalles);
         setEntregas(res.data.entregas);
       }
-    } catch (error) {
+    } catch {
       notifyError("Error al cargar el detalle del préstamo");
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     }
   }, []);
 
-  const handleCambiarEstado = async (nuevoEstado: string) => {
+  const handleCambiarEstado = useCallback(async (nuevoEstado: string) => {
     if (!selectedItemId) return;
     setIsProcessing(true);
     try {
@@ -90,14 +90,14 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
         closeAprobar();
         closeRechazo();
         cargarDatos();
-        onSuccess();
+        onSuccess?.();
       }
-    } catch (error) {
+    } catch {
       notifyError("No se pudo actualizar el estado");
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [selectedItemId, comentarioAccion, cargarDatos, closeAprobar, closeRechazo, notifyError, notifySuccess, onSuccess]);
 
   const progresoGeneral = useMemo(() => {
     if (detalles.length === 0) return 0;

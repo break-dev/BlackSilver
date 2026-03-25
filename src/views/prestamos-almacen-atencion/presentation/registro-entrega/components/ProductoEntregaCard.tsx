@@ -2,7 +2,7 @@ import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import { LotesTable } from "./LotesTable";
-import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
 
 interface ProductoEntregaCardProps {
   idDetalle: number;
@@ -33,7 +33,7 @@ export const ProductoEntregaCard = ({
       <div className="bg-zinc-900/60 border-b border-zinc-800/50 p-6 px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
+            <div className="p-3.5 rounded-2xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
               <CubeIcon className="w-5 h-5 text-indigo-400" />
             </div>
             <Stack gap={0}>

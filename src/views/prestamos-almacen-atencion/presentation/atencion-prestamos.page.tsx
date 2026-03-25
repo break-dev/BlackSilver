@@ -30,11 +30,11 @@ import { MESES } from "../../../presentation/variables/meses";
 import { DetallePrestamo } from "./detalle-prestamo";
 
 const ESTADO_COLORS: Record<string, string> = {
-  "Generado":   "blue",
+  "Generado": "blue",
   "En Proceso": "indigo",
   "Completado": "teal",
   "Finalizado": "green",
-  "Anulado":    "red",
+  "Anulado": "red",
 };
 
 export const AtencionPrestamosPage = () => {
@@ -165,7 +165,7 @@ export const AtencionPrestamosPage = () => {
         ),
       },
     ],
-    [openDetalle]
+    [openDetalle, setSelectedId]
   );
 
   return (
@@ -173,60 +173,60 @@ export const AtencionPrestamosPage = () => {
       {/* Filtros */}
       <Paper p="lg" radius="xl" className="bg-zinc-900/40 border-zinc-800 border backdrop-blur-md">
         <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
-            <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+          <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
             {/* Almacén */}
             <div className="w-full sm:w-80">
-                <Select
-                    label="Punto de Atención"
-                    placeholder="Seleccione su Almacén"
-                    leftSection={loadingAlmacenes ? <Loader size="xs" /> : <BuildingOffice2Icon className="w-4 h-4" />}
-                    data={almacenes.map((a) => ({ value: String(a.id_almacen), label: a.nombre }))}
-                    value={idAlmacen}
-                    onChange={setIdAlmacen}
-                    radius="md"
-                />
+              <Select
+                label="Punto de Atención"
+                placeholder="Seleccione su Almacén"
+                leftSection={loadingAlmacenes ? <Loader size="xs" /> : <BuildingOffice2Icon className="w-4 h-4" />}
+                data={almacenes.map((a) => ({ value: String(a.id_almacen), label: a.nombre }))}
+                value={idAlmacen}
+                onChange={setIdAlmacen}
+                radius="md"
+              />
             </div>
 
             {/* Mes */}
             <div className="w-full sm:w-40">
-                <Select
-                    label="Mes"
-                    placeholder="Mes"
-                    leftSection={<CalendarDaysIcon className="w-4 h-4" />}
-                    data={MESES}
-                    value={mes}
-                    onChange={(val) => setMes(val || "")}
-                    radius="md"
-                />
+              <Select
+                label="Mes"
+                placeholder="Mes"
+                leftSection={<CalendarDaysIcon className="w-4 h-4" />}
+                data={MESES}
+                value={mes}
+                onChange={(val) => setMes(val || "")}
+                radius="md"
+              />
             </div>
 
             {/* Año */}
             <div className="w-full sm:w-32">
-                <Select
-                    label="Año"
-                    placeholder="Año"
-                    data={Array.from({ length: 5 }, (_, i) => {
-                        const y = (dayjs().year() - i).toString();
-                        return { value: y, label: y };
-                    })}
-                    value={yearcito}
-                    onChange={(val) => setYearcito(val || "")}
-                    radius="md"
-                />
+              <Select
+                label="Año"
+                placeholder="Año"
+                data={Array.from({ length: 5 }, (_, i) => {
+                  const y = (dayjs().year() - i).toString();
+                  return { value: y, label: y };
+                })}
+                value={yearcito}
+                onChange={(val) => setYearcito(val || "")}
+                radius="md"
+              />
             </div>
 
             {/* Búsqueda */}
             <TextInput
-                label="Búsqueda rápida"
-                placeholder="Código, solicitante..."
-                leftSection={<MagnifyingGlassIcon className="w-4 h-4" />}
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.currentTarget.value)}
-                disabled={!idAlmacen}
-                className="flex-1 min-w-[200px]"
-                radius="md"
+              label="Búsqueda rápida"
+              placeholder="Código, solicitante..."
+              leftSection={<MagnifyingGlassIcon className="w-4 h-4" />}
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.currentTarget.value)}
+              disabled={!idAlmacen}
+              className="flex-1 min-w-[200px]"
+              radius="md"
             />
-            </div>
+          </div>
         </div>
       </Paper>
 
@@ -259,7 +259,7 @@ export const AtencionPrestamosPage = () => {
           closeDetalle();
           setTimeout(() => setSelectedId(null), 300);
         }}
-        title="Gestión de Préstamo entre Almacenes"
+        title="Atencion de Préstamos entre Almacenes"
         size="95%"
       >
         {selectedId && selectedPrestamo && (

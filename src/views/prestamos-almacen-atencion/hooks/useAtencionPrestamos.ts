@@ -30,17 +30,17 @@ export const useAtencionPrestamos = () => {
             const res = await PrestamosAtencionService.obtenerAlmacenesAutorizados();
             if (res.success) {
                 setAlmacenes(res.data);
-                // Si hay almacenes, seleccionamos el primero por defecto si no hay uno
-                if (res.data.length > 0 && !idAlmacen) {
-                    setIdAlmacen(res.data[0].id_almacen.toString());
+                // Si hay almacenes, seleccionamos el primero por defecto
+                if (res.data.length > 0) {
+                    setIdAlmacen(prev => prev || res.data[0].id_almacen.toString());
                 }
             }
-        } catch (error) {
+        } catch {
             notifyError("No se pudieron cargar los almacenes autorizados");
         } finally {
             setLoadingAlmacenes(false);
         }
-    }, [idAlmacen, notifyError]);
+    }, [notifyError]); // Quitamos idAlmacen de aquí para evitar ciclos
 
     // --------------------------------------------------
     // Cargar préstamos por almacén + periodo
@@ -53,7 +53,7 @@ export const useAtencionPrestamos = () => {
             if (res.success) {
                 setPrestamos(res.data ?? []);
             }
-        } catch (error) {
+        } catch {
             setPrestamos([]);
             notifyError("Error al cargar el listado de préstamos");
         } finally {
@@ -63,7 +63,7 @@ export const useAtencionPrestamos = () => {
 
     useEffect(() => {
         obtenerAlmacenesAutorizados();
-    }, []); // Una sola vez al montar
+    }, [obtenerAlmacenesAutorizados]); 
 
     useEffect(() => {
         cargarPrestamos();

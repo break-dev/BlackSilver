@@ -39,7 +39,7 @@ export const ReceptorInfo = ({
         <Stack gap="xs">
           <Group gap={6}>
             <ClipboardDocumentCheckIcon className="w-4 h-4 text-indigo-400" />
-            <Text size="xs" fw={900} className="text-zinc-500 uppercase tracking-widest">Observaciones del Despacho</Text>
+            <Text size="xs" fw={900} className="text-zinc-500 uppercase tracking-widest">Observaciones de la Entrega</Text>
           </Group>
           <Textarea
             placeholder="Indique detalles sobre el transporte, guía de remisión u otros..."

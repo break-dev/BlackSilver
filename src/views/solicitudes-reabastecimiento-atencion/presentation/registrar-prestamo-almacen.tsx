@@ -70,7 +70,7 @@ const SectionHeader = ({ icon: Icon, title, color = "amber" }: { icon: any; titl
           {title}
         </Text>
       </div>
-      <div className={`h-0.5 w-full bg-gradient-to-r ${activeColor.line} to-transparent rounded-full`} />
+      <div className={`h-0.5 w-full bg-linear-to-r ${activeColor.line} to-transparent rounded-full`} />
     </div>
   );
 };

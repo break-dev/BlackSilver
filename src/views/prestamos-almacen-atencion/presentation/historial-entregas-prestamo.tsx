@@ -25,7 +25,7 @@ export const HistorialEntregasPrestamo = ({ entregas }: Props) => {
           <Group justify="space-between" mb="md" align="start">
             <Stack gap={2}>
               <Badge variant="filled" color="indigo" radius="sm" className="font-mono font-black tracking-widest text-sm shadow-md">{e.correlativo}</Badge>
-              <Text size="10px" c="dimmed" fw={900} className="uppercase tracking-[0.2em] opacity-40 ml-1">Fecha de Despacho: {dayjs(e.fecha_hora_entrega).format("DD/MM/YYYY HH:mm")}</Text>
+              <Text size="10px" c="dimmed" fw={900} className="uppercase tracking-[0.2em] opacity-40 ml-1">Fecha de Entrega: {dayjs(e.fecha_hora_entrega).format("DD/MM/YYYY HH:mm")}</Text>
             </Stack>
             <Badge variant="dot" size="sm" color="emerald" className="font-black uppercase tracking-widest">{e.estado}</Badge>
           </Group>
@@ -34,14 +34,14 @@ export const HistorialEntregasPrestamo = ({ entregas }: Props) => {
              <Group gap="sm" wrap="nowrap">
                 <div className="p-2 bg-zinc-800/50 rounded-xl"><Text size="xs" fw={900} c="indigo.4">EN:</Text></div>
                 <Stack gap={0}>
-                  <Text size="9px" fw={900} c="zinc.6" className="uppercase tracking-[0.1em]">Despachado por:</Text>
+                  <Text size="9px" fw={900} c="zinc.6" className="uppercase tracking-widest">Entregado por:</Text>
                   <Text size="sm" fw={800} c="white" className="italic">{e.empleado_entrega}</Text>
                 </Stack>
              </Group>
              <Group gap="sm" wrap="nowrap">
                 <div className="p-2 bg-zinc-800/50 rounded-xl"><Text size="xs" fw={900} c="emerald.4">RC:</Text></div>
                 <Stack gap={0}>
-                   <Text size="9px" fw={900} c="zinc.6" className="uppercase tracking-[0.1em]">Recibido por:</Text>
+                   <Text size="9px" fw={900} c="zinc.6" className="uppercase tracking-widest">Recibido por:</Text>
                    <Text size="sm" fw={800} c="white" fs="italic">{e.empleado_recibe}</Text>
                 </Stack>
              </Group>

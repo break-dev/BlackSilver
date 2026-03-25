@@ -1,27 +1,24 @@
-import { 
-  Timeline, 
-  Text, 
-  Loader, 
-  ScrollArea, 
-  Center, 
-  Stack, 
-  Group, 
-  Paper, 
-  Badge, 
-  ThemeIcon 
+import {
+  Timeline,
+  Text,
+  Loader,
+  ScrollArea,
+  Center,
+  Stack,
+  Group,
+  Paper,
+  Badge,
+  ThemeIcon
 } from "@mantine/core";
 import {
   ClipboardDocumentListIcon,
   CheckBadgeIcon,
   TruckIcon,
-  ArchiveBoxArrowDownIcon,
   XCircleIcon,
-  CheckCircleIcon,
   CubeIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import { type RES_TrazabilidadPrestamo } from "../service/prestamos-atencion.responses";
-import { EstadoDetallePrestamo } from "../../../shared/enums/estados";
 
 interface Props {
   eventos: RES_TrazabilidadPrestamo[];
@@ -93,13 +90,13 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
                       {evento.comentario || "Acción registrada automáticamente por el sistema."}
                     </Text>
                     <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
-                          <Text size="10px" fw={900} c="zinc.5">{evento.nombre_empleado?.charAt(0) || "S"}</Text>
-                       </div>
-                       <Text size="xs" c="zinc.5" fw={800}>Registrad por:</Text>
-                       <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
-                          {evento.nombre_empleado || "Sistema Automático"}
-                       </Text>
+                      <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                        <Text size="10px" fw={900} c="zinc.5">{evento.nombre_empleado?.charAt(0) || "S"}</Text>
+                      </div>
+                      <Text size="xs" c="zinc.5" fw={800}>Registrad por:</Text>
+                      <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
+                        {evento.nombre_empleado || "Sistema Automático"}
+                      </Text>
                     </div>
                   </Paper>
                 </Timeline.Item>

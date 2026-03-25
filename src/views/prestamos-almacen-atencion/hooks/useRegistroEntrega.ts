@@ -4,6 +4,7 @@ import type {
   RES_Lote_Atencion,
   RES_EmpleadoPrestamo,
   RES_DetallePrestamo,
+  RES_LoteDisponibleDespacho,
 } from "../service/prestamos-atencion.responses";
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
@@ -62,7 +63,7 @@ export const useRegistroEntrega = ({
       }
 
       if (resLotes.success) {
-        const castedLotes = resLotes.data.map((l: any) => ({
+        const castedLotes: RES_Lote_Atencion[] = resLotes.data.map((l: RES_LoteDisponibleDespacho) => ({
           ...l,
           stock_actual: Number(l.stock_actual),
           stock_actual_base: Number(l.stock_actual_base),
@@ -74,7 +75,7 @@ export const useRegistroEntrega = ({
         const initial: Record<number, Record<number, number>> = {};
         itemsAEntregar.forEach(d => {
           initial[d.id_prestamo_detalle] = {};
-          castedLotes.filter((l: any) => l.id_producto === d.id_producto).forEach((l: any) => {
+          castedLotes.filter((l: RES_Lote_Atencion) => l.id_producto === d.id_producto).forEach((l: RES_Lote_Atencion) => {
             initial[d.id_prestamo_detalle][l.id_lote] = 0;
           });
         });
@@ -134,7 +135,7 @@ export const useRegistroEntrega = ({
     return total;
   }, [entregaCantidades]);
 
-  const registrarEntrega = async (idPrestamo: number) => {
+  const registrarEntrega = useCallback(async (idPrestamo: number) => {
     if (!idEmpleadoRecibe) {
       notifyError("Debe seleccionar el receptor");
       return;
@@ -192,7 +193,7 @@ export const useRegistroEntrega = ({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [idEmpleadoRecibe, entregaCantidades, itemsAEntregar, lotes, observacion, onSuccess, notifyError, notifySuccess]);
 
   return {
     loading,
