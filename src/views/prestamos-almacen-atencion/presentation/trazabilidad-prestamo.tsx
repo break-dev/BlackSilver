@@ -1,14 +1,14 @@
-import { 
-  Timeline, 
-  Text, 
-  Loader, 
-  ScrollArea, 
-  Center, 
-  Stack, 
-  Group, 
-  Paper, 
-  Badge, 
-  ThemeIcon 
+import {
+  Timeline,
+  Text,
+  Loader,
+  ScrollArea,
+  Center,
+  Stack,
+  Group,
+  Paper,
+  Badge,
+  ThemeIcon
 } from "@mantine/core";
 import {
   ClipboardDocumentListIcon,
@@ -16,12 +16,10 @@ import {
   TruckIcon,
   ArchiveBoxArrowDownIcon,
   XCircleIcon,
-  CheckCircleIcon,
   CubeIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
 import { type RES_TrazabilidadPrestamo } from "../service/prestamos-atencion.responses";
-import { EstadoDetallePrestamo } from "../../../shared/enums/estados";
 
 interface Props {
   eventos: RES_TrazabilidadPrestamo[];
@@ -89,17 +87,17 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
                   }
                 >
                   <Paper p="md" radius="lg" className="bg-zinc-900/40 border border-zinc-800/50 shadow-sm transition-colors hover:bg-zinc-900/60">
-                    <Text size="sm" fw={500} c="zinc.2" className="leading-relaxed italic">
-                      {evento.comentario || "Acción registrada automáticamente por el sistema."}
+                    <Text size="sm" fw={500} c="zinc.2" className="leading-relaxed">
+                      {evento.comentario || "Este movimiento se registró de forma automática al procesar la solicitud."}
                     </Text>
                     <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
-                          <Text size="10px" fw={900} c="zinc.5">{evento.nombre_empleado?.charAt(0) || "S"}</Text>
-                       </div>
-                       <Text size="xs" c="zinc.5" fw={800}>Registrad por:</Text>
-                       <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
-                          {evento.nombre_empleado || "Sistema Automático"}
-                       </Text>
+                      <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                        <Text size="10px" fw={900} c="zinc.5">{evento.nombre_empleado?.charAt(0) || "S"}</Text>
+                      </div>
+                      <Text size="xs" c="zinc.5" fw={800}>Registrad por:</Text>
+                      <Text size="xs" fw={900} c="zinc.3" className="italic underline underline-offset-4 decoration-indigo-500/30">
+                        {evento.nombre_empleado || "Sistema"}
+                      </Text>
                     </div>
                   </Paper>
                 </Timeline.Item>
@@ -114,22 +112,24 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
 
 const getStatusStyles = (status: string) => {
   const s = status.toLowerCase();
-  if (s.includes("pendiente")) return { color: "blue", variant: "light" as const };
+  if (s.includes("pendiente") || s.includes("esperando")) return { color: "blue", variant: "light" as const };
   if (s.includes("aprobado")) return { color: "violet", variant: "light" as const };
   if (s.includes("despacho") || s.includes("entregando")) return { color: "orange", variant: "light" as const };
-  if (s.includes("entrega") || s.includes("completad")) return { color: "emerald", variant: "light" as const };
+  if (s.includes("entrega") || s.includes("completad") || s.includes("atendido")) return { color: "emerald", variant: "light" as const };
+  if (s.includes("devolucion")) return { color: "pink", variant: "light" as const };
   if (s.includes("rechazado")) return { color: "red", variant: "filled" as const };
-  if (s.includes("cerrado")) return { color: "zinc", variant: "filled" as const };
+  if (s.includes("cerrado") || s.includes("finalizado")) return { color: "zinc", variant: "filled" as const };
   return { color: "gray", variant: "light" as const };
 };
 
 const getStatusIcon = (status: string) => {
   const s = status.toLowerCase();
-  if (s.includes("pendiente")) return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
+  if (s.includes("pendiente") || s.includes("esperando")) return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
   if (s.includes("aprobado")) return <CheckBadgeIcon className="w-4 h-4 text-white" />;
   if (s.includes("despacho")) return <TruckIcon className="w-4 h-4 text-white" />;
-  if (s.includes("entrega") || s.includes("completad")) return <CheckBadgeIcon className="w-4 h-4 text-white" />;
+  if (s.includes("entrega") || s.includes("atendido") || s.includes("completad")) return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
+  if (s.includes("devolucion")) return <TruckIcon className="w-4 h-4 text-white" />; // Could use a "back" icon if available
   if (s.includes("rechazado")) return <XCircleIcon className="w-4 h-4 text-white" />;
-  if (s.includes("cerrado")) return <CubeIcon className="w-4 h-4 text-white" />;
+  if (s.includes("cerrado") || s.includes("finalizado")) return <CubeIcon className="w-4 h-4 text-white" />;
   return <div className="w-2 h-2 rounded-full bg-white" />;
 };

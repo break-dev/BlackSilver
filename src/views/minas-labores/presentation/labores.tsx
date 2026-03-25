@@ -386,7 +386,7 @@ export const GestionLabores = ({ mina, onLaborCreada, onLaborFinalizada }: Props
                label="Fecha de Cierre (Real)"
                placeholder="Seleccione fecha real de término"
                value={fechaCierre}
-               onChange={(val: any) => setFechaCierre(val)}
+               onChange={(val: unknown) => setFechaCierre(val as Date | null)}
                required
                withAsterisk
              />

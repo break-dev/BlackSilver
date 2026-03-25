@@ -112,7 +112,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
 
       {/* Sub-header: Estados, Fechas */}
       <Paper p="md" radius="lg" className="bg-transparent border border-zinc-800/50 mx-2 backdrop-blur-sm">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InfoItem
             label="Estado del Préstamo"
             value={prestamo.estado}
@@ -120,16 +120,10 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             icon={ExclamationCircleIcon}
           />
           <InfoItem
-            label="Límite Devolución"
-            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Indefinido"}
-            icon={ClockIcon}
-            iconColor="text-amber-500"
-          />
-          <InfoItem
-            label="Fecha Registro"
-            value={dayjs(prestamo.created_at).format("DD/MM/YYYY HH:mm")}
-            isMono
+            label="Fecha de Devolución"
+            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Sin límite"}
             icon={CalendarDaysIcon}
+            iconColor="text-pink-500"
           />
         </div>
       </Paper>
@@ -142,7 +136,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
         </Group>
         <div className="relative h-2 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-700/10">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-300 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
+            className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 via-indigo-400 to-indigo-300 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
             style={{ width: `${progresoGeneral}%` }}
           />
         </div>
@@ -152,7 +146,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       <div className="space-y-4">
         <Group justify="space-between" px={4} align="center">
           <Group gap="xs">
-            <div className="p-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+            <div className="p-3.5 rounded-2xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
               <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
             <Text fw={800} className="text-lg text-zinc-100 italic tracking-tight">Items Solicitados</Text>

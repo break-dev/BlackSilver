@@ -9,14 +9,14 @@ import {
   Tooltip,
   Select,
   Loader,
-  Paper,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
-  EyeIcon,
+  PlayCircleIcon,
   ArchiveBoxArrowDownIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
@@ -30,11 +30,11 @@ import { MESES } from "../../../presentation/variables/meses";
 import { DetallePrestamo } from "./detalle-prestamo";
 
 const ESTADO_COLORS: Record<string, string> = {
-  "Generado":   "blue",
+  "Generado": "green",
   "En Proceso": "indigo",
   "Completado": "teal",
-  "Finalizado": "green",
-  "Anulado":    "red",
+  "Finalizado": "emerald",
+  "Anulado": "red",
 };
 
 export const AtencionPrestamosPage = () => {
@@ -80,7 +80,7 @@ export const AtencionPrestamosPage = () => {
         title: "Código",
         width: 140,
         render: (item) => (
-          <Badge variant="light" color="indigo" radius="sm" className="font-mono font-bold">
+          <Badge variant="light" color="indigo" radius="sm">
             {item.correlativo}
           </Badge>
         ),
@@ -98,10 +98,15 @@ export const AtencionPrestamosPage = () => {
       },
       {
         accessor: "registrado_por",
-        title: "Registrado por",
+        title: "Solicitante",
         width: 180,
         render: (item) => (
-          <Text size="xs" fw={600} className="text-zinc-400">{item.registrado_por}</Text>
+          <Group gap="xs" wrap="nowrap">
+            <UserCircleIcon className="w-5 h-5 text-emerald-500" />
+            <Text size="sm" className="text-zinc-200">
+              {item.registrado_por}
+            </Text>
+          </Group>
         ),
       },
       {
@@ -113,12 +118,12 @@ export const AtencionPrestamosPage = () => {
             <Group gap={6}>
               <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
               <Text size="xs" fw={800} className="text-zinc-200">
-                {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY HH:mm")}
+                Solicitado el: {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY HH:mm")}
               </Text>
             </Group>
             {item.fecha_limite_devolucion && (
-              <Text size="10px" fw={900} color="orange.6" ml={22} className="uppercase tracking-tighter">
-                Devolver: {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
+              <Text size="10px" fw={900} c="pink.5" ml={22} className="uppercase tracking-tighter italic">
+                Devolución: {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
               </Text>
             )}
           </Stack>
@@ -141,11 +146,11 @@ export const AtencionPrestamosPage = () => {
       },
       {
         accessor: "acciones",
-        title: "Atención",
+        title: "Acciones",
         textAlign: "center",
         width: 100,
         render: (item) => (
-          <Tooltip label="Gestionar Préstamo" position="top" withArrow>
+          <Tooltip label="Atender Préstamo" position="top" withArrow>
             <ActionIcon
               variant="filled"
               color="indigo"
@@ -157,88 +162,118 @@ export const AtencionPrestamosPage = () => {
               }}
               className="shadow-md hover:scale-105 transition-all"
             >
-              <EyeIcon className="w-5 h-5 text-white" />
+              <PlayCircleIcon className="w-5 h-5 text-white" />
             </ActionIcon>
           </Tooltip>
         ),
       },
     ],
-    [openDetalle]
+    [openDetalle, setSelectedId]
   );
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      {/* Filtros */}
-      <Paper p="lg" radius="xl" className="bg-zinc-900/40 border-zinc-800 border backdrop-blur-md">
-        <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
-            <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
-            {/* Almacén */}
-            <div className="w-full sm:w-80">
-                <Select
-                    label="Punto de Atención"
-                    placeholder="Seleccione su Almacén"
-                    leftSection={loadingAlmacenes ? <Loader size="xs" /> : <BuildingOffice2Icon className="w-4 h-4" />}
-                    data={almacenes.map((a) => ({ value: String(a.id_almacen), label: a.nombre }))}
-                    value={idAlmacen}
-                    onChange={setIdAlmacen}
-                    radius="md"
-                />
-            </div>
-
-            {/* Mes */}
-            <div className="w-full sm:w-40">
-                <Select
-                    label="Mes"
-                    placeholder="Mes"
-                    leftSection={<CalendarDaysIcon className="w-4 h-4" />}
-                    data={MESES}
-                    value={mes}
-                    onChange={(val) => setMes(val || "")}
-                    radius="md"
-                />
-            </div>
-
-            {/* Año */}
-            <div className="w-full sm:w-32">
-                <Select
-                    label="Año"
-                    placeholder="Año"
-                    data={Array.from({ length: 5 }, (_, i) => {
-                        const y = (dayjs().year() - i).toString();
-                        return { value: y, label: y };
-                    })}
-                    value={yearcito}
-                    onChange={(val) => setYearcito(val || "")}
-                    radius="md"
-                />
-            </div>
-
-            {/* Búsqueda */}
-            <TextInput
-                label="Búsqueda rápida"
-                placeholder="Código, solicitante..."
-                leftSection={<MagnifyingGlassIcon className="w-4 h-4" />}
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.currentTarget.value)}
-                disabled={!idAlmacen}
-                className="flex-1 min-w-[200px]"
-                radius="md"
+      {/* Filtros de Atención */}
+      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
+        <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+          {/* Almacén Selector */}
+          <div className="w-full sm:w-72">
+            <Select
+              placeholder="Seleccione Almacén a Atender"
+              leftSection={
+                loadingAlmacenes ? (
+                  <Loader size="xs" />
+                ) : (
+                  <BuildingOffice2Icon className="w-4 h-4 text-zinc-400" />
+                )
+              }
+              data={almacenes.map((a) => ({
+                value: String(a.id_almacen),
+                label: a.nombre,
+              }))}
+              value={idAlmacen}
+              onChange={setIdAlmacen}
+              radius="lg"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
             />
-            </div>
+          </div>
+
+          {/* Mes Selector */}
+          <div className="w-full sm:w-40">
+            <Select
+              placeholder="Mes"
+              leftSection={
+                <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
+              }
+              data={MESES}
+              value={mes}
+              onChange={(val) => setMes(val || "")}
+              radius="lg"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          {/* Año Selector */}
+          <div className="w-full sm:w-32">
+            <Select
+              placeholder="Año"
+              data={Array.from({ length: 5 }, (_, i) => ({
+                value: String(dayjs().year() - i),
+                label: String(dayjs().year() - i),
+              }))}
+              value={yearcito}
+              onChange={(val) => setYearcito(val || "")}
+              radius="lg"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          <TextInput
+            placeholder="Buscar por código, solicitante..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            }
+            value={busqueda}
+            onChange={(e) => {
+              setBusqueda(e.currentTarget.value);
+            }}
+            disabled={!idAlmacen}
+            className="flex-1 min-w-[200px]"
+            radius="lg"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+            }}
+          />
         </div>
-      </Paper>
+      </div>
 
       {/* Estado: sin almacén seleccionado */}
       {!idAlmacen ? (
-        <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-zinc-800 rounded-3xl bg-zinc-900/10">
-          <div className="p-5 rounded-3xl bg-zinc-900/50 mb-4 shadow-xl border border-zinc-800">
+        <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-zinc-800 rounded-3xl bg-zinc-900/10">
+          <div className="p-4 rounded-full bg-zinc-900/50 mb-4">
             <ArchiveBoxArrowDownIcon className="w-12 h-12 text-zinc-600" />
           </div>
-          <Text size="xl" fw={900} className="text-zinc-200 tracking-tight">
+          <Text size="lg" fw={600} className="text-zinc-400">
             Panel de Atención de Préstamos
           </Text>
-          <Text className="text-zinc-500 text-center max-w-sm mt-2 text-sm">
-            Para ver los préstamos pendientes, por favor seleccione el almacén del que es responsable en los filtros superiores.
+          <Text className="text-zinc-500 text-center max-w-sm mt-1">
+            Seleccione el almacén para visualizar los préstamos pendientes de atención.
           </Text>
         </div>
       ) : (
@@ -257,7 +292,7 @@ export const AtencionPrestamosPage = () => {
           closeDetalle();
           setTimeout(() => setSelectedId(null), 300);
         }}
-        title="Gestión de Préstamo entre Almacenes"
+        title="Atencion de Préstamos entre Almacenes"
         size="95%"
       >
         {selectedId && selectedPrestamo && (
