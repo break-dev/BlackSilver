@@ -41,6 +41,7 @@ export const useRegistrarEntregaBatch = ({
   >({});
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
+  const [evidencias, setEvidencias] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -289,6 +290,7 @@ export const useRegistrarEntregaBatch = ({
         id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
+        evidencias,
         detalles: detallesParaApi,
       });
 
@@ -322,6 +324,8 @@ export const useRegistrarEntregaBatch = ({
     setIdEmpleadoRecibe,
     observacion,
     setObservacion,
+    evidencias,
+    setEvidencias,
     error,
     isProcessing,
     totalEntregaGeneralBase,

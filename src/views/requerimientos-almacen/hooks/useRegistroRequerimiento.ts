@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { notifications } from "@mantine/notifications";
+import { useNotify } from "../../../hooks/useNotify";
 import { RequerimientosService } from "../services/requerimientos.service";
 import { Schema_CrearRequerimiento } from "../services/requerimientos.requests";
 import type {
@@ -22,6 +22,7 @@ interface Props {
 }
 
 export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
+  const { notifySuccess, notifyError } = useNotify();
   const [submitting, setSubmitting] = useState(false);
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -163,22 +164,14 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
   // Agregar item a la lista
   const agregarItem = useCallback(() => {
     if (!idProducto || !idUnidadMedida || cantidad <= 0 || contenido <= 0) {
-      notifications.show({
-        title: "Error",
-        message: "Complete los datos del producto",
-        color: "red",
-      });
+      notifyError("Complete los datos del producto");
       return;
     }
 
     // Validación adicional para consumibles
     if (productoSeleccionado?.es_consumible && !idProductoDestino) {
-        notifications.show({
-            title: "Campo requerido",
-            message: "Debe seleccionar un equipo de destino para este producto consumible",
-            color: "red",
-        });
-        return;
+      notifyError("Debe seleccionar un equipo de destino para este producto consumible");
+      return;
     }
 
     const nuevoItem: DTO_CrearRequerimientoDetalle = {
@@ -199,7 +192,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     setContenido(1);
     setComentarioItem("");
     setIdProductoDestino(0);
-  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem, idProductoDestino, productoSeleccionado]);
+  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem, idProductoDestino, productoSeleccionado, notifyError]);
 
   const eliminarItem = useCallback((index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
@@ -259,11 +252,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     try {
       const res = await RequerimientosService.crear(dto);
       if (res.success) {
-        notifications.show({
-          title: "Éxito",
-          message: "Requerimiento registrado correctamente",
-          color: "teal",
-        });
+        notifySuccess("Requerimiento registrado correctamente");
         onSuccess(res.data);
       } else {
         setError(res.message);
@@ -282,6 +271,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
     fechaEntregaRequerida,
     detalles,
     onSuccess,
+    notifySuccess,
   ]);
 
   return {

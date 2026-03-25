@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Badge,
   Group,
@@ -23,7 +23,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
 import { useAtencionPrestamos } from "../hooks/useAtencionPrestamos";
 import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { MESES } from "../../../presentation/variables/meses";
@@ -38,7 +38,7 @@ const ESTADO_COLORS: Record<string, string> = {
 };
 
 export const AtencionPrestamosPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Atención de Préstamos entre Almacenes");
 
   const [openedDetalle, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -59,9 +59,7 @@ export const AtencionPrestamosPage = () => {
     cargarPrestamos,
   } = useAtencionPrestamos();
 
-  useEffect(() => {
-    setTitle("Atención de Préstamos entre Almacenes");
-  }, [setTitle]);
+
 
   const selectedPrestamo = useMemo(
     () => filteredRecords.find((p) => p.id_prestamo === selectedId) ?? null,

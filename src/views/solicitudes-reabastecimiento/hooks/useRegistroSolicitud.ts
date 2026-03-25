@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { notifications } from "@mantine/notifications";
+import { useNotify } from "../../../hooks/useNotify";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import type {
   DTO_CrearSolicitud,
@@ -19,6 +19,7 @@ interface Props {
 }
 
 export const useRegistroSolicitud = ({ onSuccess }: Props) => {
+  const { notifySuccess, notifyError } = useNotify();
   const [submitting, setSubmitting] = useState(false);
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,11 +104,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
 
   const agregarItem = useCallback(() => {
     if (!idProducto || !idUnidadMedida || cantidad <= 0 || contenido <= 0) {
-      notifications.show({
-        title: "Error",
-        message: "Complete los datos del producto",
-        color: "red",
-      });
+      notifyError("Complete los datos del producto");
       return;
     }
     const nuevoItem: DTO_SolicitudDetalle = {
@@ -123,7 +120,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     setCantidad(0);
     setContenido(1);
     setComentarioItem("");
-  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem]);
+  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem, notifyError]);
 
   const eliminarItem = useCallback((index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
@@ -154,11 +151,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     try {
       const res = await ReabastecimientoService.crear(dto);
       if (res.success) {
-        notifications.show({
-          title: "Éxito",
-          message: "Solicitud registrada correctamente",
-          color: "teal",
-        });
+        notifySuccess("Solicitud registrada correctamente");
         onSuccess(res.data);
       } else {
         setError(res.message);
@@ -176,6 +169,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     fechaEntregaRequerida,
     detalles,
     onSuccess,
+    notifySuccess,
   ]);
 
   return {

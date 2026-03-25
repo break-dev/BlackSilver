@@ -4,6 +4,7 @@ import {
     EstadoVencimiento
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
+import type { IArchivo } from "../../../shared/interfaces";
 
 export interface RES_LaborRelacionada {
     id_labor: number;
@@ -83,9 +84,9 @@ export interface RES_Entrega {
     empleado_entrega: string;
     empleado_recibe: string;
     correlativo: string;
-    fecha_hora_entrega: number;
+    fecha_hora_entrega: string;
     observacion: string | null;
-    evidencias: string | null;
+    evidencias: IArchivo[] | null;
     created_at: string;
     estado: string;
     cantidad: number;

@@ -10,6 +10,8 @@ Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS dis
 - **Build Tool:** [Vite 7](https://vitejs.dev/)
 - **Languaje:** [TypeScript](https://www.typescriptlang.org/)
 - **UI Library:** [Mantine 8](https://mantine.dev/)
+- **Icons:** [HeroIcons](https://heroicons.com/)
+- **Icons:** [Tabler Icons](https://tabler.io/icons)
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
 - **State Management:** [Zustand 5](https://zustand-demo.pmnd.rs/) (Ligero y eficiente)
 - **Animations:** [Motion 12](https://motion.dev/) (Framer Motion)

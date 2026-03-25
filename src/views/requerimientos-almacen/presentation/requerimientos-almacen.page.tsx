@@ -10,7 +10,7 @@ import {
   Select,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -25,7 +25,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { useRequerimientosPage } from "../hooks/useRequerimientosPage";
 import { EstadoRequerimiento } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
-import { useUIStore } from "../../../stores/ui.store";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroRequerimiento } from "./registro-requerimiento";
@@ -40,7 +40,7 @@ const YEARS = Array.from({ length: 5 }, (_, i) => {
 });
 
 export const RequerimientosAlmacenPage = () => {
-  const setTitle = useUIStore((state) => state.setTitle);
+  useTitlePage("Requerimientos de Almacén");
 
   const {
     filteredRecords,
@@ -65,9 +65,7 @@ export const RequerimientosAlmacenPage = () => {
   const [openedTrace, { open: openTrace, close: closeTrace }] =
     useDisclosure(false);
 
-  useEffect(() => {
-    setTitle("Requerimientos de Almacén");
-  }, [setTitle]);
+
 
   const columns: DataTableColumn<RES_RequerimientoAlmacen>[] = useMemo(
     () => [

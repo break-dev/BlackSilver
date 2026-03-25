@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { notifications } from "@mantine/notifications";
+import { useNotify } from "../../../hooks/useNotify";
 import { LotesService } from "../service/lotes.service";
 import { Schema_AjustarStock } from "../service/lotes.requests";
 import type { RES_Lote } from "../service/lotes.responses";
@@ -10,6 +10,7 @@ interface UseAjusteStockProps {
 }
 
 export const useAjusteStock = ({ lote, onSuccess }: UseAjusteStockProps) => {
+  const { notifySuccess } = useNotify();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,11 +67,7 @@ export const useAjusteStock = ({ lote, onSuccess }: UseAjusteStockProps) => {
     try {
       const result = await LotesService.ajustarStock(values);
       if (result.success) {
-        notifications.show({
-          title: "Inventario Actualizado",
-          message: `El lote ${lote.correlativo} ha sido corregido exitosamente.`,
-          color: "teal",
-        });
+        notifySuccess(`El lote ${lote.correlativo} ha sido corregido exitosamente.`);
         onSuccess(result.data);
       } else {
         setError(result.message);

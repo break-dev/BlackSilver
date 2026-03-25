@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 
 import { useLotesPage } from "../../hooks/useLotesPage";
 import type { RES_Lote } from "../../service/lotes.responses";
+import { useTitlePage } from "../../../../hooks/useTitlePage";
 
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { RegistroLote } from "../registro-lote";
@@ -23,6 +24,7 @@ import { EstadoVencimiento } from "../../../../shared/enums/estados";
 import { formatNumber } from "../../../../presentation/functions/formatNumber";
 
 export const LotesPage = () => {
+  useTitlePage("Gestión de Inventario y Lotes");
   const {
     almacenes,
     records,
