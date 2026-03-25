@@ -38,6 +38,8 @@ export const RegistrarEntregaModal = ({
     setIdEmpleadoRecibe,
     observacion,
     setObservacion,
+    evidencias,
+    setEvidencias,
     submitting,
     error,
     totalEntregaGeneralBase,
@@ -59,7 +61,7 @@ export const RegistrarEntregaModal = ({
   if (loading) {
     return (
       <Stack align="center" py={50}>
-        <Loader size="xl" color="indigo" type="bars" />
+        <Loader size="xl" color="indigo" />
         <Text size="sm" fw={900} className="uppercase tracking-[0.3em] animate-pulse italic text-indigo-400">Preparando Bodega...</Text>
       </Stack>
     );
@@ -82,6 +84,8 @@ export const RegistrarEntregaModal = ({
         setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         observacion={observacion}
         setObservacion={setObservacion}
+        evidencias={evidencias}
+        setEvidencias={setEvidencias}
       />
 
       {/* Listado de Productos como Cards */}

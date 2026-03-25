@@ -1,7 +1,7 @@
 import { Table, Stack, Center, Loader, Text } from "@mantine/core";
 import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 import { LoteRow } from "./LoteRow";
-import type { RES_Lote_Atencion } from "../../service/prestamos-atencion.responses";
+import type { RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
 
 interface LotesTableProps {
   idDetalle: number;
@@ -10,6 +10,7 @@ interface LotesTableProps {
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantLoteChange: (idDetalle: number, idLote: number, val: number) => void;
   unidadAbv: string;
+  baseAbv: string;
   contenidoPorPresentacion: number;
 }
 
@@ -20,13 +21,14 @@ export const LotesTable = ({
   entregaCantidades,
   handleCantLoteChange,
   unidadAbv,
+  baseAbv,
   contenidoPorPresentacion,
 }: LotesTableProps) => {
   if (loading) {
     return (
       <Center py={40}>
         <Stack gap="xs" align="center">
-          <Loader size="md" color="indigo" type="dots" />
+          <Loader size="md" color="indigo" />
           <Text size="xs" c="dimmed" className="uppercase tracking-widest animate-pulse font-black">Consultando existencias...</Text>
         </Stack>
       </Center>
@@ -45,9 +47,9 @@ export const LotesTable = ({
   }
 
   return (
-    <div className="overflow-x-auto rounded-3xl border border-zinc-900 shadow-2xl bg-zinc-950/60 transition-all border-zinc-800/40">
+    <div className="overflow-x-auto rounded-3xl border border-zinc-800/40 shadow-2xl bg-zinc-950/60 transition-all">
       <Table verticalSpacing="md" horizontalSpacing="xl">
-        <thead className="bg-zinc-900/50 text-zinc-500 text-[9px] uppercase font-black tracking-[0.2em] border-b border-zinc-800/30">
+        <thead className="bg-zinc-900/50 text-zinc-400 text-xs font-bold border-b border-zinc-800/30">
           <tr>
             <th className="px-6 py-4 text-left">Lote / Registro</th>
             <th className="px-6 py-4 text-center">Disponible</th>
@@ -64,6 +66,7 @@ export const LotesTable = ({
               entregaCantidades={entregaCantidades}
               handleCantLoteChange={handleCantLoteChange}
               unidadAbv={unidadAbv}
+              baseAbv={baseAbv}
               contenidoPorPresentacion={contenidoPorPresentacion}
             />
           ))}

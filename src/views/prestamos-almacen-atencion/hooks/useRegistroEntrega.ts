@@ -32,6 +32,7 @@ export const useRegistroEntrega = ({
 
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
+  const [evidencias, setEvidencias] = useState<File[]>([]);
   
   // Guardamos: idDetalle -> idLote -> cantidad_base
   const [entregaCantidades, setEntregaCantidades] = useState<Record<number, Record<number, number>>>({});
@@ -221,6 +222,9 @@ export const useRegistroEntrega = ({
     totalEntregaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
-    registrarEntrega
+    registrarEntrega,
+    // Evidencias
+    evidencias,
+    setEvidencias
   };
 };

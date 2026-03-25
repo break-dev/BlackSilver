@@ -64,6 +64,7 @@ export const ProductoEntregaCard = ({
           entregaCantidades={entregaCantidades}
           handleCantLoteChange={handleCantLoteChange}
           unidadAbv={detalle.unidad_medida_abv}
+          baseAbv={detalle.unidad_medida_base_abv}
           contenidoPorPresentacion={ratio}
         />
       </div>
