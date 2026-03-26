@@ -66,7 +66,7 @@ export const TrazabilidadDetalle = ({
           lineWidth={2}
           className="px-4"
         >
-          {[...logs].reverse().map((log) => {
+          {logs.map((log) => {
             const color = getEstadoDetalleColor(
               log.estado as EstadoDetallePrestamo,
             );
