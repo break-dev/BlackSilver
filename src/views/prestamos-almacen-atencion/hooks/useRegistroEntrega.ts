@@ -192,7 +192,7 @@ export const useRegistroEntrega = ({
         fecha_hora_entrega: undefined, // Backend usará now()
         observacion: observacion || undefined,
         detalles: detallesParaApi
-      });
+      }, evidencias);
 
       if (res.success) {
         notifySuccess("Entrega registrada correctamente");
@@ -205,7 +205,7 @@ export const useRegistroEntrega = ({
     } finally {
       setSubmitting(false);
     }
-  }, [idEmpleadoRecibe, entregaCantidades, itemsAEntregar, lotes, observacion, onSuccess, notifyError, notifySuccess]);
+  }, [idEmpleadoRecibe, entregaCantidades, itemsAEntregar, lotes, observacion, evidencias, onSuccess, notifyError, notifySuccess]);
 
   return {
     loading,
