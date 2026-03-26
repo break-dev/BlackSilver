@@ -8,18 +8,22 @@ interface Props {
   idAlmacenSolicitante: number;
   detalles: RES_DetalleEntregaReabastecimiento[];
   onSuccess: () => void;
+  idEntrega?: number;
+  tipoEntrega?: "Solicitud" | "Prestamo";
+  isGlobal?: boolean;
 }
 
 export const RegistroRecepcion = ({
   idAlmacenSolicitante,
   detalles,
   onSuccess,
+  idEntrega,
+  tipoEntrega,
+  isGlobal,
 }: Props) => {
   const {
     groupedItems,
     setLotValue,
-    addLot,
-    removeLot,
     updateTabularAdjustment,
     getLotError,
     loadingAction,
@@ -32,6 +36,9 @@ export const RegistroRecepcion = ({
     idAlmacenSolicitante,
     detalles,
     onSuccess,
+    idEntrega,
+    tipoEntrega,
+    isGlobal,
   });
 
   return (
@@ -43,8 +50,6 @@ export const RegistroRecepcion = ({
             grouped={grouped}
             index={index}
             setLotValue={setLotValue}
-            addLot={addLot}
-            removeLot={removeLot}
             updateTabularAdjustment={updateTabularAdjustment}
             getLotError={getLotError}
             fetchLotesProducto={fetchLotesProducto}

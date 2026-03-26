@@ -50,6 +50,7 @@ export const HistorialEntregas = ({
 
   const [recepcionData, setRecepcionData] = useState<{
     idEntrega?: number;
+    tipoEntrega?: "Solicitud" | "Prestamo";
     detallesPendientes: RES_DetalleEntregaReabastecimiento[];
     isGlobal?: boolean;
   } | null>(null);
@@ -78,8 +79,9 @@ export const HistorialEntregas = ({
     detallesPendientes: RES_DetalleEntregaReabastecimiento[],
     idEntrega?: number,
     isGlobal = false,
+    tipoEntrega?: "Solicitud" | "Prestamo"
   ) => {
-    setRecepcionData({ idEntrega, detallesPendientes, isGlobal });
+    setRecepcionData({ idEntrega, detallesPendientes, isGlobal, tipoEntrega });
   };
 
   if (loading)
@@ -160,7 +162,22 @@ export const HistorialEntregas = ({
                       <Text size="sm" fw={900} className="text-white">
                         {h.correlativo}
                       </Text>
-                      <Badge variant="light" color="teal" size="xs">
+                      {h.tipo_entrega === "Prestamo" && (
+                        <Badge variant="filled" color="indigo" size="xs">
+                          Préstamo {h.correlativo_prestamo}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="light"
+                        color={
+                          h.estado === "Recibida"
+                            ? "teal"
+                            : h.estado === "Procesada"
+                            ? "orange"
+                            : "indigo"
+                        }
+                        size="xs"
+                      >
                         {h.estado}
                       </Badge>
                     </Group>
@@ -189,6 +206,8 @@ export const HistorialEntregas = ({
                         handleOpenRecepcion(
                           pendientes,
                           h.id_reabastecimiento_entrega,
+                          false,
+                          h.tipo_entrega as "Solicitud" | "Prestamo"
                         );
                       }}
                     >
@@ -345,6 +364,9 @@ export const HistorialEntregas = ({
           <RegistroRecepcion
             idAlmacenSolicitante={idAlmacenSolicitante}
             detalles={recepcionData.detallesPendientes}
+            idEntrega={recepcionData.idEntrega}
+            tipoEntrega={recepcionData.tipoEntrega}
+            isGlobal={recepcionData.isGlobal}
             onSuccess={() => {
               setRecepcionData(null);
               reload();

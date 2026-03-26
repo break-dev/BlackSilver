@@ -60,11 +60,20 @@ export const ReabastecimientoService = {
   },
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
-    // We can use the same endpoint from atención as they share the context, or create one. Wait, in backend `SolicitudesReabastecimientoAtencion` has `trazabilidad-entregas`. Let's create `obtenerHistorialEntregas` in backend if it doesn't exist for the small warehouse, or we can just fetch from `solicitudes-reabastecimiento-atencion` since it's just reading data? No, architecture says isolate. I'll add the method `obtenerHistorialEntregas` in `SolicitudesController.php`. Wait, I didn't add it! I will have to add it to the backend. Let's document this in frontend first and I will go back to add it.
     const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
       `${path}/historial-entregas`,
       {
         params: { id_solicitud_reabastecimiento: idSolicitud },
+      },
+    );
+    return res.data;
+  },
+
+  obtenerEntregasPrestamo: async (idSolicitud: number) => {
+    const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
+      "/prestamos-atencion/entregas-solicitud",
+      {
+        params: { id_solicitud: idSolicitud },
       },
     );
     return res.data;
@@ -95,7 +104,11 @@ export const ReabastecimientoService = {
   },
 
   recibirEntregaBulk: async (data: {
-    recepciones: { id_reabastecimiento_entrega: number; items: DTO_RecibirEntregaItem[] }[];
+    recepciones: { 
+      id_reabastecimiento_entrega: number; 
+      tipo_entrega?: "Solicitud" | "Prestamo";
+      items: DTO_RecibirEntregaItem[] 
+    }[];
   }) => {
     const res = await api.post<IRespuesta<null>>(
       `${path}/recibir-entrega-bulk`,

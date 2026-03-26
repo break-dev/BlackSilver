@@ -1,4 +1,4 @@
-import { Table, Text, Group, Checkbox, NumberInput } from "@mantine/core";
+import { Table, Text, Group, Checkbox } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { RES_LoteRecepcion } from "../../../service/reabastecimiento.responses";
@@ -7,7 +7,7 @@ interface LotesDisponiblesTableProps {
   lotes: RES_LoteRecepcion[];
   loading: boolean;
   selectedAjustes: Record<number, number>;
-  onUpdateTabular: (idLote: number, qty: number, isActive: boolean) => void;
+  onUpdateTabular: (idLote: number, isActive: boolean) => void;
   unidadBaseAbv: string;
 }
 
@@ -118,7 +118,6 @@ export const LotesDisponiblesTable = ({
                         onChange={(e) =>
                           onUpdateTabular(
                             lote.id_lote,
-                            isActive ? 0 : 1,
                             e.currentTarget.checked,
                           )
                         }
@@ -126,20 +125,17 @@ export const LotesDisponiblesTable = ({
                         size="sm"
                         classNames={{ input: "cursor-pointer" }}
                       />
-                      <NumberInput
-                        size="xs"
-                        placeholder="0"
-                        min={0}
-                        hideControls
-                        disabled={!isActive}
-                        value={isActive ? currentQty : ""}
-                        onChange={(val) =>
-                          onUpdateTabular(lote.id_lote, Number(val), true)
-                        }
-                        classNames={{
-                          input: `w-20 bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${!isActive ? "opacity-30" : "opacity-100"}`,
-                        }}
-                      />
+                      {isActive && (
+                        <div className="bg-indigo-500/20 px-3 py-1 rounded-lg border border-indigo-500/30">
+                          <Text
+                            size="sm"
+                            fw={900}
+                            className="font-mono text-indigo-300"
+                          >
+                            {formatNumber(currentQty)}
+                          </Text>
+                        </div>
+                      )}
                     </Group>
                   </td>
                 </tr>

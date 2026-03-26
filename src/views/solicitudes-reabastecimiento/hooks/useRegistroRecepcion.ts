@@ -27,6 +27,7 @@ export interface GroupedReception {
 
 interface UseRegistroRecepcionProps {
   idEntrega?: number;
+  tipoEntrega?: "Solicitud" | "Prestamo";
   idAlmacenSolicitante: number;
   detalles: RES_DetalleEntregaReabastecimiento[];
   onSuccess: () => void;
@@ -156,7 +157,6 @@ export const useRegistroRecepcion = ({
     groupIndex: number,
     lotIndex: number,
     idLote: number,
-    qty: number,
     isActive: boolean
   ) => {
     setGroupedItems((prev) => {
@@ -164,69 +164,37 @@ export const useRegistroRecepcion = ({
       const group = { ...newGrouped[groupIndex] };
       const lots = [...group.lots];
       const lot = { ...lots[lotIndex] };
-      
-      const ajustes = { ...(lot.ajustes || {}) };
-      
-      if (!isActive) {
-        delete ajustes[idLote];
-      } else {
-        const otherAjustesSum = Object.entries(ajustes).reduce((acc, [id, val]) => {
-            if (Number(id) === idLote) return acc;
-            return acc + (Number(val) || 0);
-        }, 0);
-        
-        const otherPartidasSum = lots.reduce((acc, l, idx) => {
-            if (idx === lotIndex) return acc;
-            return acc + (Number(l.cantidad_base) || 0);
-        }, 0);
 
-        const remainingForThisPartida = Math.max(0, group.total_entregado_base - otherPartidasSum);
-        const maxForThisRow = Math.max(0, remainingForThisPartida - otherAjustesSum);
-        
-        ajustes[idLote] = Math.min(qty, maxForThisRow);
+      // Limpiar todos los ajustes anteriores para forzar selección única del total
+      const ajustes: Record<number, number> = {};
+
+      if (isActive) {
+        ajustes[idLote] = group.total_entregado_base;
+        lot.cantidad_base = group.total_entregado_base;
+      } else {
+        lot.cantidad_base = 0;
       }
 
       lot.ajustes = ajustes;
-      lot.cantidad_base = Object.values(ajustes).reduce((acc, v) => acc + v, 0);
       lots[lotIndex] = lot;
-      
+
       group.lots = lots;
       newGrouped[groupIndex] = group;
+
+      // Limpiar errores si la cantidad es correcta
+      if (isActive) {
+        setErrors((prevErr) => {
+          const next = { ...prevErr };
+          delete next[`groups.${groupIndex}.lots.${lotIndex}.id_lote_existente`];
+          delete next[`groups.${groupIndex}.cantidad_total`];
+          return next;
+        });
+      }
+
       return newGrouped;
     });
   };
 
-  const addLot = (groupIndex: number) => {
-    setGroupedItems((prev) => {
-      const newGrouped = [...prev];
-      const g = newGrouped[groupIndex];
-      const lastLot = g.lots[g.lots.length - 1];
-      newGrouped[groupIndex] = {
-        ...g,
-        lots: [
-          ...g.lots,
-          {
-            ...lastLot,
-            cantidad_base: 0,
-            id_lote_existente: null,
-            ajustes: {},
-          },
-        ],
-      };
-      return newGrouped;
-    });
-  };
-
-  const removeLot = (groupIndex: number, lotIndex: number) => {
-    setGroupedItems((prev) => {
-      if (prev[groupIndex].lots.length <= 1) return prev;
-      const newGrouped = [...prev];
-      const lots = [...newGrouped[groupIndex].lots];
-      lots.splice(lotIndex, 1);
-      newGrouped[groupIndex] = { ...newGrouped[groupIndex], lots };
-      return newGrouped;
-    });
-  };
 
   const getLotError = (groupIndex: number, lotIndex: number, field: keyof DTO_RecibirLotExtendido) => {
     return errors[`groups.${groupIndex}.lots.${lotIndex}.${field}`] || null;
@@ -341,10 +309,17 @@ export const useRegistroRecepcion = ({
         });
       });
 
-      const recepciones = Object.entries(recepcionesMap).map(([id, items]) => ({
-        id_reabastecimiento_entrega: Number(id),
-        items,
-      }));
+      const recepciones = Object.entries(recepcionesMap).map(([id, items]) => {
+        const idNum = Number(id);
+        const firstDetail = detalles.find(
+          (d) => d.id_reabastecimiento_entrega === idNum,
+        );
+        return {
+          id_reabastecimiento_entrega: idNum,
+          tipo_entrega: firstDetail?.tipo_entrega || "Solicitud",
+          items,
+        };
+      });
 
       const res = await ReabastecimientoService.recibirEntregaBulk({ recepciones });
       if (res.success) {
@@ -363,8 +338,6 @@ export const useRegistroRecepcion = ({
   return {
     groupedItems,
     setLotValue,
-    addLot,
-    removeLot,
     updateTabularAdjustment,
     getLotError,
     loadingAction,

@@ -1,5 +1,5 @@
-import { Badge, Paper, Group, Text, Switch, Alert, Button, Stack, ActionIcon, Divider } from "@mantine/core";
-import { CubeIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { Badge, Paper, Group, Text, Switch, Alert, Stack, Divider } from "@mantine/core";
+import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import { NuevoLoteForm } from "./NuevoLoteForm";
 import { LotesDisponiblesTable } from "./LotesDisponiblesTable";
@@ -17,13 +17,10 @@ interface ProductoRecepcionCardProps {
     field: K,
     value: DTO_RecibirLotExtendido[K],
   ) => void;
-  addLot: (groupIndex: number) => void;
-  removeLot: (groupIndex: number, lotIndex: number) => void;
   updateTabularAdjustment: (
     groupIndex: number,
     lotIndex: number,
     idLote: number,
-    qty: number,
     isActive: boolean
   ) => void;
   getLotError: (
@@ -41,8 +38,6 @@ export const ProductoRecepcionCard = ({
   grouped,
   index: groupIndex,
   setLotValue,
-  addLot,
-  removeLot,
   updateTabularAdjustment,
   getLotError,
   fetchLotesProducto,
@@ -89,16 +84,6 @@ export const ProductoRecepcionCard = ({
               </Badge>
             </div>
           </div>
-          <Button
-            size="compact-xs"
-            variant="light"
-            color="indigo"
-            radius="xl"
-            leftSection={<PlusIcon className="w-4 h-4" />}
-            onClick={() => addLot(groupIndex)}
-          >
-            Dividir en otro lote
-          </Button>
         </div>
       </div>
 
@@ -116,21 +101,11 @@ export const ProductoRecepcionCard = ({
           return (
             <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
               {lotIndex > 0 && <Divider color="zinc.8" variant="dashed" mb="md" />}
-              <div className="flex justify-between items-center mb-2">
-                <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
-                  Partida #{lotIndex + 1}
-                </Text>
-                {grouped.lots.length > 1 && (
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="sm"
-                    onClick={() => removeLot(groupIndex, lotIndex)}
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </ActionIcon>
-                )}
-              </div>
+                <div className="flex justify-between items-center mb-2">
+                  <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
+                    Partida #{lotIndex + 1}
+                  </Text>
+                </div>
 
               <Group justify="space-between">
                 <Group gap="xs">
@@ -155,7 +130,7 @@ export const ProductoRecepcionCard = ({
                     lotes={lotes}
                     loading={loadingLotes}
                     selectedAjustes={lot.ajustes || {}}
-                    onUpdateTabular={(id, q, active) => updateTabularAdjustment(groupIndex, lotIndex, id, q, active)}
+                    onUpdateTabular={(id, active) => updateTabularAdjustment(groupIndex, lotIndex, id, active)}
                     unidadBaseAbv={grouped.unidad_base_abv}
                   />
                   {fieldError && (
@@ -186,7 +161,7 @@ export const ProductoRecepcionCard = ({
       </Stack>
 
       {cantidadTotalError && (
-        <Alert color="red" variant="filled" icon={<TrashIcon className="w-4 h-4" />} m="md" radius="md">
+        <Alert color="red" variant="filled" icon={<CubeIcon className="w-4 h-4" />} m="md" radius="md">
           <Text size="xs" fw={700}>{cantidadTotalError}</Text>
         </Alert>
       )}
