@@ -42,9 +42,9 @@ export const HistorialEntregas = ({
 }: HistorialProps) => {
   const { loading, entregas, error, reload } =
     useHistorialEntregas(idSolicitud);
-  const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  const toggleExpand = (id: number) => {
+  const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
@@ -134,8 +134,9 @@ export const HistorialEntregas = ({
       )}
 
       {entregas.map((h, index) => {
-        const expanded =
-          expandedIds[h.id_reabastecimiento_entrega] ?? index === 0;
+        const uniqueKey = `${h.tipo_entrega}-${h.id_reabastecimiento_entrega}`;
+        const expanded = expandedIds[uniqueKey] ?? index === 0;
+
         const detailsGrouped = groupDetailsByProduct(h.detalles || []);
         const pendientes = (h.detalles || []).filter(
           (d) => d.estado_entrega_detalle === "Entregado",
@@ -143,14 +144,14 @@ export const HistorialEntregas = ({
 
         return (
           <Paper
-            key={h.id_reabastecimiento_entrega}
+            key={uniqueKey}
             radius="xl"
             className="bg-zinc-900/30 border border-zinc-800/80 transition-all hover:bg-zinc-900/50 relative overflow-hidden p-4"
           >
             <UnstyledButton
               component="div"
               className="w-full"
-              onClick={() => toggleExpand(h.id_reabastecimiento_entrega)}
+              onClick={() => toggleExpand(uniqueKey)}
             >
               <Group justify="space-between" wrap="nowrap">
                 <Group gap="md" wrap="nowrap">
