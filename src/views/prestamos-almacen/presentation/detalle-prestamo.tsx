@@ -8,6 +8,7 @@ import {
   Text,
   ActionIcon,
   Tooltip,
+  Button,
 } from "@mantine/core";
 import {
   ClockIcon,
@@ -17,6 +18,7 @@ import {
   CalendarDaysIcon,
   CheckBadgeIcon,
   UserIcon,
+  TruckIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import type {
@@ -33,6 +35,7 @@ interface DetallePrestamoProps {
   loading: boolean;
   progresoGeneral: number;
   onOpenTrazabilidad: (detalle: RES_PrestamoDetalle) => void;
+  onOpenHistorial: () => void;
 }
 
 export const DetallePrestamo = ({
@@ -41,6 +44,7 @@ export const DetallePrestamo = ({
   loading,
   progresoGeneral,
   onOpenTrazabilidad,
+  onOpenHistorial,
 }: DetallePrestamoProps) => {
   if (loading) {
     return (
@@ -276,16 +280,30 @@ export const DetallePrestamo = ({
       {/* Tabla de Items */}
       <div className="space-y-4 px-2">
         <Group justify="space-between" align="center" px={4}>
-          <Group gap="xs">
-            <div className="p-1.5 bg-indigo-500/10 rounded-lg shadow-sm border border-indigo-500/10">
-              <ListBulletIcon className="w-5 h-5 text-indigo-400" />
-            </div>
-            <Text
-              fw={800}
-              className="text-zinc-100 italic tracking-tight text-lg"
+          <Group gap="lg">
+            <Group gap="xs">
+              <div className="p-1.5 bg-indigo-500/10 rounded-lg shadow-sm border border-indigo-500/10">
+                <ListBulletIcon className="w-5 h-5 text-indigo-400" />
+              </div>
+              <Text
+                fw={800}
+                className="text-zinc-100 italic tracking-tight text-lg"
+              >
+                Productos en Préstamo
+              </Text>
+            </Group>
+
+            <Button
+              size="xs"
+              radius="xl"
+              variant="light"
+              color="indigo"
+              leftSection={<TruckIcon className="w-4 h-4" />}
+              onClick={onOpenHistorial}
+              className="font-bold border border-indigo-500/20 shadow-xs"
             >
-              Productos en Préstamo
-            </Text>
+              Historial de Entregas
+            </Button>
           </Group>
           <Badge
             variant="light"

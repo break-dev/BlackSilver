@@ -5,6 +5,7 @@ import type {
   RES_PrestamoResumen,
   RES_PrestamoDetalle,
   RES_Trazabilidad,
+  RES_HistorialEntregaPrestamo,
 } from "./prestamos.responses";
 
 const path = "/prestamos-almacen";
@@ -58,6 +59,19 @@ export const PrestamosService = {
       `${path}/trazabilidad`,
       {
         params: { id_prestamo_detalle: idPrestamoDetalle },
+      },
+    );
+    return response.data.data;
+  },
+
+  /**
+   * Obtiene el historial de entregas de un préstamo
+   */
+  getHistorialEntregas: async (idPrestamo: number) => {
+    const response = await api.get<IRespuesta<RES_HistorialEntregaPrestamo[]>>(
+      `${path}/historial-entregas`,
+      {
+        params: { id_prestamo: idPrestamo },
       },
     );
     return response.data.data;

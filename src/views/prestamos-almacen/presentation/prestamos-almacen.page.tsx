@@ -9,6 +9,7 @@ import {
   ActionIcon,
   TextInput,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import {
   MagnifyingGlassIcon,
   CalendarDaysIcon,
@@ -25,6 +26,7 @@ import { useDetallePrestamo } from "../hooks/useDetallePrestamo";
 import { useTrazabilidadPrestamo } from "../hooks/useTrazabilidadPrestamo";
 import { DetallePrestamo } from "./detalle-prestamo";
 import { TrazabilidadDetalle } from "./trazabilidad-detalle";
+import { HistorialEntregasPrestamo } from "./components/HistorialEntregasPrestamo";
 import { MESES } from "../../../presentation/variables/meses";
 import type {
   RES_AlmacenSecundario,
@@ -77,6 +79,9 @@ export const PrestamosAlmacenPage = () => {
 
   const [selectedDetalle, setSelectedDetalle] =
     useState<RES_PrestamoDetalle | null>(null);
+
+  const [openedHistorial, { open: openHistorial, close: closeHistorial }] =
+    useDisclosure(false);
 
   const selectedPrestamo = useMemo(() => {
     return prestamos.find((p) => p.id_prestamo === selectedPrestamoId);
@@ -333,7 +338,19 @@ export const PrestamosAlmacenPage = () => {
               setSelectedDetalle(det);
               fetchTrazabilidad(det.id_prestamo_detalle);
             }}
+            onOpenHistorial={openHistorial}
           />
+        )}
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedHistorial}
+        close={closeHistorial}
+        title="Historial de Entregas del Préstamo"
+        size="70%"
+      >
+        {selectedPrestamoId && (
+          <HistorialEntregasPrestamo idPrestamo={selectedPrestamoId} />
         )}
       </ModalEstandar>
 
