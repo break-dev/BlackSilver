@@ -76,6 +76,15 @@ export const DataTableEstandar = ({
         paginationText={({ from, to, totalRecords }) =>
           `${from} - ${to} de ${totalRecords}`
         }
+        scrollAreaProps={{
+          viewportProps: {
+            style: {
+              minHeight: 300,
+              display: "flex",
+              flexDirection: "column",
+            },
+          },
+        }}
         classNames={{
           root: "bg-transparent",
           table: "bg-transparent",
