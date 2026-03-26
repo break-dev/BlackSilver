@@ -114,16 +114,48 @@ export const useRegistroRecepcion = ({
       const group = { ...newGrouped[groupIndex] };
       const lots = [...group.lots];
       let finalValue = value;
-
       if (field === "cantidad_base") {
         const numVal = Number(value) || 0;
-        const otherLotsSum = lots.reduce((acc, l, idx) => {
-          if (idx === lotIndex) return acc;
-          return acc + (Number(l.cantidad_base) || 0);
-        }, 0);
-
-        const remaining = Math.max(0, group.total_entregado_base - otherLotsSum);
-        finalValue = Math.min(numVal, remaining) as DTO_RecibirLotExtendido[K];
+        
+        // Calculamos la suma de todos los DEMÁS lotes (excepto el actual y el ÚLTIMO)
+        const lastIdx = lots.length - 1;
+        
+        if (lots.length > 1) {
+            // Si no estamos editando el último, el último absorbe la diferencia
+            if (lotIndex !== lastIdx) {
+                // Suma de todos menos el actual y el último
+                const otherSum = lots.reduce((acc, l, idx) => {
+                    if (idx === lotIndex || idx === lastIdx) return acc;
+                    return acc + (Number(l.cantidad_base) || 0);
+                }, 0);
+                
+                // Limitamos el actual para que no supere el total disponible (dejando sitio a los demás fijos)
+                const maxForThis = Math.max(0, group.total_entregado_base - otherSum);
+                const cappedVal = Math.min(numVal, maxForThis);
+                finalValue = cappedVal as DTO_RecibirLotExtendido[K];
+                
+                // El último recibe el resto
+                const remaining = Math.max(0, group.total_entregado_base - otherSum - cappedVal);
+                lots[lastIdx] = {
+                    ...lots[lastIdx],
+                    cantidad_base: remaining,
+                    ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+                        ? { [lots[lastIdx].id_lote_existente]: remaining }
+                        : (lots[lastIdx].ajustes || {})
+                };
+            } else {
+                // Si estamos editando el último directamente, simplemente lo limitamos al remanente
+                const otherSum = lots.reduce((acc, l, idx) => {
+                    if (idx === lotIndex) return acc;
+                    return acc + (Number(l.cantidad_base) || 0);
+                }, 0);
+                const maxForLast = Math.max(0, group.total_entregado_base - otherSum);
+                finalValue = Math.min(numVal, maxForLast) as DTO_RecibirLotExtendido[K];
+            }
+        } else {
+            // Un solo lote -> 100% (esto ya se maneja en el readOnly pero por seguridad)
+            finalValue = group.total_entregado_base as DTO_RecibirLotExtendido[K];
+        }
       }
 
       lots[lotIndex] = { ...lots[lotIndex], [field]: finalValue };
@@ -156,21 +188,34 @@ export const useRegistroRecepcion = ({
   const addLot = (groupIndex: number) => {
     setGroupedItems((prev) => {
       const newGrouped = [...prev];
-      const g = newGrouped[groupIndex];
-      const lastLot = g.lots[g.lots.length - 1];
-      newGrouped[groupIndex] = {
-        ...g,
-        lots: [
-          ...g.lots,
-          {
-            ...lastLot,
-            cantidad_base: 0,
-            id_lote_existente: null,
-            ajustes: {},
-            es_nuevo_lote: true,
-          },
-        ],
-      };
+      const g = { ...newGrouped[groupIndex] };
+      const lots = [...g.lots];
+      const lastIdx = lots.length - 1;
+      const lastLot = { ...lots[lastIdx] };
+
+      // Reparto inteligente al crear: dividimos la cantidad del último lote por 2
+      const currentQty = Number(lastLot.cantidad_base) || 0;
+      const halfQty = Math.floor(currentQty / 2);
+      const restQty = currentQty - halfQty;
+
+      // Actualizamos el que era el último
+      lastLot.cantidad_base = restQty;
+      if (!lastLot.es_nuevo_lote && lastLot.id_lote_existente) {
+          lastLot.ajustes = { [lastLot.id_lote_existente]: restQty };
+      }
+      lots[lastIdx] = lastLot;
+
+      // Añadimos el nuevo lote con la otra mitad
+      lots.push({
+        ...lastLot, // Copiamos configuración base
+        cantidad_base: halfQty,
+        id_lote_existente: null,
+        ajustes: {},
+        es_nuevo_lote: true,
+      });
+
+      g.lots = lots;
+      newGrouped[groupIndex] = g;
       return newGrouped;
     });
   };
@@ -212,29 +257,64 @@ export const useRegistroRecepcion = ({
       // Selección ÚNICA por partida (Radio behavior)
       const ajustes: Record<number, number> = {};
 
+      const lastIdx = lots.length - 1;
+
       if (isActive) {
         let finalQty = qty;
 
+        // Suma de todos menos el actual y el último
+        const otherFixedSum = lots.reduce((acc, l, idx) => {
+            if (idx === lotIndex || idx === lastIdx) return acc;
+            return acc + (Number(l.cantidad_base) || 0);
+        }, 0);
+
         if (finalQty === undefined) {
-           // Si no viene qty (primer click el radio), calculamos el remanente
-           // o si es la única partida, el total.
-           if (lots.length === 1) {
-              finalQty = group.total_entregado_base;
-           } else {
-              const otherLotsSum = lots.reduce((acc, l, idx) => {
-                if (idx === lotIndex) return acc;
-                return acc + (Number(l.cantidad_base) || 0);
-              }, 0);
-              finalQty = Math.max(0, group.total_entregado_base - otherLotsSum);
-           }
+           // Primer click: tomamos lo que falte
+           finalQty = Math.max(0, group.total_entregado_base - otherFixedSum - (lotIndex === lastIdx ? 0 : (Number(lot.cantidad_base) || 0)));
+           // Si lotIndex !== lastIdx y no hay qty, lo ideal es que tome el remanente total menos lo que ya tengan otros
+           // Simplificado para el Radio:
+           const currentOthers = lots.reduce((acc, l, idx) => idx === lotIndex ? acc : acc + (Number(l.cantidad_base) || 0), 0);
+           finalQty = Math.max(0, group.total_entregado_base - currentOthers);
+        } else {
+           // Si viene qty del NumberInput de la tabla, lo limitamos
+           const maxAvailable = Math.max(0, group.total_entregado_base - otherFixedSum);
+           finalQty = Math.min(finalQty, maxAvailable);
         }
 
         ajustes[idLote] = finalQty;
         lot.cantidad_base = finalQty;
         lot.id_lote_existente = idLote;
+
+        // BALANCEO: El último absorbe el remanente si no estamos editando el último
+        if (lots.length > 1 && lotIndex !== lastIdx) {
+            const remaining = Math.max(0, group.total_entregado_base - otherFixedSum - finalQty);
+            lots[lastIdx] = {
+                ...lots[lastIdx],
+                cantidad_base: remaining,
+                ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+                    ? { [lots[lastIdx].id_lote_existente]: remaining }
+                    : (lots[lastIdx].ajustes || {})
+            };
+        }
       } else {
         lot.id_lote_existente = null;
         lot.cantidad_base = 0;
+
+        // BALANCEO AL DESMARCAR: El último recupera lo que quedó libre
+        if (lots.length > 1 && lotIndex !== lastIdx) {
+            const otherFixedSum = lots.reduce((acc, l, idx) => {
+                if (idx === lotIndex || idx === lastIdx) return acc;
+                return acc + (Number(l.cantidad_base) || 0);
+            }, 0);
+            const remaining = Math.max(0, group.total_entregado_base - otherFixedSum);
+            lots[lastIdx] = {
+                ...lots[lastIdx],
+                cantidad_base: remaining,
+                ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+                    ? { [lots[lastIdx].id_lote_existente]: remaining }
+                    : (lots[lastIdx].ajustes || {})
+            };
+        }
       }
 
       lot.ajustes = ajustes;
