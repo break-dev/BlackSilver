@@ -48,7 +48,7 @@ export const useRegistroEntrega = ({
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
-    Record<number, number>
+    Record<number, Record<number, number>>
   >({});
 
   const [errorLocal, setErrorLocal] = useState("");
@@ -130,8 +130,15 @@ export const useRegistroEntrega = ({
           );
           if (res.success) {
             setLotes(res.data);
-            const initial: Record<number, number> = {};
-            res.data.forEach((l) => (initial[l.id_lote] = 0));
+            const initial: Record<number, Record<number, number>> = {};
+            selectedDetalles.forEach((det) => {
+              initial[det.id_solicitud_detalle] = {};
+              res.data
+                .filter((l) => l.id_producto === det.id_producto)
+                .forEach((l) => {
+                  initial[det.id_solicitud_detalle][l.id_lote] = 0;
+                });
+            });
             setEntregaCantidades(initial);
           }
         } catch (err) {
@@ -145,38 +152,58 @@ export const useRegistroEntrega = ({
       setLotes([]);
       setEntregaCantidades({});
     }
-  }, [idAlmacenEntrega, idsProductos]);
+  }, [idAlmacenEntrega, idsProductos, selectedDetalles]);
 
   const handleCantChange = useCallback(
-    (idLote: number, idProducto: number, val: number) => {
+    (idSolicitudDetalle: number, idLote: number, val: number) => {
       const lote = lotes.find((l) => l.id_lote === idLote);
       const detalle = selectedDetalles.find(
-        (d) => d.id_producto === idProducto,
+        (d) => d.id_solicitud_detalle === idSolicitudDetalle,
       );
       if (!lote || !detalle) return;
 
-      const currentTotalParaProducto = lotes
-        .filter((l) => l.id_producto === idProducto && l.id_lote !== idLote)
-        .reduce((sum, l) => sum + (entregaCantidades[l.id_lote] || 0), 0);
+      const currentDetalleCantidades = entregaCantidades[idSolicitudDetalle] || {};
+      const currentTotalParaDetalle = Object.entries(currentDetalleCantidades)
+        .filter(([idL]) => Number(idL) !== idLote)
+        .reduce((sum, [, cant]) => sum + cant, 0);
+
+      // Suma de lo entregado en OTROS detalles para ESTE LOTE
+      const totalEnOtrosDetallesParaEsteLote = Object.entries(entregaCantidades)
+        .filter(([idDet]) => Number(idDet) !== idSolicitudDetalle)
+        .reduce((sum, [, lotesMap]) => sum + (lotesMap[idLote] || 0), 0);
+
+      // El stock máximo es el del lote (menos lo que otros detalles ya tomaron),
+      // pero limitado por lo pendiente del detalle actual
+      const stockDisponibleRealLote = Math.max(
+        0,
+        lote.stock_actual_base - totalEnOtrosDetallesParaEsteLote,
+      );
 
       const maxAllowed = Math.min(
-        lote.stock_actual_base,
-        detalle.pendiente_base - currentTotalParaProducto,
+        stockDisponibleRealLote,
+        detalle.pendiente_base - currentTotalParaDetalle,
       );
 
       const newValue = Math.max(0, Math.min(val, maxAllowed));
-      setEntregaCantidades((prev) => ({ ...prev, [idLote]: newValue }));
+
+      setEntregaCantidades((prev) => ({
+        ...prev,
+        [idSolicitudDetalle]: {
+          ...(prev[idSolicitudDetalle] || {}),
+          [idLote]: newValue,
+        },
+      }));
     },
     [lotes, selectedDetalles, entregaCantidades],
   );
 
   const handleCantLoteChange = useCallback(
-    (idLote: number, idProducto: number, val: number) => {
+    (idSolicitudDetalle: number, idLote: number, val: number) => {
       const lote = lotes.find((l) => l.id_lote === idLote);
       if (!lote) return;
 
       const newBaseValue = val * (lote.contenido_por_presentacion || 1);
-      handleCantChange(idLote, idProducto, newBaseValue);
+      handleCantChange(idSolicitudDetalle, idLote, newBaseValue);
     },
     [lotes, handleCantChange],
   );
@@ -197,24 +224,31 @@ export const useRegistroEntrega = ({
     }
 
     const detallesApi: DTO_EntregasDetalleReabastecimiento[] = [];
-    for (const [idL, cant] of Object.entries(entregaCantidades)) {
-      if (cant > 0) {
-        const idLote = Number(idL);
-        const lote = lotes.find((l) => l.id_lote === idLote);
-        const detalle = selectedDetalles.find(
-          (d) => d.id_producto === lote?.id_producto,
-        );
-        if (lote && detalle) {
-          detallesApi.push({
-            id_solicitud_detalle: detalle.id_solicitud_detalle,
-            id_lote_producto: idLote,
-            cantidad_base: cant,
-            cantidad_lote: cant / (lote.contenido_por_presentacion || 1),
-            cantidad_solicitud: cant / (detalle.equivSolicitud || 1),
-          });
+
+    Object.entries(entregaCantidades).forEach(([idDet, lotesCants]) => {
+      const idSolicitudDetalle = Number(idDet);
+      const detalle = selectedDetalles.find(
+        (d) => d.id_solicitud_detalle === idSolicitudDetalle,
+      );
+
+      if (!detalle) return;
+
+      Object.entries(lotesCants).forEach(([idL, cant]) => {
+        if (cant > 0) {
+          const idLote = Number(idL);
+          const lote = lotes.find((l) => l.id_lote === idLote);
+          if (lote) {
+            detallesApi.push({
+              id_solicitud_detalle: idSolicitudDetalle,
+              id_lote_producto: idLote,
+              cantidad_base: cant,
+              cantidad_lote: cant / (lote.contenido_por_presentacion || 1),
+              cantidad_solicitud: cant / (detalle.equivSolicitud || 1),
+            });
+          }
         }
-      }
-    }
+      });
+    });
 
     if (detallesApi.length === 0) {
       setErrorLocal("Debe entregar al menos un producto");

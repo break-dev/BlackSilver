@@ -9,12 +9,16 @@ import { LotesTable } from "./LotesTable";
 interface DetalleEntregaSectionProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteReabastecimiento[];
-  entregaCantidades: Record<number, number>;
+  entregaCantidades: Record<number, Record<number, number>>;
   loadingLotes: boolean;
-  handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (
+  handleCantChange: (
+    idSolicitudDetalle: number,
     idLote: number,
-    idProducto: number,
+    val: number,
+  ) => void;
+  handleCantLoteChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
     val: number,
   ) => void;
 }
@@ -27,8 +31,9 @@ export const DetalleEntregaSection = ({
   handleCantChange,
   handleCantLoteChange,
 }: DetalleEntregaSectionProps) => {
+  const currentDetailQuantities = entregaCantidades[detalle.id_solicitud_detalle] || {};
   const tEntregadoDetalleActualBase = lotes.reduce(
-    (acc, l) => acc + (entregaCantidades[l.id_lote] || 0),
+    (acc, l) => acc + (currentDetailQuantities[l.id_lote] || 0),
     0,
   );
 
@@ -149,7 +154,7 @@ export const DetalleEntregaSection = ({
 
       <LotesTable
         lotes={lotes}
-        idProducto={detalle.id_producto}
+        idSolicitudDetalle={detalle.id_solicitud_detalle}
         unidadMedidaBaseAbv={detalle.unidad_medida_base_abv}
         entregaCantidades={entregaCantidades}
         pendienteBase={detalle.pendiente_base}

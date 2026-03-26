@@ -6,15 +6,19 @@ import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-aten
 interface LoteRowProps {
   lote: RES_LoteReabastecimiento;
   cant: number;
-  idProducto: number;
+  idSolicitudDetalle: number;
   unidadMedidaBaseAbv: string;
   maxBase: number;
   maxLote: number;
   stockAsignable: number;
-  handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (
+  handleCantChange: (
+    idSolicitudDetalle: number,
     idLote: number,
-    idProducto: number,
+    val: number,
+  ) => void;
+  handleCantLoteChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
     val: number,
   ) => void;
 }
@@ -22,7 +26,7 @@ interface LoteRowProps {
 export const LoteRow = ({
   lote,
   cant,
-  idProducto,
+  idSolicitudDetalle,
   unidadMedidaBaseAbv,
   maxBase,
   maxLote,
@@ -120,34 +124,34 @@ export const LoteRow = ({
                     )
                   : ""
               }
-              onChange={(val) =>
-                handleCantLoteChange(lote.id_lote, idProducto, Number(val))
-              }
-              placeholder="0"
-              clampBehavior="strict"
-              hideControls
-              rightSection={
-                <Text size="10px" fw={600} c="zinc.5" className="mr-3">
-                  {lote.unidad_medida_abv}
-                </Text>
-              }
-              rightSectionWidth={60}
-              className="w-28"
-              classNames={{
-                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
-              }}
-            />
-          )}
-
-          <NumberInput
-            size="sm"
-            radius="xl"
-            min={0}
-            max={maxBase}
-            value={cant || ""}
             onChange={(val) =>
-              handleCantChange(lote.id_lote, idProducto, Number(val))
+              handleCantLoteChange(idSolicitudDetalle, lote.id_lote, Number(val))
             }
+            placeholder="0"
+            clampBehavior="strict"
+            hideControls
+            rightSection={
+              <Text size="10px" fw={600} c="zinc.5" className="mr-3">
+                {lote.unidad_medida_abv}
+              </Text>
+            }
+            rightSectionWidth={60}
+            className="w-28"
+            classNames={{
+              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
+            }}
+          />
+        )}
+
+        <NumberInput
+          size="sm"
+          radius="xl"
+          min={0}
+          max={maxBase}
+          value={cant || ""}
+          onChange={(val) =>
+            handleCantChange(idSolicitudDetalle, lote.id_lote, Number(val))
+          }
             placeholder="0"
             clampBehavior="strict"
             hideControls

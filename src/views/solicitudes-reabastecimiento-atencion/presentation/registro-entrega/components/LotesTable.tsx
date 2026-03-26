@@ -4,19 +4,27 @@ import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-aten
 
 interface LotesTableProps {
   lotes: RES_LoteReabastecimiento[];
-  idProducto: number;
+  idSolicitudDetalle: number;
   unidadMedidaBaseAbv: string;
-  entregaCantidades: Record<number, number>;
+  entregaCantidades: Record<number, Record<number, number>>;
   pendienteBase: number;
   tEntregadoDetalleActualBase: number;
   loadingLotes: boolean;
-  handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
+  handleCantLoteChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
 }
 
 export const LotesTable = ({
   lotes,
-  idProducto,
+  idSolicitudDetalle,
   unidadMedidaBaseAbv,
   entregaCantidades,
   pendienteBase,
@@ -76,10 +84,19 @@ export const LotesTable = ({
             </tr>
           ) : (
             lotes.map((lote) => {
-              const cant = entregaCantidades[lote.id_lote] || 0;
-              const stockAsignable = lote.stock_actual_base;
+              const currentDetailQuantities = entregaCantidades[idSolicitudDetalle] || {};
+              const cant = currentDetailQuantities[lote.id_lote] || 0;
+
+              const totalAsignadoGlobal = Object.entries(entregaCantidades)
+                .reduce((sum, [, lotesMap]) => sum + (lotesMap[lote.id_lote] || 0), 0);
+
+              const stockRestanteGlobal = Math.max(0, lote.stock_actual_base - totalAsignadoGlobal);
+
+              const totalEnOtrosDetalles = totalAsignadoGlobal - cant;
+              const stockDisponibleParaEsteDetalle = lote.stock_actual_base - totalEnOtrosDetalles;
+
               const maxBase = Math.min(
-                stockAsignable,
+                stockDisponibleParaEsteDetalle,
                 pendienteBase - (tEntregadoDetalleActualBase - cant),
               );
               const maxLote = maxBase / (lote.contenido_por_presentacion || 1);
@@ -89,11 +106,11 @@ export const LotesTable = ({
                   key={lote.id_lote}
                   lote={lote}
                   cant={cant}
-                  idProducto={idProducto}
+                  idSolicitudDetalle={idSolicitudDetalle}
                   unidadMedidaBaseAbv={unidadMedidaBaseAbv}
                   maxBase={maxBase}
                   maxLote={maxLote}
-                  stockAsignable={stockAsignable}
+                  stockAsignable={stockRestanteGlobal}
                   handleCantChange={handleCantChange}
                   handleCantLoteChange={handleCantLoteChange}
                 />

@@ -27,12 +27,27 @@ export const LoteRow = ({
   const currentValBase = entregaCantidades[idDetalle]?.[lote.id_lote] || 0;
   const currentValLote = currentValBase / (contenidoPorPresentacion || 1);
 
+  // Cantidad total asignada a este lote en TODOS los detalles
+  const totalAsignadoGlobal = Object.entries(entregaCantidades)
+    .reduce((sum, [, lotesMap]) => sum + (lotesMap[lote.id_lote] || 0), 0);
+
+  const stockRestanteGlobal = Math.max(0, lote.stock_actual_base - totalAsignadoGlobal);
+
+  // Cantidad asignada en OTROS lotes para este mismo detalle (para limitar el pendiente)
   const totalDespachadoOtrosLotes = Object.entries(entregaCantidades[idDetalle] || {})
     .filter(([idLote]) => Number(idLote) !== lote.id_lote)
     .reduce((sum, [, val]) => sum + (val || 0), 0);
 
+  // Cantidad asignada en OTROS detalles para este mismo lote (para limitar el stock físico)
+  const totalEnOtrosDetalles = totalAsignadoGlobal - currentValBase;
+  const stockDisponibleParaEsteDetalle = lote.stock_actual_base - totalEnOtrosDetalles;
+
   const pendienteBaseItem = (detalle.cantidad_solicitada_base || 0) - (detalle.cantidad_prestada_base || 0);
-  const maxAsignableBase = Math.max(0, Math.min(lote.stock_actual_base, pendienteBaseItem - totalDespachadoOtrosLotes));
+  
+  const maxAsignableBase = Math.max(
+    0, 
+    Math.min(stockDisponibleParaEsteDetalle, pendienteBaseItem - totalDespachadoOtrosLotes)
+  );
   const maxAsignableLote = maxAsignableBase / (contenidoPorPresentacion || 1);
 
   const hasConversion = unidadAbv !== baseAbv;
@@ -81,7 +96,7 @@ export const LoteRow = ({
               color="zinc.4"
               className="bg-zinc-800/30 font-black h-7"
             >
-              {formatNumber(lote.stock_actual_base)} {baseAbv}
+              {formatNumber(stockRestanteGlobal)} {baseAbv}
             </Badge>
             {hasConversion && (
               <Badge

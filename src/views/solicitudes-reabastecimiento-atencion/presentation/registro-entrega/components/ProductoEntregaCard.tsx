@@ -10,10 +10,18 @@ import { DetalleEntregaSection } from "./DetalleEntregaSection";
 interface ProductoEntregaCardProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteReabastecimiento[];
-  entregaCantidades: Record<number, number>;
+  entregaCantidades: Record<number, Record<number, number>>;
   loadingLotes: boolean;
-  handleCantChange: (idLote: number, idProducto: number, val: number) => void;
-  handleCantLoteChange: (idLote: number, idProducto: number, val: number) => void;
+  handleCantChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
+  handleCantLoteChange: (
+    idSolicitudDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
 }
 
 export const ProductoEntregaCard = ({
