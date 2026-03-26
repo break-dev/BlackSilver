@@ -24,6 +24,7 @@ interface NuevoLoteFormProps {
   loadingUnidades: boolean;
   unidadBaseAbv: string;
   esPerecible: boolean;
+  isReadOnly?: boolean;
 }
 
 export const NuevoLoteForm = ({
@@ -36,6 +37,7 @@ export const NuevoLoteForm = ({
   loadingUnidades,
   unidadBaseAbv,
   esPerecible,
+  isReadOnly,
 }: NuevoLoteFormProps) => {
   const cantidad_base = Number(lot.cantidad_base) || 0;
 
@@ -136,20 +138,25 @@ export const NuevoLoteForm = ({
         <NumberInput
           label={`Cant. Recibir (${unidadBaseAbv})`}
           placeholder="0"
-          readOnly={true}
-          variant="filled"
+          min={0}
+          readOnly={isReadOnly}
+          variant={isReadOnly ? "filled" : "default"}
           hideControls
           fixedDecimalScale
           withAsterisk
           value={lot.cantidad_base || ""}
-          classNames={{
-            ...inputClasses,
-            input: `${inputClasses.input} cursor-not-allowed opacity-80 font-black text-emerald-400`,
+          onChange={(val) => {
+            setLotValue(groupIndex, lotIndex, "cantidad_base", Number(val));
           }}
+          classNames={isReadOnly ? {
+              ...inputClasses,
+              input: `${inputClasses.input} cursor-not-allowed opacity-80 font-black text-indigo-400`
+          } : inputClasses}
           className="md:col-span-3"
           radius="md"
           size="xs"
           leftSection={<BeakerIcon className="w-3.5 h-3.5 text-emerald-500" />}
+          error={getLotError(groupIndex, lotIndex, "cantidad_base") || undefined}
         />
 
         <CustomDatePicker

@@ -24,6 +24,8 @@ export const RegistroRecepcion = ({
   const {
     groupedItems,
     setLotValue,
+    addLot,
+    removeLot,
     updateTabularAdjustment,
     getLotError,
     loadingAction,
@@ -32,6 +34,7 @@ export const RegistroRecepcion = ({
     unidades,
     loadingUnidades,
     errors,
+    isFormValid,
   } = useRegistroRecepcion({
     idAlmacenSolicitante,
     detalles,
@@ -50,6 +53,8 @@ export const RegistroRecepcion = ({
             grouped={grouped}
             index={index}
             setLotValue={setLotValue}
+            addLot={addLot}
+            removeLot={removeLot}
             updateTabularAdjustment={updateTabularAdjustment}
             getLotError={getLotError}
             fetchLotesProducto={fetchLotesProducto}
@@ -68,6 +73,7 @@ export const RegistroRecepcion = ({
         <Button
           type="submit"
           loading={loadingAction}
+          disabled={!isFormValid}
           color="indigo"
           radius="md"
           size="xs"

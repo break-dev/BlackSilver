@@ -153,11 +153,55 @@ export const useRegistroRecepcion = ({
     });
   };
 
+  const addLot = (groupIndex: number) => {
+    setGroupedItems((prev) => {
+      const newGrouped = [...prev];
+      const g = newGrouped[groupIndex];
+      const lastLot = g.lots[g.lots.length - 1];
+      newGrouped[groupIndex] = {
+        ...g,
+        lots: [
+          ...g.lots,
+          {
+            ...lastLot,
+            cantidad_base: 0,
+            id_lote_existente: null,
+            ajustes: {},
+            es_nuevo_lote: true,
+          },
+        ],
+      };
+      return newGrouped;
+    });
+  };
+
+  const removeLot = (groupIndex: number, lotIndex: number) => {
+    setGroupedItems((prev) => {
+      if (prev[groupIndex].lots.length <= 1) return prev;
+      const newGrouped = [...prev];
+      const lots = [...newGrouped[groupIndex].lots];
+      lots.splice(lotIndex, 1);
+      
+      // Si solo queda un lote, forzar la cantidad total
+      if (lots.length === 1) {
+          lots[0].cantidad_base = newGrouped[groupIndex].total_entregado_base;
+          // Si es existente, actualizar ajustes
+          if (!lots[0].es_nuevo_lote && lots[0].id_lote_existente) {
+              lots[0].ajustes = { [lots[0].id_lote_existente]: lots[0].cantidad_base };
+          }
+      }
+      
+      newGrouped[groupIndex] = { ...newGrouped[groupIndex], lots };
+      return newGrouped;
+    });
+  };
+
   const updateTabularAdjustment = (
     groupIndex: number,
     lotIndex: number,
     idLote: number,
-    isActive: boolean
+    isActive: boolean,
+    qty?: number
   ) => {
     setGroupedItems((prev) => {
       const newGrouped = [...prev];
@@ -165,13 +209,31 @@ export const useRegistroRecepcion = ({
       const lots = [...group.lots];
       const lot = { ...lots[lotIndex] };
 
-      // Limpiar todos los ajustes anteriores para forzar selección única del total
+      // Selección ÚNICA por partida (Radio behavior)
       const ajustes: Record<number, number> = {};
 
       if (isActive) {
-        ajustes[idLote] = group.total_entregado_base;
-        lot.cantidad_base = group.total_entregado_base;
+        let finalQty = qty;
+
+        if (finalQty === undefined) {
+           // Si no viene qty (primer click el radio), calculamos el remanente
+           // o si es la única partida, el total.
+           if (lots.length === 1) {
+              finalQty = group.total_entregado_base;
+           } else {
+              const otherLotsSum = lots.reduce((acc, l, idx) => {
+                if (idx === lotIndex) return acc;
+                return acc + (Number(l.cantidad_base) || 0);
+              }, 0);
+              finalQty = Math.max(0, group.total_entregado_base - otherLotsSum);
+           }
+        }
+
+        ajustes[idLote] = finalQty;
+        lot.cantidad_base = finalQty;
+        lot.id_lote_existente = idLote;
       } else {
+        lot.id_lote_existente = null;
         lot.cantidad_base = 0;
       }
 
@@ -180,16 +242,6 @@ export const useRegistroRecepcion = ({
 
       group.lots = lots;
       newGrouped[groupIndex] = group;
-
-      // Limpiar errores si la cantidad es correcta
-      if (isActive) {
-        setErrors((prevErr) => {
-          const next = { ...prevErr };
-          delete next[`groups.${groupIndex}.lots.${lotIndex}.id_lote_existente`];
-          delete next[`groups.${groupIndex}.cantidad_total`];
-          return next;
-        });
-      }
 
       return newGrouped;
     });
@@ -335,9 +387,30 @@ export const useRegistroRecepcion = ({
     }
   };
 
+  // Validación reactiva
+  const isFormValid = groupedItems.every((group) => {
+    const sumBase = group.lots.reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
+    const sumMatch = Math.abs(sumBase - group.total_entregado_base) < 0.0001;
+    
+    const lotsValid = group.lots.every((lot) => {
+      if (lot.cantidad_base <= 0) return false;
+      if (lot.es_nuevo_lote) {
+        if (!lot.fecha_ingreso) return false;
+        if (group.es_perecible === 1 && !lot.fecha_vencimiento) return false;
+      } else {
+        if (!lot.id_lote_existente || !lot.ajustes || Object.keys(lot.ajustes).length === 0) return false;
+      }
+      return true;
+    });
+
+    return sumMatch && lotsValid;
+  });
+
   return {
     groupedItems,
     setLotValue,
+    addLot,
+    removeLot,
     updateTabularAdjustment,
     getLotError,
     loadingAction,
@@ -346,5 +419,6 @@ export const useRegistroRecepcion = ({
     unidades,
     loadingUnidades,
     errors,
+    isFormValid,
   };
 };
