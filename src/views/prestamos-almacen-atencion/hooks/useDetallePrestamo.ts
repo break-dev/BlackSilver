@@ -7,6 +7,7 @@ import type {
   RES_TrazabilidadPrestamo
 } from "../service/prestamos-atencion.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import { EstadoDetallePrestamo } from "../../../shared/enums/prestamos";
 
 interface Props {
   idPrestamo: number;
@@ -135,14 +136,14 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   }, [detalles]);
 
   const isItemEligibleForDelivery = useCallback((d: RES_DetallePrestamo) => {
-    const isApprovedToDispatch = d.estado.toLowerCase().includes("aprobado") || 
-                                 d.estado.toLowerCase().includes("iniciado") || 
-                                 d.estado.toLowerCase().includes("entrega");
-    const isRejected = d.estado.toLowerCase().includes("rechazado");
-    const porcentaje = Math.round((Number(d.cantidad_prestada_base) / Number(d.cantidad_solicitada_base)) * 100) || 0;
-    const isFinished = porcentaje >= 100;
+    const isApprovedToDispatch = d.estado === EstadoDetallePrestamo.Aprobado || 
+                                 d.estado === EstadoDetallePrestamo.DespachoIniciado;
+    
+    const isFinished = d.estado === EstadoDetallePrestamo.EntregaCompleta || 
+                       d.estado === EstadoDetallePrestamo.Cerrado || 
+                       d.estado === EstadoDetallePrestamo.Rechazado;
 
-    return isApprovedToDispatch && !isRejected && !isFinished;
+    return isApprovedToDispatch && !isFinished;
   }, []);
 
   const itemsEligibleIds = useMemo(() => {

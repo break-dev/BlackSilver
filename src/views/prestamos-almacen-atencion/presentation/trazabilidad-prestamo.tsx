@@ -31,10 +31,7 @@ export const TrazabilidadPrestamo = ({ eventos, loading, productoNombre }: Props
   if (loading) {
     return (
       <Center py={60}>
-        <Stack gap="xs" align="center">
-          <Loader size="lg" color="indigo" />
-          <Text size="xs" c="dimmed" className="uppercase tracking-widest animate-pulse font-black">Rastreando movimientos...</Text>
-        </Stack>
+        <Loader size="lg" color="indigo" />
       </Center>
     );
   }

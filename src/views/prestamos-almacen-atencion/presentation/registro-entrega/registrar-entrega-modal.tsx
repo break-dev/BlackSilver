@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Loader, Stack, Text } from "@mantine/core";
-import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
 import type { RES_DetallePrestamo } from "../../service/prestamos-atencion.responses";
 import { 
@@ -62,7 +61,6 @@ export const RegistrarEntregaModal = ({
     return (
       <Stack align="center" py={50}>
         <Loader size="xl" color="indigo" />
-        <Text size="sm" fw={900} className="uppercase tracking-[0.3em] animate-pulse italic text-indigo-400">Preparando Bodega...</Text>
       </Stack>
     );
   }
@@ -76,7 +74,7 @@ export const RegistrarEntregaModal = ({
   }
 
   return (
-    <Stack gap="xl" className="font-sans">
+    <Stack gap="xl" className="font-sans py-2">
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
         empleados={empleados}
@@ -89,26 +87,19 @@ export const RegistrarEntregaModal = ({
       />
 
       {/* Listado de Productos como Cards */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 px-2">
-            <ArchiveBoxIcon className="w-5 h-5 text-indigo-400" />
-            <Text fw={900} className="text-sm text-zinc-400 tracking-widest uppercase italic">Selección de Lotes y Cantidades</Text>
-        </div>
-
-        <Stack gap="lg">
-          {itemsAEntregar.map((detalle) => (
-            <ProductoEntregaCard
-              key={detalle.id_prestamo_detalle}
-              idDetalle={detalle.id_prestamo_detalle}
-              detalle={detalle}
-              lotes={lotes.filter(l => l.id_producto === detalle.id_producto)}
-              loadingLotes={false} // Ya vienen en el batch inicial
-              entregaCantidades={entregaCantidades}
-              handleCantLoteChange={handleCantLoteChange}
-            />
-          ))}
-        </Stack>
-      </div>
+      <Stack gap="xl">
+        {itemsAEntregar.map((detalle) => (
+          <ProductoEntregaCard
+            key={detalle.id_prestamo_detalle}
+            idDetalle={detalle.id_prestamo_detalle}
+            detalle={detalle}
+            lotes={lotes.filter(l => l.id_producto === detalle.id_producto)}
+            loadingLotes={false} // Ya vienen en el batch inicial
+            entregaCantidades={entregaCantidades}
+            handleCantLoteChange={handleCantLoteChange}
+          />
+        ))}
+      </Stack>
 
       {/* Acciones del Formulario */}
       <FormActions

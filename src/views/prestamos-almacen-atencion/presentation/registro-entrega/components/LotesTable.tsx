@@ -1,10 +1,11 @@
 import { Table, Stack, Center, Loader, Text } from "@mantine/core";
 import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 import { LoteRow } from "./LoteRow";
-import type { RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
 
 interface LotesTableProps {
   idDetalle: number;
+  detalle: RES_DetallePrestamo;
   lotes: RES_Lote_Atencion[];
   loading: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
@@ -16,6 +17,7 @@ interface LotesTableProps {
 
 export const LotesTable = ({
   idDetalle,
+  detalle,
   lotes,
   loading,
   entregaCantidades,
@@ -52,9 +54,9 @@ export const LotesTable = ({
         <thead className="bg-zinc-900/50 text-zinc-500 text-[9px] uppercase font-black tracking-[0.2em] border-b border-zinc-800/30">
           <tr>
             <th className="px-6 py-4 text-left">Lote / Registro</th>
+            <th className="px-6 py-4 text-center">Vencimiento</th>
             <th className="px-6 py-4 text-center">Disponible</th>
             <th className="px-6 py-4 text-center">Cant. Despacho</th>
-            <th className="px-6 py-4 text-center">Suma Base</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800/10">
@@ -63,6 +65,7 @@ export const LotesTable = ({
               key={lote.id_lote}
               lote={lote}
               idDetalle={idDetalle}
+              detalle={detalle}
               entregaCantidades={entregaCantidades}
               handleCantLoteChange={handleCantLoteChange}
               unidadAbv={unidadAbv}

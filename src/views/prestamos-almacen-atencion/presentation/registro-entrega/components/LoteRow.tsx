@@ -1,10 +1,12 @@
-import { NumberInput, Text, Badge } from "@mantine/core";
+import { NumberInput, Text, Badge, Stack, Group } from "@mantine/core";
+import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type { RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
 
 interface LoteRowProps {
   lote: RES_Lote_Atencion;
   idDetalle: number;
+  detalle: RES_DetallePrestamo;
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantLoteChange: (idDetalle: number, idLote: number, val: number) => void;
   unidadAbv: string;
@@ -15,6 +17,7 @@ interface LoteRowProps {
 export const LoteRow = ({
   lote,
   idDetalle,
+  detalle,
   entregaCantidades,
   handleCantLoteChange,
   unidadAbv,
@@ -24,7 +27,18 @@ export const LoteRow = ({
   const currentValBase = entregaCantidades[idDetalle]?.[lote.id_lote] || 0;
   const currentValLote = currentValBase / (contenidoPorPresentacion || 1);
 
+  const totalDespachadoOtrosLotes = Object.entries(entregaCantidades[idDetalle] || {})
+    .filter(([idLote]) => Number(idLote) !== lote.id_lote)
+    .reduce((sum, [, val]) => sum + (val || 0), 0);
+
+  const pendienteBaseItem = (detalle.cantidad_solicitada_base || 0) - (detalle.cantidad_prestada_base || 0);
+  const maxAsignableBase = Math.max(0, Math.min(lote.stock_actual_base, pendienteBaseItem - totalDespachadoOtrosLotes));
+  const maxAsignableLote = maxAsignableBase / (contenidoPorPresentacion || 1);
+
   const hasConversion = unidadAbv !== baseAbv;
+
+  const esCritico = lote.dias_para_vencer !== null && lote.dias_para_vencer <= 30;
+  const esVencido = lote.dias_para_vencer !== null && lote.dias_para_vencer < 0;
 
   return (
     <tr className={`${currentValBase > 0 ? "bg-indigo-500/5" : "hover:bg-zinc-800/20"} transition-colors`}>
@@ -39,13 +53,58 @@ export const LoteRow = ({
         </Badge>
       </td>
       <td className="text-center px-4">
-        <Badge
-          variant="light"
-          color="zinc.4"
-          className="bg-zinc-800/30 font-black h-7"
-        >
-          {formatNumber(lote.stock_actual)} {lote.presentacion_abv}
-        </Badge>
+        {lote.fecha_vencimiento ? (
+          <div className="flex flex-col gap-1 items-center">
+            <Text size="xs" fw={800} className="text-zinc-300 font-mono">
+              {dayjs(lote.fecha_vencimiento).format("DD MMM YYYY")}
+            </Text>
+            <Badge
+              variant="dot"
+              color={esVencido ? "red" : esCritico ? "orange" : "teal"}
+              size="xs"
+              className="font-bold py-1.5"
+            >
+              {esVencido ? "CADUCADO" : `${lote.dias_para_vencer} DÍAS`}
+            </Badge>
+          </div>
+        ) : (
+          <Text size="10px" fw={700} className="italic text-zinc-500!">
+            SIN VENCIMIENTO
+          </Text>
+        )}
+      </td>
+      <td className="text-center px-4">
+        <Stack align="center" gap={10}>
+          <Group gap={4} wrap="nowrap" justify="center">
+            <Badge
+              variant="light"
+              color="zinc.4"
+              className="bg-zinc-800/30 font-black h-7"
+            >
+              {formatNumber(lote.stock_actual_base)} {baseAbv}
+            </Badge>
+            {hasConversion && (
+              <Badge
+                variant="light"
+                color="indigo.4"
+                className="bg-zinc-800/30 font-black h-7"
+              >
+                {formatNumber(lote.stock_actual)} {lote.presentacion_abv || unidadAbv}
+              </Badge>
+            )}
+          </Group>
+
+          {hasConversion && (
+            <Text
+              size="9px"
+              c="zinc.5"
+              fw={700}
+              className="italic uppercase tracking-tight"
+            >
+              {formatNumber(contenidoPorPresentacion)} {baseAbv} x {unidadAbv}
+            </Text>
+          )}
+        </Stack>
       </td>
       <td className="py-2 px-4">
         <div className="flex items-center justify-center gap-3">
@@ -54,6 +113,7 @@ export const LoteRow = ({
               size="sm"
               radius="xl"
               min={0}
+              max={maxAsignableLote}
               value={currentValLote || ""}
               onChange={(val) => handleCantLoteChange(idDetalle, lote.id_lote, Number(val))}
               placeholder="0"
@@ -78,8 +138,7 @@ export const LoteRow = ({
               size="sm"
               radius="xl"
               min={0}
-              // Si no hay conversión, el handle lo hace el hook via valLote (que multiplicamos por 1)
-              // Pero en el hook manejamos valLote. Si no hay conversión, valLote = valBase.
+              max={maxAsignableBase}
               value={currentValBase || ""}
               onChange={(val) => {
                 const factor = hasConversion ? (contenidoPorPresentacion || 1) : 1;
@@ -100,18 +159,8 @@ export const LoteRow = ({
                 input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${currentValBase > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
               }}
             />
-            {!hasConversion && (
-                <div className="absolute -top-4 left-0 w-full text-center">
-                   <Text size="8px" fw={900} c="indigo.4" className="uppercase tracking-tighter opacity-50">Base</Text>
-                </div>
-            )}
           </div>
         </div>
-      </td>
-      <td className="px-6 py-4 text-center">
-          <Text size="xs" fw={900} className={`font-mono transition-colors ${currentValBase > 0 ? 'text-indigo-400' : 'text-zinc-700'}`}>
-             + {formatNumber(currentValBase)} <span className="text-[10px] opacity-30 font-black uppercase tracking-tighter">{baseAbv}</span>
-          </Text>
       </td>
     </tr>
   );

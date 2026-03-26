@@ -23,7 +23,6 @@ import {
   XCircleIcon,
   BuildingOffice2Icon,
   CheckBadgeIcon,
-  ExclamationCircleIcon,
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
@@ -35,7 +34,7 @@ import { HistorialEntregasPrestamo } from "./historial-entregas-prestamo";
 import { TrazabilidadPrestamo } from "./trazabilidad-prestamo";
 import { PrestamoStatusBadge } from "./components/prestamo-status-badge";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
-import { HeaderCard, InfoItem } from "./components/detail-elements";
+import { HeaderCard } from "./components/detail-elements";
 
 interface Props {
   prestamo: RES_PrestamoAtencion;
@@ -66,6 +65,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
     handleCambiarEstado,
     selectedItemsIds,
     toggleItemSelection,
+    deselectAllItems,
     cargarDatos,
     // Masivo
     isAllEligibleSelected,
@@ -77,10 +77,7 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
   if (loading) {
     return (
       <Center py={60}>
-        <Stack gap="xs" align="center">
-          <Loader size="lg" color="indigo" />
-          <Text size="xs" c="dimmed" className="uppercase tracking-widest animate-pulse font-black">Sincronizando préstamo...</Text>
-        </Stack>
+        <Loader size="lg" color="indigo" />
       </Center>
     );
   }
@@ -109,27 +106,87 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
         />
         <HeaderCard
           icon={CalendarDaysIcon}
-          label="Solicitado el"
+          label="Fecha Préstamo"
           value={dayjs(prestamo.fecha_hora_prestamo).format("DD/MM/YYYY")}
           color="emerald"
         />
       </div>
 
-      {/* Sub-header: Estados, Fechas */}
-      <Paper p="md" radius="lg" className="bg-transparent border border-zinc-800/50 mx-2 backdrop-blur-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <InfoItem
-            label="Estado del Préstamo"
-            value={prestamo.estado}
-            color="green"
-            icon={ExclamationCircleIcon}
-          />
-          <InfoItem
-            label="Fecha de Devolución"
-            value={prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "Sin límite"}
-            icon={CalendarDaysIcon}
-            iconColor="text-pink-500"
-          />
+      {/* Sub-header: Estados, Fechas y Solicitud Ref */}
+      <Paper
+        p="md"
+        radius="lg"
+        bg="transparent"
+        className="border border-zinc-800/50 mx-2"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Stack gap={4}>
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest leading-none mb-1"
+            >
+              Estado General
+            </Text>
+            <Badge
+              color="indigo"
+              variant="light"
+              size="sm"
+              radius="sm"
+              className="border border-indigo-900/30 font-bold"
+            >
+              {prestamo.estado}
+            </Badge>
+          </Stack>
+
+          <Stack gap={4}>
+            <div className="flex items-center gap-1.5 font-bold">
+              <CalendarDaysIcon className="w-3.5 h-3.5 text-rose-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Fecha Registro
+              </Text>
+            </div>
+            <Text size="sm" fw={800} className="text-zinc-100 italic">
+              {dayjs(prestamo.created_at).format("DD/MM/YYYY")}
+            </Text>
+          </Stack>
+
+          <Stack gap={4}>
+            <div className="flex items-center gap-1.5 font-bold">
+              <CalendarDaysIcon className="w-3.5 h-3.5 text-cyan-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Fecha Límite
+              </Text>
+            </div>
+            <Text size="sm" fw={800} className="text-zinc-100 italic">
+              {prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "No especificada"}
+            </Text>
+          </Stack>
+
+          <Stack gap={4}>
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest leading-none mb-1"
+            >
+              Solicitud Ref.
+            </Text>
+            <Badge variant="light" color="blue" radius="sm" className="font-black">
+              {prestamo.solicitud_correlativo}
+            </Badge>
+          </Stack>
         </div>
       </Paper>
 
@@ -283,7 +340,12 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
                         <div className="flex justify-between items-center px-1">
-                          <Text size="9px" fw={800} c="zinc.5" className="tabular-nums">Atendido: {formatNumber(d.cantidad_prestada)}</Text>
+                          <Text size="9px" fw={800} c="zinc.5" className="tabular-nums">
+                            Atendido:{" "}
+                            {d.unidad_medida_base_abv !== d.unidad_medida_abv
+                              ? `${formatNumber(d.cantidad_prestada_base)} ${d.unidad_medida_base_abv}`
+                              : `${formatNumber(d.cantidad_prestada)} ${d.unidad_medida_abv}`}
+                          </Text>
                           <Text size="10px" fw={900} c="indigo.4">{porcentaje}%</Text>
                         </div>
                         <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-700/20">
@@ -435,9 +497,10 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
           detallesPrestamo={detalles}
           idEmpleadoDefault={prestamo.id_empleado_recibe_default}
           onSuccess={() => {
-            closeNuevaEntrega();
-            cargarDatos();
-            onDespachoRegistrado();
+            deselectAllItems(); // Limpiar selección tras éxito
+            cargarDatos(); // Recargar datos locales del préstamo
+            onDespachoRegistrado?.(); // Notificar al padre
+            closeNuevaEntrega(); // Cerrar el modal de registro (vuelve al detalle)
           }}
           onCancel={closeNuevaEntrega}
         />

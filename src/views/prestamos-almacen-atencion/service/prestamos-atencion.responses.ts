@@ -15,6 +15,7 @@ export interface RES_PrestamoAtencion {
   id_almacen_solicitante: number;
   id_empleado_recibe_default: number | null;
   registrado_por: string;
+  solicitud_correlativo: string;
   detalles?: RES_DetallePrestamo[];
 }
 
@@ -33,6 +34,8 @@ export interface RES_DetallePrestamo {
   cantidad_prestada_base: number;
   comentario: string | null;
   estado: string;
+  stock_minimo: number;
+  stock_disponible: number | null;
 }
 
 export interface RES_TrazabilidadPrestamo {
