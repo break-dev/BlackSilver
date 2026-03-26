@@ -366,8 +366,8 @@ export const DetallePrestamo = ({
                             className="flex flex-row gap-0.5"
                           >
                             <span>Prestado: </span>
-                            <span>{formatNumber(item.cantidad_prestada)}</span>
-                            <span>{item.unidad_medida_sol_abv}</span>
+                            <span>{formatNumber(item.cantidad_prestada_base)}</span>
+                            <span>{item.unidad_medida_base_abv}</span>
                           </Text>
                           <Text size="11px" fw={900} c="indigo.4">
                             {progresoItem}%

@@ -150,7 +150,7 @@ export const PrestamosAlmacenPage = () => {
                 Préstamo: {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY")}
               </Text>
             </Group>
-            <Text size="11px" className="text-orange-500/80 ml-[22px]" fw={500}>
+            <Text size="11px" className="text-orange-500/80 ml-5.5" fw={500}>
               Devolución:{" "}
               {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
             </Text>

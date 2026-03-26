@@ -14,7 +14,12 @@ export const useTrazabilidadPrestamo = () => {
     setOpened(true);
     try {
       const data = await PrestamosService.getTrazabilidadDetalle(idDetalle);
-      setLogs(data);
+      setLogs(
+        data.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      );
     } catch {
       notifyError("No se pudo obtener la trazabilidad");
     } finally {
