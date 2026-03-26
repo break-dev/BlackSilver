@@ -39,7 +39,7 @@ import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabast
 import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
 import { AtencionPrestamosPage } from "../../views/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
-import { PrestamosAlmacenPage } from "../../views/prestamos-almacen/presentation/prestamos-almacen.page";
+import { PrestamosAlmacenPage } from "../../views/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
 
 export const App = () => {
   return (
@@ -139,17 +139,11 @@ export const App = () => {
           </Route>
 
           {/* Préstamos entre Almacenes */}
-          <Route
-            path="prestamos_almacen"
-            element={<PrestamosAlmacenLayout />}
-          >
+          <Route path="prestamos_almacen" element={<PrestamosAlmacenLayout />}>
+            <Route path="prestamos" element={<PrestamosAlmacenPage />} />
             <Route
               path="atencion_prestamos"
               element={<AtencionPrestamosPage />}
-            />
-            <Route
-              path="resumen_prestamos"
-              element={<PrestamosAlmacenPage />}
             />
           </Route>
         </Route>

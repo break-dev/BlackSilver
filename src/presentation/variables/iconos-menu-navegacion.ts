@@ -7,6 +7,7 @@ import {
   DocumentTextIcon,
   Cog6ToothIcon,
   ArrowsRightLeftIcon,
+  ReceiptRefundIcon,
 } from "@heroicons/react/24/outline";
 
 // Asociacion de iconos a cada modulo y submodulo, mediante
@@ -27,7 +28,11 @@ export const iconos_menu_navegacion = [
     submodulos: [
       { submodulo_path: "inventario", icono: ClipboardDocumentListIcon },
       { submodulo_path: "requerimiento_almacen", icono: DocumentTextIcon },
-      { submodulo_path: "solicitud_reabastecimiento", icono: ArrowsRightLeftIcon },
+      {
+        submodulo_path: "solicitud_reabastecimiento",
+        icono: ArrowsRightLeftIcon,
+      },
+      { submodulo_path: "prestamos_almacen", icono: ReceiptRefundIcon },
     ],
   },
 ];
