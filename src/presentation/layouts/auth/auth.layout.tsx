@@ -37,9 +37,9 @@ export const AuthLayout = () => {
         `}
       </style>
       {/* Background Mesh Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob1" />
-      <div className="absolute top-[10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob2" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/10 blur-[120px] pointer-events-none mix-blend-screen animate-blob3" />
+      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-600/13 blur-[120px] pointer-events-none mix-blend-screen animate-blob1" />
+      <div className="absolute top-[10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-violet-600/13 blur-[120px] pointer-events-none mix-blend-screen animate-blob2" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/13 blur-[120px] pointer-events-none mix-blend-screen animate-blob3" />
 
       {/* Capa de contenido */}
       <div className="relative z-10 flex flex-col flex-1">
