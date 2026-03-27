@@ -1,52 +1,48 @@
 import { Modal, type ModalProps } from "@mantine/core";
 
-interface ModalEstandarProps extends ModalProps {
+interface ModalEstandarProps extends Partial<ModalProps> {
   opened: boolean;
   close: () => void;
-  title?: React.ReactNode;
-  rightSection?: React.ReactNode;
+  title: string;
   children: React.ReactNode;
+  rightSection?: React.ReactNode;
 }
 
 export const ModalEstandar = ({
   opened,
-  onClose,
   close,
   title,
-  rightSection,
   children,
+  size,
+  zIndex,
+  rightSection,
   ...props
 }: ModalEstandarProps) => {
-  const renderTitle = () => {
-    if (!title) return null;
-    if (typeof title !== "string" && typeof title !== "number") return title;
-
-    return (
-      <div className="flex items-center justify-between w-full gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-1 h-6 bg-linear-to-b from-[#ffc933] to-[#b8920a] 
-              rounded-full shadow-[0_0_10px_#d4a50a]"
-          />
-          <span
-            className="text-xl font-bold bg-linear-to-r from-white via-zinc-100 
-              to-zinc-400 bg-clip-text text-transparent tracking-tight leading-none"
-          >
-            {title}
-          </span>
-        </div>
-        {rightSection && (
-          <div className="flex items-center flex-none">{rightSection}</div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <Modal
       opened={opened}
-      onClose={onClose || close}
-      title={renderTitle()}
+      onClose={close}
+      size={size || "md"}
+      zIndex={zIndex}
+      title={
+        <div className="flex items-center justify-between w-full gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-1 h-6 bg-linear-to-b from-[#ffc933] to-[#b8920a] 
+                rounded-full shadow-[0_0_10px_#d4a50a]"
+            />
+            <span
+              className="text-xl font-bold bg-linear-to-r from-white via-zinc-100 
+                to-zinc-400 bg-clip-text text-transparent tracking-tight leading-none"
+            >
+              {title}
+            </span>
+          </div>
+          {rightSection && (
+            <div className="flex items-center flex-none">{rightSection}</div>
+          )}
+        </div>
+      }
       centered
       overlayProps={{
         backgroundOpacity: 0.55,
