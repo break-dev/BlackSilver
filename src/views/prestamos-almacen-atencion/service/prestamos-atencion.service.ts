@@ -59,7 +59,32 @@ export const PrestamosAtencionService = {
     return res.data;
   },
 
-  registrarEntrega: async (dto: DTO_RegistrarEntrega) => {
+  registrarEntrega: async (dto: DTO_RegistrarEntrega, evidencias?: File[]) => {
+    if (evidencias && evidencias.length > 0) {
+      const formData = new FormData();
+      formData.append("id_prestamo", dto.id_prestamo.toString());
+      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      if (dto.fecha_hora_entrega) formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
+      if (dto.observacion) formData.append("observacion", dto.observacion);
+
+      evidencias.forEach((file) => {
+        formData.append("evidencias[]", file);
+      });
+
+      dto.detalles.forEach((detalle, index) => {
+        Object.entries(detalle).forEach(([key, value]) => {
+          formData.append(`detalles[${index}][${key}]`, String(value));
+        });
+      });
+
+      const res = await api.post<IRespuesta<{ correlativo: string; id_entrega: number }>>(
+        `${path}/despacho`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      return res.data;
+    }
+
     const res = await api.post<IRespuesta<{ correlativo: string; id_entrega: number }>>(
       `${path}/despacho`,
       dto

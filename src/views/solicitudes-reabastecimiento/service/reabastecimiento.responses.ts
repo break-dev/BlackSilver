@@ -67,7 +67,8 @@ export interface RES_DataRegistroSolicitud {
 
 export interface RES_EntregaReabastecimiento {
   id_reabastecimiento_entrega: number;
-  id_almacen_entrega: number;
+  id_entrega?: number;
+  id_almacen_entrega?: number;
   almacen_entrega: string;
   empleado_entrega: string;
   empleado_recibe: string;
@@ -78,6 +79,10 @@ export interface RES_EntregaReabastecimiento {
   created_at: string;
   estado: string;
   detalles?: RES_DetalleEntregaReabastecimiento[];
+  // Campos adicionales para entregas de préstamos
+  tipo_entrega?: "Solicitud" | "Prestamo";
+  correlativo_prestamo?: string;
+  id_prestamo?: number;
 }
 
 export interface RES_DetalleEntregaReabastecimiento {
@@ -98,6 +103,7 @@ export interface RES_DetalleEntregaReabastecimiento {
   unidad_base_abv: string;
   estado_entrega_detalle: string;
   id_unidad_medida_solicitada: number;
+  tipo_entrega?: "Solicitud" | "Prestamo";
   contenido_por_presentacion_solicitado: number;
   unidad_medida_solicitud_abv: string;
 }

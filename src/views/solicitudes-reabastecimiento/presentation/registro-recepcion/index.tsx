@@ -8,12 +8,18 @@ interface Props {
   idAlmacenSolicitante: number;
   detalles: RES_DetalleEntregaReabastecimiento[];
   onSuccess: () => void;
+  idEntrega?: number;
+  tipoEntrega?: "Solicitud" | "Prestamo";
+  isGlobal?: boolean;
 }
 
 export const RegistroRecepcion = ({
   idAlmacenSolicitante,
   detalles,
   onSuccess,
+  idEntrega,
+  tipoEntrega,
+  isGlobal,
 }: Props) => {
   const {
     groupedItems,
@@ -28,10 +34,14 @@ export const RegistroRecepcion = ({
     unidades,
     loadingUnidades,
     errors,
+    isFormValid,
   } = useRegistroRecepcion({
     idAlmacenSolicitante,
     detalles,
     onSuccess,
+    idEntrega,
+    tipoEntrega,
+    isGlobal,
   });
 
   return (
@@ -63,6 +73,7 @@ export const RegistroRecepcion = ({
         <Button
           type="submit"
           loading={loadingAction}
+          disabled={!isFormValid}
           color="indigo"
           radius="md"
           size="xs"

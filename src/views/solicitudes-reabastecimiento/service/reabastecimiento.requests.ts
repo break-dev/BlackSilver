@@ -28,5 +28,6 @@ export interface DTO_RecibirEntregaItem {
 
 export interface DTO_RecibirEntregas {
   id_reabastecimiento_entrega: number;
+  tipo_entrega?: "Solicitud" | "Prestamo";
   items: DTO_RecibirEntregaItem[];
 }

@@ -24,7 +24,7 @@ interface NuevoLoteFormProps {
   loadingUnidades: boolean;
   unidadBaseAbv: string;
   esPerecible: boolean;
-  maxAllowed: number;
+  isReadOnly?: boolean;
 }
 
 export const NuevoLoteForm = ({
@@ -37,7 +37,7 @@ export const NuevoLoteForm = ({
   loadingUnidades,
   unidadBaseAbv,
   esPerecible,
-  maxAllowed,
+  isReadOnly,
 }: NuevoLoteFormProps) => {
   const cantidad_base = Number(lot.cantidad_base) || 0;
 
@@ -139,34 +139,24 @@ export const NuevoLoteForm = ({
           label={`Cant. Recibir (${unidadBaseAbv})`}
           placeholder="0"
           min={0}
-          max={maxAllowed}
-          clampBehavior="strict"
+          readOnly={isReadOnly}
+          variant={isReadOnly ? "filled" : "default"}
           hideControls
           fixedDecimalScale
           withAsterisk
           value={lot.cantidad_base || ""}
           onChange={(val) => {
-            const numVal = Number(val);
-            setLotValue(groupIndex, lotIndex, "cantidad_base", numVal);
-            // If not base unit, we keep the number of presentations fixed and update the ratio
-            if (!isBaseUnit && currentPresentaciones > 0) {
-              const newRatio = numVal / currentPresentaciones;
-              setLotValue(
-                groupIndex,
-                lotIndex,
-                "contenido_por_presentacion",
-                newRatio,
-              );
-            }
+            setLotValue(groupIndex, lotIndex, "cantidad_base", Number(val));
           }}
-          classNames={inputClasses}
+          classNames={isReadOnly ? {
+              ...inputClasses,
+              input: `${inputClasses.input} cursor-not-allowed opacity-80 font-black text-indigo-400`
+          } : inputClasses}
           className="md:col-span-3"
           radius="md"
           size="xs"
           leftSection={<BeakerIcon className="w-3.5 h-3.5 text-emerald-500" />}
-          error={
-            getLotError(groupIndex, lotIndex, "cantidad_base") || undefined
-          }
+          error={getLotError(groupIndex, lotIndex, "cantidad_base") || undefined}
         />
 
         <CustomDatePicker

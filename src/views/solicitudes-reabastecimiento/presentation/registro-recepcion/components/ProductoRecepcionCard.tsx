@@ -23,8 +23,8 @@ interface ProductoRecepcionCardProps {
     groupIndex: number,
     lotIndex: number,
     idLote: number,
-    qty: number,
-    isActive: boolean
+    isActive: boolean,
+    qty?: number
   ) => void;
   getLotError: (
     groupIndex: number,
@@ -107,30 +107,26 @@ export const ProductoRecepcionCard = ({
           const esNuevoLote = lot.es_nuevo_lote;
           const fieldError = getLotError(groupIndex, lotIndex, "id_lote_existente");
 
-          const otherLotsSum = grouped.lots.reduce((acc: number, l: DTO_RecibirLotExtendido, idx: number) => {
-            if (idx === lotIndex) return acc;
-            return acc + (Number(l.cantidad_base) || 0);
-          }, 0);
-          const maxAllowed = Math.max(0, grouped.total_entregado_base - otherLotsSum);
+          const isReadOnly = grouped.lots.length === 1;
 
           return (
             <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
               {lotIndex > 0 && <Divider color="zinc.8" variant="dashed" mb="md" />}
-              <div className="flex justify-between items-center mb-2">
-                <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
-                  Partida #{lotIndex + 1}
-                </Text>
-                {grouped.lots.length > 1 && (
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="sm"
-                    onClick={() => removeLot(groupIndex, lotIndex)}
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </ActionIcon>
-                )}
-              </div>
+                <div className="flex justify-between items-center mb-2">
+                  <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
+                    Partida #{lotIndex + 1}
+                  </Text>
+                  {grouped.lots.length > 1 && (
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      size="sm"
+                      onClick={() => removeLot(groupIndex, lotIndex)}
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </ActionIcon>
+                  )}
+                </div>
 
               <Group justify="space-between">
                 <Group gap="xs">
@@ -155,8 +151,9 @@ export const ProductoRecepcionCard = ({
                     lotes={lotes}
                     loading={loadingLotes}
                     selectedAjustes={lot.ajustes || {}}
-                    onUpdateTabular={(id, q, active) => updateTabularAdjustment(groupIndex, lotIndex, id, q, active)}
+                    onUpdateTabular={(id, active, qty) => updateTabularAdjustment(groupIndex, lotIndex, id, active, qty)}
                     unidadBaseAbv={grouped.unidad_base_abv}
+                    isReadOnly={isReadOnly}
                   />
                   {fieldError && (
                     <Text size="xs" color="red" mt={4} fw={700}>{fieldError}</Text>
@@ -176,7 +173,7 @@ export const ProductoRecepcionCard = ({
                     loadingUnidades={loadingUnidades}
                     unidadBaseAbv={grouped.unidad_base_abv}
                     esPerecible={isPerecible}
-                    maxAllowed={maxAllowed}
+                    isReadOnly={isReadOnly}
                   />
                 </div>
               )}
@@ -186,7 +183,7 @@ export const ProductoRecepcionCard = ({
       </Stack>
 
       {cantidadTotalError && (
-        <Alert color="red" variant="filled" icon={<TrashIcon className="w-4 h-4" />} m="md" radius="md">
+        <Alert color="red" variant="filled" icon={<CubeIcon className="w-4 h-4" />} m="md" radius="md">
           <Text size="xs" fw={700}>{cantidadTotalError}</Text>
         </Alert>
       )}

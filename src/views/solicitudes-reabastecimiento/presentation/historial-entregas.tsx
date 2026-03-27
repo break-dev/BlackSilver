@@ -42,14 +42,15 @@ export const HistorialEntregas = ({
 }: HistorialProps) => {
   const { loading, entregas, error, reload } =
     useHistorialEntregas(idSolicitud);
-  const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
-  const toggleExpand = (id: number) => {
+  const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const [recepcionData, setRecepcionData] = useState<{
     idEntrega?: number;
+    tipoEntrega?: "Solicitud" | "Prestamo";
     detallesPendientes: RES_DetalleEntregaReabastecimiento[];
     isGlobal?: boolean;
   } | null>(null);
@@ -78,8 +79,9 @@ export const HistorialEntregas = ({
     detallesPendientes: RES_DetalleEntregaReabastecimiento[],
     idEntrega?: number,
     isGlobal = false,
+    tipoEntrega?: "Solicitud" | "Prestamo"
   ) => {
-    setRecepcionData({ idEntrega, detallesPendientes, isGlobal });
+    setRecepcionData({ idEntrega, detallesPendientes, isGlobal, tipoEntrega });
   };
 
   if (loading)
@@ -132,8 +134,9 @@ export const HistorialEntregas = ({
       )}
 
       {entregas.map((h, index) => {
-        const expanded =
-          expandedIds[h.id_reabastecimiento_entrega] ?? index === 0;
+        const uniqueKey = `${h.tipo_entrega}-${h.id_reabastecimiento_entrega}`;
+        const expanded = expandedIds[uniqueKey] ?? index === 0;
+
         const detailsGrouped = groupDetailsByProduct(h.detalles || []);
         const pendientes = (h.detalles || []).filter(
           (d) => d.estado_entrega_detalle === "Entregado",
@@ -141,14 +144,14 @@ export const HistorialEntregas = ({
 
         return (
           <Paper
-            key={h.id_reabastecimiento_entrega}
+            key={uniqueKey}
             radius="xl"
             className="bg-zinc-900/30 border border-zinc-800/80 transition-all hover:bg-zinc-900/50 relative overflow-hidden p-4"
           >
             <UnstyledButton
               component="div"
               className="w-full"
-              onClick={() => toggleExpand(h.id_reabastecimiento_entrega)}
+              onClick={() => toggleExpand(uniqueKey)}
             >
               <Group justify="space-between" wrap="nowrap">
                 <Group gap="md" wrap="nowrap">
@@ -160,7 +163,22 @@ export const HistorialEntregas = ({
                       <Text size="sm" fw={900} className="text-white">
                         {h.correlativo}
                       </Text>
-                      <Badge variant="light" color="teal" size="xs">
+                      {h.tipo_entrega === "Prestamo" && (
+                        <Badge variant="filled" color="indigo" size="xs">
+                          Préstamo {h.correlativo_prestamo}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="light"
+                        color={
+                          h.estado === "Recibida"
+                            ? "teal"
+                            : h.estado === "Procesada"
+                            ? "orange"
+                            : "indigo"
+                        }
+                        size="xs"
+                      >
                         {h.estado}
                       </Badge>
                     </Group>
@@ -189,6 +207,8 @@ export const HistorialEntregas = ({
                         handleOpenRecepcion(
                           pendientes,
                           h.id_reabastecimiento_entrega,
+                          false,
+                          h.tipo_entrega as "Solicitud" | "Prestamo"
                         );
                       }}
                     >
@@ -345,6 +365,9 @@ export const HistorialEntregas = ({
           <RegistroRecepcion
             idAlmacenSolicitante={idAlmacenSolicitante}
             detalles={recepcionData.detallesPendientes}
+            idEntrega={recepcionData.idEntrega}
+            tipoEntrega={recepcionData.tipoEntrega}
+            isGlobal={recepcionData.isGlobal}
             onSuccess={() => {
               setRecepcionData(null);
               reload();
