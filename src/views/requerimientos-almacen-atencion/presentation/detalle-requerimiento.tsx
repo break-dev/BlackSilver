@@ -399,6 +399,8 @@ export const DetalleRequerimiento = ({
                       {item.estado ===
                         EstadoDetalleRequerimiento.Aprobado.toString() ||
                       item.estado ===
+                        EstadoDetalleRequerimiento.AprobadoLogistica.toString() ||
+                      item.estado ===
                         EstadoDetalleRequerimiento.EnDespacho.toString() ? (
                         <Checkbox
                           checked={selectedItemsIds.includes(
@@ -639,7 +641,11 @@ export const DetalleRequerimiento = ({
 
                         {item.estado ===
                           EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
-                          <Tooltip label="Acción masiva" position="top" withArrow>
+                          <Tooltip
+                            label="Acción masiva"
+                            position="top"
+                            withArrow
+                          >
                             <Checkbox
                               size="xs"
                               color="indigo"

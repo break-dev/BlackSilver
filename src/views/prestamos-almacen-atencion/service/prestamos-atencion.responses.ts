@@ -71,7 +71,8 @@ export interface RES_DetalleEntregaPrestamo {
   correlativo_lote: string;
   fecha_vencimiento: string | null;
   dias_para_vencer: number | null;
-  cantidad: number;
+  cantidad_base: number;
+  cantidad_lote: number;
   unidad_medida: string;
   unidad_medida_abv: string;
   contenido_por_presentacion: number;

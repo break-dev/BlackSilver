@@ -289,7 +289,7 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                             fw={900}
                             className="text-emerald-400 font-mono leading-none"
                           >
-                            +{formatNumber(d.cantidad)}
+                            +{formatNumber(d.cantidad_base)}
                           </Text>
                           <Text
                             size="12px"
