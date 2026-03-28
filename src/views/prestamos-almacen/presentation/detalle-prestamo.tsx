@@ -36,6 +36,8 @@ interface DetallePrestamoProps {
   progresoGeneral: number;
   onOpenTrazabilidad: (detalle: RES_PrestamoDetalle) => void;
   onOpenHistorial: () => void;
+  onOpenReposicion: (detalles: RES_PrestamoDetalle[]) => void;
+  onOpenHistorialReposiciones: () => void;
 }
 
 export const DetallePrestamo = ({
@@ -45,6 +47,8 @@ export const DetallePrestamo = ({
   progresoGeneral,
   onOpenTrazabilidad,
   onOpenHistorial,
+  onOpenReposicion,
+  onOpenHistorialReposiciones,
 }: DetallePrestamoProps) => {
   if (loading) {
     return (
@@ -304,6 +308,37 @@ export const DetallePrestamo = ({
             >
               Historial de Entregas
             </Button>
+
+            <Button
+              size="xs"
+              radius="xl"
+              variant="light"
+              color="teal"
+              leftSection={<ClockIcon className="w-4 h-4" />}
+              onClick={onOpenHistorialReposiciones}
+              className="font-bold border border-teal-500/20 shadow-xs"
+            >
+              Historial de Reposiciones
+            </Button>
+
+            <Button
+              size="xs"
+              radius="xl"
+              color="indigo"
+              leftSection={<TruckIcon className="w-4 h-4" />}
+              onClick={() =>
+                onOpenReposicion(
+                  detalles.filter(
+                    (d) =>
+                      Number(d.cantidad_repuesta_base) <
+                      Number(d.cantidad_prestada_base),
+                  ),
+                )
+              }
+              className="font-bold shadow-xs"
+            >
+              Nueva Reposición
+            </Button>
           </Group>
           <Badge
             variant="light"
@@ -384,7 +419,9 @@ export const DetallePrestamo = ({
                             className="flex flex-row gap-0.5"
                           >
                             <span>Prestado: </span>
-                            <span>{formatNumber(item.cantidad_prestada_base)}</span>
+                            <span>
+                              {formatNumber(item.cantidad_prestada_base)}
+                            </span>
                             <span>{item.unidad_medida_base_abv}</span>
                           </Text>
                           <Text size="11px" fw={900} c="indigo.4">
@@ -413,22 +450,24 @@ export const DetallePrestamo = ({
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Tooltip
-                        label="Ver seguimiento"
-                        position="top"
-                        withArrow
-                        radius="md"
-                      >
-                        <ActionIcon
-                          variant="filled"
-                          color="indigo"
+                      <Group gap="xs" justify="center">
+                        <Tooltip
+                          label="Ver seguimiento"
+                          position="top"
+                          withArrow
                           radius="md"
-                          onClick={() => onOpenTrazabilidad(item)}
-                          className="shadow-md hover:scale-105 transition-transform"
                         >
-                          <ClockIcon className="w-4 h-4 text-white" />
-                        </ActionIcon>
-                      </Tooltip>
+                          <ActionIcon
+                            variant="filled"
+                            color="indigo"
+                            radius="md"
+                            onClick={() => onOpenTrazabilidad(item)}
+                            className="shadow-md hover:scale-105 transition-transform"
+                          >
+                            <ClockIcon className="w-4 h-4 text-white" />
+                          </ActionIcon>
+                        </Tooltip>
+                      </Group>
                     </td>
                   </tr>
                 );

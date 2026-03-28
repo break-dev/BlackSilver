@@ -52,7 +52,7 @@ export const AuthLayout = () => {
             key={pathname}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-full min-h-[calc(100vh-160px)]"
           >
             <Outlet />

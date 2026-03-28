@@ -12,9 +12,8 @@ export enum EstadoDetallePrestamo {
   DespachoIniciado = "Despacho iniciado",
   NuevaEntrega = "Nueva entrega",
   EntregaCompleta = "Entrega completa",
-  DevolucionParcial = "Devolución parcial",
-  DevolucionTotal = "Devolución total",
   Rechazado = "Rechazado",
+  EnReposicion = "En reposición",
   Cerrado = "Cerrado",
 }
 
@@ -22,4 +21,14 @@ export enum EstadoEntregaPrestamo {
   EnDespacho = "En despacho",
   Confirmada = "Entrega confirmada",
   Anulada = "Anulada",
+}
+
+export enum EstadoReposicion {
+  EnDespacho = "En Despacho",
+  Recepcionado = "Recepcionado",
+}
+
+export enum EstadoDetalleReposicion {
+  EnDespacho = "En Despacho",
+  Recepcionado = "Recepcionado",
 }

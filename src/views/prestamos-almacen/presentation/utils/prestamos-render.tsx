@@ -4,10 +4,7 @@ import {
   TruckIcon,
   ArchiveBoxArrowDownIcon,
   XCircleIcon,
-  CheckCircleIcon,
   CubeIcon,
-  ArrowPathIcon,
-  ArrowLongLeftIcon,
 } from "@heroicons/react/24/solid";
 import {
   EstadoDetallePrestamo,
@@ -26,12 +23,6 @@ export const getEstadoDetalleColor = (
       return "orange";
     case EstadoDetallePrestamo.NuevaEntrega:
       return "green";
-    case EstadoDetallePrestamo.Completado:
-      return "cyan";
-    case EstadoDetallePrestamo.DevolucionParcial:
-      return "yellow";
-    case EstadoDetallePrestamo.DevolucionTotal:
-      return "teal";
     case EstadoDetallePrestamo.Rechazado:
       return "red";
     case EstadoDetallePrestamo.Cerrado:
@@ -51,12 +42,6 @@ export const getEstadoDetalleIcon = (estado: EstadoDetallePrestamo) => {
       return <TruckIcon className="w-4 h-4 text-white" />;
     case EstadoDetallePrestamo.NuevaEntrega:
       return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
-    case EstadoDetallePrestamo.Completado:
-      return <CheckCircleIcon className="w-4 h-4 text-white" />;
-    case EstadoDetallePrestamo.DevolucionParcial:
-      return <ArrowPathIcon className="w-4 h-4 text-white" />;
-    case EstadoDetallePrestamo.DevolucionTotal:
-      return <ArrowLongLeftIcon className="w-4 h-4 text-white" />;
     case EstadoDetallePrestamo.Rechazado:
       return <XCircleIcon className="w-4 h-4 text-white" />;
     case EstadoDetallePrestamo.Cerrado:

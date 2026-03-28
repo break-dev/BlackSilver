@@ -27,6 +27,8 @@ import { useTrazabilidadPrestamo } from "../hooks/useTrazabilidadPrestamo";
 import { DetallePrestamo } from "./detalle-prestamo";
 import { TrazabilidadDetalle } from "./trazabilidad-detalle";
 import { HistorialEntregasPrestamo } from "./components/HistorialEntregasPrestamo";
+import { RegistroReposicion } from "./components/registro-reposicion/registro-reposicion";
+import { HistorialReposiciones } from "./components/historial-reposiciones/historial-reposiciones";
 import { MESES } from "../../../presentation/variables/meses";
 import type {
   RES_AlmacenSecundario,
@@ -67,6 +69,14 @@ export const PrestamosAlmacenPage = () => {
     fetchDetalles,
     closeDetail,
     selectedPrestamoId,
+    openedRepo,
+    selectedItemsRepo,
+    openReposicion,
+    closeReposicion,
+    openedHistorialRepo,
+    openHistorialRepo,
+    closeHistorialRepo,
+    reloadDetalles,
   } = useDetallePrestamo();
 
   const {
@@ -155,10 +165,12 @@ export const PrestamosAlmacenPage = () => {
                 Préstamo: {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY")}
               </Text>
             </Group>
-            <Text size="11px" className="text-orange-500/80 ml-5.5" fw={500}>
-              Devolución:{" "}
-              {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
-            </Text>
+            {item.fecha_limite_devolucion && (
+              <Text size="11px" className="text-orange-500/80 ml-5.5" fw={500}>
+                Devolución:{" "}
+                {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
+              </Text>
+            )}
           </Stack>
         ),
       },
@@ -339,7 +351,39 @@ export const PrestamosAlmacenPage = () => {
               fetchTrazabilidad(det.id_prestamo_detalle);
             }}
             onOpenHistorial={openHistorial}
+            onOpenReposicion={openReposicion}
+            onOpenHistorialReposiciones={openHistorialRepo}
           />
+        )}
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedRepo}
+        close={closeReposicion}
+        title="Registro de Reposición"
+        size="80%"
+      >
+        {selectedPrestamoId && (
+          <RegistroReposicion
+            idPrestamo={selectedPrestamoId}
+            selectedDetalles={selectedItemsRepo}
+            onSuccess={() => {
+              closeReposicion();
+              reloadDetalles();
+            }}
+            onCancel={closeReposicion}
+          />
+        )}
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedHistorialRepo}
+        close={closeHistorialRepo}
+        title="Historial de Reposiciones"
+        size="70%"
+      >
+        {selectedPrestamoId && (
+          <HistorialReposiciones idPrestamo={selectedPrestamoId} />
         )}
       </ModalEstandar>
 

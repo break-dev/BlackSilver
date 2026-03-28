@@ -12,6 +12,12 @@ export const useDetallePrestamo = () => {
     null,
   );
 
+  const [openedRepo, setOpenedRepo] = useState(false);
+  const [openedHistorialRepo, setOpenedHistorialRepo] = useState(false);
+  const [selectedItemsRepo, setSelectedItemsRepo] = useState<
+    RES_PrestamoDetalle[]
+  >([]);
+
   const fetchDetalles = async (idPrestamo: number) => {
     setLoading(true);
     setSelectedPrestamoId(idPrestamo);
@@ -33,6 +39,19 @@ export const useDetallePrestamo = () => {
     setSelectedPrestamoId(null);
   };
 
+  const openReposicion = (items: RES_PrestamoDetalle[]) => {
+    setSelectedItemsRepo(items);
+    setOpenedRepo(true);
+  };
+
+  const closeReposicion = () => {
+    setOpenedRepo(false);
+    setSelectedItemsRepo([]);
+  };
+
+  const openHistorialRepo = () => setOpenedHistorialRepo(true);
+  const closeHistorialRepo = () => setOpenedHistorialRepo(false);
+
   return {
     detalles,
     loading,
@@ -40,5 +59,16 @@ export const useDetallePrestamo = () => {
     fetchDetalles,
     closeDetail,
     selectedPrestamoId,
+    // Reposicion
+    openedRepo,
+    selectedItemsRepo,
+    openReposicion,
+    closeReposicion,
+    // Historial Repo
+    openedHistorialRepo,
+    openHistorialRepo,
+    closeHistorialRepo,
+    reloadDetalles: () =>
+      selectedPrestamoId && fetchDetalles(selectedPrestamoId),
   };
 };

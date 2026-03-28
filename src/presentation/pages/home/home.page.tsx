@@ -3,6 +3,31 @@ import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useRandomLinks, type ILinkView } from "./useRandomLinks";
+import { motion } from "motion/react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+} as const;
 
 export const HomePage = () => {
   useTitlePage("");
@@ -26,16 +51,24 @@ export const HomePage = () => {
 
       {/* acciones rapidas */}
       {randomLinks.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 mt-12 pb-10">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6 mt-12 pb-10"
+        >
           {randomLinks.map((l: ILinkView, idx: number) => {
             const Icon = l.icon;
             return (
-              <button
+              <motion.button
+                variants={itemVariants}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+                whileTap={{ scale: 0.98 }}
                 key={`${l.title}-${idx}`}
                 onClick={() => navigate(l.url)}
                 className={`group relative flex flex-col justify-between p-7 rounded-3xl 
                 bg-zinc-900/40 border border-zinc-800/60 backdrop-blur-md text-left 
-                transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl 
+                transition-all duration-500 hover:shadow-2xl 
                 hover:shadow-black/40 overflow-hidden ${l.border}`}
               >
                 {/* gradiente fondo */}
@@ -67,10 +100,10 @@ export const HomePage = () => {
                     {l.title}
                   </p>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       ) : (
         <div className="text-center py-20 text-zinc-500 border border-zinc-800/50 rounded-3xl bg-zinc-900/20 backdrop-blur-sm">
           <p>No tienes vistas configuradas disponibles.</p>

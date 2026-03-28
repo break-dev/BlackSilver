@@ -53,9 +53,8 @@ export enum EstadoDetallePrestamo {
   DespachoIniciado = "Despacho iniciado",
   NuevaEntrega = "Nueva entrega",
   Completado = "Completado",
-  DevolucionParcial = "Devolución parcial",
-  DevolucionTotal = "Devolución total",
   Rechazado = "Rechazado",
+  EnReposicion = "En reposición",
   Cerrado = "Cerrado",
 }
 

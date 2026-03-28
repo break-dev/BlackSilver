@@ -29,6 +29,7 @@ export const LotesPage = () => {
     almacenes,
     records,
     loading,
+    loadingAlmacenes,
     idAlmacen,
     setIdAlmacen,
     busqueda,
@@ -306,6 +307,7 @@ export const LotesPage = () => {
     <div className="space-y-6 animate-fade-in p-1">
       <LotesFilter
         almacenes={almacenes}
+        loadingAlmacenes={loadingAlmacenes}
         idAlmacen={idAlmacen}
         setIdAlmacen={setIdAlmacen}
         busqueda={busqueda}

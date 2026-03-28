@@ -1,11 +1,14 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
+import type { RES_LoteReabastecimiento } from "../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { REQ_RegistrarReposicion } from "./prestamos.requests";
 import type {
   RES_AlmacenSecundario,
   RES_PrestamoResumen,
   RES_PrestamoDetalle,
   RES_Trazabilidad,
   RES_HistorialEntregaPrestamo,
+  RES_HistorialReposicion,
 } from "./prestamos.responses";
 
 const path = "/prestamos-almacen";
@@ -75,5 +78,41 @@ export const PrestamosService = {
       },
     );
     return response.data.data;
+  },
+
+  getAlmacenesPrincipales: async () => {
+    const { data } = await api.get<
+      IRespuesta<{ id_almacen: number; nombre: string }[]>
+    >("/prestamos-almacen/almacenes", { params: { es_principal: true } });
+    return data;
+  },
+
+  getLotesDisponibles: async (idsProductos: number[], idAlmacen: number) => {
+    const { data } = await api.get<IRespuesta<RES_LoteReabastecimiento[]>>(
+      "/prestamos-almacen/lotes",
+      {
+        params: { ids_productos: idsProductos, id_almacen: idAlmacen },
+      },
+    );
+    return data;
+  },
+
+  getHistorialReposiciones: async (idPrestamo: number) => {
+    const { data } = await api.get<IRespuesta<RES_HistorialReposicion[]>>(
+      `/prestamos-almacen/historial-reposiciones`,
+      { params: { id_prestamo_almacen: idPrestamo } },
+    );
+    return data;
+  },
+
+  registrarReposicion: async (repo: REQ_RegistrarReposicion) => {
+    const { data } = await api.post<
+      IRespuesta<{ id: number; correlativo: string }>
+    >(`${path}/registrar-reposicion`, repo, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
   },
 };

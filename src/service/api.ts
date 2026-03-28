@@ -2,6 +2,7 @@ import axios from "axios";
 import { useAuthStore } from "../stores/auth.store";
 import { useMenuNavegacionStore } from "../stores/menu.store";
 import { usePerfilStore } from "../views/perfil/hooks/usePerfilStore";
+import { useUIStore } from "../stores/ui.store";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -43,9 +44,13 @@ api.interceptors.response.use(
     // Si recibimos un 401, cerramos la sesion automaticamente
     if (error.response?.status === 401) {
       useAuthStore.getState().clearAuth();
-      // Tambien limpiamos el menu para evitar inconsistencias
       useMenuNavegacionStore.getState().clearMenu();
       usePerfilStore.getState().reset();
+
+      // Notificar al usuario
+      const message =
+        error.response.data?.message || "Sesión expirada o no autorizada";
+      useUIStore.getState().notify({ type: "error", content: message });
     }
 
     return Promise.reject(error);

@@ -7,6 +7,7 @@ import {
 
 interface LotesFilterProps {
   almacenes: { id_almacen: number; nombre: string }[];
+  loadingAlmacenes?: boolean;
   idAlmacen: string | null;
   setIdAlmacen: (val: string | null) => void;
   busqueda: string;
@@ -22,6 +23,7 @@ interface LotesFilterProps {
 
 export const LotesFilter = ({
   almacenes,
+  loadingAlmacenes = false,
   idAlmacen,
   setIdAlmacen,
   busqueda,
@@ -59,6 +61,12 @@ export const LotesFilter = ({
           onChange={setIdAlmacen}
           searchable
           clearable
+          disabled={loadingAlmacenes}
+          rightSection={
+            loadingAlmacenes && (
+              <div className="w-4 h-4 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+            )
+          }
           radius="lg"
           size="sm"
           leftSection={<InboxStackIcon className="w-4 h-4 text-indigo-400" />}

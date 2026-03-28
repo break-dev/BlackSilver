@@ -1,4 +1,5 @@
 import type { IArchivo } from "../../../shared/interfaces";
+import { EstadoReposicion } from "../../../shared/enums/prestamos";
 
 export interface RES_PrestamoResumen {
   id_prestamo: number;
@@ -80,4 +81,28 @@ export interface RES_DetalleHistorialEntregaPrestamo {
   cantidad_base: number;
   comentario: string | null;
   estado: string;
+}
+
+export interface RES_HistorialReposicion {
+  id_reposicion: number;
+  correlativo: string;
+  fecha_hora_reposicion: string;
+  created_at: string;
+  estado: EstadoReposicion;
+  almacen_entrega: string;
+  registrado_por: string;
+  observacion: string | null;
+  evidencias: IArchivo[] | null;
+  detalles: RES_DetalleReposicion[];
+}
+
+export interface RES_DetalleReposicion {
+  id: number;
+  cantidad_base: number;
+  cantidad_lote: number;
+  cantidad_solicitud: number;
+  estado: string;
+  producto: string;
+  unidad_medida_base: string;
+  lote_correlativo: string;
 }

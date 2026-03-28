@@ -14,6 +14,7 @@ export const useLotesPage = () => {
   const [lotes, setLotes] = useState<RES_Lote[]>([]);
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Filters
@@ -26,19 +27,26 @@ export const useLotesPage = () => {
   useEffect(() => {
     setTitle("Lotes");
     const loadAlmacenes = async () => {
+      setLoadingAlmacenes(true);
       try {
         const result = await LotesService.listarAlmacenes();
         if (result.success) {
           setAlmacenes(result.data);
+          // Select first warehouse if none is selected in URL
+          if (!initialAlmacenId && result.data.length > 0) {
+            setIdAlmacen(String(result.data[0].id_almacen));
+          }
         } else {
           setError(result.message);
         }
       } catch (err) {
         setError(String(err));
+      } finally {
+        setLoadingAlmacenes(false);
       }
     };
     loadAlmacenes();
-  }, [setTitle]);
+  }, [setTitle, initialAlmacenId]);
 
   // Load lotes when warehouse changes
   useEffect(() => {
@@ -109,6 +117,7 @@ export const useLotesPage = () => {
     almacenes,
     records: filteredRecords,
     loading,
+    loadingAlmacenes,
     error,
 
     // Filters

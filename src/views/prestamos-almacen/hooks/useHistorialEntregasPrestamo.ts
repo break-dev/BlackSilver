@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PrestamosService } from "../service/prestamos.service";
 import type { RES_HistorialEntregaPrestamo } from "../service/prestamos.responses";
+import { useNotify } from "../../../hooks/useNotify";
 
 export const useHistorialEntregasPrestamo = (idPrestamo: number) => {
   const [loading, setLoading] = useState(true);
@@ -8,6 +9,7 @@ export const useHistorialEntregasPrestamo = (idPrestamo: number) => {
     [],
   );
   const [error, setError] = useState("");
+  const { notifyError } = useNotify();
 
   const fetchHistorial = useCallback(async () => {
     setLoading(true);
@@ -16,12 +18,14 @@ export const useHistorialEntregasPrestamo = (idPrestamo: number) => {
       const data = await PrestamosService.getHistorialEntregas(idPrestamo);
       setHistorial(data);
     } catch (err) {
+      const msg = "Error al cargar el historial de entregas";
       console.error(err);
-      setError("Error al cargar el historial de entregas");
+      setError(msg);
+      notifyError(msg);
     } finally {
       setLoading(false);
     }
-  }, [idPrestamo]);
+  }, [idPrestamo, notifyError]);
 
   useEffect(() => {
     if (idPrestamo) {
