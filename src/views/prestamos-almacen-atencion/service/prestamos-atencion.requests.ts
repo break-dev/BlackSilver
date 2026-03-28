@@ -13,3 +13,21 @@ export interface DTO_DetalleEntrega {
   cantidad_base: number; // Cantidad en la unidad Base
   cantidad_solicitud: number; // Cantidad en la unidad de la Solicitud Reabastecimiento
 }
+
+export interface DTO_RecibirEntregaReposicionItem {
+  id_entrega_detalle: number;
+  id_producto: number;
+  id_lote_producto: number | null; // El lote de destino
+  id_lote_existente: number | null; // Alias para compatibilidad
+  cantidad_base: number;
+  cantidad_lote: number;
+  cantidad_solicitud: number;
+  id_unidad_medida: number;
+  id_unidad_medida_solicitada: number;
+  id_solicitud_reabastecimiento_detalle: number;
+  es_nuevo_lote: boolean;
+  fecha_ingreso: string;
+  fecha_vencimiento: string | null;
+  descripcion: string;
+  contenido_por_presentacion: number;
+}

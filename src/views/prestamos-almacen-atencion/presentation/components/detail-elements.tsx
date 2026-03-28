@@ -1,10 +1,4 @@
-import {
-  Badge,
-  Group,
-  Paper,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import React from "react";
 
 interface HeaderCardProps {
@@ -67,7 +61,12 @@ const colorMap: Record<
   },
 };
 
-export const HeaderCard = ({ icon: Icon, label, value, color }: HeaderCardProps) => {
+export const HeaderCard = ({
+  icon: Icon,
+  label,
+  value,
+  color,
+}: HeaderCardProps) => {
   const styles = colorMap[color];
   return (
     <Paper
@@ -91,7 +90,11 @@ export const HeaderCard = ({ icon: Icon, label, value, color }: HeaderCardProps)
           </Text>
         </Group>
         <div className="flex-1 flex items-center min-h-[24px]">
-          <Text size="md" fw={900} className="text-white tracking-tight leading-tight">
+          <Text
+            size="md"
+            fw={900}
+            className="text-white tracking-tight leading-tight"
+          >
             {value}
           </Text>
         </div>

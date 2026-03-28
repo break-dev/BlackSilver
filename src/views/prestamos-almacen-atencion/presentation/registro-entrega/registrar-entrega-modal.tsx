@@ -2,11 +2,7 @@ import { useEffect } from "react";
 import { Loader, Stack, Text } from "@mantine/core";
 import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
 import type { RES_DetallePrestamo } from "../../service/prestamos-atencion.responses";
-import { 
-  ReceptorInfo, 
-  ProductoEntregaCard, 
-  FormActions 
-} from "./components";
+import { ReceptorInfo, ProductoEntregaCard, FormActions } from "./components";
 
 interface Props {
   idPrestamo: number;
@@ -18,14 +14,14 @@ interface Props {
   onCancel: () => void;
 }
 
-export const RegistrarEntregaModal = ({ 
-  idPrestamo, 
-  idAlmacenPrestamista, 
-  selectedItemsIds, 
+export const RegistrarEntregaModal = ({
+  idPrestamo,
+  idAlmacenPrestamista,
+  selectedItemsIds,
   detallesPrestamo,
   idEmpleadoDefault,
-  onSuccess, 
-  onCancel 
+  onSuccess,
+  onCancel,
 }: Props) => {
   const {
     loading,
@@ -68,7 +64,9 @@ export const RegistrarEntregaModal = ({
   if (itemsAEntregar.length === 0) {
     return (
       <Stack align="center" py={30}>
-          <Text c="red" fw={900} className="italic">No hay items seleccionados para entregar.</Text>
+        <Text c="red" fw={900} className="italic">
+          No hay items seleccionados para entregar.
+        </Text>
       </Stack>
     );
   }
@@ -93,7 +91,7 @@ export const RegistrarEntregaModal = ({
             key={detalle.id_prestamo_detalle}
             idDetalle={detalle.id_prestamo_detalle}
             detalle={detalle}
-            lotes={lotes.filter(l => l.id_producto === detalle.id_producto)}
+            lotes={lotes.filter((l) => l.id_producto === detalle.id_producto)}
             loadingLotes={false} // Ya vienen en el batch inicial
             entregaCantidades={entregaCantidades}
             handleCantLoteChange={handleCantLoteChange}

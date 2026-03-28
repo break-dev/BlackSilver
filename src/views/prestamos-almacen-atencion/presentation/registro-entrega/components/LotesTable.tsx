@@ -1,7 +1,10 @@
 import { Table, Stack, Center, Loader, Text } from "@mantine/core";
 import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 import { LoteRow } from "./LoteRow";
-import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
+import type {
+  RES_DetallePrestamo,
+  RES_Lote_Atencion,
+} from "../../../service/prestamos-atencion.responses";
 
 interface LotesTableProps {
   idDetalle: number;
@@ -9,7 +12,11 @@ interface LotesTableProps {
   lotes: RES_Lote_Atencion[];
   loading: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
-  handleCantLoteChange: (idDetalle: number, idLote: number, val: number) => void;
+  handleCantLoteChange: (
+    idDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
   unidadAbv: string;
   baseAbv: string;
   contenidoPorPresentacion: number;
@@ -31,7 +38,13 @@ export const LotesTable = ({
       <Center py={40}>
         <Stack gap="xs" align="center">
           <Loader size="md" color="indigo" />
-          <Text size="xs" c="dimmed" className="uppercase tracking-widest animate-pulse font-black">Consultando existencias...</Text>
+          <Text
+            size="xs"
+            c="dimmed"
+            className="uppercase tracking-widest animate-pulse font-black"
+          >
+            Consultando existencias...
+          </Text>
         </Stack>
       </Center>
     );
@@ -42,7 +55,13 @@ export const LotesTable = ({
       <Center py={40}>
         <Stack gap="sm" align="center" className="opacity-20">
           <ArchiveBoxIcon className="w-10 h-10 text-red-500" />
-          <Text size="xs" fw={900} className="uppercase tracking-widest text-red-400">Sin stock disponible en almacén</Text>
+          <Text
+            size="xs"
+            fw={900}
+            className="uppercase tracking-widest text-red-400"
+          >
+            Sin stock disponible en almacén
+          </Text>
         </Stack>
       </Center>
     );

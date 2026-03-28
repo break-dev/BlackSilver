@@ -31,6 +31,10 @@ export const useKardex = () => {
       const res = await KardexService.listarAlmacenes();
       if (res.success) {
         setAlmacenes(res.data);
+        // Auto-seleccionar primer almacén si no hay uno seleccionado
+        if (res.data.length > 0) {
+          setIdAlmacen((prev) => prev || String(res.data[0].id_almacen));
+        }
       } else {
         setError(res.message || "Error al cargar almacenes");
       }

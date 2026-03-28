@@ -3,7 +3,9 @@ import { PrestamosAtencionService } from "../service/prestamos-atencion.service"
 import type { RES_TrazabilidadPrestamo } from "../service/prestamos-atencion.responses";
 
 export const useTrazabilidadPrestamo = () => {
-  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadPrestamo[]>([]);
+  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadPrestamo[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
 
   const cargarTrazabilidad = useCallback(async (idDetalle: number) => {
@@ -21,6 +23,6 @@ export const useTrazabilidadPrestamo = () => {
   return {
     trazabilidad,
     loading,
-    cargarTrazabilidad
+    cargarTrazabilidad,
   };
 };

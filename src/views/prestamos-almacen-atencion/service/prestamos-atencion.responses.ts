@@ -11,6 +11,7 @@ export interface RES_PrestamoAtencion {
   fecha_limite_devolucion: string | null;
   created_at: string;
   estado: string;
+  id_almacen_prestamista: number;
   almacen_solicitante: string;
   id_almacen_solicitante: number;
   id_empleado_recibe_default: number | null;
@@ -115,4 +116,79 @@ export interface RES_Lote_Atencion {
 export interface RES_DetallePrestamoPorId {
   detalles: RES_DetallePrestamo[];
   entregas: RES_EntregaPrestamo[];
+}
+
+export interface RES_ReposicionPrestamo {
+  id_reposicion: number;
+  correlativo: string;
+  fecha_hora_reposicion: string;
+  created_at: string;
+  estado: string;
+  observacion: string | null;
+  evidencias: string | null;
+  almacen_entrega: string;
+  registrado_por: string;
+  detalles?: RES_DetalleReposicionPrestamo[];
+}
+
+export interface RES_DetalleReposicionPrestamo {
+  id: number;
+  cantidad_base: number;
+  cantidad_lote: number;
+  cantidad_solicitud: number;
+  estado: string;
+  producto: string;
+  unidad_medida_base: string;
+  lote_correlativo: string;
+}
+
+export interface RES_DetalleReposicionParaRecepcion {
+  id_entrega_detalle: number;
+  id_solicitud_reabastecimiento_detalle: number;
+  id_reabastecimiento_entrega: number;
+  cantidad_base: number;
+  cantidad_lote: number;
+  cantidad_solicitud: number;
+  estado_entrega_detalle: string;
+  id_producto: number;
+  producto: string;
+  es_perecible: number;
+  id_unidad_medida_base: number;
+  unidad_base_abv: string;
+  id_unidad_medida_solicitada: number;
+  contenido_por_presentacion_solicitado: number;
+  unidad_medida_solicitud_abv: string;
+  id_lote_origen: number;
+  correlativo_lote_origen: string;
+  unidad_lote_abv: string;
+  id_unidad_medida_lote: number;
+  fecha_vencimiento: string | null;
+  tipo_entrega?: "Solicitud" | "Prestamo" | "Reposicion";
+}
+
+export interface RES_LoteRecepcionReposicion {
+  id_lote: number;
+  id_producto: number;
+  id_unidad_medida_lote: number;
+  id_unidad_medida_base: number | null;
+  unidad_medida_base_abv: string | null;
+  unidad_medida_lote_abv: string | null;
+  descripcion: string | null;
+  correlativo: string;
+  stock_actual: number;
+  contenido_por_presentacion: number | null;
+  stock_actual_base: number;
+  fecha_hora_ingreso: string;
+  fecha_vencimiento: string | null;
+  estado: string;
+  stock_minimo: number;
+  dias_espera_vencimiento: number;
+  dias_para_vencer: number | null;
+  estado_vencimiento: string;
+}
+
+export interface RES_UnidadMedida {
+  id_unidad_medida: number;
+  nombre: string;
+  abreviatura: string;
 }

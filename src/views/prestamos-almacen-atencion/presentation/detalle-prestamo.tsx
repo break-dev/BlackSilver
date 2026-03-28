@@ -31,6 +31,7 @@ import { useDetallePrestamo } from "../hooks/useDetallePrestamo";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistrarEntregaModal } from "./registro-entrega/registrar-entrega-modal";
 import { HistorialEntregasPrestamo } from "./historial-entregas-prestamo";
+import { HistorialReposicionesPrestamo } from "./historial-reposiciones-prestamo";
 import { TrazabilidadPrestamo } from "./trazabilidad-prestamo";
 import { PrestamoStatusBadge } from "./components/prestamo-status-badge";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
@@ -42,22 +43,45 @@ interface Props {
   onDespachoRegistrado: () => void;
 }
 
-export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegistrado }: Props) => {
+export const DetallePrestamo = ({
+  prestamo,
+  idAlmacenPrestamista,
+  onDespachoRegistrado,
+}: Props) => {
   const {
     loading,
     detalles,
     entregas,
     progresoGeneral,
     // Modales
-    openedTrace, openTrace, closeTrace,
-    openedAprobar, openAprobar, closeAprobar,
-    openedRechazo, openRechazo, closeRechazo,
-    openedNuevaEntrega, openNuevaEntrega, closeNuevaEntrega,
-    openedHistorial, openHistorial, closeHistorial,
+    openedTrace,
+    openTrace,
+    closeTrace,
+    openedAprobar,
+    openAprobar,
+    closeAprobar,
+    openedRechazo,
+    openRechazo,
+    closeRechazo,
+    openedNuevaEntrega,
+    openNuevaEntrega,
+    closeNuevaEntrega,
+    openedHistorial,
+    openHistorial,
+    closeHistorial,
+    // Reposiciones
+    reposiciones,
+    loadingRepos,
+    openedHistorialRepos,
+    openHistorialRepos,
+    closeHistorialRepos,
+    cargarReposiciones,
     // Selección
     setSelectedItemId,
-    selectedItemName, setSelectedItemName,
-    comentarioAccion, setComentarioAccion,
+    selectedItemName,
+    setSelectedItemName,
+    comentarioAccion,
+    setComentarioAccion,
     isProcessing,
     trazabilidad,
     loadingTrace,
@@ -71,8 +95,11 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
     isAllEligibleSelected,
     hasPartialEligibleSelection,
     toggleSelectAllEligible,
-    itemsEligibleIds
-  } = useDetallePrestamo({ idPrestamo: prestamo.id_prestamo, onSuccess: onDespachoRegistrado });
+    itemsEligibleIds,
+  } = useDetallePrestamo({
+    idPrestamo: prestamo.id_prestamo,
+    onSuccess: onDespachoRegistrado,
+  });
 
   if (loading) {
     return (
@@ -170,7 +197,9 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
               </Text>
             </div>
             <Text size="sm" fw={800} className="text-zinc-100 italic">
-              {prestamo.fecha_limite_devolucion ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY") : "No especificada"}
+              {prestamo.fecha_limite_devolucion
+                ? dayjs(prestamo.fecha_limite_devolucion).format("DD/MM/YYYY")
+                : "No especificada"}
             </Text>
           </Stack>
 
@@ -183,7 +212,12 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             >
               Solicitud Ref.
             </Text>
-            <Badge variant="light" color="blue" radius="sm" className="font-black">
+            <Badge
+              variant="light"
+              color="blue"
+              radius="sm"
+              className="font-black"
+            >
               {prestamo.solicitud_correlativo}
             </Badge>
           </Stack>
@@ -191,15 +225,29 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       </Paper>
 
       {/* Barra de Progreso */}
-      <Paper p="md" radius="xl" className="bg-zinc-900/50 border border-zinc-800 mx-2 shadow-inner">
+      <Paper
+        p="md"
+        radius="xl"
+        className="bg-zinc-900/50 border border-zinc-800 mx-2 shadow-inner"
+      >
         <Group justify="space-between" mb={8} px={4}>
-          <Text size="xs" fw={800} className="text-zinc-500 tracking-tighter uppercase">Progreso General de Atención</Text>
-          <Text size="sm" fw={900} c="indigo.4">{isNaN(progresoGeneral) ? 0 : progresoGeneral}%</Text>
+          <Text
+            size="xs"
+            fw={800}
+            className="text-zinc-500 tracking-tighter uppercase"
+          >
+            Progreso General de Atención
+          </Text>
+          <Text size="sm" fw={900} c="indigo.4">
+            {isNaN(progresoGeneral) ? 0 : progresoGeneral}%
+          </Text>
         </Group>
         <div className="relative h-2 w-full bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-700/10">
           <div
             className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 via-indigo-400 to-indigo-300 transition-all duration-1000 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
-            style={{ width: `${isNaN(progresoGeneral) ? 0 : progresoGeneral}%` }}
+            style={{
+              width: `${isNaN(progresoGeneral) ? 0 : progresoGeneral}%`,
+            }}
           />
         </div>
       </Paper>
@@ -211,10 +259,29 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             <div className="p-3.5 rounded-2xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
               <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
-            <Text fw={800} className="text-lg text-zinc-100 italic tracking-tight">Items de la Solicitud</Text>
+            <Text
+              fw={800}
+              className="text-lg text-zinc-100 italic tracking-tight"
+            >
+              Items de la Solicitud
+            </Text>
           </Group>
 
           <Group gap="sm">
+            <Button
+              variant="light"
+              color="teal"
+              size="xs"
+              radius="md"
+              leftSection={<ClockIcon className="w-4 h-4" />}
+              onClick={() => {
+                cargarReposiciones();
+                openHistorialRepos();
+              }}
+              className="font-bold whitespace-nowrap"
+            >
+              Historial de Reposiciones
+            </Button>
             <Button
               variant="light"
               color="indigo"
@@ -237,8 +304,14 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             >
               Nueva Entrega ({selectedItemsIds.length})
             </Button>
-            <Badge variant="light" color="indigo" radius="md" className="font-black px-3 py-3 border border-indigo-500/20">
-              {detalles.length} {detalles.length === 1 ? 'Producto' : 'Productos'}
+            <Badge
+              variant="light"
+              color="indigo"
+              radius="md"
+              className="font-black px-3 py-3 border border-indigo-500/20"
+            >
+              {detalles.length}{" "}
+              {detalles.length === 1 ? "Producto" : "Productos"}
             </Badge>
           </Group>
         </Group>
@@ -251,7 +324,11 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                 <th className="px-4 py-4 text-center w-12">
                   {itemsEligibleIds.length > 0 && (
                     <div className="flex justify-center">
-                      <Tooltip label="Seleccionar todo lo apto para entrega" position="top" withArrow>
+                      <Tooltip
+                        label="Seleccionar todo lo apto para entrega"
+                        position="top"
+                        withArrow
+                      >
                         <Checkbox
                           checked={isAllEligibleSelected}
                           indeterminate={hasPartialEligibleSelection}
@@ -273,21 +350,39 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             </thead>
             <tbody className="divide-y divide-zinc-800/30">
               {detalles.map((d, idx) => {
-                const isApprovedToDispatch = d.estado.toLowerCase().includes("aprobado") || d.estado.toLowerCase().includes("iniciado") || d.estado.toLowerCase().includes("entrega");
-                const porcentaje = Math.round((d.cantidad_prestada_base / d.cantidad_solicitada_base) * 100) || 0;
+                const isApprovedToDispatch =
+                  d.estado.toLowerCase().includes("aprobado") ||
+                  d.estado.toLowerCase().includes("iniciado") ||
+                  d.estado.toLowerCase().includes("entrega");
+                const porcentaje =
+                  Math.round(
+                    (d.cantidad_prestada_base / d.cantidad_solicitada_base) *
+                      100,
+                  ) || 0;
 
                 return (
-                  <tr key={idx} className="hover:bg-zinc-900/40 transition-colors group">
-                    <td className="px-6 py-4 text-center text-[10px] font-mono font-black text-zinc-700">{idx + 1}</td>
+                  <tr
+                    key={idx}
+                    className="hover:bg-zinc-900/40 transition-colors group"
+                  >
+                    <td className="px-6 py-4 text-center text-[10px] font-mono font-black text-zinc-700">
+                      {idx + 1}
+                    </td>
                     <td className="px-4 py-4 text-center">
-                      {(porcentaje >= 100 || !isApprovedToDispatch || d.estado.toLowerCase().includes("rechazado")) ? (
+                      {porcentaje >= 100 ||
+                      !isApprovedToDispatch ||
+                      d.estado.toLowerCase().includes("rechazado") ? (
                         <div className="flex justify-center opacity-40">
                           <NoSymbolIcon className="w-5 h-5 text-zinc-600" />
                         </div>
                       ) : (
                         <Checkbox
-                          checked={selectedItemsIds.includes(d.id_prestamo_detalle)}
-                          onChange={() => toggleItemSelection(d.id_prestamo_detalle)}
+                          checked={selectedItemsIds.includes(
+                            d.id_prestamo_detalle,
+                          )}
+                          onChange={() =>
+                            toggleItemSelection(d.id_prestamo_detalle)
+                          }
                           color="indigo"
                           size="sm"
                           className="cursor-pointer flex justify-center translate-y-px"
@@ -296,10 +391,33 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                     </td>
                     <td className="px-6 py-4">
                       <Stack gap={2}>
-                        <Text size="sm" fw={800} className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight">{d.producto}</Text>
+                        <Text
+                          size="sm"
+                          fw={800}
+                          className="text-zinc-100 group-hover:text-indigo-400 transition-colors tracking-tight"
+                        >
+                          {d.producto}
+                        </Text>
                         <Group gap={4}>
-                          <Text size="10px" fw={800} c="zinc.5" className="uppercase tracking-wider">{d.unidad_medida}</Text>
-                          {d.comentario && <Tooltip label={d.comentario}><ActionIcon size="xs" variant="transparent" color="yellow"><ClockIcon className="w-3 h-3" /></ActionIcon></Tooltip>}
+                          <Text
+                            size="10px"
+                            fw={800}
+                            c="zinc.5"
+                            className="uppercase tracking-wider"
+                          >
+                            {d.unidad_medida}
+                          </Text>
+                          {d.comentario && (
+                            <Tooltip label={d.comentario}>
+                              <ActionIcon
+                                size="xs"
+                                variant="transparent"
+                                color="yellow"
+                              >
+                                <ClockIcon className="w-3 h-3" />
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
                         </Group>
                       </Stack>
                     </td>
@@ -311,7 +429,8 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                         size="sm"
                         className="font-black px-4"
                       >
-                        {formatNumber(d.cantidad_solicitada)} {d.unidad_medida_abv}
+                        {formatNumber(d.cantidad_solicitada)}{" "}
+                        {d.unidad_medida_abv}
                       </Badge>
                       {d.unidad_medida_base_abv !== d.unidad_medida_abv && (
                         <>
@@ -322,8 +441,10 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                             size="sm"
                             className="font-black px-4"
                           >
-                            {formatNumber(d.contenido_por_presentacion)} {d.unidad_medida_base_abv}{" "}
-                            <span className="lowercase font-bold">x</span> {d.unidad_medida_abv}
+                            {formatNumber(d.contenido_por_presentacion)}{" "}
+                            {d.unidad_medida_base_abv}{" "}
+                            <span className="lowercase font-bold">x</span>{" "}
+                            {d.unidad_medida_abv}
                           </Badge>
 
                           <Badge
@@ -332,7 +453,8 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                             radius="sm"
                             className="font-bold shadow-xs whitespace-nowrap"
                           >
-                            {formatNumber(d.cantidad_solicitada_base)} {d.unidad_medida_base_abv}
+                            {formatNumber(d.cantidad_solicitada_base)}{" "}
+                            {d.unidad_medida_base_abv}
                           </Badge>
                         </>
                       )}
@@ -340,13 +462,20 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-1.5 w-full">
                         <div className="flex justify-between items-center px-1">
-                          <Text size="9px" fw={800} c="zinc.5" className="tabular-nums">
+                          <Text
+                            size="10px"
+                            fw={800}
+                            c="zinc.5"
+                            className="tabular-nums"
+                          >
                             Atendido:{" "}
                             {d.unidad_medida_base_abv !== d.unidad_medida_abv
                               ? `${formatNumber(d.cantidad_prestada_base)} ${d.unidad_medida_base_abv}`
                               : `${formatNumber(d.cantidad_prestada)} ${d.unidad_medida_abv}`}
                           </Text>
-                          <Text size="10px" fw={900} c="indigo.4">{porcentaje}%</Text>
+                          <Text size="10px" fw={900} c="indigo.4">
+                            {porcentaje}%
+                          </Text>
                         </div>
                         <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-700/20">
                           <div
@@ -421,15 +550,37 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       {/* MODALES TÉCNICOS */}
 
       {/* Trazabilidad (Línea de vida) */}
-      <ModalEstandar opened={openedTrace} close={closeTrace} title="Seguimiento del Préstamo" size="md">
-        <TrazabilidadPrestamo eventos={trazabilidad} loading={loadingTrace} productoNombre={selectedItemName} />
+      <ModalEstandar
+        opened={openedTrace}
+        close={closeTrace}
+        title="Seguimiento del Préstamo"
+        size="md"
+      >
+        <TrazabilidadPrestamo
+          eventos={trazabilidad}
+          loading={loadingTrace}
+          productoNombre={selectedItemName}
+        />
       </ModalEstandar>
 
       {/* Aprobación */}
-      <ModalEstandar opened={openedAprobar} close={closeAprobar} title="Aprobar Ítem de Préstamo" size="sm">
+      <ModalEstandar
+        opened={openedAprobar}
+        close={closeAprobar}
+        title="Aprobar Ítem de Préstamo"
+        size="sm"
+      >
         <Stack gap="xl">
-          <Paper p="md" radius="lg" className="bg-emerald-500/5 border border-emerald-500/20 text-center">
-            <Text size="sm" c="emerald.3" fw={600}>Estás por aprobar el despacho de <span className="font-black text-white">{selectedItemName}</span>. Se podrá proceder con la salida física del producto.</Text>
+          <Paper
+            p="md"
+            radius="lg"
+            className="bg-emerald-500/5 border border-emerald-500/20 text-center"
+          >
+            <Text size="sm" c="emerald.3" fw={600}>
+              Estás por aprobar el despacho de{" "}
+              <span className="font-black text-white">{selectedItemName}</span>.
+              Se podrá proceder con la salida física del producto.
+            </Text>
           </Paper>
           <Textarea
             placeholder="Ej: Autorizado para despacho inmediato..."
@@ -439,7 +590,14 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             onChange={(e) => setComentarioAccion(e.currentTarget.value)}
           />
           <Group justify="end">
-            <Button variant="subtle" color="zinc" radius="xl" onClick={closeAprobar}>Cancelar</Button>
+            <Button
+              variant="subtle"
+              color="zinc"
+              radius="xl"
+              onClick={closeAprobar}
+            >
+              Cancelar
+            </Button>
             <Button
               color="green"
               radius="xl"
@@ -454,10 +612,23 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       </ModalEstandar>
 
       {/* Rechazo */}
-      <ModalEstandar opened={openedRechazo} close={closeRechazo} title="Rechazar ítem de Préstamo" size="sm">
+      <ModalEstandar
+        opened={openedRechazo}
+        close={closeRechazo}
+        title="Rechazar ítem de Préstamo"
+        size="sm"
+      >
         <Stack gap="xl">
-          <Paper p="md" radius="lg" className="bg-red-500/5 border border-red-500/20 text-center">
-            <Text size="sm" c="red.3" fw={600}>¿Por qué no se puede atender el préstamo de <span className="font-black text-white">{selectedItemName}</span>? El motivo es obligatorio.</Text>
+          <Paper
+            p="md"
+            radius="lg"
+            className="bg-red-500/5 border border-red-500/20 text-center"
+          >
+            <Text size="sm" c="red.3" fw={600}>
+              ¿Por qué no se puede atender el préstamo de{" "}
+              <span className="font-black text-white">{selectedItemName}</span>?
+              El motivo es obligatorio.
+            </Text>
           </Paper>
           <Textarea
             placeholder="Motivo detallado del rechazo..."
@@ -468,7 +639,14 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
             required
           />
           <Group justify="end">
-            <Button variant="subtle" color="zinc" radius="xl" onClick={closeRechazo}>Volver</Button>
+            <Button
+              variant="subtle"
+              color="zinc"
+              radius="xl"
+              onClick={closeRechazo}
+            >
+              Volver
+            </Button>
             <Button
               color="red"
               radius="xl"
@@ -507,8 +685,31 @@ export const DetallePrestamo = ({ prestamo, idAlmacenPrestamista, onDespachoRegi
       </ModalEstandar>
 
       {/* Historial de Movimientos (Entregas) */}
-      <ModalEstandar opened={openedHistorial} close={closeHistorial} title="Historial de Entregas" size="70%">
+      <ModalEstandar
+        opened={openedHistorial}
+        close={closeHistorial}
+        title="Historial de Entregas"
+        size="70%"
+      >
         <HistorialEntregasPrestamo entregas={entregas} />
+      </ModalEstandar>
+
+      {/* Historial de Movimientos (Reposiciones) */}
+      <ModalEstandar
+        opened={openedHistorialRepos}
+        close={closeHistorialRepos}
+        title="Historial de Reposiciones"
+        size="65%"
+      >
+        <HistorialReposicionesPrestamo
+          reposiciones={reposiciones}
+          loading={loadingRepos}
+          onSuccess={() => {
+            cargarReposiciones();
+            cargarDatos(true);
+          }}
+          idAlmacenLender={prestamo.id_almacen_prestamista}
+        />
       </ModalEstandar>
     </Stack>
   );

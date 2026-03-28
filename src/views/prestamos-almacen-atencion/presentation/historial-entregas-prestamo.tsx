@@ -23,6 +23,7 @@ import {
 import { type RES_EntregaPrestamo } from "../service/prestamos-atencion.responses";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
+import type { IArchivo } from "../../../shared/interfaces";
 
 interface Props {
   entregas: RES_EntregaPrestamo[];
@@ -104,7 +105,9 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                       </Text>
                       <Badge
                         variant="light"
-                        color={h.estado === "Entrega completa" ? "teal" : "violet"}
+                        color={
+                          h.estado === "Entrega completa" ? "teal" : "violet"
+                        }
                         radius="sm"
                         className="font-bold"
                         size="xs"
@@ -202,30 +205,32 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                 </div>
 
                 {/* Sección de Evidencias */}
-                {h.evidencias && Array.isArray(h.evidencias) && h.evidencias.length > 0 && (
-                  <div className="mt-8 pb-4">
-                    <Group gap="xs" mb="md" className="pl-1">
-                      <PaperClipIcon className="w-4 h-4 text-zinc-500" />
-                      <Text
-                        size="xs"
-                        fw={800}
-                        c="zinc.4"
-                        className="uppercase tracking-widest"
-                      >
-                        Evidencias de Entrega ({h.evidencias.length})
-                      </Text>
-                    </Group>
+                {h.evidencias &&
+                  Array.isArray(h.evidencias) &&
+                  h.evidencias.length > 0 && (
+                    <div className="mt-8 pb-4">
+                      <Group gap="xs" mb="md" className="pl-1">
+                        <PaperClipIcon className="w-4 h-4 text-zinc-500" />
+                        <Text
+                          size="xs"
+                          fw={800}
+                          c="zinc.4"
+                          className="uppercase tracking-widest"
+                        >
+                          Evidencias de Entrega ({h.evidencias.length})
+                        </Text>
+                      </Group>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {h.evidencias.map((ev: any, idx) => (
-                        <ArchivoCard
-                          key={`${h.id_entrega}-ev-${idx}`}
-                          archivo={ev}
-                        />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {h.evidencias.map((ev: IArchivo, idx) => (
+                          <ArchivoCard
+                            key={`${h.id_entrega}-ev-${idx}`}
+                            archivo={ev}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 <Group gap="xs" mb="md" mt="md" className="pl-1">
                   <CubeIcon className="w-4 h-4 text-zinc-500" />

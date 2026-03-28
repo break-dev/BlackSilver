@@ -2,7 +2,10 @@ import { Badge, Group, Paper, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import { LotesTable } from "./LotesTable";
-import type { RES_DetallePrestamo, RES_Lote_Atencion } from "../../../service/prestamos-atencion.responses";
+import type {
+  RES_DetallePrestamo,
+  RES_Lote_Atencion,
+} from "../../../service/prestamos-atencion.responses";
 
 interface ProductoEntregaCardProps {
   idDetalle: number;
@@ -10,7 +13,11 @@ interface ProductoEntregaCardProps {
   lotes: RES_Lote_Atencion[];
   loadingLotes: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
-  handleCantLoteChange: (idDetalle: number, idLote: number, val: number) => void;
+  handleCantLoteChange: (
+    idDetalle: number,
+    idLote: number,
+    val: number,
+  ) => void;
 }
 
 export const ProductoEntregaCard = ({
@@ -21,9 +28,13 @@ export const ProductoEntregaCard = ({
   entregaCantidades,
   handleCantLoteChange,
 }: ProductoEntregaCardProps) => {
-  const pendienteBase = (detalle.cantidad_solicitada_base || 0) - (detalle.cantidad_prestada_base || 0);
-  const totalDespachadoActualmente = Object.values(entregaCantidades[idDetalle] || {}).reduce((sum, val) => sum + (val || 0), 0);
-  
+  const pendienteBase =
+    (detalle.cantidad_solicitada_base || 0) -
+    (detalle.cantidad_prestada_base || 0);
+  const totalDespachadoActualmente = Object.values(
+    entregaCantidades[idDetalle] || {},
+  ).reduce((sum, val) => sum + (val || 0), 0);
+
   const ratio = detalle.contenido_por_presentacion || 1;
 
   return (
@@ -56,17 +67,21 @@ export const ProductoEntregaCard = ({
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
             >
-              Min: {formatNumber(detalle.stock_minimo / ratio)} {detalle.unidad_medida_abv}
+              Min: {formatNumber(detalle.stock_minimo / ratio)}{" "}
+              {detalle.unidad_medida_abv}
             </Badge>
             <Badge
               variant="dot"
               color={
-                (detalle.stock_disponible || 0) <= detalle.stock_minimo ? "orange" : "teal"
+                (detalle.stock_disponible || 0) <= detalle.stock_minimo
+                  ? "orange"
+                  : "teal"
               }
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
             >
-              Disponible: {formatNumber((detalle.stock_disponible || 0) / ratio)}{" "}
+              Disponible:{" "}
+              {formatNumber((detalle.stock_disponible || 0) / ratio)}{" "}
               {detalle.unidad_medida_abv}
             </Badge>
           </Group>
@@ -82,7 +97,8 @@ export const ProductoEntregaCard = ({
               size="md"
               className="font-black h-8 bg-zinc-800/30 border border-zinc-700/50 text-white"
             >
-              {formatNumber(detalle.cantidad_solicitada)} {detalle.unidad_medida_abv}
+              {formatNumber(detalle.cantidad_solicitada)}{" "}
+              {detalle.unidad_medida_abv}
             </Badge>
           </Group>
 

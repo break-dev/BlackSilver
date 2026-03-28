@@ -30,17 +30,18 @@ import { MESES } from "../../../presentation/variables/meses";
 import { DetallePrestamo } from "./detalle-prestamo";
 
 const ESTADO_COLORS: Record<string, string> = {
-  "Generado": "green",
+  Generado: "green",
   "En Proceso": "indigo",
-  "Completado": "teal",
-  "Finalizado": "emerald",
-  "Anulado": "red",
+  Completado: "teal",
+  Finalizado: "emerald",
+  Anulado: "red",
 };
 
 export const AtencionPrestamosPage = () => {
   useTitlePage("Atención de Préstamos entre Almacenes");
 
-  const [openedDetalle, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
+  const [openedDetalle, { open: openDetalle, close: closeDetalle }] =
+    useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const {
@@ -59,11 +60,9 @@ export const AtencionPrestamosPage = () => {
     cargarPrestamos,
   } = useAtencionPrestamos();
 
-
-
   const selectedPrestamo = useMemo(
     () => filteredRecords.find((p) => p.id_prestamo === selectedId) ?? null,
-    [filteredRecords, selectedId]
+    [filteredRecords, selectedId],
   );
 
   const columns: DataTableColumn<RES_PrestamoAtencion>[] = useMemo(
@@ -92,7 +91,9 @@ export const AtencionPrestamosPage = () => {
         render: (item) => (
           <Group gap="xs" wrap="nowrap">
             <BuildingOffice2Icon className="w-4 h-4 text-zinc-500 shrink-0" />
-            <Text size="sm" fw={700} className="text-zinc-200">{item.almacen_solicitante}</Text>
+            <Text size="sm" fw={700} className="text-zinc-200">
+              {item.almacen_solicitante}
+            </Text>
           </Group>
         ),
       },
@@ -118,12 +119,20 @@ export const AtencionPrestamosPage = () => {
             <Group gap={6}>
               <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
               <Text size="xs" fw={800} className="text-zinc-200">
-                Solicitado el: {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY HH:mm")}
+                Solicitado el:{" "}
+                {dayjs(item.fecha_hora_prestamo).format("DD/MM/YYYY HH:mm")}
               </Text>
             </Group>
             {item.fecha_limite_devolucion && (
-              <Text size="10px" fw={900} c="pink.5" ml={22} className="uppercase tracking-tighter italic">
-                Devolución: {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
+              <Text
+                size="10px"
+                fw={900}
+                c="pink.5"
+                ml={22}
+                className="uppercase tracking-tighter italic"
+              >
+                Devolución:{" "}
+                {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
               </Text>
             )}
           </Stack>
@@ -168,7 +177,7 @@ export const AtencionPrestamosPage = () => {
         ),
       },
     ],
-    [openDetalle, setSelectedId]
+    [openDetalle, setSelectedId],
   );
 
   return (
@@ -273,7 +282,8 @@ export const AtencionPrestamosPage = () => {
             Panel de Atención de Préstamos
           </Text>
           <Text className="text-zinc-500 text-center max-w-sm mt-1">
-            Seleccione el almacén para visualizar los préstamos pendientes de atención.
+            Seleccione el almacén para visualizar los préstamos pendientes de
+            atención.
           </Text>
         </div>
       ) : (
@@ -292,7 +302,7 @@ export const AtencionPrestamosPage = () => {
           closeDetalle();
           setTimeout(() => setSelectedId(null), 300);
         }}
-        title="Atencion de Préstamos entre Almacenes"
+        title="Atención de Préstamos"
         size="95%"
       >
         {selectedId && selectedPrestamo && (
