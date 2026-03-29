@@ -18,6 +18,7 @@ export const useAuthUser = () => {
     clearAuth();
     clearMenu();
     resetPerfil();
+    sessionStorage.removeItem("blackcito_saludo_inicial");
     navigate("/login", { viewTransition: true });
   }, [clearAuth, clearMenu, resetPerfil, navigate]);
 
