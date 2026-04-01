@@ -39,6 +39,7 @@ export const NuevoLoteForm = ({
   esPerecible,
 }: NuevoLoteFormProps) => {
   const cantidad_base = Number(lot.cantidad_base) || 0;
+  const maxPermitido = Number(lot.max_permitido) || 0; // Necesitamos pasar este valor o calcularlo
 
   const inputClasses = {
     input:
@@ -138,6 +139,8 @@ export const NuevoLoteForm = ({
           label={`Cant. Recibir (${unidadBaseAbv})`}
           placeholder="0"
           min={0}
+          max={maxPermitido > 0 ? maxPermitido : undefined}
+          clampBehavior="strict"
           hideControls
           fixedDecimalScale
           withAsterisk

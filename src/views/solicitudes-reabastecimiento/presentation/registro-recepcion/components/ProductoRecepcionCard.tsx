@@ -107,8 +107,6 @@ export const ProductoRecepcionCard = ({
           const esNuevoLote = lot.es_nuevo_lote;
           const fieldError = getLotError(groupIndex, lotIndex, "id_lote_existente");
 
-          const isReadOnly = grouped.lots.length === 1;
-
           return (
             <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
               {lotIndex > 0 && <Divider color="zinc.8" variant="dashed" mb="md" />}
@@ -153,7 +151,7 @@ export const ProductoRecepcionCard = ({
                     selectedAjustes={lot.ajustes || {}}
                     onUpdateTabular={(id, active, qty) => updateTabularAdjustment(groupIndex, lotIndex, id, active, qty)}
                     unidadBaseAbv={grouped.unidad_base_abv}
-                    isReadOnly={isReadOnly}
+                    maxQty={grouped.total_entregado_base}
                   />
                   {fieldError && (
                     <Text size="xs" color="red" mt={4} fw={700}>{fieldError}</Text>
@@ -173,7 +171,6 @@ export const ProductoRecepcionCard = ({
                     loadingUnidades={loadingUnidades}
                     unidadBaseAbv={grouped.unidad_base_abv}
                     esPerecible={isPerecible}
-                    isReadOnly={isReadOnly}
                   />
                 </div>
               )}

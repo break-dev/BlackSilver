@@ -28,6 +28,7 @@ import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroRecepcion } from "./registro-recepcion/index";
+import { ResumenRecepciones } from "./ResumenRecepciones";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -360,6 +361,11 @@ export const HistorialEntregas = ({
                     </div>
                   ))}
                 </div>
+
+                {/* Trazabilidad de Recepciones e Incidencias */}
+                {h.tipo_entrega === "Solicitud" && (
+                    <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} />
+                )}
               </div>
             </Collapse>
           </Paper>

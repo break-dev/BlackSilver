@@ -10,6 +10,7 @@ interface LotesDisponiblesTableProps {
   selectedAjustes: Record<number, number>;
   onUpdateTabular: (idLote: number, isActive: boolean, qty?: number) => void;
   unidadBaseAbv: string;
+  maxQty?: number;
 }
 
 export const LotesDisponiblesTable = ({
@@ -18,6 +19,7 @@ export const LotesDisponiblesTable = ({
   selectedAjustes,
   onUpdateTabular,
   unidadBaseAbv,
+  maxQty,
 }: LotesDisponiblesTableProps) => {
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-xl bg-zinc-950/40 shadow-inner">
@@ -92,6 +94,8 @@ export const LotesDisponiblesTable = ({
                         size="xs"
                         placeholder="0"
                         min={0}
+                        max={maxQty}
+                        clampBehavior="strict"
                         hideControls
                         disabled={!isActive}
                         value={isActive ? currentQty : ""}

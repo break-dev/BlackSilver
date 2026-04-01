@@ -7,8 +7,9 @@ import type {
   RES_DataRegistroSolicitud,
   RES_EntregaReabastecimiento,
   RES_LoteRecepcion,
+  RecepcionEvento,
 } from "./reabastecimiento.responses";
-import type { DTO_CrearSolicitud, DTO_RecibirEntregas, DTO_RecibirEntregaItem } from "./reabastecimiento.requests";
+import type { DTO_CrearSolicitud, DTO_RecibirEntregas } from "./reabastecimiento.requests";
 
 const path = "/solicitudes-reabastecimiento";
 
@@ -103,16 +104,25 @@ export const ReabastecimientoService = {
     return res.data;
   },
 
-  recibirEntregaBulk: async (data: {
-    recepciones: { 
-      id_reabastecimiento_entrega: number; 
-      tipo_entrega?: "Solicitud" | "Prestamo";
-      items: DTO_RecibirEntregaItem[] 
-    }[];
-  }) => {
+  recibirEntregaBulk: async (data: Record<string, unknown>) => {
     const res = await api.post<IRespuesta<null>>(
       `${path}/recibir-entrega-bulk`,
-      data
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return res.data;
+  },
+
+  getHistorialRecepcionesEntrega: async (idEntrega: number) => {
+    const res = await api.get<IRespuesta<RecepcionEvento[]>>(
+      `${path}/historial-recepciones-entrega`,
+      {
+        params: { id_reabastecimiento_entrega: idEntrega },
+      },
     );
     return res.data;
   },

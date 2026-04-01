@@ -50,7 +50,7 @@ export const useRegistroRecepcion = ({
   // Nuevos estados para cabecera de recepción
   const [conIncidencia, setConIncidencia] = useState(false);
   const [observacion, setObservacion] = useState("");
-  const [evidencias, setEvidencias] = useState<string[]>([]);
+  const [evidencias, setEvidencias] = useState<File[]>([]);
 
   useEffect(() => {
     if (detalles && detalles.length > 0 && groupedItems.length === 0) {
@@ -77,6 +77,7 @@ export const useRegistroRecepcion = ({
             id_solicitud_reabastecimiento_detalle: g.id_solicitud_reabastecimiento_detalle,
             es_nuevo_lote: true,
             cantidad_base: g.total_entregado_base,
+            max_permitido: g.total_entregado_base,
             id_lote_existente: null,
             fecha_vencimiento: g.es_perecible === 1 && g.detalles_origen[0].fecha_vencimiento ? g.detalles_origen[0].fecha_vencimiento : null,
             id_unidad_medida: g.detalles_origen[0].id_unidad_medida_base,
@@ -404,12 +405,12 @@ export const useRegistroRecepcion = ({
             flatLots.push(lot as DTO_RecibirEntregaItem);
           } else {
             Object.entries(lot.ajustes).forEach(([idLote, qty]) => {
-              const cleanLot = { ...lot };
-              delete (cleanLot as any).ajustes;
+              const cleanLot: Partial<DTO_RecibirLotExtendido> = { ...lot };
+              delete cleanLot.ajustes;
               flatLots.push({
                 ...cleanLot,
                 id_lote_existente: Number(idLote),
-                cantidad_base: qty,
+                cantidad_base: qty as number,
               } as DTO_RecibirEntregaItem);
             });
           }
@@ -475,10 +476,11 @@ export const useRegistroRecepcion = ({
   // Validación reactiva
   const isFormValid = groupedItems.every((group) => {
     const sumBase = group.lots.reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
-    const sumMatch = Math.abs(sumBase - group.total_entregado_base) < 0.0001;
+    // Permite recepciones parciales: mayor a 0 y no excede el total
+    const sumValid = sumBase > 0 && sumBase <= group.total_entregado_base + 0.0001;
     
     const lotsValid = group.lots.every((lot) => {
-      if (lot.cantidad_base <= 0) return false;
+      if (Number(lot.cantidad_base) <= 0) return false;
       if (lot.es_nuevo_lote) {
         if (!lot.fecha_ingreso) return false;
         if (group.es_perecible === 1 && !lot.fecha_vencimiento) return false;
@@ -488,7 +490,9 @@ export const useRegistroRecepcion = ({
       return true;
     });
 
-    return sumMatch && lotsValid;
+    const incidenceValid = !conIncidencia || (observacion.trim().length >= 5 && evidencias.length > 0);
+
+    return sumValid && lotsValid && incidenceValid;
   });
 
   return {

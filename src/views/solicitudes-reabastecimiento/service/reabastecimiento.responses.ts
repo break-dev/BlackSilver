@@ -129,3 +129,25 @@ export interface RES_LoteRecepcion {
   dias_para_vencer: number | null;
   estado_vencimiento: string;
 }
+
+export interface RecepcionDetalle {
+  id_detalle: number;
+  id_solicitud_reabastecimiento_entrega_detalle: number;
+  producto: string;
+  cantidad_recepcionada_base: number;
+  unidad_base_abv: string;
+  estado: string;
+}
+
+export interface RecepcionEvento {
+  id_recepcion: number;
+  id_solicitud_reabastecimiento_entrega: number;
+  id_empleado_registro: number;
+  empleado_registro: string;
+  observacion: string | null;
+  fecha_hora_recepcion: string;
+  evidencias: IArchivo[] | null;
+  con_incidencia: boolean;
+  estado: string;
+  detalles: RecepcionDetalle[];
+}

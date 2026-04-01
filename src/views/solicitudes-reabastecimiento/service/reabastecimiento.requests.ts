@@ -24,6 +24,7 @@ export interface DTO_RecibirEntregaItem {
   contenido_por_presentacion?: number | null;
   descripcion?: string | null;
   fecha_ingreso?: string | null;
+  max_permitido?: number;
 }
 
 export interface DTO_RecibirEntregas {

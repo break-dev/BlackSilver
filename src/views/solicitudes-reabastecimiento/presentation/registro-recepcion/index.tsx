@@ -3,6 +3,7 @@ import { CheckCircleIcon, ExclamationTriangleIcon, PhotoIcon, ChatBubbleBottomCe
 import { motion, AnimatePresence } from "framer-motion";
 import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
+import { MultiFilePicker } from "../../../../presentation/utils/MultiFilePicker";
 import type { RES_DetalleEntregaReabastecimiento } from "../../service/reabastecimiento.responses";
 
 interface Props {
@@ -53,7 +54,7 @@ export const RegistroRecepcion = ({
   });
 
   return (
-    <form onSubmit={handleSubmit} className="font-sans space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="font-sans space-y-4">
       <Stack gap="xl">
         {groupedItems.map((grouped, index) => (
           <ProductoRecepcionCard
@@ -80,30 +81,30 @@ export const RegistroRecepcion = ({
               exit={{ opacity: 0, y: -10 }}
             >
               <Alert
-                color="orange"
+                color="indigo"
                 variant="light"
                 title="Recepción Parcial Detectada"
-                icon={<ExclamationTriangleIcon className="w-5 h-5" />}
+                icon={<ExclamationTriangleIcon className="w-5 h-5 text-indigo-400" />}
                 radius="md"
                 classNames={{
-                  root: "bg-orange-500/10 border-orange-500/20",
-                  title: "text-orange-400 font-black uppercase tracking-wider text-xs",
+                  root: "bg-indigo-500/10 border-indigo-500/20",
+                  title: "text-indigo-400 font-black uppercase tracking-wider text-xs",
                 }}
               >
                 <Stack gap="xs">
-                  <Text size="xs" className="text-orange-200/80">
+                  <Text size="xs" className="text-zinc-300">
                     Has modificado las cantidades para recibir menos de lo entregado. ¿Este descuadre se debe a una incidencia en el traslado?
                   </Text>
                   
-                  <Group justify="space-between" align="center" className="bg-zinc-950/40 p-3 rounded-lg border border-orange-500/10">
+                  <Group justify="space-between" align="center" className="bg-zinc-950/40 p-3 rounded-lg border border-indigo-500/10">
                     <Stack gap={0}>
                       <Text size="xs" fw={800} className="text-white">Marcar como Incidencia</Text>
-                      <Text size="10px" className="text-zinc-500">Esto requerirá observación y evidencias obligatorias.</Text>
+                      <Text size="10px" className="text-zinc-500">Esto requerirá observación e imágenes obligatorias.</Text>
                     </Stack>
                     <Switch 
                       checked={conIncidencia}
                       onChange={(e) => setConIncidencia(e.currentTarget.checked)}
-                      color="orange"
+                      color="indigo"
                       size="md"
                     />
                   </Group>
@@ -113,37 +114,28 @@ export const RegistroRecepcion = ({
                       <Textarea 
                         label="Observación de la Incidencia"
                         placeholder="Describa el motivo del descuadre..."
-                        required
                         value={observacion}
                         onChange={(e) => setObservacion(e.currentTarget.value)}
                         error={errors["observacion"]}
                         radius="md"
                         size="xs"
                         minRows={3}
-                        leftSection={<ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-orange-400" />}
+                        leftSection={<ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400" />}
                         classNames={{
-                          input: "bg-zinc-900/50 border-orange-500/20 focus:border-orange-500 text-white",
-                          label: "text-zinc-400 font-bold text-[10px] uppercase mb-1",
+                          input: "bg-zinc-900/50 border-indigo-500/20 focus:border-indigo-500 text-white",
+                          label: "text-zinc-300 font-semibold text-xs mb-1",
                         }}
                       />
                       
                       <div className="space-y-1">
-                        <Text className="text-zinc-400 font-bold text-[10px] uppercase px-1">Evidencias (URLs / Links)</Text>
-                        <Textarea 
-                          placeholder="Ingrese los links de las fotos o evidencias (separados por comas)..."
-                          required
-                          value={evidencias.join(", ")}
-                          onChange={(e) => setEvidencias(e.currentTarget.value.split(",").map(s => s.trim()).filter(s => s !== ""))}
-                          error={errors["evidencias"]}
-                          radius="md"
-                          size="xs"
-                          minRows={2}
-                          leftSection={<PhotoIcon className="w-4 h-4 text-orange-400" />}
-                          classNames={{
-                            input: "bg-zinc-900/50 border-orange-500/20 focus:border-orange-500 text-white",
-                          }}
+                        <MultiFilePicker 
+                          label="Evidencias / Fotos"
+                          description="Adjunte las fotos de los productos dañados o incompleto."
+                          files={evidencias}
+                          onFilesChange={setEvidencias}
+                          accept="image/*"
                         />
-                        <Text size="10px" c="dimmed" px={2}>* Por ahora, ingrese los links de las imágenes subidas.</Text>
+                        <Text size="10px" c="dimmed" px={2} className="italic opacity-80">* Puedes subir varias fotos al mismo tiempo.</Text>
                       </div>
                     </Stack>
                   </Collapse>
