@@ -22,6 +22,7 @@ import {
   CheckBadgeIcon,
   BuildingStorefrontIcon,
   PaperClipIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
@@ -47,6 +48,11 @@ export const HistorialEntregas = ({
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
+  const toggleTrazabilidad = (idEntrega: number) => {
+    setShowTrazabilidad((prev) => ({ ...prev, [idEntrega]: !prev[idEntrega] }));
   };
 
   const [recepcionData, setRecepcionData] = useState<{
@@ -362,9 +368,30 @@ export const HistorialEntregas = ({
                   ))}
                 </div>
 
-                {/* Trazabilidad de Recepciones e Incidencias */}
-                {h.tipo_entrega === "Solicitud" && (
-                    <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} />
+                {/* Trazabilidad de Recepciones — solo si es Solicitud y hay algo recibido */}
+                {h.tipo_entrega === "Solicitud" && h.detalles.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                  <div className="px-4 pb-3">
+                    <UnstyledButton
+                      onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
+                      className="w-full"
+                    >
+                      <Group
+                        gap="xs"
+                        className="py-2 px-3 rounded-lg border border-dashed border-zinc-700/60 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all"
+                      >
+                        <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-400/70" />
+                        <Text size="xs" fw={700} c="zinc.4" className="flex-1">
+                          Seguimiento de recepciones
+                        </Text>
+                        {showTrazabilidad[h.id_reabastecimiento_entrega]
+                          ? <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                          : <ChevronDownIcon className="w-4 h-4 text-zinc-500" />}
+                      </Group>
+                    </UnstyledButton>
+                    <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
+                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} />
+                    </Collapse>
+                  </div>
                 )}
               </div>
             </Collapse>
