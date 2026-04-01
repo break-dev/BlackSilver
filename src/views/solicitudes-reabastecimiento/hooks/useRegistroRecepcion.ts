@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuthStore } from "../../../stores/auth.store";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import { LotesService } from "../../lotes-productos/service/lotes.service";
 import type {
@@ -40,6 +41,7 @@ export const useRegistroRecepcion = ({
   onSuccess,
 }: UseRegistroRecepcionProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const { usuario } = useAuthStore();
 
   const [groupedItems, setGroupedItems] = useState<GroupedReception[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -454,12 +456,17 @@ export const useRegistroRecepcion = ({
           items,
           con_incidencia: conIncidencia,
           observacion: observacion,
-          evidencias: evidencias,
-          fecha_hora_recepcion: new Date().toISOString(), // O usar un estado si agregamos input de fecha
+          fecha_hora_recepcion: new Date().toISOString(),
         };
       });
 
-      const res = await ReabastecimientoService.recibirEntregaBulk({ recepciones });
+      // Enviamos evidencias e id_empleado al nivel raíz para que
+      // Axios las serialice correctamente en multipart/form-data
+      const res = await ReabastecimientoService.recibirEntregaBulk({
+        recepciones,
+        id_empleado_registro: usuario?.id_empleado ?? 0,
+        evidencias: conIncidencia ? evidencias : [],
+      });
       if (res.success) {
         notifySuccess("Recepción registrada correctamente.");
         onSuccess();

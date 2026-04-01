@@ -62,7 +62,7 @@ export const ResumenRecepciones = ({ idEntrega }: Props) => {
         <div className="mt-3 animate-in fade-in duration-500">
             <Stack gap="xs">
                 {recepciones.map((rec, idx) => {
-                    const tieneDetalle = rec.con_incidencia && (rec.observacion || (rec.evidencias && rec.evidencias.length > 0));
+                    const tieneDetalle = rec.con_incidencia && (rec.observacion || (Array.isArray(rec.evidencias) && rec.evidencias.length > 0));
                     const isOpen = !!expandedIds[rec.id_recepcion];
                     const esParcial = rec.estado === "Recepcionado Parcialmente";
 
@@ -173,7 +173,7 @@ export const ResumenRecepciones = ({ idEntrega }: Props) => {
                                         )}
 
                                         {/* Evidencias */}
-                                        {rec.evidencias && rec.evidencias.length > 0 && (
+                                        {Array.isArray(rec.evidencias) && rec.evidencias.length > 0 && (
                                             <div>
                                                 <Group gap="xs" mb={6}>
                                                     <PaperClipIcon className="w-3.5 h-3.5 text-indigo-400/70" />
