@@ -1,5 +1,19 @@
-import { Stack, Group, Button, Switch, Textarea, Alert, Text, Collapse } from "@mantine/core";
-import { CheckCircleIcon, ExclamationTriangleIcon, PhotoIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import {
+  Stack,
+  Group,
+  Button,
+  Switch,
+  Textarea,
+  Alert,
+  Text,
+  Collapse,
+} from "@mantine/core";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PhotoIcon,
+  ChatBubbleBottomCenterTextIcon,
+} from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
@@ -84,26 +98,41 @@ export const RegistroRecepcion = ({
                 color="indigo"
                 variant="light"
                 title="Recepción Parcial Detectada"
-                icon={<ExclamationTriangleIcon className="w-5 h-5 text-indigo-400" />}
+                icon={
+                  <ExclamationTriangleIcon className="w-5 h-5 text-indigo-400" />
+                }
                 radius="md"
                 classNames={{
                   root: "bg-indigo-500/10 border-indigo-500/20",
-                  title: "text-indigo-400 font-black uppercase tracking-wider text-xs",
+                  title:
+                    "text-indigo-400 font-black uppercase tracking-wider text-xs",
                 }}
               >
                 <Stack gap="xs">
                   <Text size="xs" className="text-zinc-300">
-                    Has modificado las cantidades para recibir menos de lo entregado. ¿Este descuadre se debe a una incidencia en el traslado?
+                    Has modificado las cantidades para recibir menos de lo
+                    entregado. ¿Este descuadre se debe a una incidencia en el
+                    traslado?
                   </Text>
-                  
-                  <Group justify="space-between" align="center" className="bg-zinc-950/40 p-3 rounded-lg border border-indigo-500/10">
+
+                  <Group
+                    justify="space-between"
+                    align="center"
+                    className="bg-zinc-950/40 p-3 rounded-lg border border-indigo-500/10"
+                  >
                     <Stack gap={0}>
-                      <Text size="xs" fw={800} className="text-white">Marcar como Incidencia</Text>
-                      <Text size="10px" className="text-zinc-500">Esto requerirá observación e imágenes obligatorias.</Text>
+                      <Text size="xs" fw={800} className="text-white">
+                        Marcar como Incidencia
+                      </Text>
+                      <Text size="10px" className="text-zinc-500">
+                        Esto requerirá observación e imágenes obligatorias.
+                      </Text>
                     </Stack>
-                    <Switch 
+                    <Switch
                       checked={conIncidencia}
-                      onChange={(e) => setConIncidencia(e.currentTarget.checked)}
+                      onChange={(e) =>
+                        setConIncidencia(e.currentTarget.checked)
+                      }
                       color="indigo"
                       size="md"
                     />
@@ -111,7 +140,7 @@ export const RegistroRecepcion = ({
 
                   <Collapse in={conIncidencia}>
                     <Stack gap="sm" mt="sm">
-                      <Textarea 
+                      <Textarea
                         label="Observación de la Incidencia"
                         placeholder="Describa el motivo del descuadre..."
                         value={observacion}
@@ -120,22 +149,31 @@ export const RegistroRecepcion = ({
                         radius="md"
                         size="xs"
                         minRows={3}
-                        leftSection={<ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400" />}
+                        leftSection={
+                          <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400" />
+                        }
                         classNames={{
-                          input: "bg-zinc-900/50 border-indigo-500/20 focus:border-indigo-500 text-white",
+                          input:
+                            "bg-zinc-900/50 border-indigo-500/20 focus:border-indigo-500 text-white",
                           label: "text-zinc-300 font-semibold text-xs mb-1",
                         }}
                       />
-                      
+
                       <div className="space-y-1">
-                        <MultiFilePicker 
-                          label="Evidencias / Fotos"
-                          description="Adjunte las fotos de los productos dañados o incompleto."
+                        <MultiFilePicker
+                          label="Evidencias"
+                          description="Adjunte las fotos o documentos de los productos dañados o incompletos."
                           files={evidencias}
                           onFilesChange={setEvidencias}
-                          accept="image/*"
                         />
-                        <Text size="10px" c="dimmed" px={2} className="italic opacity-80">* Puedes subir varias fotos al mismo tiempo.</Text>
+                        <Text
+                          size="10px"
+                          c="dimmed"
+                          px={2}
+                          className="italic opacity-80"
+                        >
+                          * Puedes subir varias fotos al mismo tiempo.
+                        </Text>
                       </div>
                     </Stack>
                   </Collapse>
