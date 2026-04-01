@@ -10,7 +10,6 @@ interface LotesDisponiblesTableProps {
   selectedAjustes: Record<number, number>;
   onUpdateTabular: (idLote: number, isActive: boolean, qty?: number) => void;
   unidadBaseAbv: string;
-  isReadOnly?: boolean;
 }
 
 export const LotesDisponiblesTable = ({
@@ -19,7 +18,6 @@ export const LotesDisponiblesTable = ({
   selectedAjustes,
   onUpdateTabular,
   unidadBaseAbv,
-  isReadOnly,
 }: LotesDisponiblesTableProps) => {
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-xl bg-zinc-950/40 shadow-inner">
@@ -94,14 +92,12 @@ export const LotesDisponiblesTable = ({
                         size="xs"
                         placeholder="0"
                         min={0}
-                        readOnly={isReadOnly}
-                        variant={isReadOnly ? "filled" : "default"}
                         hideControls
                         disabled={!isActive}
                         value={isActive ? currentQty : ""}
                         onChange={(val) => onUpdateTabular(lote.id_lote, true, Number(val))}
                         classNames={{
-                          input: `w-20 bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${!isActive ? "opacity-30" : "opacity-100"} ${isReadOnly ? "cursor-not-allowed text-indigo-400 font-black" : ""}`,
+                          input: `w-20 bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${!isActive ? "opacity-30" : "opacity-100"}`,
                         }}
                       />
                     </Group>

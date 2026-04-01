@@ -46,6 +46,11 @@ export const useRegistroRecepcion = ({
   const [loadingAction, setLoadingAction] = useState(false);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
+  
+  // Nuevos estados para cabecera de recepción
+  const [conIncidencia, setConIncidencia] = useState(false);
+  const [observacion, setObservacion] = useState("");
+  const [evidencias, setEvidencias] = useState<string[]>([]);
 
   useEffect(() => {
     if (detalles && detalles.length > 0 && groupedItems.length === 0) {
@@ -54,16 +59,14 @@ export const useRegistroRecepcion = ({
         const key = d.id_solicitud_reabastecimiento_detalle;
         if (!grouped[key]) {
           grouped[key] = {
-            id_solicitud_reabastecimiento_detalle: key,
-            producto: d.producto,
+            ...d,
             total_entregado_base: 0,
-            unidad_base_abv: d.unidad_base_abv,
-            es_perecible: d.es_perecible,
-            detalles_origen: [],
             lots: [],
+            detalles_origen: [],
           };
         }
-        grouped[key].total_entregado_base += Number(d.cantidad_base);
+        const pendienteReal = Number(d.cantidad_base) - (Number(d.cantidad_recibida_total) || 0);
+        grouped[key].total_entregado_base += pendienteReal;
         grouped[key].detalles_origen.push(d);
       });
 
@@ -116,45 +119,33 @@ export const useRegistroRecepcion = ({
       let finalValue = value;
       if (field === "cantidad_base") {
         const numVal = Number(value) || 0;
-        
-        // Calculamos la suma de todos los DEMÁS lotes (excepto el actual y el ÚLTIMO)
         const lastIdx = lots.length - 1;
         
         if (lots.length > 1) {
-            // Si no estamos editando el último, el último absorbe la diferencia
+            // Calculamos cuánto han ocupado los DEMÁS lotes (excepto el actual y el último)
+            const otherFixedSum = lots.reduce((acc, l, idx) => {
+                if (idx === lotIndex || idx === lastIdx) return acc;
+                return acc + (Number(l.cantidad_base) || 0);
+            }, 0);
+            
             if (lotIndex !== lastIdx) {
-                // Suma de todos menos el actual y el último
-                const otherSum = lots.reduce((acc, l, idx) => {
-                    if (idx === lotIndex || idx === lastIdx) return acc;
-                    return acc + (Number(l.cantidad_base) || 0);
-                }, 0);
-                
-                // Limitamos el actual para que no supere el total disponible (dejando sitio a los demás fijos)
-                const maxForThis = Math.max(0, group.total_entregado_base - otherSum);
-                const cappedVal = Math.min(numVal, maxForThis);
+                // Si editamos uno que no es el último:
+                // Limitamos para que no pase del total (considerando los otros fijos)
+                const cappedVal = Math.min(numVal, Math.max(0, group.total_entregado_base - otherFixedSum));
                 finalValue = cappedVal as DTO_RecibirLotExtendido[K];
                 
-                // El último recibe el resto
-                const remaining = Math.max(0, group.total_entregado_base - otherSum - cappedVal);
-                lots[lastIdx] = {
-                    ...lots[lastIdx],
-                    cantidad_base: remaining,
-                    ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
-                        ? { [lots[lastIdx].id_lote_existente]: remaining }
-                        : (lots[lastIdx].ajustes || {})
-                };
+                // El último recibe el resto si NO marcamos incidencia tal vez? 
+                // No, permitamos que el usuario edite cualquiera y la suma simplemente pueda ser menor.
+                // Si el usuario edita el primero de 10 a 5, y el último era 0, el último se queda en 0 o absorbe?
+                // Hagamos que el último absorba el remanente SOLO si no estamos editando para ser parcial.
+                // MEJOR: Quitamos el "absorber" automático si queremos recepciones parciales fluidas.
+                // O mejor aún: solo absorber si la suma supera el total.
             } else {
-                // Si estamos editando el último directamente, simplemente lo limitamos al remanente
-                const otherSum = lots.reduce((acc, l, idx) => {
-                    if (idx === lotIndex) return acc;
-                    return acc + (Number(l.cantidad_base) || 0);
-                }, 0);
-                const maxForLast = Math.max(0, group.total_entregado_base - otherSum);
-                finalValue = Math.min(numVal, maxForLast) as DTO_RecibirLotExtendido[K];
+                finalValue = Math.min(numVal, Math.max(0, group.total_entregado_base - otherFixedSum)) as DTO_RecibirLotExtendido[K];
             }
         } else {
-            // Un solo lote -> 100% (esto ya se maneja en el readOnly pero por seguridad)
-            finalValue = group.total_entregado_base as DTO_RecibirLotExtendido[K];
+            // Un solo lote: Permitir que sea menor al total para recepción parcial
+            finalValue = Math.min(numVal, group.total_entregado_base) as DTO_RecibirLotExtendido[K];
         }
       }
 
@@ -193,12 +184,13 @@ export const useRegistroRecepcion = ({
       const lastIdx = lots.length - 1;
       const lastLot = { ...lots[lastIdx] };
 
-      // Reparto inteligente al crear: dividimos la cantidad del último lote por 2
+      // Reparto inteligente al crear
       const currentQty = Number(lastLot.cantidad_base) || 0;
+      // No dividimos a la mitad si es parcial, solo añadimos un lote vacío de 0? 
+      // No, mantengamos el split para que sea cómodo.
       const halfQty = Math.floor(currentQty / 2);
       const restQty = currentQty - halfQty;
 
-      // Actualizamos el que era el último
       lastLot.cantidad_base = restQty;
       if (!lastLot.es_nuevo_lote && lastLot.id_lote_existente) {
           lastLot.ajustes = { [lastLot.id_lote_existente]: restQty };
@@ -229,11 +221,8 @@ export const useRegistroRecepcion = ({
       
       // Si solo queda un lote, forzar la cantidad total
       if (lots.length === 1) {
-          lots[0].cantidad_base = newGrouped[groupIndex].total_entregado_base;
-          // Si es existente, actualizar ajustes
-          if (!lots[0].es_nuevo_lote && lots[0].id_lote_existente) {
-              lots[0].ajustes = { [lots[0].id_lote_existente]: lots[0].cantidad_base };
-          }
+          // No forzamos el total, dejamos que sea parcial si el usuario así lo puso antes
+          // lots[0].cantidad_base = newGrouped[groupIndex].total_entregado_base;
       }
       
       newGrouped[groupIndex] = { ...newGrouped[groupIndex], lots };
@@ -378,11 +367,23 @@ export const useRegistroRecepcion = ({
         }
       });
 
-      if (Math.abs(sumBase - group.total_entregado_base) > 0.0001) {
-        newErrors[`groups.${gIdx}.cantidad_total`] = `La suma no coincide (${formatNumber(sumBase)}/${formatNumber(group.total_entregado_base)}).`;
+      if (sumBase > group.total_entregado_base + 0.0001) {
+        newErrors[`groups.${gIdx}.cantidad_total`] = `La suma supera el total entregado (${formatNumber(sumBase)}/${formatNumber(group.total_entregado_base)}).`;
         hasErrors = true;
       }
     });
+
+    // Validación de Incidencia
+    if (conIncidencia) {
+      if (!observacion.trim()) {
+        newErrors["observacion"] = "La observación es obligatoria en caso de incidencia.";
+        hasErrors = true;
+      }
+      if (evidencias.length === 0) {
+        newErrors["evidencias"] = "Debe adjuntar al menos una evidencia en caso de incidencia.";
+        hasErrors = true;
+      }
+    }
 
     if (hasErrors) {
       setErrors(newErrors);
@@ -450,6 +451,10 @@ export const useRegistroRecepcion = ({
           id_reabastecimiento_entrega: idNum,
           tipo_entrega: firstDetail?.tipo_entrega || "Solicitud",
           items,
+          con_incidencia: conIncidencia,
+          observacion: observacion,
+          evidencias: evidencias,
+          fecha_hora_recepcion: new Date().toISOString(), // O usar un estado si agregamos input de fecha
         };
       });
 
@@ -500,5 +505,16 @@ export const useRegistroRecepcion = ({
     loadingUnidades,
     errors,
     isFormValid,
+    // Estados nuevos
+    conIncidencia,
+    setConIncidencia,
+    observacion,
+    setObservacion,
+    evidencias,
+    setEvidencias,
+    isPartialReception: groupedItems.some(g => {
+        const sum = g.lots.reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
+        return sum < g.total_entregado_base - 0.0001;
+    })
   };
 };

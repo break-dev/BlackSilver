@@ -106,6 +106,7 @@ export interface RES_DetalleEntregaReabastecimiento {
   tipo_entrega?: "Solicitud" | "Prestamo";
   contenido_por_presentacion_solicitado: number;
   unidad_medida_solicitud_abv: string;
+  cantidad_recibida_total?: number;
 }
 
 export interface RES_LoteRecepcion {

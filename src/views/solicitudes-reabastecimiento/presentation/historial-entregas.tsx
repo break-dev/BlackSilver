@@ -98,7 +98,10 @@ export const HistorialEntregas = ({
     );
 
   const allDetallesPendientes = entregas.flatMap((h) =>
-    (h.detalles || []).filter((d) => d.estado_entrega_detalle === "Entregado"),
+    (h.detalles || []).filter((d) => 
+      d.estado_entrega_detalle === "Entregado" || 
+      d.estado_entrega_detalle === "Recibido Parcialmente"
+    ),
   );
 
   if (entregas.length === 0)
@@ -139,7 +142,9 @@ export const HistorialEntregas = ({
 
         const detailsGrouped = groupDetailsByProduct(h.detalles || []);
         const pendientes = (h.detalles || []).filter(
-          (d) => d.estado_entrega_detalle === "Entregado",
+          (d) => 
+            d.estado_entrega_detalle === "Entregado" || 
+            d.estado_entrega_detalle === "Recibido Parcialmente",
         );
 
         return (
@@ -173,13 +178,13 @@ export const HistorialEntregas = ({
                         color={
                           h.estado === "Recibida"
                             ? "teal"
-                            : h.estado === "Procesada"
+                            : h.estado === "Procesada" || h.estado === "Recepcionado Parcialmente"
                             ? "orange"
                             : "indigo"
                         }
                         size="xs"
                       >
-                        {h.estado}
+                        {h.estado === "Recepcionado Parcialmente" ? "Parcial" : h.estado}
                       </Badge>
                     </Group>
                     <Group gap="xs" className="text-zinc-400 mt-0.5">
@@ -310,18 +315,25 @@ export const HistorialEntregas = ({
                           {d.producto}
                         </Text>
                         <Group gap={4}>
-                          {d.estado_entrega_detalle === "Recibido" && (
+                          {d.estado_entrega_detalle === "Recibido" ? (
                             <Badge
                               size="xs"
                               variant="light"
                               color="teal"
-                              leftSection={
-                                <CheckBadgeIcon className="w-3 h-3" />
-                              }
+                              leftSection={<CheckBadgeIcon className="w-3 h-3" />}
                             >
                               Recibido
                             </Badge>
-                          )}
+                          ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
+                            <Badge
+                              size="xs"
+                              variant="light"
+                              color="orange"
+                              className="font-black"
+                            >
+                              Parcial: {formatNumber((d.cantidad_recibida_total || 0))} {d.unidad_base_abv}
+                            </Badge>
+                          ) : null}
                         </Group>
                       </Stack>
                       <Stack gap={1} align="flex-end">
@@ -335,16 +347,15 @@ export const HistorialEntregas = ({
                             {d.unidad_base_abv}
                           </span>
                         </Text>
-                        {d.estado_entrega_detalle === "Entregado" && (
-                          <Badge
-                            size="xs"
-                            variant="dot"
-                            color="orange"
-                            className="mt-1"
-                          >
+                        {d.estado_entrega_detalle === "Entregado" ? (
+                          <Badge size="xs" variant="dot" color="orange" className="mt-1">
                             Pendiente
                           </Badge>
-                        )}
+                        ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
+                          <Badge size="xs" variant="dot" color="cyan" className="mt-1">
+                            Faltan {formatNumber(d.cantidad_base - (d.cantidad_recibida_total || 0))}
+                          </Badge>
+                        ) : null}
                       </Stack>
                     </div>
                   ))}

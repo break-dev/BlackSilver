@@ -37,7 +37,6 @@ export const NuevoLoteForm = ({
   loadingUnidades,
   unidadBaseAbv,
   esPerecible,
-  isReadOnly,
 }: NuevoLoteFormProps) => {
   const cantidad_base = Number(lot.cantidad_base) || 0;
 
@@ -139,8 +138,6 @@ export const NuevoLoteForm = ({
           label={`Cant. Recibir (${unidadBaseAbv})`}
           placeholder="0"
           min={0}
-          readOnly={isReadOnly}
-          variant={isReadOnly ? "filled" : "default"}
           hideControls
           fixedDecimalScale
           withAsterisk
@@ -148,10 +145,7 @@ export const NuevoLoteForm = ({
           onChange={(val) => {
             setLotValue(groupIndex, lotIndex, "cantidad_base", Number(val));
           }}
-          classNames={isReadOnly ? {
-              ...inputClasses,
-              input: `${inputClasses.input} cursor-not-allowed opacity-80 font-black text-indigo-400`
-          } : inputClasses}
+          classNames={inputClasses}
           className="md:col-span-3"
           radius="md"
           size="xs"
