@@ -42,6 +42,9 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
       const data = await AtencionService.obtenerAlmacenesAutorizados();
       if (data.success) {
         setAlmacenes(data.data);
+        if (data.data.length === 1) {
+          setIdAlmacen(String(data.data[0].id_almacen));
+        }
         return data.data;
       }
       return [];
