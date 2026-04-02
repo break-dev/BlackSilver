@@ -13,7 +13,7 @@ interface LoteRowProps {
   maxBase: number;
   maxLote: number;
   detalle_req: DetalleRequerimientoExtendido;
-  stockAsignable: number;
+  stockVisible: number;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
@@ -29,7 +29,7 @@ export const LoteRow = ({
   maxBase,
   maxLote,
   detalle_req,
-  stockAsignable,
+  stockVisible,
   handleCantChange,
   handleCantLoteChange,
 }: LoteRowProps) => {
@@ -79,13 +79,13 @@ export const LoteRow = ({
             color="zinc.4"
             className="bg-zinc-800/30 font-black h-7"
           >
-            {formatNumber(stockAsignable)} {detalle_req.unidad_medida_base_abv}
+            {formatNumber(stockVisible)} {detalle_req.unidad_medida_base_abv}
           </Badge>
           {lote.unidad_medida_abv !== detalle_req.unidad_medida_base_abv && (
             <Text size="10px" c="teal.4" fw={800} className="font-mono">
               (
               {formatNumber(
-                stockAsignable / (lote.contenido_por_presentacion || 1),
+                stockVisible / (lote.contenido_por_presentacion || 1),
               )}{" "}
               {lote.unidad_medida_abv})
             </Text>

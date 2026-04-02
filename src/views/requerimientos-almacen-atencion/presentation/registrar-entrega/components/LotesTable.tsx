@@ -68,20 +68,17 @@ export const LotesTable = ({
               const cant = entregaCantidades[idDetalleReq]?.[lote.id_lote] || 0;
 
               // Stock real disponible considerando lo asignado a otros detalles en este modal
-              const totalOtherItemsForThisLot = Object.entries(
-                entregaCantidades,
-              ).reduce((sum, [dId, lotesMap]) => {
-                if (Number(dId) === idDetalleReq) return sum;
+              // Suma total en todos los detalles de este modal
+              const totalItemsTotal = Object.values(entregaCantidades).reduce((sum, lotesMap) => {
                 return sum + (lotesMap[lote.id_lote] || 0);
               }, 0);
 
-              const stockAsignable = Math.max(
-                0,
-                (lote.stock_actual_base || 0) - totalOtherItemsForThisLot,
-              );
+              // Stock restante global (lo que se muestra al usuario)
+              const stockVisible = Math.max(0, (lote.stock_actual_base || 0) - totalItemsTotal);
 
+              // Lo máximo extra que puede añadir esta fila actual
               const maxBase = Math.min(
-                stockAsignable,
+                stockVisible + cant,
                 pendienteBase - (tEntregadoDetalleActualBase - cant),
               );
               const maxLote = maxBase / (lote.contenido_por_presentacion || 1);
@@ -95,7 +92,7 @@ export const LotesTable = ({
                   maxBase={maxBase}
                   maxLote={maxLote}
                   detalle_req={detalle_req}
-                  stockAsignable={stockAsignable}
+                  stockVisible={stockVisible}
                   handleCantChange={handleCantChange}
                   handleCantLoteChange={handleCantLoteChange}
                 />
