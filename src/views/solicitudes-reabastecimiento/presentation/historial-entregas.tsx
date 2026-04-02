@@ -151,6 +151,7 @@ export const HistorialEntregas = ({
         const pendientes = (h.detalles || []).filter(
           (d) => 
             d.estado_entrega_detalle === "Entregado" || 
+            d.estado_entrega_detalle === "En despacho" || 
             d.estado_entrega_detalle === "Recibido Parcialmente",
         );
 
@@ -322,7 +323,7 @@ export const HistorialEntregas = ({
                           {d.producto}
                         </Text>
                         <Group gap={4}>
-                          {d.estado_entrega_detalle === "Recibido" ? (
+                          {d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" ? (
                             <Badge
                               size="xs"
                               variant="light"
@@ -354,7 +355,7 @@ export const HistorialEntregas = ({
                             {d.unidad_base_abv}
                           </span>
                         </Text>
-                        {d.estado_entrega_detalle === "Entregado" ? (
+                        {d.estado_entrega_detalle === "Entregado" || d.estado_entrega_detalle === "En despacho" ? (
                           <Badge size="xs" variant="dot" color="orange" className="mt-1">
                             Pendiente
                           </Badge>
@@ -368,8 +369,8 @@ export const HistorialEntregas = ({
                   ))}
                 </div>
 
-                {/* Trazabilidad de Recepciones — solo si es Solicitud y hay algo recibido */}
-                {h.tipo_entrega === "Solicitud" && h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
+                {h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
                   <div className="px-4 pb-3">
                     <UnstyledButton
                       onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
@@ -389,7 +390,7 @@ export const HistorialEntregas = ({
                       </Group>
                     </UnstyledButton>
                     <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
-                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} />
+                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega={h.tipo_entrega} />
                     </Collapse>
                   </div>
                 )}

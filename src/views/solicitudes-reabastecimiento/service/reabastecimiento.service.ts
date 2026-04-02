@@ -151,11 +151,11 @@ export const ReabastecimientoService = {
     return res.data;
   },
 
-  getHistorialRecepcionesEntrega: async (idEntrega: number) => {
+  getHistorialRecepcionesEntrega: async (idEntrega: number, tipoEntrega: string = 'Solicitud') => {
     const res = await api.get<IRespuesta<RecepcionEvento[]>>(
       `${path}/historial-recepciones-entrega`,
       {
-        params: { id_reabastecimiento_entrega: idEntrega },
+        params: { id_reabastecimiento_entrega: idEntrega, tipo_entrega: tipoEntrega },
       },
     );
     return res.data;

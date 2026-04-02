@@ -19,9 +19,10 @@ import type { IArchivo } from "../../../shared/interfaces";
 
 interface Props {
     idEntrega: number;
+    tipoEntrega?: string;
 }
 
-export const ResumenRecepciones = ({ idEntrega }: Props) => {
+export const ResumenRecepciones = ({ idEntrega, tipoEntrega = 'Solicitud' }: Props) => {
     const [loading, setLoading] = useState(true);
     const [recepciones, setRecepciones] = useState<RecepcionEvento[]>([]);
     const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
@@ -34,7 +35,7 @@ export const ResumenRecepciones = ({ idEntrega }: Props) => {
         const load = async () => {
             setLoading(true);
             try {
-                const res = await ReabastecimientoService.getHistorialRecepcionesEntrega(idEntrega);
+                const res = await ReabastecimientoService.getHistorialRecepcionesEntrega(idEntrega, tipoEntrega);
                 if (res.success && res.data) {
                     setRecepciones(res.data);
                 }
@@ -45,7 +46,7 @@ export const ResumenRecepciones = ({ idEntrega }: Props) => {
             }
         };
         load();
-    }, [idEntrega]);
+    }, [idEntrega, tipoEntrega]);
 
     if (loading) return (
         <Group justify="center" p="md">
