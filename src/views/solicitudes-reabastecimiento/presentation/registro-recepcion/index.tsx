@@ -11,7 +11,6 @@ import {
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  PhotoIcon,
   ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";

@@ -369,7 +369,7 @@ export const HistorialEntregas = ({
                 </div>
 
                 {/* Trazabilidad de Recepciones — solo si es Solicitud y hay algo recibido */}
-                {h.tipo_entrega === "Solicitud" && h.detalles.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                {h.tipo_entrega === "Solicitud" && h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
                   <div className="px-4 pb-3">
                     <UnstyledButton
                       onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
