@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
-import { InboxStackIcon } from "@heroicons/react/24/outline";
+import { InboxStackIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { BlackcitoMascot } from "../../../../presentation/components/BlackcitoMascot";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import type { RES_Lote } from "../../service/lotes.responses";
@@ -17,6 +19,8 @@ export const ProductGroupCard = ({
   columns,
   loading,
 }: ProductGroupCardProps) => {
+  const [showBlackcito, setShowBlackcito] = useState(false);
+
   const isBajoStock =
     Number(product.total_stock_base) <= Number(product.stock_minimo);
 
@@ -55,16 +59,30 @@ export const ProductGroupCard = ({
                   </Badge>
                 )}
                 {isBajoStock && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded py-0.5 px-2 w-fit animate-pulse">
-                    <Text
-                      size="9px"
-                      c="red.4"
-                      fw={900}
-                      className="uppercase tracking-widest leading-none"
+                  <>
+                    <div 
+                      className="bg-orange-500/20 border-2 border-orange-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
+                      onMouseEnter={() => setShowBlackcito(true)}
+                      onMouseLeave={() => setShowBlackcito(false)}
                     >
-                      Stock crítico
-                    </Text>
-                  </div>
+                      <ExclamationTriangleIcon className="w-4 h-4 text-orange-400" />
+                      <Text
+                        size="10px"
+                        c="white"
+                        fw={900}
+                        className="uppercase tracking-widest leading-none"
+                        style={{ textShadow: "0px 1px 2px rgba(0,0,0,0.8)" }}
+                      >
+                        ¡Stock crítico!
+                      </Text>
+                    </div>
+
+                    <BlackcitoMascot 
+                      emotion="enojado" 
+                      message={`¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`}
+                      visible={showBlackcito}
+                    />
+                  </>
                 )}
               </Group>
             </div>
