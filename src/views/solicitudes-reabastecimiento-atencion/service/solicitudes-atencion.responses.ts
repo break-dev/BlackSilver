@@ -81,6 +81,7 @@ export interface RES_DetalleEntregaReabastecimiento {
   producto: string;
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimiento;
+  estado_entrega_detalle?: string;
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_solicitud: number;

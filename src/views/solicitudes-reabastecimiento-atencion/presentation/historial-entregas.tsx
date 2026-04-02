@@ -22,6 +22,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
+import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -30,9 +32,14 @@ interface HistorialProps {
 export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
   const { loading, entregas, error } = useHistorialEntregas(idSolicitud);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
 
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleTrazabilidad = (id: number) => {
+    setShowTrazabilidad((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   if (loading)
@@ -221,6 +228,32 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
+                {h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                  <div className="px-4 pb-3 mt-4">
+                    <UnstyledButton
+                      onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
+                      className="w-full"
+                    >
+                      <Group
+                        gap="xs"
+                        className="py-2 px-3 rounded-lg border border-dashed border-zinc-700/60 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all"
+                      >
+                        <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-400/70" />
+                        <Text size="xs" fw={700} c="zinc.4" className="flex-1 text-left">
+                          Seguimiento de recepciones del destino
+                        </Text>
+                        {showTrazabilidad[h.id_reabastecimiento_entrega]
+                          ? <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                          : <ChevronDownIcon className="w-4 h-4 text-zinc-500" />}
+                      </Group>
+                    </UnstyledButton>
+                    <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
+                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega={h.tipo_entrega} />
+                    </Collapse>
+                  </div>
+                )}
               </div>
             </Collapse>
           </Paper>

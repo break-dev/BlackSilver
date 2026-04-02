@@ -24,6 +24,7 @@ import { type RES_EntregaPrestamo } from "../service/prestamos-atencion.response
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces";
+import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
 
 interface Props {
   entregas: RES_EntregaPrestamo[];
@@ -32,9 +33,14 @@ interface Props {
 
 export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
 
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleTrazabilidad = (id: number) => {
+    setShowTrazabilidad((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const isExpanded = (id: number, index: number) => {
@@ -304,6 +310,32 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
+                {h.detalles?.some(d => d.estado === "Recibido" || d.estado === "Entrega confirmada" || d.estado === "Recibido Parcialmente" || d.estado === "En despacho") && (
+                  <div className="px-4 pb-3 mt-4">
+                    <UnstyledButton
+                      onClick={() => toggleTrazabilidad(h.id_entrega)}
+                      className="w-full"
+                    >
+                      <Group
+                        gap="xs"
+                        className="py-2 px-3 rounded-lg border border-dashed border-zinc-700/60 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all"
+                      >
+                        <ClipboardDocumentCheckIcon className="w-4 h-4 text-indigo-400/70" />
+                        <Text size="xs" fw={700} c="zinc.4" className="flex-1 text-left">
+                          Seguimiento de recepciones del destino
+                        </Text>
+                        {showTrazabilidad[h.id_entrega]
+                          ? <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                          : <ChevronDownIcon className="w-4 h-4 text-zinc-500" />}
+                      </Group>
+                    </UnstyledButton>
+                    <Collapse in={!!showTrazabilidad[h.id_entrega]}>
+                      <ResumenRecepciones idEntrega={h.id_entrega} tipoEntrega="Prestamo" />
+                    </Collapse>
+                  </div>
+                )}
               </div>
             </Collapse>
           </Paper>
