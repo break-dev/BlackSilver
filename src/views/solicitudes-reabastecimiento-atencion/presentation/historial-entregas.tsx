@@ -250,7 +250,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       </Group>
                     </UnstyledButton>
                     <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
-                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega={h.tipo_entrega} />
+                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega="Solicitud" />
                     </Collapse>
                   </div>
                 )}
