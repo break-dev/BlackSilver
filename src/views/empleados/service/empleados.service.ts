@@ -6,17 +6,23 @@ import type {
   RES_Area,
   RES_Cargo,
   RES_Empresa,
+  RES_Mina,
 } from "./empleados.responses";
 
 export class EmpleadosService {
   private static PATH = "/empleados";
 
   public static get_empleados = async (
-    idEmpresa?: number,
+    idMina?: number,
   ): Promise<IRespuesta<RES_Empleado[]>> => {
     const { data } = await api.get(this.PATH, {
-      params: { id_empresa: idEmpresa },
+      params: { id_mina: idMina },
     });
+    return data;
+  };
+
+  public static get_minas = async (): Promise<IRespuesta<RES_Mina[]>> => {
+    const { data } = await api.get(`${this.PATH}/minas`);
     return data;
   };
 

@@ -16,10 +16,10 @@ import {
   InformationCircleIcon,
   PencilSquareIcon,
   PlusIcon,
-  BuildingOfficeIcon,
   EllipsisVerticalIcon,
   TrashIcon,
   PencilIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -37,9 +37,9 @@ export const EmpleadosPage = () => {
   const { notifySuccess, notifyError } = useNotify();
 
   const {
-    empresas,
-    idEmpresa,
-    setIdEmpresa,
+    minas,
+    idMina,
+    setIdMina,
     empleados,
     loadingEmpresas,
     loading,
@@ -106,6 +106,42 @@ export const EmpleadosPage = () => {
             </Text>
           </div>
         </Group>
+      ),
+    },
+    {
+      accessor: "empresa",
+      title: "Empresa",
+      render: (r) => (
+        <Text size="xs" fw={700} className="text-zinc-300">
+          {r.empresa}
+        </Text>
+      ),
+    },
+    {
+      accessor: "mina",
+      title: "Mina(s)",
+      render: (r) => (
+        <div>
+          {r.minas_asignadas === "Por asignar" ? (
+            <Badge variant="dot" color="gray" radius="sm" size="sm">
+              Operaciones Centrales
+            </Badge>
+          ) : (
+            <div className="flex flex-wrap gap-1">
+              {r.minas_asignadas.split(" | ").map((m, idx) => (
+                <Badge
+                  key={idx}
+                  variant="light"
+                  color="indigo"
+                  radius="sm"
+                  size="xs"
+                >
+                  {m}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -182,16 +218,16 @@ export const EmpleadosPage = () => {
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
           <Select
             placeholder={
-              loadingEmpresas ? "Cargando..." : "Filtrar por empresa..."
+              loadingEmpresas ? "Cargando..." : "(Todas las minas)"
             }
-            data={empresas.map((e) => ({
-              value: e.id_empresa.toString(),
-              label: e.nombre_comercial,
+            data={minas.map((m) => ({
+              value: m.id_mina.toString(),
+              label: m.nombre,
             }))}
-            value={idEmpresa?.toString() || null}
-            onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
+            value={idMina?.toString() || null}
+            onChange={(val) => setIdMina(val ? Number(val) : null)}
             leftSection={
-              <BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />
+              <MapPinIcon className="w-4 h-4 text-zinc-400" />
             }
             radius="lg"
             size="sm"
@@ -202,11 +238,11 @@ export const EmpleadosPage = () => {
             }}
             disabled={loadingEmpresas}
             searchable
+            clearable
           />
 
-          {idEmpresa && (
-            <TextInput
-              placeholder="Buscar por nombre, DNI o cargo..."
+          <TextInput
+            placeholder="Buscar por nombre, DNI o cargo..."
               leftSection={
                 <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
               }
@@ -214,16 +250,16 @@ export const EmpleadosPage = () => {
               onChange={(e) => setBusqueda(e.currentTarget.value)}
               radius="lg"
               size="sm"
-              className="w-full sm:w-80"
+              className="w-full flex-1"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
               }}
             />
-          )}
         </div>
 
         <Button
+
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openRegistro}
           radius="lg"
@@ -234,26 +270,12 @@ export const EmpleadosPage = () => {
         </Button>
       </div>
 
-      {idEmpresa ? (
-        <DataTableEstandar
-          idAccessor="id_empleado"
-          columns={columns}
-          records={empleados}
-          loading={loading}
-        />
-      ) : (
-        <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed border-zinc-800/60 rounded-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800/50 border border-zinc-700 flex items-center justify-center mb-3">
-            <BuildingOfficeIcon className="w-6 h-6 text-zinc-600" />
-          </div>
-          <Text size="sm" className="text-zinc-500">
-            Sin empresa asignada
-          </Text>
-          <Text size="xs" className="text-zinc-600 mt-0.5">
-            Seleccione una empresa para ver el personal
-          </Text>
-        </div>
-      )}
+      <DataTableEstandar
+        idAccessor="id_empleado"
+        columns={columns}
+        records={empleados}
+        loading={loading}
+      />
 
       <ModalEstandar
         opened={openedRegistro}
@@ -262,9 +284,8 @@ export const EmpleadosPage = () => {
         size="md"
       >
         <RegistroEmpleado
-          idEmpresaDefault={idEmpresa}
-          onSuccess={(nuevo) => {
-            pushNuevoEmpleado(nuevo);
+          onSuccess={(_nuevo) => {
+            pushNuevoEmpleado(_nuevo);
             closeRegistro();
           }}
           onCancel={closeRegistro}

@@ -14,6 +14,12 @@ export interface RES_Empleado {
   fecha_nacimiento: string | null;
   path_foto: string | null;
   estado: string;
+  minas_asignadas: string;
+}
+
+export interface RES_Mina {
+  id_mina: number;
+  nombre: string;
 }
 
 export interface RES_Empresa {
