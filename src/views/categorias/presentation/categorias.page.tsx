@@ -144,8 +144,9 @@ export const CategoriasPage = () => {
                         Destinos de Consumo
                       </span>
                       <span className="text-xs font-semibold text-zinc-300 truncate block">
-                        {cat.ids_consumidoras?.split(",").filter(Boolean)
-                          .length || 0}{" "}
+                        {cat.ids_categorias_consumidoras
+                          ?.split(",")
+                          .filter(Boolean).length || 0}{" "}
                         Destinos
                       </span>
                     </div>
@@ -169,7 +170,9 @@ export const CategoriasPage = () => {
                   <div className="flex items-center gap-1.5 text-[10px] text-zinc-600 font-bold uppercase tracking-wider">
                     <ClipboardDocumentCheckIcon className="w-3.5 h-3.5" />
                     <span className="text-zinc-400 italic truncate max-w-[120px]">
-                      {cat.clasificacion_bien || <span className="text-zinc-600">Sin Clasificación</span>}
+                      {cat.clasificacion_bien || (
+                        <span className="text-zinc-600">Sin Clasificación</span>
+                      )}
                     </span>
                   </div>
 

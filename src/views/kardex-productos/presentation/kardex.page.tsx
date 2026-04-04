@@ -67,7 +67,7 @@ export const KardexProductosPage = () => {
       {
         accessor: "producto",
         title: "Producto",
-        width: 150,
+        width: 180,
         render: (record) => (
           <Group gap="xs" wrap="nowrap">
             <div className="w-9 h-9 rounded-lg bg-zinc-800/80 flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-700">
@@ -80,7 +80,7 @@ export const KardexProductosPage = () => {
               {record.categoria && (
                 <Group gap={4} wrap="nowrap">
                   <TagIcon className="w-3 h-3 text-zinc-500" />
-                  <Text size="xs" color="dimmed" fw={500} className="italic">
+                  <Text size="xs" c="dimmed" fw={500} className="italic">
                     {record.categoria}
                   </Text>
                 </Group>
@@ -102,7 +102,7 @@ export const KardexProductosPage = () => {
       {
         accessor: "tipo_movimiento",
         title: "Transacción",
-        width: 180,
+        width: 120,
         render: (record) => {
           const isIngreso = record.tipo_movimiento
             .toLowerCase()
@@ -112,7 +112,7 @@ export const KardexProductosPage = () => {
               <Text
                 size="10px"
                 fw={800}
-                className="text-zinc-500 uppercase tracking-tighter ml-1"
+                className="text-zinc-500 uppercase tracking-tighter"
               >
                 {record.tipo_origen}
               </Text>
@@ -138,7 +138,7 @@ export const KardexProductosPage = () => {
       {
         accessor: "descripcion",
         title: "Descripción",
-        width: 200,
+        width: 250,
         render: (record) => (
           <Text
             size="xs"

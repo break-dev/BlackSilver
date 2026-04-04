@@ -9,5 +9,5 @@ export interface RES_Categoria {
   para_cocina: boolean;
   para_mina: boolean;
   nombres_consumidoras: string | null;
-  ids_consumidoras: string | null;
+  ids_categorias_consumidoras: string | null;
 }

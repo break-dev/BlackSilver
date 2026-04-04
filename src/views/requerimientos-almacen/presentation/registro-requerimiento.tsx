@@ -172,7 +172,9 @@ export const RegistroRequerimiento = ({
               description="Seleccione las labores donde se emplearán estos materiales"
               data={labores.map((l) => ({
                 value: String(l.id_labor),
-                label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
+                label: l.nombre
+                  ? `${l.correlativo} (${l.nombre})`
+                  : l.correlativo,
               }))}
               value={idLabores.map(String)}
               onChange={(vals) => setIdLabores(vals.map(Number))}
@@ -396,9 +398,7 @@ export const RegistroRequerimiento = ({
                             idUnidadMedida > 0 ? "text-white" : "text-zinc-700"
                           }
                         >
-                          {cantidad.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatNumber(cantidad)}
                         </Text>
                         <Text
                           size="xs"
@@ -435,9 +435,7 @@ export const RegistroRequerimiento = ({
                               : "text-zinc-700"
                           }
                         >
-                          {totalBase.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatNumber(totalBase)}
                         </Text>
                         <Text
                           size="xs"
@@ -465,9 +463,7 @@ export const RegistroRequerimiento = ({
               <th className="px-4 py-3 text-left font-semibold min-w-[150px]">
                 Producto
               </th>
-              <th className="px-4 py-3 text-center min-w-[300px]">
-                Cantidad
-              </th>
+              <th className="px-4 py-3 text-center min-w-[300px]">Cantidad</th>
               <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
                 Destino / Comentario
               </th>
@@ -510,40 +506,63 @@ export const RegistroRequerimiento = ({
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Stack gap={4} align="center">
-                        <Group gap={8} justify="center" wrap="nowrap" className="w-fit">
+                        <Group
+                          gap={8}
+                          justify="center"
+                          wrap="nowrap"
+                          className="w-fit"
+                        >
                           {/* Bloque Cantidad */}
-                          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
+                          >
                             <NumberInput
                               variant="unstyled"
                               value={det.cantidad_solicitada}
-                              onChange={(val) => actualizarCantidadItem(index, Number(val))}
+                              onChange={(val) =>
+                                actualizarCantidadItem(index, Number(val))
+                              }
                               size="xs"
                               hideControls
                               classNames={{
-                                  input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`
+                                input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`,
                               }}
                             />
-                            <Text size="9px" fw={900} className={`uppercase whitespace-nowrap ${conError ? "text-red-400" : "text-zinc-500"}`}>
+                            <Text
+                              size="9px"
+                              fw={900}
+                              className={`uppercase whitespace-nowrap ${conError ? "text-red-400" : "text-zinc-500"}`}
+                            >
                               {uni?.abreviatura}
                             </Text>
                           </div>
 
-                          {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
+                          {uni?.id_unidad_medida !==
+                            prod?.id_unidad_medida_base && (
                             <>
                               {/* Bloque Contenido */}
-                              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${det.contenido_por_presentacion <= 0 ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}>
+                              <div
+                                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${det.contenido_por_presentacion <= 0 ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
+                              >
                                 <NumberInput
                                   variant="unstyled"
                                   value={det.contenido_por_presentacion}
-                                  onChange={(val) => actualizarContenidoItem(index, Number(val))}
+                                  onChange={(val) =>
+                                    actualizarContenidoItem(index, Number(val))
+                                  }
                                   size="xs"
                                   hideControls
                                   classNames={{
-                                      input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-indigo-400"}`
+                                    input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-indigo-400"}`,
                                   }}
                                 />
-                                <Text size="9px" fw={900} className={`uppercase whitespace-nowrap ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-zinc-500"}`}>
-                                  {prod?.unidad_medida_base_abv} x {uni?.abreviatura}
+                                <Text
+                                  size="9px"
+                                  fw={900}
+                                  className={`uppercase whitespace-nowrap ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-zinc-500"}`}
+                                >
+                                  {prod?.unidad_medida_base_abv} x{" "}
+                                  {uni?.abreviatura}
                                 </Text>
                               </div>
                             </>
@@ -551,12 +570,24 @@ export const RegistroRequerimiento = ({
                         </Group>
 
                         {/* Total Bottom */}
-                        {uni?.id_unidad_medida !== prod?.id_unidad_medida_base && (
+                        {uni?.id_unidad_medida !==
+                          prod?.id_unidad_medida_base && (
                           <div className="flex items-center gap-1.5 group">
-                             <Text size="9px" fw={900} variant="gradient" gradient={{ from: 'pink.4', to: 'pink.6' }} className="uppercase tracking-widest">
-                                Total: {formatNumber(det.cantidad_solicitada * det.contenido_por_presentacion)} {prod?.unidad_medida_base_abv}
-                             </Text>
-                             <div className="h-px w-8 bg-linear-to-r from-pink-500/50 to-transparent group-hover:w-12 transition-all" />
+                            <Text
+                              size="9px"
+                              fw={900}
+                              variant="gradient"
+                              gradient={{ from: "pink.4", to: "pink.6" }}
+                              className="uppercase tracking-widest"
+                            >
+                              Total:{" "}
+                              {formatNumber(
+                                det.cantidad_solicitada *
+                                  det.contenido_por_presentacion,
+                              )}{" "}
+                              {prod?.unidad_medida_base_abv}
+                            </Text>
+                            <div className="h-px w-8 bg-linear-to-r from-pink-500/50 to-transparent group-hover:w-12 transition-all" />
                           </div>
                         )}
                       </Stack>
@@ -564,9 +595,9 @@ export const RegistroRequerimiento = ({
                     <td className="px-4 py-3 text-xs text-zinc-400">
                       {dest ? (
                         <div className="flex flex-col gap-1">
-                          <Badge 
-                            size="xs" 
-                            variant="filled" 
+                          <Badge
+                            size="xs"
+                            variant="filled"
                             color="pink"
                             className="w-fit font-bold tracking-tight px-3"
                             style={{ color: "white" }}
@@ -574,7 +605,9 @@ export const RegistroRequerimiento = ({
                             PARA: {dest.nombre}
                           </Badge>
                           {det.comentario && (
-                            <Text size="xs" c="dimmed" mt={2}>{det.comentario}</Text>
+                            <Text size="xs" c="dimmed" mt={2}>
+                              {det.comentario}
+                            </Text>
                           )}
                         </div>
                       ) : (
@@ -604,13 +637,13 @@ export const RegistroRequerimiento = ({
         {error && (
           <div className="px-4 py-2 bg-red-900/20 border border-red-500/50 rounded-xl animate-pulse">
             <Text
-                c="red.5"
-                size="sm"
-                fw={700}
-                className="flex items-center gap-2"
+              c="red.5"
+              size="sm"
+              fw={700}
+              className="flex items-center gap-2"
             >
-                <BoltIcon className="w-4 h-4" />
-                {error}
+              <BoltIcon className="w-4 h-4" />
+              {error}
             </Text>
           </div>
         )}
@@ -629,9 +662,12 @@ export const RegistroRequerimiento = ({
           disabled={detalles.length === 0}
           radius="lg"
           className={`font-semibold shadow-lg border-0 px-8 transition-all ${
-            detalles.some(d => d.cantidad_solicitada <= 0 || d.contenido_por_presentacion <= 0) 
-            ? "bg-red-900/50 text-red-200 cursor-not-allowed border border-red-500/50" 
-            : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200"
+            detalles.some(
+              (d) =>
+                d.cantidad_solicitada <= 0 || d.contenido_por_presentacion <= 0,
+            )
+              ? "bg-red-900/50 text-red-200 cursor-not-allowed border border-red-500/50"
+              : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200"
           }`}
         >
           Guardar Requerimiento

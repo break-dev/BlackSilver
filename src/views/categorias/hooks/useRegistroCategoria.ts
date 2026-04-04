@@ -54,7 +54,7 @@ export const useRegistroCategoria = ({
       es_consumible: esConsumible,
       para_cocina: paraCocina,
       para_mina: paraMina,
-      ids_consumidoras: idsConsumidoras,
+      ids_categorias_consumidoras: idsConsumidoras,
     };
 
     const validation = Schema_RegistroCategoria.safeParse(data);

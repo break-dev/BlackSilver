@@ -48,8 +48,8 @@ export const useCategoriasPage = () => {
   const handleOpenGestionDestinos = (cat: RES_Categoria) => {
     setCategoriaSeleccionada(cat);
     // Parseamos los IDs que vienen de la BD ("1,2,3" -> [1,2,3])
-    const ids = cat.ids_consumidoras
-      ? cat.ids_consumidoras.split(",").map(Number)
+    const ids = cat.ids_categorias_consumidoras
+      ? cat.ids_categorias_consumidoras.split(",").map(Number)
       : [];
     setIdsDestinosTemp(ids);
     openDestinos();

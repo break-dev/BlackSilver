@@ -22,11 +22,11 @@ export class CategoriasService {
 
   public static actualizar_consumidoras = async (
     id_categoria: number,
-    ids_consumidoras: number[],
+    ids_categorias_consumidoras: number[],
   ): Promise<IRespuesta<RES_Categoria>> => {
     const { data } = await api.post(`${this.PATH}/actualizar-consumidoras`, {
       id_categoria,
-      ids_consumidoras,
+      ids_categorias_consumidoras,
     });
     return data;
   };
