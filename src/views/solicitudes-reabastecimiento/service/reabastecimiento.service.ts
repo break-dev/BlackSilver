@@ -62,7 +62,7 @@ export const ReabastecimientoService = {
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
     const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
-      `${path}/historial-entregas`,
+      `${path}/entregas`,
       {
         params: { id_solicitud_reabastecimiento: idSolicitud },
       },

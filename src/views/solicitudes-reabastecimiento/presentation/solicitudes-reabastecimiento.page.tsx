@@ -126,12 +126,12 @@ export const SolicitudesReabastecimientoPage = () => {
         ),
       },
       {
-        accessor: "empleado_solicitante",
+        accessor: "solicitante",
         title: "Solicitante",
         width: 200,
         render: (item) => (
           <Text size="sm" className="text-zinc-400">
-            {item.empleado_solicitante}
+            {item.solicitante}
           </Text>
         ),
       },

@@ -134,7 +134,7 @@ export const DetalleSolicitud = ({
               fw={800}
               className="text-zinc-100 tracking-tight leading-tight"
             >
-              {headerData.empleado_solicitante}
+              {headerData.solicitante}
             </Text>
           </Stack>
         </Paper>
@@ -251,7 +251,9 @@ export const DetalleSolicitud = ({
             </div>
             <Text size="sm" fw={800} className="text-zinc-100 font-mono">
               {headerData.fecha_entrega_requerida || (
-                <span className="text-zinc-500 italic font-normal">Sin fecha</span>
+                <span className="text-zinc-500 italic font-normal">
+                  Sin fecha
+                </span>
               )}
             </Text>
           </Stack>
@@ -481,10 +483,10 @@ export const DetalleSolicitud = ({
         title="Historial de Entregas"
         size="70%"
       >
-        <HistorialEntregas 
-            idSolicitud={headerData.id_solicitud} 
-            idAlmacenSolicitante={headerData.id_almacen_solicitante} 
-            almacenSolicitante={headerData.almacen_solicitante}
+        <HistorialEntregas
+          idSolicitud={headerData.id_solicitud}
+          idAlmacenSolicitante={headerData.id_almacen_solicitante}
+          almacenSolicitante={headerData.almacen_solicitante}
         />
       </ModalEstandar>
     </Stack>
