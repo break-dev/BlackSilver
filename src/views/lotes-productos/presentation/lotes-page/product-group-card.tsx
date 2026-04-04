@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
-import { InboxStackIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { Badge, Group, Stack, Text } from "@mantine/core";
+import {
+  InboxStackIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { BlackcitoMascot } from "../../../../presentation/components/BlackcitoMascot";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
@@ -25,18 +28,16 @@ export const ProductGroupCard = ({
     Number(product.total_stock_base) <= Number(product.stock_minimo);
 
   return (
-    <Paper
-      withBorder
-      radius="24px"
-      className="bg-zinc-900/20 border-zinc-800/50 shadow-xl overflow-hidden flex flex-col"
+    <div
+      className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md"
     >
       {/* Product Summary Header */}
-      <div className="p-4 bg-zinc-900/40 border-b border-zinc-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="p-4 bg-zinc-900/20 border-b border-zinc-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20">
             <InboxStackIcon className="w-4 h-4 text-indigo-400" />
           </div>
-          <Stack gap={0}>
+          <Stack gap={2}>
             <Text
               fw={800}
               className="uppercase tracking-widest text-zinc-500 text-[10px]!"
@@ -60,14 +61,14 @@ export const ProductGroupCard = ({
                 )}
                 {isBajoStock && (
                   <>
-                    <div 
-                      className="bg-orange-500/20 border-2 border-orange-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
+                    <div
+                      className="bg-rose-500/20 border-2 border-rose-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
                       onMouseEnter={() => setShowBlackcito(true)}
                       onMouseLeave={() => setShowBlackcito(false)}
                     >
-                      <ExclamationTriangleIcon className="w-4 h-4 text-orange-400" />
+                      <ExclamationTriangleIcon className="w-3 h-3 text-rose-400" />
                       <Text
-                        size="10px"
+                        size="9px"
                         c="white"
                         fw={900}
                         className="uppercase tracking-widest leading-none"
@@ -77,8 +78,8 @@ export const ProductGroupCard = ({
                       </Text>
                     </div>
 
-                    <BlackcitoMascot 
-                      emotion="enojado" 
+                    <BlackcitoMascot
+                      emotion="enojado"
                       message={`¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`}
                       visible={showBlackcito}
                     />
@@ -94,7 +95,7 @@ export const ProductGroupCard = ({
           {product.es_perecible == true && (
             <div className="hidden sm:flex items-center gap-4 p-2 bg-zinc-950/40 rounded-xl border border-zinc-800/50 px-4">
               <div className="flex flex-col items-center">
-                <Text size="8px" fw={900} className="text-zinc-600 uppercase">
+                <Text size="9px" fw={900} className="text-zinc-600 uppercase">
                   Vigentes
                 </Text>
                 <Text size="xs" fw={900} className="text-emerald-500">
@@ -103,7 +104,7 @@ export const ProductGroupCard = ({
               </div>
               <div className="w-px h-6 bg-zinc-800/50" />
               <div className="flex flex-col items-center">
-                <Text size="8px" fw={900} className="text-zinc-600 uppercase">
+                <Text size="9px" fw={900} className="text-zinc-600 uppercase">
                   Por Vencer
                 </Text>
                 <Text size="xs" fw={900} className="text-amber-500">
@@ -112,7 +113,7 @@ export const ProductGroupCard = ({
               </div>
               <div className="w-px h-6 bg-zinc-800/50" />
               <div className="flex flex-col items-center">
-                <Text size="8px" fw={900} className="text-zinc-600 uppercase">
+                <Text size="9px" fw={900} className="text-zinc-600 uppercase">
                   Vencidos
                 </Text>
                 <Text size="xs" fw={900} className="text-red-500">
@@ -148,18 +149,16 @@ export const ProductGroupCard = ({
       </div>
 
       {/* DataTable for lots of this product */}
-      <div className="relative">
+      <div className="relative shadow-inner">
         <DataTableEstandar
           idAccessor="id_lote"
           columns={columns}
           records={product.lotes}
           loading={loading}
           initialPageSize={5}
-          minHeight={0} // Allows shrinking
-          // Using a style for max height control
-          // style={{ maxHeight: 350 }}
+          minHeight={0} // Permite que se encoja si hay pocos registros
         />
       </div>
-    </Paper>
+    </div>
   );
 };

@@ -159,7 +159,8 @@ export const LotesPage = () => {
                   radius="md"
                   className="font-bold h-7 border border-pink-500/20"
                 >
-                  {record.stock_actual_base} {record.unidad_medida_base}
+                  {formatNumber(record.stock_actual_base)}{" "}
+                  {record.unidad_medida_base}
                 </Badge>
               </div>
 
@@ -195,7 +196,7 @@ export const LotesPage = () => {
               {dayjs(record.fecha_hora_ingreso).format("DD MMM YYYY")}
             </Text>
             <Text
-              size="10px"
+              size="11px"
               c="dimmed"
               fw={700}
               className="uppercase tracking-tighter"
@@ -231,7 +232,7 @@ export const LotesPage = () => {
             </div>
             <div className="flex flex-col items-start gap-0.5">
               <Text
-                size="xs"
+                size="11px"
                 fw={800}
                 className={isVencido ? "text-red-500" : "text-orange-400"}
               >
@@ -265,7 +266,7 @@ export const LotesPage = () => {
         return (
           <Stack gap={2} align="center">
             <Text
-              size="xs"
+              size="10px"
               fw={900}
               className={
                 record.dias_para_vencer <= 0 ? "text-red-500" : "text-zinc-300"
@@ -276,7 +277,7 @@ export const LotesPage = () => {
                 : `QUEDAN: ${record.dias_para_vencer} DÍAS`}
             </Text>
             {record.dias_espera_vencimiento && (
-              <Text size="9px" c="dimmed" fw={700} className="uppercase">
+              <Text size="10px" c="dimmed" fw={700} className="uppercase">
                 Aviso: {record.dias_espera_vencimiento}d. antes
               </Text>
             )}

@@ -52,6 +52,8 @@ export const DataTableEstandar = ({
     });
   }, [columns, page, pageSize]);
 
+  const { minHeight = 300, ...otherProps } = props;
+
   return (
     <div
       className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden 
@@ -63,9 +65,9 @@ export const DataTableEstandar = ({
         totalRecords={records.length}
         recordsPerPage={pageSize}
         page={page}
-        minHeight={300}
+        minHeight={minHeight}
         onPageChange={setPage}
-        recordsPerPageOptions={[10, 25, 50, 100]}
+        recordsPerPageOptions={[5, 10, 25, 50, 100]}
         onRecordsPerPageChange={setPageSize}
         striped={true}
         highlightOnHover={true}
@@ -79,7 +81,7 @@ export const DataTableEstandar = ({
         scrollAreaProps={{
           viewportProps: {
             style: {
-              minHeight: 300,
+              minHeight: minHeight,
               display: "flex",
               flexDirection: "column",
             },
@@ -96,7 +98,7 @@ export const DataTableEstandar = ({
             "--mantine-color-text": "var(--mantine-color-zinc-3, #d4d4d8)",
           },
         }}
-        {...props}
+        {...otherProps}
       />
     </div>
   );

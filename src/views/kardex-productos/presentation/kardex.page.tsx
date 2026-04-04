@@ -55,32 +55,19 @@ export const KardexProductosPage = () => {
     error,
   } = useKardex();
 
-
-
   // Columns definition
   const columns: DataTableColumn<RES_MovimientoKardex>[] = useMemo(
     () => [
       {
-        accessor: "id_kardex",
+        accessor: "index",
         title: "#",
         textAlign: "center",
-        width: 60,
-        render: (_record, index) => index + 1,
-      },
-      {
-        accessor: "correlativo",
-        title: "Cód. Lote",
-        width: 120,
-        render: (record) => (
-          <Badge variant="light" color="violet" radius="sm">
-            {record.correlativo}
-          </Badge>
-        ),
+        width: 50,
       },
       {
         accessor: "producto",
         title: "Producto",
-        width: 300,
+        width: 150,
         render: (record) => (
           <Group gap="xs" wrap="nowrap">
             <div className="w-9 h-9 rounded-lg bg-zinc-800/80 flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-700">
@@ -100,6 +87,16 @@ export const KardexProductosPage = () => {
               )}
             </Stack>
           </Group>
+        ),
+      },
+      {
+        accessor: "correlativo",
+        title: "Cód. Lote",
+        width: 120,
+        render: (record) => (
+          <Badge variant="light" color="violet" radius="sm">
+            {record.correlativo}
+          </Badge>
         ),
       },
       {
@@ -139,14 +136,28 @@ export const KardexProductosPage = () => {
         },
       },
       {
+        accessor: "descripcion",
+        title: "Descripción",
+        width: 200,
+        render: (record) => (
+          <Text
+            size="xs"
+            className="text-zinc-400 italic line-clamp-2"
+            title={record.descripcion || ""}
+          >
+            {record.descripcion || "-"}
+          </Text>
+        ),
+      },
+      {
         accessor: "cantidad_movimiento",
         title: "Movimiento",
-        textAlign: "right",
+        textAlign: "center",
         width: 160,
         render: (record) => {
           const isIngreso = record.tipo_movimiento === TipoMovimiento.Ingreso;
           return (
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-row items-end gap-2.5 justify-center">
               {record.unidad_base !== record.unidad_lote && (
                 <Badge
                   variant="filled"
@@ -177,10 +188,10 @@ export const KardexProductosPage = () => {
       {
         accessor: "stock_resultante",
         title: "Stock Resultante",
-        textAlign: "right",
+        textAlign: "center",
         width: 170,
         render: (record) => (
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-row items-end gap-2.5 justify-center">
             {record.unidad_base !== record.unidad_lote && (
               <Badge
                 variant="light"
@@ -189,8 +200,7 @@ export const KardexProductosPage = () => {
                 size="sm"
                 className="font-bold border border-cyan-500/30"
               >
-                {formatNumber(record.stock_resultante)}{" "}
-                {record.unidad_lote_abv}
+                {formatNumber(record.stock_resultante)} {record.unidad_lote_abv}
               </Badge>
             )}
             <Badge
@@ -209,9 +219,10 @@ export const KardexProductosPage = () => {
       {
         accessor: "created_at",
         title: "Fecha",
+        textAlign: "center",
         width: 160,
         render: (record) => (
-          <Group gap="sm" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap" justify="center">
             <CalendarDaysIcon className="w-5 h-5 text-indigo-400 shrink-0" />
             <div className="flex flex-col gap-0">
               <Text size="xs" fw={600} className="text-zinc-100">
@@ -222,20 +233,6 @@ export const KardexProductosPage = () => {
               </Text>
             </div>
           </Group>
-        ),
-      },
-      {
-        accessor: "descripcion",
-        title: "Descripción",
-        width: 200,
-        render: (record) => (
-          <Text
-            size="xs"
-            className="text-zinc-400 italic line-clamp-2"
-            title={record.descripcion || ""}
-          >
-            {record.descripcion || "-"}
-          </Text>
         ),
       },
     ],
