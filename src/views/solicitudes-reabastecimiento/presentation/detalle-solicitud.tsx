@@ -346,14 +346,7 @@ export const DetalleSolicitud = ({
                 </tr>
               ) : (
                 detalles.map((det, index) => {
-                  const progresoItem = Math.min(
-                    100,
-                    Math.round(
-                      (Number(det.cantidad_entregada_base || 0) /
-                        Number(det.cantidad_solicitada_base || 1)) *
-                        100,
-                    ),
-                  );
+                  const progresoItem = det.porcentaje_progreso;
 
                   return (
                     <tr
@@ -376,6 +369,14 @@ export const DetalleSolicitud = ({
                             >
                               {det.producto}
                             </Text>
+                            {det.empleado_atencion && (
+                              <Group gap={4}>
+                                <UserIcon className="w-3 h-3 text-indigo-400" />
+                                <Text size="10px" fw={700} c="zinc.5">
+                                  Atendido por: {det.empleado_atencion}
+                                </Text>
+                              </Group>
+                            )}
                           </div>
                         </Group>
                       </td>
@@ -388,10 +389,9 @@ export const DetalleSolicitud = ({
                             className="font-bold shadow-xs whitespace-nowrap"
                           >
                             {formatNumber(det.cantidad_solicitada)}{" "}
-                            {det.unidad_medida_solicitud_abv}
+                            {det.unidad_medida_sol_abv}
                           </Badge>
-                          {det.unidad_medida_base_abv !==
-                            det.unidad_medida_solicitud_abv && (
+                          {det.id_unidad_medida_base !== det.id_unidad_medida_sol && (
                             <>
                               <Badge
                                 variant="filled"
@@ -403,7 +403,7 @@ export const DetalleSolicitud = ({
                                 {formatNumber(det.contenido_por_presentacion)}{" "}
                                 {det.unidad_medida_base_abv}{" "}
                                 <span className="lowercase">x</span>{" "}
-                                {det.unidad_medida_solicitud_abv}
+                                {det.unidad_medida_sol_abv}
                               </Badge>
 
                               <Badge
@@ -424,7 +424,7 @@ export const DetalleSolicitud = ({
                           <div className="flex justify-between items-center px-1">
                             <Text size="10px" fw={800} c="zinc.5">
                               Entregado: {formatNumber(det.cantidad_entregada)}{" "}
-                              {det.unidad_medida_solicitud_abv}
+                              {det.unidad_medida_sol_abv}
                             </Text>
                             <Text size="10px" fw={900} c="indigo.4">
                               {progresoItem}%
@@ -439,15 +439,29 @@ export const DetalleSolicitud = ({
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <Badge
-                          color={getStatusColor(det.estado)}
-                          variant="light"
-                          size="sm"
-                          radius="md"
-                          className="font-bold px-3 py-2.5"
-                        >
-                          {det.estado}
-                        </Badge>
+                        <Stack gap={4} align="center">
+                          <Badge
+                            color={getStatusColor(det.estado)}
+                            variant="light"
+                            size="sm"
+                            radius="md"
+                            className="font-bold px-3 py-2.5"
+                          >
+                            {det.estado}
+                          </Badge>
+                          {det.comentario_decision && (
+                            <Tooltip label={det.comentario_decision} withArrow>
+                              <Text
+                                size="10px"
+                                fw={700}
+                                c="orange.4"
+                                className="max-w-32 truncate"
+                              >
+                                {det.comentario_decision}
+                              </Text>
+                            </Tooltip>
+                          )}
+                        </Stack>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <Group gap={8} justify="center" wrap="nowrap">

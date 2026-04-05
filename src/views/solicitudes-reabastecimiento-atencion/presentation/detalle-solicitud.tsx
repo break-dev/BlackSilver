@@ -305,9 +305,11 @@ export const DetalleSolicitud = ({
                 <th className="px-4 py-4 text-center w-10">
                   {detalles.some(
                     (d) =>
-                      d.estado === EstadoSolicitudDetalle.Aprobado ||
-                      d.estado === EstadoSolicitudDetalle.EnDespacho ||
-                      d.estado === EstadoSolicitudDetalle.NuevaEntrega,
+                      (d.estado === EstadoSolicitudDetalle.Aprobado ||
+                        d.estado === EstadoSolicitudDetalle.EnDespacho ||
+                        d.estado === EstadoSolicitudDetalle.NuevaEntrega ||
+                        d.estado === EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+                      d.cantidad_solicitada_base - d.cantidad_entregada_base > 0,
                   ) && (
                     <div className="flex justify-center">
                       <Checkbox
@@ -354,9 +356,13 @@ export const DetalleSolicitud = ({
                     {idx + 1}
                   </td>
                   <td className="px-4 py-4 text-center">
-                    {item.estado === EstadoSolicitudDetalle.Aprobado ||
-                    item.estado === EstadoSolicitudDetalle.EnDespacho ||
-                    item.estado === EstadoSolicitudDetalle.NuevaEntrega ? (
+                    {(item.estado === EstadoSolicitudDetalle.Aprobado ||
+                      item.estado === EstadoSolicitudDetalle.EnDespacho ||
+                      item.estado === EstadoSolicitudDetalle.NuevaEntrega ||
+                      item.estado === EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+                    item.cantidad_solicitada_base -
+                      item.cantidad_entregada_base >
+                      0 ? (
                       <Checkbox
                         checked={selectedItemsIds.includes(
                           item.id_solicitud_detalle,
@@ -382,45 +388,36 @@ export const DetalleSolicitud = ({
                       >
                         {item.producto}
                       </Text>
+                      {item.empleado_atencion && (
+                        <Group gap={4}>
+                          <UserIcon className="w-3 h-3 text-indigo-400" />
+                          <Text size="10px" fw={700} c="zinc.5">
+                            Atendido por: {item.empleado_atencion}
+                          </Text>
+                        </Group>
+                      )}
                       {(() => {
-                        const stock = Number(item.stock_disponible || 0);
+                        const stock = Number(item.stock_disponible_base || 0);
                         const pendiente = item.pendiente_base;
 
-                        if (stock <= 0) {
-                          return (
-                            <Badge
-                              variant="light"
-                              color="red"
-                              size="xs"
-                              radius="sm"
-                            >
-                              Sin stock
-                            </Badge>
-                          );
-                        }
-
-                        if (stock < pendiente) {
-                          return (
-                            <Badge
-                              variant="light"
-                              color="orange"
-                              size="xs"
-                              radius="sm"
-                            >
-                              Stock insuficiente
-                            </Badge>
-                          );
-                        }
-
                         return (
-                          <Badge
-                            variant="light"
-                            color="green"
-                            size="xs"
-                            radius="sm"
-                          >
-                            Stock disponible
-                          </Badge>
+                          <Group gap={4}>
+                            <Badge
+                              variant="light"
+                              color={stock <= 0 ? "red" : stock < pendiente ? "orange" : "green"}
+                              size="xs"
+                              radius="sm"
+                            >
+                              Stock: {formatNumber(stock)} {item.unidad_medida_base_abv}
+                            </Badge>
+                            {item.cantidad_prestada_total_base > 0 && (
+                              <Tooltip label="Cantidad total prestada desde otros almacenes">
+                                <Badge variant="filled" color="orange" size="xs" radius="sm">
+                                  Prestado: {formatNumber(item.cantidad_prestada_total_base)}
+                                </Badge>
+                              </Tooltip>
+                            )}
+                          </Group>
                         );
                       })()}
                     </Stack>
@@ -468,7 +465,7 @@ export const DetalleSolicitud = ({
                     <div className="flex flex-col gap-1.5 w-full">
                       <div className="flex justify-between items-center px-1">
                         <Text size="10px" fw={800} c="zinc.5">
-                          Entregado: {formatNumber(item.cantidad_entregada)}
+                          Entregado: {formatNumber(item.cantidad_entregada)}{" "}{item.unidad_medida_sol_abv}
                         </Text>
                         <Text size="10px" fw={900} c="indigo.4">
                           {item.porcentaje_progreso}%
@@ -483,15 +480,29 @@ export const DetalleSolicitud = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <Badge
-                      variant="light"
-                      color={getStatusColor(item.estado)}
-                      radius="md"
-                      size="sm"
-                      className="font-bold uppercase"
-                    >
-                      {item.estado}
-                    </Badge>
+                    <Stack gap={4} align="center">
+                      <Badge
+                        variant="light"
+                        color={getStatusColor(item.estado)}
+                        radius="md"
+                        size="sm"
+                        className="font-bold uppercase"
+                      >
+                        {item.estado}
+                      </Badge>
+                      {item.comentario_decision && (
+                        <Tooltip label={item.comentario_decision} withArrow>
+                          <Text
+                            size="10px"
+                            fw={700}
+                            c="orange.4"
+                            className="max-w-32 truncate"
+                          >
+                            {item.comentario_decision}
+                          </Text>
+                        </Tooltip>
+                      )}
+                    </Stack>
                   </td>
                   <td className="px-6 py-4">
                     <Group gap={8} justify="center" wrap="nowrap">
@@ -668,7 +679,7 @@ export const DetalleSolicitud = ({
       <ModalEstandar
         opened={openedEntrega}
         close={closeEntrega}
-        title="Registrar Entrega de Reabastecimiento"
+        title="Registrar Entrega"
         size="90%"
       >
         <RegistroEntrega
@@ -698,7 +709,7 @@ export const DetalleSolicitud = ({
       <ModalEstandar
         opened={openedPrestamo}
         close={closePrestamo}
-        title="Crear Solicitud de Préstamo entre Almacenes"
+        title="Solicitar un Préstamo"
         size="75%"
       >
         <RegistrarPrestamoAlmacen

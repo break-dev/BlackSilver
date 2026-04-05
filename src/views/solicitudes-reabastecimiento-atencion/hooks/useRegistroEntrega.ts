@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
 import type {
   RES_DetalleSolicitud,
-  RES_LoteReabastecimiento,
+  RES_LoteDisponible,
   RES_Empleado,
   RES_Almacen,
   DetalleSolicitudExtendido,
@@ -41,7 +41,7 @@ export const useRegistroEntrega = ({
     RES_Almacen[]
   >([]);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
-  const [lotes, setLotes] = useState<RES_LoteReabastecimiento[]>([]);
+  const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
@@ -209,7 +209,7 @@ export const useRegistroEntrega = ({
   );
 
   const lotesPorProducto = useMemo(() => {
-    const acc: Record<number, RES_LoteReabastecimiento[]> = {};
+    const acc: Record<number, RES_LoteDisponible[]> = {};
     lotes.forEach((l) => {
       if (!acc[l.id_producto]) acc[l.id_producto] = [];
       acc[l.id_producto].push(l);

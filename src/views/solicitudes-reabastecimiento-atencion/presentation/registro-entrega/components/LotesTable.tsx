@@ -1,9 +1,9 @@
 import { Table, Text } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
-import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../service/solicitudes-atencion.responses";
 
 interface LotesTableProps {
-  lotes: RES_LoteReabastecimiento[];
+  lotes: RES_LoteDisponible[];
   idSolicitudDetalle: number;
   unidadMedidaBaseAbv: string;
   entregaCantidades: Record<number, Record<number, number>>;

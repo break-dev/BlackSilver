@@ -12,13 +12,14 @@ export const useHistorialEntregas = (idSolicitud: number) => {
       setLoading(true);
       setError(null);
       
-      const [dataSolicitud, dataPrestamo] = await Promise.all([
-        ReabastecimientoService.obtenerHistorialEntregas(idSolicitud),
-        ReabastecimientoService.obtenerEntregasPrestamo(idSolicitud),
-      ]);
+      const res = await ReabastecimientoService.obtenerHistorialEntregas(idSolicitud);
+
+      if (!res.success || !res.data) {
+        throw new Error(res.message || "Error al cargar historial");
+      }
 
       const entregasSolicitud: RES_EntregaReabastecimiento[] = (
-        dataSolicitud.data || []
+        res.data.logistica || []
       ).map((ent) => ({
         ...ent,
         tipo_entrega: "Solicitud",
@@ -29,10 +30,10 @@ export const useHistorialEntregas = (idSolicitud: number) => {
       }));
 
       const entregasPrestamo: RES_EntregaReabastecimiento[] = (
-        dataPrestamo.data || []
+        res.data.prestamo || []
       ).map((ent) => ({
         ...ent,
-        id_reabastecimiento_entrega: ent.id_entrega!,
+        id_reabastecimiento_entrega: ent.id_reabastecimiento_entrega || ent.id_entrega || 0,
         tipo_entrega: "Prestamo",
         estado:
           ent.estado === "En despacho"

@@ -5,6 +5,10 @@ import {
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
 import type { IArchivo } from "../../../shared/interfaces";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
+export type { RES_Almacen, RES_Empleado, RES_LoteDisponible };
 
 export interface RES_SolicitudReabastecimiento {
   id_solicitud: number;
@@ -38,11 +42,10 @@ export interface RES_DetalleSolicitud {
   cantidad_entregada: number;
   cantidad_entregada_base: number;
   porcentaje_progreso: number;
-  stock_disponible: number;
+  stock_disponible_base: number;
+  cantidad_prestada_total_base: number;
   comentario: string | null;
   comentario_decision: string | null;
-  cantidad_prestada_total: number;
-  cantidad_prestada_total_base: number;
   estado: EstadoSolicitudDetalle;
 }
 
@@ -71,57 +74,39 @@ export interface RES_EntregaReabastecimiento {
   created_at: string;
   estado: string;
   detalles?: RES_DetalleEntregaReabastecimiento[];
+  // Campos adicionales para entregas de préstamos
+  tipo_entrega?: "Solicitud" | "Prestamo";
+  correlativo_prestamo?: string;
+  id_prestamo?: number;
+}
+
+export interface RES_HistorialEntregas {
+  logistica: RES_EntregaReabastecimiento[];
+  prestamo: RES_EntregaReabastecimiento[];
 }
 
 export interface RES_DetalleEntregaReabastecimiento {
   id_entrega_detalle: number;
   id_solicitud_reabastecimiento_detalle: number;
-  correlativo: string; // del lote
+  lote_correlativo: string; // antes correlativo
   fecha_vencimiento: string | null;
   producto: string;
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimiento;
   estado_entrega_detalle?: string;
-  cantidad_base: number;
-  cantidad_lote: number;
-  cantidad_solicitud: number;
+  cantidad_base: number | string;
+  cantidad_lote: number | string;
+  cantidad_solicitud: number | string;
   id_unidad_medida_lote: number;
   id_unidad_medida_base: number;
-  unidad_lote: string;
-  unidad_lote_abv: string;
-  unidad_base: string;
-  unidad_base_abv: string;
+  unidad_lote?: string;
+  unidad_medida_lot_abv: string; // antes unidad_lote_abv
+  unidad_base?: string;
+  unidad_medida_base_abv: string; // antes unidad_base_abv
+  tipo_entrega?: "Solicitud" | "Prestamo";
+  cantidad_recibida_total_base?: number | string; // antes cantidad_recibida_total
 }
 
-export interface RES_LoteReabastecimiento {
-  id_lote: number;
-  id_producto: number;
-  correlativo: string;
-  stock_actual: number;
-  stock_actual_base: number;
-  contenido_por_presentacion: number;
-  id_unidad_medida: number;
-  id_unidad_medida_base: number;
-  unidad_medida: string;
-  unidad_medida_abv: string;
-  fecha_hora_ingreso: string;
-  fecha_vencimiento: string | null;
-  dias_para_vencer: number | null;
-  estado_vencimiento?: EstadoVencimiento;
-}
-
-export interface RES_Almacen {
-  id_almacen: number;
-  nombre: string;
-  es_principal: number | boolean;
-}
-
-export interface RES_Empleado {
-  id_empleado: number;
-  nombre_completo: string;
-  dni: string;
-  path_foto: string | null;
-}
 
 export interface RES_Prestamo {
   id: number;
@@ -156,9 +141,13 @@ export interface RES_DetallePrestamo {
 
 export interface RES_AlmacenConStock {
   id_almacen: number;
-  nombre_almacen: string;
-  stock_actual_base: number;
-  unidad_medida_base: string;
+  nombre: string;
+}
+
+export interface RES_StockTotalAlmacen {
+  id_producto: number;
+  stock_minimo: number;
+  stock_total_base: number;
 }
 
 export interface RES_LoteDisponiblePrestamo {

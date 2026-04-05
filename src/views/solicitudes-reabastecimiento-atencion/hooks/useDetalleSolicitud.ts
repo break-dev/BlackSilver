@@ -87,9 +87,11 @@ export const useDetalleSolicitud = ({
   const eligibleForDelivery = useMemo(() => {
     return detalles.filter(
       (d) =>
-        d.estado === EstadoSolicitudDetalle.Aprobado ||
-        d.estado === EstadoSolicitudDetalle.EnDespacho ||
-        d.estado === EstadoSolicitudDetalle.NuevaEntrega,
+        (d.estado === EstadoSolicitudDetalle.Aprobado ||
+          d.estado === EstadoSolicitudDetalle.EnDespacho ||
+          d.estado === EstadoSolicitudDetalle.NuevaEntrega ||
+          d.estado === EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+        d.cantidad_solicitada_base - d.cantidad_entregada_base > 0,
     );
   }, [detalles]);
 

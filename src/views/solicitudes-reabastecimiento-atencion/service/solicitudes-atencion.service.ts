@@ -4,13 +4,14 @@ import type {
   RES_SolicitudReabastecimiento,
   RES_DetalleSolicitud,
   RES_DetalleLog,
-  RES_EntregaReabastecimiento,
-  RES_LoteReabastecimiento,
   RES_Almacen,
   RES_Empleado,
   RES_Prestamo,
   RES_AlmacenConStock,
   RES_LoteDisponiblePrestamo,
+  RES_HistorialEntregas,
+  RES_StockTotalAlmacen,
+  RES_LoteDisponible,
 } from "./solicitudes-atencion.responses";
 import type {
   DTO_DecisionDetalle,
@@ -64,7 +65,7 @@ export const SolicitudesAtencionService = {
   },
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
+    const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
       `${path}/entregas`,
       {
         params: { id_solicitud: idSolicitud },
@@ -127,7 +128,7 @@ export const SolicitudesAtencionService = {
     idsProductos: number[],
     idAlmacen: number,
   ) => {
-    const res = await api.get<IRespuesta<RES_LoteReabastecimiento[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/auxiliares/lotes`,
       {
         params: { ids_productos: idsProductos, id_almacen: idAlmacen },
@@ -169,6 +170,25 @@ export const SolicitudesAtencionService = {
       `${path}/prestamos/almacenes-con-stock?${params.toString()}`,
     );
     return resp.data;
+  },
+
+  obtenerStockTotalAlmacenPorProductos: async (
+    idAlmacen: number,
+    idsProductos: number[],
+  ) => {
+    const params = new URLSearchParams();
+    idsProductos.forEach((id) =>
+      params.append("ids_productos[]", id.toString()),
+    );
+    params.append("id_almacen", idAlmacen.toString());
+
+    const res = await api.get<IRespuesta<RES_StockTotalAlmacen[]>>(
+      `${path}/prestamos/stock-total-almacen`,
+      {
+        params: { id_almacen: idAlmacen, ids_productos: idsProductos },
+      },
+    );
+    return res.data;
   },
 
   obtenerLotesDisponiblesPrestamo: async (

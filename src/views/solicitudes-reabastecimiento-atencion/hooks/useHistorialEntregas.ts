@@ -10,10 +10,23 @@ export const useHistorialEntregas = (idSolicitud: number) => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res =
-        await SolicitudesAtencionService.obtenerHistorialEntregas(idSolicitud);
-      if (res.success) {
-        setEntregas(res.data);
+      const res = await SolicitudesAtencionService.obtenerHistorialEntregas(idSolicitud);
+      if (res.success && res.data) {
+        const entregasLogistica = (res.data.logistica || []).map(ent => ({
+          ...ent,
+          tipo_entrega: "Solicitud" as const
+        }));
+        
+        const entregasPrestamo = (res.data.prestamo || []).map(ent => ({
+          ...ent,
+          tipo_entrega: "Prestamo" as const
+        }));
+
+        const todas = [...entregasLogistica, ...entregasPrestamo].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        setEntregas(todas);
       } else {
         setError(res.message);
       }

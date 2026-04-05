@@ -1,10 +1,10 @@
 import { Badge, Group, NumberInput, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type { RES_LoteReabastecimiento } from "../../../service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../service/solicitudes-atencion.responses";
 
 interface LoteRowProps {
-  lote: RES_LoteReabastecimiento;
+  lote: RES_LoteDisponible;
   cant: number;
   idSolicitudDetalle: number;
   unidadMedidaBaseAbv: string;
@@ -83,18 +83,18 @@ export const LoteRow = ({
             >
               {formatNumber(stockAsignable)} {unidadMedidaBaseAbv}
             </Badge>
-            {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+            {lote.unidad_medida_lote_abv !== unidadMedidaBaseAbv && (
               <Badge
                 variant="light"
                 color="indigo.4"
                 className="bg-zinc-800/30 font-black h-7"
               >
-                {formatNumber(lote.stock_actual)} {lote.unidad_medida_abv}
+                {formatNumber(lote.stock_actual)} {lote.unidad_medida_lote_abv}
               </Badge>
             )}
           </Group>
 
-          {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+          {lote.unidad_medida_lote_abv !== unidadMedidaBaseAbv && (
             <Text
               size="9px"
               c="zinc.5"
@@ -102,14 +102,14 @@ export const LoteRow = ({
               className="italic uppercase tracking-tight"
             >
               {formatNumber(lote.contenido_por_presentacion)}{" "}
-              {unidadMedidaBaseAbv} x {lote.unidad_medida_abv}
+              {unidadMedidaBaseAbv} x {lote.unidad_medida_lote_abv}
             </Text>
           )}
         </Stack>
       </td>
       <td className="pr-8">
         <div className="flex items-center justify-center gap-3">
-          {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+          {lote.unidad_medida_lote_abv !== unidadMedidaBaseAbv && (
             <NumberInput
               size="sm"
               radius="xl"
@@ -132,7 +132,7 @@ export const LoteRow = ({
             hideControls
             rightSection={
               <Text size="10px" fw={600} c="zinc.5" className="mr-3">
-                {lote.unidad_medida_abv}
+                {lote.unidad_medida_lote_abv}
               </Text>
             }
             rightSectionWidth={60}

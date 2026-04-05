@@ -1,5 +1,8 @@
 import type { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import type { IArchivo } from "../../../shared/interfaces";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+export type { RES_Almacen, RES_UnidadMedida };
 
 export interface RES_SolicitudReabastecimiento {
   id_solicitud: number;
@@ -17,18 +20,22 @@ export interface RES_SolicitudReabastecimiento {
 
 export interface RES_SolicitudDetalle {
   id_solicitud_detalle: number;
+  empleado_atencion: string | null;
+  id_producto: number;
   producto: string;
-  id_unidad_medida_sol: number;
+  stock_minimo: number;
+  id_unidad_medida_base: number;
   unidad_medida_base_abv: string;
-  unidad_medida_solicitud_abv: string;
-  es_fiscalizado: number;
-  es_perecible: number;
-  cantidad_solicitada: number;
-  contenido_por_presentacion: number;
   cantidad_solicitada_base: number;
-  cantidad_entregada: number;
   cantidad_entregada_base: number;
+  contenido_por_presentacion: number;
+  id_unidad_medida_sol: number;
+  unidad_medida_sol_abv: string;
+  cantidad_solicitada: number;
+  cantidad_entregada: number;
+  porcentaje_progreso: number;
   comentario: string | null;
+  comentario_decision: string | null;
   estado: EstadoSolicitudDetalle;
 }
 
@@ -40,11 +47,6 @@ export interface RES_TrazabilidadEvento {
   estado: string;
 }
 
-export interface RES_Almacen_Local {
-  id_almacen: number;
-  nombre: string;
-}
-
 export interface RES_Producto_Local {
   id_producto: number;
   nombre: string;
@@ -53,16 +55,10 @@ export interface RES_Producto_Local {
   id_unidad_medida_base: number;
 }
 
-export interface RES_Unidad_Local {
-  id_unidad_medida: number;
-  nombre: string;
-  abreviatura: string;
-}
-
 export interface RES_DataRegistroSolicitud {
-  almacenes: RES_Almacen_Local[];
+  almacenes: RES_Almacen[];
   productos: RES_Producto_Local[];
-  unidades_medida: RES_Unidad_Local[];
+  unidades_medida: RES_UnidadMedida[];
 }
 
 export interface RES_EntregaReabastecimiento {
@@ -83,6 +79,11 @@ export interface RES_EntregaReabastecimiento {
   tipo_entrega?: "Solicitud" | "Prestamo";
   correlativo_prestamo?: string;
   id_prestamo?: number;
+}
+
+export interface RES_HistorialEntregas {
+  logistica: RES_EntregaReabastecimiento[];
+  prestamo: RES_EntregaReabastecimiento[];
 }
 
 export interface RES_DetalleEntregaReabastecimiento {

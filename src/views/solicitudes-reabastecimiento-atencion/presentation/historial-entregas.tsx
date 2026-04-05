@@ -91,8 +91,23 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       <Text size="sm" fw={900} className="text-white">
                         {h.correlativo}
                       </Text>
-                      <Badge variant="light" color="teal" size="xs">
-                        {h.estado}
+                      {h.tipo_entrega === "Prestamo" && (
+                        <Badge variant="filled" color="indigo" size="xs">
+                          Préstamo
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="light"
+                        color={
+                          h.estado === "Recibida" || h.estado === "Recibido"
+                            ? "teal"
+                            : h.estado === "Procesada" || h.estado === "Recepcionado Parcialmente"
+                            ? "orange"
+                            : "indigo"
+                        }
+                        size="xs"
+                      >
+                        {h.estado === "Recepcionado Parcialmente" ? "Parcial" : h.estado}
                       </Badge>
                     </Group>
                     <Group gap="xs" className="text-zinc-400">
@@ -174,57 +189,98 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                   </div>
                 )}
 
-                <Group gap="xs" mb="sm" mx="md">
-                  <CubeIcon className="w-4 h-4 text-indigo-400/70" />
+                <Group gap="xs" mb="md" mt="md" className="pl-1">
+                  <CubeIcon className="w-4 h-4 text-zinc-500" />
                   <Text
                     size="xs"
                     fw={800}
                     c="zinc.4"
                     className="uppercase tracking-widest"
                   >
-                    Productos Entregados
+                    Productos Despachados ({h.detalles?.length || 0})
                   </Text>
                 </Group>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-4 pb-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 px-4 pb-2">
                   {h.detalles?.map((d) => (
                     <div
                       key={d.id_entrega_detalle}
-                      className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-800/40 flex justify-between items-center group/item hover:border-indigo-500/30 transition-colors"
+                      className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
                     >
-                      <Stack gap={1}>
-                        <Text size="sm" fw={900} className="text-zinc-100">
+                      {/* Highlight lateral en hover item */}
+                      <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
+
+                      <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                        <Text
+                          size="sm"
+                          fw={900}
+                          className="text-white leading-tight"
+                        >
                           {d.producto}
                         </Text>
-                        <Group gap={4}>
+
+                        <Group gap="xs" wrap="nowrap" align="center">
+                          <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                          <Text
+                            size="11px"
+                            fw={800}
+                            c="zinc.4"
+                            className="uppercase tracking-widest leading-none"
+                          >
+                            Lote:
+                          </Text>
                           <Badge
-                            size="xs"
                             variant="light"
                             color="indigo"
-                            className="font-bold"
+                            size="sm"
+                            className="font-bold tracking-wider"
                           >
-                            {d.correlativo}
+                            {d.lote_correlativo}
                           </Badge>
                         </Group>
-                      </Stack>
-                      <Stack gap={0} align="flex-end">
-                        <Text
-                          size="md"
-                          fw={900}
-                          className="text-emerald-400 font-mono"
-                        >
-                          +{formatNumber(d.cantidad_lote)}{" "}
-                          <span className="text-xs font-sans">
-                            {d.unidad_lote_abv}
-                          </span>
-                        </Text>
-                        {d.unidad_lote_abv !== d.unidad_base_abv && (
-                          <Text size="xs" c="dimmed" className="font-mono">
-                            ({formatNumber(d.cantidad_base)} {d.unidad_base_abv}
-                            )
+                      </div>
+
+                      <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
+                        <Group gap="xs" wrap="nowrap" align="center">
+                          <Text
+                            size="md"
+                            fw={900}
+                            className="text-emerald-400 font-mono leading-none"
+                          >
+                            +{formatNumber(d.cantidad_lote)}
                           </Text>
-                        )}
-                      </Stack>
+                          <Text
+                            size="12px"
+                            fw={800}
+                            c="zinc.5"
+                            className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
+                          >
+                            {d.unidad_medida_lot_abv || "UNI"}
+                          </Text>
+
+                          {d.unidad_medida_lot_abv !==
+                            d.unidad_medida_base_abv && (
+                            <>
+                              <div className="w-px h-6 bg-zinc-800/80 mx-1"></div>
+                              <Text
+                                size="md"
+                                fw={700}
+                                className="text-emerald-500/70 font-mono leading-none"
+                              >
+                                +{formatNumber(d.cantidad_base)}
+                              </Text>
+                              <Text
+                                size="12px"
+                                fw={800}
+                                c="zinc.5"
+                                className="uppercase tracking-widest bg-zinc-900/50 px-1.5 py-0.5 rounded-md inline-block"
+                              >
+                                {d.unidad_medida_base_abv}
+                              </Text>
+                            </>
+                          )}
+                        </Group>
+                      </div>
                     </div>
                   ))}
                 </div>

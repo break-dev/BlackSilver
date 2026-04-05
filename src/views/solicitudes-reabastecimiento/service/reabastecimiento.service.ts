@@ -8,6 +8,7 @@ import type {
   RES_EntregaReabastecimiento,
   RES_LoteRecepcion,
   RecepcionEvento,
+  RES_HistorialEntregas,
 } from "./reabastecimiento.responses";
 import type { DTO_CrearSolicitud, DTO_RecibirEntregas, DTO_RecibirEntregaItem } from "./reabastecimiento.requests";
 
@@ -61,7 +62,7 @@ export const ReabastecimientoService = {
   },
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
+    const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
       `${path}/entregas`,
       {
         params: { id_solicitud_reabastecimiento: idSolicitud },

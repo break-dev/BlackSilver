@@ -2,14 +2,14 @@ import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type {
-  RES_LoteReabastecimiento,
+  RES_LoteDisponible,
   DetalleSolicitudExtendido,
 } from "../../../service/solicitudes-atencion.responses";
 import { DetalleEntregaSection } from "./DetalleEntregaSection";
 
 interface ProductoEntregaCardProps {
   detalle: DetalleSolicitudExtendido;
-  lotes: RES_LoteReabastecimiento[];
+  lotes: RES_LoteDisponible[];
   entregaCantidades: Record<number, Record<number, number>>;
   loadingLotes: boolean;
   handleCantChange: (
@@ -68,12 +68,12 @@ export const ProductoEntregaCard = ({
             <Badge
               variant="dot"
               color={
-                detalle.stock_disponible <= detalle.stock_minimo ? "orange" : "teal"
+                detalle.stock_disponible_base <= detalle.stock_minimo ? "orange" : "teal"
               }
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
             >
-              Disponible: {formatNumber(detalle.stock_disponible)}{" "}
+              Disponible: {formatNumber(detalle.stock_disponible_base)}{" "}
               {detalle.unidad_medida_base_abv}
             </Badge>
           </Group>

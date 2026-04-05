@@ -5,7 +5,8 @@ import type {
   RES_DetalleSolicitud,
   RES_SolicitudReabastecimiento,
   RES_Prestamo,
-  RES_LoteDisponiblePrestamo
+  RES_AlmacenConStock,
+  RES_StockTotalAlmacen
 } from "../service/solicitudes-atencion.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
@@ -15,16 +16,7 @@ interface UseRegistrarPrestamoProps {
   onSuccess: (nuevoPrestamo: RES_Prestamo) => void;
 }
 
-export type AlmacenAliado = {
-  id_almacen: number;
-  nombre_almacen: string;
-  items: {
-      id_producto: number;
-      nombre_producto: string;
-      stock_actual_base: number;
-      unidad_medida_base: string;
-  }[];
-};
+export type AlmacenAliado = RES_AlmacenConStock;
 
 export const useRegistrarPrestamo = ({
   solicitud,
@@ -42,7 +34,7 @@ export const useRegistrarPrestamo = ({
   const [almacenesAliados, setAlmacenesAliados] = useState<AlmacenAliado[]>([]);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [loadingStocks, setLoadingStocks] = useState(false);
-  const [stocksAlmacen, setStocksAlmacen] = useState<Record<number, RES_LoteDisponiblePrestamo[]>>({});
+  const [stocksAlmacen, setStocksAlmacen] = useState<Record<number, RES_StockTotalAlmacen>>({});
 
   const { notifyError, notifySuccess } = useNotify();
 
@@ -52,9 +44,10 @@ export const useRegistrarPrestamo = ({
         if (isSelecting) {
             const item = detalles.find(d => d.id_solicitud_detalle === id);
             if (item) {
+                const cantidadPrestadaSol = Number(item.cantidad_prestada_total_base || 0) / Number(item.contenido_por_presentacion || 1);
                 const pendiente = Number(item.cantidad_solicitada) - 
                                  Number(item.cantidad_entregada || 0) - 
-                                 Number(item.cantidad_prestada_total || 0);
+                                 cantidadPrestadaSol;
                 
                 // Pre-llenar con el pendiente real (o 0 si ya se cubrió todo)
                 setCantidades(c => ({ 
@@ -84,23 +77,7 @@ export const useRegistrarPrestamo = ({
     try {
       const resp = await SolicitudesAtencionService.getAlmacenesConStock(idsProductos, solicitud.id_almacen_solicitante);
       if (resp.success) {
-        const grouped: Record<number, AlmacenAliado> = {};
-        resp.data.forEach((item: any) => {
-          if (!grouped[item.id_almacen]) {
-            grouped[item.id_almacen] = {
-              id_almacen: item.id_almacen,
-              nombre_almacen: item.nombre_almacen,
-              items: []
-            };
-          }
-          grouped[item.id_almacen].items.push({
-            id_producto: item.id_producto,
-            nombre_producto: item.nombre_producto,
-            stock_actual_base: Number(item.stock_actual_base),
-            unidad_medida_base: item.unidad_medida_base
-          });
-        });
-        setAlmacenesAliados(Object.values(grouped));
+        setAlmacenesAliados(resp.data);
       }
     } catch (error) {
        console.error(error);
@@ -119,21 +96,40 @@ export const useRegistrarPrestamo = ({
   }, [selectedItemIds, detalles, cargarAlmacenesAliados]);
 
   const cargarStockPrestamista = useCallback(async (almacenId: number) => {
+    if (selectedItemIds.length === 0) return;
+    
     setLoadingStocks(true);
-    const newStocks: Record<number, RES_LoteDisponiblePrestamo[]> = {};
-    const promises = selectedItemIds.map(async (idDetalle) => {
-      const item = detalles.find((d) => d.id_solicitud_detalle === idDetalle);
-      if (item) {
-        const resp = await SolicitudesAtencionService.obtenerLotesDisponiblesPrestamo(item.id_producto, almacenId);
-        if (resp.success) {
-          newStocks[idDetalle] = resp.data;
-        }
-      }
-    });
+    try {
+      const idsProductosRaw = detalles
+        .filter(d => selectedItemIds.includes(d.id_solicitud_detalle))
+        .map(d => d.id_producto);
+      
+      const idsProductosUnicos = [...new Set(idsProductosRaw)];
+      
+      if (idsProductosUnicos.length === 0) return;
 
-    await Promise.all(promises);
-    setStocksAlmacen(newStocks);
-    setLoadingStocks(false);
+      const resp = await SolicitudesAtencionService.obtenerStockTotalAlmacenPorProductos(almacenId, idsProductosUnicos);
+      
+      if (resp.success && resp.data) {
+        const stockMap: Record<number, RES_StockTotalAlmacen> = {};
+        
+        selectedItemIds.forEach(idDetalle => {
+          const detail = detalles.find(d => d.id_solicitud_detalle === idDetalle);
+          if (detail) {
+            const stockInfo = resp.data.find(s => Number(s.id_producto) === Number(detail.id_producto));
+            if (stockInfo) {
+              stockMap[idDetalle] = stockInfo;
+            }
+          }
+        });
+        
+        setStocksAlmacen(stockMap);
+      }
+    } catch (error) {
+      console.error("Error al cargar stock del prestamista:", error);
+    } finally {
+      setLoadingStocks(false);
+    }
   }, [selectedItemIds, detalles]);
 
   const handleRegistrar = async () => {
@@ -161,7 +157,7 @@ export const useRegistrarPrestamo = ({
       } else {
         notifyError(resp.message || "Error al registrar");
       }
-    } catch (error) {
+    } catch {
       notifyError("Error de conexión");
     } finally {
       setSubmitting(false);
