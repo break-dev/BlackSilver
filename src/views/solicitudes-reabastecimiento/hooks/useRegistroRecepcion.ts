@@ -341,7 +341,11 @@ export const useRegistroRecepcion = ({
         items
       };
 
-      const res = await ReabastecimientoService.registrarRecepcion(
+      const serviceMethod = tipoEntrega === "Prestamo" 
+        ? ReabastecimientoService.registrarRecepcionPrestamo 
+        : ReabastecimientoService.registrarRecepcionLogistica;
+
+      const res = await serviceMethod(
         usuario?.id_empleado ?? 0,
         recepcion,
         evidencias

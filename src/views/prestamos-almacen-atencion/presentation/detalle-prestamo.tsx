@@ -24,6 +24,7 @@ import {
   BuildingOffice2Icon,
   CheckBadgeIcon,
   NoSymbolIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
@@ -79,6 +80,7 @@ export const DetallePrestamo = ({
     closeHistorialRepos,
     cargarReposiciones,
     // Selección
+    selectedItemId,
     setSelectedItemId,
     selectedItemName,
     setSelectedItemName,
@@ -98,6 +100,11 @@ export const DetallePrestamo = ({
     hasPartialEligibleSelection,
     toggleSelectAllEligible,
     itemsEligibleIds,
+    // Masivo aprobación
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
   } = useDetallePrestamo({
     idPrestamo: prestamo.id_prestamo,
     onSuccess: onDespachoRegistrado,
@@ -262,8 +269,8 @@ export const DetallePrestamo = ({
               <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
             <Text
-              fw={800}
-              className="text-lg text-zinc-100 italic tracking-tight"
+              fw={700}
+              className="text-sm text-zinc-100"
             >
               Items de la Solicitud
             </Text>
@@ -309,6 +316,41 @@ export const DetallePrestamo = ({
             >
               Nueva Entrega ({selectedItemsIds.length})
             </Button>
+
+            {detalles.some((d) => d.estado.toLowerCase() === "pendiente") && (
+              <>
+                <Button
+                  color="green"
+                  variant="filled"
+                  size="xs"
+                  radius="md"
+                  leftSection={<CheckCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null);
+                    openAprobar();
+                  }}
+                  className="font-bold shadow-green-500/10 shadow-lg"
+                >
+                  Aprobar ({idsParaAccionMasiva.length})
+                </Button>
+                <Button
+                  color="red"
+                  variant="filled"
+                  size="xs"
+                  radius="md"
+                  leftSection={<XCircleIcon className="w-4 h-4" />}
+                  disabled={idsParaAccionMasiva.length === 0}
+                  onClick={() => {
+                    setSelectedItemId(null);
+                    openRechazo();
+                  }}
+                  className="font-bold shadow-red-500/10 shadow-lg"
+                >
+                  Rechazar ({idsParaAccionMasiva.length})
+                </Button>
+              </>
+            )}
             <Badge
               variant="light"
               color="indigo"
@@ -349,8 +391,23 @@ export const DetallePrestamo = ({
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-center">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
-                <th className="px-6 py-4 text-center">Estado</th>
-                <th className="px-6 py-4 text-center w-36">Acciones</th>
+                <th className="px-6 py-4 text-center w-44">Estado</th>
+                <th className="px-6 py-4 text-center w-40">
+                  <Group gap={4} justify="center">
+                    <span>Acciones</span>
+                    {detalles.some((d) => d.estado.toLowerCase() === "pendiente") && (
+                      <Tooltip label="Seleccionar todos los pendientes para acción masiva" position="top">
+                        <Checkbox
+                          size="xs"
+                          color="indigo"
+                          checked={isAllPendingSelected}
+                          onChange={seleccionarTodoLoPendiente}
+                          className="cursor-pointer"
+                        />
+                      </Tooltip>
+                    )}
+                  </Group>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/30">
@@ -513,34 +570,15 @@ export const DetallePrestamo = ({
                         </Tooltip>
 
                         {d.estado.toLowerCase().includes("pendiente") && (
-                          <>
-                            <Tooltip label="Aprobar Ítem" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="green"
-                                radius="md"
-                                onClick={() => {
-                                  setSelectedItemId(d.id_prestamo_detalle);
-                                  openAprobar();
-                                }}
-                              >
-                                <CheckCircleIcon className="w-5 h-5 text-zinc-50" />
-                              </ActionIcon>
-                            </Tooltip>
-                            <Tooltip label="Rechazar Ítem" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="red"
-                                radius="md"
-                                onClick={() => {
-                                  setSelectedItemId(d.id_prestamo_detalle);
-                                  openRechazo();
-                                }}
-                              >
-                                <XCircleIcon className="w-5 h-5 text-zinc-50" />
-                              </ActionIcon>
-                            </Tooltip>
-                          </>
+                          <Tooltip label="Acción masiva" position="top" withArrow>
+                            <Checkbox
+                              size="xs"
+                              color="indigo"
+                              checked={idsParaAccionMasiva.includes(d.id_prestamo_detalle)}
+                              onChange={() => toggleSeleccionMasiva(d.id_prestamo_detalle)}
+                              className="ml-1 cursor-pointer"
+                            />
+                          </Tooltip>
                         )}
                       </Group>
                     </td>
@@ -579,12 +617,16 @@ export const DetallePrestamo = ({
           <Paper
             p="md"
             radius="lg"
-            className="bg-emerald-500/5 border border-emerald-500/20 text-center"
+            className="bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-3"
           >
-            <Text size="sm" c="emerald.3" fw={600}>
-              Estás por aprobar el despacho de{" "}
-              <span className="font-black text-white">{selectedItemName}</span>.
-              Se podrá proceder con la salida física del producto.
+            <CheckCircleIcon className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <Text size="sm" c="emerald.3" fw={600} className="italic text-left leading-snug">
+              {selectedItemId ? (
+                <>Estás por aprobar el despacho de <span className="font-black text-white">{selectedItemName}</span>.</>
+              ) : (
+                <>Estás por aprobar <span className="font-black text-white">{idsParaAccionMasiva.length} ítems</span> de forma masiva.</>
+              )}
+              {" "}Se podrá proceder con la salida física del producto.
             </Text>
           </Paper>
           <Textarea
@@ -627,12 +669,16 @@ export const DetallePrestamo = ({
           <Paper
             p="md"
             radius="lg"
-            className="bg-red-500/5 border border-red-500/20 text-center"
+            className="bg-red-500/5 border border-red-500/20 flex items-start gap-3"
           >
-            <Text size="sm" c="red.3" fw={600}>
-              ¿Por qué no se puede atender el préstamo de{" "}
-              <span className="font-black text-white">{selectedItemName}</span>?
-              El motivo es obligatorio.
+            <ExclamationTriangleIcon className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <Text size="sm" c="red.3" fw={600} className="italic text-left leading-snug">
+              {selectedItemId ? (
+                <>¿Por qué no se puede atender el préstamo de <span className="font-black text-white">{selectedItemName}</span>?</>
+              ) : (
+                <>¿Por qué no se pueden atender estos <span className="font-black text-white">{idsParaAccionMasiva.length} ítems</span>?</>
+              )}
+              {" "}El motivo es obligatorio.
             </Text>
           </Paper>
           <Textarea

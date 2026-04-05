@@ -22,6 +22,7 @@ export interface RES_PrestamoAtencion {
 
 export interface RES_DetallePrestamo {
   id_prestamo_detalle: number;
+  id_solicitud_reabastecimiento_detalle?: number;
   id_producto: number;
   producto: string;
   id_unidad_medida: number;

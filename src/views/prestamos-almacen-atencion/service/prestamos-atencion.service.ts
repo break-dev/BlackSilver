@@ -121,7 +121,8 @@ export const PrestamosAtencionService = {
   },
 
   cambiarEstadoDetalle: async (data: {
-    id_prestamo_detalle: number;
+    id_prestamo_detalle?: number;
+    ids_detalles?: number[];
     nuevo_estado: string;
     comentario?: string;
   }) => {

@@ -79,6 +79,7 @@ export interface RES_EntregaReabastecimiento {
   tipo_entrega?: "Solicitud" | "Prestamo";
   correlativo_prestamo?: string;
   id_prestamo?: number;
+  id_prestamo_entrega?: number; // Campo natural del API de préstamos
 }
 
 export interface RES_HistorialEntregas {
@@ -109,6 +110,15 @@ export interface RES_DetalleEntregaReabastecimiento {
   contenido_por_presentacion_solicitado: number;
   unidad_medida_solicitud_abv: string;
   cantidad_recibida_total_base: number; // nombre real del campo
+  // Campos naturales del API de préstamos
+  id_prestamo_almacen_entrega?: number;
+  id_prestamo_almacen_detalle?: number;
+  cantidad_prestamo?: number;
+  cantidad_lot?: number;
+  id_unidad_medida_pr?: number;
+  unidad_medida_pr_abv?: string;
+  contenido_por_presentacion_pr?: number;
+  id_lote_producto?: number;
 }
 
 export interface RES_LoteRecepcion {

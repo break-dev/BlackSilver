@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
-import type { RES_EntregaReabastecimiento } from "../service/reabastecimiento.responses";
+import type { RES_EntregaReabastecimiento, RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
 
 export const useHistorialEntregas = (idSolicitud: number) => {
   const [loading, setLoading] = useState(true);
@@ -36,9 +36,10 @@ export const useHistorialEntregas = (idSolicitud: number) => {
 
       const entregasPrestamo: RES_EntregaReabastecimiento[] = (
         res.data.prestamo || []
-      ).map((ent) => ({
+      ).map((ent: RES_EntregaReabastecimiento) => ({
         ...ent,
-        id_reabastecimiento_entrega: ent.id_reabastecimiento_entrega || ent.id_entrega || 0,
+        // Mapeamos el ID natural al ID genérico que espera el componente de recepción
+        id_reabastecimiento_entrega: ent.id_prestamo_entrega || ent.id_reabastecimiento_entrega || 0,
         tipo_entrega: "Prestamo",
         estado:
           ent.estado === "En despacho"
@@ -46,15 +47,23 @@ export const useHistorialEntregas = (idSolicitud: number) => {
             : ent.estado === "Entrega confirmada"
               ? "Recibida"
               : ent.estado,
-        detalles: (ent.detalles || []).map((d) => ({
+        detalles: (ent.detalles || []).map((d: RES_DetalleEntregaReabastecimiento) => ({
           ...d,
           tipo_entrega: "Prestamo",
+          // Mapeamos los campos naturales del préstamo a los nombres genéricos del front
+          id_entrega_detalle: d.id_entrega_detalle,
+          cantidad_solicitud: Number(d.cantidad_prestamo || d.cantidad_base || 0),
+          id_unidad_medida_solicitada: d.id_unidad_medida_pr || d.id_unidad_medida_solicitada,
+          unidad_medida_solicitud_abv: d.unidad_medida_pr_abv || d.unidad_medida_solicitud_abv,
+          contenido_por_presentacion_solicitado: Number(d.contenido_por_presentacion_pr || d.contenido_por_presentacion_solicitado || 1),
+          // Mapeo de estados
           estado_entrega_detalle:
-            d.estado_entrega_detalle === "En despacho"
+            d.estado === "En despacho"
               ? "Entregado"
-              : d.estado_entrega_detalle === "Entrega confirmada"
+              : d.estado === "Entrega confirmada"
                 ? "Recibido"
-                : d.estado_entrega_detalle,
+                : d.estado,
+          cantidad_recibida_total_base: Number(d.cantidad_recibida_total_base || 0),
         })),
       }));
 

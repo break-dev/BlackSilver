@@ -57,6 +57,36 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   // Selección múltiple para despacho
   const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
 
+  // Selección múltiple para acciones de aprobación/rechazo (PENDIENTES)
+  const [idsParaAccionMasiva, setIdsParaAccionMasiva] = useState<number[]>([]);
+
+  const toggleSeleccionMasiva = useCallback((id: number) => {
+    setIdsParaAccionMasiva((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+  }, []);
+
+  const pendingItemsIds = useMemo(() => {
+    return detalles
+      .filter((d) => d.estado === EstadoDetallePrestamo.Pendiente)
+      .map((d) => d.id_prestamo_detalle);
+  }, [detalles]);
+
+  const isAllPendingSelected = useMemo(() => {
+    return (
+      pendingItemsIds.length > 0 &&
+      pendingItemsIds.every((id) => idsParaAccionMasiva.includes(id))
+    );
+  }, [pendingItemsIds, idsParaAccionMasiva]);
+
+  const seleccionarTodoLoPendiente = useCallback(() => {
+    if (isAllPendingSelected) {
+      setIdsParaAccionMasiva([]);
+    } else {
+      setIdsParaAccionMasiva(pendingItemsIds);
+    }
+  }, [isAllPendingSelected, pendingItemsIds]);
+
   const toggleItemSelection = useCallback((id: number) => {
     setSelectedItemsIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
@@ -131,19 +161,22 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
 
   const handleCambiarEstado = useCallback(
     async (nuevoEstado: string) => {
-      if (!selectedItemId) return;
+      const ids = selectedItemId ? [selectedItemId] : idsParaAccionMasiva;
+      if (ids.length === 0) return;
+
       setIsProcessing(true);
       try {
         const res = await PrestamosAtencionService.cambiarEstadoDetalle({
-          id_prestamo_detalle: selectedItemId,
+          ids_detalles: ids,
           nuevo_estado: nuevoEstado,
           comentario: comentarioAccion,
         });
-        if (res.success) {
-          notifySuccess(res.message || "Estado actualizado");
-          setComentarioAccion("");
-          closeAprobar();
-          closeRechazo();
+          if (res.success) {
+            notifySuccess(res.message || "Estado actualizado");
+            setComentarioAccion("");
+            setIdsParaAccionMasiva([]); // Limpiar selección masiva tras éxito
+            closeAprobar();
+            closeRechazo();
 
           // Actualización local inmediata para feedback instantáneo
           setDetalles((prev) =>
@@ -166,6 +199,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     },
     [
       selectedItemId,
+      idsParaAccionMasiva,
       comentarioAccion,
       cargarDatos,
       closeAprobar,
@@ -293,11 +327,15 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     // Entregas
     loadingEntregas,
     cargarEntregas,
-    // Selección múltiple
     selectedItemsIds,
     toggleItemSelection,
     deselectAllItems,
     cargarDatos,
+    // Bulk select pending
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
     // Bulk select helpers
     isAllEligibleSelected,
     hasPartialEligibleSelection,

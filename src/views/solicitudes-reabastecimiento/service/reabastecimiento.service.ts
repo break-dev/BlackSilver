@@ -98,9 +98,9 @@ export const ReabastecimientoService = {
   },
 
   /**
-   * Registrar una recepción de stock para una entrega específica
+   * Registrar una recepción de stock para una entrega de LOGÍSTICA
    */
-  registrarRecepcion: async (
+  registrarRecepcionLogistica: async (
     id_empleado_registro: number,
     recepcion: DTO_RegistrarRecepcion,
     evidencias: File[],
@@ -114,7 +114,31 @@ export const ReabastecimientoService = {
     });
 
     const res = await api.post<IRespuesta<null>>(
-      `${path}/recepciones/registrar-recepcion`,
+      `${path}/recepciones/registrar-recepcion-logistica`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
+
+  /**
+   * Registrar una recepción de stock para una entrega de PRÉSTAMO
+   */
+  registrarRecepcionPrestamo: async (
+    id_empleado_registro: number,
+    recepcion: DTO_RegistrarRecepcion,
+    evidencias: File[],
+  ) => {
+    const formData = new FormData();
+    formData.append("id_empleado_registro", id_empleado_registro.toString());
+    formData.append("recepcion", JSON.stringify(recepcion));
+    
+    evidencias.forEach((file) => {
+      formData.append("evidencias[]", file);
+    });
+
+    const res = await api.post<IRespuesta<null>>(
+      `${path}/recepciones/registrar-recepcion-prestamo`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },
     );
