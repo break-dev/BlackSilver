@@ -56,10 +56,9 @@ export const HistorialEntregas = ({
   };
 
   const [recepcionData, setRecepcionData] = useState<{
-    idEntrega?: number;
-    tipoEntrega?: "Solicitud" | "Prestamo";
+    idEntrega: number;
+    tipoEntrega: "Solicitud" | "Prestamo";
     detallesPendientes: RES_DetalleEntregaReabastecimiento[];
-    isGlobal?: boolean;
   } | null>(null);
 
   const groupDetailsByProduct = (
@@ -84,11 +83,10 @@ export const HistorialEntregas = ({
 
   const handleOpenRecepcion = (
     detallesPendientes: RES_DetalleEntregaReabastecimiento[],
-    idEntrega?: number,
-    isGlobal = false,
-    tipoEntrega?: "Solicitud" | "Prestamo"
+    idEntrega: number,
+    tipoEntrega: "Solicitud" | "Prestamo"
   ) => {
-    setRecepcionData({ idEntrega, detallesPendientes, isGlobal, tipoEntrega });
+    setRecepcionData({ idEntrega, detallesPendientes, tipoEntrega });
   };
 
   if (loading)
@@ -104,13 +102,6 @@ export const HistorialEntregas = ({
       </Text>
     );
 
-  const allDetallesPendientes = entregas.flatMap((h) =>
-    (h.detalles || []).filter((d) => 
-      d.estado_entrega_detalle === "Entregado" || 
-      d.estado_entrega_detalle === "Recibido Parcialmente"
-    ),
-  );
-
   if (entregas.length === 0)
     return (
       <div className="py-12 text-center flex flex-col items-center gap-3">
@@ -125,24 +116,6 @@ export const HistorialEntregas = ({
 
   return (
     <Stack gap="xl" className="font-sans pt-2 pb-6 px-2">
-      {allDetallesPendientes.length > 0 && (
-        <Group justify="flex-end" px="md">
-          <Button
-            size="sm"
-            radius="xl"
-            variant="gradient"
-            gradient={{ from: "indigo", to: "cyan" }}
-            leftSection={<CheckBadgeIcon className="w-5 h-5" />}
-            className="shadow-lg shadow-indigo-500/20"
-            onClick={() =>
-              handleOpenRecepcion(allDetallesPendientes, undefined, true)
-            }
-          >
-            Recepción Global ({allDetallesPendientes.length} ítems)
-          </Button>
-        </Group>
-      )}
-
       {entregas.map((h, index) => {
         const uniqueKey = `${h.tipo_entrega}-${h.id_reabastecimiento_entrega}`;
         const expanded = expandedIds[uniqueKey] ?? index === 0;
@@ -220,7 +193,6 @@ export const HistorialEntregas = ({
                         handleOpenRecepcion(
                           pendientes,
                           h.id_reabastecimiento_entrega,
-                          false,
                           h.tipo_entrega as "Solicitud" | "Prestamo"
                         );
                       }}
@@ -292,8 +264,8 @@ export const HistorialEntregas = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {h.evidencias.map((ev, idx) => (
                         <ArchivoCard
-                          key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
-                          archivo={ev}
+                           key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
+                           archivo={ev}
                         />
                       ))}
                     </div>
@@ -335,11 +307,11 @@ export const HistorialEntregas = ({
                           ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
                             <Badge
                               size="xs"
-                              variant="light"
-                              color="orange"
-                              className="font-black"
+                               variant="light"
+                               color="orange"
+                               className="font-black"
                             >
-                              Parcial: {formatNumber((d.cantidad_recibida_total || 0))} {d.unidad_base_abv}
+                               Parcial: {formatNumber((d.cantidad_recibida_total_base || 0))} {d.unidad_medida_base_abv}
                             </Badge>
                           ) : null}
                         </Group>
@@ -352,7 +324,7 @@ export const HistorialEntregas = ({
                         >
                           +{formatNumber(d.total_cantidad_base)}{" "}
                           <span className="text-xs font-sans">
-                            {d.unidad_base_abv}
+                            {d.unidad_medida_base_abv}
                           </span>
                         </Text>
                         {d.estado_entrega_detalle === "Entregado" || d.estado_entrega_detalle === "En despacho" ? (
@@ -361,7 +333,7 @@ export const HistorialEntregas = ({
                           </Badge>
                         ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
                           <Badge size="xs" variant="dot" color="cyan" className="mt-1">
-                            Faltan {formatNumber(d.cantidad_base - (d.cantidad_recibida_total || 0))}
+                            Faltan {formatNumber(d.cantidad_base - (d.cantidad_recibida_total_base || 0))}
                           </Badge>
                         ) : null}
                       </Stack>
@@ -412,7 +384,6 @@ export const HistorialEntregas = ({
             detalles={recepcionData.detallesPendientes}
             idEntrega={recepcionData.idEntrega}
             tipoEntrega={recepcionData.tipoEntrega}
-            isGlobal={recepcionData.isGlobal}
             onSuccess={() => {
               setRecepcionData(null);
               reload();

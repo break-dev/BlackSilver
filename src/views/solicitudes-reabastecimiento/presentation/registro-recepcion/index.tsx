@@ -1,41 +1,36 @@
 import {
-  Stack,
-  Group,
   Button,
-  Switch,
-  Textarea,
-  Alert,
+  Stack,
   Text,
-  Collapse,
+  Group,
+  Divider,
+  Paper,
+  Textarea,
+  Checkbox,
+  Badge,
+  Alert,
+  SimpleGrid,
 } from "@mantine/core";
+import { DateTimePicker } from "@mantine/dates";
 import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ChatBubbleBottomCenterTextIcon,
+  CalendarDaysIcon,
+  ExclamationCircleIcon,
+  ArchiveBoxArrowDownIcon,
 } from "@heroicons/react/24/outline";
-import { motion, AnimatePresence } from "framer-motion";
 import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
-import { MultiFilePicker } from "../../../../presentation/utils/MultiFilePicker";
 import type { RES_DetalleEntregaReabastecimiento } from "../../service/reabastecimiento.responses";
+import { MultiFilePicker } from "../../../../presentation/utils/MultiFilePicker";
 
 interface Props {
   idAlmacenSolicitante: number;
   detalles: RES_DetalleEntregaReabastecimiento[];
-  onSuccess: () => void;
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
-  isGlobal?: boolean;
+  onSuccess: () => void;
 }
 
-export const RegistroRecepcion = ({
-  idAlmacenSolicitante,
-  detalles,
-  onSuccess,
-  idEntrega,
-  tipoEntrega,
-  isGlobal,
-}: Props) => {
+export const RegistroRecepcion = (props: Props) => {
   const {
     groupedItems,
     setLotValue,
@@ -44,7 +39,6 @@ export const RegistroRecepcion = ({
     updateTabularAdjustment,
     getLotError,
     loadingAction,
-    fetchLotesProducto,
     handleSubmit,
     unidades,
     loadingUnidades,
@@ -56,150 +50,203 @@ export const RegistroRecepcion = ({
     setObservacion,
     evidencias,
     setEvidencias,
-    isPartialReception,
-  } = useRegistroRecepcion({
-    idAlmacenSolicitante,
-    detalles,
-    onSuccess,
-    idEntrega,
-    tipoEntrega,
-    isGlobal,
-  });
+    fechaHoraRecepcion,
+    setFechaHoraRecepcion,
+    lotesDisponibles,
+    loadingLotes,
+  } = useRegistroRecepcion(props);
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="font-sans space-y-4">
-      <Stack gap="xl">
-        {groupedItems.map((grouped, index) => (
-          <ProductoRecepcionCard
-            key={grouped.id_solicitud_reabastecimiento_detalle}
-            grouped={grouped}
-            index={index}
-            setLotValue={setLotValue}
-            addLot={addLot}
-            removeLot={removeLot}
-            updateTabularAdjustment={updateTabularAdjustment}
-            getLotError={getLotError}
-            fetchLotesProducto={fetchLotesProducto}
-            unidades={unidades}
-            loadingUnidades={loadingUnidades}
-            cantidadTotalError={errors[`groups.${index}.cantidad_total`]}
-          />
-        ))}
+    <form onSubmit={handleSubmit}>
+      <Stack gap="xl" p="md">
+        {/* Cabecera de Recepción */}
+        <Paper
+          p="xl"
+          radius="xl"
+          className="bg-zinc-900/40 border border-zinc-800 shadow-xl overflow-hidden relative"
+        >
+          {/* Decoración de fondo */}
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <ArchiveBoxArrowDownIcon className="w-40 h-40" />
+          </div>
 
-        <AnimatePresence>
-          {isPartialReception && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+          <Group justify="space-between" mb="xl">
+            <Stack gap={0}>
+              <Text fw={900} size="xl" className="tracking-tight text-white">
+                Datos del Ingreso de Mercancía
+              </Text>
+              <Text size="xs" c="dimmed" fw={600}>
+                Registre los detalles del evento de recepción física.
+              </Text>
+            </Stack>
+            {conIncidencia && (
+              <Badge
+                color="red"
+                variant="filled"
+                size="sm"
+                radius="xl"
+                fw={700}
+              >
+                INCIDENCIA DETECTADA
+              </Badge>
+            )}
+          </Group>
+
+          <Stack gap="lg">
+            {/* Fila 1: Fecha (Izquierda) y Check Incidencia (Derecha) */}
+            <SimpleGrid
+              cols={{ base: 1, md: 2 }}
+              spacing="xl"
+              verticalSpacing="md"
             >
-              <Alert
-                color="indigo"
-                variant="light"
-                title="Recepción Parcial Detectada"
-                icon={
-                  <ExclamationTriangleIcon className="w-5 h-5 text-indigo-400" />
+              <DateTimePicker
+                label="Fecha y Hora de Recepción"
+                placeholder="Seleccione cuándo se recibió el envío"
+                value={fechaHoraRecepcion}
+                onChange={(val) => {
+                  if (typeof val === "string") {
+                    setFechaHoraRecepcion(new Date(val));
+                  } else {
+                    setFechaHoraRecepcion(val as Date | null);
+                  }
+                }}
+                required
+                leftSection={
+                  <CalendarDaysIcon className="w-5 h-5 text-indigo-400" />
                 }
                 radius="md"
-                classNames={{
-                  root: "bg-indigo-500/10 border-indigo-500/20",
-                  title:
-                    "text-indigo-400 font-black uppercase tracking-wider text-xs",
-                }}
-              >
-                <Stack gap="xs">
-                  <Text size="xs" className="text-zinc-300">
-                    Has modificado las cantidades para recibir menos de lo
-                    entregado. ¿Este descuadre se debe a una incidencia en el
-                    traslado?
-                  </Text>
+                variant="filled"
+              />
 
-                  <Group
-                    justify="space-between"
-                    align="center"
-                    className="bg-zinc-950/40 p-3 rounded-lg border border-indigo-500/10"
-                  >
+              <div className="flex items-center h-full pt-6">
+                <Checkbox
+                  label={
                     <Stack gap={0}>
-                      <Text size="xs" fw={800} className="text-white">
-                        Marcar como Incidencia
+                      <Text size="sm" fw={800} className="text-white">
+                        Reportar incidencia en este envío
                       </Text>
-                      <Text size="10px" className="text-zinc-500">
-                        Esto requerirá observación e imágenes obligatorias.
+                      <Text size="xs" c="dimmed">
+                        Faltantes, daños o inconsistencias en la carga.
                       </Text>
                     </Stack>
-                    <Switch
-                      checked={conIncidencia}
-                      onChange={(e) =>
-                        setConIncidencia(e.currentTarget.checked)
-                      }
-                      color="indigo"
-                      size="md"
-                    />
-                  </Group>
+                  }
+                  checked={conIncidencia}
+                  onChange={(e) => setConIncidencia(e.currentTarget.checked)}
+                  color="red"
+                  radius="sm"
+                  styles={{
+                    label: { cursor: "pointer" },
+                    input: { cursor: "pointer" },
+                  }}
+                />
+              </div>
+            </SimpleGrid>
 
-                  <Collapse in={conIncidencia}>
-                    <Stack gap="sm" mt="sm">
-                      <Textarea
-                        label="Observación de la Incidencia"
-                        placeholder="Describa el motivo del descuadre..."
-                        value={observacion}
-                        onChange={(e) => setObservacion(e.currentTarget.value)}
-                        error={errors["observacion"]}
-                        radius="md"
-                        size="xs"
-                        minRows={3}
-                        leftSection={
-                          <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400" />
-                        }
-                        classNames={{
-                          input:
-                            "bg-zinc-900/50 border-indigo-500/20 focus:border-indigo-500 text-white",
-                          label: "text-zinc-300 font-semibold text-xs mb-1",
-                        }}
-                      />
-
-                      <div className="space-y-1">
-                        <MultiFilePicker
-                          label="Evidencias"
-                          description="Adjunte las fotos o documentos de los productos dañados o incompletos."
-                          files={evidencias}
-                          onFilesChange={setEvidencias}
-                        />
-                        <Text
-                          size="10px"
-                          c="dimmed"
-                          px={2}
-                          className="italic opacity-80"
-                        >
-                          * Puedes subir varias fotos al mismo tiempo.
-                        </Text>
-                      </div>
-                    </Stack>
-                  </Collapse>
-                </Stack>
+            {conIncidencia && (
+              <Alert
+                icon={<ExclamationCircleIcon className="w-5 h-5" />}
+                color="red"
+                variant="outline"
+                mt="sm"
+                radius="lg"
+                title={
+                  <Text size="xs" fw={900}>
+                    REQUERIMIENTO DE INCIDENCIA
+                  </Text>
+                }
+              >
+                <Text size="xs" fw={500}>
+                  Al marcar como incidencia, es obligatorio detallarla en la
+                  observación y adjuntar al menos una evidencia.
+                </Text>
               </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Stack>
+            )}
 
-      <Group
-        justify="flex-end"
-        mt="xl"
-        className="sticky bottom-0 bg-zinc-950 pb-2 pt-4 border-t border-zinc-800 z-10"
-      >
-        <Button
-          type="submit"
-          loading={loadingAction}
-          disabled={!isFormValid}
-          color="indigo"
-          radius="md"
-          size="xs"
-          leftSection={<CheckCircleIcon className="w-5 h-5" />}
-        >
-          Confirmar Recepción
-        </Button>
-      </Group>
+            {/* Fila 2: Observación (Toda la fila) */}
+            <Textarea
+              label="Observación General"
+              placeholder={
+                conIncidencia
+                  ? "Describa detalladamente la incidencia..."
+                  : "Notas adicionales sobre la recepción..."
+              }
+              value={observacion}
+              onChange={(e) => setObservacion(e.currentTarget.value)}
+              minRows={3}
+              required={conIncidencia}
+              error={errors.observacion}
+              radius="md"
+              variant="filled"
+              className="w-full"
+            />
+
+            {/* Fila 3: Evidencias (Toda la fila) */}
+            <Stack gap="xs" mt="sm">
+              <MultiFilePicker
+                files={evidencias}
+                onFilesChange={setEvidencias}
+                maxFiles={5}
+                label="Evidencias"
+              />
+              {errors.evidencias && (
+                <Text size="xs" c="red" fw={700} ml={4}>
+                  {errors.evidencias}
+                </Text>
+              )}
+            </Stack>
+          </Stack>
+        </Paper>
+
+        <Divider
+          label={
+            <Text
+              fw={900}
+              size="xs"
+              className="uppercase tracking-[0.2em] text-indigo-400"
+            >
+              Detalle de Productos
+            </Text>
+          }
+          labelPosition="center"
+          my={1}
+          className="opacity-50"
+        />
+
+        <Stack gap="lg">
+          {groupedItems.map((group, idx) => (
+            <ProductoRecepcionCard
+              key={group.id_solicitud_reabastecimiento_detalle}
+              group={group}
+              groupIndex={idx}
+              setLotValue={setLotValue}
+              addLot={addLot}
+              removeLot={removeLot}
+              updateTabularAdjustment={updateTabularAdjustment}
+              getLotError={getLotError}
+              unidades={unidades}
+              loadingUnidades={loadingUnidades}
+              allLotes={lotesDisponibles}
+              loadingLotes={loadingLotes}
+              cantidadTotalError={errors[`groups.${idx}.cantidad_total`]}
+            />
+          ))}
+        </Stack>
+
+        <Group justify="flex-end">
+          <Button
+            type="submit"
+            size="xs"
+            radius="xl"
+            loading={loadingAction}
+            disabled={!isFormValid}
+            variant="gradient"
+            gradient={{ from: "indigo.6", to: "cyan.6" }}
+            className="px-10 shadow-lg shadow-indigo-500/20 flex-end"
+          >
+            Registrar Ingreso de Stock
+          </Button>
+        </Group>
+      </Stack>
     </form>
   );
 };

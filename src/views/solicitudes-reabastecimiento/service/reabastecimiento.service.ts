@@ -10,7 +10,7 @@ import type {
   RecepcionEvento,
   RES_HistorialEntregas,
 } from "./reabastecimiento.responses";
-import type { DTO_CrearSolicitud, DTO_RecibirEntregas, DTO_RecibirEntregaItem } from "./reabastecimiento.requests";
+import type { DTO_CrearSolicitud, DTO_RegistrarRecepcion } from "./reabastecimiento.requests";
 
 const path = "/solicitudes-reabastecimiento";
 
@@ -97,55 +97,24 @@ export const ReabastecimientoService = {
     return res.data;
   },
 
-  recibirEntregas: async (data: DTO_RecibirEntregas) => {
-    const res = await api.post<IRespuesta<null>>(
-      `${path}/recibir-entrega-item`,
-      data
-    );
-    return res.data;
-  },
-
-  recibirEntregaBulk: async (payload: {
-    recepciones: Array<{
-      id_reabastecimiento_entrega: number;
-      tipo_entrega: string;
-      items: DTO_RecibirEntregaItem[];
-      con_incidencia: boolean;
-      observacion: string;
-      fecha_hora_recepcion: string;
-    }>;
-    id_empleado_registro: number;
-    evidencias: File[];
-  }) => {
+  /**
+   * Registrar una recepción de stock para una entrega específica
+   */
+  registrarRecepcion: async (
+    id_empleado_registro: number,
+    recepcion: DTO_RegistrarRecepcion,
+    evidencias: File[],
+  ) => {
     const formData = new FormData();
-
-    // Campo raíz: empleado
-    formData.append("id_empleado_registro", payload.id_empleado_registro.toString());
-
-    // Evidencias al nivel raíz (mismo patrón que PrestamosAtencion)
-    payload.evidencias.forEach((file) => {
+    formData.append("id_empleado_registro", id_empleado_registro.toString());
+    formData.append("recepcion", JSON.stringify(recepcion));
+    
+    evidencias.forEach((file) => {
       formData.append("evidencias[]", file);
     });
 
-    // Recepciones con sus items anidados
-    payload.recepciones.forEach((rec, rIdx) => {
-      formData.append(`recepciones[${rIdx}][id_reabastecimiento_entrega]`, rec.id_reabastecimiento_entrega.toString());
-      formData.append(`recepciones[${rIdx}][tipo_entrega]`, rec.tipo_entrega);
-      formData.append(`recepciones[${rIdx}][con_incidencia]`, rec.con_incidencia ? "1" : "0");
-      formData.append(`recepciones[${rIdx}][observacion]`, rec.observacion ?? "");
-      formData.append(`recepciones[${rIdx}][fecha_hora_recepcion]`, rec.fecha_hora_recepcion);
-
-      rec.items.forEach((item, iIdx) => {
-        Object.entries(item).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            formData.append(`recepciones[${rIdx}][items][${iIdx}][${key}]`, String(value));
-          }
-        });
-      });
-    });
-
     const res = await api.post<IRespuesta<null>>(
-      `${path}/recibir-entrega-bulk`,
+      `${path}/recepciones/registrar-recepcion`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },
     );
@@ -154,7 +123,7 @@ export const ReabastecimientoService = {
 
   getHistorialRecepcionesEntrega: async (idEntrega: number, tipoEntrega: string = 'Solicitud') => {
     const res = await api.get<IRespuesta<RecepcionEvento[]>>(
-      `${path}/historial-recepciones-entrega`,
+      `${path}/recepciones/historial-recepciones-entrega`,
       {
         params: { id_reabastecimiento_entrega: idEntrega, tipo_entrega: tipoEntrega },
       },

@@ -16,6 +16,7 @@ export interface DTO_SolicitudDetalle {
 
 export interface DTO_RecibirEntregaItem {
   id_solicitud_reabastecimiento_detalle: number;
+  id_entrega_detalle: number | null; // Nuevo: para vincular con el detalle de la entrega
   es_nuevo_lote: boolean;
   cantidad_base: number; // Nueva: permite desglosar cantidades
   id_lote_existente?: number | null;
@@ -27,8 +28,11 @@ export interface DTO_RecibirEntregaItem {
   max_permitido?: number;
 }
 
-export interface DTO_RecibirEntregas {
+export interface DTO_RegistrarRecepcion {
   id_reabastecimiento_entrega: number;
-  tipo_entrega?: "Solicitud" | "Prestamo";
+  tipo_entrega: "Solicitud" | "Prestamo";
+  con_incidencia: boolean;
+  observacion?: string | null;
+  fecha_hora_recepcion: string;
   items: DTO_RecibirEntregaItem[];
 }

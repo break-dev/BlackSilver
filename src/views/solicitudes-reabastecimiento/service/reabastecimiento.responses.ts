@@ -90,7 +90,7 @@ export interface RES_DetalleEntregaReabastecimiento {
   id_entrega_detalle: number;
   id_reabastecimiento_entrega: number;
   id_solicitud_reabastecimiento_detalle: number;
-  correlativo: string; // del lote
+  lote_correlativo: string; // nombre real del campo
   fecha_vencimiento: string | null;
   producto: string;
   es_perecible: number;
@@ -100,14 +100,15 @@ export interface RES_DetalleEntregaReabastecimiento {
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_solicitud: number;
-  unidad_lote_abv: string;
-  unidad_base_abv: string;
-  estado_entrega_detalle: string;
+  unidad_medida_lot_abv: string; // nombre real del campo
+  unidad_medida_base_abv: string; // nombre real del campo
+  estado: string; // nombre real del campo en el API
+  estado_entrega_detalle: string; // para uso interno en el front
   id_unidad_medida_solicitada: number;
   tipo_entrega?: "Solicitud" | "Prestamo";
   contenido_por_presentacion_solicitado: number;
   unidad_medida_solicitud_abv: string;
-  cantidad_recibida_total?: number;
+  cantidad_recibida_total_base: number; // nombre real del campo
 }
 
 export interface RES_LoteRecepcion {

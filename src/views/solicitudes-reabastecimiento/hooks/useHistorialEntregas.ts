@@ -26,6 +26,11 @@ export const useHistorialEntregas = (idSolicitud: number) => {
         detalles: (ent.detalles || []).map((d) => ({
           ...d,
           tipo_entrega: "Solicitud",
+          estado_entrega_detalle:
+            d.estado === "Entregado" || d.estado === "Procesada"
+              ? "Entregado"
+              : d.estado,
+          cantidad_recibida_total_base: Number(d.cantidad_recibida_total_base || 0),
         })),
       }));
 

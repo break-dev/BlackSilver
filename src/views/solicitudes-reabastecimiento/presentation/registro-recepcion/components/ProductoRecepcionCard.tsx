@@ -9,8 +9,8 @@ import type { RES_UnidadMedida } from "../../../../lotes-productos/service/lotes
 import { useProductoRecepcionCard } from "../../../hooks/useProductoRecepcionCard";
 
 interface ProductoRecepcionCardProps {
-  grouped: GroupedReception;
-  index: number;
+  group: GroupedReception;
+  groupIndex: number;
   setLotValue: <K extends keyof DTO_RecibirLotExtendido>(
     groupIndex: number,
     lotIndex: number,
@@ -31,34 +31,36 @@ interface ProductoRecepcionCardProps {
     lotIndex: number,
     field: keyof DTO_RecibirLotExtendido,
   ) => string | null;
-  fetchLotesProducto: (id: number) => Promise<RES_LoteRecepcion[]>;
   unidades: RES_UnidadMedida[];
   loadingUnidades: boolean;
+  allLotes: RES_LoteRecepcion[];
+  loadingLotes: boolean;
   cantidadTotalError?: string;
 }
 
 export const ProductoRecepcionCard = ({
-  grouped,
-  index: groupIndex,
+  group,
+  groupIndex,
   setLotValue,
   addLot,
   removeLot,
   updateTabularAdjustment,
   getLotError,
-  fetchLotesProducto,
   unidades,
   loadingUnidades,
+  allLotes,
+  loadingLotes,
   cantidadTotalError,
 }: ProductoRecepcionCardProps) => {
-  const isPerecible = grouped.es_perecible === 1;
-  const targetVencimiento = grouped.detalles_origen[0].fecha_vencimiento;
+  const isPerecible = group.es_perecible === 1;
+  const targetVencimiento = group.detalles_origen[0].fecha_vencimiento;
 
-  const { lotes, loadingLotes } = useProductoRecepcionCard({
-    idProducto: grouped.detalles_origen[0].id_producto,
+  const { lotes } = useProductoRecepcionCard({
+    lotesDisponibles: allLotes,
+    idProducto: group.detalles_origen[0].id_producto,
     esNuevoLote: false,
     isPerecible,
     targetVencimiento,
-    fetchLotesProducto,
   });
 
   return (
@@ -76,7 +78,7 @@ export const ProductoRecepcionCard = ({
             </div>
             <div>
               <Text size="md" fw={900} className="text-white tracking-tight leading-tight">
-                {grouped.producto}
+                {group.producto}
               </Text>
               <Badge
                 variant="dot"
@@ -85,7 +87,7 @@ export const ProductoRecepcionCard = ({
                 mt={2}
                 className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
               >
-                Total a Recibir: {formatNumber(grouped.total_entregado_base)} {grouped.unidad_base_abv}
+                Total a Recibir: {formatNumber(group.total_entregado_base)} {group.unidad_base_abv}
               </Badge>
             </div>
           </div>
@@ -103,18 +105,18 @@ export const ProductoRecepcionCard = ({
       </div>
 
       <Stack gap={0}>
-        {grouped.lots.map((lot: DTO_RecibirLotExtendido, lotIndex: number) => {
+        {group.lots.map((lot: DTO_RecibirLotExtendido, lotIndex: number) => {
           const esNuevoLote = lot.es_nuevo_lote;
           const fieldError = getLotError(groupIndex, lotIndex, "id_lote_existente");
 
           return (
             <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
               {lotIndex > 0 && <Divider color="zinc.8" variant="dashed" mb="md" />}
-                <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-2">
                   <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
                     Partida #{lotIndex + 1}
                   </Text>
-                  {grouped.lots.length > 1 && (
+                  {group.lots.length > 1 && (
                     <ActionIcon
                       variant="subtle"
                       color="red"
@@ -128,18 +130,21 @@ export const ProductoRecepcionCard = ({
 
               <Group justify="space-between">
                 <Group gap="xs">
-                  <Text size="xs" fw={700} c={esNuevoLote ? "indigo.3" : "zinc.4"}>
-                    Generar Lote Nuevo
-                  </Text>
-                  <Switch
-                    checked={esNuevoLote}
-                    onChange={(e) => {
-                      const checked = e.currentTarget.checked;
-                      setLotValue(groupIndex, lotIndex, "es_nuevo_lote", checked);
-                    }}
-                    color="indigo"
-                    size="sm"
-                  />
+                   <Text size="xs" fw={700} c={esNuevoLote ? "zinc.4" : "emerald.4"}>
+                     Ingresar a Lote Existente
+                   </Text>
+                   <Switch
+                     checked={esNuevoLote}
+                     onChange={(e) => {
+                       const checked = e.currentTarget.checked;
+                       setLotValue(groupIndex, lotIndex, "es_nuevo_lote", checked);
+                     }}
+                     color="indigo"
+                     size="sm"
+                   />
+                   <Text size="xs" fw={700} c={esNuevoLote ? "indigo.3" : "zinc.4"}>
+                     Generar Lote Nuevo
+                   </Text>
                 </Group>
               </Group>
 
@@ -150,8 +155,8 @@ export const ProductoRecepcionCard = ({
                     loading={loadingLotes}
                     selectedAjustes={lot.ajustes || {}}
                     onUpdateTabular={(id, active, qty) => updateTabularAdjustment(groupIndex, lotIndex, id, active, qty)}
-                    unidadBaseAbv={grouped.unidad_base_abv}
-                    maxQty={grouped.total_entregado_base}
+                    unidadBaseAbv={group.unidad_base_abv}
+                    maxQty={group.total_entregado_base}
                   />
                   {fieldError && (
                     <Text size="xs" color="red" mt={4} fw={700}>{fieldError}</Text>
@@ -169,7 +174,7 @@ export const ProductoRecepcionCard = ({
                     getLotError={getLotError}
                     unidades={unidades}
                     loadingUnidades={loadingUnidades}
-                    unidadBaseAbv={grouped.unidad_base_abv}
+                    unidadBaseAbv={group.unidad_base_abv}
                     esPerecible={isPerecible}
                   />
                 </div>
