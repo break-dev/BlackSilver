@@ -348,7 +348,9 @@ export const DetalleRequerimiento = ({
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-center">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
-                <th className="px-6 py-4 text-left min-w-[200px]">Destino / Comentario</th>
+                <th className="px-6 py-4 text-left min-w-[200px]">
+                  Destino / Comentario
+                </th>
                 <th className="px-6 py-4 text-center">Estado</th>
                 <th className="px-6 py-4 text-center w-20">Acciones</th>
               </tr>
@@ -394,9 +396,10 @@ export const DetalleRequerimiento = ({
                         className="font-bold shadow-xs whitespace-nowrap"
                       >
                         {formatNumber(item.cantidad_solicitada)}{" "}
-                        {item.unidad_medida}
+                        {item.unidad_medida_req_abv}
                       </Badge>{" "}
-                      {item.unidad_medida_base !== item.unidad_medida && (
+                      {item.id_unidad_medida_base !==
+                        item.id_unidad_medida_req && (
                         <>
                           <Badge
                             variant="filled"
@@ -406,9 +409,9 @@ export const DetalleRequerimiento = ({
                             className="font-black px-4"
                           >
                             {formatNumber(item.contenido_por_presentacion)}{" "}
-                            {item.unidad_medida_base}{" "}
+                            {item.unidad_medida_base_abv}{" "}
                             <span className="lowercase">x</span>{" "}
-                            {item.unidad_medida}
+                            {item.unidad_medida_req_abv}
                           </Badge>
                           <Badge
                             variant="filled"
@@ -417,7 +420,7 @@ export const DetalleRequerimiento = ({
                             className="font-bold shadow-xs whitespace-nowrap"
                           >
                             {formatNumber(item.cantidad_solicitada_base)}{" "}
-                            {item.unidad_medida_base}
+                            {item.unidad_medida_base_abv}
                           </Badge>
                         </>
                       )}
@@ -432,10 +435,8 @@ export const DetalleRequerimiento = ({
                             className="flex flex-row gap-0.5"
                           >
                             <span>Atendido: </span>
-                            <span>
-                              {formatNumber(item.cantidad_entregada)}
-                            </span>
-                            <span>{item.unidad_medida}</span>
+                            <span>{formatNumber(item.cantidad_entregada)}</span>
+                            <span>{item.unidad_medida_req_abv}</span>
                           </Text>
                           <Text size="11px" fw={900} c="indigo.4">
                             {progresoItem}%
@@ -467,9 +468,12 @@ export const DetalleRequerimiento = ({
                           c="zinc.5"
                           className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
                         >
-                          {item.comentario || (
-                            !item.producto_destino && <span className="text-zinc-400">Sin comentarios</span>
-                          )}
+                          {item.comentario ||
+                            (!item.producto_destino && (
+                              <span className="text-zinc-400">
+                                Sin comentarios
+                              </span>
+                            ))}
                         </Text>
                       </div>
                     </td>

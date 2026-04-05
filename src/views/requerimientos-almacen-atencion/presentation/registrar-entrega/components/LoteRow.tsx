@@ -1,13 +1,11 @@
 import { Badge, NumberInput, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_Lote,
-} from "../../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
 
 interface LoteRowProps {
-  lote: RES_Lote;
+  lote: RES_LoteDisponible;
   idDetalleReq: number;
   cant: number;
   maxBase: number;
@@ -81,20 +79,20 @@ export const LoteRow = ({
           >
             {formatNumber(stockVisible)} {detalle_req.unidad_medida_base_abv}
           </Badge>
-          {lote.unidad_medida_abv !== detalle_req.unidad_medida_base_abv && (
+          {lote.id_unidad_medida_lote !== detalle_req.id_unidad_medida_base && (
             <Text size="10px" c="teal.4" fw={800} className="font-mono">
               (
               {formatNumber(
                 stockVisible / (lote.contenido_por_presentacion || 1),
               )}{" "}
-              {lote.unidad_medida_abv})
+              {lote.unidad_medida_lote_abv})
             </Text>
           )}
         </div>
       </td>
       <td className="pr-8">
         <div className="flex items-center justify-center gap-3">
-          {lote.unidad_medida_abv !== detalle_req.unidad_medida_base_abv && (
+          {lote.id_unidad_medida_lote !== detalle_req.id_unidad_medida_base && (
             <NumberInput
               size="sm"
               radius="xl"
@@ -118,7 +116,7 @@ export const LoteRow = ({
               hideControls
               rightSection={
                 <Text size="xs" fw={900} c="zinc.5" className="mr-3">
-                  {lote.unidad_medida_abv}
+                  {lote.unidad_medida_lote_abv}
                 </Text>
               }
               rightSectionWidth={60}

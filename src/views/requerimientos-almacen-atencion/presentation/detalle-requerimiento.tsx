@@ -434,7 +434,7 @@ export const DetalleRequerimiento = ({
                           {item.producto}
                         </Text>
                         {(() => {
-                          const stock = Number(item.stock_disponible || 0);
+                          const stock = Number(item.stock_disponible_base || 0);
                           const pendiente = item.pendiente_base;
 
                           if (stock <= 0) {
@@ -485,10 +485,10 @@ export const DetalleRequerimiento = ({
                         className="font-black px-4"
                       >
                         {formatNumber(item.cantidad_solicitada)}{" "}
-                        {item.unidad_medida_abv}
+                        {item.unidad_medida_req_abv}
                       </Badge>
-                      {item.unidad_medida_base_abv !==
-                        item.unidad_medida_abv && (
+                      {item.id_unidad_medida_base !==
+                        item.id_unidad_medida_req && (
                         <>
                           <Badge
                             variant="filled"
@@ -500,7 +500,7 @@ export const DetalleRequerimiento = ({
                             {formatNumber(item.contenido_por_presentacion)}{" "}
                             {item.unidad_medida_base_abv}{" "}
                             <span className="lowercase">x</span>{" "}
-                            {item.unidad_medida_abv}
+                            {item.unidad_medida_req_abv}
                           </Badge>
 
                           <Badge

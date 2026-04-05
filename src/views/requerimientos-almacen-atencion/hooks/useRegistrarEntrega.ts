@@ -2,13 +2,13 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import type {
   RES_DetalleRequerimiento,
-  RES_Lote,
-  RES_Empleado,
   DetalleRequerimientoExtendido,
 } from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
 import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;
@@ -31,7 +31,7 @@ export const useRegistrarEntregaBatch = ({
   const loggedEmployeeId = authUser.usuario?.id_empleado;
 
   const [loading, setLoading] = useState(true);
-  const [lotes, setLotes] = useState<RES_Lote[]>([]);
+  const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
   const [empleados, setEmpleados] = useState<
     { value: string; label: string }[]
   >([]);
@@ -87,7 +87,7 @@ export const useRegistrarEntregaBatch = ({
         if (cancelled) return;
 
         if (resLotes.success) {
-          const castedLotes = resLotes.data.map((l: RES_Lote) => ({
+          const castedLotes = resLotes.data.map((l: RES_LoteDisponible) => ({
             ...l,
             stock_actual: Number(l.stock_actual),
             stock_actual_base: Number(l.stock_actual_base),
@@ -222,7 +222,7 @@ export const useRegistrarEntregaBatch = ({
   );
 
   const lotesPorProducto = useMemo(() => {
-    const agrupado: Record<number, RES_Lote[]> = {};
+    const agrupado: Record<number, RES_LoteDisponible[]> = {};
     lotes.forEach((l) => {
       if (!agrupado[l.id_producto]) agrupado[l.id_producto] = [];
       agrupado[l.id_producto].push(l);

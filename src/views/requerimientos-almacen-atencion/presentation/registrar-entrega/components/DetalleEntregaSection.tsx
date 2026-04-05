@@ -1,14 +1,12 @@
 import { Badge, Group, Text } from "@mantine/core";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_Lote,
-} from "../../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import { LotesTable } from "./LotesTable";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
 
 interface DetalleEntregaSectionProps {
   detalle_req: DetalleRequerimientoExtendido;
-  lotes: RES_Lote[];
+  lotes: RES_LoteDisponible[];
   index: number;
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
@@ -48,7 +46,7 @@ export const DetalleEntregaSection = ({
             <Text size="sm" fw={800} className="text-zinc-200">
               <span className="text-white font-black">
                 {formatNumber(detalle_req.cantidad_solicitada)}{" "}
-                {detalle_req.unidad_medida_abv}
+                {detalle_req.unidad_medida_req_abv}
               </span>
             </Text>
             {detalle_req.producto_destino && (
@@ -62,8 +60,8 @@ export const DetalleEntregaSection = ({
               </Badge>
             )}
           </div>
-          {detalle_req.unidad_medida_abv !==
-            detalle_req.unidad_medida_base_abv && (
+          {detalle_req.id_unidad_medida_base !==
+            detalle_req.id_unidad_medida_req && (
             <Badge
               size="9px"
               variant="transparent"

@@ -1,11 +1,9 @@
 import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_Lote,
-} from "../../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import { DetalleEntregaSection } from "./DetalleEntregaSection";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
 
 interface ProductoEntregaCardProps {
   idProducto: number;
@@ -16,7 +14,7 @@ interface ProductoEntregaCardProps {
     unidad_medida_base_abv: string;
     details: DetalleRequerimientoExtendido[];
   };
-  lotesPorProducto: Record<number, RES_Lote[]>;
+  lotesPorProducto: Record<number, RES_LoteDisponible[]>;
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (

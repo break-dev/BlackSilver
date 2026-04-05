@@ -81,7 +81,7 @@ export const RegistrarEntrega = ({
       groupedByProduct[d.id_producto] = {
         name: d.producto,
         stock_minimo: d.stock_minimo,
-        stock_disponible: d.stock_disponible,
+        stock_disponible: d.stock_disponible_base,
         unidad_medida_base_abv: d.unidad_medida_base_abv,
         details: [],
       };

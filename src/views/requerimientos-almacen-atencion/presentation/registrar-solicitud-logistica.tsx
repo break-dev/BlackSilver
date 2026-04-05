@@ -222,7 +222,7 @@ export const RegistrarSolicitudLogistica = ({
                   const canBase = cantidadesBase[idDetalle] || 0;
                   const factorVal = factores[idDetalle] || 1;
                   const isDifferentUnit =
-                    item.unidad_medida_abv !== item.unidad_medida_base_abv;
+                    item.id_unidad_medida_req !== item.id_unidad_medida_base;
 
                   return (
                     <tr
@@ -250,7 +250,7 @@ export const RegistrarSolicitudLogistica = ({
                           className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
                         >
                           {formatNumber(item.cantidad_solicitada)}{" "}
-                          {item.unidad_medida_abv}
+                          {item.unidad_medida_req_abv}
                         </Badge>
                         {item.id_unidad_medida_req !=
                           item.id_unidad_medida_base && (
@@ -265,7 +265,7 @@ export const RegistrarSolicitudLogistica = ({
                               {formatNumber(item.contenido_por_presentacion)}{" "}
                               {item.unidad_medida_base_abv}{" "}
                               <span className="lowercase">x</span>{" "}
-                              {item.unidad_medida_abv}
+                              {item.unidad_medida_req_abv}
                             </Badge>
                             <Badge
                               variant="filled"
@@ -306,7 +306,7 @@ export const RegistrarSolicitudLogistica = ({
                                 placeholder="0"
                                 rightSection={
                                   <Text size="10px" fw={800} c="zinc.5">
-                                    {item.unidad_medida_abv}
+                                    {item.unidad_medida_req_abv}
                                   </Text>
                                 }
                                 rightSectionWidth={35}

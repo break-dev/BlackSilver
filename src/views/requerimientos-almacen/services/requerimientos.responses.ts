@@ -28,8 +28,10 @@ export interface RES_RequerimientoAlmacen {
 export interface RES_RequerimientoDetalle {
   id_requerimiento_almacen_detalle: number;
   producto: string;
-  unidad_medida_base: string;
-  unidad_medida: string;
+  id_unidad_medida_base: number;
+  unidad_medida_base_abv: string;
+  id_unidad_medida_req: number;
+  unidad_medida_req_abv: string;
   contenido_por_presentacion: number;
   cantidad_solicitada: number;
   cantidad_solicitada_base: number;

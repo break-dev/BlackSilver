@@ -1,12 +1,10 @@
 import { Table } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_Lote,
-} from "../../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
 
 interface LotesTableProps {
-  lotes: RES_Lote[];
+  lotes: RES_LoteDisponible[];
   idDetalleReq: number;
   pendienteBase: number;
   tEntregadoDetalleActualBase: number;
