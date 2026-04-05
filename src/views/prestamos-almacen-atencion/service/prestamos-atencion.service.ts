@@ -4,6 +4,7 @@ import type {
   RES_AlmacenAutorizado,
   RES_PrestamoAtencion,
   RES_DetallePrestamoPorId,
+  RES_EntregaPrestamo,
   RES_LoteDisponibleDespacho,
   RES_EmpleadoPrestamo,
   RES_TrazabilidadPrestamo,
@@ -73,6 +74,14 @@ export const PrestamosAtencionService = {
   obtenerDetallePrestamo: async (idPrestamo: number) => {
     const res = await api.get<IRespuesta<RES_DetallePrestamoPorId>>(
       `${path}/ver`,
+      { params: { id_prestamo: idPrestamo } },
+    );
+    return res.data;
+  },
+  
+  obtenerHistorialEntregas: async (idPrestamo: number) => {
+    const res = await api.get<IRespuesta<RES_EntregaPrestamo[]>>(
+      `${path}/historial-entregas`,
       { params: { id_prestamo: idPrestamo } },
     );
     return res.data;

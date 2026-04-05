@@ -116,7 +116,7 @@ export interface RES_Lote_Atencion {
 
 export interface RES_DetallePrestamoPorId {
   detalles: RES_DetallePrestamo[];
-  entregas: RES_EntregaPrestamo[];
+  entregas?: RES_EntregaPrestamo[];
 }
 
 export interface RES_ReposicionPrestamo {

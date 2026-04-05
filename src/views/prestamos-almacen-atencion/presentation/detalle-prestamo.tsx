@@ -69,6 +69,8 @@ export const DetallePrestamo = ({
     openedHistorial,
     openHistorial,
     closeHistorial,
+    loadingEntregas,
+    cargarEntregas,
     // Reposiciones
     reposiciones,
     loadingRepos,
@@ -288,7 +290,10 @@ export const DetallePrestamo = ({
               size="xs"
               radius="md"
               leftSection={<ClockIcon className="w-4 h-4" />}
-              onClick={openHistorial}
+              onClick={() => {
+                cargarEntregas();
+                openHistorial();
+              }}
               className="font-bold whitespace-nowrap"
             >
               Historial de Entregas
@@ -691,7 +696,10 @@ export const DetallePrestamo = ({
         title="Historial de Entregas"
         size="70%"
       >
-        <HistorialEntregasPrestamo entregas={entregas} />
+        <HistorialEntregasPrestamo
+          entregas={entregas}
+          loading={loadingEntregas}
+        />
       </ModalEstandar>
 
       {/* Historial de Movimientos (Reposiciones) */}

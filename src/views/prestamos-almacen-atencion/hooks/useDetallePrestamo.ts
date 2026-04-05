@@ -43,6 +43,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     [],
   );
   const [loadingRepos, setLoadingRepos] = useState(false);
+  const [loadingEntregas, setLoadingEntregas] = useState(false);
 
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
@@ -72,7 +73,6 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
           await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
         if (res.success) {
           setDetalles(res.data.detalles);
-          setEntregas(res.data.entregas);
         }
       } catch {
         notifyError("Error al cargar el detalle del préstamo");
@@ -111,6 +111,21 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
       notifyError("Error al cargar el historial de reposiciones");
     } finally {
       setLoadingRepos(false);
+    }
+  }, [idPrestamo, notifyError]);
+
+  const cargarEntregas = useCallback(async () => {
+    setLoadingEntregas(true);
+    try {
+      const res =
+        await PrestamosAtencionService.obtenerHistorialEntregas(idPrestamo);
+      if (res.success) {
+        setEntregas(res.data);
+      }
+    } catch {
+      notifyError("Error al cargar el historial de entregas");
+    } finally {
+      setLoadingEntregas(false);
     }
   }, [idPrestamo, notifyError]);
 
@@ -275,6 +290,9 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     reposiciones,
     loadingRepos,
     cargarReposiciones,
+    // Entregas
+    loadingEntregas,
+    cargarEntregas,
     // Selección múltiple
     selectedItemsIds,
     toggleItemSelection,

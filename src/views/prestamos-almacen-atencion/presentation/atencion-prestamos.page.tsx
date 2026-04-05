@@ -125,11 +125,11 @@ export const AtencionPrestamosPage = () => {
             </Group>
             {item.fecha_limite_devolucion && (
               <Text
-                size="10px"
-                fw={900}
+                size="11px"
+                fw={700}
                 c="pink.5"
                 ml={22}
-                className="uppercase tracking-tighter italic"
+                className=""
               >
                 Devolución:{" "}
                 {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
