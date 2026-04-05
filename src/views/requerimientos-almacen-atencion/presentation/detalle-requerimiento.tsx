@@ -519,7 +519,7 @@ export const DetalleRequerimiento = ({
                       <div className="flex flex-col gap-1.5 w-full">
                         <div className="flex justify-between items-center px-1">
                           <Text size="10px" fw={800} c="zinc.5">
-                            Atendido: {formatNumber(item.cantidad_entregada)}
+                            Atendido: {formatNumber(item.cantidad_entregada)}{" "}{item.unidad_medida_req_abv}
                           </Text>
                           <Text size="10px" fw={900} c="indigo.4">
                             {item.porcentaje_progreso}%
