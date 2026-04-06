@@ -23,68 +23,79 @@ Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS dis
 
 ## 🏗️ Arquitectura: Aislamiento por Vista
 
-El proyecto sigue estrictamente el principio de **Aislamiento por Vista**. Cada módulo o funcionalidad importante reside en su propio directorio y debe ser autosuficiente.
+El proyecto sigue estrictamente el principio de **Aislamiento por Vista**. Cada vista de la aplicación reside en su propio directorio y debe ser autosuficiente.
 
-### Ubicación: `src/views/[nombre-modulo]`
+### Ubicación: `src/views/[nombre-vista-kebab-case]`
 
 Cada vista se divide obligatoriamente en tres capas para separar responsabilidades:
 
 #### 1. Presentation (`components/` y `.page.tsx`)
+
 - **Responsabilidad:** UI/UX y renderizado.
 - **Regla:** No debe contener lógica compleja, cálculos pesados ni manejo de estado de negocio.
-- **Interacción:** Consume datos del **Hook** y emite eventos (clics, envíos).
-- **Archivos:** `Index.page.tsx` y sub-componentes en carpetas locales.
+- **Archivos:** El componente principal es `[nombre-vista].page.tsx`. Los sub-componentes son `[nombre-componente].component.tsx`.
+- **Escalabilidad:** Si un componente se vuelve complejo, crea una carpeta con su nombre, coloca el `.tsx` ahí dentro, y crea una subcarpeta `components/` para los elementos que lo integran.
 
 #### 2. Hooks (`hooks/`)
-- **Responsabilidad:** El "Cerebro" de la vista. Maneja el estado local, efectos (`useEffect`), validaciones y **cálculos derivados** (usando `useMemo`).
-- **Regla:** Toda transformación de datos para la UI debe ocurrir aquí.
-- **Archivos:** `use[Modulo].ts`.
+
+- **Responsabilidad:** El "Cerebro" del componente. Maneja el estado local, efectos y validaciones.
+- **Regla:** Los hooks son **por cada componente complejo de la vista**, no uno general por vista. (Ej: `useRegistroEntregaLogistica.ts`).
 
 #### 3. Service (`service/`)
+
 - **Responsabilidad:** Comunicación con la API y definición de modelos de datos.
-- **Regla:** Aquí se definen las **Interfaces** de TypeScript y los **Stores de Zustand** para estados globales (ej. formularios que persisten entre pasos).
-- **Archivos:** `[Modulo].service.ts`, `responses.ts`, `requests.ts`.
+- **Regla:** Solo deben existir **3 archivos** nombrados con el nombre de la vista:
+  1. `[nombre-vista].service.ts`
+  2. `[nombre-vista].requests.ts`
+  3. `[nombre-vista].responses.ts` (Debe ser **exactamente** lo que la API envía).
 
 > [!IMPORTANT]
-> **Regla de Oro:** Ninguna vista debe importar lógica, servicios o componentes de otra vista hermana. Si necesitas algo compartido, debe moverse a `src/shared`.
+> **Reglas de Oro:**
+>
+> 1. **Prohibido reutilizar componentes de negocio** entre diferentes vistas (ej. entregas de requerimientos vs. entregas de préstamos), aunque se parezcan. Se debe tomar como referencia y crear uno nuevo en la vista correspondiente.
+> 2. **Componentes Abstractos:** Solo se reutilizan componentes sin lógica de procesos específicos (Modal, Datatable, CustomDatePicker, FileUpload) desde `src/presentation` o `src/shared`.
 
 ---
 
 ## 📂 Estructura de Directorios
 
-- `src/hooks`: Hooks de utilidad global (ej. `useAuth`, `useTheme`).
-- `src/presentation`: Componentes de UI globales y Layouts principales.
+- `src/hooks`: Hooks de utilidad global transversales. Destacan `useTitlePage` (para nombre en header y pestaña) y `useNotify` (para alertas UI). **No existe useTheme.**
+- `src/presentation`: Componentes de UI globales y abstractos.
 - `src/service`: Instancia de Axios y servicios core del sistema.
-- `src/shared`: Constantes, utilidades, tipos globales y componentes reutilizables.
+- `src/shared`: Constantes, utilidades, tipos globales y **Enums** (que deben mantener similitud estricta con los de la API).
 - `src/stores`: Stores globales (ej. sesión de usuario, configuración).
-- `src/views`: Módulos de la aplicación organizados por funcionalidad.
+- `src/views`: Vistas de la aplicación organizadas por funcionalidad.
 
 ---
 
 ## 📝 Reglas de Desarrollo
 
 ### 1. Convenciones de Nombres
-- **Componentes:** `PascalCase.tsx` (ej. `BotonEnvio.tsx`).
-- **Hooks:** `camelCase.ts` empezando con 'use' (ej. `useFormulario.ts`).
-- **Servicios/Utilidades:** `camelCase.ts`.
+
+- **Página Principal:** `kebab-case.page.tsx`
+- **Sub-Componentes:** `kebab-case.component.tsx`
+- **Hooks:** `camelCase.ts` empezando con 'use' (ej. `useRegistroEntrega.ts`).
+- **Servicios:** `kebab-case.service.ts`
 - **Carpetas:** `kebab-case`.
 
 ### 2. Tipado Estrictamente Obligatorio
-Está prohibido el uso de `any`. Todas las respuestas y requests de la API deben tener una interfaz definida en el `service/responses.ts`, `service/requests.ts` del módulo.
+
+Está prohibido el uso de `any`. Todas las respuestas y requests de la API deben tener una interfaz definida en el respectivo archivo de la capa de servicio.
 
 ### 3. Flujo de Datos
+
 El flujo debe ser siempre unidireccional:
 `Componente (UI) -> Hook (Lógica) -> Service (API/Store) -> Backend`.
 
 ---
 
-## 🚀 Workflow: Crear un Nuevo Módulo
+## 🚀 Workflow: Crear una Nueva Vista
 
-1. **Crear Carpeta:** En `src/views/nuevo-modulo`.
-2. **Definir Service:** Crea `responses.ts` y `requests.ts` con los tipos de la API y `nuevo-modulo.service.ts` para las peticiones.
-3. **Crear Hook:** Implementa `useNuevoModulo.ts` para manejar el estado y la lógica de negocio por cada componente que este modulo posea segun criterio propio.
-4. **Implementar Vista:** Crea `NuevoModulo.page.tsx` y sus componentes usando componentes de Mantine y Tailwind.
-5. **Registrar Ruta:** Añade la nueva ruta en el enrutador principal (usualmente en `App.tsx` o un archivo de rutas centralizado).
+1. **Crear Carpeta:** En `src/views/nueva-vista`.
+2. **Definir Service:** Crea `nueva-vista.responses.ts`, `nueva-vista.requests.ts` y `nueva-vista.service.ts`.
+3. **Crear Hook:** Implementa los hooks necesarios para cada componente complejo de la vista en la carpeta `hooks/`.
+4. **Implementar Vista:** Crea `nueva-vista.page.tsx` y sus sub-componentes. Usa `useTitlePage` y `useNotify`.
+5. **Registrar Ruta:** Añade la nueva ruta en el enrutador principal.
 
 ---
 
@@ -99,15 +110,12 @@ npm run build
 
 # Ejecutar Linter
 npm run lint
-
-# Previsualizar build local
-npm run preview
 ```
 
 ---
 
 ## 💎 Estética y Diseño
+
 - Mantén la consistencia visual usando los tokens de Mantine.
-- Usa **Motion** para transiciones suaves entre estados o navegación.
-- Prioriza la experiencia del usuario (UX) y el diseño (UI) con estados de carga (`Loader`) y notificaciones simples pero efectivas.
- siempre: `Componente -> Hook -> Servicio -> API`.
+- Usa **Motion** para transiciones suaves, animaciones y traslaciones entre estados o navegación.
+- Prioriza la experiencia del usuario (UX) con colores, gradientes y estados de carga en pro de mostrar un sistema moderno, genial y estupendo.

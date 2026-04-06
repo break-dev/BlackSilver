@@ -462,7 +462,7 @@ export const DetallePrestamo = ({
                         </Text>
                         <Group gap={4}>
                           <Text
-                            size="10px"
+                            size="9px"
                             fw={800}
                             c="zinc.5"
                             className="uppercase tracking-wider"

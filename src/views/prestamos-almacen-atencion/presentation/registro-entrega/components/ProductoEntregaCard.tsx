@@ -51,8 +51,8 @@ export const ProductoEntregaCard = ({
             </div>
             <div>
               <Text
-                size="md"
-                fw={900}
+                size="sm"
+                fw={800}
                 className="text-white tracking-tight leading-tight uppercase italic"
               >
                 {detalle.producto}

@@ -12,6 +12,7 @@ import type {
   RES_DetalleReposicionParaRecepcion,
   RES_LoteRecepcionReposicion,
   RES_UnidadMedida,
+  RES_RecepcionEvento,
 } from "./prestamos-atencion.responses";
 import type {
   DTO_RegistrarEntrega,
@@ -190,6 +191,14 @@ export const PrestamosAtencionService = {
     const res = await api.post<IRespuesta<null>>(
       `/prestamos-almacen/recibir-reposicion`,
       recepData,
+    );
+    return res.data;
+  },
+
+  obtenerHistorialRecepcionesEntrega: async (idEntrega: number) => {
+    const res = await api.get<IRespuesta<RES_RecepcionEvento[]>>(
+      `${path}/recepciones`,
+      { params: { id_prestamo_entrega: idEntrega } },
     );
     return res.data;
   },

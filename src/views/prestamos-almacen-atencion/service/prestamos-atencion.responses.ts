@@ -1,3 +1,5 @@
+import type { IArchivo } from "../../../shared/interfaces";
+
 export interface RES_AlmacenAutorizado {
   id_almacen: number;
   nombre: string;
@@ -50,7 +52,7 @@ export interface RES_TrazabilidadPrestamo {
 }
 
 export interface RES_EntregaPrestamo {
-  id_entrega: number;
+  id_prestamo_entrega: number;
   correlativo: string;
   numero_correlativo: number;
   fecha_hora_entrega: string;
@@ -193,4 +195,26 @@ export interface RES_UnidadMedida {
   id_unidad_medida: number;
   nombre: string;
   abreviatura: string;
+}
+
+export interface RES_RecepcionDetalle {
+  id_recepcion_detalle: number;
+  id_prestamo_almacen_entrega_detalle: number;
+  producto: string;
+  cantidad_recepcionada_base: number;
+  unidad_medida_base_abv: string;
+  estado: string;
+}
+
+export interface RES_RecepcionEvento {
+  id_recepcion: number;
+  id_prestamo_almacen_entrega: number;
+  id_empleado_registro: number;
+  empleado_registro: string;
+  observacion: string | null;
+  fecha_hora_recepcion: string;
+  evidencias: IArchivo[] | null;
+  con_incidencia: boolean;
+  estado: string;
+  detalles: RES_RecepcionDetalle[];
 }

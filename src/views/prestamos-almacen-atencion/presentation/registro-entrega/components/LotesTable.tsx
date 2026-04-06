@@ -70,9 +70,9 @@ export const LotesTable = ({
   return (
     <div className="overflow-x-auto rounded-3xl border border-zinc-800/40 shadow-2xl bg-zinc-950/60 transition-all">
       <Table verticalSpacing="md" horizontalSpacing="xl">
-        <thead className="bg-zinc-900/50 text-zinc-500 text-[9px] uppercase font-black tracking-[0.2em] border-b border-zinc-800/30">
+        <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-black tracking-[0.2em] border-b border-zinc-800/30">
           <tr>
-            <th className="px-6 py-4 text-left">Lote / Registro</th>
+            <th className="px-6 py-4 text-center">Lote</th>
             <th className="px-6 py-4 text-center">Vencimiento</th>
             <th className="px-6 py-4 text-center">Disponible</th>
             <th className="px-6 py-4 text-center">Cant. Despacho</th>

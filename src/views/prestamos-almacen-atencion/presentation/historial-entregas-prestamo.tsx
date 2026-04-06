@@ -24,7 +24,7 @@ import { type RES_EntregaPrestamo } from "../service/prestamos-atencion.response
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces";
-import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
+import { ResumenRecepciones } from "./components/ResumenRecepciones";
 
 interface Props {
   entregas: RES_EntregaPrestamo[];
@@ -75,11 +75,11 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
       className="font-sans pt-2 pb-6 max-h-[70vh] overflow-y-auto px-2"
     >
       {entregas.map((h, index) => {
-        const expanded = isExpanded(h.id_entrega, index);
+        const expanded = isExpanded(h.id_prestamo_entrega, index);
 
         return (
           <Paper
-            key={h.id_entrega}
+            key={h.id_prestamo_entrega}
             radius="xl"
             className="bg-zinc-900/30 border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all hover:bg-zinc-900/50 hover:border-indigo-500/20 group relative overflow-hidden p-4 shrink-0"
           >
@@ -88,7 +88,7 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
 
             <UnstyledButton
               className="w-full p-5 sm:p-6"
-              onClick={() => toggleExpand(h.id_entrega)}
+              onClick={() => toggleExpand(h.id_prestamo_entrega)}
             >
               <Group
                 justify="space-between"
@@ -228,9 +228,9 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                       </Group>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {h.evidencias.map((ev: IArchivo, idx) => (
+                         {h.evidencias.map((ev: IArchivo, idx) => (
                           <ArchivoCard
-                            key={`${h.id_entrega}-ev-${idx}`}
+                            key={`${h.id_prestamo_entrega}-ev-${idx}`}
                             archivo={ev}
                           />
                         ))}
@@ -315,7 +315,7 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                 {h.detalles?.some(d => d.estado === "Recibido" || d.estado === "Entrega confirmada" || d.estado === "Recibido Parcialmente" || d.estado === "En despacho") && (
                   <div className="px-4 pb-3 mt-4">
                     <UnstyledButton
-                      onClick={() => toggleTrazabilidad(h.id_entrega)}
+                      onClick={() => toggleTrazabilidad(h.id_prestamo_entrega)}
                       className="w-full"
                     >
                       <Group
@@ -326,13 +326,13 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                         <Text size="xs" fw={700} c="zinc.4" className="flex-1 text-left">
                           Seguimiento de recepciones del destino
                         </Text>
-                        {showTrazabilidad[h.id_entrega]
+                        {showTrazabilidad[h.id_prestamo_entrega]
                           ? <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
                           : <ChevronDownIcon className="w-4 h-4 text-zinc-500" />}
                       </Group>
                     </UnstyledButton>
-                    <Collapse in={!!showTrazabilidad[h.id_entrega]}>
-                      <ResumenRecepciones idEntrega={h.id_entrega} tipoEntrega="Prestamo" />
+                    <Collapse in={!!showTrazabilidad[h.id_prestamo_entrega]}>
+                      <ResumenRecepciones idEntrega={h.id_prestamo_entrega} />
                     </Collapse>
                   </div>
                 )}
