@@ -27,7 +27,7 @@ export const useAtencionSolicitudes = () => {
         setAlmacenes(resp.data);
         // Solo auto-seleccionar si no hay nada seleccionado aún
         if (resp.data.length > 0) {
-          setIdAlmacen((prev) => prev || resp.data[0].id?.toString() || null);
+          setIdAlmacen((prev) => prev || resp.data[0].id_almacen?.toString() || null);
         }
       }
     } catch (error) {

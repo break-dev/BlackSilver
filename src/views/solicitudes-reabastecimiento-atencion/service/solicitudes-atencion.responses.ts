@@ -1,7 +1,6 @@
-import {
+  import {
   EstadoSolicitud,
   EstadoSolicitudDetalle,
-  EstadoVencimiento,
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
 import type { IArchivo } from "../../../shared/interfaces";
@@ -63,7 +62,8 @@ export interface RES_DetalleLog {
 
 export interface RES_EntregaReabastecimiento {
   id_reabastecimiento_entrega: number;
-  id_almacen_entrega: number;
+  id_entrega?: number;
+  id_almacen_entrega?: number;
   almacen_entrega: string;
   empleado_entrega: string;
   empleado_recibe: string;
@@ -78,6 +78,7 @@ export interface RES_EntregaReabastecimiento {
   tipo_entrega?: "Solicitud" | "Prestamo";
   correlativo_prestamo?: string;
   id_prestamo?: number;
+  id_prestamo_entrega?: number; // Campo natural del API de préstamos
 }
 
 export interface RES_HistorialEntregas {
@@ -87,24 +88,39 @@ export interface RES_HistorialEntregas {
 
 export interface RES_DetalleEntregaReabastecimiento {
   id_entrega_detalle: number;
+  id_reabastecimiento_entrega: number;
   id_solicitud_reabastecimiento_detalle: number;
-  lote_correlativo: string; // antes correlativo
+  lote_correlativo: string; // nombre real del campo
   fecha_vencimiento: string | null;
   producto: string;
-  dias_para_vencer: number | null;
-  estado_vencimiento: EstadoVencimiento;
-  estado_entrega_detalle?: string;
+  es_perecible?: number;
+  id_unidad_medida_base: number;
+  id_producto: number;
+  id_unidad_medida?: number; // para lote
+  id_unidad_medida_lote: number; // compatible con el anterior
   cantidad_base: number | string;
   cantidad_lote: number | string;
   cantidad_solicitud: number | string;
-  id_unidad_medida_lote: number;
-  id_unidad_medida_base: number;
   unidad_lote?: string;
-  unidad_medida_lot_abv: string; // antes unidad_lote_abv
+  unidad_medida_lot_abv: string; // nombre real del campo
   unidad_base?: string;
-  unidad_medida_base_abv: string; // antes unidad_base_abv
+  unidad_medida_base_abv: string; // nombre real del campo
+  estado: string; // nombre real del campo en el API
+  estado_entrega_detalle?: string; // para uso interno en el front
+  id_unidad_medida_solicitada?: number;
   tipo_entrega?: "Solicitud" | "Prestamo";
-  cantidad_recibida_total_base?: number | string; // antes cantidad_recibida_total
+  contenido_por_presentacion_solicitado?: number;
+  unidad_medida_solicitud_abv?: string;
+  cantidad_recibida_total_base?: number | string; // nombre real del campo
+  // Campos naturales del API de préstamos
+  id_prestamo_almacen_entrega?: number;
+  id_prestamo_almacen_detalle?: number;
+  cantidad_prestamo?: number | string;
+  cantidad_lot?: number | string;
+  id_unidad_medida_pr?: number;
+  unidad_medida_pr_abv?: string;
+  contenido_por_presentacion_pr?: number;
+  id_lote_producto?: number;
 }
 
 

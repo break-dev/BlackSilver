@@ -258,8 +258,8 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                             {d.unidad_medida_lot_abv || "UNI"}
                           </Text>
 
-                          {d.unidad_medida_lot_abv !==
-                            d.unidad_medida_base_abv && (
+                          {d.id_unidad_medida_lote !=
+                            d.id_unidad_medida_base && (
                             <>
                               <div className="w-px h-6 bg-zinc-800/80 mx-1"></div>
                               <Text
@@ -286,7 +286,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                 </div>
 
                 {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
-                {h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                {h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entregado") && (
                   <div className="px-4 pb-3 mt-4">
                     <UnstyledButton
                       onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
@@ -306,7 +306,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       </Group>
                     </UnstyledButton>
                     <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
-                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega="Solicitud" />
+                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega={h.tipo_entrega || 'Solicitud'} />
                     </Collapse>
                   </div>
                 )}
