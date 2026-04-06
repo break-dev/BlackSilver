@@ -136,20 +136,6 @@ export const KardexProductosPage = () => {
         },
       },
       {
-        accessor: "descripcion",
-        title: "Descripción",
-        width: 250,
-        render: (record) => (
-          <Text
-            size="xs"
-            className="text-zinc-400 italic line-clamp-2"
-            title={record.descripcion || ""}
-          >
-            {record.descripcion || "-"}
-          </Text>
-        ),
-      },
-      {
         accessor: "cantidad_movimiento",
         title: "Movimiento",
         textAlign: "center",
@@ -217,6 +203,20 @@ export const KardexProductosPage = () => {
         ),
       },
       {
+        accessor: "descripcion",
+        title: "Descripción",
+        width: 250,
+        render: (record) => (
+          <Text
+            size="xs"
+            className="text-zinc-400 italic line-clamp-2"
+            title={record.descripcion || ""}
+          >
+            {record.descripcion || "-"}
+          </Text>
+        ),
+      },
+      {
         accessor: "created_at",
         title: "Fecha",
         textAlign: "center",
@@ -224,7 +224,7 @@ export const KardexProductosPage = () => {
         render: (record) => (
           <Group gap="sm" wrap="nowrap" justify="center">
             <CalendarDaysIcon className="w-5 h-5 text-indigo-400 shrink-0" />
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col gap-0 items-start">
               <Text size="xs" fw={600} className="text-zinc-100">
                 {dayjs(record.created_at).format("DD/MM/YYYY")}
               </Text>
