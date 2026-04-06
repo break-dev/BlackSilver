@@ -144,16 +144,28 @@ export interface RES_LoteRecepcion {
 
 export interface RecepcionDetalle {
   id_detalle: number;
-  id_solicitud_reabastecimiento_entrega_detalle: number;
+  id_solicitud_reabastecimiento_recepcion?: number;
+  id_solicitud_reabastecimiento_entrega_detalle?: number;
+  id_prestamo_almacen_recepcion?: number;
+  id_prestamo_almacen_entrega_detalle?: number;
+  id_producto: number;
   producto: string;
+  id_unidad_medida_base: number;
+  unidad_medida_base_abv: string;
   cantidad_recepcionada_base: number;
-  unidad_base_abv: string;
+  id_unidad_medida_sol: number;
+  unidad_medida_sol_abv: string;
+  contenido_por_presentacion_sol?: number;
+  contenido_por_presentacion?: number; // Campo natural del préstamo
+  cantidad_recep_sol?: number;
+  cantidad_recepcionada_sol?: number; // Campo natural del préstamo
   estado: string;
 }
 
 export interface RecepcionEvento {
   id_recepcion: number;
-  id_solicitud_reabastecimiento_entrega: number;
+  id_solicitud_reabastecimiento_entrega?: number;
+  id_prestamo_almacen_entrega?: number;
   id_empleado_registro: number;
   empleado_registro: string;
   observacion: string | null;

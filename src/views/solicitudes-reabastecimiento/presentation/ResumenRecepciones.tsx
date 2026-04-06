@@ -192,9 +192,21 @@ export const ResumenRecepciones = ({
                           className="text-emerald-400 font-mono"
                         >
                           +{formatNumber(det.cantidad_recepcionada_base)}
-                          <span className="text-zinc-500 font-normal ml-0.5">
-                            {det.unidad_base_abv}
+                          <span className="font-normal ml-0.5">
+                            {det.unidad_medida_base_abv}
                           </span>
+                          {det.id_unidad_medida_base !=
+                            det.id_unidad_medida_sol && (
+                            <Text span size="10px" c="dimmed" ml={4} fw={500}>
+                              (
+                              {formatNumber(
+                                det.cantidad_recep_sol ||
+                                  det.cantidad_recepcionada_sol ||
+                                  0,
+                              )}{" "}
+                              {det.unidad_medida_sol_abv})
+                            </Text>
+                          )}
                         </Text>
                       </span>
                     ))}

@@ -46,7 +46,9 @@ export const useHistorialEntregas = (idSolicitud: number) => {
             ? "Procesada"
             : ent.estado === "Entrega confirmada"
               ? "Recibida"
-              : ent.estado,
+              : ent.estado === "Recibido Parcialmente"
+                ? "Recepcionado Parcialmente"
+                : ent.estado,
         detalles: (ent.detalles || []).map((d: RES_DetalleEntregaReabastecimiento) => ({
           ...d,
           tipo_entrega: "Prestamo",

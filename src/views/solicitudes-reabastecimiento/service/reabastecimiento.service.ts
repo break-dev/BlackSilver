@@ -147,7 +147,7 @@ export const ReabastecimientoService = {
 
   getHistorialRecepcionesEntrega: async (idEntrega: number, tipoEntrega: string = 'Solicitud') => {
     const res = await api.get<IRespuesta<RecepcionEvento[]>>(
-      `${path}/recepciones/historial-recepciones-entrega`,
+      `${path}/recepciones/historial`,
       {
         params: { id_reabastecimiento_entrega: idEntrega, tipo_entrega: tipoEntrega },
       },
