@@ -124,26 +124,61 @@ export interface RES_DetallePrestamoPorId {
 
 export interface RES_ReposicionPrestamo {
   id_reposicion: number;
+  id_almacen_entrega: number;
+  id_prestamo_almacen: number;
+  almacen_entrega: string;
   correlativo: string;
   fecha_hora_reposicion: string;
+  observacion: string | null;
+  evidencias: IArchivo[] | null;
+  registrado_por: string;
   created_at: string;
   estado: string;
-  observacion: string | null;
-  evidencias: string | null;
-  almacen_entrega: string;
-  registrado_por: string;
   detalles?: RES_DetalleReposicionPrestamo[];
+  recepciones?: RES_RecepcionReposicion[];
+}
+
+export interface RES_DetalleRecepcionReposicion {
+  id_recepcion_detalle: number;
+  id_reposicion_detalle: number;
+  producto: string;
+  cantidad_recepcionada_base: number;
+  unidad_medida_base_abv: string;
+}
+
+export interface RES_RecepcionReposicion {
+  id_recepcion: number;
+  id_reposicion: number;
+  id_empleado_registro: number;
+  empleado_registro: string;
+  observacion: string | null;
+  fecha_hora_recepcion: string;
+  evidencias: IArchivo[] | null;
+  con_incidencia: number | boolean;
+  estado: string;
+  detalles?: RES_DetalleRecepcionReposicion[];
 }
 
 export interface RES_DetalleReposicionPrestamo {
-  id: number;
-  cantidad_base: number;
-  cantidad_lote: number;
-  cantidad_solicitud: number;
-  estado: string;
+  id_reposicion_detalle: number;
+  id_prestamo_almacen_detalle: number;
+  id_producto: number;
   producto: string;
-  unidad_medida_base: string;
+  es_perecible: number;
+  id_lote_producto: number;
   lote_correlativo: string;
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
+  id_unidad_medida_solicitada: number;
+  id_unidad_medida_lote: number;
+  unidad_medida_lote: string;
+  unidad_medida_lote_abv: string;
+  cantidad_base: string | number;
+  cantidad_lote: string | number;
+  cantidad_prestamo: string | number;
+  cantidad_solicitud?: string | number; // Alias or compatibility
+  estado: string;
 }
 
 export interface RES_DetalleReposicionParaRecepcion {

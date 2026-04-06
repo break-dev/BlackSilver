@@ -1,51 +1,44 @@
-import { useState, useEffect, useRef } from "react";
+import { useMemo } from "react";
 import type { RES_LoteRecepcionReposicion } from "../service/prestamos-atencion.responses";
 
 interface UseProductoRecepcionCardProps {
+  lotesDisponiblesGlobal: RES_LoteRecepcionReposicion[];
   idProducto: number;
   esNuevoLote: boolean;
   isPerecible: boolean;
   targetVencimiento: string | null;
-  fetchLotesProducto: (id: number) => Promise<RES_LoteRecepcionReposicion[]>;
 }
 
 export const useProductoRecepcionCard = ({
+  lotesDisponiblesGlobal,
   idProducto,
   esNuevoLote,
   isPerecible,
   targetVencimiento,
-  fetchLotesProducto,
 }: UseProductoRecepcionCardProps) => {
-  const [lotes, setLotes] = useState<RES_LoteRecepcionReposicion[]>([]);
-  const [loadingLotes, setLoadingLotes] = useState(false);
-  const fetchedId = useRef<number | null>(null);
+  const lotes = useMemo(() => {
+    if (esNuevoLote) return [];
 
-  useEffect(() => {
-    let mounted = true;
-    if (!esNuevoLote && fetchedId.current !== idProducto) {
-      Promise.resolve().then(() => setLoadingLotes(true));
-      fetchLotesProducto(idProducto).then((data) => {
-        if (!mounted) return;
-        let filtrados = data;
-        if (isPerecible && targetVencimiento) {
-          filtrados = filtrados.filter(
-            (l) => !l.fecha_vencimiento || l.fecha_vencimiento === targetVencimiento
-          );
-        } else if (isPerecible) {
-          filtrados = filtrados.filter((l) => !l.fecha_vencimiento);
-        }
-        setLotes(filtrados);
-        setLoadingLotes(false);
-        fetchedId.current = idProducto;
+    // 1. Filtrar por producto
+    let filtrados = lotesDisponiblesGlobal.filter(l => l.id_producto === idProducto);
+
+    // 2. Aplicar lógica de perecibilidad (si aplica)
+    // Si es perecible y tenemos una fecha objetivo (de la entrega de logística), filtramos estrictamente.
+    // Pero si no hay fecha objetivo (como en reposiciones donde se quiere ajustar stock libremente), 
+    // mostramos todos los lotes de ese producto.
+    if (isPerecible && targetVencimiento) {
+      const targetDateStr = targetVencimiento.split("T")[0].split(" ")[0];
+      filtrados = filtrados.filter((l) => {
+        if (!l.fecha_vencimiento) return true;
+        const lDateStr = l.fecha_vencimiento.split("T")[0].split(" ")[0];
+        return lDateStr === targetDateStr;
       });
     }
-    return () => {
-      mounted = false;
-    };
-  }, [idProducto, esNuevoLote, isPerecible, targetVencimiento, fetchLotesProducto]);
+
+    return filtrados;
+  }, [idProducto, esNuevoLote, isPerecible, targetVencimiento, lotesDisponiblesGlobal]);
 
   return {
     lotes,
-    loadingLotes,
   };
 };

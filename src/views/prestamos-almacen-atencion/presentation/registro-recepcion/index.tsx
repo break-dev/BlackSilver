@@ -29,10 +29,11 @@ export const RegistroRecepcion = ({
     updateTabularAdjustment,
     getLotError,
     loadingAction,
-    fetchLotesProducto,
     handleSubmit,
     unidades,
     loadingUnidades,
+    lotesDisponibles,
+    loadingLotesDisp,
     errors,
     isFormValid,
   } = useRegistroRecepcion({
@@ -57,7 +58,8 @@ export const RegistroRecepcion = ({
             removeLot={removeLot}
             updateTabularAdjustment={updateTabularAdjustment}
             getLotError={getLotError}
-            fetchLotesProducto={fetchLotesProducto}
+            lotesDisponibles={lotesDisponibles}
+            loadingLotes={loadingLotesDisp}
             unidades={unidades}
             loadingUnidades={loadingUnidades}
             cantidadTotalError={errors[`groups.${index}.cantidad_total`]}

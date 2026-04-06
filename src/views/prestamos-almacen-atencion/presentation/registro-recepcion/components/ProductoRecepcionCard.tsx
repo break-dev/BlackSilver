@@ -30,7 +30,8 @@ interface ProductoRecepcionCardProps {
     lotIndex: number,
     field: keyof DTO_RecibirLotExtendido,
   ) => string | null;
-  fetchLotesProducto: (id: number) => Promise<RES_LoteRecepcionReposicion[]>;
+  lotesDisponibles: RES_LoteRecepcionReposicion[];
+  loadingLotes: boolean;
   unidades: RES_UnidadMedida[];
   loadingUnidades: boolean;
   cantidadTotalError?: string;
@@ -44,7 +45,8 @@ export const ProductoRecepcionCard = ({
   removeLot,
   updateTabularAdjustment,
   getLotError,
-  fetchLotesProducto,
+  lotesDisponibles,
+  loadingLotes,
   unidades,
   loadingUnidades,
   cantidadTotalError,
@@ -52,12 +54,12 @@ export const ProductoRecepcionCard = ({
   const isPerecible = grouped.es_perecible === 1;
   const targetVencimiento = grouped.detalles_origen[0].fecha_vencimiento;
 
-  const { lotes, loadingLotes } = useProductoRecepcionCard({
+  const { lotes } = useProductoRecepcionCard({
+    lotesDisponiblesGlobal: lotesDisponibles,
     idProducto: grouped.detalles_origen[0].id_producto,
     esNuevoLote: false,
     isPerecible,
     targetVencimiento,
-    fetchLotesProducto,
   });
 
   return (
@@ -129,18 +131,21 @@ export const ProductoRecepcionCard = ({
 
               <Group justify="space-between">
                 <Group gap="xs">
-                  <Text size="xs" fw={700} c={esNuevoLote ? "indigo.3" : "zinc.4"}>
-                    Generar Lote Nuevo
-                  </Text>
-                  <Switch
-                    checked={esNuevoLote}
-                    onChange={(e) => {
-                      const checked = e.currentTarget.checked;
-                      setLotValue(groupIndex, lotIndex, "es_nuevo_lote", checked);
-                    }}
-                    color="indigo"
-                    size="sm"
-                  />
+                   <Text size="xs" fw={700} c={esNuevoLote ? "zinc.4" : "emerald.4"}>
+                     Ingresar a Lote Existente
+                   </Text>
+                   <Switch
+                     checked={esNuevoLote}
+                     onChange={(e) => {
+                       const checked = e.currentTarget.checked;
+                       setLotValue(groupIndex, lotIndex, "es_nuevo_lote", checked);
+                     }}
+                     color="indigo"
+                     size="sm"
+                   />
+                   <Text size="xs" fw={700} c={esNuevoLote ? "indigo.3" : "zinc.4"}>
+                     Generar Lote Nuevo
+                   </Text>
                 </Group>
               </Group>
 

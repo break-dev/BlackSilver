@@ -268,10 +268,7 @@ export const DetallePrestamo = ({
             <div className="p-3.5 rounded-2xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
               <ClipboardDocumentListIcon className="w-5 h-5 text-indigo-400" />
             </div>
-            <Text
-              fw={700}
-              className="text-sm text-zinc-100"
-            >
+            <Text fw={700} className="text-sm text-zinc-100">
               Items de la Solicitud
             </Text>
           </Group>
@@ -391,12 +388,17 @@ export const DetallePrestamo = ({
                 <th className="px-6 py-4 text-left">Producto</th>
                 <th className="px-6 py-4 text-center">Cantidad solicitada</th>
                 <th className="px-6 py-4 text-center w-44">Progreso</th>
-                <th className="px-6 py-4 text-center w-44">Estado</th>
-                <th className="px-6 py-4 text-center w-40">
+                <th className="px-6 py-4 text-center">Estado</th>
+                <th className="px-6 py-4 text-center">
                   <Group gap={4} justify="center">
                     <span>Acciones</span>
-                    {detalles.some((d) => d.estado.toLowerCase() === "pendiente") && (
-                      <Tooltip label="Seleccionar todos los pendientes para acción masiva" position="top">
+                    {detalles.some(
+                      (d) => d.estado.toLowerCase() === "pendiente",
+                    ) && (
+                      <Tooltip
+                        label="Seleccionar todos los pendientes para acción masiva"
+                        position="top"
+                      >
                         <Checkbox
                           size="xs"
                           color="indigo"
@@ -570,12 +572,20 @@ export const DetallePrestamo = ({
                         </Tooltip>
 
                         {d.estado.toLowerCase().includes("pendiente") && (
-                          <Tooltip label="Acción masiva" position="top" withArrow>
+                          <Tooltip
+                            label="Acción masiva"
+                            position="top"
+                            withArrow
+                          >
                             <Checkbox
                               size="xs"
                               color="indigo"
-                              checked={idsParaAccionMasiva.includes(d.id_prestamo_detalle)}
-                              onChange={() => toggleSeleccionMasiva(d.id_prestamo_detalle)}
+                              checked={idsParaAccionMasiva.includes(
+                                d.id_prestamo_detalle,
+                              )}
+                              onChange={() =>
+                                toggleSeleccionMasiva(d.id_prestamo_detalle)
+                              }
                               className="ml-1 cursor-pointer"
                             />
                           </Tooltip>
@@ -620,13 +630,30 @@ export const DetallePrestamo = ({
             className="bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-3"
           >
             <CheckCircleIcon className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-            <Text size="sm" c="emerald.3" fw={600} className="italic text-left leading-snug">
+            <Text
+              size="sm"
+              c="emerald.3"
+              fw={600}
+              className="italic text-left leading-snug"
+            >
               {selectedItemId ? (
-                <>Estás por aprobar el despacho de <span className="font-black text-white">{selectedItemName}</span>.</>
+                <>
+                  Estás por aprobar el despacho de{" "}
+                  <span className="font-black text-white">
+                    {selectedItemName}
+                  </span>
+                  .
+                </>
               ) : (
-                <>Estás por aprobar <span className="font-black text-white">{idsParaAccionMasiva.length} ítems</span> de forma masiva.</>
-              )}
-              {" "}Se podrá proceder con la salida física del producto.
+                <>
+                  Estás por aprobar{" "}
+                  <span className="font-black text-white">
+                    {idsParaAccionMasiva.length} ítems
+                  </span>{" "}
+                  de forma masiva.
+                </>
+              )}{" "}
+              Se podrá proceder con la salida física del producto.
             </Text>
           </Paper>
           <Textarea
@@ -672,13 +699,30 @@ export const DetallePrestamo = ({
             className="bg-red-500/5 border border-red-500/20 flex items-start gap-3"
           >
             <ExclamationTriangleIcon className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-            <Text size="sm" c="red.3" fw={600} className="italic text-left leading-snug">
+            <Text
+              size="sm"
+              c="red.3"
+              fw={600}
+              className="italic text-left leading-snug"
+            >
               {selectedItemId ? (
-                <>¿Por qué no se puede atender el préstamo de <span className="font-black text-white">{selectedItemName}</span>?</>
+                <>
+                  ¿Por qué no se puede atender el préstamo de{" "}
+                  <span className="font-black text-white">
+                    {selectedItemName}
+                  </span>
+                  ?
+                </>
               ) : (
-                <>¿Por qué no se pueden atender estos <span className="font-black text-white">{idsParaAccionMasiva.length} ítems</span>?</>
-              )}
-              {" "}El motivo es obligatorio.
+                <>
+                  ¿Por qué no se pueden atender estos{" "}
+                  <span className="font-black text-white">
+                    {idsParaAccionMasiva.length} ítems
+                  </span>
+                  ?
+                </>
+              )}{" "}
+              El motivo es obligatorio.
             </Text>
           </Paper>
           <Textarea
@@ -753,7 +797,7 @@ export const DetallePrestamo = ({
         opened={openedHistorialRepos}
         close={closeHistorialRepos}
         title="Historial de Reposiciones"
-        size="65%"
+        size="70%"
       >
         <HistorialReposicionesPrestamo
           reposiciones={reposiciones}

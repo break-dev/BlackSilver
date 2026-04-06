@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { useNotify } from "../../../hooks/useNotify";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
@@ -7,7 +7,10 @@ import type {
   RES_LoteRecepcionReposicion,
   RES_UnidadMedida,
 } from "../service/prestamos-atencion.responses";
-import type { DTO_RecibirEntregaReposicionItem } from "../service/prestamos-atencion.requests";
+import type {
+  DTO_RecibirEntregaReposicionItem,
+  DTO_ItemRecepcionReposicion,
+} from "../service/prestamos-atencion.requests";
 import React from "react";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {
@@ -42,6 +45,8 @@ export const useRegistroRecepcion = ({
   idAlmacenSolicitante,
   detalles,
   onSuccess,
+  idEntrega,
+  tipoEntrega,
 }: UseRegistroRecepcionProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
@@ -50,6 +55,9 @@ export const useRegistroRecepcion = ({
   const [loadingAction, setLoadingAction] = useState(false);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
+  const [lotesDisponibles, setLotesDisponibles] = useState<RES_LoteRecepcionReposicion[]>([]);
+  const [loadingLotesDisp, setLoadingLotesDisp] = useState(false);
+  const defaultsApplied = useRef(false);
 
   useEffect(() => {
     if (detalles && detalles.length > 0 && groupedItems.length === 0) {
@@ -84,7 +92,7 @@ export const useRegistroRecepcion = ({
             cantidad_solicitud: 0,
             id_unidad_medida_lote: g.detalles_origen[0].id_unidad_medida_base,
             id_unidad_medida_solicitada: g.detalles_origen[0].id_unidad_medida_solicitada,
-            es_nuevo_lote: true,
+            es_nuevo_lote: false,
             cantidad_base: g.total_entregado_base,
             id_lote_existente: null,
             fecha_vencimiento: g.es_perecible === 1 && g.detalles_origen[0].fecha_vencimiento ? g.detalles_origen[0].fecha_vencimiento : null,
@@ -115,6 +123,57 @@ export const useRegistroRecepcion = ({
     loadUnidades();
   }, []);
 
+  useEffect(() => {
+    const fetchAllLotes = async () => {
+      if (!detalles || detalles.length === 0) return;
+      
+      const uniqueProductIds = Array.from(new Set(detalles.map(d => d.id_producto)));
+      if (uniqueProductIds.length === 0) return;
+
+      setLoadingLotesDisp(true);
+      try {
+        const res = await PrestamosAtencionService.getLotesDestino(idAlmacenSolicitante, uniqueProductIds);
+        if (res.success && res.data) {
+          setLotesDisponibles(res.data);
+        }
+      } catch (err) {
+        console.error("Error fetching lots in batch:", err);
+        notifyError("Error al cargar los lotes disponibles.");
+      } finally {
+        setLoadingLotesDisp(false);
+      }
+    };
+
+    fetchAllLotes();
+  }, [detalles, idAlmacenSolicitante, notifyError]);
+
+  useEffect(() => {
+    if (!defaultsApplied.current && lotesDisponibles.length > 0 && groupedItems.length > 0) {
+      setGroupedItems((prev) => {
+        return prev.map((group) => {
+          const lotsForProduct = lotesDisponibles.filter((l) => l.id_producto === group.id_producto);
+          if (lotsForProduct.length > 0) {
+            const firstLote = lotsForProduct[0];
+            const updatedLots = group.lots.map((lot, idx) => {
+              if (idx === 0) {
+                return {
+                  ...lot,
+                  es_nuevo_lote: false,
+                  id_lote_existente: firstLote.id_lote,
+                  ajustes: { [firstLote.id_lote]: Number(lot.cantidad_base) },
+                };
+              }
+              return lot;
+            });
+            return { ...group, lots: updatedLots };
+          }
+          return group;
+        });
+      });
+      defaultsApplied.current = true;
+    }
+  }, [lotesDisponibles, groupedItems.length]);
+
   const setLotValue = <K extends keyof DTO_RecibirLotExtendido>(
     groupIndex: number,
     lotIndex: number,
@@ -128,45 +187,36 @@ export const useRegistroRecepcion = ({
       let finalValue = value;
       if (field === "cantidad_base") {
         const numVal = Number(value) || 0;
-        
-        // Calculamos la suma de todos los DEMÁS lotes (excepto el actual y el ÚLTIMO)
         const lastIdx = lots.length - 1;
         
         if (lots.length > 1) {
-            // Si no estamos editando el último, el último absorbe la diferencia
-            if (lotIndex !== lastIdx) {
-                // Suma de todos menos el actual y el último
-                const otherSum = lots.reduce((acc, l, idx) => {
-                    if (idx === lotIndex || idx === lastIdx) return acc;
-                    return acc + (Number(l.cantidad_base) || 0);
-                }, 0);
-                
-                // Limitamos el actual para que no supere el total disponible (dejando sitio a los demás fijos)
-                const maxForThis = Math.max(0, group.total_entregado_base - otherSum);
-                const cappedVal = Math.min(numVal, maxForThis);
-                finalValue = cappedVal as DTO_RecibirLotExtendido[K];
-                
-                // El último recibe el resto
-                const remaining = Math.max(0, group.total_entregado_base - otherSum - cappedVal);
-                lots[lastIdx] = {
-                    ...lots[lastIdx],
-                    cantidad_base: remaining,
-                    ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
-                        ? { [lots[lastIdx].id_lote_existente]: remaining }
-                        : (lots[lastIdx].ajustes || {})
-                };
-            } else {
-                // Si estamos editando el último directamente, simplemente lo limitamos al remanente
-                const otherSum = lots.reduce((acc, l, idx) => {
-                    if (idx === lotIndex) return acc;
-                    return acc + (Number(l.cantidad_base) || 0);
-                }, 0);
-                const maxForLast = Math.max(0, group.total_entregado_base - otherSum);
-                finalValue = Math.min(numVal, maxForLast) as DTO_RecibirLotExtendido[K];
-            }
+          if (lotIndex !== lastIdx) {
+            const otherSum = lots.reduce((acc, l, idx) => {
+              if (idx === lotIndex || idx === lastIdx) return acc;
+              return acc + (Number(l.cantidad_base) || 0);
+            }, 0);
+            const maxForThis = Math.max(0, group.total_entregado_base - otherSum);
+            const cappedVal = Math.min(numVal, maxForThis);
+            finalValue = cappedVal as DTO_RecibirLotExtendido[K];
+            
+            const remaining = Math.max(0, group.total_entregado_base - otherSum - cappedVal);
+            lots[lastIdx] = {
+              ...lots[lastIdx],
+              cantidad_base: remaining,
+              ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+                ? { [lots[lastIdx].id_lote_existente]: remaining }
+                : (lots[lastIdx].ajustes || {})
+            };
+          } else {
+            const otherSum = lots.reduce((acc, l, idx) => {
+              if (idx === lotIndex) return acc;
+              return acc + (Number(l.cantidad_base) || 0);
+            }, 0);
+            const maxForLast = Math.max(0, group.total_entregado_base - otherSum);
+            finalValue = Math.min(numVal, maxForLast) as DTO_RecibirLotExtendido[K];
+          }
         } else {
-            // Un solo lote -> 100% (esto ya se maneja en el readOnly pero por seguridad)
-            finalValue = group.total_entregado_base as DTO_RecibirLotExtendido[K];
+          finalValue = group.total_entregado_base as DTO_RecibirLotExtendido[K];
         }
       }
 
@@ -182,7 +232,6 @@ export const useRegistroRecepcion = ({
       group.lots = lots;
       newGrouped[groupIndex] = group;
 
-      // Limpieza de errores
       const currentSum = group.lots.reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
       setErrors((prevErr) => {
         const next = { ...prevErr };
@@ -205,21 +254,18 @@ export const useRegistroRecepcion = ({
       const lastIdx = lots.length - 1;
       const lastLot = { ...lots[lastIdx] };
 
-      // Reparto inteligente al crear: dividimos la cantidad del último lote por 2
       const currentQty = Number(lastLot.cantidad_base) || 0;
       const halfQty = Math.floor(currentQty / 2);
       const restQty = currentQty - halfQty;
 
-      // Actualizamos el que era el último
       lastLot.cantidad_base = restQty;
       if (!lastLot.es_nuevo_lote && lastLot.id_lote_existente) {
-          lastLot.ajustes = { [lastLot.id_lote_existente]: restQty };
+        lastLot.ajustes = { [lastLot.id_lote_existente]: restQty };
       }
       lots[lastIdx] = lastLot;
 
-      // Añadimos el nuevo lote con la otra mitad
       lots.push({
-        ...lastLot, // Copiamos configuración base
+        ...lastLot,
         cantidad_base: halfQty,
         id_lote_existente: null,
         ajustes: {},
@@ -239,13 +285,11 @@ export const useRegistroRecepcion = ({
       const lots = [...newGrouped[groupIndex].lots];
       lots.splice(lotIndex, 1);
       
-      // Si solo queda un lote, forzar la cantidad total
       if (lots.length === 1) {
-          lots[0].cantidad_base = newGrouped[groupIndex].total_entregado_base;
-          // Si es existente, actualizar ajustes
-          if (!lots[0].es_nuevo_lote && lots[0].id_lote_existente) {
-              lots[0].ajustes = { [lots[0].id_lote_existente]: lots[0].cantidad_base };
-          }
+        lots[0].cantidad_base = newGrouped[groupIndex].total_entregado_base;
+        if (!lots[0].es_nuevo_lote && lots[0].id_lote_existente) {
+          lots[0].ajustes = { [lots[0].id_lote_existente]: lots[0].cantidad_base };
+        }
       }
       
       newGrouped[groupIndex] = { ...newGrouped[groupIndex], lots };
@@ -265,100 +309,70 @@ export const useRegistroRecepcion = ({
       const group = { ...newGrouped[groupIndex] };
       const lots = [...group.lots];
       const lot = { ...lots[lotIndex] };
-
-      // Selección ÚNICA por partida (Radio behavior)
       const ajustes: Record<number, number> = {};
-
       const lastIdx = lots.length - 1;
 
       if (isActive) {
         let finalQty = qty;
-
-        // Suma de todos menos el actual y el último
         const otherFixedSum = lots.reduce((acc, l, idx) => {
-            if (idx === lotIndex || idx === lastIdx) return acc;
-            return acc + (Number(l.cantidad_base) || 0);
+          if (idx === lotIndex || idx === lastIdx) return acc;
+          return acc + (Number(l.cantidad_base) || 0);
         }, 0);
 
         if (finalQty === undefined) {
-           // Primer click: tomamos lo que falte
-           finalQty = Math.max(0, group.total_entregado_base - otherFixedSum - (lotIndex === lastIdx ? 0 : (Number(lot.cantidad_base) || 0)));
-           // Si lotIndex !== lastIdx y no hay qty, lo ideal es que tome el remanente total menos lo que ya tengan otros
-           // Simplificado para el Radio:
-           const currentOthers = lots.reduce((acc, l, idx) => idx === lotIndex ? acc : acc + (Number(l.cantidad_base) || 0), 0);
-           finalQty = Math.max(0, group.total_entregado_base - currentOthers);
+          const currentOthers = lots.reduce((acc, l, idx) => idx === lotIndex ? acc : acc + (Number(l.cantidad_base) || 0), 0);
+          finalQty = Math.max(0, group.total_entregado_base - currentOthers);
         } else {
-           // Si viene qty del NumberInput de la tabla, lo limitamos
-           const maxAvailable = Math.max(0, group.total_entregado_base - otherFixedSum);
-           finalQty = Math.min(finalQty, maxAvailable);
+          const maxAvailable = Math.max(0, group.total_entregado_base - otherFixedSum);
+          finalQty = Math.min(finalQty, maxAvailable);
         }
 
         ajustes[idLote] = finalQty;
         lot.cantidad_base = finalQty;
         lot.id_lote_existente = idLote;
 
-        // BALANCEO: El último absorbe el remanente si no estamos editando el último
         if (lots.length > 1 && lotIndex !== lastIdx) {
-            const remaining = Math.max(0, group.total_entregado_base - otherFixedSum - finalQty);
-            lots[lastIdx] = {
-                ...lots[lastIdx],
-                cantidad_base: remaining,
-                ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
-                    ? { [lots[lastIdx].id_lote_existente]: remaining }
-                    : (lots[lastIdx].ajustes || {})
-            };
+          const remaining = Math.max(0, group.total_entregado_base - otherFixedSum - finalQty);
+          lots[lastIdx] = {
+            ...lots[lastIdx],
+            cantidad_base: remaining,
+            ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+              ? { [lots[lastIdx].id_lote_existente]: remaining }
+              : (lots[lastIdx].ajustes || {})
+          };
         }
       } else {
         lot.id_lote_existente = null;
         lot.cantidad_base = 0;
 
-        // BALANCEO AL DESMARCAR: El último recupera lo que quedó libre
         if (lots.length > 1 && lotIndex !== lastIdx) {
-            const otherFixedSum = lots.reduce((acc, l, idx) => {
-                if (idx === lotIndex || idx === lastIdx) return acc;
-                return acc + (Number(l.cantidad_base) || 0);
-            }, 0);
-            const remaining = Math.max(0, group.total_entregado_base - otherFixedSum);
-            lots[lastIdx] = {
-                ...lots[lastIdx],
-                cantidad_base: remaining,
-                ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
-                    ? { [lots[lastIdx].id_lote_existente]: remaining }
-                    : (lots[lastIdx].ajustes || {})
-            };
+          const otherFixedSum = lots.reduce((acc, l, idx) => {
+            if (idx === lotIndex || idx === lastIdx) return acc;
+            return acc + (Number(l.cantidad_base) || 0);
+          }, 0);
+          const remaining = Math.max(0, group.total_entregado_base - otherFixedSum);
+          lots[lastIdx] = {
+            ...lots[lastIdx],
+            cantidad_base: remaining,
+            ajustes: (!lots[lastIdx].es_nuevo_lote && lots[lastIdx].id_lote_existente)
+              ? { [lots[lastIdx].id_lote_existente]: remaining }
+              : (lots[lastIdx].ajustes || {})
+          };
         }
       }
 
       lot.ajustes = ajustes;
       lots[lotIndex] = lot;
-
       group.lots = lots;
       newGrouped[groupIndex] = group;
-
       return newGrouped;
     });
   };
-
 
   const getLotError = (groupIndex: number, lotIndex: number, field: keyof DTO_RecibirLotExtendido) => {
     return errors[`groups.${groupIndex}.lots.${lotIndex}.${field}`] || null;
   };
 
-  const fetchLotesProducto = useCallback(
-    async (idProducto: number): Promise<RES_LoteRecepcionReposicion[]> => {
-      try {
-        const res = await PrestamosAtencionService.getLotesDestino(
-          idAlmacenSolicitante,
-          [idProducto]
-        );
-        return res.success && res.data ? res.data : [];
-      } catch {
-        notifyError("Error al cargar lotes.");
-        return [];
-      }
-    },
-    [idAlmacenSolicitante, notifyError]
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -370,13 +384,11 @@ export const useRegistroRecepcion = ({
       group.lots.forEach((lot, lIdx) => {
         const cant = Number(lot.cantidad_base) || 0;
         sumBase += cant;
-        
         if (cant <= 0) {
           newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] = "Debe ser mayor a 0.";
           hasErrors = true;
         }
-
-        if (!lot.es_nuevo_lote && (!lot.ajustes || Object.keys(lot.ajustes).length === 0)) {
+        if (!lot.es_nuevo_lote && (!lot.id_lote_existente)) {
           newErrors[`groups.${gIdx}.lots.${lIdx}.id_lote_existente`] = "Seleccione al menos un lote.";
           hasErrors = true;
         }
@@ -389,7 +401,6 @@ export const useRegistroRecepcion = ({
           hasErrors = true;
         }
       });
-
       if (Math.abs(sumBase - group.total_entregado_base) > 0.0001) {
         newErrors[`groups.${gIdx}.cantidad_total`] = `La suma no coincide (${formatNumber(sumBase)}/${formatNumber(group.total_entregado_base)}).`;
         hasErrors = true;
@@ -404,97 +415,75 @@ export const useRegistroRecepcion = ({
 
     setLoadingAction(true);
     try {
-      const recepcionesMap: Record<number, DTO_RecibirEntregaReposicionItem[]> = {};
-      groupedItems.forEach((group) => {
-        let detIdx = 0;
-        let detRemaining = Number(group.detalles_origen[detIdx].cantidad_base);
+      if (tipoEntrega === "Reposicion") {
+        const repoId = Number(idEntrega);
+        if (!repoId) throw new Error("ID de reposición no encontrado");
 
-        const flatLots: DTO_RecibirEntregaReposicionItem[] = [];
-        group.lots.forEach(lot => {
-          if (lot.es_nuevo_lote || !lot.ajustes || Object.keys(lot.ajustes).length === 0) {
-            flatLots.push(lot as DTO_RecibirEntregaReposicionItem);
-          } else {
-            Object.entries(lot.ajustes).forEach(([idLote, qty]) => {
-              const cleanLot = { ...lot };
-              delete cleanLot.ajustes;
-              flatLots.push({
-                ...cleanLot,
-                id_lote_existente: Number(idLote),
-                cantidad_base: qty,
-              } as DTO_RecibirEntregaReposicionItem);
-            });
-          }
+        const itemsRepo: DTO_ItemRecepcionReposicion[] = [];
+        groupedItems.forEach((group) => {
+          group.lots.forEach((lot) => {
+            if (lot.es_nuevo_lote) {
+              itemsRepo.push({
+                id_reposicion_detalle: lot.id_solicitud_reabastecimiento_detalle,
+                cantidad_base: lot.cantidad_base,
+                es_nuevo_lote: true,
+                id_unidad_medida: lot.id_unidad_medida,
+                contenido_por_presentacion: lot.contenido_por_presentacion,
+                descripcion: lot.descripcion,
+                fecha_vencimiento: lot.fecha_vencimiento,
+                fecha_ingreso: lot.fecha_ingreso,
+              });
+            } else {
+              itemsRepo.push({
+                id_reposicion_detalle: lot.id_solicitud_reabastecimiento_detalle,
+                cantidad_base: lot.cantidad_base,
+                es_nuevo_lote: false,
+                id_lote_existente: lot.id_lote_existente ?? 0,
+                id_unidad_medida: lot.id_unidad_medida,
+                contenido_por_presentacion: lot.contenido_por_presentacion,
+              });
+            }
+          });
         });
 
-        flatLots.forEach((lot) => {
-          let lotRemaining = Number(lot.cantidad_base);
-          if (lotRemaining <= 0) return;
-          while (lotRemaining > 0 && detIdx < group.detalles_origen.length) {
-            const amount = Math.min(lotRemaining, detRemaining);
-            const parentId = group.detalles_origen[detIdx].id_reabastecimiento_entrega;
-            if (!recepcionesMap[parentId]) recepcionesMap[parentId] = [];
-            recepcionesMap[parentId].push({ ...lot, cantidad_base: amount });
-            lotRemaining -= amount;
-            detRemaining -= amount;
-            if (detRemaining <= 0.0001) {
-              detIdx++;
-              if (detIdx < group.detalles_origen.length) {
-                detRemaining = Number(group.detalles_origen[detIdx].cantidad_base);
-              }
-            }
-          }
-          if (lotRemaining > 0) {
-            const lastDet = group.detalles_origen[group.detalles_origen.length - 1];
-            const items = recepcionesMap[lastDet.id_reabastecimiento_entrega];
-            if (items && items.length > 0) {
-              items[items.length - 1].cantidad_base = Number(items[items.length - 1].cantidad_base) + lotRemaining;
-            }
-          }
+        const res = await PrestamosAtencionService.registrarRecepcionReposicion({
+          id_reposicion: repoId,
+          fecha_hora_recepcion: new Date().toISOString(),
+          con_incidencia: false,
+          items: itemsRepo,
         });
-      });
 
-      const recepciones = Object.entries(recepcionesMap).map(([id, items]) => {
-        const idNum = Number(id);
-        const firstDetail = detalles.find(
-          (d) => d.id_reabastecimiento_entrega === idNum,
-        );
-        return {
-          id_reabastecimiento_entrega: idNum,
-          tipo_entrega: firstDetail?.tipo_entrega || "Reposicion",
-          items,
-        };
-      });
-
-      const res = await PrestamosAtencionService.recibirReposicion({ recepciones });
-      if (res.success) {
-        notifySuccess("Recepción registrada correctamente.");
-        onSuccess();
-      } else {
-        notifyError(res.message || "Error al registrar.");
+        if (res.success) {
+          notifySuccess("Recepción registrada correctamente.");
+          onSuccess();
+        } else {
+          notifyError(res.message || "Error al registrar.");
+        }
+        return;
       }
-    } catch {
-      notifyError("Error de conexión.");
+      
+      // Lógica para otros tipos (Solicitud, etc) si es necesario...
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error inesperado.";
+      notifyError(message);
     } finally {
       setLoadingAction(false);
     }
   };
 
-  // Validación reactiva
-  const isFormValid = groupedItems.every((group) => {
+  const isFormValid = groupedItems.length > 0 && groupedItems.every((group) => {
     const sumBase = group.lots.reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
     const sumMatch = Math.abs(sumBase - group.total_entregado_base) < 0.0001;
-    
     const lotsValid = group.lots.every((lot) => {
       if (lot.cantidad_base <= 0) return false;
       if (lot.es_nuevo_lote) {
         if (!lot.fecha_ingreso) return false;
         if (group.es_perecible === 1 && !lot.fecha_vencimiento) return false;
       } else {
-        if (!lot.id_lote_existente || !lot.ajustes || Object.keys(lot.ajustes).length === 0) return false;
+        if (!lot.id_lote_existente) return false;
       }
       return true;
     });
-
     return sumMatch && lotsValid;
   });
 
@@ -506,10 +495,11 @@ export const useRegistroRecepcion = ({
     updateTabularAdjustment,
     getLotError,
     loadingAction,
-    fetchLotesProducto,
     handleSubmit,
     unidades,
     loadingUnidades,
+    lotesDisponibles,
+    loadingLotesDisp,
     errors,
     isFormValid,
   };

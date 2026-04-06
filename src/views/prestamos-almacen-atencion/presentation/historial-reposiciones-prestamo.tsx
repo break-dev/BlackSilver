@@ -8,6 +8,7 @@ import {
   Stack,
   Loader,
   Button,
+  UnstyledButton,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import {
@@ -21,6 +22,10 @@ import {
   PaperClipIcon,
   CheckCircleIcon,
   BuildingStorefrontIcon,
+  ExclamationTriangleIcon,
+  ChatBubbleBottomCenterTextIcon,
+  InboxArrowDownIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import {
   type RES_ReposicionPrestamo,
@@ -30,7 +35,6 @@ import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces";
 import { useNotify } from "../../../hooks/useNotify";
-import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import { RegistroRecepcion } from "./registro-recepcion";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
@@ -49,7 +53,8 @@ export const HistorialReposicionesPrestamo = ({
 }: Props) => {
   const { notifyError } = useNotify();
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
-  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [expandedRecepcionIds, setExpandedRecepcionIds] = useState<Record<number, boolean>>({});
+  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
   const [selectedRepo, setSelectedRepo] =
     useState<RES_ReposicionPrestamo | null>(null);
   const [detailsForReception, setDetailsForReception] = useState<
@@ -61,28 +66,54 @@ export const HistorialReposicionesPrestamo = ({
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const toggleExpandRecepcion = (id: number) => {
+    setExpandedRecepcionIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleTrazabilidad = (idReposicion: number) => {
+    setShowTrazabilidad((prev) => ({ ...prev, [idReposicion]: !prev[idReposicion] }));
+  };
+
   const isExpanded = (id: number, index: number) => {
     if (expandedIds[id] !== undefined) return expandedIds[id];
     return index === 0;
   };
 
-  const handleOpenRecepcion = async (repo: RES_ReposicionPrestamo) => {
-    setLoadingDetails(true);
-    try {
-      const res =
-        await PrestamosAtencionService.obtenerDetallesReposicionRecepcion(
-          repo.id_reposicion,
-        );
-      if (res.success) {
-        setDetailsForReception(res.data);
-        setSelectedRepo(repo);
-        setOpenedRecepcion(true);
-      }
-    } catch {
-      notifyError("Error al cargar los detalles para la recepción");
-    } finally {
-      setLoadingDetails(false);
+  const handleOpenRecepcion = (repo: RES_ReposicionPrestamo) => {
+    if (!repo.detalles || repo.detalles.length === 0) {
+      notifyError("Esta reposición no tiene productos registrados");
+      return;
     }
+
+    const mapped: RES_DetalleReposicionParaRecepcion[] = repo.detalles.map(
+      (d) => ({
+        id_entrega_detalle: d.id_reposicion_detalle,
+        id_solicitud_reabastecimiento_detalle: d.id_reposicion_detalle,
+        id_reabastecimiento_entrega: repo.id_reposicion,
+        cantidad_base: Number(d.cantidad_base),
+        cantidad_lote: Number(d.cantidad_lote),
+        cantidad_solicitud: Number(d.cantidad_prestamo),
+        estado_entrega_detalle: d.estado,
+        id_producto: d.id_producto,
+        producto: d.producto,
+        es_perecible: d.es_perecible,
+        id_unidad_medida_base: d.id_unidad_medida_base,
+        unidad_base_abv: d.unidad_medida_base_abv,
+        id_unidad_medida_solicitada: d.id_unidad_medida_solicitada,
+        contenido_por_presentacion_solicitado: 1, // Se asume 1 para préstamos
+        unidad_medida_solicitud_abv: d.unidad_medida_base_abv, // Se asume base
+        id_lote_origen: d.id_lote_producto,
+        correlativo_lote_origen: d.lote_correlativo,
+        unidad_lote_abv: d.unidad_medida_lote_abv,
+        id_unidad_medida_lote: d.id_unidad_medida_lote,
+        fecha_vencimiento: null, // El almacén destino decidirá
+        tipo_entrega: "Reposicion",
+      }),
+    );
+
+    setDetailsForReception(mapped);
+    setSelectedRepo(repo);
+    setOpenedRecepcion(true);
   };
 
   if (loading) {
@@ -114,7 +145,9 @@ export const HistorialReposicionesPrestamo = ({
       >
         {reposiciones.map((h, index) => {
           const expanded = isExpanded(h.id_reposicion, index);
-          const isPendingReception = h.estado === "En Despacho";
+          const isPendingReception =
+            h.estado === "En Despacho" ||
+            h.estado === "Recepcionado Parcialmente";
 
           // Parse evidencias if it's a string
           let evidenciasArray: IArchivo[] = [];
@@ -171,7 +204,7 @@ export const HistorialReposicionesPrestamo = ({
                         <Badge
                           variant="light"
                           color={
-                            h.estado === "Recepcionado" ? "emerald" : "orange"
+                            h.estado === "Recepcionado" ? "teal" : "orange"
                           }
                           radius="sm"
                           className="font-bold"
@@ -253,10 +286,6 @@ export const HistorialReposicionesPrestamo = ({
                           e.stopPropagation();
                           handleOpenRecepcion(h);
                         }}
-                        loading={
-                          loadingDetails &&
-                          selectedRepo?.id_reposicion === h.id_reposicion
-                        }
                       >
                         Registrar Stock
                       </Button>
@@ -338,7 +367,7 @@ export const HistorialReposicionesPrestamo = ({
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-4">
                     {h.detalles?.map((d) => (
                       <div
-                        key={d.id}
+                        key={d.id_reposicion_detalle}
                         className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
                       >
                         <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
@@ -361,7 +390,7 @@ export const HistorialReposicionesPrestamo = ({
                               fw={900}
                               className="text-emerald-400 font-mono leading-none"
                             >
-                              +{formatNumber(d.cantidad_solicitud)}
+                              +{formatNumber(Number(d.cantidad_base))}
                             </Text>
                             <Text
                               size="12px"
@@ -376,6 +405,236 @@ export const HistorialReposicionesPrestamo = ({
                       </div>
                     ))}
                   </div>
+
+                  {/* Sección de Recepciones */}
+                  {h.recepciones && h.recepciones.length > 0 && (
+                    <div className="mt-8 pb-6 animate-in fade-in duration-500">
+                      <UnstyledButton
+                        onClick={() => toggleTrazabilidad(h.id_reposicion)}
+                        className="w-full mb-3"
+                      >
+                        <Group
+                          gap="xs"
+                          className="py-2 px-3 rounded-lg border border-dashed border-zinc-700/60 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all"
+                        >
+                          <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-400/70" />
+                          <Text size="xs" fw={700} c="zinc.4" className="flex-1">
+                            Seguimiento de recepciones
+                          </Text>
+                          {showTrazabilidad[h.id_reposicion] ? (
+                            <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                          ) : (
+                            <ChevronDownIcon className="w-4 h-4 text-zinc-500" />
+                          )}
+                        </Group>
+                      </UnstyledButton>
+
+                      <Collapse in={!!showTrazabilidad[h.id_reposicion]}>
+                        <Stack gap="xs" mt="sm">
+                          {h.recepciones.map((rec, recIdx) => {
+                            const hasDetail =
+                              !!rec.observacion ||
+                              (rec.evidencias && rec.evidencias.length > 0);
+                            const isRecOpen =
+                              !!expandedRecepcionIds[rec.id_recepcion];
+                            const isPartial =
+                              rec.estado === "Recepcionado Parcialmente";
+
+                            return (
+                              <Paper
+                                key={rec.id_recepcion}
+                                radius="md"
+                                className={`border overflow-hidden transition-all duration-300 hover:bg-zinc-900/30 ${
+                                  rec.con_incidencia
+                                    ? "border-rose-500/25 shadow-[0_0_12px_rgba(99,102,241,0.06)] hover:border-rose-500/40"
+                                    : "border-zinc-500/25 hover:border-zinc-500/50"
+                                }`}
+                              >
+                                <UnstyledButton
+                                  onClick={() =>
+                                    hasDetail &&
+                                    toggleExpandRecepcion(rec.id_recepcion)
+                                  }
+                                  className={`w-full transition-colors ${
+                                    hasDetail
+                                      ? "cursor-pointer hover:bg-zinc-900/70"
+                                      : "cursor-default"
+                                  } bg-zinc-950/50`}
+                                >
+                                  <div className="p-3">
+                                    <Group
+                                      justify="space-between"
+                                      wrap="nowrap"
+                                      mb={8}
+                                    >
+                                      <Group gap="sm">
+                                        <div
+                                          className={`p-1.5 rounded-lg ${
+                                            rec.con_incidencia
+                                              ? "bg-rose-500/10"
+                                              : "bg-emerald-500/10"
+                                          }`}
+                                        >
+                                          <InboxArrowDownIcon
+                                            className={`w-4 h-4 ${
+                                              rec.con_incidencia
+                                                ? "text-rose-400"
+                                                : "text-emerald-400"
+                                            }`}
+                                          />
+                                        </div>
+                                        <Text
+                                          size="xs"
+                                          fw={900}
+                                          className="text-white"
+                                        >
+                                          Recepción #
+                                          {h.recepciones!.length - recIdx}
+                                        </Text>
+                                        {isPartial && (
+                                          <Badge
+                                            size="xs"
+                                            variant="dot"
+                                            color="orange"
+                                          >
+                                            Parcial
+                                          </Badge>
+                                        )}
+                                        {rec.con_incidencia && (
+                                          <Badge
+                                            size="xs"
+                                            variant="light"
+                                            color="pink"
+                                            leftSection={
+                                              <ExclamationTriangleIcon className="w-2.5 h-2.5" />
+                                            }
+                                          >
+                                            Incidencia
+                                          </Badge>
+                                        )}
+                                      </Group>
+                                      {hasDetail &&
+                                        (isRecOpen ? (
+                                          <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                                        ) : (
+                                          <ChevronDownIcon className="w-4 h-4 text-zinc-500" />
+                                        ))}
+                                    </Group>
+
+                                    <Group gap="xs">
+                                      <UserIcon className="w-3.5 h-3.5 text-zinc-500" />
+                                      <Text size="xs" c="dimmed">
+                                        Recepcionado por:{" "}
+                                        <span className="text-zinc-200 font-semibold">
+                                          {rec.empleado_registro}
+                                        </span>
+                                      </Text>
+                                      <div className="w-1 h-1 rounded-full bg-zinc-700" />
+                                      <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-500" />
+                                      <Text size="xs" c="dimmed">
+                                        {dayjs(rec.fecha_hora_recepcion).format(
+                                          "DD/MM/YYYY - HH:mm",
+                                        )}
+                                      </Text>
+                                    </Group>
+
+                                    <Group gap={4} wrap="wrap" mt="xs">
+                                      {rec.detalles?.map((rd) => (
+                                        <span
+                                          key={rd.id_recepcion_detalle}
+                                          className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
+                                        >
+                                          <Text
+                                            size="xs"
+                                            className="text-zinc-400"
+                                          >
+                                            {rd.producto}
+                                          </Text>
+                                          <Text
+                                            size="xs"
+                                            fw={900}
+                                            className="text-emerald-400 font-mono"
+                                          >
+                                            +
+                                            {formatNumber(
+                                              Number(
+                                                rd.cantidad_recepcionada_base,
+                                              ),
+                                            )}
+                                            <span className="font-normal ml-0.5">
+                                              {rd.unidad_medida_base_abv}
+                                            </span>
+                                          </Text>
+                                        </span>
+                                      ))}
+                                    </Group>
+                                  </div>
+                                </UnstyledButton>
+
+                                <Collapse in={isRecOpen}>
+                                  <Stack
+                                    gap="sm"
+                                    p="sm"
+                                    pt={0}
+                                    className="border-t border-zinc-800/40 bg-zinc-950/20"
+                                  >
+                                    <div className="pt-3">
+                                      {rec.observacion && (
+                                        <div className="mb-3">
+                                          <Group gap="xs" mb={5}>
+                                            <ChatBubbleBottomCenterTextIcon className="w-3.5 h-3.5 text-indigo-400/70" />
+                                            <Text
+                                              size="10px"
+                                              fw={800}
+                                              c="zinc.5"
+                                              className="uppercase tracking-widest"
+                                            >
+                                              Observación de la Incidencia
+                                            </Text>
+                                          </Group>
+                                          <Text
+                                            size="xs"
+                                            className="italic text-zinc-300 leading-relaxed whitespace-pre-wrap pl-1"
+                                          >
+                                            "{rec.observacion}"
+                                          </Text>
+                                        </div>
+                                      )}
+
+                                      {rec.evidencias &&
+                                        rec.evidencias.length > 0 && (
+                                          <div>
+                                            <Group gap="xs" mb={6}>
+                                              <PaperClipIcon className="w-3.5 h-3.5 text-indigo-400/70" />
+                                              <Text
+                                                size="10px"
+                                                fw={800}
+                                                c="zinc.5"
+                                                className="uppercase tracking-widest"
+                                              >
+                                                Evidencias ({rec.evidencias.length})
+                                              </Text>
+                                            </Group>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                              {rec.evidencias.map((ev, i) => (
+                                                <ArchivoCard
+                                                  key={i}
+                                                  archivo={ev}
+                                                />
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                    </div>
+                                  </Stack>
+                                </Collapse>
+                              </Paper>
+                            );
+                          })}
+                        </Stack>
+                      </Collapse>
+                    </div>
+                  )}
                 </div>
               </Collapse>
             </Paper>
@@ -407,6 +666,7 @@ export const HistorialReposicionesPrestamo = ({
               detalles={
                 detailsForReception as unknown as RES_DetalleReposicionParaRecepcion[]
               }
+              idEntrega={selectedRepo.id_reposicion}
               tipoEntrega="Reposicion"
               onSuccess={() => {
                 setOpenedRecepcion(false);

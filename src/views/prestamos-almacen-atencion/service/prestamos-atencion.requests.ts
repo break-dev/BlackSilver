@@ -31,3 +31,23 @@ export interface DTO_RecibirEntregaReposicionItem {
   descripcion: string;
   contenido_por_presentacion: number;
 }
+
+export interface DTO_RegistrarRecepcionReposicion {
+  id_reposicion: number;
+  fecha_hora_recepcion: string;
+  con_incidencia: boolean;
+  observacion?: string;
+  items: DTO_ItemRecepcionReposicion[];
+}
+
+export interface DTO_ItemRecepcionReposicion {
+  id_reposicion_detalle: number;
+  cantidad_base: number;
+  es_nuevo_lote: boolean;
+  id_lote_existente?: number;
+  id_unidad_medida: number; // del lote si es nuevo
+  contenido_por_presentacion: number;
+  descripcion?: string;
+  fecha_vencimiento?: string | null;
+  fecha_ingreso?: string;
+}

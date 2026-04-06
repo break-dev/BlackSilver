@@ -124,13 +124,7 @@ export const AtencionPrestamosPage = () => {
               </Text>
             </Group>
             {item.fecha_limite_devolucion && (
-              <Text
-                size="11px"
-                fw={700}
-                c="pink.5"
-                ml={22}
-                className=""
-              >
+              <Text size="11px" fw={700} c="pink.5" ml={22} className="">
                 Devolución:{" "}
                 {dayjs(item.fecha_limite_devolucion).format("DD/MM/YYYY")}
               </Text>
@@ -303,7 +297,7 @@ export const AtencionPrestamosPage = () => {
           setTimeout(() => setSelectedId(null), 300);
         }}
         title="Atención de Préstamos"
-        size="95%"
+        size="70%"
       >
         {selectedId && selectedPrestamo && (
           <DetallePrestamo

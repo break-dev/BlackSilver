@@ -16,7 +16,7 @@ import type {
 } from "./prestamos-atencion.responses";
 import type {
   DTO_RegistrarEntrega,
-  DTO_RecibirEntregaReposicionItem,
+  DTO_RegistrarRecepcionReposicion,
 } from "./prestamos-atencion.requests";
 
 const path = "/prestamos-atencion";
@@ -152,7 +152,7 @@ export const PrestamosAtencionService = {
 
   obtenerDetallesReposicionRecepcion: async (idReposicion: number) => {
     const res = await api.get<IRespuesta<RES_DetalleReposicionParaRecepcion[]>>(
-      `/prestamos-almacen/detalles-recepcion-reposicion`,
+      `${path}/recepciones-reposicion/detalles`,
       { params: { id_reposicion: idReposicion } },
     );
     return res.data;
@@ -181,16 +181,34 @@ export const PrestamosAtencionService = {
     return res.data;
   },
 
-  recibirReposicion: async (recepData: {
-    recepciones: {
-      id_reabastecimiento_entrega: number;
-      tipo_entrega?: "Solicitud" | "Prestamo" | "Reposicion";
-      items: DTO_RecibirEntregaReposicionItem[];
-    }[];
-  }) => {
+  registrarRecepcionReposicion: async (
+    dto: DTO_RegistrarRecepcionReposicion,
+    evidencias?: File[],
+  ) => {
+    const formData = new FormData();
+    formData.append("id_reposicion", dto.id_reposicion.toString());
+    formData.append("fecha_hora_recepcion", dto.fecha_hora_recepcion);
+    formData.append("con_incidencia", String(dto.con_incidencia));
+    if (dto.observacion) formData.append("observacion", dto.observacion);
+
+    if (evidencias) {
+      evidencias.forEach((file) => formData.append("evidencias[]", file));
+    }
+
+    formData.append("items", JSON.stringify(dto.items));
+
     const res = await api.post<IRespuesta<null>>(
-      `/prestamos-almacen/recibir-reposicion`,
-      recepData,
+      `${path}/recepciones-reposicion`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
+
+  obtenerHistorialRecepcionesReposicion: async (idReposicion: number) => {
+    const res = await api.get<IRespuesta<RES_RecepcionEvento[]>>(
+      `${path}/recepciones-reposicion/historial`,
+      { params: { id_reposicion: idReposicion } },
     );
     return res.data;
   },
