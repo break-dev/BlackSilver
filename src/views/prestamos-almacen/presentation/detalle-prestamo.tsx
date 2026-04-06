@@ -330,6 +330,7 @@ export const DetallePrestamo = ({
                 onOpenReposicion(
                   detalles.filter(
                     (d) =>
+                      // Solo productos que tengan algo pendiente de reponer
                       Number(d.cantidad_repuesta_base) <
                       Number(d.cantidad_prestada_base),
                   ),

@@ -13,5 +13,5 @@ export interface REQ_DetalleReposicionItem {
   id_lote_producto: number;
   cantidad_base: number;
   cantidad_lote: number;
-  cantidad_solicitud: number;
+  cantidad_prestamo: number;
 }

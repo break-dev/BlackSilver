@@ -51,7 +51,7 @@ export interface RES_Trazabilidad {
 }
 
 export interface RES_HistorialEntregaPrestamo {
-  id_entrega: number;
+  id_prestamo_entrega: number;
   correlativo: string;
   fecha_hora_entrega: string;
   observacion: string | null;
@@ -60,26 +60,29 @@ export interface RES_HistorialEntregaPrestamo {
   empleado_entrega: string;
   empleado_recibe: string | null;
   detalles: RES_DetalleHistorialEntregaPrestamo[];
+  recepciones: RES_HistorialRecepcionPrestamo[];
 }
 
 export interface RES_DetalleHistorialEntregaPrestamo {
   id_entrega_detalle: number;
+  id_prestamo_almacen_entrega: number;
   id_prestamo_almacen_detalle: number;
   id_producto: number;
   producto: string;
-  id_lote_salida: number;
-  correlativo_lote: string;
-  fecha_vencimiento: string | null;
-  id_unidad_medida_sol: number;
-  unidad_medida_sol: string;
-  unidad_medida_sol_abv: string;
+  id_lote_producto: number;
+  lote_correlativo: string;
   id_unidad_medida_base: number;
-  unidad_medida_base: string;
-  unidad_medida_abv: string;
-  cantidad: number;
-  contenido_por_presentacion: number;
+  unidad_medida_base_abv: string;
   cantidad_base: number;
-  comentario: string | null;
+  id_unidad_medida_lot: number;
+  unidad_medida_lot_abv: string;
+  contenido_por_presentacion_lot: number;
+  cantidad_lot: number;
+  id_unidad_medida_pr: number;
+  unidad_medida_pr_abv: string;
+  contenido_por_presentacion_pr: number;
+  cantidad_prestamo: number;
+  cantidad_recibida_total_base: number;
   estado: string;
 }
 
@@ -104,5 +107,35 @@ export interface RES_DetalleReposicion {
   estado: string;
   producto: string;
   unidad_medida_base: string;
+  unidad_medida_base_abv: string;
   lote_correlativo: string;
+}
+
+export interface RES_HistorialRecepcionPrestamo {
+  id_recepcion: number;
+  id_prestamo_almacen_entrega: number;
+  id_empleado_registro: number;
+  empleado_registro: string;
+  observacion: string | null;
+  fecha_hora_recepcion: string;
+  evidencias: IArchivo[] | null;
+  con_incidencia: boolean;
+  estado: string;
+  detalles: RES_DetalleRecepcionPrestamo[];
+}
+
+export interface RES_DetalleRecepcionPrestamo {
+  id_recepcion_detalle: number;
+  id_prestamo_almacen_entrega_detalle: number;
+  id_prestamo_almacen_recepcion: number;
+  id_producto: number;
+  producto: string;
+  id_unidad_medida_base: number;
+  unidad_medida_base_abv: string;
+  cantidad_recepcionada_base: number;
+  contenido_por_presentacion: number;
+  id_unidad_medida_sol: number;
+  unidad_medida_sol_abv: string;
+  cantidad_recepcionada_sol: number;
+  estado: string;
 }
