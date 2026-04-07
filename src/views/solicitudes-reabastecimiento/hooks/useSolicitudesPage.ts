@@ -107,7 +107,7 @@ export const useSolicitudesPage = () => {
       (item) =>
         (item.correlativo || "").toLowerCase().includes(q) ||
         (item.correlativo_requerimiento || "").toLowerCase().includes(q) ||
-        (item.empleado_solicitante || "").toLowerCase().includes(q),
+        (item.solicitante || "").toLowerCase().includes(q),
     );
   }, [solicitudes, search]);
 

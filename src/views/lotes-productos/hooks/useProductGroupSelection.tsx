@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { ActionIcon, Checkbox, Group, Tooltip } from "@mantine/core";
 import { PrinterIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import type { RES_Lote } from "../../../service/lotes.responses";
+import type { RES_Lote } from "../service/lotes.responses";
 
 interface UseProductGroupSelectionProps {
   lotes: RES_Lote[];

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { RES_Lote } from "../service/lotes.responses";
-import type { GroupedProduct } from "../presentation/lotes-page/types";
+import type { GroupedProduct } from "../presentation/lotes-page/product-group-card/product-group-card";
 import { EstadoVencimiento } from "../../../shared/enums/estados";
 
 export const useGroupedProducts = (records: RES_Lote[]) => {

@@ -44,9 +44,12 @@ export const AjusteStockModal = ({
   } = useAjusteStock({ lote, onSuccess });
 
   const inputClasses = {
-    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-    dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
-    option: "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+    dropdown:
+      "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+    option:
+      "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
     label: "text-zinc-300 mb-1 font-medium",
     description: "text-zinc-500 text-[10px] italic mt-1",
   };
@@ -224,9 +227,9 @@ export const AjusteStockModal = ({
 
       {error && (
         <div className="p-3 bg-red-950/20 border border-red-900/40 rounded-xl">
-           <Text c="red.5" size="xs" ta="center" fw={700}>
-             {error}
-           </Text>
+          <Text c="red.5" size="xs" ta="center" fw={700}>
+            {error}
+          </Text>
         </div>
       )}
 

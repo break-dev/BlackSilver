@@ -4,9 +4,9 @@ import {
   InboxStackIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import { BlackcitoMascot } from "../../../../presentation/components/BlackcitoMascot";
-import { formatNumber } from "../../../../presentation/functions/formatNumber";
-import type { GroupedProduct } from "../lotes-page/types";
+import { BlackcitoMascot } from "../../../../../presentation/components/BlackcitoMascot";
+import { formatNumber } from "../../../../../presentation/functions/formatNumber";
+import type { GroupedProduct } from "./product-group-card";
 
 export const ProductGroupHeader = ({
   product,

@@ -20,9 +20,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   PaperClipIcon,
-  CheckCircleIcon,
   ExclamationCircleIcon,
-  ArrowDownRightIcon,
   ShoppingBagIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";

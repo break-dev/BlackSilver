@@ -8,7 +8,11 @@ import {
   Paper,
   Divider,
 } from "@mantine/core";
-import { ArchiveBoxIcon, ScaleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ArchiveBoxIcon,
+  ScaleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 import { pluralizar } from "../../../presentation/functions/pluralizar";
 import { useRegistroLote } from "../hooks/useRegistroLote";
 import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
@@ -54,13 +58,15 @@ export const RegistroLote = ({
   } = useRegistroLote({ initialAlmacenId, almacenes, onSuccess });
 
   const inputClasses = {
-    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-    dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
-    option: "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+    dropdown:
+      "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+    option:
+      "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
     label: "text-zinc-300 mb-1 font-medium",
     description: "text-zinc-500 text-[11px] mt-1",
   };
-
 
   return (
     <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
@@ -83,7 +89,7 @@ export const RegistroLote = ({
           comboboxProps={{
             withinPortal: true,
             zIndex: 9999,
-            transitionProps: { transition: 'pop', duration: 200 }
+            transitionProps: { transition: "pop", duration: 200 },
           }}
         />
 
@@ -106,7 +112,7 @@ export const RegistroLote = ({
           comboboxProps={{
             withinPortal: true,
             zIndex: 9999,
-            transitionProps: { transition: 'pop', duration: 200 }
+            transitionProps: { transition: "pop", duration: 200 },
           }}
         />
 
@@ -130,7 +136,7 @@ export const RegistroLote = ({
           comboboxProps={{
             withinPortal: true,
             zIndex: 9999,
-            transitionProps: { transition: 'pop', duration: 200 }
+            transitionProps: { transition: "pop", duration: 200 },
           }}
         />
 
@@ -186,7 +192,12 @@ export const RegistroLote = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Text size="xs" c="indigo.4" fw={700} className="uppercase tracking-tight">
+                <Text
+                  size="xs"
+                  c="indigo.4"
+                  fw={700}
+                  className="uppercase tracking-tight"
+                >
                   Ingreso en lote
                 </Text>
                 <Text fw={800} size="xl" className="text-white leading-none">
@@ -197,7 +208,12 @@ export const RegistroLote = ({
                 </Text>
               </div>
               <div className="space-y-1">
-                <Text size="xs" c="pink.5" fw={700} className="uppercase tracking-tight">
+                <Text
+                  size="xs"
+                  c="pink.5"
+                  fw={700}
+                  className="uppercase tracking-tight"
+                >
                   Total base
                 </Text>
                 <Text fw={800} size="xl" className="text-pink-500 leading-none">
@@ -238,7 +254,9 @@ export const RegistroLote = ({
               </Text>
             </div>
             <Text size="xs" c="zinc.5" className="text-zinc-500 leading-snug">
-              Este producto ha sido configurado como <span className="text-zinc-300 font-bold">No Perecible</span>, por lo que no requiere fecha de vencimiento.
+              Este producto ha sido configurado como{" "}
+              <span className="text-zinc-300 font-bold">No Perecible</span>, por
+              lo que no requiere fecha de vencimiento.
             </Text>
           </div>
         )}

@@ -140,12 +140,15 @@ export const useRegistroReposicion = ({
           const factor = Number(detalle.contenido_por_presentacion || 1);
           const factorLote = Number(lote?.contenido_por_presentacion || 1);
 
+          const cantPrestamo = cantBase / factor;
+          const cantLote = cantBase / factorLote;
+
           itemsFinal.push({
             id_prestamo_detalle: detalle.id_prestamo_detalle,
             id_lote_producto: idLote,
-            cantidad_solicitud: cantBase / factor,
+            cantidad_prestamo: cantPrestamo,
             cantidad_base: cantBase,
-            cantidad_lote: cantBase / factorLote,
+            cantidad_lote: cantLote,
           });
         });
       });

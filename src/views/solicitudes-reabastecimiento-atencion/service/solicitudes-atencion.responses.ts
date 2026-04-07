@@ -9,6 +9,26 @@ import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
 export type { RES_Almacen, RES_Empleado, RES_LoteDisponible };
 
+export interface RES_LoteReabastecimiento {
+  id_lote: number;
+  id_producto: number;
+  correlativo: string;
+  stock_actual: number;
+  stock_actual_base: number;
+  contenido_por_presentacion: number;
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
+  id_unidad_medida_lote: number;
+  unidad_medida_lote: string;
+  unidad_medida_lote_abv: string;
+  unidad_medida_abv?: string; // Alias para compatibilidad en el front
+  fecha_hora_ingreso: string;
+  fecha_vencimiento: string | null;
+  dias_para_vencer: number | null;
+  estado_vencimiento: string;
+}
+
 export interface RES_SolicitudReabastecimiento {
   id_solicitud: number;
   id_almacen_solicitante: number;
@@ -19,6 +39,7 @@ export interface RES_SolicitudReabastecimiento {
   observacion: string | null;
   id_empleado_solicitante: number;
   solicitante: string;
+  empleado_solicitante?: string; // Mantener por compatibilidad si es necesario en otros sitios, pero usar solicitante
   premura: Premura;
   fecha_entrega_requerida: string | null;
   estado: EstadoSolicitud;

@@ -7,12 +7,12 @@ import type {
   DTO_SolicitudDetalle,
 } from "../service/reabastecimiento.requests";
 import type {
-  RES_Almacen_Local,
   RES_Producto_Local,
-  RES_Unidad_Local,
   RES_SolicitudReabastecimiento,
 } from "../service/reabastecimiento.responses";
 import { Premura } from "../../../shared/enums/otros";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 interface Props {
   onSuccess: (item: RES_SolicitudReabastecimiento) => void;
@@ -25,9 +25,9 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   // Catálogos
-  const [almacenes, setAlmacenes] = useState<RES_Almacen_Local[]>([]);
+  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [productos, setProductos] = useState<RES_Producto_Local[]>([]);
-  const [unidades, setUnidades] = useState<RES_Unidad_Local[]>([]);
+  const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   // Estado Formulario Cabecera
   const [idAlmacenSolicitante, setIdAlmacenSolicitante] = useState<number>(0);
@@ -120,17 +120,21 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     setCantidad(0);
     setContenido(1);
     setComentarioItem("");
-  }, [idProducto, idUnidadMedida, cantidad, contenido, comentarioItem, notifyError]);
+  }, [
+    idProducto,
+    idUnidadMedida,
+    cantidad,
+    contenido,
+    comentarioItem,
+    notifyError,
+  ]);
 
   const eliminarItem = useCallback((index: number) => {
     setDetalles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (
-      !idAlmacenSolicitante ||
-      detalles.length === 0
-    ) {
+    if (!idAlmacenSolicitante || detalles.length === 0) {
       setError("Faltan campos obligatorios");
       return;
     }

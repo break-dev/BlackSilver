@@ -1,9 +1,23 @@
 import { type DataTableColumn } from "mantine-datatable";
-import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
-import type { RES_Lote } from "../../service/lotes.responses";
-import type { GroupedProduct } from "./types";
-import { useProductGroupSelection } from "./hooks/useProductGroupSelection";
-import { ProductGroupHeader } from "../components/product-group-header.component";
+import { DataTableEstandar } from "../../../../../presentation/utils/datatable-estandar";
+import type { RES_Lote } from "../../../service/lotes.responses";
+import { useProductGroupSelection } from "../../../hooks/useProductGroupSelection";
+import { ProductGroupHeader } from "./product-group-header";
+
+export interface GroupedProduct {
+  id_producto: number;
+  producto: string;
+  categoria: string | null;
+  unidad_medida_base: string;
+  stock_minimo: number;
+  lotes: RES_Lote[];
+  total_stock_base: number;
+  vigentes: number;
+  por_vencer: number;
+  vencidos: number;
+  es_perecible: boolean;
+  es_fiscalizado: boolean;
+}
 
 interface ProductGroupCardProps {
   product: GroupedProduct;

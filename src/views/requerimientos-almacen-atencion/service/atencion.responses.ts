@@ -6,6 +6,33 @@ import {
 import { Premura } from "../../../shared/enums/otros";
 import type { IArchivo } from "../../../shared/interfaces";
 
+export interface RES_Empleado {
+  id_empleado: number;
+  nombre_completo: string;
+  dni: string;
+  path_foto: string | null;
+}
+
+export interface RES_Lote {
+  id_lote: number;
+  id_producto: number;
+  correlativo: string;
+  stock_actual: number;
+  stock_actual_base: number;
+  contenido_por_presentacion: number;
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
+  id_unidad_medida_lote: number;
+  unidad_medida_lote: string;
+  unidad_medida_lote_abv: string;
+  unidad_medida_abv?: string; // Alias para compatibilidad
+  fecha_hora_ingreso: string;
+  fecha_vencimiento: string | null;
+  dias_para_vencer: number | null;
+  estado_vencimiento: string;
+}
+
 export interface RES_LaborRelacionada {
   id_labor: number;
   nombre: string;

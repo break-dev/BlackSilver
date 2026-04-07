@@ -11,10 +11,12 @@ import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { RegistroLote } from "../registro-lote";
 import { AjusteStockModal } from "../ajuste-stock";
 import { LotesFilter } from "./lotes-filter";
-import { ProductGroupCard } from "./product-group-card";
-import { useLotesPrinter } from "../../hooks/useLotesPrinter";
+import { ProductGroupCard } from "./product-group-card/product-group-card";
+import { PrinterPage } from "../../../../presentation/utils/printer-page";
+import { TicketLotePrinter } from "../../../../presentation/utils/TicketLote";
 import { useGroupedProducts } from "../../hooks/useGroupedProducts";
 import { useLotesColumns } from "../../hooks/useLotesColumns";
+import { type TicketLoteProps } from "../../../../presentation/utils/TicketLote";
 
 export const LotesPage = () => {
   useTitlePage("Gestión de Inventario y Lotes");
@@ -35,6 +37,7 @@ export const LotesPage = () => {
     productosUnicos,
     addLote,
     updateLote,
+    armarTicket,
   } = useLotesPage();
 
   // Modals Local State (Purely UI)
@@ -43,9 +46,14 @@ export const LotesPage = () => {
   const [loteParaAjustar, setLoteParaAjustar] = useState<RES_Lote | null>(null);
   const [openedAjuste, { open: openAjuste, close: closeAjuste }] =
     useDisclosure(false);
+  const [openedPrinter, setOpenedPrinter] = useState(0);
+  const [ticketsToPrint, setTicketsToPrint] = useState<TicketLoteProps[]>([]);
 
-  // Instancia de impresión separada en hook
-  const { printLotes: handlePrint } = useLotesPrinter(almacenes);
+  const handlePrint = (lotes: RES_Lote | RES_Lote[]) => {
+    const lotesArray = Array.isArray(lotes) ? lotes : [lotes];
+    setTicketsToPrint(lotesArray.map(armarTicket));
+    setOpenedPrinter((s) => s + 1); // Disparo por pulso (contador)
+  };
 
   // Grouping logic concentrada en hook abstracto
   const groupedProducts = useGroupedProducts(records);
@@ -154,6 +162,13 @@ export const LotesPage = () => {
           />
         )}
       </ModalEstandar>
+
+      <PrinterPage
+        opened={openedPrinter}
+        size="fit"
+      >
+        <TicketLotePrinter data={ticketsToPrint} />
+      </PrinterPage>
     </div>
   );
 };

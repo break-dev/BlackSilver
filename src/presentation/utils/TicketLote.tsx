@@ -1,18 +1,32 @@
 import { QRCodeSVG } from "qrcode.react";
 import dayjs from "dayjs";
 
-interface TicketLoteProps {
-  data: {
-    id: number;
-    producto: string;
-    lote: string;
-    almacen: string;
-    descripcion: string | null;
-    fecha_ingreso: string;
-  };
+export interface TicketLoteProps {
+  id: number;
+  producto: string;
+  lote: string;
+  almacen: string;
+  descripcion: string | null;
+  fecha_ingreso: string;
 }
 
-export const TicketLote = ({ data }: TicketLoteProps) => {
+
+/**
+ * Componente que organiza uno o múltiples tickets de lote en una cuadrícula.
+ * Maneja el layout y el espaciado para asegurar que la impresión use padding en los bordes.
+ */
+export const TicketLotePrinter = ({ data }: { data: TicketLoteProps[] }) => {
+  return (
+    <div className="flex gap-3">
+      {data.map((lote) => (
+        <TicketLote key={lote.id} data={lote} />
+      ))}
+    </div>
+  );
+};
+
+
+export const TicketLote = ({ data }: { data: TicketLoteProps }) => {
   const qrValue = JSON.stringify(
     {
       id: data.id,
@@ -20,7 +34,7 @@ export const TicketLote = ({ data }: TicketLoteProps) => {
       lote: data.lote,
       almacen: data.almacen,
       descripcion: data.descripcion || "",
-      fecha_ingreso: data.fecha_ingreso,
+      fecha_ingreso: dayjs(data.fecha_ingreso).format("DD/MM/YY"),
     },
     null,
     2,
