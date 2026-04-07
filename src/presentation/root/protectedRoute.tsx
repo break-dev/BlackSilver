@@ -1,8 +1,12 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuthUser } from "../../hooks/useAuthUser";
 
 // Componente que protege rutas autenticadas y verifica autorización por menú
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+export const ProtectedRoute = ({
+  children,
+}: {
+  children?: React.ReactNode;
+}) => {
   const { isAuthenticated, isAuthorized } = useAuthUser();
 
   if (!isAuthenticated) {
@@ -14,5 +18,5 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/home" replace />;
   }
 
-  return <>{children}</>;
+  return <>{children || <Outlet />}</>;
 };

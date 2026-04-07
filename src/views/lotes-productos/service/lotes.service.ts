@@ -6,6 +6,7 @@ import type {
   RES_ProductoDisponible,
   RES_UnidadMedida,
   RES_Almacen,
+  RES_Ticket,
 } from "./lotes.responses";
 import dayjs from "dayjs";
 
@@ -82,6 +83,16 @@ export class LotesService {
       `${this.PATH}/ajustar-stock`,
       dto,
     );
+    return response.data;
+  }
+
+  /**
+   * Obtener información de lotes para impresión de tickets.
+   */
+  static async getTicketsInfo(ids: number[]) {
+    const response = await api.get<IRespuesta<RES_Ticket[]>>(`${this.PATH}/tickets`, {
+      params: { ids: ids.join(",") },
+    });
     return response.data;
   }
 }

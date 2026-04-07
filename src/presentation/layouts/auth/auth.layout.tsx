@@ -4,6 +4,7 @@ import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
 import { useAuthLayout } from "./hooks/useAuthLayout";
+import { PrinterArea } from "../../utils/printer-area";
 
 export const AuthLayout = () => {
   const { open, setOpen } = useAuthLayout();
@@ -59,6 +60,7 @@ export const AuthLayout = () => {
           </motion.div>
         </main>
       </div>
+      <PrinterArea />
     </div>
   );
 };
