@@ -3,6 +3,7 @@ import {
   Group,
   TextInput,
   Select,
+  MultiSelect,
   Button,
   Avatar,
   FileButton,
@@ -14,6 +15,7 @@ import {
   MapPinIcon,
   BriefcaseIcon,
   PencilIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
 import type { RES_Empleado } from "../service/empleados.responses";
@@ -38,10 +40,12 @@ export const RegistroEmpleado = ({
     minas,
     areas,
     cargos,
+    labores,
     loading,
     loadingMinas,
     loadingAreas,
     loadingCargos,
+    loadingLabores,
     handleSubmit,
   } = useRegistroEmpleado(onSuccess, idMinaDefault);
 
@@ -82,7 +86,6 @@ export const RegistroEmpleado = ({
         </FileButton>
       </div>
 
-      {/* Mina */}
       <Select
         label="Mina"
         placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
@@ -99,6 +102,30 @@ export const RegistroEmpleado = ({
         withAsterisk
         searchable
         disabled={loadingMinas || loading}
+      />
+
+      <MultiSelect
+        label="Asignar Labores (Opcional)"
+        placeholder={
+          form.id_mina === 0
+            ? "Primero seleccione mina"
+            : loadingLabores
+              ? "Cargando labores..."
+              : "Seleccione una o más labores"
+        }
+        data={labores.map((l) => ({
+          value: l.id_labor.toString(),
+          label: l.nombre ? `${l.correlativo} - ${l.nombre}` : l.correlativo,
+        }))}
+        value={form.ids_labor?.map((id) => id.toString()) || []}
+        onChange={(vals) => setField("ids_labor", vals.map(Number))}
+        leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={fieldClasses}
+        radius="lg"
+        searchable
+        clearable
+        hidePickedOptions
+        disabled={form.id_mina === 0 || loadingLabores || loading}
       />
 
       {/* Nombres y Apellidos */}

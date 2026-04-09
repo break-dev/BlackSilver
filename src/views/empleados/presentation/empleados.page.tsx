@@ -10,6 +10,7 @@ import {
   Menu,
   FileButton,
   Tooltip,
+  Stack,
 } from "@mantine/core";
 import { useNotify } from "../../../hooks/useNotify";
 import {
@@ -136,17 +137,28 @@ export const EmpleadosPage = () => {
       render: (r) => {
         const sinAsignar = r.labores_asignadas === "Sin asignar";
         return (
-          <Group gap={6} justify="center">
-            {sinAsignar ? (
-              <Badge variant="outline" color="gray" radius="sm" size="sm">
-                Sin asignar
-              </Badge>
-            ) : (
-              <Badge variant="light" color="cyan" radius="sm" size="sm" className="font-bold font-mono">
-                {r.labores_asignadas}
-              </Badge>
-            )}
-            <Tooltip label="Asignar Labor">
+          <Group gap={6} justify="center" wrap="nowrap">
+            <Stack gap={4} align="center">
+              {sinAsignar ? (
+                <Badge variant="outline" color="gray" radius="sm" size="sm">
+                  Sin asignar
+                </Badge>
+              ) : (
+                r.labores_asignadas.split(" | ").map((lab, idx) => (
+                  <Badge
+                    key={idx}
+                    variant="light"
+                    color="cyan"
+                    radius="xs"
+                    size="xs"
+                    className="font-bold font-mono"
+                  >
+                    {lab}
+                  </Badge>
+                ))
+              )}
+            </Stack>
+            <Tooltip label="Gestionar Labores">
               <ActionIcon
                 variant="subtle"
                 color="indigo"
@@ -262,7 +274,9 @@ export const EmpleadosPage = () => {
 
           <TextInput
             placeholder="Buscar por nombre, DNI o cargo..."
-            leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            }
             value={busqueda}
             onChange={(e) => setBusqueda(e.currentTarget.value)}
             radius="lg"

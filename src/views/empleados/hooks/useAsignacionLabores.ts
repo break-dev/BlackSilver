@@ -17,9 +17,20 @@ export const useAsignacionLabores = (onSuccess: () => void) => {
     setSeleccionados([]);
     setLoadingLabores(true);
     try {
-      // Cargamos solo las que NO tiene el empleado (pasando su ID como filtro al back)
-      const resp = await EmpleadosService.get_labores_disponibles(emp.id_mina, emp.id_empleado);
-      if (resp.success) setLaboresDisponibles(resp.data);
+      // 1. Obtener TODAS las labores activas de la mina (sin filtrar por empleado para ver el panorama completo)
+      const respDisponibles = await EmpleadosService.get_labores_disponibles(emp.id_mina);
+      
+      // 2. Obtener las labores que YA TIENE el empleado para marcarlas
+      const respActuales = await EmpleadosService.get_labores_empleado(emp.id_empleado);
+
+      if (respDisponibles.success) {
+        setLaboresDisponibles(respDisponibles.data);
+      }
+
+      if (respActuales.success) {
+        setSeleccionados(respActuales.data.map(l => l.id_labor));
+      }
+
     } catch (err) {
       console.error(err);
       notify({ type: "error", content: "Error al cargar labores" });
@@ -45,13 +56,9 @@ export const useAsignacionLabores = (onSuccess: () => void) => {
   const handleAsignar = async () => {
     if (!empleado) return;
 
-    if (seleccionados.length === 0) {
-      notify({ type: "error", content: "Selecciona al menos una labor para asignar." });
-      return;
-    }
-
     setLoading(true);
     try {
+      // Sincronizamos: lo que está seleccionado es lo que queda en la BD
       const resp = await EmpleadosService.asignar_labores(empleado.id_empleado, {
         ids_labor: seleccionados,
       });
