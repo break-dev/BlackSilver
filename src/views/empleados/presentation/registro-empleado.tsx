@@ -115,12 +115,15 @@ export const RegistroEmpleado = ({
         }
         data={labores.map((l) => ({
           value: l.id_labor.toString(),
-          label: l.nombre ? `${l.correlativo} - ${l.nombre}` : l.correlativo,
+          label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
         }))}
         value={form.ids_labor?.map((id) => id.toString()) || []}
         onChange={(vals) => setField("ids_labor", vals.map(Number))}
         leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={fieldClasses}
+        classNames={{
+          ...fieldClasses,
+          pill: "bg-purple-600 text-white",
+        }}
         radius="lg"
         searchable
         clearable

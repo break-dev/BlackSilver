@@ -121,10 +121,11 @@ export const EmpleadosPage = () => {
     {
       accessor: "mina",
       title: "Mina",
+      width: 180,
       render: (r) => (
-        <Group gap="xs">
-          <MapPinIcon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-          <Text size="xs" fw={600} className="text-zinc-300">
+        <Group gap={6}>
+          <MapPinIcon className="w-4 h-4 text-emerald-400" />
+          <Text size="sm" fw={600} className="text-zinc-200">
             {r.mina}
           </Text>
         </Group>
@@ -149,8 +150,8 @@ export const EmpleadosPage = () => {
                     key={idx}
                     variant="light"
                     color="cyan"
-                    radius="xs"
-                    size="xs"
+                    radius="sm"
+                    size="sm"
                     className="font-bold font-mono"
                   >
                     {lab}
@@ -158,7 +159,7 @@ export const EmpleadosPage = () => {
                 ))
               )}
             </Stack>
-            <Tooltip label="Gestionar Labores">
+            <Tooltip label="Agregar Labores">
               <ActionIcon
                 variant="subtle"
                 color="indigo"
