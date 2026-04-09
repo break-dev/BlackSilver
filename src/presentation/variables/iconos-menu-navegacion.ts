@@ -8,6 +8,7 @@ import {
   Cog6ToothIcon,
   ArrowsRightLeftIcon,
   ReceiptRefundIcon,
+  ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 
 // Asociacion de iconos a cada modulo y submodulo, mediante
@@ -33,6 +34,7 @@ export const iconos_menu_navegacion = [
         icono: ArrowsRightLeftIcon,
       },
       { submodulo_path: "prestamos_almacen", icono: ReceiptRefundIcon },
+      { submodulo_path: "compras", icono: ShoppingCartIcon },
     ],
   },
 ];
