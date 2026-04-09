@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProveedoresService } from "../service/proveedores.service";
 import { useNotify } from "../../../hooks/useNotify";
 import {
   Schema_CrearCuentaBancaria,
   type CrearCuentaBancariaRequest,
 } from "../service/proveedores.requests";
+import type {
+  BancoResponse,
+  CuentaBancariaResponse,
+} from "../service/proveedores.responses";
 
 export const useRegistroCuentaBancaria = (
   idProveedor: number | null,
-  onAccountAdded: () => void,
+  bancos: BancoResponse[],
+  onAccountAdded: (account: CuentaBancariaResponse) => void,
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,16 +28,44 @@ export const useRegistroCuentaBancaria = (
     es_para_detraccion: 0,
   });
 
+  // Auto-selección del primer banco al cargar
+  useEffect(() => {
+    if (payload.id_banco === 0 && bancos.length > 0) {
+      handleSelectBanco(bancos[0].id_banco.toString());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bancos]);
+
   const handleChangeStr = (
     field: keyof CrearCuentaBancariaRequest,
     value: string,
   ) => {
-    setPayload((prev) => ({ ...prev, [field]: value }));
+    setPayload((prev) => {
+      const newPayload = { ...prev, [field]: value };
+
+      // Si se cambia la moneda y no es Soles, se resetea detracción
+      if (field === "moneda" && value !== "Soles") {
+        newPayload.es_para_detraccion = 0;
+      }
+
+      return newPayload;
+    });
     if (error) setError(null);
   };
 
   const handleSelectBanco = (val: string | null) => {
-    setPayload((prev) => ({ ...prev, id_banco: val ? Number(val) : 0 }));
+    const idBanco = val ? Number(val) : 0;
+    const banco = bancos.find((b) => b.id_banco === idBanco);
+
+    setPayload((prev) => ({
+      ...prev,
+      id_banco: idBanco,
+      // Solo habilitado si el banco es nacional y la moneda es Soles
+      es_para_detraccion:
+        banco?.es_nacional && prev.moneda === "Soles"
+          ? prev.es_para_detraccion
+          : 0,
+    }));
     if (error) setError(null);
   };
 
@@ -60,7 +93,9 @@ export const useRegistroCuentaBancaria = (
 
     setIsSubmitting(true);
     try {
-      await ProveedoresService.crearCuentaBancaria(validation.data);
+      const created = await ProveedoresService.crearCuentaBancaria(
+        validation.data,
+      );
       notifySuccess("Cuenta bancaria añadida");
       setPayload({
         id_proveedor: 0,
@@ -70,7 +105,7 @@ export const useRegistroCuentaBancaria = (
         cci: "",
         es_para_detraccion: 0,
       });
-      onAccountAdded();
+      onAccountAdded(created);
     } catch (e) {
       console.error(e);
       notifyError("Error al añadir la cuenta bancaria");

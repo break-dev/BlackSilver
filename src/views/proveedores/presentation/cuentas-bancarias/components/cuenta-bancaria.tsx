@@ -1,4 +1,9 @@
-import { Badge } from "@mantine/core";
+import { Badge, Text, Group, Stack, ThemeIcon, Grid } from "@mantine/core";
+import {
+  IconCreditCard,
+  IconCash,
+  IconBuildingBank,
+} from "@tabler/icons-react";
 import { MONEDAS } from "../../../../../shared/variables/monedas";
 import type { CuentaBancariaResponse } from "../../../service/proveedores.responses";
 
@@ -7,53 +12,118 @@ interface Props {
 }
 
 export const CuentaBancaria = ({ cuenta }: Props) => {
+  const isSoles = cuenta.moneda === MONEDAS.PEN.label;
+
   return (
-    <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:bg-zinc-800/50 transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="flex flex-col">
-          <span className="text-white font-medium">{cuenta.banco_nombre}</span>
-          <span className="text-sm text-zinc-400 font-mono mt-0.5">
-            {cuenta.numero_cuenta}
-          </span>
-        </div>
-      </div>
+    <div className="group p-4 bg-zinc-900/40 border border-zinc-800/60 rounded-xl hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all duration-200">
+      <Grid align="center" gutter="lg">
+        {/* Info Banco */}
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <Group gap="md">
+            <ThemeIcon
+              variant="light"
+              color={isSoles ? "blue" : "emerald"}
+              size="lg"
+              radius="xl"
+              className="bg-zinc-950/50"
+            >
+              <IconBuildingBank size={20} stroke={1.5} />
+            </ThemeIcon>
 
-      <div className="flex items-center gap-6">
-        <div className="flex flex-col items-end">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-            Moneda
-          </span>
-          <Badge
-            color={cuenta.moneda === MONEDAS.PEN.label ? "blue.8" : "emerald.8"}
-            variant="light"
-            size="sm"
-          >
-            {cuenta.moneda}
-          </Badge>
-        </div>
+            <Stack gap={0}>
+              <Text size="sm" fw={600} className="text-zinc-200 truncate">
+                {cuenta.banco}{" "}
+                {cuenta.banco_abv && (
+                  <span className="text-zinc-500 font-medium text-[10px] ml-1">
+                    ({cuenta.banco_abv})
+                  </span>
+                )}
+              </Text>
+              <Group gap={6}>
+                <IconCreditCard size={14} className="text-zinc-500" />
+                <Text
+                  size="xs"
+                  className="text-zinc-400 font-mono tracking-tight"
+                >
+                  {cuenta.numero_cuenta}
+                </Text>
+              </Group>
+            </Stack>
+          </Group>
+        </Grid.Col>
 
-        <div className="flex flex-col items-end min-w-[120px]">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-            CCI
-          </span>
-          <span className="text-sm text-zinc-300 font-mono">
-            {cuenta.cci || "No registrado"}
-          </span>
-        </div>
-
-        <div className="flex flex-col items-end min-w-[80px]">
-          <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">
-            Detracción
-          </span>
-          {cuenta.es_para_detraccion === 1 ? (
-            <Badge color="yellow.8" variant="dot" size="sm">
-              Sí
+        {/* Moneda */}
+        <Grid.Col span={{ base: 6, sm: 2 }}>
+          <Stack gap={2} align="center">
+            <Text
+              size="10px"
+              fw={700}
+              className="text-zinc-600 uppercase tracking-widest"
+            >
+              MONEDA
+            </Text>
+            <Badge
+              color={isSoles ? "blue" : "emerald"}
+              variant="light"
+              size="sm"
+              radius="xl"
+              leftSection={<IconCash size={12} />}
+            >
+              {cuenta.moneda}
             </Badge>
-          ) : (
-            <span className="text-sm text-zinc-500">-</span>
-          )}
-        </div>
-      </div>
+          </Stack>
+        </Grid.Col>
+
+        {/* CCI */}
+        <Grid.Col span={{ base: 6, sm: 4 }}>
+          <Stack gap={2} align="center">
+            <Text
+              size="10px"
+              fw={700}
+              className="text-zinc-600 uppercase tracking-widest"
+            >
+              CCI
+            </Text>
+            {cuenta.cci ? (
+              <Text size="xs" fw={500} className="text-zinc-300 font-mono">
+                {cuenta.cci}
+              </Text>
+            ) : (
+              <Text size="xs" className="text-zinc-700 italic">
+                No registrado
+              </Text>
+            )}
+          </Stack>
+        </Grid.Col>
+
+        {/* Tipo (Detracción) */}
+        <Grid.Col span={{ base: 12, sm: 2 }}>
+          <Stack gap={2} align="end">
+            <Text
+              size="10px"
+              fw={700}
+              className="text-zinc-600 uppercase tracking-widest"
+            >
+              TIPO
+            </Text>
+            {!cuenta.es_para_detraccion ? (
+              <Badge color="yellow.9" variant="dot" size="sm" radius="xl">
+                Detracción
+              </Badge>
+            ) : (
+              <Badge
+                color="zinc.7"
+                variant="outline"
+                size="sm"
+                radius="xl"
+                className="border-zinc-800 text-zinc-600 bg-transparent"
+              >
+                Estándar
+              </Badge>
+            )}
+          </Stack>
+        </Grid.Col>
+      </Grid>
     </div>
   );
 };

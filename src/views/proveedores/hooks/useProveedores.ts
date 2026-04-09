@@ -26,5 +26,9 @@ export const useProveedores = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { proveedores, loading, fetchProveedores };
+  const insertProveedor = (p: ProveedorResponse) => {
+    setProveedores((prev) => [p, ...prev]);
+  };
+
+  return { proveedores, loading, fetchProveedores, insertProveedor };
 };

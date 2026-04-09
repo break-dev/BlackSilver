@@ -9,6 +9,7 @@ export interface ProveedorResponse {
   direccion: string | null;
   telefono: string | null;
   correo: string | null;
+  cantidad_cuentas_bancarias: number;
   estado: EstadoBase;
 }
 
@@ -16,16 +17,17 @@ export interface BancoResponse {
   id_banco: number;
   abreviatura: string;
   nombre: string;
+  es_nacional: boolean;
 }
 
 export interface CuentaBancariaResponse {
   id_cuenta_bancaria: number;
   banco_abv: string;
-  banco_nombre: string;
+  banco: string;
   id_banco: number;
-  moneda: string;
+  moneda: string; // MONEDAS
   numero_cuenta: string;
   cci: string | null;
-  es_para_detraccion: number;
+  es_para_detraccion: boolean;
   estado: EstadoBase;
 }

@@ -6,8 +6,11 @@ import {
   type CrearProveedorRequest,
 } from "../service/proveedores.requests";
 import { TipoEntidad } from "../../../shared/enums/tipos";
+import type { ProveedorResponse } from "../service/proveedores.responses";
 
-export const useRegistroProveedor = (onSuccess: () => void) => {
+export const useRegistroProveedor = (
+  onSuccess: (p: ProveedorResponse) => void,
+) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notifySuccess, notifyError } = useNotify();
@@ -29,7 +32,12 @@ export const useRegistroProveedor = (onSuccess: () => void) => {
 
   const handleSelectChange = (value: string | null) => {
     if (value) {
-      setPayload((prev) => ({ ...prev, tipo_entidad: value as TipoEntidad }));
+      setPayload((prev) => ({
+        ...prev,
+        tipo_entidad: value as TipoEntidad,
+        dni: "", // Limpiar para evitar basura entre tipos
+        ruc: "",
+      }));
       if (error) setError(null);
     }
   };
@@ -46,7 +54,7 @@ export const useRegistroProveedor = (onSuccess: () => void) => {
 
     setLoading(true);
     try {
-      await ProveedoresService.crearProveedor(validation.data);
+      const created = await ProveedoresService.crearProveedor(validation.data);
       notifySuccess("Proveedor registrado exitosamente");
       setPayload({
         tipo_entidad: TipoEntidad.Juridica,
@@ -57,7 +65,7 @@ export const useRegistroProveedor = (onSuccess: () => void) => {
         telefono: "",
         correo: "",
       });
-      onSuccess();
+      onSuccess(created);
     } catch (e) {
       console.error(e);
       notifyError("Ocurrió un error al registrar el proveedor");

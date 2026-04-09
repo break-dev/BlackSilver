@@ -35,14 +35,9 @@ export const useRegistroBanco = (onSuccess: (banco: BancoResponse) => void) => {
     setLoading(true);
     try {
       const response = await ProveedoresService.crearBanco(validation.data);
-      const nuevoBanco: BancoResponse = {
-        id_banco: response.id_banco,
-        nombre: validation.data.nombre,
-        abreviatura: validation.data.abreviatura,
-      };
       notifySuccess("Banco registrado exitosamente");
       setPayload({ nombre: "", abreviatura: "" });
-      onSuccess(nuevoBanco);
+      onSuccess(response);
     } catch (e) {
       console.error(e);
       notifyError("Error al registrar banco");

@@ -28,6 +28,7 @@ export const useCuentasBancarias = (idProveedor: number | null) => {
   };
 
   const fetchBancos = async () => {
+    if (loadingBancos || bancos.length > 0) return;
     setLoadingBancos(true);
     try {
       const data = await ProveedoresService.getBancos();
@@ -40,12 +41,9 @@ export const useCuentasBancarias = (idProveedor: number | null) => {
   };
 
   useEffect(() => {
-    fetchBancos();
-  }, []);
-
-  useEffect(() => {
     if (idProveedor) {
       fetchCuentas(idProveedor);
+      fetchBancos(); // Carga automática al abrir/cambiar proveedor
     } else {
       setCuentas([]);
     }
@@ -58,6 +56,10 @@ export const useCuentasBancarias = (idProveedor: number | null) => {
     setBancos,
     loadingCuentas,
     loadingBancos,
+    fetchBancos,
+    insertCuenta: (c: CuentaBancariaResponse) => {
+      setCuentas((prev) => [c, ...prev]);
+    },
     reloadCuentas: () => {
       if (idProveedor) fetchCuentas(idProveedor);
     },

@@ -17,7 +17,7 @@ export const ProveedoresService = {
   },
   crearProveedor: async (
     payload: CrearProveedorRequest,
-  ): Promise<{ id_proveedor: number }> => {
+  ): Promise<ProveedorResponse> => {
     const { data } = await api.post("/proveedores", payload);
     return data.data;
   },
@@ -26,9 +26,7 @@ export const ProveedoresService = {
     const { data } = await api.get("/proveedores/bancos");
     return data.data;
   },
-  crearBanco: async (
-    payload: CrearBancoRequest,
-  ): Promise<{ id_banco: number }> => {
+  crearBanco: async (payload: CrearBancoRequest): Promise<BancoResponse> => {
     const { data } = await api.post("/proveedores/bancos", payload);
     return data.data;
   },
@@ -43,7 +41,7 @@ export const ProveedoresService = {
   },
   crearCuentaBancaria: async (
     payload: CrearCuentaBancariaRequest,
-  ): Promise<{ id_cuenta_bancaria: number }> => {
+  ): Promise<CuentaBancariaResponse> => {
     const { data } = await api.post("/proveedores/cuentas-bancarias", payload);
     return data.data;
   },

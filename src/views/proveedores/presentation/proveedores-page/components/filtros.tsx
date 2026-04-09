@@ -7,27 +7,27 @@ interface Props {
 
 export const Filtros = ({ onOpenRegistro }: Props) => {
   return (
-    <div className="flex justify-between items-end pb-4 border-b border-zinc-800/50 flex-none relative z-10">
-      <div className="flex items-center gap-4">
-        <TextInput
-          placeholder="Buscar proveedor..."
-          leftSection={<IconSearch size={16} />}
-          classNames={{
-            input: "bg-zinc-900 border-zinc-700 text-white min-w-[250px]",
-          }}
-        />
-        <Button
-          leftSection={<IconPlus size={18} stroke={2.5} />}
-          radius="xl"
-          size="md"
-          variant="gradient"
-          gradient={{ from: "zinc-800", to: "zinc-900", deg: 90 }}
-          className="border border-zinc-700 hover:border-zinc-500 shadow-xl"
-          onClick={onOpenRegistro}
-        >
-          Nuevo Proveedor
-        </Button>
-      </div>
+    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <TextInput
+        placeholder="Buscar por razón social, RUC o DNI..."
+        leftSection={<IconSearch size={16} className="text-zinc-400" />}
+        radius="xl"
+        size="sm"
+        className="flex-1 min-w-64"
+        classNames={{
+          input:
+            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+        }}
+      />
+      <Button
+        leftSection={<IconPlus size={18} />}
+        radius="xl"
+        size="sm"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+        onClick={onOpenRegistro}
+      >
+        Nuevo Proveedor
+      </Button>
     </div>
   );
 };
