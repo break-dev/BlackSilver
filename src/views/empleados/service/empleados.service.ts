@@ -1,11 +1,12 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
-import type { DTO_CrearEmpleado } from "./empleados.requests";
+import type { DTO_AsignarLabores, DTO_CrearEmpleado } from "./empleados.requests";
 import type {
-  RES_Empleado,
   RES_Area,
   RES_Cargo,
-  RES_Empresa,
+  RES_Empleado,
+  RES_Labor,
+  RES_LaborEmpleado,
   RES_Mina,
 } from "./empleados.responses";
 
@@ -23,11 +24,6 @@ export class EmpleadosService {
 
   public static get_minas = async (): Promise<IRespuesta<RES_Mina[]>> => {
     const { data } = await api.get(`${this.PATH}/minas`);
-    return data;
-  };
-
-  public static get_empresas = async (): Promise<IRespuesta<RES_Empresa[]>> => {
-    const { data } = await api.get(`${this.PATH}/empresas`);
     return data;
   };
 
@@ -52,12 +48,12 @@ export class EmpleadosService {
         formData.append(key, value instanceof File ? value : String(value));
       }
     });
-
     const { data } = await api.post(this.PATH, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data;
   };
+
   public static actualizar_foto = async (
     idEmpleado: number,
     file: File,
@@ -67,6 +63,33 @@ export class EmpleadosService {
     const { data } = await api.post(`${this.PATH}/foto/${idEmpleado}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return data;
+  };
+
+  // --- Labores ---
+
+  public static get_labores_disponibles = async (
+    idMina: number,
+    idEmpleado?: number,
+  ): Promise<IRespuesta<RES_Labor[]>> => {
+    const { data } = await api.get(`${this.PATH}/labores-mina/${idMina}`, {
+      params: idEmpleado !== undefined ? { id_empleado: idEmpleado } : undefined,
+    });
+    return data;
+  };
+
+  public static get_labores_empleado = async (
+    idEmpleado: number,
+  ): Promise<IRespuesta<RES_LaborEmpleado[]>> => {
+    const { data } = await api.get(`${this.PATH}/${idEmpleado}/labores`);
+    return data;
+  };
+
+  public static asignar_labores = async (
+    idEmpleado: number,
+    dto: DTO_AsignarLabores,
+  ): Promise<IRespuesta<RES_LaborEmpleado[]>> => {
+    const { data } = await api.post(`${this.PATH}/${idEmpleado}/labores`, dto);
     return data;
   };
 }

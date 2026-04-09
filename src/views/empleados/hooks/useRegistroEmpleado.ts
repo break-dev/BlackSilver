@@ -6,14 +6,15 @@ import {
   type DTO_CrearEmpleado,
 } from "../service/empleados.requests";
 import type {
-  RES_Empleado,
-  RES_Empresa,
   RES_Area,
   RES_Cargo,
+  RES_Empleado,
+  RES_Mina,
+  RES_Labor,
 } from "../service/empleados.responses";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
-  id_empresa: 0,
+  id_mina: 0,
   id_cargo: 0,
   nombre: "",
   apellido: "",
@@ -23,36 +24,39 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
   pasaporte: "",
   fecha_nacimiento: "",
   path_foto: "",
+  ids_labor: [],
 };
 
 export const useRegistroEmpleado = (
   onSuccess: (nuevo: RES_Empleado) => void,
-  idEmpresaDefault: number | null = null
+  idMinaDefault: number | null = null,
 ) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearEmpleado>({
     ...INITIAL_FORM,
-    id_empresa: idEmpresaDefault ?? 0,
+    id_mina: idMinaDefault ?? 0,
   });
-  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
+  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [cargos, setCargos] = useState<RES_Cargo[]>([]);
+  const [labores, setLabores] = useState<RES_Labor[]>([]);
 
   const [idArea, setIdArea] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [loadingCargos, setLoadingCargos] = useState(false);
+  const [loadingLabores, setLoadingLabores] = useState(false);
 
-  const cargarEmpresas = useCallback(async () => {
-    setLoadingEmpresas(true);
+  const cargarMinas = useCallback(async () => {
+    setLoadingMinas(true);
     try {
-      const resp = await EmpleadosService.get_empresas();
-      if (resp.success) setEmpresas(resp.data);
+      const resp = await EmpleadosService.get_minas();
+      if (resp.success) setMinas(resp.data);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoadingEmpresas(false);
+      setLoadingMinas(false);
     }
   }, []);
 
@@ -68,10 +72,33 @@ export const useRegistroEmpleado = (
     }
   }, []);
 
+  const cargarLaboresMina = useCallback(async (minaId: number) => {
+    setLoadingLabores(true);
+    try {
+      const resp = await EmpleadosService.get_labores_disponibles(minaId);
+      if (resp.success) setLabores(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingLabores(false);
+    }
+  }, []);
+
   useEffect(() => {
-    cargarEmpresas();
+    cargarMinas();
     cargarAreas();
-  }, [cargarEmpresas, cargarAreas]);
+  }, [cargarMinas, cargarAreas]);
+
+  // Al cambiar la mina en el form, cargar sus labores
+  useEffect(() => {
+    if (form.id_mina > 0) {
+      cargarLaboresMina(form.id_mina);
+    } else {
+      setLabores([]);
+    }
+    // Si se limpia la mina, limpiar los seleccionados de labores
+    setForm(prev => ({ ...prev, ids_labor: [] }));
+  }, [form.id_mina, cargarLaboresMina]);
 
   const cargarCargos = useCallback(async (areaId: number) => {
     setLoadingCargos(true);
@@ -113,7 +140,7 @@ export const useRegistroEmpleado = (
       if (resp.success) {
         notify({ type: "success", content: resp.message });
         onSuccess(resp.data);
-        setForm(INITIAL_FORM);
+        setForm({ ...INITIAL_FORM, id_mina: idMinaDefault ?? 0 });
         setIdArea(null);
       } else {
         notify({ type: "error", content: resp.message });
@@ -131,13 +158,15 @@ export const useRegistroEmpleado = (
     setField,
     idArea,
     setIdArea,
-    empresas,
+    minas,
     areas,
     cargos,
+    labores,
     loading,
-    loadingEmpresas,
+    loadingMinas,
     loadingAreas,
     loadingCargos,
+    loadingLabores,
     handleSubmit,
   };
 };

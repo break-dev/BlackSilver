@@ -135,7 +135,7 @@ export const CuentasPage = () => {
                     radius="sm"
                     className="text-white font-bold border-none"
                   >
-                    {cuenta.empresa_pertenece}
+                    {cuenta.mina_pertenece}
                   </Badge>
                   <Badge
                     color={isActive ? "green" : "gray"}

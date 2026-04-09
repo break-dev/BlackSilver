@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const Schema_CrearEmpleado = z.object({
-  id_empresa: z.number("Debe seleccionar una empresa"),
-  id_cargo: z.number("Debe seleccionar un cargo"),
+  id_mina: z.number().min(1, "Debe seleccionar una mina"),
+  id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
   nombre: z.string().min(1, "Los nombres son obligatorios"),
   apellido: z.string().min(1, "Los apellidos son obligatorios"),
   dni: z
@@ -41,6 +41,11 @@ export const Schema_CrearEmpleado = z.object({
       return val;
     }),
   path_foto: z.any().nullable().optional(),
+  ids_labor: z.array(z.number()).optional().default([]),
 });
 
 export type DTO_CrearEmpleado = z.infer<typeof Schema_CrearEmpleado>;
+
+export interface DTO_AsignarLabores {
+  ids_labor: number[];
+}

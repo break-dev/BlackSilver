@@ -53,13 +53,8 @@ export const PerfilPage = () => {
         {/* SECCIÓN LABORAL */}
         <ProfileSection title="Información Laboral">
           <ProfileDataField
-            label="Empresa / Institución"
-            value={perfil?.empresa_nombre || (loading ? "" : "Corporativo")}
-            loading={loading}
-          />
-          <ProfileDataField
-            label="RUC de la Empresa"
-            value={perfil?.empresa_ruc}
+            label="Mina donde Labora"
+            value={perfil?.mina_nombre || (loading ? "" : "Sin asignar")}
             loading={loading}
           />
           <ProfileDataField

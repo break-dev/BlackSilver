@@ -1,9 +1,10 @@
 export interface RES_Empleado {
   id_empleado: number;
-  id_empresa: number;
-  empresa: string;
+  id_mina: number;
+  mina: string;
   id_cargo: number;
   cargo: string;
+  id_area: number;
   area: string;
   nombre: string;
   apellido: string;
@@ -14,18 +15,12 @@ export interface RES_Empleado {
   fecha_nacimiento: string | null;
   path_foto: string | null;
   estado: string;
-  minas_asignadas: string;
+  labores_asignadas: string; // "TA-001 | SN-002" o "Sin asignar"
 }
 
 export interface RES_Mina {
   id_mina: number;
   nombre: string;
-}
-
-export interface RES_Empresa {
-  id_empresa: number;
-  nombre_comercial: string;
-  razon_social: string;
 }
 
 export interface RES_Area {
@@ -36,4 +31,17 @@ export interface RES_Area {
 export interface RES_Cargo {
   id_cargo: number;
   nombre: string;
+}
+
+export interface RES_Labor {
+  id_labor: number;
+  correlativo: string;
+  nombre: string | null;
+}
+
+export interface RES_LaborEmpleado {
+  id_labor_empleado: number;
+  id_labor: number;
+  correlativo: string;
+  nombre: string | null;
 }
