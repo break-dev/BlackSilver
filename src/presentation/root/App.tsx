@@ -17,6 +17,7 @@ import {
   RequerimientoAlmacenLayout,
   SolicitudReabastecimientoLayout,
   PrestamosAlmacenLayout,
+  ComprasLayout,
 } from "../layouts/logistica.layout";
 // Vistas
 import { LoginPage } from "../../views/login/presentation/login.page";
@@ -40,6 +41,7 @@ import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
 import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
 import { AtencionPrestamosPage } from "../../views/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
 import { PrestamosAlmacenPage } from "../../views/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
+import { ProveedoresPage } from "../../views/proveedores/presentation/proveedores-page/proveedores.page.tsx";
 
 export const App = () => {
   return (
@@ -145,6 +147,11 @@ export const App = () => {
               path="atencion_prestamos"
               element={<AtencionPrestamosPage />}
             />
+          </Route>
+
+          {/* Compras */}
+          <Route path="compras" element={<ComprasLayout />}>
+            <Route path="proveedores" element={<ProveedoresPage />} />
           </Route>
         </Route>
 

@@ -1,5 +1,70 @@
-/**
- * Este hook gestionara el proceso de registro de un proveedor
- * Sera llamado por el hook de useProveedores para que le devuelva
- * el proveedor registrado y lo inserte en la lista de proveedores
- */
+import { useState } from "react";
+import { ProveedoresService } from "../service/proveedores.service";
+import { useNotify } from "../../../hooks/useNotify";
+import {
+  Schema_CrearProveedor,
+  type CrearProveedorRequest,
+} from "../service/proveedores.requests";
+import { TipoEntidad } from "../../../shared/enums/tipos";
+
+export const useRegistroProveedor = (onSuccess: () => void) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { notifySuccess, notifyError } = useNotify();
+
+  const [payload, setPayload] = useState<CrearProveedorRequest>({
+    tipo_entidad: TipoEntidad.Juridica,
+    dni: "",
+    ruc: "",
+    razon_social: "",
+    direccion: "",
+    telefono: "",
+    correo: "",
+  });
+
+  const handleChange = (field: keyof CrearProveedorRequest, value: string) => {
+    setPayload((prev) => ({ ...prev, [field]: value }));
+    if (error) setError(null);
+  };
+
+  const handleSelectChange = (value: string | null) => {
+    if (value) {
+      setPayload((prev) => ({ ...prev, tipo_entidad: value as TipoEntidad }));
+      if (error) setError(null);
+    }
+  };
+
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    const validation = Schema_CrearProveedor.safeParse(payload);
+    if (!validation.success) {
+      setError(validation.error.issues[0].message);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await ProveedoresService.crearProveedor(validation.data);
+      notifySuccess("Proveedor registrado exitosamente");
+      setPayload({
+        tipo_entidad: TipoEntidad.Juridica,
+        dni: "",
+        ruc: "",
+        razon_social: "",
+        direccion: "",
+        telefono: "",
+        correo: "",
+      });
+      onSuccess();
+    } catch (e) {
+      console.error(e);
+      notifyError("Ocurrió un error al registrar el proveedor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { payload, handleChange, handleSelectChange, submit, loading, error };
+};

@@ -1,6 +1,30 @@
-/**
- * Hook para el listado de proveedores y aplicar filtros
- * Se comunicara con el hook de registro de proveedor para que
- * si se registra un proveedor, a este hook se le pase un objeto de proveedor
- * devuelto por la api y asi insertarlo en la lista de proveedores
- */
+import { useState, useEffect } from "react";
+import { ProveedoresService } from "../service/proveedores.service";
+import type { ProveedorResponse } from "../service/proveedores.responses";
+import { useNotify } from "../../../hooks/useNotify";
+
+export const useProveedores = () => {
+  const [proveedores, setProveedores] = useState<ProveedorResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { notifyError } = useNotify();
+
+  const fetchProveedores = async () => {
+    setLoading(true);
+    try {
+      const data = await ProveedoresService.getProveedores();
+      setProveedores(data);
+    } catch (e) {
+      console.error(e);
+      notifyError("Ocurrió un error al cargar los proveedores");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProveedores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { proveedores, loading, fetchProveedores };
+};

@@ -33,7 +33,7 @@ Cada vista se divide obligatoriamente en tres capas para separar responsabilidad
 
 - **Responsabilidad:** UI/UX y renderizado.
 - **Regla:** No debe contener lógica compleja, cálculos pesados ni manejo de estado de negocio.
-- **Archivos:** El componente principal es `[nombre-vista].page.tsx`. Los sub-componentes son `[nombre-componente].component.tsx`.
+- **Archivos:** El componente principal es `[nombre-vista].page.tsx`. Los sub-componentes son `[nombre-componente].tsx`.
 - **Escalabilidad:** Si un componente se vuelve complejo, crea una carpeta con su nombre, coloca el `.tsx` ahí dentro, y crea una subcarpeta `components/` para los elementos que lo integran.
 
 #### 2. Hooks (`hooks/`)
@@ -73,7 +73,7 @@ Cada vista se divide obligatoriamente en tres capas para separar responsabilidad
 ### 1. Convenciones de Nombres
 
 - **Página Principal:** `kebab-case.page.tsx`
-- **Sub-Componentes:** `kebab-case.component.tsx`
+- **Sub-Componentes:** `kebab-case.tsx`
 - **Hooks:** `camelCase.ts` empezando con 'use' (ej. `useRegistroEntrega.ts`).
 - **Servicios:** `kebab-case.service.ts`
 - **Carpetas:** `kebab-case`.
