@@ -32,3 +32,8 @@ export enum TipoMineral {
   Carbon = "Carbón",
   Aurifero = "Aurífero",
 }
+
+export enum TipoEntidad {
+  Natural = "Natural",
+  Juridica = "Jurídica",
+}
