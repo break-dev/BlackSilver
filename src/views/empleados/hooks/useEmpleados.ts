@@ -1,36 +1,24 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { EmpleadosService } from "../service/empleados.service";
-import type { RES_Empleado, RES_Empresa, RES_Mina } from "../service/empleados.responses";
+import type { RES_Empleado, RES_Mina } from "../service/empleados.responses";
 
 export const useEmpleados = () => {
-  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
-  
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
-
-  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
-  const cargarEmpresas = useCallback(async () => {
-    try {
-      const resp = await EmpleadosService.get_empresas();
-      if (resp.success) setEmpresas(resp.data);
-    } catch (err) {
-      console.error(err);
-    }
-  }, []);
-
   const cargarMinas = useCallback(async () => {
-    setLoadingEmpresas(true);
+    setLoadingMinas(true);
     try {
       const resp = await EmpleadosService.get_minas();
       if (resp.success) setMinas(resp.data);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoadingEmpresas(false);
+      setLoadingMinas(false);
     }
   }, []);
 
@@ -47,12 +35,10 @@ export const useEmpleados = () => {
   }, []);
 
   useEffect(() => {
-    cargarEmpresas();
     cargarMinas();
-  }, [cargarEmpresas, cargarMinas]);
+  }, [cargarMinas]);
 
   useEffect(() => {
-    // Si es null trae todos de golpe
     listar(idMina || undefined);
   }, [idMina, listar]);
 
@@ -68,10 +54,7 @@ export const useEmpleados = () => {
     );
   }, [empleados, busqueda]);
 
-  const pushNuevoEmpleado = (_nuevo: RES_Empleado) => {
-    // Si estamos filtrando por una mina, solo lo agregamos al state si 
-    // su mina_asignada incuye la nuestra o evaluamos después
-    // Simplificado: Solo re-cargamos la lista para asegurarnos de su estado.
+  const pushNuevoEmpleado = () => {
     listar(idMina || undefined);
   };
 
@@ -95,12 +78,11 @@ export const useEmpleados = () => {
   };
 
   return {
-    empresas,
     minas,
     idMina,
     setIdMina,
     empleados: filtrados,
-    loadingEmpresas,
+    loadingMinas,
     loading,
     busqueda,
     setBusqueda,

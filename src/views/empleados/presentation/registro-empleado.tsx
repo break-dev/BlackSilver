@@ -1,8 +1,17 @@
-import { Stack, Group, TextInput, Select, Button, Avatar, FileButton, Text } from "@mantine/core";
+import {
+  Stack,
+  Group,
+  TextInput,
+  Select,
+  Button,
+  Avatar,
+  FileButton,
+  Text,
+} from "@mantine/core";
 import {
   UserIcon,
   IdentificationIcon,
-  BuildingOfficeIcon,
+  MapPinIcon,
   BriefcaseIcon,
   PencilIcon,
 } from "@heroicons/react/24/outline";
@@ -11,13 +20,13 @@ import type { RES_Empleado } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroEmpleadoProps {
-  idEmpresaDefault?: number | null;
+  idMinaDefault?: number | null;
   onSuccess: (nuevo: RES_Empleado) => void;
   onCancel: () => void;
 }
 
 export const RegistroEmpleado = ({
-  idEmpresaDefault,
+  idMinaDefault,
   onSuccess,
   onCancel,
 }: RegistroEmpleadoProps) => {
@@ -26,15 +35,15 @@ export const RegistroEmpleado = ({
     setField,
     idArea,
     setIdArea,
-    empresas,
+    minas,
     areas,
     cargos,
     loading,
-    loadingEmpresas,
+    loadingMinas,
     loadingAreas,
     loadingCargos,
     handleSubmit,
-  } = useRegistroEmpleado(onSuccess, idEmpresaDefault);
+  } = useRegistroEmpleado(onSuccess, idMinaDefault);
 
   const fieldClasses = {
     input:
@@ -42,61 +51,57 @@ export const RegistroEmpleado = ({
     label: "text-zinc-300 mb-1 font-medium",
   };
 
-  const photoPreview = form.path_foto instanceof File ? URL.createObjectURL(form.path_foto) : null;
+  const photoPreview =
+    form.path_foto instanceof File ? URL.createObjectURL(form.path_foto) : null;
 
   return (
     <Stack gap="md">
       {/* Selector de Foto Circular */}
       <div className="flex flex-col items-center justify-center py-4">
-        <FileButton 
-          onChange={(file) => setField("path_foto", file)} 
+        <FileButton
+          onChange={(file) => setField("path_foto", file)}
           accept="image/png,image/jpeg,image/jpg"
         >
           {(props) => (
-            <div 
+            <div
               {...props}
               className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
               style={{ width: 110, height: 110 }}
             >
-              <Avatar
-                src={photoPreview}
-                size={110}
-                radius={100}
-                className="bg-transparent"
-              >
+              <Avatar src={photoPreview} size={110} radius={100} className="bg-transparent">
                 <UserIcon className="w-10 h-10 text-indigo-400/40" />
               </Avatar>
-
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
                 <PencilIcon className="w-5 h-5 text-white mb-1 drop-shadow-md" />
                 <Text size="10px" fw={700} className="text-white leading-tight">
-                  {form.path_foto ? 'Cambiar imagen' : 'Subir imagen'}
+                  {form.path_foto ? "Cambiar imagen" : "Subir imagen"}
                 </Text>
               </div>
             </div>
           )}
         </FileButton>
       </div>
+
+      {/* Mina */}
       <Select
-        label="Empresa"
-        placeholder={
-          loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
-        }
-        data={empresas.map((e) => ({
-          value: e.id_empresa.toString(),
-          label: e.nombre_comercial,
+        label="Mina"
+        placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
+        data={minas.map((m) => ({
+          value: m.id_mina.toString(),
+          label: m.nombre,
         }))}
-        value={form.id_empresa === 0 ? null : form.id_empresa.toString()}
-        onChange={(val) => setField("id_empresa", Number(val))}
-        leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
+        value={form.id_mina === 0 ? null : form.id_mina.toString()}
+        onChange={(val) => setField("id_mina", Number(val))}
+        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
         classNames={fieldClasses}
         radius="lg"
         required
         withAsterisk
         searchable
-        disabled={loadingEmpresas || loading}
+        disabled={loadingMinas || loading}
       />
 
+      {/* Nombres y Apellidos */}
       <Group grow align="flex-start" gap="md">
         <TextInput
           label="Nombres"
@@ -124,12 +129,15 @@ export const RegistroEmpleado = ({
         />
       </Group>
 
+      {/* DNI y Fecha de Nacimiento */}
       <Group grow align="flex-start" gap="md">
         <TextInput
           label="DNI"
           placeholder="Ej. 12345678"
           value={form.dni || ""}
-          onChange={(e) => setField("dni", e.currentTarget.value.replace(/\D/g, ""))}
+          onChange={(e) =>
+            setField("dni", e.currentTarget.value.replace(/\D/g, ""))
+          }
           leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
@@ -140,11 +148,12 @@ export const RegistroEmpleado = ({
           label="Fecha de Nacimiento"
           placeholder="Seleccione fecha"
           value={form.fecha_nacimiento || null}
-          onChange={(val: any) => setField("fecha_nacimiento", val)}
+          onChange={(val: unknown) => setField("fecha_nacimiento", val)}
           disabled={loading}
         />
       </Group>
 
+      {/* Área y Cargo en cascada */}
       <Group grow align="flex-start" gap="md">
         <Select
           label="Área"
@@ -188,6 +197,7 @@ export const RegistroEmpleado = ({
         />
       </Group>
 
+      {/* Acciones */}
       <Group justify="flex-end" gap="md" mt="xl">
         <Button
           variant="subtle"
