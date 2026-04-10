@@ -7,14 +7,16 @@ import {
   TextInput, 
   NumberInput, 
   Select, 
-  Switch
+  Switch,
+  ActionIcon
 } from "@mantine/core";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import type { 
   DTO_CotizacionRequest, 
   DTO_ProductoComparativo, 
   DTO_CotizacionDetalle 
 } from "../service/cotizaciones.requests";
-import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
+import { MetodoPago } from "../../../shared/enums/estados";
 
 interface ComparativoTablaProps {
   productos: (DTO_ProductoComparativo & { nombre: string; codigo: string })[];
@@ -23,6 +25,7 @@ interface ComparativoTablaProps {
   proveedores: { id_proveedor: number; razon_social: string }[];
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(index: number, field: K, value: DTO_CotizacionRequest[K]) => void;
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(cotIndex: number, prodId: number, field: K, value: DTO_CotizacionDetalle[K]) => void;
+  onRemoveCotizacion: (index: number) => void;
 }
 
 export const ComparativoTabla = ({
@@ -32,6 +35,7 @@ export const ComparativoTabla = ({
   proveedores,
   onUpdateHeader,
   onUpdateDetail,
+  onRemoveCotizacion,
 }: ComparativoTablaProps) => {
 
   const inputStyles = {
@@ -50,88 +54,96 @@ export const ComparativoTabla = ({
               </Group>
             </Table.Th>
 
-            {cotizaciones.map((cot, idx) => {
-              const prov = proveedores.find(p => p.id_proveedor === cot.id_proveedor);
-              return (
-                <Table.Th key={idx} style={{ minWidth: 320 }} className="p-0">
-                  <Stack gap="xs" className="p-4 bg-zinc-900/30">
-                    <Group justify="space-between" align="flex-start" wrap="nowrap">
-                      <Stack gap={0} className="flex-1">
-                        <Text size="xs" className="text-indigo-400 font-bold uppercase tracking-widest mb-1">Cotización #{idx + 1}</Text>
-                        <Text size="sm" fw={700} className="text-white truncate">
-                          {prov?.razon_social || `Proveedor #${cot.id_proveedor}`}
-                        </Text>
-                      </Stack>
-                      <Badge 
-                        color={cot.estado === EstadoCotizacion.Aprobada ? "green" : "gray"} 
-                        variant="light"
-                        size="sm"
-                        className="cursor-pointer"
-                        onClick={() => onUpdateHeader(idx, "estado", 
-                          cot.estado === EstadoCotizacion.Aprobada ? EstadoCotizacion.Generada : EstadoCotizacion.Aprobada
-                        )}
-                      >
-                        {cot.estado}
-                      </Badge>
-                    </Group>
+            {cotizaciones.map((cot, idx) => (
+              <Table.Th key={idx} style={{ minWidth: 320 }} className="p-0 align-top">
+                <Stack gap="xs" className="p-4 bg-zinc-900/30 relative group-header">
+                  {/* Botón Eliminar Columna */}
+                  <ActionIcon 
+                    variant="subtle" 
+                    color="red" 
+                    size="sm" 
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ zIndex: 5 }}
+                    onClick={() => onRemoveCotizacion(idx)}
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </ActionIcon>
 
-                    <Group grow gap="xs">
-                      <Select
-                        label="Moneda"
-                        data={["Soles", "Dolares"]}
-                        value={cot.moneda}
-                        onChange={(val) => onUpdateHeader(idx, "moneda", val ?? "Soles")}
-                        classNames={inputStyles}
-                        size="xs"
-                      />
-                      <Select
-                        label="Pago"
-                        data={[
-                          { value: MetodoPago.Contado, label: "Contado" },
-                          { value: MetodoPago.Credito, label: "Crédito" }
-                        ]}
-                        value={cot.metodo_pago}
-                        onChange={(val) => onUpdateHeader(idx, "metodo_pago", (val as MetodoPago) ?? MetodoPago.Contado)}
-                        classNames={inputStyles}
-                        size="xs"
-                      />
-                    </Group>
-
-                    {cot.metodo_pago === MetodoPago.Credito && (
-                      <TextInput
-                        label="Vencimiento"
-                        type="date"
-                        value={cot.fecha_vencimiento_pago || ""}
-                        onChange={(e) => onUpdateHeader(idx, "fecha_vencimiento_pago", e.currentTarget.value)}
-                        classNames={inputStyles}
-                        size="xs"
-                      />
-                    )}
-
-                    <Group grow align="flex-end">
-                      <div className="flex flex-col gap-1">
-                        <Text size="10px" className="text-zinc-500 uppercase font-bold">Incluye IGV</Text>
-                        <Switch 
-                          checked={cot.incluye_igv}
-                          onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
-                          size="sm"
-                          color="indigo"
-                        />
-                      </div>
-                      <Badge 
-                        variant="filled" 
-                        color="violet" 
-                        size="lg" 
-                        radius="lg"
-                        className="h-9 px-4 shadow-lg shadow-violet-900/20"
-                      >
-                        Total: {cot.total_despues_igv.toFixed(2)}
-                      </Badge>
-                    </Group>
+                  <Stack gap={4} mb="xs">
+                    <Text size="10px" className="text-indigo-400 font-bold uppercase tracking-widest">Oferta Recibida #{idx + 1}</Text>
+                    <Select
+                      placeholder="Seleccionar Proveedor..."
+                      data={proveedores.map(p => ({
+                        value: String(p.id_proveedor),
+                        label: p.razon_social
+                      }))}
+                      value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
+                      onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
+                      searchable
+                      size="sm"
+                      radius="md"
+                      classNames={{
+                        input: "bg-zinc-950 border-zinc-700 focus:border-indigo-500 font-bold text-white",
+                      }}
+                    />
                   </Stack>
-                </Table.Th>
-              );
-            })}
+
+                  <Group grow gap="xs">
+                    <Select
+                      label="Moneda"
+                      data={["Soles", "Dolares"]}
+                      value={cot.moneda}
+                      onChange={(val) => onUpdateHeader(idx, "moneda", val ?? "Soles")}
+                      classNames={inputStyles}
+                      size="xs"
+                    />
+                    <Select
+                      label="Método Pago"
+                      data={[
+                        { value: MetodoPago.Contado, label: "Contado" },
+                        { value: MetodoPago.Credito, label: "Crédito" }
+                      ]}
+                      value={cot.metodo_pago}
+                      onChange={(val) => onUpdateHeader(idx, "metodo_pago", (val as MetodoPago) ?? MetodoPago.Contado)}
+                      classNames={inputStyles}
+                      size="xs"
+                    />
+                  </Group>
+
+                  {cot.metodo_pago === MetodoPago.Credito && (
+                    <TextInput
+                      label="Fecha Vencimiento"
+                      type="date"
+                      value={cot.fecha_vencimiento_pago || ""}
+                      onChange={(e) => onUpdateHeader(idx, "fecha_vencimiento_pago", e.currentTarget.value)}
+                      classNames={inputStyles}
+                      size="xs"
+                    />
+                  )}
+
+                  <Group grow align="flex-end">
+                    <div className="flex flex-col gap-1">
+                      <Text size="10px" className="text-zinc-500 uppercase font-bold">Incluye IGV</Text>
+                      <Switch 
+                        checked={cot.incluye_igv}
+                        onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
+                        size="sm"
+                        color="indigo"
+                      />
+                    </div>
+                    <Badge 
+                      variant="filled" 
+                      color="violet" 
+                      size="lg" 
+                      radius="lg"
+                      className="h-9 px-4 shadow-lg shadow-violet-900/20"
+                    >
+                      Total: {cot.total_despues_igv.toLocaleString('es-PE', { style: 'currency', currency: cot.moneda === 'Soles' ? 'PEN' : 'USD' })}
+                    </Badge>
+                  </Group>
+                </Stack>
+              </Table.Th>
+            ))}
           </Table.Tr>
         </Table.Thead>
 
@@ -153,12 +165,13 @@ export const ComparativoTabla = ({
                   <Table.Td key={cotIdx} className="p-4 align-top">
                     <Stack gap="xs">
                       <Select
-                        label="U. Medida"
+                        label="Unidad Cotizada"
                         data={unidadesMedida}
                         value={String(det.id_unidad_medida)}
                         onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "id_unidad_medida", Number(val))}
                         size="xs"
                         classNames={inputStyles}
+                        placeholder="Elegir..."
                       />
                       
                       <Group grow gap="xs">
@@ -171,37 +184,38 @@ export const ComparativoTabla = ({
                           min={0}
                         />
                         <NumberInput
-                          label="Precio"
-                          value={det.precio_unitario}
+                          label="Precio Unit."
+                          value={det.precio_unitario || 0}
                           onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "precio_unitario", Number(val))}
                           size="xs"
                           classNames={inputStyles}
                           min={0}
                           decimalScale={2}
+                          placeholder="0.00"
                         />
                       </Group>
 
                       <NumberInput
-                        label="Contenido x Presentación"
+                        label="Equivalencia"
                         value={det.contenido_por_presentacion}
                         onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "contenido_por_presentacion", Number(val))}
                         size="xs"
-                        placeholder="Ej: 12"
+                        placeholder="Contenido..."
                         classNames={inputStyles}
-                        description={<Text size="9px" className="text-zinc-600">Cant. unidades base en esta UOM</Text>}
+                        description={<Text size="9px" className="text-zinc-600">Cant. de unid. base por esta presentación</Text>}
                       />
 
                       <div className="pt-2 border-t border-zinc-800/50 mt-1">
                         <Group justify="space-between">
                           <Stack gap={0}>
-                            <Text size="10px" className="text-zinc-600 font-bold uppercase">Subtotal</Text>
+                            <Text size="10px" className="text-zinc-600 font-bold uppercase truncate">Subtotal Oferta</Text>
                             <Text size="xs" fw={700} className="text-indigo-400">
-                              {(det.cantidad * det.precio_unitario).toFixed(2)}
+                              {(det.cantidad * (det.precio_unitario || 0)).toFixed(2)}
                             </Text>
                           </Stack>
                           <Stack gap={0} align="flex-end">
-                            <Text size="10px" className="text-zinc-600 font-bold uppercase">Unit. Base</Text>
-                            <Text size="xs" className="text-zinc-300">
+                            <Text size="10px" className="text-zinc-600 font-bold uppercase">Precio x Base</Text>
+                            <Text size="xs" className="text-emerald-400 fw-bold">
                               {det.precio_unitario_base.toFixed(4)}
                             </Text>
                           </Stack>
@@ -215,6 +229,13 @@ export const ComparativoTabla = ({
           ))}
         </Table.Tbody>
       </Table>
+      
+      {/* Estilos inline para la transición de hover en cabeceras */}
+      <style>{`
+        .group-header:hover .opacity-0 {
+          opacity: 1 !important;
+        }
+      `}</style>
     </div>
   );
 };

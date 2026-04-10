@@ -1,167 +1,178 @@
-import { useState } from "react";
-import { useNotify } from "../../../hooks/useNotify";
-import { CotizacionesService } from "../service/cotizaciones.service";
-import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
+import { useState, useCallback } from "react";
 import type { 
-  DTO_RegistrarComparativo, 
   DTO_CotizacionRequest, 
-  DTO_ProductoComparativo,
-  DTO_CotizacionDetalle
+  DTO_ProductoComparativo, 
+  DTO_CotizacionDetalle,
+  DTO_RegistrarComparativo
 } from "../service/cotizaciones.requests";
+import { CotizacionesService } from "../service/cotizaciones.service";
+import { useNotify } from "../../../hooks/useNotify";
+import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
 
 export const useRegistroCotizacion = (onSuccess: () => void) => {
-  const { notify } = useNotify();
-  const [loading, setLoading] = useState(false);
-
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
   const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { notify } = useNotify();
 
-  const agregarProductoAlComparador = (id_producto: number) => {
-    if (productos.some(p => p.id_producto === id_producto)) return;
-    
-    const nuevoProducto: DTO_ProductoComparativo = { id_producto };
-    setProductos(prev => [...prev, nuevoProducto]);
-
-    setCotizaciones(prev => prev.map(cot => ({
-      ...cot,
-      detalles: [...cot.detalles, {
+  // Paso 1: Añadir/Quitar productos base del comparativo
+  const agregarProductoAlComparador = useCallback((id_producto: number) => {
+    setProductos((prev) => {
+      if (prev.some((p) => p.id_producto === id_producto)) return prev;
+      
+      const nuevoProd: DTO_ProductoComparativo = {
         id_producto,
-        id_unidad_medida: 0,
-        cantidad: 0,
-        contenido_por_presentacion: 1,
-        cantidad_base: 0,
-        precio_unitario: 0,
-        precio_unitario_base: 0,
-        comentario: ""
-      }]
-    })));
-  };
+        id_solicitud_detalle: null
+      };
 
-  const agregarProveedor = (id_proveedor: number) => {
-    if (cotizaciones.some(c => c.id_proveedor === id_proveedor)) {
-      notify({ type: "error", content: "Este proveedor ya ha sido añadido." });
+      // Si ya hay cotizaciones, les añadimos este producto automáticamente
+      setCotizaciones((prevCots) => 
+        prevCots.map(cot => ({
+          ...cot,
+          detalles: [
+            ...cot.detalles,
+            {
+              id_producto,
+              id_unidad_medida: 1, // Por defecto
+              cantidad: 1,
+              contenido_por_presentacion: 1,
+              cantidad_base: 1,
+              precio_unitario: 0,
+              precio_unitario_base: 0,
+              comentario: null
+            }
+          ]
+        }))
+      );
+
+      return [...prev, nuevoProd];
+    });
+  }, []);
+
+  // Paso 2: Añadir una nueva columna (oferta) al comparativo
+  const agregarCotizacion = useCallback(() => {
+    setCotizaciones((prev) => {
+      const nuevaCot: DTO_CotizacionRequest = {
+        id_proveedor: 0,
+        moneda: "Soles",
+        metodo_pago: MetodoPago.Contado,
+        fecha_vencimiento_pago: null,
+        total_antes_igv: 0,
+        incluye_igv: true,
+        porcentaje_igv: 18,
+        monto_igv: 0,
+        total_despues_igv: 0,
+        observacion: null,
+        estado: EstadoCotizacion.Generada,
+        detalles: productos.map((p) => ({
+          id_producto: p.id_producto,
+          id_unidad_medida: 1,
+          cantidad: 1,
+          contenido_por_presentacion: 1,
+          cantidad_base: 1,
+          precio_unitario: 0,
+          precio_unitario_base: 0,
+          comentario: null,
+        })),
+      };
+      return [...prev, nuevaCot];
+    });
+  }, [productos]);
+
+  const eliminarCotizacion = useCallback((index: number) => {
+    setCotizaciones((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // Actualización de cabeceras (Proveedor, Moneda, etc)
+  const updateCotizacionHeader = useCallback(<K extends keyof DTO_CotizacionRequest>(
+    index: number,
+    field: K,
+    value: DTO_CotizacionRequest[K]
+  ) => {
+    setCotizaciones((prev) => {
+      const p = [...prev];
+      const target = { ...p[index], [field]: value };
+
+      if (field === "incluye_igv" || field === "porcentaje_igv" || field === "id_proveedor") {
+        const totalSinIgv = target.detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+        target.total_antes_igv = totalSinIgv;
+        target.monto_igv = totalSinIgv * (target.porcentaje_igv / 100);
+        target.total_despues_igv = target.incluye_igv ? totalSinIgv : totalSinIgv + target.monto_igv;
+      }
+
+      p[index] = target;
+      return p;
+    });
+  }, []);
+
+  // Actualización de detalles (Precios, cantidades por proveedor)
+  const updateCotizacionDetail = useCallback(<K extends keyof DTO_CotizacionDetalle>(
+    cotIndex: number,
+    prodId: number,
+    field: K,
+    value: DTO_CotizacionDetalle[K]
+  ) => {
+    setCotizaciones((prev) => {
+      const p = [...prev];
+      const cot = { ...p[cotIndex] };
+      const detalles = cot.detalles.map((d) => {
+        if (d.id_producto !== prodId) return d;
+        
+        const updatedDet = { ...d, [field]: value };
+        
+        updatedDet.cantidad_base = updatedDet.cantidad * updatedDet.contenido_por_presentacion;
+        updatedDet.precio_unitario_base = updatedDet.contenido_por_presentacion > 0 
+          ? updatedDet.precio_unitario / updatedDet.contenido_por_presentacion 
+          : 0;
+
+        return updatedDet;
+      });
+
+      cot.detalles = detalles;
+      
+      const totalSinIgv = detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+      cot.total_antes_igv = totalSinIgv;
+      cot.monto_igv = totalSinIgv * (cot.porcentaje_igv / 100);
+      cot.total_despues_igv = cot.incluye_igv ? totalSinIgv : totalSinIgv + cot.monto_igv;
+
+      p[cotIndex] = cot;
+      return p;
+    });
+  }, []);
+
+  const handleSave = async () => {
+    if (cotizaciones.length === 0) {
+      notify({ type: "info", content: "Debe añadir al menos una cotización." });
       return;
     }
 
-    const nuevaCot: DTO_CotizacionRequest = {
-      id_proveedor,
-      moneda: "Soles",
-      metodo_pago: MetodoPago.Contado,
-      fecha_vencimiento_pago: null,
-      incluye_igv: true,
-      porcentaje_igv: 18,
-      total_antes_igv: 0,
-      monto_igv: 0,
-      total_despues_igv: 0,
-      estado: EstadoCotizacion.Generada,
-      detalles: productos.map(p => ({
-        id_producto: p.id_producto,
-        id_unidad_medida: 0,
-        cantidad: 0,
-        contenido_por_presentacion: 1,
-        cantidad_base: 0,
-        precio_unitario: 0,
-        precio_unitario_base: 0,
-        comentario: ""
-      }))
-    };
-
-    setCotizaciones(prev => [...prev, nuevaCot]);
-  };
-
-  const calcularTotalesCotizacion = (cot: DTO_CotizacionRequest): DTO_CotizacionRequest => {
-    const subtotal = cot.detalles.reduce((acc, det) => acc + (det.cantidad * det.precio_unitario), 0);
-    const porcentaje = cot.porcentaje_igv / 100;
-    
-    let monto_igv = 0;
-    let total_final = 0;
-
-    if (cot.incluye_igv) {
-      total_final = subtotal;
-      monto_igv = subtotal - (subtotal / (1 + porcentaje));
-    } else {
-      monto_igv = subtotal * porcentaje;
-      total_final = subtotal + monto_igv;
+    if (cotizaciones.some(c => c.id_proveedor === 0)) {
+      notify({ type: "info", content: "Todas las cotizaciones deben tener un proveedor asignado." });
+      return;
     }
-
-    return {
-      ...cot,
-      total_antes_igv: subtotal,
-      monto_igv: Number(monto_igv.toFixed(2)),
-      total_despues_igv: Number(total_final.toFixed(2))
-    };
-  };
-
-  const updateCotizacionHeader = <K extends keyof DTO_CotizacionRequest>(
-    index: number, 
-    field: K, 
-    value: DTO_CotizacionRequest[K]
-  ) => {
-    setCotizaciones(prev => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: value };
-      
-      if (['incluye_igv', 'porcentaje_igv'].includes(field as string)) {
-        copy[index] = calcularTotalesCotizacion(copy[index]);
-      }
-      
-      return copy;
-    });
-  };
-
-  const updateCotizacionDetail = <K extends keyof DTO_CotizacionDetalle>(
-    cotIndex: number, 
-    prodId: number, 
-    field: K, 
-    value: DTO_CotizacionDetalle[K]
-  ) => {
-    setCotizaciones(prev => {
-      const copy = [...prev];
-      const cot = { ...copy[cotIndex] };
-      const detalles = [...cot.detalles];
-      const detIndex = detalles.findIndex(d => d.id_producto === prodId);
-
-      if (detIndex !== -1) {
-        const det = { ...detalles[detIndex], [field]: value };
-
-        if (field === 'cantidad' || field === 'contenido_por_presentacion') {
-          det.cantidad_base = Number(det.cantidad) * Number(det.contenido_por_presentacion);
-        }
-        if (field === 'precio_unitario' || field === 'contenido_por_presentacion') {
-          det.precio_unitario_base = det.contenido_por_presentacion > 0 
-            ? Number(det.precio_unitario) / Number(det.contenido_por_presentacion) 
-            : 0;
-        }
-
-        detalles[detIndex] = det;
-        cot.detalles = detalles;
-        copy[cotIndex] = calcularTotalesCotizacion(cot);
-      }
-
-      return copy;
-    });
-  };
-
-  const handleSave = async () => {
-    if (productos.length === 0) return notify({ type: "error", content: "No hay productos en el comparativo." });
-    if (cotizaciones.length === 0) return notify({ type: "error", content: "Debe añadir al menos una cotización." });
 
     setLoading(true);
     try {
-      const dto: DTO_RegistrarComparativo = {
-        productos,
-        cotizaciones
+      const payload: DTO_RegistrarComparativo = {
+        productos: productos,
+        cotizaciones: cotizaciones.map(c => ({
+            ...c,
+            total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
+            monto_igv: Number(c.monto_igv.toFixed(2)),
+            total_despues_igv: Number(c.total_despues_igv.toFixed(2))
+        }))
       };
 
-      const resp = await CotizacionesService.registrar_comparativo(dto);
+      const resp = await CotizacionesService.registrar_comparativo(payload);
+
       if (resp.success) {
-        notify({ type: "success", content: resp.message });
+        notify({ type: "success", content: "Comparativo registrado correctamente." });
         onSuccess();
       } else {
         notify({ type: "error", content: resp.message });
       }
     } catch {
-      notify({ type: "error", content: "Error inesperado al intentar guardar." });
+      notify({ type: "error", content: "Ocurrió un error al guardar el comparativo." });
     } finally {
       setLoading(false);
     }
@@ -172,9 +183,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     cotizaciones,
     loading,
     agregarProductoAlComparador,
-    agregarProveedor,
+    agregarCotizacion,
+    eliminarCotizacion,
     updateCotizacionHeader,
     updateCotizacionDetail,
-    handleSave
+    handleSave,
   };
 };
