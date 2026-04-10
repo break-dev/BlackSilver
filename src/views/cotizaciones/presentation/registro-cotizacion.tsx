@@ -51,7 +51,8 @@ export const RegistroCotizacion = ({
       nombre: maestro?.nombre || "Producto desconocido",
       codigo: maestro?.codigo || "---",
       id_unidad_medida_base: maestro?.id_unidad_medida_base || 0,
-      unidad_medida_base: maestro?.unidad_medida_base || "unidades"
+      unidad_medida_base: maestro?.unidad_medida_base || "unidades",
+      unidad_medida_abreviatura: maestro?.unidad_medida_abreviatura || "UND"
     };
   });
 
@@ -106,6 +107,7 @@ export const RegistroCotizacion = ({
             unidadesMedida={maestros.unidades.map((u) => ({
               value: String(u.id_unidad_medida),
               label: u.nombre,
+              abreviatura: u.abreviatura,
             }))}
             proveedores={maestros.proveedores}
             loadingProveedores={loadingMaestros}

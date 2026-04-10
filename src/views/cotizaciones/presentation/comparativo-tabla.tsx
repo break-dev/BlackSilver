@@ -13,13 +13,9 @@ import {
 import {
   XMarkIcon,
   ChatBubbleBottomCenterTextIcon,
-  ScaleIcon,
-  ArchiveBoxIcon,
-  BanknotesIcon,
   IdentificationIcon,
   ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { pluralizar } from "../../../presentation/functions/pluralizar";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type {
@@ -35,9 +31,10 @@ interface ComparativoTablaProps {
     codigo: string;
     id_unidad_medida_base: number;
     unidad_medida_base: string;
+    unidad_medida_abreviatura: string;
   })[];
   cotizaciones: DTO_CotizacionRequest[];
-  unidadesMedida: { value: string; label: string }[];
+  unidadesMedida: { value: string; label: string; abreviatura: string }[];
   proveedores: { id_proveedor: number; razon_social: string }[];
   loadingProveedores?: boolean;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
@@ -438,42 +435,42 @@ export const ComparativoTabla = ({
 
                 return (
                   <Table.Td key={cotIdx} className="p-4 align-top">
-                    <Stack gap="xs">
-                      <Select
-                        label="Unidad de medida de la Cotización"
-                        withAsterisk
-                        data={unidadesMedida}
-                        value={String(det.id_unidad_medida)}
-                        onChange={(val) =>
-                          onUpdateDetail(
-                            cotIdx,
-                            prod.id_producto,
-                            "id_unidad_medida",
-                            Number(val),
-                          )
-                        }
-                        size="xs"
-                        radius="lg"
-                        classNames={inputStyles}
-                        placeholder="Elegir..."
-                      />
-
+                    <Stack gap="sm" className="w-full">
                       {(() => {
-                        const unidadSel = unidadesMedida.find(
+                        const currentUnit = unidadesMedida.find(
                           (u) => u.value === String(det.id_unidad_medida),
                         );
-                        const nombrePlural = pluralizar(
-                          unidadSel?.label || "unidades",
-                        );
-                        const esMismaUnidad =
-                          det.id_unidad_medida === prod.id_unidad_medida_base;
+                        const abrev = currentUnit?.abreviatura || "---";
+                        const baseAbrev =
+                          prod.unidad_medida_abreviatura || "UND";
 
                         return (
                           <>
-                            <Group grow gap="xs">
-                              <NumberInput
-                                label={`Cantidad de ${nombrePlural}`}
+                            {/* Fila 1: Unidad y Cantidad */}
+                            <Group grow align="flex-end" gap="xs">
+                              <Select
+                                label="Und. Medida de Cotización"
+                                data={unidadesMedida}
+                                value={String(det.id_unidad_medida)}
+                                onChange={(val) =>
+                                  onUpdateDetail(
+                                    cotIdx,
+                                    prod.id_producto,
+                                    "id_unidad_medida",
+                                    Number(val),
+                                  )
+                                }
+                                size="xs"
+                                radius="lg"
+                                classNames={inputStyles}
                                 withAsterisk
+                                comboboxProps={{
+                                  withinPortal: true,
+                                  zIndex: 9999,
+                                }}
+                              />
+                              <NumberInput
+                                label={`Cant. x ${abrev}`}
                                 value={det.cantidad}
                                 onChange={(val) =>
                                   onUpdateDetail(
@@ -483,65 +480,27 @@ export const ComparativoTabla = ({
                                     Number(val),
                                   )
                                 }
+                                min={0}
                                 size="xs"
                                 radius="lg"
-                                classNames={inputStyles}
-                                min={0}
-                                leftSection={
-                                  <ArchiveBoxIcon className="w-3 h-3 text-zinc-500" />
-                                }
-                              />
-                              <NumberInput
-                                label={`Precio por ${unidadSel?.label || "unidad"}`}
                                 withAsterisk
-                                value={det.precio_unitario || 0}
-                                onChange={(val) =>
-                                  onUpdateDetail(
-                                    cotIdx,
-                                    prod.id_producto,
-                                    "precio_unitario",
-                                    Number(val),
-                                  )
-                                }
-                                size="xs"
-                                radius="lg"
                                 classNames={inputStyles}
-                                min={0}
-                                decimalScale={2}
-                                placeholder="0.00"
-                                leftSection={
-                                  <BanknotesIcon className="w-3 h-3 text-zinc-500" />
-                                }
                               />
                             </Group>
 
-                            <Stack gap={2}>
-                              <Group
-                                justify="space-between"
-                                align="center"
-                                className="mb-0.5"
-                              >
-                                <Text
-                                  size="xs"
-                                  fw={500}
-                                  className="text-zinc-300 font-medium"
-                                >
-                                  Contenido por unidad{" "}
-                                  <span className="text-red-500">*</span>
-                                </Text>
-                                <Badge
-                                  color="orange"
-                                  variant="filled"
-                                  size="xs"
-                                  className="text-[10px] h-5"
-                                >
-                                  Ingreso total:{" "}
-                                  {det.cantidad *
-                                    det.contenido_por_presentacion}{" "}
-                                  {pluralizar(prod.unidad_medida_base)}
-                                </Badge>
-                              </Group>
+                            {/* Fila 2: Factor y Precio */}
+                            <Group grow align="flex-end" gap="xs">
                               <NumberInput
+                                label={
+                                  <Text
+                                    size="xs"
+                                    fw={500}
+                                    className="text-zinc-300"
+                                  >
+                                    Und x {abrev}{" "}
+                                    <span className="text-red-500">*</span>
+                                  </Text>
+                                }
                                 value={det.contenido_por_presentacion}
                                 onChange={(val) =>
                                   onUpdateDetail(
@@ -551,82 +510,133 @@ export const ComparativoTabla = ({
                                     Number(val),
                                   )
                                 }
+                                disabled={
+                                  det.id_unidad_medida ===
+                                  prod.id_unidad_medida_base
+                                }
+                                min={1}
                                 size="xs"
                                 radius="lg"
-                                placeholder="Contenido..."
                                 classNames={inputStyles}
-                                disabled={esMismaUnidad}
-                                leftSection={
-                                  <ScaleIcon className="w-3 h-3 text-zinc-500" />
-                                }
-                                description={
-                                  <Text size="9px" className="text-zinc-600">
-                                    {esMismaUnidad
-                                      ? "Misma unidad que la base (Bloqueado)"
-                                      : `Indique cuánt@s ${pluralizar(prod.unidad_medida_base) || "unidades base"} contiene cada ${unidadSel?.label || "unidad"}`}
+                              />
+
+                              <NumberInput
+                                label={
+                                  <Text
+                                    size="xs"
+                                    fw={500}
+                                    className="text-zinc-300"
+                                  >
+                                    Precio x {abrev}{" "}
+                                    <span className="text-red-500">*</span>
                                   </Text>
                                 }
+                                value={det.precio_unitario}
+                                onChange={(val) =>
+                                  onUpdateDetail(
+                                    cotIdx,
+                                    prod.id_producto,
+                                    "precio_unitario",
+                                    Number(val),
+                                  )
+                                }
+                                min={0}
+                                size="xs"
+                                radius="lg"
+                                classNames={inputStyles}
+                                placeholder="0.00"
+                                decimalScale={2}
                               />
-                            </Stack>
+                            </Group>
+
+                            {/* Fila 3: Tarjetas de Resultados Financieros */}
+                            <Group grow wrap="nowrap" gap="xs">
+                              {/* Total Unidades Base (Celeste / Cyan) */}
+                              <Stack
+                                gap={0}
+                                px="xs"
+                                py={4}
+                                className="bg-cyan-600 rounded-lg shadow-sm border border-cyan-400/20"
+                              >
+                                <Text
+                                  size="9px"
+                                  fw={800}
+                                  className="text-white uppercase truncate opacity-90"
+                                >
+                                  Total {baseAbrev}
+                                </Text>
+                                <Text size="xs" fw={800} className="text-white">
+                                  {det.cantidad *
+                                    det.contenido_por_presentacion}{" "}
+                                  {baseAbrev}
+                                </Text>
+                              </Stack>
+
+                              {/* Precio x Base (Verde Claro / Teal) */}
+                              <Stack
+                                gap={0}
+                                px="xs"
+                                py={4}
+                                className="bg-teal-600 rounded-lg shadow-sm border border-teal-400/20"
+                              >
+                                <Text
+                                  size="9px"
+                                  fw={800}
+                                  className="text-white uppercase truncate opacity-90"
+                                >
+                                  Precio x {baseAbrev}
+                                </Text>
+                                <Text size="xs" fw={800} className="text-white">
+                                  {cot.moneda === "Soles" ? "S/. " : "$ "}
+                                  {formatNumber(det.precio_unitario_base)}
+                                </Text>
+                              </Stack>
+
+                              {/* Subtotal Final (Verde Oscuro / Emerald) */}
+                              <Stack
+                                gap={0}
+                                px="xs"
+                                py={4}
+                                className="bg-emerald-700 rounded-lg shadow-md border border-emerald-500/20"
+                              >
+                                <Text
+                                  size="9px"
+                                  fw={800}
+                                  className="text-white uppercase truncate opacity-90"
+                                >
+                                  Subtotal
+                                </Text>
+                                <Text size="xs" fw={800} className="text-white">
+                                  {cot.moneda === "Soles" ? "S/. " : "$ "}
+                                  {formatNumber(
+                                    det.cantidad * det.precio_unitario,
+                                  )}
+                                </Text>
+                              </Stack>
+                            </Group>
+
+                            <TextInput
+                              label="Comentario (Opcional)"
+                              placeholder="Marca, color, etc..."
+                              size="xs"
+                              radius="lg"
+                              classNames={inputStyles}
+                              value={det.comentario || ""}
+                              onChange={(e) =>
+                                onUpdateDetail(
+                                  cotIdx,
+                                  prod.id_producto,
+                                  "comentario",
+                                  e.currentTarget.value,
+                                )
+                              }
+                              leftSection={
+                                <ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-zinc-600" />
+                              }
+                            />
                           </>
                         );
                       })()}
-
-                      <TextInput
-                        label="Comentario del ítem"
-                        placeholder="Ej: Marca específica, color, etc..."
-                        leftSection={
-                          <ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-zinc-600" />
-                        }
-                        value={det.comentario || ""}
-                        onChange={(e) =>
-                          onUpdateDetail(
-                            cotIdx,
-                            prod.id_producto,
-                            "comentario",
-                            e.currentTarget.value,
-                          )
-                        }
-                        size="xs"
-                        radius="lg"
-                        classNames={inputStyles}
-                      />
-
-                      <div className="pt-2 border-t border-zinc-800/50 mt-1">
-                        <Group justify="space-between">
-                          <Stack gap={0}>
-                            <Text
-                              size="10px"
-                              className="text-zinc-600 font-bold uppercase truncate"
-                            >
-                              Subtotal Oferta
-                            </Text>
-                            <Text
-                              size="xs"
-                              fw={700}
-                              className="text-indigo-400"
-                            >
-                              {(
-                                det.cantidad * (det.precio_unitario || 0)
-                              ).toFixed(2)}
-                            </Text>
-                          </Stack>
-                          <Stack gap={0} align="flex-end">
-                            <Text
-                              size="10px"
-                              className="text-zinc-600 font-bold uppercase"
-                            >
-                              Precio x Base
-                            </Text>
-                            <Text
-                              size="xs"
-                              className="text-emerald-400 fw-bold"
-                            >
-                              {det.precio_unitario_base.toFixed(4)}
-                            </Text>
-                          </Stack>
-                        </Group>
-                      </div>
                     </Stack>
                   </Table.Td>
                 );
