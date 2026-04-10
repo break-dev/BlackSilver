@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Stack,
   Group,
@@ -7,6 +8,8 @@ import {
 import {
   PlusIcon,
   BuildingOffice2Icon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo-tabla";
@@ -39,6 +42,8 @@ export const RegistroCotizacion = ({
     maestros,
   } = useRegistroCotizacion(onSuccess);
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const productosEnriquecidos = productos.map(p => {
     const maestro = maestros.catalogo.find(m => m.id_producto === p.id_producto);
     return {
@@ -59,19 +64,33 @@ export const RegistroCotizacion = ({
               <Text fw={800} size="xl" className="text-white tracking-tight">Comparativo</Text>
               <Text size="xs" className="text-zinc-500 italic">Ingrese las distintas cotizaciones que desea comparar</Text>
            </Stack>
-           <Button
-              variant="filled"
-              color="emerald"
-              radius="xl"
-              leftSection={<PlusIcon className="w-5 h-5" />}
-              onClick={agregarCotizacion}
-              className="shadow-lg shadow-emerald-900/20"
-              styles={{
-                root: { border: '1px solid rgba(255, 255, 255, 0.4)' }
-              }}
-           >
-              Añadir Cotización
-           </Button>
+           <Group gap="sm">
+              <Button
+                variant="subtle"
+                color="zinc"
+                radius="xl"
+                leftSection={isCollapsed ? <ArrowsPointingOutIcon className="w-5 h-5" /> : <ArrowsPointingInIcon className="w-5 h-5" />}
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="text-zinc-400 hover:text-white"
+                size="sm"
+              >
+                {isCollapsed ? "Vista Detallada" : "Vista Resumida"}
+              </Button>
+
+              <Button
+                variant="filled"
+                color="emerald"
+                radius="xl"
+                leftSection={<PlusIcon className="w-5 h-5" />}
+                onClick={agregarCotizacion}
+                className="shadow-lg shadow-emerald-900/20"
+                styles={{
+                  root: { border: '1px solid rgba(255, 255, 255, 0.4)' }
+                }}
+              >
+                Añadir Cotización
+              </Button>
+           </Group>
         </Group>
 
         {productos.length === 0 && cotizaciones.length === 0 ? (
@@ -93,6 +112,7 @@ export const RegistroCotizacion = ({
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
             onRemoveCotizacion={eliminarCotizacion}
+            isCollapsed={isCollapsed}
           />
         )}
       </div>
