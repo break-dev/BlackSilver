@@ -177,6 +177,14 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         if (d.id_producto !== prodId) return d;
         
         const updatedDet = { ...d, [field]: value };
+
+        // Lógica de reset si la unidad coincide con la base
+        if (field === "id_unidad_medida") {
+          const maestro = maestros.catalogo.find(m => m.id_producto === prodId);
+          if (maestro && Number(value) === maestro.id_unidad_medida_base) {
+            updatedDet.contenido_por_presentacion = 1;
+          }
+        }
         
         updatedDet.cantidad_base = updatedDet.cantidad * updatedDet.contenido_por_presentacion;
         updatedDet.precio_unitario_base = updatedDet.contenido_por_presentacion > 0 
@@ -204,7 +212,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       p[cotIndex] = cot;
       return p;
     });
-  }, []);
+  }, [maestros.catalogo]);
 
   const handleSave = async () => {
     if (cotizaciones.length === 0) {
