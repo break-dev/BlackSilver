@@ -101,7 +101,7 @@ export const ComparativoTabla = ({
             {cotizaciones.map((cot, idx) => (
               <Table.Th
                 key={idx}
-                style={{ minWidth: 320 }}
+                style={{ minWidth: 450 }}
                 className="p-0 align-top"
               >
                 <Stack
