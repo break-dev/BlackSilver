@@ -50,7 +50,7 @@ export const ComparativoTabla = ({
           <Table.Tr>
             <Table.Th style={{ minWidth: 280 }} className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950 shadow-2xl">
               <Group gap="xs">
-                <Text size="xs" fw={800} className="text-zinc-500 uppercase tracking-widest">Lista de Productos</Text>
+                <Text size="xs" fw={800} className="text-zinc-500 uppercase tracking-widest">Productos</Text>
               </Group>
             </Table.Th>
 
@@ -151,10 +151,7 @@ export const ComparativoTabla = ({
           {productos.map((prod) => (
             <Table.Tr key={prod.id_producto} className="border-b border-zinc-900 hover:bg-zinc-900/10 transition-colors">
               <Table.Td className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950/90 shadow-xl backdrop-blur-md">
-                <Stack gap={2}>
-                  <Text size="sm" fw={700} className="text-zinc-200">{prod.nombre}</Text>
-                  <Text size="xs" className="text-zinc-500 font-mono italic">{prod.codigo}</Text>
-                </Stack>
+                <Text size="sm" fw={700} className="text-zinc-200">{prod.nombre}</Text>
               </Table.Td>
 
               {cotizaciones.map((cot, cotIdx) => {

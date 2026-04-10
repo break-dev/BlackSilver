@@ -70,7 +70,7 @@ export const RegistroCotizacion = ({
     const ejecutarCarga = async () => {
       try {
         const resProv = await api.get("/proveedores").catch(() => null);
-        const resUni = await api.get("/unidades").catch(() => null);
+        const resUni = await api.get("/productos/unidades-medida").catch(() => null);
         const resProd = await api.get("/productos").catch(() => null);
 
         const getPayload = (res: { data?: unknown } | null): unknown[] => {
