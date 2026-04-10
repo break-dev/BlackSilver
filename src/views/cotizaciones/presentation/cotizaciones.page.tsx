@@ -26,7 +26,7 @@ import { CotizacionesFilter } from "./cotizaciones-filter";
 import type { RES_Cotizacion } from "../service/cotizaciones.responses";
 
 export const CotizacionesPage = () => {
-  useTitlePage("Gestión de Cotizaciones y Comparativos");
+  useTitlePage("Cotizaciones");
 
   const { cotizaciones, loading, fetchCotizaciones, busqueda, setBusqueda } =
     useCotizaciones();

@@ -29,6 +29,7 @@ export const RegistroCotizacion = ({
     productos,
     cotizaciones,
     loading,
+    loadingMaestros,
     agregarProductoAlComparador,
     agregarCotizacion,
     eliminarCotizacion,
@@ -38,12 +39,14 @@ export const RegistroCotizacion = ({
     maestros,
   } = useRegistroCotizacion(onSuccess);
 
-  const productosEnriquecidos = productos.map((p) => {
-    const found = maestros.catalogo.find((cp) => cp.id_producto === p.id_producto);
+  const productosEnriquecidos = productos.map(p => {
+    const maestro = maestros.catalogo.find(m => m.id_producto === p.id_producto);
     return {
       ...p,
-      nombre: found?.nombre || "Cargando...",
-      codigo: found?.codigo || "---",
+      nombre: maestro?.nombre || "Producto desconocido",
+      codigo: maestro?.codigo || "---",
+      id_unidad_medida_base: maestro?.id_unidad_medida_base || 0,
+      unidad_medida_base: maestro?.unidad_medida_base || "unidades"
     };
   });
 
@@ -86,6 +89,7 @@ export const RegistroCotizacion = ({
               label: u.nombre,
             }))}
             proveedores={maestros.proveedores}
+            loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
             onRemoveCotizacion={eliminarCotizacion}

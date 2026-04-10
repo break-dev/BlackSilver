@@ -17,6 +17,7 @@ import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
 export const useRegistroCotizacion = (onSuccess: () => void) => {
   const { notify } = useNotify();
   const [loading, setLoading] = useState(false);
+  const [loadingMaestros, setLoadingMaestros] = useState(true);
   
   // Estados para maestros
   const [maestros, setMaestros] = useState<{
@@ -36,6 +37,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
   useEffect(() => {
     const cargarMaestros = async () => {
       try {
+        setLoadingMaestros(true);
         const [resProv, resUni, resProd] = await Promise.all([
           CotizacionesService.get_proveedores_maestro(),
           CotizacionesService.get_unidades_medida_maestro(),
@@ -49,6 +51,8 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         });
       } catch (error) {
         console.error("Error al cargar maestros en hook", error);
+      } finally {
+        setLoadingMaestros(false);
       }
     };
     cargarMaestros();
@@ -64,6 +68,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         id_solicitud_detalle: null
       };
 
+      // Buscamos la unidad base del producto en el catálogo
+      const maestro = maestros.catalogo.find(m => m.id_producto === id_producto);
+      const idUnidadBase = maestro?.id_unidad_medida_base || 1;
+
       // Si ya hay cotizaciones, les añadimos este producto automáticamente
       setCotizaciones((prevCots) => 
         prevCots.map(cot => ({
@@ -72,7 +80,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             ...cot.detalles,
             {
               id_producto,
-              id_unidad_medida: 1, // Por defecto
+              id_unidad_medida: idUnidadBase,
               cantidad: 1,
               contenido_por_presentacion: 1,
               cantidad_base: 1,
@@ -86,7 +94,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
       return [...prev, nuevoProd];
     });
-  }, []);
+  }, [maestros.catalogo]);
 
   // Paso 2: Añadir una nueva columna (oferta) al comparativo
   const agregarCotizacion = useCallback(() => {
@@ -103,20 +111,23 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         total_despues_igv: 0,
         observacion: null,
         estado: EstadoCotizacion.Generada,
-        detalles: productos.map((p) => ({
-          id_producto: p.id_producto,
-          id_unidad_medida: 1,
-          cantidad: 1,
-          contenido_por_presentacion: 1,
-          cantidad_base: 1,
-          precio_unitario: 0,
-          precio_unitario_base: 0,
-          comentario: null,
-        })),
+        detalles: productos.map((p) => {
+          const maestro = maestros.catalogo.find(m => m.id_producto === p.id_producto);
+          return {
+            id_producto: p.id_producto,
+            id_unidad_medida: maestro?.id_unidad_medida_base || 1,
+            cantidad: 1,
+            contenido_por_presentacion: 1,
+            cantidad_base: 1,
+            precio_unitario: 0,
+            precio_unitario_base: 0,
+            comentario: null,
+          };
+        }),
       };
       return [...prev, nuevaCot];
     });
-  }, [productos]);
+  }, [productos, maestros.catalogo]);
 
   const eliminarCotizacion = useCallback((index: number) => {
     setCotizaciones((prev) => prev.filter((_, i) => i !== index));
@@ -238,6 +249,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     cotizaciones,
     maestros,
     loading,
+    loadingMaestros,
     agregarProductoAlComparador,
     agregarCotizacion,
     eliminarCotizacion,

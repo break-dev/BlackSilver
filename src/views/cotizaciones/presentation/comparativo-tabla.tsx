@@ -7,9 +7,23 @@ import {
   NumberInput, 
   Select, 
   Switch,
-  ActionIcon
+  ActionIcon,
+  Divider,
+  Badge,
 } from "@mantine/core";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { 
+  XMarkIcon, 
+  ChatBubbleBottomCenterTextIcon,
+  ScaleIcon,
+  ArchiveBoxIcon,
+  BanknotesIcon,
+  IdentificationIcon,
+  ClipboardDocumentCheckIcon
+} from "@heroicons/react/24/outline";
+import { pluralizar } from "../../../presentation/functions/pluralizar";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../presentation/functions/formatNumber";
+import { LabelForm } from "../../productos/presentation/components/label-form";
 import type { 
   DTO_CotizacionRequest, 
   DTO_ProductoComparativo, 
@@ -18,10 +32,16 @@ import type {
 import { MetodoPago } from "../../../shared/enums/estados";
 
 interface ComparativoTablaProps {
-  productos: (DTO_ProductoComparativo & { nombre: string; codigo: string })[];
+  productos: (DTO_ProductoComparativo & { 
+    nombre: string; 
+    codigo: string; 
+    id_unidad_medida_base: number;
+    unidad_medida_base: string; 
+  })[];
   cotizaciones: DTO_CotizacionRequest[];
   unidadesMedida: { value: string; label: string }[];
   proveedores: { id_proveedor: number; razon_social: string }[];
+  loadingProveedores?: boolean;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(index: number, field: K, value: DTO_CotizacionRequest[K]) => void;
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(cotIndex: number, prodId: number, field: K, value: DTO_CotizacionDetalle[K]) => void;
   onRemoveCotizacion: (index: number) => void;
@@ -32,22 +52,24 @@ export const ComparativoTabla = ({
   cotizaciones,
   unidadesMedida,
   proveedores,
+  loadingProveedores,
   onUpdateHeader,
   onUpdateDetail,
   onRemoveCotizacion,
 }: ComparativoTablaProps) => {
 
   const inputStyles = {
-    input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500 transition-all",
-    label: "text-zinc-500 text-[10px] uppercase font-bold tracking-tighter mb-1"
+    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 !font-normal transition-all",
+    label: "text-zinc-300 mb-1.5 font-medium text-xs", 
+    description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
   };
 
   return (
     <div className="max-h-[750px] overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4">
       <Table stickyHeader stickyHeaderOffset={0} withColumnBorders withTableBorder={false} verticalSpacing="md" horizontalSpacing="md">
-        <Table.Thead className="bg-zinc-950 z-[30]">
+        <Table.Thead className="bg-zinc-950 z-30">
           <Table.Tr>
-            <Table.Th style={{ minWidth: 280 }} className="border-r border-zinc-800 sticky top-0 left-0 z-[40] bg-zinc-950 shadow-2xl">
+            <Table.Th style={{ width: 260, minWidth: 260 }} className="border-r border-zinc-800 sticky top-0 left-0 z-40 bg-zinc-950 shadow-2xl">
               <Group gap="xs">
                 <Text size="xs" fw={800} className="text-zinc-500 uppercase tracking-widest">Productos</Text>
               </Group>
@@ -55,130 +77,147 @@ export const ComparativoTabla = ({
 
             {cotizaciones.map((cot, idx) => (
               <Table.Th key={idx} style={{ minWidth: 320 }} className="p-0 align-top">
-                <Stack gap="xs" className="p-4 bg-zinc-900/30 relative group-header">
-                  {/* Botón Eliminar Columna */}
-                  <ActionIcon 
-                    variant="subtle" 
-                    color="red" 
-                    size="sm" 
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ zIndex: 5 }}
-                    onClick={() => onRemoveCotizacion(idx)}
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </ActionIcon>
+                <Stack gap="sm" className="p-5 relative group-header border-b border-zinc-900">
+                  {/* Título y Cerrar */}
+                  <Group justify="space-between" align="center">
+                    <Text size="sm" fw={800} className="text-white tracking-tight uppercase">
+                      Cotización #{idx + 1}
+                    </Text>
+                    
+                    <ActionIcon 
+                      variant="subtle" 
+                      color="red" 
+                      size="sm" 
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => onRemoveCotizacion(idx)}
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                    </ActionIcon>
+                  </Group>
 
-                  <Stack gap={4} mb="xs">
-                    <Text size="10px" className="text-indigo-400 font-bold uppercase tracking-widest">Oferta Recibida #{idx + 1}</Text>
+                  {/* Configuración Principal */}
+                  <Stack gap="sm">
                     <Select
-                      placeholder="Seleccionar Proveedor..."
+                      placeholder={loadingProveedores ? "Buscando proveedores..." : "Seleccione proveedor..."}
                       data={proveedores.map(p => ({
                         value: String(p.id_proveedor),
                         label: p.razon_social
                       }))}
+                      label="Proveedor"
+                      withAsterisk
+                      disabled={loadingProveedores}
+                      leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
                       value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
                       onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
                       searchable
-                      size="sm"
-                      radius="md"
-                      classNames={{
-                        input: "bg-zinc-950 border-zinc-700 focus:border-indigo-500 font-bold text-white",
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      comboboxProps={{
+                        withinPortal: true,
+                        zIndex: 9999,
+                        transitionProps: { transition: "pop", duration: 200 },
                       }}
+                    />
+
+                    <Group grow gap="md">
+                      <Select
+                        label="Moneda"
+                        data={["Soles", "Dolares"]}
+                        value={cot.moneda}
+                        onChange={(val) => onUpdateHeader(idx, "moneda", val ?? "Soles")}
+                        classNames={inputStyles}
+                        size="xs"
+                        radius="lg"
+                      />
+                      <Select
+                        label="Método de Pago"
+                        data={[
+                          { value: MetodoPago.Contado, label: "Contado" },
+                          { value: MetodoPago.Credito, label: "Crédito" }
+                        ]}
+                        value={cot.metodo_pago}
+                        onChange={(val) => onUpdateHeader(idx, "metodo_pago", (val as MetodoPago) ?? MetodoPago.Contado)}
+                        classNames={inputStyles}
+                        size="xs"
+                        radius="lg"
+                      />
+                    </Group>
+
+                    {cot.metodo_pago === MetodoPago.Credito && (
+                      <CustomDatePicker
+                        label="Fecha de Vencimiento"
+                        withAsterisk
+                        placeholder="Seleccione fecha..."
+                        value={cot.fecha_vencimiento_pago ? new Date(cot.fecha_vencimiento_pago + 'T00:00:00') : null}
+                        onChange={(val: unknown) => onUpdateHeader(idx, "fecha_vencimiento_pago", val instanceof Date ? val.toISOString().split('T')[0] : null)}
+                        size="xs"
+                        radius="lg"
+                      />
+                    )}
+
+                    <TextInput 
+                      label="Observación (Opcional)"
+                      placeholder="Escriba alguna observación de la oferta..."
+                      leftSection={<ClipboardDocumentCheckIcon className="w-4 h-4 text-zinc-500" />}
+                      value={cot.observacion || ""}
+                      onChange={(e) => onUpdateHeader(idx, "observacion", e.currentTarget.value)}
+                      classNames={inputStyles}
+                      size="xs"
+                      radius="lg"
                     />
                   </Stack>
 
-                  <Group grow gap="xs">
-                    <Select
-                      label="Moneda"
-                      data={["Soles", "Dolares"]}
-                      value={cot.moneda}
-                      onChange={(val) => onUpdateHeader(idx, "moneda", val ?? "Soles")}
-                      classNames={inputStyles}
-                      size="xs"
-                    />
-                    <Select
-                      label="Método Pago"
-                      data={[
-                        { value: MetodoPago.Contado, label: "Contado" },
-                        { value: MetodoPago.Credito, label: "Crédito" }
-                      ]}
-                      value={cot.metodo_pago}
-                      onChange={(val) => onUpdateHeader(idx, "metodo_pago", (val as MetodoPago) ?? MetodoPago.Contado)}
-                      classNames={inputStyles}
-                      size="xs"
-                    />
-                  </Group>
-
-                  {cot.metodo_pago === MetodoPago.Credito && (
-                    <TextInput
-                      label="Fecha Vencimiento"
-                      type="date"
-                      value={cot.fecha_vencimiento_pago || ""}
-                      onChange={(e) => onUpdateHeader(idx, "fecha_vencimiento_pago", e.currentTarget.value)}
-                      classNames={inputStyles}
-                      size="xs"
-                    />
-                  )}
-
-                  <Stack gap="xs">
-                    <Group grow wrap="nowrap" gap="xs">
-                      <div className="flex flex-col gap-1">
-                        <Text size="10px" className="text-zinc-500 uppercase font-bold">Incluye IGV</Text>
-                        <Switch 
-                          checked={cot.incluye_igv}
-                          onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
-                          size="sm"
-                          color="indigo"
-                        />
-                      </div>
+                  {/* Resumen de Totales y Tax */}
+                  <Group grow align="flex-start" gap="md">
+                    <Stack gap={2}>
+                      <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">Incluye IGV</Text>
+                      <Switch 
+                        checked={cot.incluye_igv}
+                        onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
+                        size="xs"
+                        color="indigo"
+                      />
+                    </Stack>
+                    <Stack gap={2}>
+                      <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">Porcentaje IGV</Text>
                       <NumberInput 
-                        label="Porcentaje IGV"
                         value={cot.porcentaje_igv}
                         onChange={(val) => onUpdateHeader(idx, "porcentaje_igv", Number(val))}
                         disabled
                         size="xs"
+                        radius="lg"
                         classNames={inputStyles}
                         suffix="%"
                       />
-                    </Group>
+                    </Stack>
+                  </Group>
 
-                    <Group grow gap="xs">
-                      <NumberInput 
-                        label="Total (sin igv)"
-                        value={cot.total_antes_igv}
-                        readOnly
-                        size="xs"
-                        decimalScale={2}
-                        classNames={inputStyles}
-                        hideControls
-                        leftSection={<Text size="xs" c="dimmed">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
-                      />
-                      <NumberInput 
-                        label="IGV"
-                        value={cot.monto_igv}
-                        readOnly
-                        size="xs"
-                        decimalScale={2}
-                        classNames={inputStyles}
-                        hideControls
-                        leftSection={<Text size="xs" c="dimmed">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
-                      />
-                    </Group>
+                  <Group grow gap="xs">
+                    {/* Subtotal */}
+                    <Stack gap={2}>
+                      <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">Subtotal (sin igv)</Text>
+                      <Badge variant="light" color="pink" radius="md" className="h-[28px] w-full font-medium text-xs lowercase first-letter:uppercase">
+                        {cot.moneda === 'Soles' ? 'S/. ' : '$ '} {formatNumber(cot.total_antes_igv)}
+                      </Badge>
+                    </Stack>
 
-                    <NumberInput 
-                      label="Total (con igv)"
-                      value={cot.total_despues_igv}
-                      readOnly
-                      size="xs"
-                      decimalScale={2}
-                      classNames={{
-                        ...inputStyles,
-                        input: "bg-indigo-500/10 border-indigo-500 text-indigo-400 font-bold"
-                      }}
-                      hideControls
-                      leftSection={<Text size="xs" className="text-indigo-400/50">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
-                    />
-                  </Stack>
+                    {/* Monto IGV */}
+                    <Stack gap={2}>
+                      <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">Monto IGV</Text>
+                      <Badge variant="light" color="grape" radius="md" className="h-[28px] w-full font-medium text-xs lowercase first-letter:uppercase">
+                        {cot.moneda === 'Soles' ? 'S/. ' : '$ '} {formatNumber(cot.monto_igv)}
+                      </Badge>
+                    </Stack>
+
+                    {/* Total final */}
+                    <Stack gap={2}>
+                      <Text size="xs" fw={700} className="text-cyan-400 mb-1.5 font-bold">Total (con igv)</Text>
+                      <Badge variant="filled" color="cyan" radius="md" className="h-[28px] w-full text-xs font-bold shadow-lg shadow-cyan-500/10">
+                        {cot.moneda === 'Soles' ? 'S/. ' : '$ '} {formatNumber(cot.total_despues_igv)}
+                      </Badge>
+                    </Stack>
+                  </Group>
                 </Stack>
               </Table.Th>
             ))}
@@ -188,7 +227,7 @@ export const ComparativoTabla = ({
         <Table.Tbody>
           {productos.map((prod) => (
             <Table.Tr key={prod.id_producto} className="border-b border-zinc-900 hover:bg-zinc-900/10 transition-colors">
-              <Table.Td className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950/90 shadow-xl backdrop-blur-md">
+              <Table.Td style={{ width: 260, minWidth: 260 }} className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950/90 shadow-xl backdrop-blur-md">
                 <Text size="sm" fw={700} className="text-zinc-200">{prod.nombre}</Text>
               </Table.Td>
 
@@ -200,44 +239,79 @@ export const ComparativoTabla = ({
                   <Table.Td key={cotIdx} className="p-4 align-top">
                     <Stack gap="xs">
                       <Select
-                        label="Unidad Cotizada"
+                        label="Unidad de medida de la Cotización"
                         data={unidadesMedida}
                         value={String(det.id_unidad_medida)}
                         onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "id_unidad_medida", Number(val))}
                         size="xs"
+                        radius="lg"
                         classNames={inputStyles}
                         placeholder="Elegir..."
                       />
                       
-                      <Group grow gap="xs">
-                        <NumberInput
-                          label="Cantidad"
-                          value={det.cantidad}
-                          onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "cantidad", Number(val))}
-                          size="xs"
-                          classNames={inputStyles}
-                          min={0}
-                        />
-                        <NumberInput
-                          label="Precio Unit."
-                          value={det.precio_unitario || 0}
-                          onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "precio_unitario", Number(val))}
-                          size="xs"
-                          classNames={inputStyles}
-                          min={0}
-                          decimalScale={2}
-                          placeholder="0.00"
-                        />
-                      </Group>
+                      {(() => {
+                        const unidadSel = unidadesMedida.find(u => u.value === String(det.id_unidad_medida));
+                        const nombrePlural = pluralizar(unidadSel?.label || "unidades");
+                        const esMismaUnidad = det.id_unidad_medida === prod.id_unidad_medida_base;
 
-                      <NumberInput
-                        label="Equivalencia"
-                        value={det.contenido_por_presentacion}
-                        onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "contenido_por_presentacion", Number(val))}
+                        return (
+                          <>
+                            <Group grow gap="xs">
+                              <NumberInput
+                                label={`Cantidad de ${nombrePlural} *`}
+                                value={det.cantidad}
+                                onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "cantidad", Number(val))}
+                                size="xs"
+                                radius="lg"
+                                classNames={inputStyles}
+                                min={0}
+                                leftSection={<ArchiveBoxIcon className="w-3 h-3 text-zinc-500" />}
+                              />
+                              <NumberInput
+                                label={`Precio por ${unidadSel?.label || "unidad"}`}
+                                value={det.precio_unitario || 0}
+                                onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "precio_unitario", Number(val))}
+                                size="xs"
+                                radius="lg"
+                                classNames={inputStyles}
+                                min={0}
+                                decimalScale={2}
+                                placeholder="0.00"
+                                leftSection={<BanknotesIcon className="w-3 h-3 text-zinc-500" />}
+                              />
+                            </Group>
+
+                            <NumberInput
+                              label="Contenido por unidad *"
+                              value={det.contenido_por_presentacion}
+                              onChange={(val) => onUpdateDetail(cotIdx, prod.id_producto, "contenido_por_presentacion", Number(val))}
+                              size="xs"
+                              radius="lg"
+                              placeholder="Contenido..."
+                              disabled={esMismaUnidad}
+                              classNames={inputStyles}
+                              leftSection={<ScaleIcon className="w-3 h-3 text-zinc-500" />}
+                              description={
+                                <Text size="9px" className="text-zinc-600">
+                                  {esMismaUnidad 
+                                    ? "Misma unidad que la base (Bloqueado)"
+                                    : `Indique cuánt@s ${pluralizar(prod.unidad_medida_base) || "unidades base"} contiene cada ${unidadSel?.label || "unidad"}`}
+                                </Text>
+                              }
+                            />
+                          </>
+                        );
+                      })()}
+
+                      <TextInput 
+                        label="Comentario del ítem"
+                        placeholder="Ej: Marca específica, color, etc..."
+                        leftSection={<ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-zinc-600" />}
+                        value={det.comentario || ""}
+                        onChange={(e) => onUpdateDetail(cotIdx, prod.id_producto, "comentario", e.currentTarget.value)}
                         size="xs"
-                        placeholder="Contenido..."
+                        radius="lg"
                         classNames={inputStyles}
-                        description={<Text size="9px" className="text-zinc-600">Cant. de unid. base por esta presentación</Text>}
                       />
 
                       <div className="pt-2 border-t border-zinc-800/50 mt-1">
