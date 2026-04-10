@@ -42,6 +42,7 @@ import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes
 import { AtencionPrestamosPage } from "../../views/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
 import { PrestamosAlmacenPage } from "../../views/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
 import { ProveedoresPage } from "../../views/proveedores/presentation/proveedores-page/proveedores.page.tsx";
+import CotizacionesPage from "../../views/cotizaciones/presentation/cotizaciones.page";
 
 export const App = () => {
   return (
@@ -152,6 +153,7 @@ export const App = () => {
           {/* Compras */}
           <Route path="compras" element={<ComprasLayout />}>
             <Route path="proveedores" element={<ProveedoresPage />} />
+            <Route path="cotizaciones" element={<CotizacionesPage />} />
           </Route>
         </Route>
 

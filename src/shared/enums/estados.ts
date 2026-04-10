@@ -65,3 +65,14 @@ export enum EstadoVencimiento {
   PorVencer = "Por vencer",
   Vencido = "Vencido",
 }
+
+export enum EstadoCotizacion {
+  Generada = "Generada",
+  Aprobada = "Aprobada",
+  Desestimada = "Desestimada",
+}
+
+export enum MetodoPago {
+  Contado = "Contado",
+  Credito = "Credito",
+}

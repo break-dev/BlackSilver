@@ -1,0 +1,38 @@
+import type { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
+
+export interface RES_Cotizacion {
+  id: number;
+  id_comparativo: number;
+  id_proveedor: number;
+  proveedor_nombre: string;
+  moneda: string;
+  correlativo: string;
+  numero_correlativo: number;
+  metodo_pago: MetodoPago;
+  fecha_vencimiento_pago: string | null;
+  total_antes_igv: number;
+  incluye_igv: boolean;
+  porcentaje_igv: number;
+  monto_igv: number;
+  total_despues_igv: number;
+  observacion: string | null;
+  evidencia: string | null;
+  fecha_hora_cotizacion: string;
+  comparativo_fecha: string;
+  estado: EstadoCotizacion;
+  created_at: string;
+}
+
+export interface RES_CotizacionDetalle {
+  id: number;
+  id_cotizacion: number;
+  id_comparativo_detalle: number;
+  id_unidad_medida: number;
+  unidad_medida_nombre: string;
+  cantidad: number;
+  contenido_por_presentacion: number;
+  cantidad_base: number;
+  precio_unitario: number;
+  precio_unitario_base: number;
+  comentario: string | null;
+}
