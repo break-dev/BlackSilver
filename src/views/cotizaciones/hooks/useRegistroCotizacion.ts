@@ -1,19 +1,58 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { 
   DTO_CotizacionRequest, 
   DTO_ProductoComparativo, 
   DTO_CotizacionDetalle,
   DTO_RegistrarComparativo
 } from "../service/cotizaciones.requests";
+import type { 
+  RES_MaestroProducto, 
+  RES_MaestroProveedor, 
+  RES_MaestroUnidadMedida 
+} from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
 import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
 
 export const useRegistroCotizacion = (onSuccess: () => void) => {
+  const { notify } = useNotify();
+  const [loading, setLoading] = useState(false);
+  
+  // Estados para maestros
+  const [maestros, setMaestros] = useState<{
+    proveedores: RES_MaestroProveedor[];
+    unidades: RES_MaestroUnidadMedida[];
+    catalogo: RES_MaestroProducto[];
+  }>({
+    proveedores: [],
+    unidades: [],
+    catalogo: [],
+  });
+
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
   const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { notify } = useNotify();
+
+  // Carga inicial de maestros
+  useEffect(() => {
+    const cargarMaestros = async () => {
+      try {
+        const [resProv, resUni, resProd] = await Promise.all([
+          CotizacionesService.get_proveedores_maestro(),
+          CotizacionesService.get_unidades_medida_maestro(),
+          CotizacionesService.get_productos_maestro()
+        ]);
+
+        setMaestros({
+          proveedores: resProv.success ? resProv.data : [],
+          unidades: resUni.success ? resUni.data : [],
+          catalogo: resProd.success ? resProd.data : [],
+        });
+      } catch (error) {
+        console.error("Error al cargar maestros en hook", error);
+      }
+    };
+    cargarMaestros();
+  }, []);
 
   // Paso 1: Añadir/Quitar productos base del comparativo
   const agregarProductoAlComparador = useCallback((id_producto: number) => {
@@ -197,6 +236,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
   return {
     productos,
     cotizaciones,
+    maestros,
     loading,
     agregarProductoAlComparador,
     agregarCotizacion,

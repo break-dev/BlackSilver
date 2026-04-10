@@ -12,7 +12,8 @@ import {
   ScrollArea
 } from "@mantine/core";
 import { MagnifyingGlassIcon, CubeIcon } from "@heroicons/react/24/outline";
-import { api } from "../../../service/api"; // Usamos la api base para traer productos
+import { CotizacionesService } from "../service/cotizaciones.service";
+import type { RES_MaestroProducto } from "../service/cotizaciones.responses";
 
 interface ModalSeleccionProductosProps {
   opened: boolean;
@@ -21,30 +22,22 @@ interface ModalSeleccionProductosProps {
   seleccionadosActuales: number[];
 }
 
-interface ProductoCargado {
-  id_producto: number;
-  nombre: string;
-  codigo: string;
-  categoria_nombre: string;
-}
-
 export const ModalSeleccionProductos = ({
   opened,
   onClose,
   onSelect,
   seleccionadosActuales,
 }: ModalSeleccionProductosProps) => {
-  const [productos, setProductos] = useState<ProductoCargado[]>([]);
+  const [productos, setProductos] = useState<RES_MaestroProducto[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(false);
 
   const cargarProductos = useCallback(async () => {
     setLoading(true);
     try {
-      // Asumimos que existe este endpoint que ya usas en otros módulos
-      const { data } = await api.get("/productos");
-      if (data.success) {
-        setProductos(data.data);
+      const resp = await CotizacionesService.get_productos_maestro();
+      if (resp.success) {
+        setProductos(resp.data);
       }
     } catch (error) {
       console.error("Error al cargar productos", error);

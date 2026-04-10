@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Stack,
   Group,
@@ -13,29 +12,12 @@ import {
 import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo-tabla";
 import { ModalSeleccionProductos } from "./modal-seleccion-productos";
-import { api } from "../../../service/api";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;
   onCancel: () => void;
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
-}
-
-interface ProveedorMaestro {
-  id_proveedor: number;
-  razon_social: string;
-}
-
-interface UnidadMedidaMaestro {
-  id_unidad_medida: number;
-  nombre: string;
-}
-
-interface ProductoCatalogo {
-  id_producto: number;
-  nombre: string;
-  codigo: string;
 }
 
 export const RegistroCotizacion = ({
@@ -54,47 +36,8 @@ export const RegistroCotizacion = ({
     updateCotizacionHeader,
     updateCotizacionDetail,
     handleSave,
+    maestros,
   } = useRegistroCotizacion(onSuccess);
-
-  const [maestros, setMaestros] = useState<{
-    proveedores: ProveedorMaestro[];
-    unidades: UnidadMedidaMaestro[];
-    catalogo: ProductoCatalogo[];
-  }>({
-    proveedores: [],
-    unidades: [],
-    catalogo: [],
-  });
-
-  useEffect(() => {
-    const ejecutarCarga = async () => {
-      try {
-        const resProv = await api.get("/cotizaciones/proveedores").catch(() => null);
-        const resUni  = await api.get("/cotizaciones/unidades-medida").catch(() => null);
-        const resProd = await api.get("/cotizaciones/productos").catch(() => null);
-
-        const getPayload = (res: { data?: unknown } | null): unknown[] => {
-          if (!res || !res.data) return [];
-          const body = res.data;
-          if (body && typeof body === "object" && !Array.isArray(body) && "data" in body) {
-            const potentialData = (body as { data: unknown }).data;
-            if (Array.isArray(potentialData)) return potentialData;
-          }
-          if (Array.isArray(body)) return body;
-          return [];
-        };
-
-        setMaestros({
-          proveedores: getPayload(resProv) as ProveedorMaestro[],
-          unidades: getPayload(resUni) as UnidadMedidaMaestro[],
-          catalogo: getPayload(resProd) as ProductoCatalogo[],
-        });
-      } catch (error) {
-        console.error("Error crítico al cargar datos maestros", error);
-      }
-    };
-    ejecutarCarga();
-  }, []);
 
   const productosEnriquecidos = productos.map((p) => {
     const found = maestros.catalogo.find((cp) => cp.id_producto === p.id_producto);

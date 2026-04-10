@@ -36,3 +36,27 @@ export interface RES_CotizacionDetalle {
   precio_unitario_base: number;
   comentario: string | null;
 }
+
+export interface RES_MaestroProveedor {
+  id_proveedor: number;
+  razon_social: string;
+  ruc: string | null;
+  dni: string | null;
+}
+
+export interface RES_MaestroUnidadMedida {
+  id_unidad_medida: number;
+  nombre: string;
+  abreviatura: string;
+  es_base: boolean;
+}
+
+export interface RES_MaestroProducto {
+  id_producto: number;
+  nombre: string;
+  codigo?: string;
+  categoria_nombre: string;
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_abreviatura: string;
+}

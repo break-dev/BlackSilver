@@ -3,7 +3,6 @@ import {
   Group, 
   Stack, 
   Text, 
-  Badge, 
   TextInput, 
   NumberInput, 
   Select, 
