@@ -43,11 +43,11 @@ export const ComparativoTabla = ({
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4">
-      <Table withColumnBorders withTableBorder={false} verticalSpacing="md" horizontalSpacing="md">
-        <Table.Thead className="bg-zinc-950">
+    <div className="max-h-[750px] overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4">
+      <Table stickyHeader stickyHeaderOffset={0} withColumnBorders withTableBorder={false} verticalSpacing="md" horizontalSpacing="md">
+        <Table.Thead className="bg-zinc-950 z-[30]">
           <Table.Tr>
-            <Table.Th style={{ minWidth: 280 }} className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950 shadow-2xl">
+            <Table.Th style={{ minWidth: 280 }} className="border-r border-zinc-800 sticky top-0 left-0 z-[40] bg-zinc-950 shadow-2xl">
               <Group gap="xs">
                 <Text size="xs" fw={800} className="text-zinc-500 uppercase tracking-widest">Productos</Text>
               </Group>

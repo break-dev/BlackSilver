@@ -7,7 +7,6 @@ import {
 import {
   PlusIcon,
   BuildingOffice2Icon,
-  CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo-tabla";
@@ -64,6 +63,9 @@ export const RegistroCotizacion = ({
               leftSection={<PlusIcon className="w-5 h-5" />}
               onClick={agregarCotizacion}
               className="shadow-lg shadow-emerald-900/20"
+              styles={{
+                root: { border: '1px solid rgba(255, 255, 255, 0.4)' }
+              }}
            >
               Añadir Cotización
            </Button>
@@ -91,30 +93,28 @@ export const RegistroCotizacion = ({
         )}
       </div>
 
-      {/* Footer del Modal (Abajo a la Izquierda) */}
-      <div className="border-t border-zinc-900 pt-6 mt-4 pb-2">
-        <Group gap="md">
-          <Button
-            leftSection={<CheckBadgeIcon className="w-5 h-5" />}
-            onClick={handleSave}
-            loading={loading}
-            radius="xl"
-            size="md"
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 px-8"
-          >
-            Guardar Comparativo
-          </Button>
-          <Button
-            variant="subtle"
-            color="gray"
-            onClick={onCancel}
-            radius="xl"
-            className="text-zinc-500 hover:text-white"
-          >
-            Cancelar y Cerrar
-          </Button>
-        </Group>
-      </div>
+      {/* Acciones del Modal (Pie de Página) */}
+      <Group justify="flex-end" gap="md" mt="xl">
+        <Button
+          variant="subtle"
+          onClick={onCancel}
+          disabled={loading}
+          radius="lg"
+          size="sm"
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
+        >
+          Cancelar
+        </Button>
+        <Button
+          loading={loading}
+          onClick={handleSave}
+          radius="lg"
+          size="sm"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
+        >
+          Registrar Cotización
+        </Button>
+      </Group>
 
       <ModalSeleccionProductos
         opened={modalProductosOpened}

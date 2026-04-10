@@ -16,6 +16,7 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { BlackcitoMascot } from "../../../presentation/components/BlackcitoMascot";
 
 import { useCotizaciones } from "../hooks/useCotizaciones";
 import { useTitlePage } from "../../../hooks/useTitlePage";
@@ -33,6 +34,7 @@ export const CotizacionesPage = () => {
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
   const [openedProductos, setOpenedProductos] = useState(false);
+  const [openedProductosHover, setOpenedProductosHover] = useState(false);
 
   // Agrupamos las cotizaciones por comparativo
   const comparativosAgrupados = cotizaciones.reduce(
@@ -194,16 +196,26 @@ export const CotizacionesPage = () => {
         title="Cotizaciones"
         size="100%"
         rightSection={
-          <Button
-            variant="light"
-            color="indigo"
-            leftSection={<CubeIcon className="w-5 h-5" />}
-            onClick={() => setOpenedProductos(true)}
-            radius="xl"
-            size="sm"
-          >
-            Añadir Productos
-          </Button>
+          <>
+            <BlackcitoMascot
+              emotion="feliz"
+              message="¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito esta pendiente de ti!"
+              visible={openedProductosHover}
+            />
+            <Button
+              variant="filled"
+              color="pink"
+              className="shadow-lg shadow-pink-800/20 transition-all duration-300"
+              leftSection={<CubeIcon className="w-5 h-5" />}
+              onClick={() => setOpenedProductos(true)}
+              onMouseEnter={() => setOpenedProductosHover(true)}
+              onMouseLeave={() => setOpenedProductosHover(false)}
+              radius="xl"
+              size="sm"
+            >
+              Añadir Productos
+            </Button>
+          </>
         }
       >
         <RegistroCotizacion
