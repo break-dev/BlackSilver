@@ -94,10 +94,18 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const target = { ...p[index], [field]: value };
 
       if (field === "incluye_igv" || field === "porcentaje_igv" || field === "id_proveedor") {
-        const totalSinIgv = target.detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
-        target.total_antes_igv = totalSinIgv;
-        target.monto_igv = totalSinIgv * (target.porcentaje_igv / 100);
-        target.total_despues_igv = target.incluye_igv ? totalSinIgv : totalSinIgv + target.monto_igv;
+        const sumDetalles = target.detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+        const factor = 1 + (target.porcentaje_igv / 100);
+
+        if (target.incluye_igv) {
+          target.total_despues_igv = sumDetalles;
+          target.total_antes_igv = sumDetalles / factor;
+          target.monto_igv = sumDetalles - target.total_antes_igv;
+        } else {
+          target.total_antes_igv = sumDetalles;
+          target.monto_igv = sumDetalles * (target.porcentaje_igv / 100);
+          target.total_despues_igv = sumDetalles + target.monto_igv;
+        }
       }
 
       p[index] = target;
@@ -130,10 +138,18 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
       cot.detalles = detalles;
       
-      const totalSinIgv = detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
-      cot.total_antes_igv = totalSinIgv;
-      cot.monto_igv = totalSinIgv * (cot.porcentaje_igv / 100);
-      cot.total_despues_igv = cot.incluye_igv ? totalSinIgv : totalSinIgv + cot.monto_igv;
+      const sumDetalles = detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+      const factor = 1 + (cot.porcentaje_igv / 100);
+
+      if (cot.incluye_igv) {
+        cot.total_despues_igv = sumDetalles;
+        cot.total_antes_igv = sumDetalles / factor;
+        cot.monto_igv = sumDetalles - cot.total_antes_igv;
+      } else {
+        cot.total_antes_igv = sumDetalles;
+        cot.monto_igv = sumDetalles * (cot.porcentaje_igv / 100);
+        cot.total_despues_igv = sumDetalles + cot.monto_igv;
+      }
 
       p[cotIndex] = cot;
       return p;

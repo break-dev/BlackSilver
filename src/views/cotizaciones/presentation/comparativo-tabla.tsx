@@ -121,26 +121,65 @@ export const ComparativoTabla = ({
                     />
                   )}
 
-                  <Group grow align="flex-end">
-                    <div className="flex flex-col gap-1">
-                      <Text size="10px" className="text-zinc-500 uppercase font-bold">Incluye IGV</Text>
-                      <Switch 
-                        checked={cot.incluye_igv}
-                        onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
-                        size="sm"
-                        color="indigo"
+                  <Stack gap="xs">
+                    <Group grow wrap="nowrap" gap="xs">
+                      <div className="flex flex-col gap-1">
+                        <Text size="10px" className="text-zinc-500 uppercase font-bold">Incluye IGV</Text>
+                        <Switch 
+                          checked={cot.incluye_igv}
+                          onChange={(e) => onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)}
+                          size="sm"
+                          color="indigo"
+                        />
+                      </div>
+                      <NumberInput 
+                        label="Porcentaje IGV"
+                        value={cot.porcentaje_igv}
+                        onChange={(val) => onUpdateHeader(idx, "porcentaje_igv", Number(val))}
+                        disabled
+                        size="xs"
+                        classNames={inputStyles}
+                        suffix="%"
                       />
-                    </div>
-                    <Badge 
-                      variant="filled" 
-                      color="violet" 
-                      size="lg" 
-                      radius="lg"
-                      className="h-9 px-4 shadow-lg shadow-violet-900/20"
-                    >
-                      Total: {cot.total_despues_igv.toLocaleString('es-PE', { style: 'currency', currency: cot.moneda === 'Soles' ? 'PEN' : 'USD' })}
-                    </Badge>
-                  </Group>
+                    </Group>
+
+                    <Group grow gap="xs">
+                      <NumberInput 
+                        label="Total (sin igv)"
+                        value={cot.total_antes_igv}
+                        readOnly
+                        size="xs"
+                        decimalScale={2}
+                        classNames={inputStyles}
+                        hideControls
+                        leftSection={<Text size="xs" c="dimmed">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
+                      />
+                      <NumberInput 
+                        label="IGV"
+                        value={cot.monto_igv}
+                        readOnly
+                        size="xs"
+                        decimalScale={2}
+                        classNames={inputStyles}
+                        hideControls
+                        leftSection={<Text size="xs" c="dimmed">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
+                      />
+                    </Group>
+
+                    <NumberInput 
+                      label="Total (con igv)"
+                      value={cot.total_despues_igv}
+                      readOnly
+                      size="xs"
+                      decimalScale={2}
+                      classNames={{
+                        ...inputStyles,
+                        input: "bg-indigo-500/10 border-indigo-500 text-indigo-400 font-bold"
+                      }}
+                      hideControls
+                      leftSection={<Text size="xs" className="text-indigo-400/50">{cot.moneda === 'Soles' ? 'S/.' : '$'}</Text>}
+                    />
+                  </Stack>
                 </Stack>
               </Table.Th>
             ))}

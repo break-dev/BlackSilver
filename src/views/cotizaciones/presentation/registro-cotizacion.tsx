@@ -69,9 +69,9 @@ export const RegistroCotizacion = ({
   useEffect(() => {
     const ejecutarCarga = async () => {
       try {
-        const resProv = await api.get("/proveedores").catch(() => null);
-        const resUni = await api.get("/productos/unidades-medida").catch(() => null);
-        const resProd = await api.get("/productos").catch(() => null);
+        const resProv = await api.get("/cotizaciones/proveedores").catch(() => null);
+        const resUni  = await api.get("/cotizaciones/unidades-medida").catch(() => null);
+        const resProd = await api.get("/cotizaciones/productos").catch(() => null);
 
         const getPayload = (res: { data?: unknown } | null): unknown[] => {
           if (!res || !res.data) return [];
