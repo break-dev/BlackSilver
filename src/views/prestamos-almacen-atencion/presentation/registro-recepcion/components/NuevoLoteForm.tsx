@@ -3,7 +3,7 @@ import { formatNumber } from "../../../../../presentation/functions/formatNumber
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
 import type { DTO_RecibirEntregaReposicionItem } from "../../../service/prestamos-atencion.requests";
-import type { RES_UnidadMedida } from "../../../service/prestamos-atencion.responses";
+import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
 
 interface NuevoLoteFormProps {
   groupIndex: number;
@@ -84,7 +84,12 @@ export const NuevoLoteForm = ({
             const u = unidades.find((u) => u.id_unidad_medida === selectedId);
             setLotValue(groupIndex, lotIndex, "id_unidad_medida", selectedId);
             if (u?.abreviatura === unidadBaseAbv) {
-              setLotValue(groupIndex, lotIndex, "contenido_por_presentacion", 1);
+              setLotValue(
+                groupIndex,
+                lotIndex,
+                "contenido_por_presentacion",
+                1,
+              );
             } else {
               // Default to 1 unit of presentation (Ratio = Base Amount)
               setLotValue(
@@ -149,7 +154,9 @@ export const NuevoLoteForm = ({
           radius="md"
           size="xs"
           leftSection={<BeakerIcon className="w-3.5 h-3.5 text-emerald-500" />}
-          error={getLotError(groupIndex, lotIndex, "cantidad_base") || undefined}
+          error={
+            getLotError(groupIndex, lotIndex, "cantidad_base") || undefined
+          }
         />
 
         <CustomDatePicker

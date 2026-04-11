@@ -1,6 +1,6 @@
 import { Table, Text } from "@mantine/core";
 import { LoteRowRepo } from "./LoteRowRepo";
-import type { RES_LoteDisponible } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LotesTableRepoProps {
   lotes: RES_LoteDisponible[];
@@ -74,19 +74,21 @@ export const LotesTableRepo = ({
 
               // --- LÓGICA DE STOCK GLOBAL (SESIÓN) ---
               // Calculamos cuánto se ha tomado de este lote en ABSOLUTAMENTE TODOS los detalles
-              const stockTotalUsadoDeEsteLote = Object.values(reposicionCantidades)
-                .reduce((sum, detailQuants) => {
-                  return sum + (detailQuants[lote.id_lote] || 0);
-                }, 0);
+              const stockTotalUsadoDeEsteLote = Object.values(
+                reposicionCantidades,
+              ).reduce((sum, detailQuants) => {
+                return sum + (detailQuants[lote.id_lote] || 0);
+              }, 0);
 
               // Stock que quedaría físicamente en el almacén después de esta operación
               const stockFisicoRestante = Math.max(
                 0,
                 lote.stock_actual_base - stockTotalUsadoDeEsteLote,
               );
-              
+
               // Para el "MAX" permitimos lo que ya tomamos + lo que sobra físicamente
-              const stockDisponibleParaEsteInput = cantBase + stockFisicoRestante;
+              const stockDisponibleParaEsteInput =
+                cantBase + stockFisicoRestante;
               // ---------------------------------------
 
               // Total ya asignado para este detalle (otros lotes del mismo producto)

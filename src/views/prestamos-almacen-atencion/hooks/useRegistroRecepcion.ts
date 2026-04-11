@@ -5,7 +5,6 @@ import { PrestamosAtencionService } from "../service/prestamos-atencion.service"
 import type {
   RES_DetalleReposicionParaRecepcion,
   RES_LoteRecepcionReposicion,
-  RES_UnidadMedida,
 } from "../service/prestamos-atencion.responses";
 import type {
   DTO_RecibirEntregaReposicionItem,
@@ -13,6 +12,7 @@ import type {
 } from "../service/prestamos-atencion.requests";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {
   id_lote_existente: number | null;

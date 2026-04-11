@@ -68,8 +68,7 @@ export const useDetalleSolicitud = ({
       (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
     );
     return (
-      pendientes.length > 0 &&
-      idsParaAccionMasiva.length === pendientes.length
+      pendientes.length > 0 && idsParaAccionMasiva.length === pendientes.length
     );
   }, [detalles, idsParaAccionMasiva]);
 
@@ -123,15 +122,15 @@ export const useDetalleSolicitud = ({
             idSolicitud,
           );
         if (resp.success) {
-            setDetalles(
-              resp.data.map((d) => ({
-                ...d,
-                pendiente_base:
-                  d.cantidad_solicitada_base -
-                  (Number(d.cantidad_entregada_base) +
-                    Number(d.cantidad_prestada_total_base)),
-              })),
-            );
+          setDetalles(
+            resp.data.map((d) => ({
+              ...d,
+              pendiente_base:
+                d.cantidad_solicitada_base -
+                (Number(d.cantidad_entregada_base) +
+                  Number(d.cantidad_prestada_total_base)),
+            })),
+          );
         } else {
           setError(resp.message || "Error al obtener detalles");
         }
@@ -232,9 +231,7 @@ export const useDetalleSolicitud = ({
         );
         onSuccess();
         notifySuccess(
-          ids.length > 1
-            ? "Ítems rechazados correctamente"
-            : "Ítem rechazado",
+          ids.length > 1 ? "Ítems rechazados correctamente" : "Ítem rechazado",
         );
       } else {
         setError(res.message || "Error al rechazar");

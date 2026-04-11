@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type {
-  RES_SolicitudReabastecimiento,
-  RES_Almacen,
-} from "../service/solicitudes-atencion.responses";
+import type { RES_SolicitudReabastecimiento } from "../service/solicitudes-atencion.responses";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import dayjs from "dayjs";
 
 export const useAtencionSolicitudes = () => {
@@ -27,7 +25,9 @@ export const useAtencionSolicitudes = () => {
         setAlmacenes(resp.data);
         // Solo auto-seleccionar si no hay nada seleccionado aún
         if (resp.data.length > 0) {
-          setIdAlmacen((prev) => prev || resp.data[0].id_almacen?.toString() || null);
+          setIdAlmacen(
+            (prev) => prev || resp.data[0].id_almacen?.toString() || null,
+          );
         }
       }
     } catch (error) {

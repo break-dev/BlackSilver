@@ -10,7 +10,8 @@ export const useTrazabilidadDetalle = (idDetalle: number | null) => {
     if (!idDetalle) return;
     setLoading(true);
     try {
-      const res = await SolicitudesAtencionService.obtenerTrazabilidad(idDetalle);
+      const res =
+        await SolicitudesAtencionService.obtenerTrazabilidad(idDetalle);
       if (res.success) {
         setEventos(res.data);
       } else {

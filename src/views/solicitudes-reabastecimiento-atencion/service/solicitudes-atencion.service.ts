@@ -4,20 +4,18 @@ import type {
   RES_SolicitudReabastecimiento,
   RES_DetalleSolicitud,
   RES_DetalleLog,
-  RES_Almacen,
-  RES_Empleado,
   RES_Prestamo,
-  RES_AlmacenConStock,
-  RES_LoteDisponiblePrestamo,
   RES_HistorialEntregas,
   RES_StockTotalAlmacen,
-  RES_LoteDisponible,
 } from "./solicitudes-atencion.responses";
 import type {
   DTO_DecisionDetalle,
   DTO_RegistrarEntregaReabastecimiento,
   DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
+import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 
 const path = "/solicitudes-atencion";
 
@@ -166,7 +164,7 @@ export const SolicitudesAtencionService = {
     );
     params.append("id_almacen_excluido", id_almacen_excluido.toString());
 
-    const resp = await api.get<IRespuesta<RES_AlmacenConStock[]>>(
+    const resp = await api.get<IRespuesta<RES_Almacen[]>>(
       `${path}/prestamos/almacenes-con-stock?${params.toString()}`,
     );
     return resp.data;
@@ -195,7 +193,7 @@ export const SolicitudesAtencionService = {
     idProducto: number,
     idAlmacen: number,
   ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponiblePrestamo[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/prestamos/lotes-disponibles`,
       {
         params: { id_producto: idProducto, id_almacen: idAlmacen },

@@ -1,13 +1,10 @@
 import { useState, useCallback, useMemo } from "react";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
-import type {
-  RES_Lote_Atencion,
-  RES_EmpleadoPrestamo,
-  RES_DetallePrestamo,
-  RES_LoteDisponibleDespacho,
-} from "../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo } from "../service/prestamos-atencion.responses";
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
@@ -30,7 +27,7 @@ export const useRegistroEntrega = ({
   const [empleados, setEmpleados] = useState<
     { value: string; label: string }[]
   >([]);
-  const [lotes, setLotes] = useState<RES_Lote_Atencion[]>([]);
+  const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
 
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
@@ -68,7 +65,7 @@ export const useRegistroEntrega = ({
       ]);
 
       if (resEmps.success) {
-        const empsMapped = resEmps.data.map((e: RES_EmpleadoPrestamo) => ({
+        const empsMapped = resEmps.data.map((e: RES_Empleado) => ({
           value: String(e.id_empleado),
           label: `${e.nombre_completo} - ${e.dni}`,
         }));
@@ -86,8 +83,8 @@ export const useRegistroEntrega = ({
       }
 
       if (resLotes.success) {
-        const castedLotes: RES_Lote_Atencion[] = resLotes.data.map(
-          (l: RES_LoteDisponibleDespacho) => ({
+        const castedLotes: RES_LoteDisponible[] = resLotes.data.map(
+          (l: RES_LoteDisponible) => ({
             ...l,
             stock_actual: Number(l.stock_actual),
             stock_actual_base: Number(l.stock_actual_base),
@@ -101,8 +98,8 @@ export const useRegistroEntrega = ({
         itemsAEntregar.forEach((d) => {
           initial[d.id_prestamo_detalle] = {};
           castedLotes
-            .filter((l: RES_Lote_Atencion) => l.id_producto === d.id_producto)
-            .forEach((l: RES_Lote_Atencion) => {
+            .filter((l: RES_LoteDisponible) => l.id_producto === d.id_producto)
+            .forEach((l: RES_LoteDisponible) => {
               initial[d.id_prestamo_detalle][l.id_lote] = 0;
             });
         });

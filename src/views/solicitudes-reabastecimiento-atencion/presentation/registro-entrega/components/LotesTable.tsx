@@ -1,6 +1,6 @@
 import { Table, Text } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
-import type { RES_LoteDisponible } from "../../../service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LotesTableProps {
   lotes: RES_LoteDisponible[];
@@ -67,7 +67,11 @@ export const LotesTable = ({
                       <div className="w-6 h-6 rounded-full bg-indigo-500/10 animate-pulse" />
                     </div>
                   </div>
-                  <Text size="xs" fw={800} className="text-indigo-400 uppercase tracking-widest animate-pulse">
+                  <Text
+                    size="xs"
+                    fw={800}
+                    className="text-indigo-400 uppercase tracking-widest animate-pulse"
+                  >
                     Buscando Lotes...
                   </Text>
                 </div>
@@ -84,16 +88,25 @@ export const LotesTable = ({
             </tr>
           ) : (
             lotes.map((lote) => {
-              const currentDetailQuantities = entregaCantidades[idSolicitudDetalle] || {};
+              const currentDetailQuantities =
+                entregaCantidades[idSolicitudDetalle] || {};
               const cant = currentDetailQuantities[lote.id_lote] || 0;
 
-              const totalAsignadoGlobal = Object.entries(entregaCantidades)
-                .reduce((sum, [, lotesMap]) => sum + (lotesMap[lote.id_lote] || 0), 0);
+              const totalAsignadoGlobal = Object.entries(
+                entregaCantidades,
+              ).reduce(
+                (sum, [, lotesMap]) => sum + (lotesMap[lote.id_lote] || 0),
+                0,
+              );
 
-              const stockRestanteGlobal = Math.max(0, lote.stock_actual_base - totalAsignadoGlobal);
+              const stockRestanteGlobal = Math.max(
+                0,
+                lote.stock_actual_base - totalAsignadoGlobal,
+              );
 
               const totalEnOtrosDetalles = totalAsignadoGlobal - cant;
-              const stockDisponibleParaEsteDetalle = lote.stock_actual_base - totalEnOtrosDetalles;
+              const stockDisponibleParaEsteDetalle =
+                lote.stock_actual_base - totalEnOtrosDetalles;
 
               const maxBase = Math.min(
                 stockDisponibleParaEsteDetalle,

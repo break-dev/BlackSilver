@@ -2,7 +2,7 @@ import { Stack } from "@mantine/core";
 
 import { useTitlePage } from "../../../../hooks/useTitlePage";
 import { useProveedores } from "../../hooks/useProveedores";
-import { RegistroProveedor } from "../registro-proveedor/regiStro-proveedor";
+import { RegistroProveedor } from "../registro-proveedor/registro-proveedor";
 import { CuentasBancarias } from "../cuentas-bancarias/cuentas-bancarias";
 import { useState } from "react";
 import type { ProveedorResponse } from "../../service/proveedores.responses";

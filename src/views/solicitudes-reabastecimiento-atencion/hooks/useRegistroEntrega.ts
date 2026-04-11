@@ -3,14 +3,14 @@ import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
 import type {
   RES_DetalleSolicitud,
-  RES_LoteDisponible,
-  RES_Empleado,
-  RES_Almacen,
   DetalleSolicitudExtendido,
 } from "../service/solicitudes-atencion.responses";
 import type { DTO_EntregasDetalleReabastecimiento } from "../service/solicitudes-atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
@@ -162,7 +162,8 @@ export const useRegistroEntrega = ({
       );
       if (!lote || !detalle) return;
 
-      const currentDetalleCantidades = entregaCantidades[idSolicitudDetalle] || {};
+      const currentDetalleCantidades =
+        entregaCantidades[idSolicitudDetalle] || {};
       const currentTotalParaDetalle = Object.entries(currentDetalleCantidades)
         .filter(([idL]) => Number(idL) !== idLote)
         .reduce((sum, [, cant]) => sum + cant, 0);

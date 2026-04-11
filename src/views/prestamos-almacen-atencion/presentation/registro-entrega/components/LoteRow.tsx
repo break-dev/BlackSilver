@@ -1,13 +1,11 @@
 import { NumberInput, Text, Badge, Stack, Group } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  RES_DetallePrestamo,
-  RES_Lote_Atencion,
-} from "../../../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo } from "../../../service/prestamos-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LoteRowProps {
-  lote: RES_Lote_Atencion;
+  lote: RES_LoteDisponible;
   idDetalle: number;
   detalle: RES_DetallePrestamo;
   entregaCantidades: Record<number, Record<number, number>>;
@@ -127,8 +125,7 @@ export const LoteRow = ({
                 color="indigo.4"
                 className="bg-zinc-800/30 font-black h-7"
               >
-                {formatNumber(lote.stock_actual)}{" "}
-                {lote.presentacion_abv || unidadAbv}
+                {formatNumber(lote.stock_actual)} {lote.unidad_medida_lote_abv}
               </Badge>
             )}
           </Group>

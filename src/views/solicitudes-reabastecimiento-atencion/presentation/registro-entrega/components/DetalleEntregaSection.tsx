@@ -1,14 +1,12 @@
 import { Badge, Group, Text } from "@mantine/core";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  DetalleSolicitudExtendido,
-  RES_LoteReabastecimiento,
-} from "../../../service/solicitudes-atencion.responses";
+import type { DetalleSolicitudExtendido } from "../../../service/solicitudes-atencion.responses";
 import { LotesTable } from "./LotesTable";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface DetalleEntregaSectionProps {
   detalle: DetalleSolicitudExtendido;
-  lotes: RES_LoteReabastecimiento[];
+  lotes: RES_LoteDisponible[];
   entregaCantidades: Record<number, Record<number, number>>;
   loadingLotes: boolean;
   handleCantChange: (
@@ -31,7 +29,8 @@ export const DetalleEntregaSection = ({
   handleCantChange,
   handleCantLoteChange,
 }: DetalleEntregaSectionProps) => {
-  const currentDetailQuantities = entregaCantidades[detalle.id_solicitud_detalle] || {};
+  const currentDetailQuantities =
+    entregaCantidades[detalle.id_solicitud_detalle] || {};
   const tEntregadoDetalleActualBase = lotes.reduce(
     (acc, l) => acc + (currentDetailQuantities[l.id_lote] || 0),
     0,

@@ -1,10 +1,5 @@
 import type { IArchivo } from "../../../shared/interfaces";
 
-export interface RES_AlmacenAutorizado {
-  id_almacen: number;
-  nombre: string;
-}
-
 export interface RES_PrestamoAtencion {
   id_prestamo: number;
   correlativo: string;
@@ -81,40 +76,6 @@ export interface RES_DetalleEntregaPrestamo {
   contenido_por_presentacion: number;
   comentario: string | null;
   estado: string;
-}
-
-export interface RES_LoteDisponibleDespacho {
-  id_lote: number;
-  id_producto: number;
-  correlativo: string;
-  stock_actual: number;
-  stock_actual_base: number;
-  contenido_por_presentacion: number;
-  unidad_medida: string;
-  unidad_medida_abv: string;
-  fecha_vencimiento: string | null;
-  dias_para_vencer: number | null;
-}
-
-export interface RES_EmpleadoPrestamo {
-  id_empleado: number;
-  nombre_completo: string;
-  dni: string;
-  path_foto: string | null;
-}
-
-export interface RES_Lote_Atencion {
-  id_lote: number;
-  id_producto: number;
-  correlativo: string;
-  stock_actual: number;
-  stock_actual_base: number;
-  contenido_por_presentacion: number;
-  unidad_medida: string;
-  unidad_medida_abv: string;
-  presentacion_abv?: string; // Alias for UI if needed
-  fecha_vencimiento: string | null;
-  dias_para_vencer: number | null;
 }
 
 export interface RES_DetallePrestamoPorId {
@@ -224,12 +185,6 @@ export interface RES_LoteRecepcionReposicion {
   dias_espera_vencimiento: number;
   dias_para_vencer: number | null;
   estado_vencimiento: string;
-}
-
-export interface RES_UnidadMedida {
-  id_unidad_medida: number;
-  nombre: string;
-  abreviatura: string;
 }
 
 export interface RES_RecepcionDetalle {

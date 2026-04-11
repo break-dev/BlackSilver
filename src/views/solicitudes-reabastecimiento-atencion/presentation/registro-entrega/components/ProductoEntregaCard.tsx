@@ -1,11 +1,9 @@
 import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type {
-  RES_LoteDisponible,
-  DetalleSolicitudExtendido,
-} from "../../../service/solicitudes-atencion.responses";
+import type { DetalleSolicitudExtendido } from "../../../service/solicitudes-atencion.responses";
 import { DetalleEntregaSection } from "./DetalleEntregaSection";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface ProductoEntregaCardProps {
   detalle: DetalleSolicitudExtendido;
@@ -68,7 +66,9 @@ export const ProductoEntregaCard = ({
             <Badge
               variant="dot"
               color={
-                detalle.stock_disponible_base <= detalle.stock_minimo ? "orange" : "teal"
+                detalle.stock_disponible_base <= detalle.stock_minimo
+                  ? "orange"
+                  : "teal"
               }
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"

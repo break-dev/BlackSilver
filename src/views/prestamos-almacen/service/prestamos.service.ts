@@ -1,6 +1,6 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
-import type { RES_LoteDisponible } from "../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
 import type {
   RES_AlmacenSecundario,

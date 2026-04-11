@@ -1,7 +1,7 @@
 import { Badge, Group, NumberInput, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type { RES_LoteDisponible } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LoteRowRepoProps {
   lote: RES_LoteDisponible;

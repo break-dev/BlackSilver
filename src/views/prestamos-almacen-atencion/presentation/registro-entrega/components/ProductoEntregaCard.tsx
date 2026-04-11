@@ -2,15 +2,13 @@ import { Badge, Group, Paper, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import { LotesTable } from "./LotesTable";
-import type {
-  RES_DetallePrestamo,
-  RES_Lote_Atencion,
-} from "../../../service/prestamos-atencion.responses";
+import type { RES_DetallePrestamo } from "../../../service/prestamos-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface ProductoEntregaCardProps {
   idDetalle: number;
   detalle: RES_DetallePrestamo;
-  lotes: RES_Lote_Atencion[];
+  lotes: RES_LoteDisponible[];
   loadingLotes: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantLoteChange: (

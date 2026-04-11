@@ -1,7 +1,7 @@
 import { Badge, Group, NumberInput, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type { RES_LoteDisponible } from "../../../service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LoteRowProps {
   lote: RES_LoteDisponible;
@@ -124,34 +124,38 @@ export const LoteRow = ({
                     )
                   : ""
               }
-            onChange={(val) =>
-              handleCantLoteChange(idSolicitudDetalle, lote.id_lote, Number(val))
-            }
-            placeholder="0"
-            clampBehavior="strict"
-            hideControls
-            rightSection={
-              <Text size="10px" fw={600} c="zinc.5" className="mr-3">
-                {lote.unidad_medida_lote_abv}
-              </Text>
-            }
-            rightSectionWidth={60}
-            className="w-28"
-            classNames={{
-              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
-            }}
-          />
-        )}
+              onChange={(val) =>
+                handleCantLoteChange(
+                  idSolicitudDetalle,
+                  lote.id_lote,
+                  Number(val),
+                )
+              }
+              placeholder="0"
+              clampBehavior="strict"
+              hideControls
+              rightSection={
+                <Text size="10px" fw={600} c="zinc.5" className="mr-3">
+                  {lote.unidad_medida_lote_abv}
+                </Text>
+              }
+              rightSectionWidth={60}
+              className="w-28"
+              classNames={{
+                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
+              }}
+            />
+          )}
 
-        <NumberInput
-          size="sm"
-          radius="xl"
-          min={0}
-          max={maxBase}
-          value={cant || ""}
-          onChange={(val) =>
-            handleCantChange(idSolicitudDetalle, lote.id_lote, Number(val))
-          }
+          <NumberInput
+            size="sm"
+            radius="xl"
+            min={0}
+            max={maxBase}
+            value={cant || ""}
+            onChange={(val) =>
+              handleCantChange(idSolicitudDetalle, lote.id_lote, Number(val))
+            }
             placeholder="0"
             clampBehavior="strict"
             hideControls

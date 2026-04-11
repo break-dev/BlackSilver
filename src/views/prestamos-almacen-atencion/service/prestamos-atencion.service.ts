@@ -1,44 +1,44 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
 import type {
-  RES_AlmacenAutorizado,
   RES_PrestamoAtencion,
   RES_DetallePrestamoPorId,
   RES_EntregaPrestamo,
-  RES_LoteDisponibleDespacho,
-  RES_EmpleadoPrestamo,
   RES_TrazabilidadPrestamo,
   RES_ReposicionPrestamo,
   RES_DetalleReposicionParaRecepcion,
   RES_LoteRecepcionReposicion,
-  RES_UnidadMedida,
   RES_RecepcionEvento,
 } from "./prestamos-atencion.responses";
 import type {
   DTO_RegistrarEntrega,
   DTO_RegistrarRecepcionReposicion,
 } from "./prestamos-atencion.requests";
-import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+import type {
+  RES_LoteDisponible,
+  RES_TicketLote,
+} from "../../../service/responses/lote-producto";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 const path = "/prestamos-atencion";
 
 export const PrestamosAtencionService = {
   obtenerAlmacenesAutorizados: async () => {
-    const res = await api.get<IRespuesta<RES_AlmacenAutorizado[]>>(
+    const res = await api.get<IRespuesta<RES_Almacen[]>>(
       `${path}/almacenes-autorizados`,
     );
     return res.data;
   },
 
   obtenerEmpleados: async () => {
-    const res = await api.get<IRespuesta<RES_EmpleadoPrestamo[]>>(
-      `${path}/empleados`,
-    );
+    const res = await api.get<IRespuesta<RES_Empleado[]>>(`${path}/empleados`);
     return res.data;
   },
 
   obtenerLotesDisponibles: async (idProducto: number, idAlmacen: number) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponibleDespacho[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/lotes`,
       { params: { id_producto: idProducto, id_almacen: idAlmacen } },
     );
@@ -49,7 +49,7 @@ export const PrestamosAtencionService = {
     idsProductos: number[],
     idAlmacen: number,
   ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponibleDespacho[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/lotes-batch`,
       {
         params: {
