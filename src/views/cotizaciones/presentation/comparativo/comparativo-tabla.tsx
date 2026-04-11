@@ -19,14 +19,14 @@ import {
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import { useRef, useEffect } from "react";
-import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import { formatNumber } from "../../../presentation/functions/formatNumber";
+import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../../presentation/functions/formatNumber";
 import type {
   DTO_CotizacionRequest,
   DTO_ProductoComparativo,
   DTO_CotizacionDetalle,
-} from "../service/cotizaciones.requests";
-import { MetodoPago } from "../../../shared/enums/estados";
+} from "../../service/cotizaciones.requests";
+import { MetodoPago } from "../../../../shared/enums/estados";
 
 interface ComparativoTablaProps {
   productos: (DTO_ProductoComparativo & {
@@ -68,7 +68,9 @@ export const ComparativoTabla = ({
   onRemoveCotizacion,
   isCollapsed = false,
   onAutoCollapse,
-}: ComparativoTablaProps & { onAutoCollapse?: (collapsed: boolean) => void }) => {
+}: ComparativoTablaProps & {
+  onAutoCollapse?: (collapsed: boolean) => void;
+}) => {
   // Referencia para guardar dónde estábamos cuando se expandió
   const scrollAlExpandir = useRef(0);
 
@@ -82,8 +84,8 @@ export const ComparativoTabla = ({
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = e.currentTarget.scrollTop;
-    
-    // Si estamos en vista detallada, solo colapsamos si el usuario se mueve 
+
+    // Si estamos en vista detallada, solo colapsamos si el usuario se mueve
     // significativamente (>40px) desde donde lo abrió.
     if (!isCollapsed) {
       const desplazamiento = Math.abs(scrollTop - scrollAlExpandir.current);
@@ -101,7 +103,7 @@ export const ComparativoTabla = ({
   };
 
   return (
-    <div 
+    <div
       id="comparativo-container"
       className="h-full overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar relative"
       onScroll={handleScroll}
@@ -117,7 +119,7 @@ export const ComparativoTabla = ({
           <Table.Tr>
             {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
             <Table.Th
-              style={{ width: 200, minWidth: 200, verticalAlign: 'middle' }}
+              style={{ width: 200, minWidth: 200, verticalAlign: "middle" }}
               className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-100 p-6 shadow-xl"
             >
               <Text
@@ -132,7 +134,7 @@ export const ComparativoTabla = ({
             {cotizaciones.map((cot, idx) => (
               <Table.Th
                 key={idx}
-                style={{ minWidth: 450, verticalAlign: 'top' }}
+                style={{ minWidth: 450, verticalAlign: "top" }}
                 className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-40"
               >
                 <Stack
@@ -283,9 +285,15 @@ export const ComparativoTabla = ({
                             label="Fecha de Vencimiento"
                             withAsterisk
                             placeholder="Seleccione fecha..."
-                            value={(cot.fecha_vencimiento_pago as unknown) as Date | null}
+                            value={
+                              cot.fecha_vencimiento_pago as unknown as Date | null
+                            }
                             onChange={(val) =>
-                              onUpdateHeader(idx, "fecha_vencimiento_pago", (val as unknown) as string)
+                              onUpdateHeader(
+                                idx,
+                                "fecha_vencimiento_pago",
+                                val as unknown as string,
+                              )
                             }
                             size="xs"
                             radius="lg"
@@ -454,31 +462,46 @@ export const ComparativoTabla = ({
                   );
 
                 return (
-                  <Table.Td 
-                    key={cotIdx} 
-                    className={`p-4 align-top relative transition-all duration-300 ${det.no_cotiza ? 'bg-zinc-950/30' : ''}`}
+                  <Table.Td
+                    key={cotIdx}
+                    className={`p-4 align-top relative transition-all duration-300 ${det.no_cotiza ? "bg-zinc-950/30" : ""}`}
                   >
                     {/* Switch de Inhabilitación (Arriba a la derecha) */}
                     <div className="absolute top-2 right-2 z-50">
-                      <Tooltip label={det.no_cotiza ? "Habilitar para cotizar" : "Marcar como: No cotiza este producto"} position="left">
+                      <Tooltip
+                        label={
+                          det.no_cotiza
+                            ? "Habilitar para cotizar"
+                            : "Marcar como: No cotiza este producto"
+                        }
+                        position="left"
+                      >
                         <Group gap={6} align="center">
-                          <Text size="10px" fw={700} className={det.no_cotiza ? "text-zinc-600" : "text-zinc-400"}>
+                          <Text
+                            size="10px"
+                            fw={700}
+                            className={
+                              det.no_cotiza ? "text-zinc-600" : "text-zinc-400"
+                            }
+                          >
                             {det.no_cotiza ? "OFF" : "¿COTIZAR?"}
                           </Text>
-                          <Switch 
+                          <Switch
                             size="xs"
                             color="red"
                             checked={!det.no_cotiza}
-                            onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+                            onChange={() =>
+                              onToggleNoCotiza(cotIdx, prod.id_producto)
+                            }
                             className="hover:scale-110 transition-transform cursor-pointer"
                           />
                         </Group>
                       </Tooltip>
                     </div>
 
-                    <Stack 
-                      gap="sm" 
-                      className={`w-full transition-all duration-300 ${det.no_cotiza ? 'opacity-20 pointer-events-none grayscale blur-[0.5px]' : ''}`}
+                    <Stack
+                      gap="sm"
+                      className={`w-full transition-all duration-300 ${det.no_cotiza ? "opacity-20 pointer-events-none grayscale blur-[0.5px]" : ""}`}
                     >
                       {(() => {
                         const currentUnit = unidadesMedida.find(
@@ -685,9 +708,9 @@ export const ComparativoTabla = ({
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-6">
                         <div className="bg-red-500/10 border border-red-500/50 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center gap-2 shadow-2xl">
                           <NoSymbolIcon className="w-8 h-8 text-red-500 opacity-80" />
-                          <Text 
-                            size="xs" 
-                            fw={800} 
+                          <Text
+                            size="xs"
+                            fw={800}
                             className="text-red-500 uppercase tracking-tighter"
                           >
                             No participa
