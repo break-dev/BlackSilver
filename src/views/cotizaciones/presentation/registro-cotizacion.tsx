@@ -61,9 +61,9 @@ export const RegistroCotizacion = forwardRef<
   });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)]">
-      {/* Área con Scroll para la Tabla */}
-      <div className="flex-1 overflow-auto custom-scrollbar pr-1">
+    <div className="flex flex-col h-[calc(100vh-180px)] overflow-hidden">
+      {/* Área de la Tabla (La tabla maneja su propio scroll interno) */}
+      <div className="flex-1 min-h-0 pr-1">
         {productos.length === 0 && cotizaciones.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-900 rounded-[3rem] bg-zinc-900/5">
             <BuildingOffice2Icon className="w-20 h-20 text-zinc-800 mb-6 opacity-50" />

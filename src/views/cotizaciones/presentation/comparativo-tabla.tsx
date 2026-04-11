@@ -71,7 +71,7 @@ export const ComparativoTabla = ({
   };
 
   return (
-    <div className="h-[calc(100vh-210px)] overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4 relative">
+    <div className="h-full overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar relative">
       <Table
         withColumnBorders
         withTableBorder={false}
