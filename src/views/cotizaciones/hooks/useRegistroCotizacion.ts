@@ -214,9 +214,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         }
         
         updatedDet.cantidad_base = updatedDet.cantidad * updatedDet.contenido_por_presentacion;
-        updatedDet.precio_unitario_base = updatedDet.contenido_por_presentacion > 0 
+        const pBase = updatedDet.contenido_por_presentacion > 0 
           ? updatedDet.precio_unitario / updatedDet.contenido_por_presentacion 
           : 0;
+        updatedDet.precio_unitario_base = Number(pBase.toFixed(2));
 
         return updatedDet;
       });
@@ -315,23 +316,27 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const payload: DTO_RegistrarComparativo = {
         productos: productos,
         cotizaciones: cotizaciones.map(c => {
-            // Conversión de Date a String para la API (Solo si es Crédito)
+            // Conversión robusta a YYYY-MM-DD para evitar rechazos de la base de datos (Columna DATE)
             let fechaStr = null;
-            const fechaVal = c.fecha_vencimiento_pago as unknown;
-            
-            // SI ES CRÉDITO, procesamos la fecha. SI ES CONTADO, se queda en null.
-            if (c.metodo_pago === MetodoPago.Credito && fechaVal instanceof Date) {
-              const year = fechaVal.getFullYear();
-              const month = String(fechaVal.getMonth() + 1).padStart(2, '0');
-              const day = String(fechaVal.getDate()).padStart(2, "0");
-              fechaStr = `${year}-${month}-${day}`;
+            if (c.metodo_pago === MetodoPago.Credito && c.fecha_vencimiento_pago) {
+              const d = new Date(c.fecha_vencimiento_pago as unknown as string);
+              if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                fechaStr = `${year}-${month}-${day}`;
+              }
             }
 
             return {
                 ...c,
                 fecha_vencimiento_pago: fechaStr,
-                // AQUÍ FILTRAMOS LO QUE NO SE COTIZA PARA NO ENVIARLO A LA BD
-                detalles: c.detalles.filter(d => !d.no_cotiza),
+                // AQUÍ FILTRAMOS LO QUE NO SE COTIZA Y REDONDEAMOS DECIMALES
+                detalles: c.detalles.filter(d => !d.no_cotiza).map(d => ({
+                    ...d,
+                    precio_unitario_base: Number(d.precio_unitario_base.toFixed(2)),
+                    cantidad_base: Number(d.cantidad_base.toFixed(2))
+                })),
                 total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
                 monto_igv: Number(c.monto_igv.toFixed(2)),
                 total_despues_igv: Number(c.total_despues_igv.toFixed(2))
