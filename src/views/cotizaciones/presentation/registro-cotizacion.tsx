@@ -17,6 +17,7 @@ interface RegistroCotizacionProps {
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
   isCollapsed: boolean;
+  onAutoCollapse?: (collapsed: boolean) => void;
 }
 
 export const RegistroCotizacion = forwardRef<
@@ -28,6 +29,7 @@ export const RegistroCotizacion = forwardRef<
   modalProductosOpened,
   setModalProductosOpened,
   isCollapsed,
+  onAutoCollapse,
 }, ref) => {
   const {
     productos,
@@ -89,6 +91,7 @@ export const RegistroCotizacion = forwardRef<
             onUpdateDetail={updateCotizacionDetail}
             onRemoveCotizacion={eliminarCotizacion}
             isCollapsed={isCollapsed}
+            onAutoCollapse={onAutoCollapse}
           />
         )}
       </div>

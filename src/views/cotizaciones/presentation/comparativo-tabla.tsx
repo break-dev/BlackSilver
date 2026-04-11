@@ -16,6 +16,7 @@ import {
   IdentificationIcon,
   ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
+import { useState, useRef, useEffect } from "react";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type {
@@ -62,7 +63,32 @@ export const ComparativoTabla = ({
   onUpdateDetail,
   onRemoveCotizacion,
   isCollapsed = false,
-}: ComparativoTablaProps) => {
+  onAutoCollapse,
+}: ComparativoTablaProps & { onAutoCollapse?: (collapsed: boolean) => void }) => {
+  // Referencia para guardar dónde estábamos cuando se expandió
+  const scrollAlExpandir = useRef(0);
+
+  // Cada vez que cambia el estado a "expandido", recordamos la posición actual
+  useEffect(() => {
+    if (!isCollapsed) {
+      const container = document.getElementById("comparativo-container");
+      if (container) scrollAlExpandir.current = container.scrollTop;
+    }
+  }, [isCollapsed]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    
+    // Si estamos en vista detallada, solo colapsamos si el usuario se mueve 
+    // significativamente (>40px) desde donde lo abrió.
+    if (!isCollapsed) {
+      const desplazamiento = Math.abs(scrollTop - scrollAlExpandir.current);
+      if (desplazamiento > 40) {
+        onAutoCollapse?.(true);
+      }
+    }
+  };
+
   const inputStyles = {
     input:
       "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 !font-normal transition-all",
@@ -71,7 +97,11 @@ export const ComparativoTabla = ({
   };
 
   return (
-    <div className="h-full overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar relative">
+    <div 
+      id="comparativo-container"
+      className="h-full overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar relative"
+      onScroll={handleScroll}
+    >
       <Table
         withColumnBorders
         withTableBorder={false}
