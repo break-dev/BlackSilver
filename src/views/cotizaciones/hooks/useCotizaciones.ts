@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { CotizacionesService } from "../service/cotizaciones.service";
-import type { RES_Cotizacion } from "../service/cotizaciones.responses";
+import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
 
 export const useCotizaciones = () => {
   const [cotizaciones, setCotizaciones] = useState<RES_Cotizacion[]>([]);
+  const [detalles, setDetalles] = useState<RES_CotizacionDetalle[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -11,8 +12,9 @@ export const useCotizaciones = () => {
     setLoading(true);
     try {
       const resp = await CotizacionesService.get_cotizaciones();
-      if (resp.success) {
-        setCotizaciones(resp.data || []);
+      if (resp.success && resp.data) {
+        setCotizaciones(resp.data.cotizaciones || []);
+        setDetalles(resp.data.detalles || []);
       }
     } catch (e) {
       console.error("Error al cargar cotizaciones:", e);
@@ -27,6 +29,7 @@ export const useCotizaciones = () => {
 
   return {
     cotizaciones,
+    detalles,
     loading,
     fetchCotizaciones,
     busqueda,
