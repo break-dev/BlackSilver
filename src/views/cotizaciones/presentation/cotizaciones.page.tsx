@@ -261,6 +261,7 @@ export const CotizacionesPage = () => {
         <RegistroCotizacion
           ref={registroRef}
           isCollapsed={isCollapsed}
+          onAutoCollapse={setIsCollapsed}
           onSuccess={() => {
             closeCreate();
             fetchCotizaciones();
