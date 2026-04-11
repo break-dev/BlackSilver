@@ -19,9 +19,7 @@ import {
   CalendarDaysIcon,
   BuildingStorefrontIcon,
   CurrencyDollarIcon,
-  CheckCircleIcon,
   ClockIcon,
-  EyeIcon,
   BanknotesIcon,
   CubeIcon,
   TableCellsIcon,
@@ -39,10 +37,10 @@ interface ListadoComparativosProps {
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
-const estadoConfig: Record<string, { color: string; label: string }> = {
-  Generada:    { color: "indigo",  label: "Generada" },
-  Aprobada:    { color: "teal",    label: "Aprobada" },
-  Desestimada: { color: "zinc",    label: "Desestimada" },
+const estadoConfig: Record<string, { color: string; label: string; variant: "filled" | "light" | "outline" }> = {
+  Generada:    { color: "indigo", label: "Generada",    variant: "light"  },
+  Aprobada:    { color: "teal",   label: "Aprobada",    variant: "filled" },
+  Desestimada: { color: "zinc",   label: "Desestimada", variant: "outline" },
 };
 
 export const ListadoComparativos = ({
@@ -246,14 +244,9 @@ export const ListadoComparativos = ({
                                   </Badge>
                                   {/* Estado */}
                                   <Badge
-                                    variant={cot.estado === "Aprobada" ? "filled" : "dot"}
+                                    variant={cfg.variant}
                                     color={cfg.color}
                                     size="xs"
-                                    leftSection={
-                                      cot.estado === "Aprobada" ? (
-                                        <CheckCircleIcon className="w-3 h-3" />
-                                      ) : undefined
-                                    }
                                   >
                                     {cfg.label}
                                   </Badge>
@@ -278,24 +271,14 @@ export const ListadoComparativos = ({
                                 <Button
                                   size="xs"
                                   radius="xl"
-                                  color="teal"
-                                  variant={cot.estado === "Aprobada" ? "filled" : "light"}
+                                  color="green"
+                                  variant="filled"
                                   leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
-                                  disabled={cot.estado === "Desestimada"}
+                                  disabled={cot.estado === "Aprobada" || cot.estado === "Desestimada"}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   Aprobar
                                 </Button>
-                              </Tooltip>
-
-                              {/* Ver detalles (chevron) */}
-                              <Tooltip label="Ver productos" withArrow>
-                                <div
-                                  className="w-7 h-7 rounded-full bg-zinc-800/80 flex items-center justify-center border border-zinc-700/40 cursor-pointer hover:border-indigo-500/40 hover:bg-indigo-500/10 transition-all"
-                                  onClick={(e) => { e.stopPropagation(); toggleCot(cot.id); }}
-                                >
-                                  <EyeIcon className="w-3.5 h-3.5 text-zinc-400" />
-                                </div>
                               </Tooltip>
 
                               <div className="w-6 h-6 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0">
@@ -401,39 +384,69 @@ export const ListadoComparativos = ({
                           </Group>
 
                           <div className="grid grid-cols-1 gap-2">
-                            {cotDetalles.map((det) => (
-                              <div
-                                key={det.id}
-                                className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-4 py-3 flex justify-between items-center hover:border-indigo-500/20 transition-colors"
-                              >
-                                <Stack gap={2}>
-                                  <Group gap="xs">
-                                    <Text size="sm" fw={800} className="text-zinc-100">
-                                      {det.producto_nombre}
-                                    </Text>
-                                  </Group>
-                                  <Text size="xs" c="dimmed">
-                                    {formatNumber(det.cantidad)} {det.unidad_medida_abv}
-                                    {det.contenido_por_presentacion > 1 &&
-                                      ` × ${det.contenido_por_presentacion} = ${formatNumber(det.cantidad_base)} und. base`}
-                                  </Text>
+                            {cotDetalles.map((det) => {
+                              const subtotal = Number(det.cantidad) * Number(det.precio_unitario);
+                              return (
+                                <div
+                                  key={det.id}
+                                  className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-4 py-3 hover:border-indigo-500/20 transition-colors"
+                                >
+                                  <div className="flex justify-between items-start gap-4">
+                                    {/* Info izquierda */}
+                                    <Stack gap={2} className="flex-1">
+                                      <Text size="sm" fw={800} className="text-zinc-100">
+                                        {det.producto_nombre}
+                                      </Text>
+                                      <Text size="xs" c="dimmed">
+                                        {formatNumber(det.cantidad)} {det.unidad_medida_abv}
+                                        {det.contenido_por_presentacion > 1 &&
+                                          ` × ${det.contenido_por_presentacion} = ${formatNumber(det.cantidad_base)} und. base`}
+                                      </Text>
+                                    </Stack>
+
+                                    {/* Precio unitario + Subtotal — lado a lado */}
+                                    <Group gap="xs" wrap="nowrap" className="shrink-0">
+                                      <Badge
+                                        variant="light"
+                                        color="pink"
+                                        size="sm"
+                                        radius="md"
+                                      >
+                                        {cot.moneda === "Soles" ? "S/." : "$"} {formatNumber(Number(det.precio_unitario))} / {det.unidad_medida_abv}
+                                      </Badge>
+                                      <Badge
+                                        variant="filled"
+                                        color="pink"
+                                        size="sm"
+                                        radius="md"
+                                      >
+                                        Sub: {cot.moneda === "Soles" ? "S/." : "$"} {formatNumber(subtotal)}
+                                      </Badge>
+                                    </Group>
+                                  </div>
+
+                                  {/* Comentario (solo si existe) */}
                                   {det.comentario && (
-                                    <Text size="xs" className="italic text-zinc-500">
-                                      {det.comentario}
-                                    </Text>
+                                    <div className="mt-3 pt-2 border-t border-zinc-800/50">
+                                      <Text
+                                        size="xs"
+                                        c="dimmed"
+                                        fw={800}
+                                        className="uppercase tracking-widest mb-1"
+                                      >
+                                        Comentario
+                                      </Text>
+                                      <div className="flex gap-2">
+                                        <div className="w-0.5 rounded-full bg-indigo-500/40 shrink-0" />
+                                        <Text size="xs" className="italic text-zinc-400 leading-relaxed">
+                                          {det.comentario}
+                                        </Text>
+                                      </div>
+                                    </div>
                                   )}
-                                </Stack>
-                                <Stack gap={0} align="flex-end">
-                                  <Text size="sm" fw={900} className="text-emerald-400 font-mono">
-                                    {cot.moneda === "Soles" ? "S/." : "$"}{" "}
-                                    {formatNumber(Number(det.precio_unitario))}
-                                  </Text>
-                                  <Text size="xs" c="dimmed">
-                                    por {det.unidad_medida_abv}
-                                  </Text>
-                                </Stack>
-                              </div>
-                            ))}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </Collapse>
