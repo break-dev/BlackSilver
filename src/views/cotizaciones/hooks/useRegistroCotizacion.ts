@@ -315,10 +315,12 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const payload: DTO_RegistrarComparativo = {
         productos: productos,
         cotizaciones: cotizaciones.map(c => {
-            // Conversión de Date a String para la API (Formato YYYY-MM-DD)
+            // Conversión de Date a String para la API (Solo si es Crédito)
             let fechaStr = null;
             const fechaVal = c.fecha_vencimiento_pago as unknown;
-            if (fechaVal instanceof Date) {
+            
+            // SI ES CRÉDITO, procesamos la fecha. SI ES CONTADO, se queda en null.
+            if (c.metodo_pago === MetodoPago.Credito && fechaVal instanceof Date) {
               const year = fechaVal.getFullYear();
               const month = String(fechaVal.getMonth() + 1).padStart(2, '0');
               const day = String(fechaVal.getDate()).padStart(2, "0");
