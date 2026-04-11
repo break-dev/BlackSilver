@@ -71,37 +71,35 @@ export const ComparativoTabla = ({
   };
 
   return (
-    <div className="max-h-[750px] overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4">
+    <div className="h-[calc(100vh-210px)] overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar mt-4 relative">
       <Table
-        stickyHeader
-        stickyHeaderOffset={0}
         withColumnBorders
         withTableBorder={false}
         verticalSpacing="md"
         horizontalSpacing="md"
+        className="border-separate border-spacing-0 min-w-full"
       >
-        <Table.Thead className="bg-zinc-950 z-30">
+        <Table.Thead className="z-50">
           <Table.Tr>
+            {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
             <Table.Th
-              style={{ width: 200, minWidth: 200 }}
-              className="border-r border-zinc-800 sticky top-0 left-0 z-40 bg-zinc-950 shadow-2xl"
+              style={{ width: 200, minWidth: 200, verticalAlign: 'middle' }}
+              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-[100] p-6 shadow-xl"
             >
-              <Group gap="xs">
-                <Text
-                  size="xs"
-                  fw={800}
-                  className="text-zinc-500 uppercase tracking-widest"
-                >
-                  Productos
-                </Text>
-              </Group>
+              <Text
+                size="xs"
+                fw={800}
+                className="text-white uppercase tracking-widest text-center"
+              >
+                Productos
+              </Text>
             </Table.Th>
 
             {cotizaciones.map((cot, idx) => (
               <Table.Th
                 key={idx}
-                style={{ minWidth: 450 }}
-                className="p-0 align-top"
+                style={{ minWidth: 450, verticalAlign: 'top' }}
+                className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-40"
               >
                 <Stack
                   gap={4}
