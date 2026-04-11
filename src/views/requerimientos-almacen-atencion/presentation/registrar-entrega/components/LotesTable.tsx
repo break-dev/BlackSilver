@@ -2,6 +2,8 @@ import { Table } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
 import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { JsonScanner } from "../../../../../presentation/utils/JsonScanner";
+import { useJsonScanner } from "../../../../../hooks/useJsonScanner";
 
 interface LotesTableProps {
   lotes: RES_LoteDisponible[];
@@ -28,8 +30,22 @@ export const LotesTable = ({
   handleCantChange,
   handleCantLoteChange,
 }: LotesTableProps) => {
+  const { isFiltering, clearFilter, handleScanned, filterItems } = useJsonScanner();
+  const lotesVisibles = filterItems(lotes, "id_lote");
+
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-2xl bg-zinc-950/30 shadow-inner">
+      {/* Barra de escaneo QR */}
+      <div className="flex justify-end px-4 py-2 border-b border-zinc-800/40 bg-zinc-900/30">
+        <JsonScanner
+          fields={["id"]}
+          onScanned={handleScanned}
+          isFiltering={isFiltering}
+          onClearFilter={clearFilter}
+          filteredCount={lotesVisibles.length}
+        />
+      </div>
+
       <Table
         verticalSpacing="sm"
         horizontalSpacing="lg"
@@ -52,17 +68,19 @@ export const LotesTable = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800/40">
-          {lotes.length === 0 ? (
+          {lotesVisibles.length === 0 ? (
             <tr>
               <td
                 colSpan={4}
                 className="py-10 text-center text-zinc-600 italic text-sm font-medium"
               >
-                No se encontraron lotes disponibles en este almacén.
+                {isFiltering
+                  ? "Ningún lote escaneado coincide con los disponibles."
+                  : "No se encontraron lotes disponibles en este almacén."}
               </td>
             </tr>
           ) : (
-            lotes.map((lote) => {
+            lotesVisibles.map((lote) => {
               const cant = entregaCantidades[idDetalleReq]?.[lote.id_lote] || 0;
 
               // Stock real disponible considerando lo asignado a otros detalles en este modal

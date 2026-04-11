@@ -22,9 +22,9 @@ export interface RES_LoteDisponible {
 }
 
 export interface RES_TicketLote {
-  id: number;
-  producto: string;
-  lote: string;
-  almacen: string;
-  fecha_ingreso: string;
+  id: number; // id_lote
+  producto: string; // nombre del producto
+  lote: string; // es el correlatito del lote
+  almacen: string; // nombre del almacen
+  fecha_ingreso: string; // fecha de ingreso del lote
 }

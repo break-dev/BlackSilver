@@ -1,6 +1,8 @@
 import { Table, Text } from "@mantine/core";
 import { LoteRowRepo } from "./LoteRowRepo";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { JsonScanner } from "../../../../../presentation/utils/JsonScanner";
+import { useJsonScanner } from "../../../../../hooks/useJsonScanner";
 
 interface LotesTableRepoProps {
   lotes: RES_LoteDisponible[];
@@ -25,8 +27,23 @@ export const LotesTableRepo = ({
   loadingLotes,
   handleUpdateLoteQuantity,
 }: LotesTableRepoProps) => {
+  const { isFiltering, clearFilter, handleScanned, filterItems } =
+    useJsonScanner();
+  const lotesVisibles = filterItems(lotes, "id_lote");
+
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-xl bg-zinc-950/30 shadow-inner">
+      {/* Barra de escaneo QR */}
+      <div className="flex justify-end px-4 py-2 border-b border-zinc-800/40 bg-zinc-900/30">
+        <JsonScanner
+          fields={["id"]}
+          onScanned={handleScanned}
+          isFiltering={isFiltering}
+          onClearFilter={clearFilter}
+          filteredCount={lotesVisibles.length}
+        />
+      </div>
+
       <Table
         verticalSpacing="xs"
         horizontalSpacing="md"
@@ -57,17 +74,19 @@ export const LotesTableRepo = ({
                 </div>
               </td>
             </tr>
-          ) : lotes.length === 0 ? (
+          ) : lotesVisibles.length === 0 ? (
             <tr>
               <td
                 colSpan={4}
                 className="py-10 text-center text-zinc-600 italic text-xs font-medium tracking-tight"
               >
-                No se encontraron lotes para este producto.
+                {isFiltering
+                  ? "Ningún lote escaneado coincide con los disponibles."
+                  : "No se encontraron lotes para este producto."}
               </td>
             </tr>
           ) : (
-            lotes.map((lote) => {
+            lotesVisibles.map((lote) => {
               const currentDetailQuantities =
                 reposicionCantidades[idDetalle] || {};
               const cantBase = currentDetailQuantities[lote.id_lote] || 0;
