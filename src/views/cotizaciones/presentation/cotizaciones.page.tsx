@@ -14,8 +14,11 @@ import {
   ArrowPathIcon,
   ChevronRightIcon,
   CubeIcon,
+  PlusIcon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { BlackcitoMascot } from "../../../presentation/components/BlackcitoMascot";
 
 import { useCotizaciones } from "../hooks/useCotizaciones";
@@ -35,6 +38,8 @@ export const CotizacionesPage = () => {
     useDisclosure(false);
   const [openedProductos, setOpenedProductos] = useState(false);
   const [openedProductosHover, setOpenedProductosHover] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const registroRef = useRef<{ agregarCotizacion: () => void } | null>(null);
 
   // Agrupamos las cotizaciones por comparativo
   const comparativosAgrupados = cotizaciones.reduce(
@@ -196,7 +201,7 @@ export const CotizacionesPage = () => {
         title="Cotizaciones"
         size="100%"
         rightSection={
-          <>
+          <Group gap="sm">
             <BlackcitoMascot
               emotion="feliz"
               message="¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito esta pendiente de ti!"
@@ -215,10 +220,47 @@ export const CotizacionesPage = () => {
             >
               Añadir Productos
             </Button>
-          </>
+
+            {openedCreate && (
+              <>
+                <Divider orientation="vertical" color="zinc.8" h={20} />
+
+                <Button
+                  variant="light"
+                  color="emerald"
+                  radius="xl"
+                  leftSection={<PlusIcon className="w-4 h-4" />}
+                  onClick={() => registroRef.current?.agregarCotizacion()}
+                  size="xs"
+                >
+                  Añadir Cotización
+                </Button>
+
+                <Button
+                  variant="subtle"
+                  color="zinc"
+                  radius="xl"
+                  leftSection={
+                    isCollapsed ? (
+                      <ArrowsPointingOutIcon className="w-5 h-5 text-zinc-400" />
+                    ) : (
+                      <ArrowsPointingInIcon className="w-5 h-5 text-zinc-400" />
+                    )
+                  }
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="hover:bg-white/5"
+                  size="xs"
+                >
+                  {isCollapsed ? "Vista Detallada" : "Vista Resumida"}
+                </Button>
+              </>
+            )}
+          </Group>
         }
       >
         <RegistroCotizacion
+          ref={registroRef}
+          isCollapsed={isCollapsed}
           onSuccess={() => {
             closeCreate();
             fetchCotizaciones();
