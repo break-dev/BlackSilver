@@ -24,6 +24,8 @@ import {
   EyeIcon,
   BanknotesIcon,
   CubeIcon,
+  TableCellsIcon,
+  ReceiptPercentIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
@@ -158,31 +160,26 @@ export const ListadoComparativos = ({
                         <div className="w-1 h-1 rounded-full bg-zinc-700 mx-1" />
                         <BuildingStorefrontIcon className="w-3.5 h-3.5 text-indigo-400/70" />
                         <Text size="xs" fw={600}>
-                          {cots.length} {cots.length === 1 ? "oferta" : "ofertas"}
+                          {cots.length} {cots.length === 1 ? "Cotización" : "Cotizaciones"}
                         </Text>
                       </Group>
                     </Stack>
                   </Group>
 
-                  {/* Badges de correlativos + chevron */}
+                  {/* Botón ver comparativo + chevron */}
                   <Group gap="sm" wrap="nowrap">
-                    <div className="hidden sm:flex gap-1">
-                      {cots.slice(0, 3).map((c) => (
-                        <Badge
-                          key={c.id}
-                          variant="light"
-                          color={estadoConfig[c.estado]?.color ?? "zinc"}
-                          size="xs"
-                        >
-                          {c.correlativo}
-                        </Badge>
-                      ))}
-                      {cots.length > 3 && (
-                        <Badge variant="outline" color="zinc" size="xs">
-                          +{cots.length - 3}
-                        </Badge>
-                      )}
-                    </div>
+                    <Tooltip label="Próximamente" withArrow>
+                      <Button
+                        size="xs"
+                        radius="xl"
+                        variant="light"
+                        color="indigo"
+                        leftSection={<TableCellsIcon className="w-3.5 h-3.5" />}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Ver Comparativo
+                      </Button>
+                    </Tooltip>
                     <div className="w-8 h-8 rounded-full bg-zinc-800/60 flex items-center justify-center border border-zinc-700/50 shrink-0">
                       {isCompExpanded ? (
                         <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
@@ -318,17 +315,33 @@ export const ListadoComparativos = ({
                         <div className="px-4 pb-4 pt-0">
                           <Divider color="zinc.8" mb="sm" />
 
-                          {/* IGV Info */}
-                          <Group gap="xl" mb="sm" px="xs">
+                          {/* Desglose IGV */}
+                          <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3 px-1">
+                            {/* Incluye IGV */}
+                            <Group gap="xs">
+                              <ReceiptPercentIcon className="w-3.5 h-3.5 text-zinc-500" />
+                              <Text size="xs" c="dimmed">
+                                IGV incluido:{" "}
+                                <Badge
+                                  variant="light"
+                                  color={cot.incluye_igv ? "teal" : "orange"}
+                                  size="xs"
+                                >
+                                  {cot.incluye_igv ? "Sí" : "No"}
+                                </Badge>
+                              </Text>
+                            </Group>
+                            {/* Subtotal */}
                             <Group gap="xs">
                               <BanknotesIcon className="w-3.5 h-3.5 text-zinc-500" />
                               <Text size="xs" c="dimmed">
-                                Subtotal:{" "}
+                                Subtotal (sin IGV):{" "}
                                 <span className="text-zinc-300 font-bold">
                                   {cot.moneda === "Soles" ? "S/." : "$"} {formatNumber(Number(cot.total_antes_igv))}
                                 </span>
                               </Text>
                             </Group>
+                            {/* Monto IGV */}
                             <Group gap="xs">
                               <CurrencyDollarIcon className="w-3.5 h-3.5 text-zinc-500" />
                               <Text size="xs" c="dimmed">
@@ -338,6 +351,17 @@ export const ListadoComparativos = ({
                                 </span>
                               </Text>
                             </Group>
+                            {/* Total con IGV */}
+                            <Group gap="xs">
+                              <BanknotesIcon className="w-3.5 h-3.5 text-emerald-500/70" />
+                              <Text size="xs" c="dimmed">
+                                Total (con IGV):{" "}
+                                <span className="text-emerald-400 font-bold">
+                                  {cot.moneda === "Soles" ? "S/." : "$"} {formatNumber(Number(cot.total_despues_igv))}
+                                </span>
+                              </Text>
+                            </Group>
+                            {/* Fecha vencimiento (solo crédito) */}
                             {cot.metodo_pago === MetodoPago.Credito && cot.fecha_vencimiento_pago && (
                               <Group gap="xs">
                                 <ClockIcon className="w-3.5 h-3.5 text-violet-400" />
@@ -349,7 +373,7 @@ export const ListadoComparativos = ({
                                 </Text>
                               </Group>
                             )}
-                          </Group>
+                          </div>
 
                           {/* Observación */}
                           {cot.observacion && (
