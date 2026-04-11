@@ -1,10 +1,10 @@
 import { Badge, Group, NumberInput, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
-import type { RES_LoteReabastecimiento } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
 
 interface LoteRowRepoProps {
-  lote: RES_LoteReabastecimiento;
+  lote: RES_LoteDisponible;
   cantBase: number;
   idDetalle: number;
   unidadMedidaBaseAbv: string;
@@ -76,7 +76,7 @@ export const LoteRowRepo = ({
               {formatNumber(lote.stock_actual_base)} {unidadMedidaBaseAbv}
             </Badge>
           </Group>
-          {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+          {lote.id_unidad_medida_lote !== lote.id_unidad_medida_base && (
             <Text
               size="10px"
               c="zinc.5"
@@ -84,14 +84,14 @@ export const LoteRowRepo = ({
               className="italic uppercase tracking-tight"
             >
               {formatNumber(lote.contenido_por_presentacion)}{" "}
-              {unidadMedidaBaseAbv} x {lote.unidad_medida_abv}
+              {unidadMedidaBaseAbv} x {lote.unidad_medida_lote_abv}
             </Text>
           )}
         </Stack>
       </td>
       <td className="py-3 pr-4">
         <div className="flex items-center justify-center gap-3">
-          {lote.unidad_medida_abv !== unidadMedidaBaseAbv && (
+          {lote.id_unidad_medida_base !== lote.id_unidad_medida_lote && (
             <NumberInput
               size="xs"
               radius="xl"
@@ -118,7 +118,7 @@ export const LoteRowRepo = ({
               hideControls
               rightSection={
                 <Text size="10px" fw={700} c="zinc.5" className="mr-3">
-                  {lote.unidad_medida_abv}
+                  {lote.unidad_medida_lote_abv}
                 </Text>
               }
               rightSectionWidth={45}

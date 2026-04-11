@@ -1,10 +1,27 @@
-import { Badge, Paper, Group, Text, Switch, Alert, Button, Stack, ActionIcon, Divider } from "@mantine/core";
+import {
+  Badge,
+  Paper,
+  Group,
+  Text,
+  Switch,
+  Alert,
+  Button,
+  Stack,
+  ActionIcon,
+  Divider,
+} from "@mantine/core";
 import { CubeIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import { NuevoLoteForm } from "./NuevoLoteForm";
 import { LotesDisponiblesTable } from "./LotesDisponiblesTable";
-import type { GroupedReception, DTO_RecibirLotExtendido } from "../../../hooks/useRegistroRecepcion";
-import type { RES_LoteRecepcionReposicion, RES_UnidadMedida } from "../../../service/prestamos-atencion.responses";
+import type {
+  GroupedReception,
+  DTO_RecibirLotExtendido,
+} from "../../../hooks/useRegistroRecepcion";
+import type {
+  RES_LoteRecepcionReposicion,
+  RES_UnidadMedida,
+} from "../../../service/prestamos-atencion.responses";
 import { useProductoRecepcionCard } from "../../../hooks/useProductoRecepcionCard";
 
 interface ProductoRecepcionCardProps {
@@ -23,7 +40,7 @@ interface ProductoRecepcionCardProps {
     lotIndex: number,
     idLote: number,
     isActive: boolean,
-    qty?: number
+    qty?: number,
   ) => void;
   getLotError: (
     groupIndex: number,
@@ -76,7 +93,11 @@ export const ProductoRecepcionCard = ({
               <CubeIcon className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <Text size="md" fw={900} className="text-white tracking-tight leading-tight">
+              <Text
+                size="md"
+                fw={900}
+                className="text-white tracking-tight leading-tight"
+              >
                 {grouped.producto}
               </Text>
               <Badge
@@ -86,7 +107,8 @@ export const ProductoRecepcionCard = ({
                 mt={2}
                 className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
               >
-                Total a Recibir: {formatNumber(grouped.total_entregado_base)} {grouped.unidad_base_abv}
+                Total a Recibir: {formatNumber(grouped.total_entregado_base)}{" "}
+                {grouped.unidad_base_abv}
               </Badge>
             </div>
           </div>
@@ -106,46 +128,68 @@ export const ProductoRecepcionCard = ({
       <Stack gap={0}>
         {grouped.lots.map((lot: DTO_RecibirLotExtendido, lotIndex: number) => {
           const esNuevoLote = lot.es_nuevo_lote;
-          const fieldError = getLotError(groupIndex, lotIndex, "id_lote_existente");
-
-          const isReadOnly = grouped.lots.length === 1;
+          const fieldError = getLotError(
+            groupIndex,
+            lotIndex,
+            "id_lote_existente",
+          );
 
           return (
             <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
-              {lotIndex > 0 && <Divider color="zinc.8" variant="dashed" mb="md" />}
-                <div className="flex justify-between items-center mb-2">
-                  <Text size="xs" fw={800} c="dimmed" className="uppercase tracking-widest">
-                    Partida #{lotIndex + 1}
-                  </Text>
-                  {grouped.lots.length > 1 && (
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      size="sm"
-                      onClick={() => removeLot(groupIndex, lotIndex)}
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </ActionIcon>
-                  )}
-                </div>
+              {lotIndex > 0 && (
+                <Divider color="zinc.8" variant="dashed" mb="md" />
+              )}
+              <div className="flex justify-between items-center mb-2">
+                <Text
+                  size="xs"
+                  fw={800}
+                  c="dimmed"
+                  className="uppercase tracking-widest"
+                >
+                  Partida #{lotIndex + 1}
+                </Text>
+                {grouped.lots.length > 1 && (
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    size="sm"
+                    onClick={() => removeLot(groupIndex, lotIndex)}
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </ActionIcon>
+                )}
+              </div>
 
               <Group justify="space-between">
                 <Group gap="xs">
-                   <Text size="xs" fw={700} c={esNuevoLote ? "zinc.4" : "emerald.4"}>
-                     Ingresar a Lote Existente
-                   </Text>
-                   <Switch
-                     checked={esNuevoLote}
-                     onChange={(e) => {
-                       const checked = e.currentTarget.checked;
-                       setLotValue(groupIndex, lotIndex, "es_nuevo_lote", checked);
-                     }}
-                     color="indigo"
-                     size="sm"
-                   />
-                   <Text size="xs" fw={700} c={esNuevoLote ? "indigo.3" : "zinc.4"}>
-                     Generar Lote Nuevo
-                   </Text>
+                  <Text
+                    size="xs"
+                    fw={700}
+                    c={esNuevoLote ? "zinc.4" : "emerald.4"}
+                  >
+                    Ingresar a Lote Existente
+                  </Text>
+                  <Switch
+                    checked={esNuevoLote}
+                    onChange={(e) => {
+                      const checked = e.currentTarget.checked;
+                      setLotValue(
+                        groupIndex,
+                        lotIndex,
+                        "es_nuevo_lote",
+                        checked,
+                      );
+                    }}
+                    color="indigo"
+                    size="sm"
+                  />
+                  <Text
+                    size="xs"
+                    fw={700}
+                    c={esNuevoLote ? "indigo.3" : "zinc.4"}
+                  >
+                    Generar Lote Nuevo
+                  </Text>
                 </Group>
               </Group>
 
@@ -155,12 +199,21 @@ export const ProductoRecepcionCard = ({
                     lotes={lotes}
                     loading={loadingLotes}
                     selectedAjustes={lot.ajustes || {}}
-                    onUpdateTabular={(id, active, qty) => updateTabularAdjustment(groupIndex, lotIndex, id, active, qty)}
+                    onUpdateTabular={(id, active, qty) =>
+                      updateTabularAdjustment(
+                        groupIndex,
+                        lotIndex,
+                        id,
+                        active,
+                        qty,
+                      )
+                    }
                     unidadBaseAbv={grouped.unidad_base_abv}
-                    isReadOnly={isReadOnly}
                   />
                   {fieldError && (
-                    <Text size="xs" color="red" mt={4} fw={700}>{fieldError}</Text>
+                    <Text size="xs" color="red" mt={4} fw={700}>
+                      {fieldError}
+                    </Text>
                   )}
                 </div>
               )}
@@ -177,7 +230,6 @@ export const ProductoRecepcionCard = ({
                     loadingUnidades={loadingUnidades}
                     unidadBaseAbv={grouped.unidad_base_abv}
                     esPerecible={isPerecible}
-                    isReadOnly={isReadOnly}
                   />
                 </div>
               )}
@@ -187,8 +239,16 @@ export const ProductoRecepcionCard = ({
       </Stack>
 
       {cantidadTotalError && (
-        <Alert color="red" variant="filled" icon={<CubeIcon className="w-4 h-4" />} m="md" radius="md">
-          <Text size="xs" fw={700}>{cantidadTotalError}</Text>
+        <Alert
+          color="red"
+          variant="filled"
+          icon={<CubeIcon className="w-4 h-4" />}
+          m="md"
+          radius="md"
+        >
+          <Text size="xs" fw={700}>
+            {cantidadTotalError}
+          </Text>
         </Alert>
       )}
     </Paper>

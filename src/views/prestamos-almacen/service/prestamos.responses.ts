@@ -27,8 +27,8 @@ export interface RES_PrestamoDetalle {
   cantidad_repuesta: number;
   cantidad_repuesta_base: number;
   comentario: string | null;
-  id_unidad_medida_sol: number;
-  unidad_medida_sol_abv: string;
+  id_unidad_medida_pr: number;
+  unidad_medida_pr_abv: string;
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;
   estado: string;

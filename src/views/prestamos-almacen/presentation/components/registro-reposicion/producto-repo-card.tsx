@@ -2,12 +2,12 @@ import { Paper, Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { RES_PrestamoDetalle } from "../../../service/prestamos.responses";
-import type { RES_LoteReabastecimiento } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
 import { LotesTableRepo } from "./LotesTableRepo";
 
 interface ProductoRepoCardProps {
   detalle: RES_PrestamoDetalle;
-  lotes: RES_LoteReabastecimiento[];
+  lotes: RES_LoteDisponible[];
   reposicionCantidades: Record<number, Record<number, number>>;
   loadingLotes: boolean;
   handleUpdateLoteQuantity: (
@@ -79,7 +79,7 @@ export const ProductoRepoCard = ({
               size="sm"
             >
               Prestado: {formatNumber(detalle.cantidad_prestada)}{" "}
-              {detalle.unidad_medida_sol_abv}
+              {detalle.unidad_medida_pr_abv}
             </Badge>
             <Badge
               variant="dot"
@@ -89,7 +89,7 @@ export const ProductoRepoCard = ({
               size="sm"
             >
               Repuesto: {formatNumber(detalle.cantidad_repuesta)}{" "}
-              {detalle.unidad_medida_sol_abv}
+              {detalle.unidad_medida_pr_abv}
             </Badge>
             <Badge
               variant="dot"
@@ -99,7 +99,7 @@ export const ProductoRepoCard = ({
               size="sm"
             >
               Por reponer: {formatNumber(faltanteSolicitud)}{" "}
-              {detalle.unidad_medida_sol_abv}
+              {detalle.unidad_medida_pr_abv}
             </Badge>
 
             {totalAsignadoBase > 0 && (
@@ -111,7 +111,7 @@ export const ProductoRepoCard = ({
                 size="sm"
               >
                 Asignado: {formatNumber(totalAsignadoSolicitud)}{" "}
-                {detalle.unidad_medida_sol_abv}
+                {detalle.unidad_medida_pr_abv}
               </Badge>
             )}
           </Group>
@@ -122,7 +122,7 @@ export const ProductoRepoCard = ({
         <LotesTableRepo
           lotes={lotes}
           idDetalle={detalle.id_prestamo_detalle}
-          unidadMedidaBaseAbv={detalle.unidad_medida_sol_abv}
+          unidadMedidaBaseAbv={detalle.unidad_medida_pr_abv}
           reposicionCantidades={reposicionCantidades}
           pendienteBase={faltanteBase}
           loadingLotes={loadingLotes}

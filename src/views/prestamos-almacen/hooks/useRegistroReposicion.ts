@@ -3,7 +3,7 @@ import { PrestamosService } from "../service/prestamos.service";
 import type { RES_PrestamoDetalle } from "../service/prestamos.responses";
 import type { REQ_DetalleReposicionItem } from "../service/prestamos.requests";
 import { useAuthStore } from "../../../stores/auth.store";
-import type { RES_LoteReabastecimiento } from "../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistroReposicionProps {
@@ -31,7 +31,7 @@ export const useRegistroReposicion = ({
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
 
   const [lotesPorProducto, setLotesPorProducto] = useState<
-    Record<number, RES_LoteReabastecimiento[]>
+    Record<number, RES_LoteDisponible[]>
   >({});
 
   // id_detalle -> id_lote -> cantidad_base
@@ -78,8 +78,8 @@ export const useRegistroReposicion = ({
         if (res.success) {
           const grouped = res.data.reduce(
             (
-              acc: Record<number, RES_LoteReabastecimiento[]>,
-              lote: RES_LoteReabastecimiento,
+              acc: Record<number, RES_LoteDisponible[]>,
+              lote: RES_LoteDisponible,
             ) => {
               if (!acc[lote.id_producto]) acc[lote.id_producto] = [];
               acc[lote.id_producto].push(lote);

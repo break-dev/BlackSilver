@@ -406,7 +406,7 @@ export const DetallePrestamo = ({
                           className="font-bold shadow-xs whitespace-nowrap"
                         >
                           {formatNumber(item.cantidad_solicitada)}{" "}
-                          {item.unidad_medida_sol_abv}
+                          {item.unidad_medida_pr_abv}
                         </Badge>
                       </Group>
                     </td>

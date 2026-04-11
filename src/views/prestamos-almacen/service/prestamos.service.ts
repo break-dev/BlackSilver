@@ -1,6 +1,6 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
-import type { RES_LoteReabastecimiento } from "../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
+import type { RES_LoteDisponible } from "../../solicitudes-reabastecimiento-atencion/service/solicitudes-atencion.responses";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
 import type {
   RES_AlmacenSecundario,
@@ -88,7 +88,7 @@ export const PrestamosService = {
   },
 
   getLotesDisponibles: async (idsProductos: number[], idAlmacen: number) => {
-    const { data } = await api.get<IRespuesta<RES_LoteReabastecimiento[]>>(
+    const { data } = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       "/prestamos-almacen/lotes",
       {
         params: { ids_productos: idsProductos, id_almacen: idAlmacen },
