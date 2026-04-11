@@ -14,17 +14,20 @@ const PrintJobRunner = ({ job }: { job: PrintJob }) => {
         if (cancelled) return;
 
         const url = URL.createObjectURL(blob);
-        const win = window.open(url, "_blank");
+        const win = window.open(url, job.config.target || "_blank");
 
-        // Liberar el object URL cuando el tab lo haya cargado
+        // Liberar el object URL. 
+        // Si no hay target (es _blank), intentamos el listener, sino un timeout.
         const revoke = () => URL.revokeObjectURL(url);
-        if (win) {
+        if (win && !job.config.target) {
           win.addEventListener("load", revoke, { once: true });
         } else {
           setTimeout(revoke, 10_000);
-          console.warn(
-            "Permite ventanas emergentes en este sitio para abrir el PDF.",
-          );
+          if (!win && !job.config.target) {
+            console.warn(
+              "Permite ventanas emergentes en este sitio para abrir el PDF.",
+            );
+          }
         }
       } catch (err) {
         console.error("Error al generar el PDF:", err);

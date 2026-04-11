@@ -18,6 +18,7 @@ import type {
   DTO_RegistrarEntrega,
   DTO_RegistrarRecepcionReposicion,
 } from "./prestamos-atencion.requests";
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
 
 const path = "/prestamos-atencion";
 
@@ -197,7 +198,7 @@ export const PrestamosAtencionService = {
 
     formData.append("items", JSON.stringify(dto.items));
 
-    const res = await api.post<IRespuesta<null>>(
+    const res = await api.post<IRespuesta<RES_TicketLote[]>>(
       `${path}/recepciones-reposicion`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },

@@ -11,6 +11,7 @@ import type {
   RES_HistorialEntregas,
 } from "./reabastecimiento.responses";
 import type { DTO_CrearSolicitud, DTO_RegistrarRecepcion } from "./reabastecimiento.requests";
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
 
 const path = "/solicitudes-reabastecimiento";
 
@@ -113,7 +114,7 @@ export const ReabastecimientoService = {
       formData.append("evidencias[]", file);
     });
 
-    const res = await api.post<IRespuesta<null>>(
+    const res = await api.post<IRespuesta<RES_TicketLote[]>>(
       `${path}/recepciones/registrar-recepcion-logistica`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },
@@ -137,7 +138,7 @@ export const ReabastecimientoService = {
       formData.append("evidencias[]", file);
     });
 
-    const res = await api.post<IRespuesta<null>>(
+    const res = await api.post<IRespuesta<RES_TicketLote[]>>(
       `${path}/recepciones/registrar-recepcion-prestamo`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } },

@@ -37,6 +37,10 @@ import type { IArchivo } from "../../../shared/interfaces";
 import { useNotify } from "../../../hooks/useNotify";
 import { RegistroRecepcion } from "./registro-recepcion";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { usePrint } from "../../../hooks/usePrint";
+import { TicketLotePDF } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import QRCode from "qrcode";
 
 interface Props {
   reposiciones: RES_ReposicionPrestamo[];
@@ -52,9 +56,14 @@ export const HistorialReposicionesPrestamo = ({
   idAlmacenLender,
 }: Props) => {
   const { notifyError } = useNotify();
+  const { print } = usePrint();
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
-  const [expandedRecepcionIds, setExpandedRecepcionIds] = useState<Record<number, boolean>>({});
-  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
+  const [expandedRecepcionIds, setExpandedRecepcionIds] = useState<
+    Record<number, boolean>
+  >({});
+  const [showTrazabilidad, setShowTrazabilidad] = useState<
+    Record<number, boolean>
+  >({});
   const [selectedRepo, setSelectedRepo] =
     useState<RES_ReposicionPrestamo | null>(null);
   const [detailsForReception, setDetailsForReception] = useState<
@@ -71,7 +80,10 @@ export const HistorialReposicionesPrestamo = ({
   };
 
   const toggleTrazabilidad = (idReposicion: number) => {
-    setShowTrazabilidad((prev) => ({ ...prev, [idReposicion]: !prev[idReposicion] }));
+    setShowTrazabilidad((prev) => ({
+      ...prev,
+      [idReposicion]: !prev[idReposicion],
+    }));
   };
 
   const isExpanded = (id: number, index: number) => {
@@ -418,7 +430,12 @@ export const HistorialReposicionesPrestamo = ({
                           className="py-2 px-3 rounded-lg border border-dashed border-zinc-700/60 hover:border-indigo-500/40 hover:bg-indigo-500/5 transition-all"
                         >
                           <ClipboardDocumentListIcon className="w-4 h-4 text-indigo-400/70" />
-                          <Text size="xs" fw={700} c="zinc.4" className="flex-1">
+                          <Text
+                            size="xs"
+                            fw={700}
+                            c="zinc.4"
+                            className="flex-1"
+                          >
                             Seguimiento de recepciones
                           </Text>
                           {showTrazabilidad[h.id_reposicion] ? (
@@ -612,7 +629,8 @@ export const HistorialReposicionesPrestamo = ({
                                                 c="zinc.5"
                                                 className="uppercase tracking-widest"
                                               >
-                                                Evidencias ({rec.evidencias.length})
+                                                Evidencias (
+                                                {rec.evidencias.length})
                                               </Text>
                                             </Group>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -668,9 +686,33 @@ export const HistorialReposicionesPrestamo = ({
               }
               idEntrega={selectedRepo.id_reposicion}
               tipoEntrega="Reposicion"
-              onSuccess={() => {
+              onSuccess={async (lotesNuevos?: RES_TicketLote[]) => {
                 setOpenedRecepcion(false);
                 onSuccess();
+                if (lotesNuevos && lotesNuevos.length > 0) {
+                  const tickets = await Promise.all(
+                    lotesNuevos.map(async (t) => {
+                      const qrValue = JSON.stringify({
+                        id: t.id,
+                        producto: t.producto,
+                        lote: t.lote,
+                        almacen: t.almacen,
+                        fecha_ingreso: dayjs(t.fecha_ingreso).format(
+                          "DD/MM/YY",
+                        ),
+                      });
+                      const qrDataUrl = await QRCode.toDataURL(qrValue, {
+                        width: 120,
+                        margin: 1,
+                      });
+                      return { ...t, qrDataUrl };
+                    }),
+                  );
+                  print(<TicketLotePDF tickets={tickets} />, {
+                    documentTitle: "Tickets Lotes",
+                    target: "TicketLotePrinter",
+                  });
+                }
               }}
             />
           )}

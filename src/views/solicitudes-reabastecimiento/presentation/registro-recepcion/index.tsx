@@ -21,13 +21,14 @@ import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
 import type { RES_DetalleEntregaReabastecimiento } from "../../service/reabastecimiento.responses";
 import { MultiFilePicker } from "../../../../presentation/utils/MultiFilePicker";
+import type { RES_TicketLote } from "../../../../presentation/utils/TicketLotePDF";
 
 interface Props {
   idAlmacenSolicitante: number;
   detalles: RES_DetalleEntregaReabastecimiento[];
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
-  onSuccess: () => void;
+  onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
 }
 
 export const RegistroRecepcion = (props: Props) => {

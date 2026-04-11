@@ -96,7 +96,7 @@ export const ResumenRecepciones = ({
 
           return (
             <Paper
-              key={rec.id_recepcion}
+              key={`recepcion-${rec.id_recepcion}-${idx}`}
               radius="md"
               className={`border overflow-hidden transition-all duration-300 hover:bg-zinc-900/30 ${
                 rec.con_incidencia
@@ -178,9 +178,9 @@ export const ResumenRecepciones = ({
 
                   {/* Productos recibidos */}
                   <Group gap={4} wrap="wrap" mt="xs">
-                    {rec.detalles.map((det: RecepcionDetalle) => (
+                    {rec.detalles.map((det: RecepcionDetalle, dIdx) => (
                       <span
-                        key={det.id_detalle}
+                        key={`det-${rec.id_recepcion}-${det.id_detalle || dIdx}`}
                         className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
                       >
                         <Text size="xs" className="text-zinc-400">
@@ -263,7 +263,10 @@ export const ResumenRecepciones = ({
                           </Group>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {rec.evidencias.map((ev: IArchivo, i: number) => (
-                              <ArchivoCard key={i} archivo={ev} />
+                              <ArchivoCard 
+                                key={`ev-${rec.id_recepcion}-${i}`} 
+                                archivo={ev} 
+                              />
                             ))}
                           </div>
                         </div>

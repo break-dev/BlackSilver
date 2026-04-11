@@ -1,3 +1,6 @@
+import { Buffer } from "buffer";
+window.Buffer = window.Buffer || Buffer;
+
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { MantineProvider } from "@mantine/core";

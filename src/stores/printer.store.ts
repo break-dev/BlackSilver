@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 
 export interface PrintConfig {
   documentTitle?: string;
+  target?: string;
   onAfterPrint?: () => void | Promise<void>;
 }
 

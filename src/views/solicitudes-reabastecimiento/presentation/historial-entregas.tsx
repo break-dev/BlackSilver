@@ -28,8 +28,12 @@ import { formatNumber } from "../../../presentation/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
 import type { RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistroRecepcion } from "./registro-recepcion/index";
 import { ResumenRecepciones } from "./ResumenRecepciones";
+import { usePrint } from "../../../hooks/usePrint";
+import { TicketLotePDF } from "../../../presentation/utils/TicketLotePDF";
+import { RegistroRecepcion } from "./registro-recepcion";
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import QRCode from "qrcode";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -45,12 +49,15 @@ export const HistorialEntregas = ({
   const { loading, entregas, error, reload } =
     useHistorialEntregas(idSolicitud);
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const { print } = usePrint();
 
   const toggleExpand = (id: string) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const [showTrazabilidad, setShowTrazabilidad] = useState<Record<number, boolean>>({});
+  const [showTrazabilidad, setShowTrazabilidad] = useState<
+    Record<number, boolean>
+  >({});
   const toggleTrazabilidad = (idEntrega: number) => {
     setShowTrazabilidad((prev) => ({ ...prev, [idEntrega]: !prev[idEntrega] }));
   };
@@ -84,7 +91,7 @@ export const HistorialEntregas = ({
   const handleOpenRecepcion = (
     detallesPendientes: RES_DetalleEntregaReabastecimiento[],
     idEntrega: number,
-    tipoEntrega: "Solicitud" | "Prestamo"
+    tipoEntrega: "Solicitud" | "Prestamo",
   ) => {
     setRecepcionData({ idEntrega, detallesPendientes, tipoEntrega });
   };
@@ -122,9 +129,9 @@ export const HistorialEntregas = ({
 
         const detailsGrouped = groupDetailsByProduct(h.detalles || []);
         const pendientes = (h.detalles || []).filter(
-          (d) => 
-            d.estado_entrega_detalle === "Entregado" || 
-            d.estado_entrega_detalle === "En despacho" || 
+          (d) =>
+            d.estado_entrega_detalle === "Entregado" ||
+            d.estado_entrega_detalle === "En despacho" ||
             d.estado_entrega_detalle === "Recibido Parcialmente",
         );
 
@@ -159,13 +166,16 @@ export const HistorialEntregas = ({
                         color={
                           h.estado === "Recibida"
                             ? "teal"
-                            : h.estado === "Procesada" || h.estado === "Recepcionado Parcialmente"
-                            ? "orange"
-                            : "indigo"
+                            : h.estado === "Procesada" ||
+                                h.estado === "Recepcionado Parcialmente"
+                              ? "orange"
+                              : "indigo"
                         }
                         size="xs"
                       >
-                        {h.estado === "Recepcionado Parcialmente" ? "Parcial" : h.estado}
+                        {h.estado === "Recepcionado Parcialmente"
+                          ? "Parcial"
+                          : h.estado}
                       </Badge>
                     </Group>
                     <Group gap="xs" className="text-zinc-400 mt-0.5">
@@ -193,7 +203,7 @@ export const HistorialEntregas = ({
                         handleOpenRecepcion(
                           pendientes,
                           h.id_reabastecimiento_entrega,
-                          h.tipo_entrega as "Solicitud" | "Prestamo"
+                          h.tipo_entrega as "Solicitud" | "Prestamo",
                         );
                       }}
                     >
@@ -264,8 +274,8 @@ export const HistorialEntregas = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {h.evidencias.map((ev, idx) => (
                         <ArchivoCard
-                           key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
-                           archivo={ev}
+                          key={`${h.id_reabastecimiento_entrega}-ev-${idx}`}
+                          archivo={ev}
                         />
                       ))}
                     </div>
@@ -295,23 +305,31 @@ export const HistorialEntregas = ({
                           {d.producto}
                         </Text>
                         <Group gap={4}>
-                          {d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" ? (
+                          {d.estado_entrega_detalle === "Recibido" ||
+                          d.estado_entrega_detalle === "Entrega confirmada" ? (
                             <Badge
                               size="xs"
                               variant="light"
                               color="teal"
-                              leftSection={<CheckBadgeIcon className="w-3 h-3" />}
+                              leftSection={
+                                <CheckBadgeIcon className="w-3 h-3" />
+                              }
                             >
                               Recibido
                             </Badge>
-                          ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
+                          ) : d.estado_entrega_detalle ===
+                            "Recibido Parcialmente" ? (
                             <Badge
                               size="xs"
-                               variant="light"
-                               color="orange"
-                               className="font-black"
+                              variant="light"
+                              color="orange"
+                              className="font-black"
                             >
-                               Parcial: {formatNumber((d.cantidad_recibida_total_base || 0))} {d.unidad_medida_base_abv}
+                              Parcial:{" "}
+                              {formatNumber(
+                                d.cantidad_recibida_total_base || 0,
+                              )}{" "}
+                              {d.unidad_medida_base_abv}
                             </Badge>
                           ) : null}
                         </Group>
@@ -327,13 +345,29 @@ export const HistorialEntregas = ({
                             {d.unidad_medida_base_abv}
                           </span>
                         </Text>
-                        {d.estado_entrega_detalle === "Entregado" || d.estado_entrega_detalle === "En despacho" ? (
-                          <Badge size="xs" variant="dot" color="orange" className="mt-1">
+                        {d.estado_entrega_detalle === "Entregado" ||
+                        d.estado_entrega_detalle === "En despacho" ? (
+                          <Badge
+                            size="xs"
+                            variant="dot"
+                            color="orange"
+                            className="mt-1"
+                          >
                             Pendiente
                           </Badge>
-                        ) : d.estado_entrega_detalle === "Recibido Parcialmente" ? (
-                          <Badge size="xs" variant="dot" color="cyan" className="mt-1">
-                            Faltan {formatNumber(d.cantidad_base - (d.cantidad_recibida_total_base || 0))}
+                        ) : d.estado_entrega_detalle ===
+                          "Recibido Parcialmente" ? (
+                          <Badge
+                            size="xs"
+                            variant="dot"
+                            color="cyan"
+                            className="mt-1"
+                          >
+                            Faltan{" "}
+                            {formatNumber(
+                              d.cantidad_base -
+                                (d.cantidad_recibida_total_base || 0),
+                            )}
                           </Badge>
                         ) : null}
                       </Stack>
@@ -342,10 +376,17 @@ export const HistorialEntregas = ({
                 </div>
 
                 {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
-                {h.detalles?.some(d => d.estado_entrega_detalle === "Recibido" || d.estado_entrega_detalle === "Entrega confirmada" || d.estado_entrega_detalle === "Recibido Parcialmente") && (
+                {h.detalles?.some(
+                  (d) =>
+                    d.estado_entrega_detalle === "Recibido" ||
+                    d.estado_entrega_detalle === "Entrega confirmada" ||
+                    d.estado_entrega_detalle === "Recibido Parcialmente",
+                ) && (
                   <div className="px-4 pb-3">
                     <UnstyledButton
-                      onClick={() => toggleTrazabilidad(h.id_reabastecimiento_entrega)}
+                      onClick={() =>
+                        toggleTrazabilidad(h.id_reabastecimiento_entrega)
+                      }
                       className="w-full"
                     >
                       <Group
@@ -356,13 +397,20 @@ export const HistorialEntregas = ({
                         <Text size="xs" fw={700} c="zinc.4" className="flex-1">
                           Seguimiento de recepciones
                         </Text>
-                        {showTrazabilidad[h.id_reabastecimiento_entrega]
-                          ? <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
-                          : <ChevronDownIcon className="w-4 h-4 text-zinc-500" />}
+                        {showTrazabilidad[h.id_reabastecimiento_entrega] ? (
+                          <ChevronUpIcon className="w-4 h-4 text-zinc-500" />
+                        ) : (
+                          <ChevronDownIcon className="w-4 h-4 text-zinc-500" />
+                        )}
                       </Group>
                     </UnstyledButton>
-                    <Collapse in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}>
-                      <ResumenRecepciones idEntrega={h.id_reabastecimiento_entrega} tipoEntrega={h.tipo_entrega} />
+                    <Collapse
+                      in={!!showTrazabilidad[h.id_reabastecimiento_entrega]}
+                    >
+                      <ResumenRecepciones
+                        idEntrega={h.id_reabastecimiento_entrega}
+                        tipoEntrega={h.tipo_entrega}
+                      />
                     </Collapse>
                   </div>
                 )}
@@ -384,9 +432,31 @@ export const HistorialEntregas = ({
             detalles={recepcionData.detallesPendientes}
             idEntrega={recepcionData.idEntrega}
             tipoEntrega={recepcionData.tipoEntrega}
-            onSuccess={() => {
+            onSuccess={async (lotesNuevos?: RES_TicketLote[]) => {
               setRecepcionData(null);
               reload();
+              if (lotesNuevos && lotesNuevos.length > 0) {
+                const tickets = await Promise.all(
+                  lotesNuevos.map(async (t) => {
+                    const qrValue = JSON.stringify({
+                      id: t.id,
+                      producto: t.producto,
+                      lote: t.lote,
+                      almacen: t.almacen,
+                      fecha_ingreso: dayjs(t.fecha_ingreso).format("DD/MM/YY"),
+                    });
+                    const qrDataUrl = await QRCode.toDataURL(qrValue, {
+                      width: 120,
+                      margin: 1,
+                    });
+                    return { ...t, qrDataUrl };
+                  }),
+                );
+                print(<TicketLotePDF tickets={tickets} />, {
+                  documentTitle: "Tickets Lotes",
+                  target: "TicketLotePrinter",
+                });
+              }
             }}
           />
         )}
