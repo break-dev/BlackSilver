@@ -36,11 +36,13 @@ export const RegistroCotizacion = forwardRef<
     cotizaciones,
     loading,
     loadingMaestros,
-    agregarProductoAlComparador,
+    toggleProductoEnComparador,
+    productosEnUsoIds,
     agregarCotizacion,
     eliminarCotizacion,
     updateCotizacionHeader,
     updateCotizacionDetail,
+    toggleCotizacionNoCotiza,
     handleSave,
     maestros,
   } = useRegistroCotizacion(onSuccess);
@@ -89,6 +91,7 @@ export const RegistroCotizacion = forwardRef<
             loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
+            onToggleNoCotiza={toggleCotizacionNoCotiza}
             onRemoveCotizacion={eliminarCotizacion}
             isCollapsed={isCollapsed}
             onAutoCollapse={onAutoCollapse}
@@ -125,8 +128,9 @@ export const RegistroCotizacion = forwardRef<
       <ModalSeleccionProductos
         opened={modalProductosOpened}
         onClose={() => setModalProductosOpened(false)}
-        onSelect={(id) => agregarProductoAlComparador(id)}
+        onToggle={(id) => toggleProductoEnComparador(id)}
         seleccionadosActuales={productos.map((p) => p.id_producto)}
+        productosBloqueados={productosEnUsoIds}
       />
     </div>
   );

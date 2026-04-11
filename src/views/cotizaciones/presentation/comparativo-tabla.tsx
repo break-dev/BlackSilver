@@ -9,14 +9,16 @@ import {
   Switch,
   ActionIcon,
   Badge,
+  Tooltip,
 } from "@mantine/core";
 import {
   XMarkIcon,
   ChatBubbleBottomCenterTextIcon,
   IdentificationIcon,
   ClipboardDocumentCheckIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type {
@@ -49,6 +51,7 @@ interface ComparativoTablaProps {
     field: K,
     value: DTO_CotizacionDetalle[K],
   ) => void;
+  onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
   onRemoveCotizacion: (index: number) => void;
   isCollapsed?: boolean;
 }
@@ -61,6 +64,7 @@ export const ComparativoTabla = ({
   loadingProveedores,
   onUpdateHeader,
   onUpdateDetail,
+  onToggleNoCotiza,
   onRemoveCotizacion,
   isCollapsed = false,
   onAutoCollapse,
@@ -114,7 +118,7 @@ export const ComparativoTabla = ({
             {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
             <Table.Th
               style={{ width: 200, minWidth: 200, verticalAlign: 'middle' }}
-              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-[100] p-6 shadow-xl"
+              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-100 p-6 shadow-xl"
             >
               <Text
                 size="xs"
@@ -279,21 +283,9 @@ export const ComparativoTabla = ({
                             label="Fecha de Vencimiento"
                             withAsterisk
                             placeholder="Seleccione fecha..."
-                            value={
-                              cot.fecha_vencimiento_pago
-                                ? new Date(
-                                    cot.fecha_vencimiento_pago + "T00:00:00",
-                                  )
-                                : null
-                            }
-                            onChange={(val: unknown) =>
-                              onUpdateHeader(
-                                idx,
-                                "fecha_vencimiento_pago",
-                                val instanceof Date
-                                  ? val.toISOString().split("T")[0]
-                                  : null,
-                              )
+                            value={(cot.fecha_vencimiento_pago as unknown) as Date | null}
+                            onChange={(val) =>
+                              onUpdateHeader(idx, "fecha_vencimiento_pago", (val as unknown) as string)
                             }
                             size="xs"
                             radius="lg"
@@ -462,8 +454,32 @@ export const ComparativoTabla = ({
                   );
 
                 return (
-                  <Table.Td key={cotIdx} className="p-4 align-top">
-                    <Stack gap="sm" className="w-full">
+                  <Table.Td 
+                    key={cotIdx} 
+                    className={`p-4 align-top relative transition-all duration-300 ${det.no_cotiza ? 'bg-zinc-950/30' : ''}`}
+                  >
+                    {/* Switch de Inhabilitación (Arriba a la derecha) */}
+                    <div className="absolute top-2 right-2 z-50">
+                      <Tooltip label={det.no_cotiza ? "Habilitar para cotizar" : "Marcar como: No cotiza este producto"} position="left">
+                        <Group gap={6} align="center">
+                          <Text size="10px" fw={700} className={det.no_cotiza ? "text-zinc-600" : "text-zinc-400"}>
+                            {det.no_cotiza ? "OFF" : "¿COTIZAR?"}
+                          </Text>
+                          <Switch 
+                            size="xs"
+                            color="red"
+                            checked={!det.no_cotiza}
+                            onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+                            className="hover:scale-110 transition-transform cursor-pointer"
+                          />
+                        </Group>
+                      </Tooltip>
+                    </div>
+
+                    <Stack 
+                      gap="sm" 
+                      className={`w-full transition-all duration-300 ${det.no_cotiza ? 'opacity-20 pointer-events-none grayscale blur-[0.5px]' : ''}`}
+                    >
                       {(() => {
                         const currentUnit = unidadesMedida.find(
                           (u) => u.value === String(det.id_unidad_medida),
@@ -477,7 +493,7 @@ export const ComparativoTabla = ({
                             {/* Fila 1: Unidad y Cantidad */}
                             <Group grow align="flex-end" gap="xs">
                               <Select
-                                label="Und. Medida de Cotización"
+                                label="Und. de Cotización"
                                 data={unidadesMedida}
                                 value={String(det.id_unidad_medida)}
                                 onChange={(val) =>
@@ -579,7 +595,6 @@ export const ComparativoTabla = ({
 
                             {/* Fila 3: Tarjetas de Resultados Financieros */}
                             <Group grow wrap="nowrap" gap="xs">
-                              {/* Total Unidades Base (Celeste / Cyan) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -600,7 +615,6 @@ export const ComparativoTabla = ({
                                 </Text>
                               </Stack>
 
-                              {/* Precio x Base (Verde Claro / Teal) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -620,7 +634,6 @@ export const ComparativoTabla = ({
                                 </Text>
                               </Stack>
 
-                              {/* Subtotal Final (Verde Oscuro / Emerald) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -666,6 +679,22 @@ export const ComparativoTabla = ({
                         );
                       })()}
                     </Stack>
+
+                    {/* Overlay de 'No Cotiza' */}
+                    {det.no_cotiza && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-6">
+                        <div className="bg-red-500/10 border border-red-500/50 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center gap-2 shadow-2xl">
+                          <NoSymbolIcon className="w-8 h-8 text-red-500 opacity-80" />
+                          <Text 
+                            size="xs" 
+                            fw={800} 
+                            className="text-red-500 uppercase tracking-tighter"
+                          >
+                            No participa
+                          </Text>
+                        </div>
+                      </div>
+                    )}
                   </Table.Td>
                 );
               })}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { 
   DTO_CotizacionRequest, 
   DTO_ProductoComparativo, 
@@ -58,43 +58,66 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     cargarMaestros();
   }, []);
 
-  // Paso 1: Añadir/Quitar productos base del comparativo
-  const agregarProductoAlComparador = useCallback((id_producto: number) => {
+  // Paso 1: Añadir/Quitar productos base del comparativo (Toggle)
+  const toggleProductoEnComparador = useCallback((id_producto: number) => {
     setProductos((prev) => {
-      if (prev.some((p) => p.id_producto === id_producto)) return prev;
+      const existe = prev.some((p) => p.id_producto === id_producto);
       
-      const nuevoProd: DTO_ProductoComparativo = {
-        id_producto,
-        id_solicitud_detalle: null
-      };
+      if (existe) {
+        // Antes de quitar, verificamos si tiene datos en las cotizaciones
+        const tieneDatos = cotizaciones.some(cot => {
+          const det = cot.detalles.find(d => d.id_producto === id_producto);
+          return det && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
+        });
 
-      // Buscamos la unidad base del producto en el catálogo
-      const maestro = maestros.catalogo.find(m => m.id_producto === id_producto);
-      const idUnidadBase = maestro?.id_unidad_medida_base || 1;
+        if (tieneDatos) return prev; // No permitimos quitarlo si tiene datos
 
-      // Si ya hay cotizaciones, les añadimos este producto automáticamente
-      setCotizaciones((prevCots) => 
-        prevCots.map(cot => ({
-          ...cot,
-          detalles: [
-            ...cot.detalles,
-            {
-              id_producto,
-              id_unidad_medida: idUnidadBase,
-              cantidad: 1,
-              contenido_por_presentacion: 1,
-              cantidad_base: 1,
-              precio_unitario: 0,
-              precio_unitario_base: 0,
-              comentario: null
-            }
-          ]
-        }))
-      );
+        // Si no tiene datos, lo quitamos de la lista base
+        const nuevosProds = prev.filter(p => p.id_producto !== id_producto);
+        
+        // Y lo quitamos de los detalles de todas las cotizaciones
+        setCotizaciones((prevCots) => 
+          prevCots.map(cot => ({
+            ...cot,
+            detalles: cot.detalles.filter(d => d.id_producto !== id_producto)
+          }))
+        );
+        
+        return nuevosProds;
+      } else {
+        // Si no existe, lo agregamos (Lógica original)
+        const nuevoProd: DTO_ProductoComparativo = {
+          id_producto,
+          id_solicitud_detalle: null
+        };
 
-      return [...prev, nuevoProd];
+        const maestro = maestros.catalogo.find(m => m.id_producto === id_producto);
+        const idUnidadBase = maestro?.id_unidad_medida_base || 1;
+
+        setCotizaciones((prevCots) => 
+          prevCots.map(cot => ({
+            ...cot,
+            detalles: [
+              ...cot.detalles,
+              {
+                id_producto,
+                id_unidad_medida: idUnidadBase,
+                cantidad: 1,
+                contenido_por_presentacion: 1,
+                cantidad_base: 1,
+                precio_unitario: 0,
+                precio_unitario_base: 0,
+                no_cotiza: false,
+                comentario: null
+              }
+            ]
+          }))
+        );
+
+        return [...prev, nuevoProd];
+      }
     });
-  }, [maestros.catalogo]);
+  }, [maestros.catalogo, cotizaciones]);
 
   // Paso 2: Añadir una nueva columna (oferta) al comparativo
   const agregarCotizacion = useCallback(() => {
@@ -103,7 +126,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         id_proveedor: 0,
         moneda: "Soles",
         metodo_pago: MetodoPago.Contado,
-        fecha_vencimiento_pago: null,
+        fecha_vencimiento_pago: null, // Ahora será Date | null en el estado del hook
         total_antes_igv: 0,
         incluye_igv: true,
         porcentaje_igv: 18,
@@ -121,6 +144,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             cantidad_base: 1,
             precio_unitario: 0,
             precio_unitario_base: 0,
+            no_cotiza: false,
             comentario: null,
           };
         }),
@@ -144,7 +168,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const target = { ...p[index], [field]: value };
 
       if (field === "incluye_igv" || field === "porcentaje_igv" || field === "id_proveedor") {
-        const sumDetalles = target.detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+        const sumDetalles = target.detalles.reduce((acc, d) => {
+          if (d.no_cotiza) return acc;
+          return acc + (d.cantidad * d.precio_unitario);
+        }, 0);
         const factor = 1 + (target.porcentaje_igv / 100);
 
         if (target.incluye_igv) {
@@ -196,7 +223,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
       cot.detalles = detalles;
       
-      const sumDetalles = detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+      const sumDetalles = detalles.reduce((acc, d) => {
+        if (d.no_cotiza) return acc;
+        return acc + (d.cantidad * d.precio_unitario);
+      }, 0);
       const factor = 1 + (cot.porcentaje_igv / 100);
 
       if (cot.incluye_igv) {
@@ -214,6 +244,39 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     });
   }, [maestros.catalogo]);
 
+  const toggleCotizacionNoCotiza = useCallback((cotIndex: number, prodId: number) => {
+    setCotizaciones((prev) => {
+      const p = [...prev];
+      const cot = { ...p[cotIndex] };
+      const detalles = cot.detalles.map((d) => {
+        if (d.id_producto !== prodId) return d;
+        return { ...d, no_cotiza: !d.no_cotiza };
+      });
+
+      cot.detalles = detalles;
+      
+      // Recalcular totales al cambiar estado "no cotiza"
+      const sumDetalles = detalles.reduce((acc, d) => {
+        if (d.no_cotiza) return acc;
+        return acc + (d.cantidad * d.precio_unitario);
+      }, 0);
+      const factor = 1 + (cot.porcentaje_igv / 100);
+
+      if (cot.incluye_igv) {
+        cot.total_despues_igv = sumDetalles;
+        cot.total_antes_igv = sumDetalles / factor;
+        cot.monto_igv = sumDetalles - cot.total_antes_igv;
+      } else {
+        cot.total_antes_igv = sumDetalles;
+        cot.monto_igv = sumDetalles * (cot.porcentaje_igv / 100);
+        cot.total_despues_igv = sumDetalles + cot.monto_igv;
+      }
+
+      p[cotIndex] = cot;
+      return p;
+    });
+  }, []);
+
   const handleSave = async () => {
     if (cotizaciones.length === 0) {
       notify({ type: "info", content: "Debe añadir al menos una cotización." });
@@ -225,16 +288,55 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       return;
     }
 
+    // 1. Validar Fechas de Vencimiento para Créditos
+    const cotsSinFecha = cotizaciones.some(c => c.metodo_pago === MetodoPago.Credito && !c.fecha_vencimiento_pago);
+    if (cotsSinFecha) {
+        notify({ type: "info", content: "Si el método es crédito, debe asignar una fecha de vencimiento." });
+        return;
+    }
+
+    // 2. Validar que cada proveedor tenga al menos un producto "Habilitado"
+    if (cotizaciones.some(c => c.detalles.filter(d => !d.no_cotiza).length === 0)) {
+        notify({ type: "info", content: "Cada proveedor debe cotizar al menos un producto." });
+        return;
+    }
+
+    // 3. Validar que los productos habilitados tengan precio > 0
+    const productosSinPrecio = cotizaciones.some(c => 
+      c.detalles.some(d => !d.no_cotiza && d.precio_unitario <= 0)
+    );
+    if (productosSinPrecio) {
+        notify({ type: "info", content: "Todos los productos habilitados deben tener un precio mayor a 0." });
+        return;
+    }
+
     setLoading(true);
     try {
       const payload: DTO_RegistrarComparativo = {
         productos: productos,
-        cotizaciones: cotizaciones.map(c => ({
-            ...c,
-            total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
-            monto_igv: Number(c.monto_igv.toFixed(2)),
-            total_despues_igv: Number(c.total_despues_igv.toFixed(2))
-        }))
+        cotizaciones: cotizaciones.map(c => {
+            // Conversión de Date a String para la API (Solo si es Crédito)
+            let fechaStr = null;
+            const fechaVal = c.fecha_vencimiento_pago as unknown;
+            
+            // SI ES CRÉDITO, procesamos la fecha. SI ES CONTADO, se queda en null.
+            if (c.metodo_pago === MetodoPago.Credito && fechaVal instanceof Date) {
+              const year = fechaVal.getFullYear();
+              const month = String(fechaVal.getMonth() + 1).padStart(2, '0');
+              const day = String(fechaVal.getDate()).padStart(2, "0");
+              fechaStr = `${year}-${month}-${day}`;
+            }
+
+            return {
+                ...c,
+                fecha_vencimiento_pago: fechaStr,
+                // AQUÍ FILTRAMOS LO QUE NO SE COTIZA PARA NO ENVIARLO A LA BD
+                detalles: c.detalles.filter(d => !d.no_cotiza),
+                total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
+                monto_igv: Number(c.monto_igv.toFixed(2)),
+                total_despues_igv: Number(c.total_despues_igv.toFixed(2))
+            };
+        })
       };
 
       const resp = await CotizacionesService.registrar_comparativo(payload);
@@ -252,17 +354,29 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     }
   };
 
+  const productosEnUsoIds = useMemo(() => {
+    return productos.filter(p => {
+      return cotizaciones.some(cot => {
+        const det = cot.detalles.find(d => d.id_producto === p.id_producto);
+        // Si no cotiza, no se cuenta como "en uso" (se puede quitar del comparativo)
+        return det && !det.no_cotiza && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
+      });
+    }).map(p => p.id_producto);
+  }, [productos, cotizaciones]);
+
   return {
     productos,
     cotizaciones,
     maestros,
     loading,
     loadingMaestros,
-    agregarProductoAlComparador,
+    toggleProductoEnComparador,
+    productosEnUsoIds,
     agregarCotizacion,
     eliminarCotizacion,
     updateCotizacionHeader,
     updateCotizacionDetail,
+    toggleCotizacionNoCotiza,
     handleSave,
   };
 };
