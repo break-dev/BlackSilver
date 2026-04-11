@@ -11,6 +11,7 @@ export const Schema_CotizacionDetalle = z.object({
   precio_unitario: z.number().min(0, "Precio no válido"),
   precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
   comentario: z.string().optional().nullable(),
+  no_cotiza: z.boolean().optional().default(false),
 });
 
 // Cabecera de una cotización (un proveedor)

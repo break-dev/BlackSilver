@@ -42,6 +42,7 @@ export const RegistroCotizacion = forwardRef<
     eliminarCotizacion,
     updateCotizacionHeader,
     updateCotizacionDetail,
+    toggleCotizacionNoCotiza,
     handleSave,
     maestros,
   } = useRegistroCotizacion(onSuccess);
@@ -90,6 +91,7 @@ export const RegistroCotizacion = forwardRef<
             loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
+            onToggleNoCotiza={toggleCotizacionNoCotiza}
             onRemoveCotizacion={eliminarCotizacion}
             isCollapsed={isCollapsed}
             onAutoCollapse={onAutoCollapse}

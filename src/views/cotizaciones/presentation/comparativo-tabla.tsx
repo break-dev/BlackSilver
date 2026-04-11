@@ -9,12 +9,14 @@ import {
   Switch,
   ActionIcon,
   Badge,
+  Tooltip,
 } from "@mantine/core";
 import {
   XMarkIcon,
   ChatBubbleBottomCenterTextIcon,
   IdentificationIcon,
   ClipboardDocumentCheckIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import { useRef, useEffect } from "react";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -49,6 +51,7 @@ interface ComparativoTablaProps {
     field: K,
     value: DTO_CotizacionDetalle[K],
   ) => void;
+  onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
   onRemoveCotizacion: (index: number) => void;
   isCollapsed?: boolean;
 }
@@ -61,6 +64,7 @@ export const ComparativoTabla = ({
   loadingProveedores,
   onUpdateHeader,
   onUpdateDetail,
+  onToggleNoCotiza,
   onRemoveCotizacion,
   isCollapsed = false,
   onAutoCollapse,
@@ -462,8 +466,27 @@ export const ComparativoTabla = ({
                   );
 
                 return (
-                  <Table.Td key={cotIdx} className="p-4 align-top">
-                    <Stack gap="sm" className="w-full">
+                  <Table.Td 
+                    key={cotIdx} 
+                    className={`p-4 align-top relative transition-all duration-300 ${det.no_cotiza ? 'bg-zinc-950/30' : ''}`}
+                  >
+                    {/* Switch de Inhabilitación (Arriba a la derecha) */}
+                    <div className="absolute top-2 right-2 z-50">
+                      <Tooltip label={det.no_cotiza ? "Habilitar para cotizar" : "Marcar como: No cotiza este producto"} position="left">
+                        <Switch 
+                          size="xs"
+                          color="red"
+                          checked={!det.no_cotiza}
+                          onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+                          className="hover:scale-110 transition-transform cursor-pointer"
+                        />
+                      </Tooltip>
+                    </div>
+
+                    <Stack 
+                      gap="sm" 
+                      className={`w-full transition-all duration-300 ${det.no_cotiza ? 'opacity-20 pointer-events-none grayscale blur-[0.5px]' : ''}`}
+                    >
                       {(() => {
                         const currentUnit = unidadesMedida.find(
                           (u) => u.value === String(det.id_unidad_medida),
@@ -477,7 +500,7 @@ export const ComparativoTabla = ({
                             {/* Fila 1: Unidad y Cantidad */}
                             <Group grow align="flex-end" gap="xs">
                               <Select
-                                label="Und. Medida de Cotización"
+                                label="Und. de Cotización"
                                 data={unidadesMedida}
                                 value={String(det.id_unidad_medida)}
                                 onChange={(val) =>
@@ -579,7 +602,6 @@ export const ComparativoTabla = ({
 
                             {/* Fila 3: Tarjetas de Resultados Financieros */}
                             <Group grow wrap="nowrap" gap="xs">
-                              {/* Total Unidades Base (Celeste / Cyan) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -600,7 +622,6 @@ export const ComparativoTabla = ({
                                 </Text>
                               </Stack>
 
-                              {/* Precio x Base (Verde Claro / Teal) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -620,7 +641,6 @@ export const ComparativoTabla = ({
                                 </Text>
                               </Stack>
 
-                              {/* Subtotal Final (Verde Oscuro / Emerald) */}
                               <Stack
                                 gap={0}
                                 px="xs"
@@ -666,6 +686,22 @@ export const ComparativoTabla = ({
                         );
                       })()}
                     </Stack>
+
+                    {/* Overlay de 'No Cotiza' */}
+                    {det.no_cotiza && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-6">
+                        <div className="bg-red-500/10 border border-red-500/50 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center gap-2 shadow-2xl">
+                          <NoSymbolIcon className="w-8 h-8 text-red-500 opacity-80" />
+                          <Text 
+                            size="xs" 
+                            fw={800} 
+                            className="text-red-500 uppercase tracking-tighter"
+                          >
+                            No participa
+                          </Text>
+                        </div>
+                      </div>
+                    )}
                   </Table.Td>
                 );
               })}

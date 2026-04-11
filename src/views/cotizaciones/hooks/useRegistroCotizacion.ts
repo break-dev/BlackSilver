@@ -107,6 +107,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
                 cantidad_base: 1,
                 precio_unitario: 0,
                 precio_unitario_base: 0,
+                no_cotiza: false,
                 comentario: null
               }
             ]
@@ -143,6 +144,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             cantidad_base: 1,
             precio_unitario: 0,
             precio_unitario_base: 0,
+            no_cotiza: false,
             comentario: null,
           };
         }),
@@ -166,7 +168,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const target = { ...p[index], [field]: value };
 
       if (field === "incluye_igv" || field === "porcentaje_igv" || field === "id_proveedor") {
-        const sumDetalles = target.detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+        const sumDetalles = target.detalles.reduce((acc, d) => {
+          if (d.no_cotiza) return acc;
+          return acc + (d.cantidad * d.precio_unitario);
+        }, 0);
         const factor = 1 + (target.porcentaje_igv / 100);
 
         if (target.incluye_igv) {
@@ -218,7 +223,10 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
       cot.detalles = detalles;
       
-      const sumDetalles = detalles.reduce((acc, d) => acc + (d.cantidad * d.precio_unitario), 0);
+      const sumDetalles = detalles.reduce((acc, d) => {
+        if (d.no_cotiza) return acc;
+        return acc + (d.cantidad * d.precio_unitario);
+      }, 0);
       const factor = 1 + (cot.porcentaje_igv / 100);
 
       if (cot.incluye_igv) {
@@ -236,6 +244,39 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     });
   }, [maestros.catalogo]);
 
+  const toggleCotizacionNoCotiza = useCallback((cotIndex: number, prodId: number) => {
+    setCotizaciones((prev) => {
+      const p = [...prev];
+      const cot = { ...p[cotIndex] };
+      const detalles = cot.detalles.map((d) => {
+        if (d.id_producto !== prodId) return d;
+        return { ...d, no_cotiza: !d.no_cotiza };
+      });
+
+      cot.detalles = detalles;
+      
+      // Recalcular totales al cambiar estado "no cotiza"
+      const sumDetalles = detalles.reduce((acc, d) => {
+        if (d.no_cotiza) return acc;
+        return acc + (d.cantidad * d.precio_unitario);
+      }, 0);
+      const factor = 1 + (cot.porcentaje_igv / 100);
+
+      if (cot.incluye_igv) {
+        cot.total_despues_igv = sumDetalles;
+        cot.total_antes_igv = sumDetalles / factor;
+        cot.monto_igv = sumDetalles - cot.total_antes_igv;
+      } else {
+        cot.total_antes_igv = sumDetalles;
+        cot.monto_igv = sumDetalles * (cot.porcentaje_igv / 100);
+        cot.total_despues_igv = sumDetalles + cot.monto_igv;
+      }
+
+      p[cotIndex] = cot;
+      return p;
+    });
+  }, []);
+
   const handleSave = async () => {
     if (cotizaciones.length === 0) {
       notify({ type: "info", content: "Debe añadir al menos una cotización." });
@@ -247,12 +288,20 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       return;
     }
 
+    // Validación extra: Cada proveedor debe tener al menos un producto cotizado
+    if (cotizaciones.some(c => c.detalles.filter(d => !d.no_cotiza).length === 0)) {
+        notify({ type: "info", content: "Cada proveedor debe cotizar al menos un producto." });
+        return;
+    }
+
     setLoading(true);
     try {
       const payload: DTO_RegistrarComparativo = {
         productos: productos,
         cotizaciones: cotizaciones.map(c => ({
             ...c,
+            // AQUÍ FILTRAMOS LO QUE NO SE COTIZA PARA NO ENVIARLO A LA BD
+            detalles: c.detalles.filter(d => !d.no_cotiza),
             total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
             monto_igv: Number(c.monto_igv.toFixed(2)),
             total_despues_igv: Number(c.total_despues_igv.toFixed(2))
@@ -278,7 +327,8 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     return productos.filter(p => {
       return cotizaciones.some(cot => {
         const det = cot.detalles.find(d => d.id_producto === p.id_producto);
-        return det && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
+        // Si no cotiza, no se cuenta como "en uso" (se puede quitar del comparativo)
+        return det && !det.no_cotiza && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
       });
     }).map(p => p.id_producto);
   }, [productos, cotizaciones]);
@@ -295,6 +345,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     eliminarCotizacion,
     updateCotizacionHeader,
     updateCotizacionDetail,
+    toggleCotizacionNoCotiza,
     handleSave,
   };
 };
