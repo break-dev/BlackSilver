@@ -28,13 +28,20 @@ export interface RES_CotizacionDetalle {
   id_cotizacion: number;
   id_comparativo_detalle: number;
   id_unidad_medida: number;
+  producto_nombre: string;
   unidad_medida_nombre: string;
+  unidad_medida_abv: string;
   cantidad: number;
   contenido_por_presentacion: number;
   cantidad_base: number;
   precio_unitario: number;
   precio_unitario_base: number;
   comentario: string | null;
+}
+
+export interface RES_ListadoComparativo {
+  cotizaciones: RES_Cotizacion[];
+  detalles: RES_CotizacionDetalle[];
 }
 
 export interface RES_MaestroProveedor {

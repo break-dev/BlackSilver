@@ -1,7 +1,7 @@
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
 import type { 
-  RES_Cotizacion, 
+  RES_ListadoComparativo,
   RES_MaestroProducto, 
   RES_MaestroProveedor, 
   RES_MaestroUnidadMedida 
@@ -12,8 +12,8 @@ export const CotizacionesService = {
   /**
    * Obtener todas las cotizaciones agrupadas por comparativo
    */
-  get_cotizaciones: async (): Promise<IRespuesta<RES_Cotizacion[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Cotizacion[]>>("/cotizaciones");
+  get_cotizaciones: async (): Promise<IRespuesta<RES_ListadoComparativo>> => {
+    const { data } = await api.get<IRespuesta<RES_ListadoComparativo>>("/cotizaciones");
     return data;
   },
 
