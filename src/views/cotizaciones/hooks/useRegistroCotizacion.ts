@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { 
   DTO_CotizacionRequest, 
   DTO_ProductoComparativo, 
@@ -58,43 +58,65 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     cargarMaestros();
   }, []);
 
-  // Paso 1: Añadir/Quitar productos base del comparativo
-  const agregarProductoAlComparador = useCallback((id_producto: number) => {
+  // Paso 1: Añadir/Quitar productos base del comparativo (Toggle)
+  const toggleProductoEnComparador = useCallback((id_producto: number) => {
     setProductos((prev) => {
-      if (prev.some((p) => p.id_producto === id_producto)) return prev;
+      const existe = prev.some((p) => p.id_producto === id_producto);
       
-      const nuevoProd: DTO_ProductoComparativo = {
-        id_producto,
-        id_solicitud_detalle: null
-      };
+      if (existe) {
+        // Antes de quitar, verificamos si tiene datos en las cotizaciones
+        const tieneDatos = cotizaciones.some(cot => {
+          const det = cot.detalles.find(d => d.id_producto === id_producto);
+          return det && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
+        });
 
-      // Buscamos la unidad base del producto en el catálogo
-      const maestro = maestros.catalogo.find(m => m.id_producto === id_producto);
-      const idUnidadBase = maestro?.id_unidad_medida_base || 1;
+        if (tieneDatos) return prev; // No permitimos quitarlo si tiene datos
 
-      // Si ya hay cotizaciones, les añadimos este producto automáticamente
-      setCotizaciones((prevCots) => 
-        prevCots.map(cot => ({
-          ...cot,
-          detalles: [
-            ...cot.detalles,
-            {
-              id_producto,
-              id_unidad_medida: idUnidadBase,
-              cantidad: 1,
-              contenido_por_presentacion: 1,
-              cantidad_base: 1,
-              precio_unitario: 0,
-              precio_unitario_base: 0,
-              comentario: null
-            }
-          ]
-        }))
-      );
+        // Si no tiene datos, lo quitamos de la lista base
+        const nuevosProds = prev.filter(p => p.id_producto !== id_producto);
+        
+        // Y lo quitamos de los detalles de todas las cotizaciones
+        setCotizaciones((prevCots) => 
+          prevCots.map(cot => ({
+            ...cot,
+            detalles: cot.detalles.filter(d => d.id_producto !== id_producto)
+          }))
+        );
+        
+        return nuevosProds;
+      } else {
+        // Si no existe, lo agregamos (Lógica original)
+        const nuevoProd: DTO_ProductoComparativo = {
+          id_producto,
+          id_solicitud_detalle: null
+        };
 
-      return [...prev, nuevoProd];
+        const maestro = maestros.catalogo.find(m => m.id_producto === id_producto);
+        const idUnidadBase = maestro?.id_unidad_medida_base || 1;
+
+        setCotizaciones((prevCots) => 
+          prevCots.map(cot => ({
+            ...cot,
+            detalles: [
+              ...cot.detalles,
+              {
+                id_producto,
+                id_unidad_medida: idUnidadBase,
+                cantidad: 1,
+                contenido_por_presentacion: 1,
+                cantidad_base: 1,
+                precio_unitario: 0,
+                precio_unitario_base: 0,
+                comentario: null
+              }
+            ]
+          }))
+        );
+
+        return [...prev, nuevoProd];
+      }
     });
-  }, [maestros.catalogo]);
+  }, [maestros.catalogo, cotizaciones]);
 
   // Paso 2: Añadir una nueva columna (oferta) al comparativo
   const agregarCotizacion = useCallback(() => {
@@ -252,13 +274,23 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     }
   };
 
+  const productosEnUsoIds = useMemo(() => {
+    return productos.filter(p => {
+      return cotizaciones.some(cot => {
+        const det = cot.detalles.find(d => d.id_producto === p.id_producto);
+        return det && (det.precio_unitario > 0 || (det.comentario && det.comentario.trim() !== ""));
+      });
+    }).map(p => p.id_producto);
+  }, [productos, cotizaciones]);
+
   return {
     productos,
     cotizaciones,
     maestros,
     loading,
     loadingMaestros,
-    agregarProductoAlComparador,
+    toggleProductoEnComparador,
+    productosEnUsoIds,
     agregarCotizacion,
     eliminarCotizacion,
     updateCotizacionHeader,

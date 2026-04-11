@@ -6,9 +6,10 @@ import {
   Button, 
   Group, 
   Text, 
-  Badge
+  Badge,
+  Select
 } from "@mantine/core";
-import { MagnifyingGlassIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CubeIcon, LockClosedIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import type { RES_MaestroProducto } from "../service/cotizaciones.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -17,18 +18,21 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 interface ModalSeleccionProductosProps {
   opened: boolean;
   onClose: () => void;
-  onSelect: (id_producto: number) => void;
+  onToggle: (id_producto: number) => void;
   seleccionadosActuales: number[];
+  productosBloqueados?: number[];
 }
 
 export const ModalSeleccionProductos = ({
   opened,
   onClose,
-  onSelect,
+  onToggle,
   seleccionadosActuales,
+  productosBloqueados = [],
 }: ModalSeleccionProductosProps) => {
   const [productos, setProductos] = useState<RES_MaestroProducto[]>([]);
   const [busqueda, setBusqueda] = useState("");
+  const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const cargarProductos = useCallback(async () => {
@@ -49,12 +53,31 @@ export const ModalSeleccionProductos = ({
     if (opened) cargarProductos();
   }, [opened, cargarProductos]);
 
+  // Extraemos categorías únicas del catálogo cargado
+  const categoriasDisponibles = useMemo(() => {
+    const list = productos.map(p => p.categoria_nombre);
+    const unique = Array.from(new Set(list)).sort();
+    return unique.map(c => ({ value: c, label: c }));
+  }, [productos]);
+
   const filtrados = useMemo(() => {
-    return productos.filter(p => 
-      p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
-      p.codigo?.toLowerCase().includes(busqueda.toLowerCase())
-    );
-  }, [productos, busqueda]);
+    return productos.filter(p => {
+      const matchTexto = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+                         (p.codigo?.toLowerCase().includes(busqueda.toLowerCase()));
+      const matchCategoria = !categoriaId || p.categoria_nombre === categoriaId;
+      
+      return matchTexto && matchCategoria;
+    });
+  }, [productos, busqueda, categoriaId]);
+
+  const handleToggle = (id: number) => {
+    const isChecked = seleccionadosActuales.includes(id);
+    const isBlocked = productosBloqueados.includes(id);
+
+    if (isChecked && isBlocked) return;
+
+    onToggle(id);
+  };
 
   const columns = [
     {
@@ -62,15 +85,21 @@ export const ModalSeleccionProductos = ({
       title: "",
       textAlign: "center" as const,
       width: 40,
-      render: (p: RES_MaestroProducto) => (
-        <Checkbox 
-          checked={seleccionadosActuales.includes(p.id_producto)} 
-          onChange={() => onSelect(p.id_producto)}
-          color="indigo"
-          radius="sm"
-          size="xs"
-        />
-      )
+      render: (p: RES_MaestroProducto) => {
+        const isBlocked = productosBloqueados.includes(p.id_producto);
+        const isChecked = seleccionadosActuales.includes(p.id_producto);
+        return (
+          <Checkbox 
+            checked={isChecked} 
+            onChange={() => handleToggle(p.id_producto)}
+            color="indigo"
+            radius="sm"
+            size="xs"
+            disabled={isChecked && isBlocked}
+            className={`flex justify-center transition-opacity ${isChecked && isBlocked ? 'opacity-40 cursor-no-drop' : ''}`}
+          />
+        );
+      }
     },
     {
       accessor: "index",
@@ -83,15 +112,21 @@ export const ModalSeleccionProductos = ({
       title: "Producto",
       render: (p: RES_MaestroProducto) => {
         const isChecked = seleccionadosActuales.includes(p.id_producto);
+        const isBlocked = productosBloqueados.includes(p.id_producto);
         return (
-          <Group gap="md" wrap="nowrap" onClick={() => onSelect(p.id_producto)} className="cursor-pointer">
-            <div className={`p-2 rounded-xl border transition-colors ${isChecked ? 'bg-indigo-500/20 border-indigo-400/50' : 'bg-zinc-800/30 border-zinc-700/50'}`}>
+          <Group gap="md" wrap="nowrap" onClick={() => handleToggle(p.id_producto)} className="cursor-pointer group">
+            <div className={`p-2 rounded-xl border transition-all ${isChecked ? 'bg-indigo-500/20 border-indigo-400/50' : 'bg-zinc-800/30 border-zinc-700/50'}`}>
               <CubeIcon className={`w-4 h-4 ${isChecked ? 'text-indigo-400' : 'text-zinc-500'}`} />
             </div>
             <Stack gap={0}>
-              <Text size="sm" fw={700} className={isChecked ? 'text-indigo-200' : 'text-zinc-100'}>
-                {p.nombre}
-              </Text>
+              <Group gap={6} align="center">
+                <Text size="sm" fw={700} className={isChecked ? 'text-indigo-200' : 'text-zinc-100'}>
+                  {p.nombre}
+                </Text>
+                {isChecked && isBlocked && (
+                  <LockClosedIcon className="w-3.5 h-3.5 text-red-400 opacity-70" />
+                )}
+              </Group>
             </Stack>
           </Group>
         );
@@ -122,18 +157,36 @@ export const ModalSeleccionProductos = ({
       title="Añadir Productos al Comparativo"
       size="xl"
     >
-      <Stack gap="md">
-        <TextInput
-          placeholder="Buscar producto por nombre o código..."
-          leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.currentTarget.value)}
-          radius="lg"
-          variant="filled"
-          classNames={{
-            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-600 transition-all"
-          }}
-        />
+      <Stack gap="md" className="relative">
+        <Group grow gap="sm">
+          <TextInput
+            placeholder="Buscar producto por nombre..."
+            leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.currentTarget.value)}
+            radius="lg"
+            variant="filled"
+            classNames={{
+              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-600 transition-all h-10"
+            }}
+          />
+          <Select
+            placeholder="Todas las categorías"
+            leftSection={<Squares2X2Icon className="w-4 h-4 text-zinc-400" />}
+            data={categoriasDisponibles}
+            value={categoriaId}
+            onChange={setCategoriaId}
+            clearable
+            searchable
+            radius="lg"
+            variant="filled"
+            classNames={{
+              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-600 h-10",
+              dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl rounded-xl",
+              option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-indigo-600 data-[selected]:text-white rounded-lg my-1 transition-colors mx-2"
+            }}
+          />
+        </Group>
 
         <DataTableEstandar
           idAccessor="id_producto"
