@@ -126,7 +126,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         id_proveedor: 0,
         moneda: "Soles",
         metodo_pago: MetodoPago.Contado,
-        fecha_vencimiento_pago: null,
+        fecha_vencimiento_pago: null, // Ahora será Date | null en el estado del hook
         total_antes_igv: 0,
         incluye_igv: true,
         porcentaje_igv: 18,
@@ -288,9 +288,25 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       return;
     }
 
-    // Validación extra: Cada proveedor debe tener al menos un producto cotizado
+    // 1. Validar Fechas de Vencimiento para Créditos
+    const cotsSinFecha = cotizaciones.some(c => c.metodo_pago === MetodoPago.Credito && !c.fecha_vencimiento_pago);
+    if (cotsSinFecha) {
+        notify({ type: "info", content: "Si el método es crédito, debe asignar una fecha de vencimiento." });
+        return;
+    }
+
+    // 2. Validar que cada proveedor tenga al menos un producto "Habilitado"
     if (cotizaciones.some(c => c.detalles.filter(d => !d.no_cotiza).length === 0)) {
         notify({ type: "info", content: "Cada proveedor debe cotizar al menos un producto." });
+        return;
+    }
+
+    // 3. Validar que los productos habilitados tengan precio > 0
+    const productosSinPrecio = cotizaciones.some(c => 
+      c.detalles.some(d => !d.no_cotiza && d.precio_unitario <= 0)
+    );
+    if (productosSinPrecio) {
+        notify({ type: "info", content: "Todos los productos habilitados deben tener un precio mayor a 0." });
         return;
     }
 
@@ -298,14 +314,27 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     try {
       const payload: DTO_RegistrarComparativo = {
         productos: productos,
-        cotizaciones: cotizaciones.map(c => ({
-            ...c,
-            // AQUÍ FILTRAMOS LO QUE NO SE COTIZA PARA NO ENVIARLO A LA BD
-            detalles: c.detalles.filter(d => !d.no_cotiza),
-            total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
-            monto_igv: Number(c.monto_igv.toFixed(2)),
-            total_despues_igv: Number(c.total_despues_igv.toFixed(2))
-        }))
+        cotizaciones: cotizaciones.map(c => {
+            // Conversión de Date a String para la API (Formato YYYY-MM-DD)
+            let fechaStr = null;
+            const fechaVal = c.fecha_vencimiento_pago as unknown;
+            if (fechaVal instanceof Date) {
+              const year = fechaVal.getFullYear();
+              const month = String(fechaVal.getMonth() + 1).padStart(2, '0');
+              const day = String(fechaVal.getDate()).padStart(2, "0");
+              fechaStr = `${year}-${month}-${day}`;
+            }
+
+            return {
+                ...c,
+                fecha_vencimiento_pago: fechaStr,
+                // AQUÍ FILTRAMOS LO QUE NO SE COTIZA PARA NO ENVIARLO A LA BD
+                detalles: c.detalles.filter(d => !d.no_cotiza),
+                total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
+                monto_igv: Number(c.monto_igv.toFixed(2)),
+                total_despues_igv: Number(c.total_despues_igv.toFixed(2))
+            };
+        })
       };
 
       const resp = await CotizacionesService.registrar_comparativo(payload);

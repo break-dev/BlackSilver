@@ -283,21 +283,9 @@ export const ComparativoTabla = ({
                             label="Fecha de Vencimiento"
                             withAsterisk
                             placeholder="Seleccione fecha..."
-                            value={
-                              cot.fecha_vencimiento_pago
-                                ? new Date(
-                                    cot.fecha_vencimiento_pago + "T00:00:00",
-                                  )
-                                : null
-                            }
-                            onChange={(val: unknown) =>
-                              onUpdateHeader(
-                                idx,
-                                "fecha_vencimiento_pago",
-                                val instanceof Date
-                                  ? val.toISOString().split("T")[0]
-                                  : null,
-                              )
+                            value={(cot.fecha_vencimiento_pago as unknown) as Date | null}
+                            onChange={(val) =>
+                              onUpdateHeader(idx, "fecha_vencimiento_pago", (val as unknown) as string)
                             }
                             size="xs"
                             radius="lg"
@@ -473,13 +461,18 @@ export const ComparativoTabla = ({
                     {/* Switch de Inhabilitación (Arriba a la derecha) */}
                     <div className="absolute top-2 right-2 z-50">
                       <Tooltip label={det.no_cotiza ? "Habilitar para cotizar" : "Marcar como: No cotiza este producto"} position="left">
-                        <Switch 
-                          size="xs"
-                          color="red"
-                          checked={!det.no_cotiza}
-                          onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
-                          className="hover:scale-110 transition-transform cursor-pointer"
-                        />
+                        <Group gap={6} align="center">
+                          <Text size="10px" fw={700} className={det.no_cotiza ? "text-zinc-600" : "text-zinc-400"}>
+                            {det.no_cotiza ? "OFF" : "¿COTIZAR?"}
+                          </Text>
+                          <Switch 
+                            size="xs"
+                            color="red"
+                            checked={!det.no_cotiza}
+                            onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+                            className="hover:scale-110 transition-transform cursor-pointer"
+                          />
+                        </Group>
                       </Tooltip>
                     </div>
 
