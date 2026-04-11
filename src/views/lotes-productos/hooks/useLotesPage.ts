@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { LotesService } from "../service/lotes.service";
 import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
 import { useUIStore } from "../../../stores/ui.store";
-import { type TicketLoteProps } from "../../../presentation/utils/TicketLote";
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
 
 export const useLotesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -154,14 +154,13 @@ export const useLotesPage = () => {
         prev.map((l) => (l.id_lote === lote.id_lote ? lote : l)),
       );
     },
-    armarTicket: (lote: RES_Lote): TicketLoteProps => ({
+    armarTicket: (lote: RES_Lote): RES_TicketLote => ({
       id: lote.id_lote,
       producto: lote.producto,
       lote: lote.correlativo,
       almacen:
         almacenes.find((a) => String(a.id_almacen) === String(lote.id_almacen))
           ?.nombre || "Sin Almacén",
-      descripcion: lote.descripcion,
       fecha_ingreso: lote.fecha_hora_ingreso,
     }),
   };

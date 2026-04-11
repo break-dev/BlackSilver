@@ -47,14 +47,3 @@ export interface RES_Almacen {
   id_almacen: number;
   nombre: string;
 }
-
-export interface RES_Ticket {
-  id: number;
-  id_almacen: number;
-  almacen: string;
-  id_producto: number;
-  producto: string;
-  lote: string;
-  descripcion: string | null;
-  fecha_ingreso: string;
-}

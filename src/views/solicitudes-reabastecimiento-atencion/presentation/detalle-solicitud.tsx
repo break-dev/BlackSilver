@@ -388,14 +388,6 @@ export const DetalleSolicitud = ({
                       >
                         {item.producto}
                       </Text>
-                      {item.empleado_atencion && (
-                        <Group gap={4}>
-                          <UserIcon className="w-3 h-3 text-indigo-400" />
-                          <Text size="10px" fw={700} c="zinc.5">
-                            Atendido por: {item.empleado_atencion}
-                          </Text>
-                        </Group>
-                      )}
                       {(() => {
                         const stock = Number(item.stock_disponible_base || 0);
                         const pendiente = item.pendiente_base;

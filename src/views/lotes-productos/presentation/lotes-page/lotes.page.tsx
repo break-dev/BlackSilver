@@ -2,6 +2,8 @@ import { Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useState } from "react";
 import { InboxStackIcon } from "@heroicons/react/24/outline";
+import QRCode from "qrcode";
+import dayjs from "dayjs";
 
 import { useLotesPage } from "../../hooks/useLotesPage";
 import type { RES_Lote } from "../../service/lotes.responses";
@@ -12,11 +14,10 @@ import { RegistroLote } from "../registro-lote";
 import { AjusteStockModal } from "../ajuste-stock";
 import { LotesFilter } from "./lotes-filter";
 import { ProductGroupCard } from "./product-group-card/product-group-card";
-import { PrinterPage } from "../../../../presentation/utils/printer-page";
-import { TicketLotePrinter } from "../../../../presentation/utils/TicketLote";
+import { TicketLotePDF } from "../../../../presentation/utils/TicketLotePDF";
 import { useGroupedProducts } from "../../hooks/useGroupedProducts";
 import { useLotesColumns } from "../../hooks/useLotesColumns";
-import { type TicketLoteProps } from "../../../../presentation/utils/TicketLote";
+import { usePrint } from "../../../../hooks/usePrint";
 
 export const LotesPage = () => {
   useTitlePage("Gestión de Inventario y Lotes");
@@ -46,13 +47,34 @@ export const LotesPage = () => {
   const [loteParaAjustar, setLoteParaAjustar] = useState<RES_Lote | null>(null);
   const [openedAjuste, { open: openAjuste, close: closeAjuste }] =
     useDisclosure(false);
-  const [openedPrinter, setOpenedPrinter] = useState(0);
-  const [ticketsToPrint, setTicketsToPrint] = useState<TicketLoteProps[]>([]);
 
-  const handlePrint = (lotes: RES_Lote | RES_Lote[]) => {
+  const { print } = usePrint();
+
+  const handlePrint = async (lotes: RES_Lote | RES_Lote[]) => {
     const lotesArray = Array.isArray(lotes) ? lotes : [lotes];
-    setTicketsToPrint(lotesArray.map(armarTicket));
-    setOpenedPrinter((s) => s + 1); // Disparo por pulso (contador)
+    const rawTickets = lotesArray.map(armarTicket);
+
+    // Pre-generar QR como PNG data URL (qrcode no funciona dentro de react-pdf)
+    const tickets = await Promise.all(
+      rawTickets.map(async (t) => {
+        const qrValue = JSON.stringify({
+          id: t.id,
+          producto: t.producto,
+          lote: t.lote,
+          almacen: t.almacen,
+          fecha_ingreso: dayjs(t.fecha_ingreso).format("DD/MM/YY"),
+        });
+        const qrDataUrl = await QRCode.toDataURL(qrValue, {
+          width: 120,
+          margin: 1,
+        });
+        return { ...t, qrDataUrl };
+      }),
+    );
+
+    print(<TicketLotePDF tickets={tickets} />, {
+      documentTitle: "Tickets",
+    });
   };
 
   // Grouping logic concentrada en hook abstracto
@@ -162,13 +184,6 @@ export const LotesPage = () => {
           />
         )}
       </ModalEstandar>
-
-      <PrinterPage
-        opened={openedPrinter}
-        size="fit"
-      >
-        <TicketLotePrinter data={ticketsToPrint} />
-      </PrinterPage>
     </div>
   );
 };

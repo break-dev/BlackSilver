@@ -10,14 +10,18 @@ Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS dis
 - **Build Tool:** [Vite 7](https://vitejs.dev/)
 - **Languaje:** [TypeScript](https://www.typescriptlang.org/)
 - **UI Library:** [Mantine 8](https://mantine.dev/)
-- **Icons:** [HeroIcons](https://heroicons.com/)
-- **Icons:** [Tabler Icons](https://tabler.io/icons)
+- **Icons:** [HeroIcons](https://heroicons.com/) & [Tabler Icons](https://tabler.io/icons)
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
-- **State Management:** [Zustand 5](https://zustand-demo.pmnd.rs/) (Ligero y eficiente)
+- **State Management:** [Zustand 5](https://zustand.com/)
 - **Animations:** [Motion 12](https://motion.dev/) (Framer Motion)
 - **Forms & Validation:** [Zod](https://zod.dev/) + [Mantine Form](https://mantine.dev/form/use-form/)
 - **Routing:** [React Router 7](https://reactrouter.com/)
 - **HTTP Client:** [Axios](https://axios-http.com/)
+- **PDF & Printing:** [@react-pdf/renderer](https://react-pdf.org/) + [react-pdf-tailwind](https://github.com/diegomura/react-pdf-tailwind) (Generación de PDFs vectoriales estilados con Tailwind CSS)
+- **Utilities:** [Day.js](https://day.js.org/) (Fechas), [QRCode](https://github.com/soldair/node-qrcode) (QR), [tailwind-merge](https://github.com/dcastil/tailwind-merge) (Fusión de clases)
+- **Data Grid:** [Mantine DataTable](https://icflorescu.github.io/mantine-datatable/) (Tablas de datos avanzadas)
+- **Charts:** [Recharts](https://recharts.org/) + [@mantine/charts](https://mantine.dev/charts/getting-started/)
+- **Rich Text Editor:** [Tiptap](https://tiptap.dev/) (Editor de texto enriquecido modular)
 
 ---
 

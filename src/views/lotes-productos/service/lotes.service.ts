@@ -1,3 +1,4 @@
+import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
 import type { DTO_AjustarStock, DTO_CrearLote } from "./lotes.requests";
@@ -6,7 +7,6 @@ import type {
   RES_ProductoDisponible,
   RES_UnidadMedida,
   RES_Almacen,
-  RES_Ticket,
 } from "./lotes.responses";
 import dayjs from "dayjs";
 
@@ -90,9 +90,12 @@ export class LotesService {
    * Obtener información de lotes para impresión de tickets.
    */
   static async getTicketsInfo(ids: number[]) {
-    const response = await api.get<IRespuesta<RES_Ticket[]>>(`${this.PATH}/tickets`, {
-      params: { ids: ids.join(",") },
-    });
+    const response = await api.get<IRespuesta<RES_TicketLote[]>>(
+      `${this.PATH}/tickets`,
+      {
+        params: { ids: ids.join(",") },
+      },
+    );
     return response.data;
   }
 }

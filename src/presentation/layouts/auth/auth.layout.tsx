@@ -4,6 +4,7 @@ import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
 import { useAuthLayout } from "./hooks/useAuthLayout";
+import { GlobalPrinterPortal } from "../../utils/GlobalPrinterPortal";
 
 export const AuthLayout = () => {
   const { open, setOpen } = useAuthLayout();
@@ -43,9 +44,9 @@ export const AuthLayout = () => {
 
       {/* Capa de contenido */}
       <div className="relative z-10 flex flex-col flex-1">
-        <GlobalNotification />
         <Header onMenuToggle={() => setOpen(true)} />
         {open && <Navbar onClose={() => setOpen(false)} />}
+        <GlobalNotification />
 
         <main className="flex-1 mx-auto w-full pt-22 px-4 pb-10 overflow-hidden relative">
           <motion.div
@@ -59,6 +60,7 @@ export const AuthLayout = () => {
           </motion.div>
         </main>
       </div>
+      <GlobalPrinterPortal />
     </div>
   );
 };
