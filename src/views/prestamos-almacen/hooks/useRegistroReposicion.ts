@@ -3,7 +3,7 @@ import { PrestamosService } from "../service/prestamos.service";
 import type { RES_PrestamoDetalle } from "../service/prestamos.responses";
 import type { REQ_DetalleReposicionItem } from "../service/prestamos.requests";
 import { useAuthStore } from "../../../stores/auth.store";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistroReposicionProps {

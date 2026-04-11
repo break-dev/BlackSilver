@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { LotesService } from "../service/lotes.service";
 import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
 import { useUIStore } from "../../../stores/ui.store";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 
 export const useLotesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);

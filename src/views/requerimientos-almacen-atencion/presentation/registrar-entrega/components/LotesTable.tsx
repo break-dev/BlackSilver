@@ -1,7 +1,7 @@
 import { Table } from "@mantine/core";
 import { LoteRow } from "./LoteRow";
 import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LotesTableProps {
   lotes: RES_LoteDisponible[];
@@ -67,12 +67,18 @@ export const LotesTable = ({
 
               // Stock real disponible considerando lo asignado a otros detalles en este modal
               // Suma total en todos los detalles de este modal
-              const totalItemsTotal = Object.values(entregaCantidades).reduce((sum, lotesMap) => {
-                return sum + (lotesMap[lote.id_lote] || 0);
-              }, 0);
+              const totalItemsTotal = Object.values(entregaCantidades).reduce(
+                (sum, lotesMap) => {
+                  return sum + (lotesMap[lote.id_lote] || 0);
+                },
+                0,
+              );
 
               // Stock restante global (lo que se muestra al usuario)
-              const stockVisible = Math.max(0, (lote.stock_actual_base || 0) - totalItemsTotal);
+              const stockVisible = Math.max(
+                0,
+                (lote.stock_actual_base || 0) - totalItemsTotal,
+              );
 
               // Lo máximo extra que puede añadir esta fila actual
               const maxBase = Math.min(

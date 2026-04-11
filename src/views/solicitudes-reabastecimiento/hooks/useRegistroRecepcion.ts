@@ -12,7 +12,7 @@ import type {
   DTO_RegistrarRecepcion,
 } from "../service/reabastecimiento.requests";
 import type { RES_UnidadMedida } from "../../lotes-productos/service/lotes.responses";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {

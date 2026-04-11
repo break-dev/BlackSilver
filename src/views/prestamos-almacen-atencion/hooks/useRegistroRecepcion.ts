@@ -11,7 +11,7 @@ import type {
   DTO_RecibirEntregaReposicionItem,
   DTO_ItemRecepcionReposicion,
 } from "../service/prestamos-atencion.requests";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {

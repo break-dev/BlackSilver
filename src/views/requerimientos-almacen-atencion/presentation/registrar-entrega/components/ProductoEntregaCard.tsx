@@ -3,7 +3,7 @@ import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import { DetalleEntregaSection } from "./DetalleEntregaSection";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface ProductoEntregaCardProps {
   idProducto: number;

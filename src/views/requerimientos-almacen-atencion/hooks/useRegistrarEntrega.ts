@@ -7,7 +7,7 @@ import type {
 import { AtencionService } from "../service/atencion.service";
 import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface UseRegistrarEntregaBatchProps {

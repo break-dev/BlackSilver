@@ -2,7 +2,7 @@ import { Badge, Group, Text } from "@mantine/core";
 import { formatNumber } from "../../../../../presentation/functions/formatNumber";
 import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import { LotesTable } from "./LotesTable";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface DetalleEntregaSectionProps {
   detalle_req: DetalleRequerimientoExtendido;

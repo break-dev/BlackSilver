@@ -18,7 +18,7 @@ import type {
   DTO_RegistrarEntrega,
   DTO_RegistrarRecepcionReposicion,
 } from "./prestamos-atencion.requests";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 
 const path = "/prestamos-atencion";
 
@@ -80,7 +80,7 @@ export const PrestamosAtencionService = {
     );
     return res.data;
   },
-  
+
   obtenerHistorialEntregas: async (idPrestamo: number) => {
     const res = await api.get<IRespuesta<RES_EntregaPrestamo[]>>(
       `${path}/historial-entregas`,
@@ -161,7 +161,7 @@ export const PrestamosAtencionService = {
 
   listarUnidades: async () => {
     const res = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      `${path}/catalogos/unidades`
+      `${path}/catalogos/unidades`,
     );
     return res.data;
   },

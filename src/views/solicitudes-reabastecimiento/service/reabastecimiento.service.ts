@@ -10,20 +10,26 @@ import type {
   RecepcionEvento,
   RES_HistorialEntregas,
 } from "./reabastecimiento.responses";
-import type { DTO_CrearSolicitud, DTO_RegistrarRecepcion } from "./reabastecimiento.requests";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type {
+  DTO_CrearSolicitud,
+  DTO_RegistrarRecepcion,
+} from "./reabastecimiento.requests";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 
 const path = "/solicitudes-reabastecimiento";
 
 export const ReabastecimientoService = {
-  listar: async (filters: { 
-    id_almacen_solicitante?: number; 
-    mes: string; 
-    yearcito: string 
+  listar: async (filters: {
+    id_almacen_solicitante?: number;
+    mes: string;
+    yearcito: string;
   }) => {
-    const res = await api.get<IRespuesta<RES_SolicitudReabastecimiento[]>>(path, {
-      params: filters,
-    });
+    const res = await api.get<IRespuesta<RES_SolicitudReabastecimiento[]>>(
+      path,
+      {
+        params: filters,
+      },
+    );
     return res.data;
   },
 
@@ -85,13 +91,16 @@ export const ReabastecimientoService = {
   /**
    * Obtiene los lotes disponibles en el almacen destino para una entrega
    */
-  getLotesDestino: async (idAlmacenSolicitante: number, idProductos: number[]) => {
+  getLotesDestino: async (
+    idAlmacenSolicitante: number,
+    idProductos: number[],
+  ) => {
     const res = await api.get<IRespuesta<RES_LoteRecepcion[]>>(
       `${path}/catalogos/lotes-destino`,
       {
-        params: { 
+        params: {
           id_almacen_solicitante: idAlmacenSolicitante,
-          id_productos: idProductos
+          id_productos: idProductos,
         },
       },
     );
@@ -109,7 +118,7 @@ export const ReabastecimientoService = {
     const formData = new FormData();
     formData.append("id_empleado_registro", id_empleado_registro.toString());
     formData.append("recepcion", JSON.stringify(recepcion));
-    
+
     evidencias.forEach((file) => {
       formData.append("evidencias[]", file);
     });
@@ -133,7 +142,7 @@ export const ReabastecimientoService = {
     const formData = new FormData();
     formData.append("id_empleado_registro", id_empleado_registro.toString());
     formData.append("recepcion", JSON.stringify(recepcion));
-    
+
     evidencias.forEach((file) => {
       formData.append("evidencias[]", file);
     });
@@ -146,11 +155,17 @@ export const ReabastecimientoService = {
     return res.data;
   },
 
-  getHistorialRecepcionesEntrega: async (idEntrega: number, tipoEntrega: string = 'Solicitud') => {
+  getHistorialRecepcionesEntrega: async (
+    idEntrega: number,
+    tipoEntrega: string = "Solicitud",
+  ) => {
     const res = await api.get<IRespuesta<RecepcionEvento[]>>(
       `${path}/recepciones/historial`,
       {
-        params: { id_reabastecimiento_entrega: idEntrega, tipo_entrega: tipoEntrega },
+        params: {
+          id_reabastecimiento_entrega: idEntrega,
+          tipo_entrega: tipoEntrega,
+        },
       },
     );
     return res.data;

@@ -21,7 +21,7 @@ import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
 import type { RES_DetalleEntregaReabastecimiento } from "../../service/reabastecimiento.responses";
 import { MultiFilePicker } from "../../../../presentation/utils/MultiFilePicker";
-import type { RES_TicketLote } from "../../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
 
 interface Props {
   idAlmacenSolicitante: number;

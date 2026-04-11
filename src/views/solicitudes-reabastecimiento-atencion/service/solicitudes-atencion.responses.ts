@@ -1,4 +1,4 @@
-  import {
+import {
   EstadoSolicitud,
   EstadoSolicitudDetalle,
 } from "../../../shared/enums/estados";
@@ -6,7 +6,7 @@ import { Premura } from "../../../shared/enums/otros";
 import type { IArchivo } from "../../../shared/interfaces";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Empleado } from "../../../service/responses/empleado";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-disponible";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 export type { RES_Almacen, RES_Empleado, RES_LoteDisponible };
 
 export interface RES_LoteReabastecimiento {
@@ -143,7 +143,6 @@ export interface RES_DetalleEntregaReabastecimiento {
   contenido_por_presentacion_pr?: number;
   id_lote_producto?: number;
 }
-
 
 export interface RES_Prestamo {
   id: number;

@@ -1,4 +1,4 @@
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { api } from "../../../service/api";
 import type { IRespuesta } from "../../../shared/interfaces";
 import type { DTO_AjustarStock, DTO_CrearLote } from "./lotes.requests";

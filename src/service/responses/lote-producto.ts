@@ -20,3 +20,11 @@ export interface RES_LoteDisponible {
   dias_para_vencer: number | null;
   estado_vencimiento: string;
 }
+
+export interface RES_TicketLote {
+  id: number;
+  producto: string;
+  lote: string;
+  almacen: string;
+  fecha_ingreso: string;
+}

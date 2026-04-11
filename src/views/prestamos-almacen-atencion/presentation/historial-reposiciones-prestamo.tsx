@@ -39,7 +39,7 @@ import { RegistroRecepcion } from "./registro-recepcion";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { usePrint } from "../../../hooks/usePrint";
 import { TicketLotePDF } from "../../../presentation/utils/TicketLotePDF";
-import type { RES_TicketLote } from "../../../presentation/utils/TicketLotePDF";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import QRCode from "qrcode";
 
 interface Props {

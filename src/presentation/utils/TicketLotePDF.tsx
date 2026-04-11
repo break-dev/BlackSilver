@@ -2,17 +2,10 @@ import { Document, Page, View, Text, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { createTw } from "react-pdf-tailwind";
 import { mmToPt } from "../functions/mm-to-pt";
+import type { RES_TicketLote } from "../../service/responses/lote-producto";
 
 // Configuración de Tailwind para react-pdf
 const tw = createTw({});
-
-export interface RES_TicketLote {
-  id: number;
-  producto: string;
-  lote: string;
-  almacen: string;
-  fecha_ingreso: string;
-}
 
 export interface TicketData extends RES_TicketLote {
   qrDataUrl: string;
