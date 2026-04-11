@@ -16,7 +16,7 @@ import {
   IdentificationIcon,
   ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type {
@@ -114,7 +114,7 @@ export const ComparativoTabla = ({
             {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
             <Table.Th
               style={{ width: 200, minWidth: 200, verticalAlign: 'middle' }}
-              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-[100] p-6 shadow-xl"
+              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-100 p-6 shadow-xl"
             >
               <Text
                 size="xs"

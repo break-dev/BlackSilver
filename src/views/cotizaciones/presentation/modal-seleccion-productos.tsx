@@ -1,19 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { 
-  Modal, 
   Stack, 
   TextInput, 
-  Table, 
   Checkbox, 
   Button, 
   Group, 
   Text, 
-  Loader,
-  ScrollArea
+  Badge
 } from "@mantine/core";
 import { MagnifyingGlassIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import type { RES_MaestroProducto } from "../service/cotizaciones.responses";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 
 interface ModalSeleccionProductosProps {
   opened: boolean;
@@ -50,84 +49,114 @@ export const ModalSeleccionProductos = ({
     if (opened) cargarProductos();
   }, [opened, cargarProductos]);
 
-  const filtrados = productos.filter(p => 
-    p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
-    p.codigo?.toLowerCase().includes(busqueda.toLowerCase())
-  );
+  const filtrados = useMemo(() => {
+    return productos.filter(p => 
+      p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+      p.codigo?.toLowerCase().includes(busqueda.toLowerCase())
+    );
+  }, [productos, busqueda]);
+
+  const columns = [
+    {
+      accessor: "seleccion",
+      title: "",
+      textAlign: "center" as const,
+      width: 40,
+      render: (p: RES_MaestroProducto) => (
+        <Checkbox 
+          checked={seleccionadosActuales.includes(p.id_producto)} 
+          onChange={() => onSelect(p.id_producto)}
+          color="indigo"
+          radius="sm"
+          size="xs"
+        />
+      )
+    },
+    {
+      accessor: "index",
+      title: "#",
+      textAlign: "center" as const,
+      width: 40,
+    },
+    {
+      accessor: "nombre",
+      title: "Producto",
+      render: (p: RES_MaestroProducto) => {
+        const isChecked = seleccionadosActuales.includes(p.id_producto);
+        return (
+          <Group gap="md" wrap="nowrap" onClick={() => onSelect(p.id_producto)} className="cursor-pointer">
+            <div className={`p-2 rounded-xl border transition-colors ${isChecked ? 'bg-indigo-500/20 border-indigo-400/50' : 'bg-zinc-800/30 border-zinc-700/50'}`}>
+              <CubeIcon className={`w-4 h-4 ${isChecked ? 'text-indigo-400' : 'text-zinc-500'}`} />
+            </div>
+            <Stack gap={0}>
+              <Text size="sm" fw={700} className={isChecked ? 'text-indigo-200' : 'text-zinc-100'}>
+                {p.nombre}
+              </Text>
+            </Stack>
+          </Group>
+        );
+      }
+    },
+    {
+      accessor: "categoria_nombre",
+      title: "Categoría",
+      render: (p: RES_MaestroProducto) => (
+        <Badge 
+          variant="filled" 
+          color="violet.7" 
+          size="xs" 
+          radius="md" 
+          className="font-bold uppercase px-3 shadow-md"
+          style={{ color: 'white' }}
+        >
+          {p.categoria_nombre}
+        </Badge>
+      )
+    }
+  ];
 
   return (
-    <Modal
+    <ModalEstandar
       opened={opened}
-      onClose={onClose}
+      close={onClose}
       title="Añadir Productos al Comparativo"
       size="xl"
-      radius="xl"
-      classNames={{ header: "bg-zinc-950", content: "bg-zinc-950 border border-zinc-800 shadow-2xl" }}
     >
       <Stack gap="md">
         <TextInput
-          placeholder="Buscar producto..."
-          leftSection={<MagnifyingGlassIcon className="w-4 h-4" />}
+          placeholder="Buscar producto por nombre o código..."
+          leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />}
           value={busqueda}
           onChange={(e) => setBusqueda(e.currentTarget.value)}
           radius="lg"
           variant="filled"
-          className="bg-zinc-900"
+          classNames={{
+            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-600 transition-all"
+          }}
         />
 
-        <ScrollArea h={400} type="auto">
-          {loading ? (
-            <div className="flex justify-center py-20"><Loader color="indigo" size="sm" /></div>
-          ) : (
-            <Table verticalSpacing="sm" className="text-zinc-300">
-              <Table.Thead className="bg-zinc-900/50 sticky top-0 z-10">
-                <Table.Tr>
-                  <Table.Th style={{ width: 40 }}></Table.Th>
-                  <Table.Th>Producto</Table.Th>
-                  <Table.Th>Categoría</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {filtrados.map((p) => {
-                  const isChecked = seleccionadosActuales.includes(p.id_producto);
-                  return (
-                    <Table.Tr 
-                      key={p.id_producto} 
-                      className="hover:bg-zinc-800/30 cursor-pointer transition-colors"
-                      onClick={() => onSelect(p.id_producto)}
-                    >
-                      <Table.Td>
-                        <Checkbox 
-                          checked={isChecked} 
-                          onChange={() => {}} 
-                          color="indigo" 
-                          radius="xs" 
-                        />
-                      </Table.Td>
-                      <Table.Td>
-                        <Group gap="xs">
-                          <CubeIcon className="w-4 h-4 text-zinc-500" />
-                          <Stack gap={0}>
-                            <Text size="sm" fw={600}>{p.nombre}</Text>
-                            <Text size="xs" className="text-zinc-500 font-mono">{p.codigo}</Text>
-                          </Stack>
-                        </Group>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text size="xs" className="text-zinc-400 capitalize">{p.categoria_nombre}</Text>
-                      </Table.Td>
-                    </Table.Tr>
-                  );
-                })}
-              </Table.Tbody>
-            </Table>
-          )}
-        </ScrollArea>
+        <DataTableEstandar
+          idAccessor="id_producto"
+          columns={columns}
+          records={filtrados}
+          loading={loading}
+          initialPageSize={10}
+          minHeight={350}
+        />
 
         <Group justify="flex-end" mt="md">
-          <Button variant="subtle" color="gray" onClick={onClose} radius="lg">Listo</Button>
+          <Button 
+            variant="gradient" 
+            gradient={{ from: 'indigo.6', to: 'indigo.8' }} 
+            onClick={onClose} 
+            radius="xl"
+            size="sm"
+            className="px-8 font-bold shadow-lg shadow-indigo-900/20"
+          >
+            Finalizar Selección
+          </Button>
         </Group>
       </Stack>
-    </Modal>
+    </ModalEstandar>
   );
 };
