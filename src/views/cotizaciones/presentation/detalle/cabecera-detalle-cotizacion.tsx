@@ -54,7 +54,7 @@ export const CabeceraDetalleCotizacion = ({
   }
 
   return (
-    <Stack gap="sm" className="p-4 bg-zinc-900/40 rounded-t-3xl border-x border-t border-zinc-800/80">
+    <Stack gap="sm" className="p-4 bg-zinc-950 border-x border-t border-zinc-800/80 h-full">
       <Group wrap="nowrap" align="flex-start" justify="space-between">
         <Stack gap={2} className="flex-1">
           <Group gap={6}>

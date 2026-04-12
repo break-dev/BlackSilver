@@ -34,35 +34,35 @@ export const TablaDetalleResumen = ({
   }, [detalles]);
 
   return (
-    <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden backdrop-blur-md relative">
+    <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden relative">
       <div className="flex-1 overflow-auto custom-scrollbar">
         <Table
           withColumnBorders
           withTableBorder={false}
           className="border-separate border-spacing-0"
-          style={{ width: "max-content" }}
+          style={{ width: "max-content", minWidth: "100%" }}
         >
-          <Table.Thead className="sticky top-0 z-50 shadow-xl shadow-black/20">
+          <Table.Thead className="z-50">
             <Table.Tr>
-              {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
+              {/* Esquina PRODUCTOS: Fija sin altura forzada */}
               <Table.Th
-                className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-100 shadow-xl"
-                style={{ width: 200, minWidth: 200, maxWidth: 200 }}
+                className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-110 shadow-xl"
+                style={{ width: 200, minWidth: 200, maxWidth: 200, verticalAlign: "middle" }}
               >
                 <Text
                   size="xs"
                   fw={800}
-                  className="text-white uppercase tracking-widest"
+                  className="text-white uppercase tracking-widest text-center"
                 >
                   Productos
                 </Text>
               </Table.Th>
 
-              {/* Columnas de Cotización: Siempre 450px */}
+              {/* Columnas de Cotización: Sólidas y pegadas arriba */}
               {cotizaciones.map((cot) => (
                 <Table.Th
                   key={cot.id}
-                  className="p-0 border-b border-r border-zinc-800 align-top sticky top-0 z-40 transition-all"
+                  className="p-0 border-b border-r border-zinc-800 align-top sticky top-0 z-40 bg-zinc-950"
                   style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                 >
                   <CabeceraDetalleCotizacion
@@ -89,9 +89,8 @@ export const TablaDetalleResumen = ({
                 key={prod.id}
                 className="group-tr hover:bg-white/1 transition-colors"
               >
-                {/* Columna fija del producto */}
                 <Table.Td 
-                  className="p-4 border-r border-b border-zinc-800 align-top bg-zinc-950 border-l-0 sticky left-0 z-20 shadow-xl"
+                  className="p-4 border-r border-b border-zinc-800 align-top bg-zinc-950 sticky left-0 z-20 shadow-xl"
                   style={{ width: 200, minWidth: 200, maxWidth: 200 }}
                 >
                   <Stack gap={4}>
