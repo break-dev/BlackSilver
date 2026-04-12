@@ -62,7 +62,7 @@ export const CeldaDetalle = ({
   return (
     <>
       {/* Switch de Inhabilitación (Arriba a la derecha) */}
-      <div className="absolute top-2 right-2 z-50">
+      <div className="absolute top-2 right-2 z-10">
         <Tooltip
           label={
             det.no_cotiza

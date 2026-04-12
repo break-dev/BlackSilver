@@ -106,7 +106,7 @@ export const ComparativoTabla = ({
               <Table.Th
                 key={idx}
                 style={{ minWidth: 450, verticalAlign: "top" }}
-                className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-40"
+                className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-70"
               >
                 <CabeceraCotizacion
                   cot={cot}
