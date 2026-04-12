@@ -496,7 +496,7 @@ export const ListadoComparativos = ({
           </Group>
         }
       >
-        <div style={{ height: "75vh" }}>
+        <div style={{ height: "70vh" }}>
           {selectedCompId && (
             <TablaDetalleResumen
               isCollapsed={resumenDetalleIsCollapsed}

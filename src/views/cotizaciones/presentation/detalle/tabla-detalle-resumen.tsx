@@ -18,6 +18,7 @@ export const TablaDetalleResumen = ({
   detalles,
   isCollapsed,
 }: TablaDetalleResumenProps) => {
+
   const productosUnicos = useMemo(() => {
     const map = new Map();
     detalles.forEach((d) => {
@@ -33,18 +34,20 @@ export const TablaDetalleResumen = ({
   }, [detalles]);
 
   return (
-    <div className="flex flex-col h-full bg-black/40 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden backdrop-blur-md">
+    <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden backdrop-blur-md relative">
       <div className="flex-1 overflow-auto custom-scrollbar">
         <Table
           withColumnBorders
           withTableBorder={false}
-          className="border-collapse table-fixed min-w-[900px]"
+          className="border-separate border-spacing-0"
+          style={{ width: "max-content" }}
         >
-          <Table.Thead className="sticky top-0 z-20 shadow-xl shadow-black/20">
+          <Table.Thead className="sticky top-0 z-50 shadow-xl shadow-black/20">
             <Table.Tr>
+              {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
               <Table.Th
-                className="bg-zinc-950 border-r border-zinc-800 p-4 text-center"
-                style={{ width: "250px" }}
+                className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-100 shadow-xl"
+                style={{ width: 200, minWidth: 200, maxWidth: 200 }}
               >
                 <Text
                   size="xs"
@@ -54,11 +57,13 @@ export const TablaDetalleResumen = ({
                   Productos
                 </Text>
               </Table.Th>
+
+              {/* Columnas de Cotización: Siempre 450px */}
               {cotizaciones.map((cot) => (
                 <Table.Th
                   key={cot.id}
-                  className="p-0 border-r border-zinc-800 align-top"
-                  style={{ width: isCollapsed ? "180px" : "320px" }}
+                  className="p-0 border-b border-r border-zinc-800 align-top sticky top-0 z-40 transition-all"
+                  style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                 >
                   <CabeceraDetalleCotizacion
                     proveedor={cot.proveedor_nombre}
@@ -77,13 +82,18 @@ export const TablaDetalleResumen = ({
               ))}
             </Table.Tr>
           </Table.Thead>
+
           <Table.Tbody>
             {productosUnicos.map((prod) => (
               <Table.Tr
                 key={prod.id}
                 className="group-tr hover:bg-white/1 transition-colors"
               >
-                <Table.Td className="p-4 border-r border-b border-zinc-800 align-top bg-zinc-950/20 backdrop-blur-sm sticky left-0 z-10">
+                {/* Columna fija del producto */}
+                <Table.Td 
+                  className="p-4 border-r border-b border-zinc-800 align-top bg-zinc-950 border-l-0 sticky left-0 z-20 shadow-xl"
+                  style={{ width: 200, minWidth: 200, maxWidth: 200 }}
+                >
                   <Stack gap={4}>
                     <Text
                       size="xs"
@@ -102,6 +112,7 @@ export const TablaDetalleResumen = ({
                     </Badge>
                   </Stack>
                 </Table.Td>
+
                 {cotizaciones.map((cot) => {
                   const det = detalles.find(
                     (d) =>
@@ -112,6 +123,7 @@ export const TablaDetalleResumen = ({
                     <Table.Td
                       key={cot.id}
                       className="p-4 border-r border-b border-zinc-800 align-top"
+                      style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                     >
                       {det ? (
                         <CeldaDetalleItem
@@ -129,7 +141,7 @@ export const TablaDetalleResumen = ({
                       ) : (
                         <div className="h-full min-h-[80px] flex items-center justify-center bg-zinc-950/10 rounded-2xl border border-dashed border-zinc-800/40 opacity-30 italic">
                           <Text size="xs" c="dimmed" fw={700}>
-                            Sin Oferta
+                            No cotizado
                           </Text>
                         </div>
                       )}
@@ -141,7 +153,13 @@ export const TablaDetalleResumen = ({
           </Table.Tbody>
         </Table>
       </div>
-      <style>{`.custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; } .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }`}</style>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #09090b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+      `}</style>
     </div>
   );
 };
