@@ -10,6 +10,7 @@ import {
   Button,
   Divider,
   Tooltip,
+  ActionIcon,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import {
@@ -24,11 +25,14 @@ import {
   CubeIcon,
   TableCellsIcon,
   ReceiptPercentIcon,
+  ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
 import { MetodoPago } from "../../../shared/enums/estados";
+import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
@@ -51,11 +55,20 @@ export const ListadoComparativos = ({
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>({});
   const [expandedCots, setExpandedCots] = useState<Record<number, boolean>>({});
 
+  const [modalComparativoOpened, setModalComparativoOpened] = useState(false);
+  const [selectedCompId, setSelectedCompId] = useState<number | null>(null);
+  const [resumenDetalleIsCollapsed, setResumenDetalleIsCollapsed] = useState(false);
+
   const toggleComp = (id: number) =>
     setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const toggleCot = (id: number) =>
     setExpandedCots((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleVerComparativo = (id: number) => {
+    setSelectedCompId(id);
+    setModalComparativoOpened(true);
+  };
 
   // Agrupamos por comparativo
   const comparativosMap = cotizaciones.reduce(
@@ -166,18 +179,19 @@ export const ListadoComparativos = ({
 
                   {/* Botón ver comparativo + chevron */}
                   <Group gap="sm" wrap="nowrap">
-                    <Tooltip label="Próximamente" withArrow>
-                      <Button
-                        size="xs"
-                        radius="xl"
-                        variant="light"
-                        color="indigo"
-                        leftSection={<TableCellsIcon className="w-3.5 h-3.5" />}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Ver Comparativo
-                      </Button>
-                    </Tooltip>
+                    <Button
+                      size="xs"
+                      radius="xl"
+                      variant="light"
+                      color="indigo"
+                      leftSection={<TableCellsIcon className="w-3.5 h-3.5" />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVerComparativo(idComp);
+                      }}
+                    >
+                      Ver Comparativo
+                    </Button>
                     <div className="w-8 h-8 rounded-full bg-zinc-800/60 flex items-center justify-center border border-zinc-700/50 shrink-0">
                       {isCompExpanded ? (
                         <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
@@ -458,6 +472,42 @@ export const ListadoComparativos = ({
           </Paper>
         );
       })}
+      {/* MODAL DE COMPARATIVO MATRICIAL */}
+      <ModalEstandar
+        opened={modalComparativoOpened}
+        onClose={() => setModalComparativoOpened(false)}
+        close={() => setModalComparativoOpened(false)}
+        title="Cuadro comparativo de Cotizaciones"
+        size="95%"
+        rightSection={
+          <Group gap="xs" mr="xl">
+            <Tooltip label={resumenDetalleIsCollapsed ? "Ver Detalle Extendido" : "Ver Vista Resumida"} withArrow>
+              <ActionIcon 
+                variant="light" 
+                color={resumenDetalleIsCollapsed ? "cyan" : "indigo"} 
+                size="lg" 
+                radius="xl"
+                onClick={() => setResumenDetalleIsCollapsed(!resumenDetalleIsCollapsed)}
+                className="shadow-lg active:scale-95 transition-all border border-white/10"
+              >
+                {resumenDetalleIsCollapsed ? <ListBulletIcon className="w-5 h-5" /> : <TableCellsIcon className="w-5 h-5" />}
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        }
+      >
+        <div style={{ height: "75vh" }}>
+          {selectedCompId && (
+            <TablaDetalleResumen
+              isCollapsed={resumenDetalleIsCollapsed}
+              cotizaciones={comparativosMap[selectedCompId]}
+              detalles={detalles.filter(d => 
+                comparativosMap[selectedCompId].some(c => c.id === d.id_cotizacion)
+              )}
+            />
+          )}
+        </div>
+      </ModalEstandar>
     </Stack>
   );
 };
