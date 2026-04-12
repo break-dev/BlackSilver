@@ -1,4 +1,4 @@
-import { Group, Stack, Text, Badge, Tooltip } from "@mantine/core";
+import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { formatNumber } from "../../../../presentation/functions/formatNumber";
 import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
 
@@ -24,66 +24,98 @@ export const CeldaDetalleItem = ({
   noCotiza = false,
 }: CeldaDetalleItemProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
-  
+
   if (noCotiza) {
     return (
-      <div className="flex items-center justify-center p-4 bg-zinc-950/20 rounded-2xl border border-zinc-800/40">
-        <Badge variant="light" color="red" size="sm" className="font-bold opacity-60">
+      <div className="flex items-center justify-center p-4 bg-zinc-950/20 rounded-2xl border border-dashed border-red-900/40 min-h-[160px]">
+        <Badge
+          variant="dot"
+          color="red"
+          size="sm"
+          className="font-bold opacity-60"
+        >
           No Cotiza
         </Badge>
       </div>
     );
   }
 
-  const totalBase = cantidad * (contenidoPorPresentacion || 1);
-  const precioBase = precioUnitario / (contenidoPorPresentacion || 1);
   const subtotal = cantidad * precioUnitario;
+  const showConversion =
+    (unidadMedida !== unidadMedidaBase && unidadMedidaBase) ||
+    Number(contenidoPorPresentacion) > 1;
 
   return (
-    <Stack gap="xs" className="w-full">
-      <div className="bg-zinc-950/40 rounded-2xl p-3 border border-zinc-800/50 shadow-inner group/item relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-16 h-16 bg-linear-to-br from-indigo-500/5 to-transparent rounded-bl-full pointer-events-none" />
-        <Group justify="space-between" wrap="nowrap" align="flex-end">
-          <Stack gap={0}>
-            <Text size="10px" c="dimmed" fw={700} className="uppercase tracking-tighter opacity-70">Solicitado</Text>
-            <Text size="sm" fw={800} className="text-white">
-              {formatNumber(cantidad)} <span className="text-[10px] text-zinc-500 font-bold uppercase">{unidadMedida}</span>
+    <Stack gap={6} className="w-full h-full min-h-[160px] justify-between p-1">
+      {/* Contenedor Principal Morado (Estilo Mini-Recibo) */}
+      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between">
+        <Stack gap={5}>
+          <Group justify="space-between" wrap="nowrap">
+            <Text
+              size="10px"
+              fw={800}
+              className="text-zinc-500 uppercase tracking-tighter"
+            >
+              Precio x {unidadMedida}
             </Text>
-          </Stack>
-          <Stack gap={0} align="flex-end">
-            <Text size="10px" c="emerald.5" fw={800} className="uppercase tracking-tighter">Unitario</Text>
-            <Text size="sm" fw={900} className="text-emerald-400 font-mono">
+            <Text size="xs" fw={800} className="text-zinc-200">
               {smb} {formatNumber(precioUnitario)}
             </Text>
-          </Stack>
-        </Group>
+          </Group>
+
+          <Group justify="space-between" wrap="nowrap">
+            <Text
+              size="10px"
+              fw={800}
+              className="text-zinc-500 uppercase tracking-tighter"
+            >
+              Total {unidadMedida}
+            </Text>
+            <Text size="xs" fw={800} className="text-zinc-200">
+              {formatNumber(cantidad)}
+            </Text>
+          </Group>
+
+          {showConversion && (
+            <Text
+              size="9px"
+              c="dimmed"
+              fw={700}
+              className="italic opacity-70 mt-0.5 leading-none"
+            >
+              * 1 {unidadMedida} = {formatNumber(contenidoPorPresentacion)}{" "}
+              {unidadMedidaBase}
+            </Text>
+          )}
+        </Stack>
+
+        <Stack gap={4} mt={10}>
+          <Divider color="indigo.9" variant="dashed" opacity={0.3} />
+          <Group justify="space-between" wrap="nowrap" align="flex-end">
+            <Text size="10px" fw={900} className="text-indigo-400 uppercase">
+              Subtotal
+            </Text>
+            <Text size="sm" fw={950} className="text-indigo-100 font-mono">
+              {smb} {formatNumber(subtotal)}
+            </Text>
+          </Group>
+        </Stack>
       </div>
 
-      <Group grow wrap="nowrap" gap={6}>
-        <Stack gap={0} px="xs" py={4} className="bg-cyan-500/10 rounded-xl border border-cyan-500/20">
-          <Text size="9px" fw={800} className="text-cyan-400 uppercase truncate">Factor Base</Text>
-          <Text size="xs" fw={800} className="text-cyan-100">{formatNumber(totalBase)} {unidadMedidaBase}</Text>
+      {/* Comentario Directo */}
+      {comentario && (
+        <Stack gap={2} px={4} className="mt-1">
+          <Group gap={4}>
+            <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400 shrink-0" />
+            <Text size="10px" fw={900} className="text-zinc-500 uppercase">
+              Comentario
+            </Text>
+          </Group>
+          <Text size="xs" c="dimmed" className="leading-tight pl-6">
+            {comentario}
+          </Text>
         </Stack>
-        <Stack gap={0} px="xs" py={4} className="bg-teal-500/10 rounded-xl border border-teal-500/20">
-          <Text size="9px" fw={800} className="text-teal-400 uppercase truncate">Precio/Base</Text>
-          <Text size="xs" fw={800} className="text-teal-100">{smb} {formatNumber(precioBase)}</Text>
-        </Stack>
-      </Group>
-
-      <div className="flex items-center justify-between px-1">
-        {comentario ? (
-          <Tooltip label={comentario} position="top" withArrow>
-            <div className="flex items-center gap-1.5 cursor-help">
-              <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400" />
-              <Text size="xs" c="dimmed" fs="italic">Ver obs.</Text>
-            </div>
-          </Tooltip>
-        ) : <div />}
-        <Stack gap={0} align="flex-end">
-          <Text size="9px" fw={800} className="text-emerald-500 uppercase">Subtotal</Text>
-          <Text size="sm" fw={900} className="text-white font-mono">{smb} {formatNumber(subtotal)}</Text>
-        </Stack>
-      </div>
+      )}
     </Stack>
   );
 };

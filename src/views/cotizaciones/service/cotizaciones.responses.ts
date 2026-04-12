@@ -38,6 +38,7 @@ export interface RES_CotizacionDetalle {
   precio_unitario_base: number;
   comentario: string | null;
   no_cotiza: number;
+  unidad_medida_base_abv: string;
 }
 
 export interface RES_ListadoComparativo {

@@ -21,13 +21,13 @@ export const TablaDetalleResumen = ({
   const productosUnicos = useMemo(() => {
     const map = new Map();
     detalles.forEach((d) => {
-      if (!map.has(d.id_comparativo_detalle)) {
-        map.set(d.id_comparativo_detalle, {
-          id: d.id_comparativo_detalle,
-          nombre: d.producto_nombre,
-          unidadBase: d.unidad_medida_abv,
-        });
-      }
+        if (!map.has(d.id_comparativo_detalle) || !map.get(d.id_comparativo_detalle).unidadBase) {
+          map.set(d.id_comparativo_detalle, {
+            id: d.id_comparativo_detalle,
+            nombre: d.producto_nombre,
+            unidadBase: d.unidad_medida_base_abv,
+          });
+        }
     });
     return Array.from(map.values());
   }, [detalles]);
