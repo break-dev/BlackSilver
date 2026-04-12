@@ -78,6 +78,7 @@ export const CotizacionesPage = () => {
           cotizaciones={cotizaciones}
           detalles={detalles}
           busqueda={busqueda}
+          onRefresh={fetchCotizaciones}
         />
       )}
 

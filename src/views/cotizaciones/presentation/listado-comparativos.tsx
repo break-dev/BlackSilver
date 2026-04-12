@@ -33,11 +33,14 @@ import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizacio
 import { MetodoPago } from "../../../shared/enums/estados";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { useNotify } from "../../../hooks/useNotify";
+import { CotizacionesService } from "../service/cotizaciones.service";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
   busqueda: string;
+  onRefresh?: () => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
@@ -51,7 +54,10 @@ export const ListadoComparativos = ({
   cotizaciones,
   detalles,
   busqueda,
+  onRefresh,
 }: ListadoComparativosProps) => {
+  const { notifySuccess, notifyError } = useNotify();
+  const [loadingApprove, setLoadingApprove] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>({});
   const [expandedCots, setExpandedCots] = useState<Record<number, boolean>>({});
 
@@ -68,6 +74,24 @@ export const ListadoComparativos = ({
   const handleVerComparativo = (id: number) => {
     setSelectedCompId(id);
     setModalComparativoOpened(true);
+  };
+
+  const handleApprove = async (id: number) => {
+    try {
+      setLoadingApprove(id);
+      const res = await CotizacionesService.aprobar_cotizacion(id);
+      if (res.success) {
+        notifySuccess("Cotización aprobada correctamente.");
+        onRefresh?.();
+      } else {
+        notifyError(res.message);
+      }
+    } catch (error) {
+      console.error(error);
+      notifyError("No se pudo procesar la aprobación.");
+    } finally {
+      setLoadingApprove(null);
+    }
   };
 
   // Agrupamos por comparativo
@@ -238,9 +262,20 @@ export const ListadoComparativos = ({
                               </div>
 
                               <Stack gap={1}>
-                                <Text size="sm" fw={800} className="text-white leading-tight">
-                                  {cot.proveedor_nombre}
-                                </Text>
+                                <Group gap="sm" wrap="nowrap">
+                                  <Text size="sm" fw={800} className="text-white leading-tight">
+                                    {cot.proveedor_nombre}
+                                  </Text>
+                                  <Badge
+                                    variant={cfg.variant}
+                                    color={cfg.color}
+                                    size="xs"
+                                    radius="sm"
+                                    className="font-bold border border-current/10"
+                                  >
+                                    {cfg.label}
+                                  </Badge>
+                                </Group>
                                 <Group gap="xs">
                                   {/* Método pago */}
                                   <Badge
@@ -255,14 +290,6 @@ export const ListadoComparativos = ({
                                   {/* Moneda */}
                                   <Badge variant="outline" color="zinc" size="xs">
                                     {cot.moneda}
-                                  </Badge>
-                                  {/* Estado */}
-                                  <Badge
-                                    variant={cfg.variant}
-                                    color={cfg.color}
-                                    size="xs"
-                                  >
-                                    {cfg.label}
                                   </Badge>
                                 </Group>
                               </Stack>
@@ -280,20 +307,22 @@ export const ListadoComparativos = ({
                                 </Text>
                               </Stack>
 
-                              {/* Botón Aprobar (visual only) */}
-                              <Tooltip label="Próximamente" withArrow>
-                                <Button
-                                  size="xs"
-                                  radius="xl"
-                                  color="green"
-                                  variant="filled"
-                                  leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
-                                  disabled={cot.estado === "Aprobada" || cot.estado === "Desestimada"}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  Aprobar
-                                </Button>
-                              </Tooltip>
+                              {/* Botón Aprobar */}
+                              <Button
+                                size="xs"
+                                radius="xl"
+                                color="green"
+                                variant="filled"
+                                loading={loadingApprove === cot.id}
+                                leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
+                                disabled={cot.estado === "Aprobada" || cot.estado === "Desestimada" || tieneAprobada}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApprove(cot.id);
+                                }}
+                              >
+                                Aprobar
+                              </Button>
 
                               <div className="w-6 h-6 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0">
                                 {isCotExpanded ? (
@@ -504,6 +533,7 @@ export const ListadoComparativos = ({
               detalles={detalles.filter(d => 
                 comparativosMap[selectedCompId].some(c => c.id === d.id_cotizacion)
               )}
+              onApprove={handleApprove}
             />
           )}
         </div>

@@ -1,11 +1,12 @@
-import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
+import { Group, Stack, Text, Badge, Divider, Button } from "@mantine/core";
 import { formatNumber } from "../../../../presentation/functions/formatNumber";
 import { 
   BuildingStorefrontIcon, 
   CalendarDaysIcon, 
   CurrencyDollarIcon,
   CreditCardIcon,
-  ChatBubbleBottomCenterTextIcon
+  ChatBubbleBottomCenterTextIcon,
+  CheckBadgeIcon
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
@@ -21,6 +22,10 @@ interface CabeceraDetalleCotizacionProps {
   totalAntesIgv: number;
   totalDespuesIgv: number;
   observacion?: string | null;
+  estado: string;
+  idCotizacion: number;
+  onApprove?: (id: number) => void;
+  disabledApprove: boolean;
   isCollapsed: boolean;
 }
 
@@ -36,16 +41,37 @@ export const CabeceraDetalleCotizacion = ({
   totalAntesIgv,
   totalDespuesIgv,
   observacion,
+  estado,
+  idCotizacion,
+  onApprove,
+  disabledApprove,
   isCollapsed,
 }: CabeceraDetalleCotizacionProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
+
+  // Colores para los estados
+  const getEstadoColor = (est: string) => {
+    switch (est.toUpperCase()) {
+      case "GENERADA": return "indigo";
+      case "APROBADA": return "teal";
+      case "DESESTIMADA": return "red";
+      default: return "zinc";
+    }
+  };
+
+  const showButton = estado.toUpperCase() === "GENERADA" && !disabledApprove;
 
   if (isCollapsed) {
     return (
       <div className="py-2 px-3 group-header cursor-pointer hover:bg-white/2 transition-colors">
         <Group justify="space-between" wrap="nowrap">
           <Stack gap={0} className="flex-1 min-w-0">
-             <Text size="xs" fw={900} className="text-white truncate uppercase">{proveedor}</Text>
+             <Group gap={6} wrap="nowrap">
+                <Text size="xs" fw={900} className="text-white truncate uppercase">{proveedor}</Text>
+                <Badge variant="outline" color={getEstadoColor(estado)} size="9px" radius="xs" className="font-bold">
+                  {estado}
+                </Badge>
+             </Group>
              <Text size="10px" c="dimmed" fw={700}>{nroCotizacion}</Text>
           </Stack>
           <Badge variant="filled" color="cyan" size="xs">
@@ -58,17 +84,38 @@ export const CabeceraDetalleCotizacion = ({
 
   return (
     <Stack gap="sm" className="p-4 bg-zinc-950 h-full">
-      {/* Línea Superior: Proveedor y Correlativo */}
-      <Group wrap="nowrap" align="flex-start" justify="space-between">
-        <Group gap={6} className="flex-1 min-w-0">
-          <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400 shrink-0" />
-          <Text size="sm" fw={900} className="text-indigo-100 uppercase tracking-tight truncate">
-            {proveedor}
-          </Text>
-        </Group>
-        <Badge variant="filled" color="indigo.9" size="sm" radius="sm" className="font-bold border border-indigo-500/30">
-          {nroCotizacion}
-        </Badge>
+      {/* Línea Superior: Proveedor, Correlativo y Acción */}
+      <Group wrap="nowrap" align="center" justify="space-between">
+        <Stack gap={4} className="flex-1 min-w-0">
+          <Group gap={6} wrap="nowrap" align="center">
+            <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400 shrink-0" />
+            <Text size="sm" fw={900} className="text-indigo-100 uppercase tracking-tight truncate">
+              {proveedor}
+            </Text>
+            <Badge variant="filled" color="indigo.9" size="xs" radius="sm" className="font-bold border border-indigo-500/30 shrink-0">
+              {nroCotizacion}
+            </Badge>
+          </Group>
+          <Group gap={8} wrap="nowrap">
+            <Badge variant="light" color={getEstadoColor(estado)} size="xs" radius="xs" className="font-bold border border-current/10">
+              {estado}
+            </Badge>
+          </Group>
+        </Stack>
+
+        {showButton && (
+          <Button
+            variant="filled"
+            color="green"
+            size="xs"
+            radius="md"
+            leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
+            className="shadow-lg shadow-green-900/20 active:scale-95 transition-transform h-8 px-4"
+            onClick={() => onApprove?.(idCotizacion)}
+          >
+            Aprobar
+          </Button>
+        )}
       </Group>
 
       {/* Línea de Info: Moneda | Pago | Vencimiento */}
@@ -121,14 +168,14 @@ export const CabeceraDetalleCotizacion = ({
       </Stack>
 
       {observacion && (
-        <Stack gap={2} className="px-1 mt-2">
+        <Stack gap={2} px={1} className="mt-2">
           <Group gap={4}>
-            <ChatBubbleBottomCenterTextIcon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-            <Text size="11px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
+            <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-indigo-400 shrink-0" />
+            <Text size="10px" fw={900} className="text-zinc-500 uppercase flex-1">
               Observación
             </Text>
           </Group>
-          <Text size="xs" c="dimmed" className="leading-tight pl-5">
+          <Text size="xs" c="dimmed" className="leading-tight pl-6">
             {observacion}
           </Text>
         </Stack>
