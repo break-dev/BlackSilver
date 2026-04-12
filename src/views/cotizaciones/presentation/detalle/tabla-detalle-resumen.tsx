@@ -34,11 +34,6 @@ export const TablaDetalleResumen = ({
     return Array.from(map.values());
   }, [detalles]);
 
-  // Si alguna cotización ya está APROBADA, deshabilitamos la acción de Aprobar en el resto
-  const existsApproved = useMemo(() => 
-    cotizaciones.some(c => c.estado.toUpperCase() === "APROBADA"),
-  [cotizaciones]);
-
   return (
     <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden relative">
       <div className="flex-1 overflow-auto custom-scrollbar">
@@ -91,7 +86,6 @@ export const TablaDetalleResumen = ({
                     observacion={cot.observacion}
                     estado={cot.estado}
                     onApprove={onApprove}
-                    disabledApprove={existsApproved}
                     isCollapsed={isCollapsed}
                   />
                 </Table.Th>

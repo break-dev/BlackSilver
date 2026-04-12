@@ -27,7 +27,7 @@ import { ListadoComparativos } from "./listado-comparativos";
 export const CotizacionesPage = () => {
   useTitlePage("Cotizaciones");
 
-  const { cotizaciones, detalles, loading, fetchCotizaciones, busqueda, setBusqueda } =
+  const { cotizaciones, detalles, loading, fetchCotizaciones, updateCotizacionLocal, busqueda, setBusqueda } =
     useCotizaciones();
 
   const [openedCreate, { open: openCreate, close: closeCreate }] =
@@ -78,7 +78,7 @@ export const CotizacionesPage = () => {
           cotizaciones={cotizaciones}
           detalles={detalles}
           busqueda={busqueda}
-          onRefresh={fetchCotizaciones}
+          onUpdateLocal={updateCotizacionLocal}
         />
       )}
 

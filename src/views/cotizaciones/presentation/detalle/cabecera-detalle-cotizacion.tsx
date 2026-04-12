@@ -9,6 +9,7 @@ import {
   CheckBadgeIcon
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
+import { EstadoCotizacion } from "../../../../shared/enums/estados";
 
 interface CabeceraDetalleCotizacionProps {
   proveedor: string;
@@ -25,7 +26,6 @@ interface CabeceraDetalleCotizacionProps {
   estado: string;
   idCotizacion: number;
   onApprove?: (id: number) => void;
-  disabledApprove: boolean;
   isCollapsed: boolean;
 }
 
@@ -44,22 +44,21 @@ export const CabeceraDetalleCotizacion = ({
   estado,
   idCotizacion,
   onApprove,
-  disabledApprove,
   isCollapsed,
 }: CabeceraDetalleCotizacionProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
 
-  // Colores para los estados
+  // Colores para los estados usando el enum
   const getEstadoColor = (est: string) => {
-    switch (est.toUpperCase()) {
-      case "GENERADA": return "indigo";
-      case "APROBADA": return "teal";
-      case "DESESTIMADA": return "red";
+    switch (est) {
+      case EstadoCotizacion.Generada: return "indigo";
+      case EstadoCotizacion.Aprobada: return "teal";
+      case EstadoCotizacion.Desestimada: return "red";
       default: return "zinc";
     }
   };
 
-  const showButton = estado.toUpperCase() === "GENERADA" && !disabledApprove;
+  const showButton = estado === EstadoCotizacion.Generada;
 
   if (isCollapsed) {
     return (

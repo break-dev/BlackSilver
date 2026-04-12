@@ -30,7 +30,7 @@ import {
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
-import { MetodoPago } from "../../../shared/enums/estados";
+import { MetodoPago, EstadoCotizacion } from "../../../shared/enums/estados";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useNotify } from "../../../hooks/useNotify";
@@ -40,21 +40,33 @@ interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
   busqueda: string;
-  onRefresh?: () => void;
+  onUpdateLocal?: (id: number, nuevoEstado: EstadoCotizacion) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
-const estadoConfig: Record<string, { color: string; label: string; variant: "filled" | "light" | "outline" }> = {
-  Generada:    { color: "indigo", label: "Generada",    variant: "light"  },
-  Aprobada:    { color: "teal",   label: "Aprobada",    variant: "filled" },
-  Desestimada: { color: "zinc",   label: "Desestimada", variant: "outline" },
+const COLOR_BY_STATE: Record<string, { color: string; label: string; variant: string }> = {
+  [EstadoCotizacion.Generada]: {
+    color: "indigo",
+    label: "Generada",
+    variant: "light",
+  },
+  [EstadoCotizacion.Aprobada]: {
+    color: "teal",
+    label: "Aprobada",
+    variant: "filled",
+  },
+  [EstadoCotizacion.Desestimada]: {
+    color: "red",
+    label: "Desestimada",
+    variant: "light",
+  },
 };
 
 export const ListadoComparativos = ({
   cotizaciones,
   detalles,
   busqueda,
-  onRefresh,
+  onUpdateLocal,
 }: ListadoComparativosProps) => {
   const { notifySuccess, notifyError } = useNotify();
   const [loadingApprove, setLoadingApprove] = useState<number | null>(null);
@@ -82,7 +94,7 @@ export const ListadoComparativos = ({
       const res = await CotizacionesService.aprobar_cotizacion(id);
       if (res.success) {
         notifySuccess("Cotización aprobada correctamente.");
-        onRefresh?.();
+        onUpdateLocal?.(id, EstadoCotizacion.Aprobada);
       } else {
         notifyError(res.message);
       }
@@ -237,7 +249,7 @@ export const ListadoComparativos = ({
                   const cotDetalles = detalles.filter(
                     (d) => d.id_cotizacion === cot.id,
                   );
-                  const cfg = estadoConfig[cot.estado] ?? { color: "zinc", label: cot.estado };
+                  const cfg = COLOR_BY_STATE[cot.estado] ?? { color: "zinc", label: cot.estado, variant: "light" };
 
                   return (
                     <Paper
@@ -315,7 +327,7 @@ export const ListadoComparativos = ({
                                 variant="filled"
                                 loading={loadingApprove === cot.id}
                                 leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
-                                disabled={cot.estado === "Aprobada" || cot.estado === "Desestimada" || tieneAprobada}
+                                disabled={cot.estado === EstadoCotizacion.Aprobada || cot.estado === EstadoCotizacion.Desestimada}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleApprove(cot.id);
@@ -346,7 +358,7 @@ export const ListadoComparativos = ({
                             {/* Incluye IGV */}
                             <Group gap="xs">
                               <ReceiptPercentIcon className="w-3.5 h-3.5 text-zinc-500" />
-                              <Text size="xs" c="dimmed">
+                              <Text size="xs" c="dimmed" component="div" className="flex items-center gap-1">
                                 IGV incluido:{" "}
                                 <Badge
                                   variant="light"
