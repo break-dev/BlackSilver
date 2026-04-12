@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Table, Stack, Text, Badge } from "@mantine/core";
+import { Table, Text } from "@mantine/core";
 import { CabeceraDetalleCotizacion } from "./cabecera-detalle-cotizacion";
 import { CeldaDetalleItem } from "./celda-detalle-item";
 import type {
@@ -18,7 +18,6 @@ export const TablaDetalleResumen = ({
   detalles,
   isCollapsed,
 }: TablaDetalleResumenProps) => {
-
   const productosUnicos = useMemo(() => {
     const map = new Map();
     detalles.forEach((d) => {
@@ -47,7 +46,12 @@ export const TablaDetalleResumen = ({
               {/* Esquina PRODUCTOS: Fija sin altura forzada */}
               <Table.Th
                 className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-110 shadow-xl"
-                style={{ width: 200, minWidth: 200, maxWidth: 200, verticalAlign: "middle" }}
+                style={{
+                  width: 200,
+                  minWidth: 200,
+                  maxWidth: 200,
+                  verticalAlign: "middle",
+                }}
               >
                 <Text
                   size="xs"
@@ -72,6 +76,7 @@ export const TablaDetalleResumen = ({
                     metodoPago={cot.metodo_pago}
                     vencimiento={cot.fecha_vencimiento_pago}
                     incluyeIgv={Number(cot.incluye_igv) === 1}
+                    porcentajeIgv={Number(cot.porcentaje_igv)}
                     montoIgv={Number(cot.monto_igv)}
                     totalAntesIgv={Number(cot.total_antes_igv)}
                     totalDespuesIgv={Number(cot.total_despues_igv)}
@@ -89,27 +94,22 @@ export const TablaDetalleResumen = ({
                 key={prod.id}
                 className="group-tr hover:bg-white/1 transition-colors"
               >
-                <Table.Td 
-                  className="p-4 border-r border-b border-zinc-800 align-top bg-zinc-950 sticky left-0 z-20 shadow-xl"
-                  style={{ width: 200, minWidth: 200, maxWidth: 200 }}
+                <Table.Td
+                  className="p-4 border-r border-b border-zinc-800 align-middle bg-zinc-950 sticky left-0 z-20 shadow-xl text-left"
+                  style={{
+                    width: 200,
+                    minWidth: 200,
+                    maxWidth: 200,
+                    verticalAlign: "middle",
+                  }}
                 >
-                  <Stack gap={4}>
-                    <Text
-                      size="xs"
-                      fw={900}
-                      className="text-zinc-100 leading-tight"
-                    >
-                      {prod.nombre}
-                    </Text>
-                    <Badge
-                      variant="outline"
-                      color="zinc"
-                      size="9px"
-                      className="font-bold opacity-60"
-                    >
-                      UND: {prod.unidadBase}
-                    </Badge>
-                  </Stack>
+                  <Text
+                    size="xs"
+                    fw={900}
+                    className="text-zinc-100 leading-tight"
+                  >
+                    {prod.nombre}
+                  </Text>
                 </Table.Td>
 
                 {cotizaciones.map((cot) => {

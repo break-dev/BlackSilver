@@ -1,9 +1,10 @@
-import { Group, Stack, Text, Badge, Paper, Divider } from "@mantine/core";
+import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { formatNumber } from "../../../../presentation/functions/formatNumber";
 import { 
   BuildingStorefrontIcon, 
   CalendarDaysIcon, 
-  TagIcon,
+  CurrencyDollarIcon,
+  CreditCardIcon,
   ChatBubbleBottomCenterTextIcon
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
@@ -15,6 +16,7 @@ interface CabeceraDetalleCotizacionProps {
   metodoPago: string;
   vencimiento?: string | null;
   incluyeIgv: boolean;
+  porcentajeIgv: number;
   montoIgv: number;
   totalAntesIgv: number;
   totalDespuesIgv: number;
@@ -29,6 +31,7 @@ export const CabeceraDetalleCotizacion = ({
   metodoPago,
   vencimiento,
   incluyeIgv,
+  porcentajeIgv,
   montoIgv,
   totalAntesIgv,
   totalDespuesIgv,
@@ -54,46 +57,81 @@ export const CabeceraDetalleCotizacion = ({
   }
 
   return (
-    <Stack gap="sm" className="p-4 bg-zinc-950 border-x border-t border-zinc-800/80 h-full">
+    <Stack gap="sm" className="p-4 bg-zinc-950 h-full">
+      {/* Línea Superior: Proveedor y Correlativo */}
       <Group wrap="nowrap" align="flex-start" justify="space-between">
-        <Stack gap={2} className="flex-1">
-          <Group gap={6}>
-            <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
-            <Text size="sm" fw={900} className="text-indigo-100 uppercase tracking-tight">{proveedor}</Text>
-          </Group>
-          <Text size="xs" c="dimmed" fw={700} className="font-mono">REF: {nroCotizacion}</Text>
-        </Stack>
-        <Badge variant="dot" color="cyan" size="sm" className="font-bold">{moneda}</Badge>
+        <Group gap={6} className="flex-1 min-w-0">
+          <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400 shrink-0" />
+          <Text size="sm" fw={900} className="text-indigo-100 uppercase tracking-tight truncate">
+            {proveedor}
+          </Text>
+        </Group>
+        <Badge variant="filled" color="indigo.9" size="sm" radius="sm" className="font-bold border border-indigo-500/30">
+          {nroCotizacion}
+        </Badge>
       </Group>
 
-      <Divider color="zinc.8" opacity={0.5} />
+      {/* Línea de Info: Moneda | Pago | Vencimiento */}
+      <Group gap="xs" wrap="nowrap" className="bg-zinc-900/40 p-2 rounded-xl border border-zinc-800/50">
+        <Group gap={4} wrap="nowrap">
+          <CurrencyDollarIcon className="w-3.5 h-3.5 text-zinc-500" />
+          <Text size="10px" fw={800} className="text-zinc-200 uppercase">{moneda}</Text>
+        </Group>
+        <Divider orientation="vertical" color="zinc.8" />
+        <Group gap={4} wrap="nowrap">
+          <CreditCardIcon className="w-3.5 h-3.5 text-zinc-500" />
+          <Text size="10px" fw={800} className="text-zinc-200 uppercase">{metodoPago}</Text>
+        </Group>
+        {vencimiento && (
+          <>
+            <Divider orientation="vertical" color="zinc.8" />
+            <Group gap={4} wrap="nowrap">
+              <CalendarDaysIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <Text size="10px" fw={800} className="text-zinc-200 uppercase">
+                Vence: {dayjs(vencimiento).format("DD/MM/YYYY")}
+              </Text>
+            </Group>
+          </>
+        )}
+      </Group>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Paper p={6} radius="lg" className="bg-zinc-950/30 border border-zinc-800/50">
-          <Group gap={4} wrap="nowrap"><TagIcon className="w-3 h-3 text-zinc-500" /><Text size="10px" fw={700} c="dimmed" className="uppercase">Pago</Text></Group>
-          <Text size="xs" fw={800} className="text-white mt-0.5">{metodoPago}</Text>
-        </Paper>
-        <Paper p={6} radius="lg" className="bg-zinc-950/30 border border-zinc-800/50">
-          <Group gap={4} wrap="nowrap"><CalendarDaysIcon className="w-3 h-3 text-zinc-500" /><Text size="10px" fw={700} c="dimmed" className="uppercase">Vencimiento</Text></Group>
-          <Text size="xs" fw={800} className="text-white mt-0.5">{vencimiento ? dayjs(vencimiento).format("DD/MM/YYYY") : "---"}</Text>
-        </Paper>
-      </div>
-
-      <Stack gap={4} p="xs" className="bg-linear-to-br from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800/80 shadow-lg">
-        <Group justify="space-between"><Text size="xs" c="dimmed" fw={700}>SUBTOTAL</Text><Text size="xs" fw={800} className="text-zinc-200">{smb} {formatNumber(totalAntesIgv)}</Text></Group>
+      {/* Stack de Totales Mejorado */}
+      <Stack gap={4} p="xs" className="bg-linear-to-br from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800/80 shadow-lg mt-auto">
         <Group justify="space-between">
-          <div className="flex items-center gap-2"><Text size="xs" c="dimmed" fw={700}>IGV</Text><Badge variant="light" color={incluyeIgv ? "teal" : "zinc"} size="9px" radius="xs">{incluyeIgv ? "INCLUIDO" : "MÁS IGV"}</Badge></div>
+          <Text size="10px" c="dimmed" fw={800}>SUBTOTAL (NETO)</Text>
+          <Text size="xs" fw={800} className="text-zinc-200">{smb} {formatNumber(totalAntesIgv)}</Text>
+        </Group>
+        
+        <Group justify="space-between">
+          <Text size="10px" c="dimmed" fw={800}>IGV ({porcentajeIgv}%)</Text>
           <Text size="xs" fw={800} className="text-zinc-200">{smb} {formatNumber(montoIgv)}</Text>
         </Group>
-        <Divider color="zinc.8" my={2} />
-        <Group justify="space-between"><Text size="sm" fw={900} className="text-cyan-400">TOTAL</Text><Text size="sm" fw={900} className="text-cyan-100 font-mono">{smb} {formatNumber(totalDespuesIgv)}</Text></Group>
+
+        <Divider color="zinc.8" my={2} variant="dashed" />
+
+        <Group justify="space-between">
+          <Text size="sm" fw={900} className="text-cyan-400">TOTAL</Text>
+          <Text size="sm" fw={900} className="text-cyan-100 font-mono">{smb} {formatNumber(totalDespuesIgv)}</Text>
+        </Group>
+
+        {/* Indicador sutil de origen */}
+        <Text size="9px" c={incluyeIgv ? "teal.6" : "amber.6"} fw={700} className="text-center opacity-80 mt-1 uppercase italic">
+          * Precios {incluyeIgv ? "ya incluyen" : "no consideran"} el IGV
+        </Text>
       </Stack>
 
       {observacion && (
-        <Group gap="xs" wrap="nowrap" className="px-1">
-          <ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-indigo-500" />
-          <Text size="10px" c="dimmed" fs="italic" truncate className="flex-1">{observacion}</Text>
-        </Group>
+        <Stack gap={2} className="px-1 mt-2">
+          <Group gap={4}>
+            <ChatBubbleBottomCenterTextIcon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+            <Text size="11px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
+              Observación
+            </Text>
+          </Group>
+          <Text size="xs" c="dimmed" className="leading-tight pl-5">
+            {observacion}
+          </Text>
+        </Stack>
       )}
     </Stack>
   );
