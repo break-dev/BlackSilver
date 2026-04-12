@@ -8,6 +8,7 @@ import {
   ActionIcon,
   Badge,
   TextInput,
+  Checkbox,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -16,10 +17,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../../presentation/functions/formatNumber";
-import type {
-  DTO_CotizacionRequest,
-} from "../../service/cotizaciones.requests";
-import { MetodoPago } from "../../../../shared/enums/estados";
+import type { DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
+import { MetodoPago, EstadoCotizacion } from "../../../../shared/enums/estados";
 
 interface CabeceraCotizacionProps {
   cot: DTO_CotizacionRequest;
@@ -60,7 +59,11 @@ export const CabeceraCotizacion = ({
       {/* Título y Cerrar - Vista Extendida */}
       {!isCollapsed && (
         <Group justify="space-between" align="center">
-          <Text size="sm" fw={800} className="text-white tracking-tight uppercase">
+          <Text
+            size="sm"
+            fw={800}
+            className="text-white tracking-tight uppercase"
+          >
             Cotización #{idx + 1}
           </Text>
           <ActionIcon
@@ -113,39 +116,77 @@ export const CabeceraCotizacion = ({
         <>
           {/* Configuración Principal */}
           <Stack gap="sm">
-            <Select
-              placeholder={
-                loadingProveedores
-                  ? "Buscando proveedores..."
-                  : "Seleccione proveedor..."
-              }
-              data={proveedores.map((p) => ({
-                value: String(p.id_proveedor),
-                label: p.razon_social,
-              }))}
-              label="Proveedor"
-              withAsterisk
-              disabled={loadingProveedores}
-              leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
-              value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
-              onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
-              searchable
-              size="xs"
-              radius="lg"
-              classNames={inputStyles}
-              comboboxProps={{
-                withinPortal: true,
-                zIndex: 9999,
-                transitionProps: { transition: "pop", duration: 200 },
-              }}
-            />
+            <Group align="flex-end" gap="xs">
+              <Select
+                placeholder={
+                  loadingProveedores
+                    ? "Buscando proveedores..."
+                    : "Seleccione proveedor..."
+                }
+                data={proveedores.map((p) => ({
+                  value: String(p.id_proveedor),
+                  label: p.razon_social,
+                }))}
+                label="Proveedor"
+                withAsterisk
+                disabled={loadingProveedores}
+                leftSection={
+                  <IdentificationIcon className="w-4 h-4 text-zinc-500" />
+                }
+                value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
+                onChange={(val) =>
+                  onUpdateHeader(idx, "id_proveedor", Number(val))
+                }
+                searchable
+                size="xs"
+                radius="lg"
+                classNames={inputStyles}
+                className="flex-1"
+                comboboxProps={{
+                  withinPortal: true,
+                  zIndex: 9999,
+                  transitionProps: { transition: "pop", duration: 200 },
+                }}
+              />
+
+              <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer">
+                <Group gap="xs" wrap="nowrap" align="center">
+                  <Text
+                    size="10px"
+                    fw={900}
+                    className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors"
+                  >
+                    Aprobar
+                  </Text>
+                  <Checkbox
+                    size="xs"
+                    color="green"
+                    checked={cot.estado === EstadoCotizacion.Aprobada}
+                    onChange={(e) =>
+                      onUpdateHeader(
+                        idx,
+                        "estado",
+                        e.currentTarget.checked
+                          ? EstadoCotizacion.Aprobada
+                          : EstadoCotizacion.Generada,
+                      )
+                    }
+                    styles={{
+                      input: { cursor: "pointer" },
+                    }}
+                  />
+                </Group>
+              </div>
+            </Group>
 
             <Group grow gap="md">
               <Select
                 label="Moneda"
                 data={["Soles", "Dolares"]}
                 value={cot.moneda}
-                onChange={(val) => onUpdateHeader(idx, "moneda", val ?? "Soles")}
+                onChange={(val) =>
+                  onUpdateHeader(idx, "moneda", val ?? "Soles")
+                }
                 classNames={inputStyles}
                 size="xs"
                 radius="lg"
@@ -207,7 +248,11 @@ export const CabeceraCotizacion = ({
           {/* Resumen de Totales y Tax */}
           <Group grow align="flex-start" gap="md" className="mt-2">
             <Stack gap={2}>
-              <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">
+              <Text
+                size="xs"
+                fw={500}
+                className="text-zinc-300 mb-1.5 font-medium"
+              >
                 Incluye IGV
               </Text>
               <Switch
@@ -220,7 +265,11 @@ export const CabeceraCotizacion = ({
               />
             </Stack>
             <Stack gap={2}>
-              <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">
+              <Text
+                size="xs"
+                fw={500}
+                className="text-zinc-300 mb-1.5 font-medium"
+              >
                 Porcentaje IGV
               </Text>
               <NumberInput
@@ -240,7 +289,11 @@ export const CabeceraCotizacion = ({
           <Group grow gap="xs">
             {/* Subtotal */}
             <Stack gap={2}>
-              <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">
+              <Text
+                size="xs"
+                fw={500}
+                className="text-zinc-300 mb-1.5 font-medium"
+              >
                 Subtotal (sin igv)
               </Text>
               <Badge
@@ -256,7 +309,11 @@ export const CabeceraCotizacion = ({
 
             {/* Monto IGV */}
             <Stack gap={2}>
-              <Text size="xs" fw={500} className="text-zinc-300 mb-1.5 font-medium">
+              <Text
+                size="xs"
+                fw={500}
+                className="text-zinc-300 mb-1.5 font-medium"
+              >
                 Monto IGV
               </Text>
               <Badge
@@ -272,7 +329,11 @@ export const CabeceraCotizacion = ({
 
             {/* Total final */}
             <Stack gap={2}>
-              <Text size="xs" fw={700} className="text-cyan-400 mb-1.5 font-bold">
+              <Text
+                size="xs"
+                fw={700}
+                className="text-cyan-400 mb-1.5 font-bold"
+              >
                 Total (con igv)
               </Text>
               <Badge
