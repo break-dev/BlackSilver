@@ -12,6 +12,7 @@ interface TablaDetalleResumenProps {
   detalles: RES_CotizacionDetalle[];
   isCollapsed: boolean;
   onApprove?: (id: number) => void;
+  loadingApprove?: number | null;
 }
 
 export const TablaDetalleResumen = ({
@@ -19,6 +20,7 @@ export const TablaDetalleResumen = ({
   detalles,
   isCollapsed,
   onApprove,
+  loadingApprove,
 }: TablaDetalleResumenProps) => {
   const productosUnicos = useMemo(() => {
     const map = new Map();
@@ -86,6 +88,7 @@ export const TablaDetalleResumen = ({
                     observacion={cot.observacion}
                     estado={cot.estado}
                     onApprove={onApprove}
+                    loading={loadingApprove === cot.id}
                     isCollapsed={isCollapsed}
                   />
                 </Table.Th>

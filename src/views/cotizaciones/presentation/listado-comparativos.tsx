@@ -546,6 +546,7 @@ export const ListadoComparativos = ({
                 comparativosMap[selectedCompId].some(c => c.id === d.id_cotizacion)
               )}
               onApprove={handleApprove}
+              loadingApprove={loadingApprove}
             />
           )}
         </div>

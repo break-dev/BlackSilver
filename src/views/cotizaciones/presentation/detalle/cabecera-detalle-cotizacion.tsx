@@ -26,6 +26,7 @@ interface CabeceraDetalleCotizacionProps {
   estado: string;
   idCotizacion: number;
   onApprove?: (id: number) => void;
+  loading?: boolean;
   isCollapsed: boolean;
 }
 
@@ -44,6 +45,7 @@ export const CabeceraDetalleCotizacion = ({
   estado,
   idCotizacion,
   onApprove,
+  loading,
   isCollapsed,
 }: CabeceraDetalleCotizacionProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
@@ -108,6 +110,7 @@ export const CabeceraDetalleCotizacion = ({
             color="green"
             size="xs"
             radius="md"
+            loading={loading}
             leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
             className="shadow-lg shadow-green-900/20 active:scale-95 transition-transform h-8 px-4"
             onClick={() => onApprove?.(idCotizacion)}
