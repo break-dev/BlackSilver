@@ -10,6 +10,7 @@ import {
   Button,
   Divider,
   Tooltip,
+  ActionIcon,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import {
@@ -24,38 +25,86 @@ import {
   CubeIcon,
   TableCellsIcon,
   ReceiptPercentIcon,
+  ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../presentation/functions/formatNumber";
 import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
-import { MetodoPago } from "../../../shared/enums/estados";
+import { MetodoPago, EstadoCotizacion } from "../../../shared/enums/estados";
+import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { useNotify } from "../../../hooks/useNotify";
+import { CotizacionesService } from "../service/cotizaciones.service";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
   busqueda: string;
+  onUpdateLocal?: (id: number, nuevoEstado: EstadoCotizacion) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
-const estadoConfig: Record<string, { color: string; label: string; variant: "filled" | "light" | "outline" }> = {
-  Generada:    { color: "indigo", label: "Generada",    variant: "light"  },
-  Aprobada:    { color: "teal",   label: "Aprobada",    variant: "filled" },
-  Desestimada: { color: "zinc",   label: "Desestimada", variant: "outline" },
+const COLOR_BY_STATE: Record<string, { color: string; label: string; variant: string }> = {
+  [EstadoCotizacion.Generada]: {
+    color: "indigo",
+    label: "Generada",
+    variant: "light",
+  },
+  [EstadoCotizacion.Aprobada]: {
+    color: "teal",
+    label: "Aprobada",
+    variant: "filled",
+  },
+  [EstadoCotizacion.Desestimada]: {
+    color: "red",
+    label: "Desestimada",
+    variant: "light",
+  },
 };
 
 export const ListadoComparativos = ({
   cotizaciones,
   detalles,
   busqueda,
+  onUpdateLocal,
 }: ListadoComparativosProps) => {
+  const { notifySuccess, notifyError } = useNotify();
+  const [loadingApprove, setLoadingApprove] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>({});
   const [expandedCots, setExpandedCots] = useState<Record<number, boolean>>({});
+
+  const [modalComparativoOpened, setModalComparativoOpened] = useState(false);
+  const [selectedCompId, setSelectedCompId] = useState<number | null>(null);
+  const [resumenDetalleIsCollapsed, setResumenDetalleIsCollapsed] = useState(false);
 
   const toggleComp = (id: number) =>
     setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const toggleCot = (id: number) =>
     setExpandedCots((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleVerComparativo = (id: number) => {
+    setSelectedCompId(id);
+    setModalComparativoOpened(true);
+  };
+
+  const handleApprove = async (id: number) => {
+    try {
+      setLoadingApprove(id);
+      const res = await CotizacionesService.aprobar_cotizacion(id);
+      if (res.success) {
+        notifySuccess("Cotización aprobada correctamente.");
+        onUpdateLocal?.(id, EstadoCotizacion.Aprobada);
+      } else {
+        notifyError(res.message);
+      }
+    } catch (error) {
+      console.error(error);
+      notifyError("No se pudo procesar la aprobación.");
+    } finally {
+      setLoadingApprove(null);
+    }
+  };
 
   // Agrupamos por comparativo
   const comparativosMap = cotizaciones.reduce(
@@ -166,18 +215,19 @@ export const ListadoComparativos = ({
 
                   {/* Botón ver comparativo + chevron */}
                   <Group gap="sm" wrap="nowrap">
-                    <Tooltip label="Próximamente" withArrow>
-                      <Button
-                        size="xs"
-                        radius="xl"
-                        variant="light"
-                        color="indigo"
-                        leftSection={<TableCellsIcon className="w-3.5 h-3.5" />}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Ver Comparativo
-                      </Button>
-                    </Tooltip>
+                    <Button
+                      size="xs"
+                      radius="xl"
+                      variant="light"
+                      color="indigo"
+                      leftSection={<TableCellsIcon className="w-3.5 h-3.5" />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVerComparativo(idComp);
+                      }}
+                    >
+                      Ver Comparativo
+                    </Button>
                     <div className="w-8 h-8 rounded-full bg-zinc-800/60 flex items-center justify-center border border-zinc-700/50 shrink-0">
                       {isCompExpanded ? (
                         <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
@@ -199,7 +249,7 @@ export const ListadoComparativos = ({
                   const cotDetalles = detalles.filter(
                     (d) => d.id_cotizacion === cot.id,
                   );
-                  const cfg = estadoConfig[cot.estado] ?? { color: "zinc", label: cot.estado };
+                  const cfg = COLOR_BY_STATE[cot.estado] ?? { color: "zinc", label: cot.estado, variant: "light" };
 
                   return (
                     <Paper
@@ -224,9 +274,20 @@ export const ListadoComparativos = ({
                               </div>
 
                               <Stack gap={1}>
-                                <Text size="sm" fw={800} className="text-white leading-tight">
-                                  {cot.proveedor_nombre}
-                                </Text>
+                                <Group gap="sm" wrap="nowrap">
+                                  <Text size="sm" fw={800} className="text-white leading-tight">
+                                    {cot.proveedor_nombre}
+                                  </Text>
+                                  <Badge
+                                    variant={cfg.variant}
+                                    color={cfg.color}
+                                    size="xs"
+                                    radius="sm"
+                                    className="font-bold border border-current/10"
+                                  >
+                                    {cfg.label}
+                                  </Badge>
+                                </Group>
                                 <Group gap="xs">
                                   {/* Método pago */}
                                   <Badge
@@ -241,14 +302,6 @@ export const ListadoComparativos = ({
                                   {/* Moneda */}
                                   <Badge variant="outline" color="zinc" size="xs">
                                     {cot.moneda}
-                                  </Badge>
-                                  {/* Estado */}
-                                  <Badge
-                                    variant={cfg.variant}
-                                    color={cfg.color}
-                                    size="xs"
-                                  >
-                                    {cfg.label}
                                   </Badge>
                                 </Group>
                               </Stack>
@@ -266,20 +319,22 @@ export const ListadoComparativos = ({
                                 </Text>
                               </Stack>
 
-                              {/* Botón Aprobar (visual only) */}
-                              <Tooltip label="Próximamente" withArrow>
-                                <Button
-                                  size="xs"
-                                  radius="xl"
-                                  color="green"
-                                  variant="filled"
-                                  leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
-                                  disabled={cot.estado === "Aprobada" || cot.estado === "Desestimada"}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  Aprobar
-                                </Button>
-                              </Tooltip>
+                              {/* Botón Aprobar */}
+                              <Button
+                                size="xs"
+                                radius="xl"
+                                color="green"
+                                variant="filled"
+                                loading={loadingApprove === cot.id}
+                                leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
+                                disabled={cot.estado === EstadoCotizacion.Aprobada || cot.estado === EstadoCotizacion.Desestimada}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApprove(cot.id);
+                                }}
+                              >
+                                Aprobar
+                              </Button>
 
                               <div className="w-6 h-6 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0">
                                 {isCotExpanded ? (
@@ -303,7 +358,7 @@ export const ListadoComparativos = ({
                             {/* Incluye IGV */}
                             <Group gap="xs">
                               <ReceiptPercentIcon className="w-3.5 h-3.5 text-zinc-500" />
-                              <Text size="xs" c="dimmed">
+                              <Text size="xs" c="dimmed" component="div" className="flex items-center gap-1">
                                 IGV incluido:{" "}
                                 <Badge
                                   variant="light"
@@ -458,6 +513,44 @@ export const ListadoComparativos = ({
           </Paper>
         );
       })}
+      {/* MODAL DE COMPARATIVO MATRICIAL */}
+      <ModalEstandar
+        opened={modalComparativoOpened}
+        onClose={() => setModalComparativoOpened(false)}
+        close={() => setModalComparativoOpened(false)}
+        title="Cuadro comparativo de Cotizaciones"
+        size="95%"
+        rightSection={
+          <Group gap="xs" mr="xl">
+            <Tooltip label={resumenDetalleIsCollapsed ? "Ver Detalle Extendido" : "Ver Vista Resumida"} withArrow>
+              <ActionIcon 
+                variant="light" 
+                color={resumenDetalleIsCollapsed ? "cyan" : "indigo"} 
+                size="lg" 
+                radius="xl"
+                onClick={() => setResumenDetalleIsCollapsed(!resumenDetalleIsCollapsed)}
+                className="shadow-lg active:scale-95 transition-all border border-white/10"
+              >
+                {resumenDetalleIsCollapsed ? <ListBulletIcon className="w-5 h-5" /> : <TableCellsIcon className="w-5 h-5" />}
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        }
+      >
+        <div style={{ height: "70vh" }}>
+          {selectedCompId && (
+            <TablaDetalleResumen
+              isCollapsed={resumenDetalleIsCollapsed}
+              cotizaciones={comparativosMap[selectedCompId]}
+              detalles={detalles.filter(d => 
+                comparativosMap[selectedCompId].some(c => c.id === d.id_cotizacion)
+              )}
+              onApprove={handleApprove}
+              loadingApprove={loadingApprove}
+            />
+          )}
+        </div>
+      </ModalEstandar>
     </Stack>
   );
 };

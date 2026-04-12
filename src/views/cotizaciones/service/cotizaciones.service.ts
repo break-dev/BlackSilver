@@ -48,4 +48,12 @@ export const CotizacionesService = {
     const { data } = await api.get<IRespuesta<RES_MaestroProducto[]>>("/cotizaciones/productos");
     return data;
   },
+
+  /**
+   * Aprobar una cotización específica (Desestima las otras del mismo grupo)
+   */
+  aprobar_cotizacion: async (id_cotizacion: number): Promise<IRespuesta<null>> => {
+    const { data } = await api.post<IRespuesta<null>>(`/cotizaciones/${id_cotizacion}/aprobar`);
+    return data;
+  },
 };

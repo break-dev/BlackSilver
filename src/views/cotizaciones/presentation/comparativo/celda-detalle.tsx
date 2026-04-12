@@ -1,0 +1,242 @@
+import {
+  Group,
+  Stack,
+  Text,
+  NumberInput,
+  Select,
+  Switch,
+  Tooltip,
+  TextInput,
+} from "@mantine/core";
+import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import { formatNumber } from "../../../../presentation/functions/formatNumber";
+import type {
+  DTO_CotizacionRequest,
+  DTO_CotizacionDetalle,
+  DTO_ProductoComparativo,
+} from "../../service/cotizaciones.requests";
+
+interface CeldaDetalleProps {
+  det: DTO_CotizacionDetalle;
+  prod: DTO_ProductoComparativo & {
+    nombre: string;
+    codigo: string;
+    id_unidad_medida_base: number;
+    unidad_medida_base: string;
+    unidad_medida_abreviatura: string;
+  };
+  cot: DTO_CotizacionRequest;
+  cotIdx: number;
+  unidadesMedida: { value: string; label: string; abreviatura: string }[];
+  onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
+    cotIndex: number,
+    prodId: number,
+    field: K,
+    value: DTO_CotizacionDetalle[K],
+  ) => void;
+  onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
+}
+
+const inputStyles = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 !font-normal transition-all",
+  label: "text-zinc-300 mb-1.5 font-medium text-xs",
+  description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
+};
+
+export const CeldaDetalle = ({
+  det,
+  prod,
+  cot,
+  cotIdx,
+  unidadesMedida,
+  onUpdateDetail,
+  onToggleNoCotiza,
+}: CeldaDetalleProps) => {
+  const currentUnit = unidadesMedida.find(
+    (u) => u.value === String(det.id_unidad_medida),
+  );
+  const abrev = currentUnit?.abreviatura || "---";
+  const baseAbrev = prod.unidad_medida_abreviatura || "UND";
+
+  return (
+    <>
+      {/* Switch de Inhabilitación (Arriba a la derecha) */}
+      <div className="absolute top-2 right-2 z-10">
+        <Tooltip
+          label={
+            det.no_cotiza
+              ? "Habilitar para cotizar"
+              : "Marcar como: No cotiza este producto"
+          }
+          position="left"
+        >
+          <Group gap={6} align="center">
+            <Text
+              size="10px"
+              fw={700}
+              className={det.no_cotiza ? "text-zinc-600" : "text-zinc-400"}
+            >
+              {det.no_cotiza ? "OFF" : "¿COTIZAR?"}
+            </Text>
+            <Switch
+              size="xs"
+              color="red"
+              checked={!det.no_cotiza}
+              onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+              className="hover:scale-110 transition-transform cursor-pointer"
+            />
+          </Group>
+        </Tooltip>
+      </div>
+
+      {/* Campos editables (se ocultan si no cotiza) */}
+      <Stack
+        gap="sm"
+        className={`w-full transition-all duration-300 ${
+          det.no_cotiza
+            ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
+            : ""
+        }`}
+      >
+        {/* Fila 1: Unidad y Cantidad */}
+        <Group grow align="flex-end" gap="xs">
+          <Select
+            label="Und. de Cotización"
+            data={unidadesMedida}
+            value={String(det.id_unidad_medida)}
+            onChange={(val) =>
+              onUpdateDetail(cotIdx, prod.id_producto, "id_unidad_medida", Number(val))
+            }
+            size="xs"
+            radius="lg"
+            classNames={inputStyles}
+            withAsterisk
+            comboboxProps={{ withinPortal: true, zIndex: 9999 }}
+          />
+          <NumberInput
+            label={`Cant. x ${abrev}`}
+            value={det.cantidad}
+            onChange={(val) =>
+              onUpdateDetail(cotIdx, prod.id_producto, "cantidad", Number(val))
+            }
+            min={0}
+            size="xs"
+            radius="lg"
+            withAsterisk
+            classNames={inputStyles}
+          />
+        </Group>
+
+        {/* Fila 2: Factor y Precio */}
+        <Group grow align="flex-end" gap="xs">
+          <NumberInput
+            label={
+              <Text size="xs" fw={500} className="text-zinc-300">
+                Und x {abrev} <span className="text-red-500">*</span>
+              </Text>
+            }
+            value={det.contenido_por_presentacion}
+            onChange={(val) =>
+              onUpdateDetail(
+                cotIdx,
+                prod.id_producto,
+                "contenido_por_presentacion",
+                Number(val),
+              )
+            }
+            disabled={det.id_unidad_medida === prod.id_unidad_medida_base}
+            min={1}
+            size="xs"
+            radius="lg"
+            classNames={inputStyles}
+          />
+          <NumberInput
+            label={
+              <Text size="xs" fw={500} className="text-zinc-300">
+                Precio x {abrev} <span className="text-red-500">*</span>
+              </Text>
+            }
+            value={det.precio_unitario}
+            onChange={(val) =>
+              onUpdateDetail(cotIdx, prod.id_producto, "precio_unitario", Number(val))
+            }
+            min={0}
+            size="xs"
+            radius="lg"
+            classNames={inputStyles}
+            placeholder="0.00"
+            decimalScale={2}
+          />
+        </Group>
+
+        {/* Fila 3: Tarjetas de Resultados Financieros */}
+        <Group grow wrap="nowrap" gap="xs">
+          <Stack
+            gap={0}
+            px="xs"
+            py={4}
+            className="bg-cyan-600 rounded-lg shadow-sm border border-cyan-400/20"
+          >
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">
+              Total {baseAbrev}
+            </Text>
+            <Text size="xs" fw={800} className="text-white">
+              {det.cantidad * det.contenido_por_presentacion} {baseAbrev}
+            </Text>
+          </Stack>
+
+          <Stack
+            gap={0}
+            px="xs"
+            py={4}
+            className="bg-teal-600 rounded-lg shadow-sm border border-teal-400/20"
+          >
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">
+              Precio x {baseAbrev}
+            </Text>
+            <Text size="xs" fw={800} className="text-white">
+              {cot.moneda === "Soles" ? "S/. " : "$ "}
+              {formatNumber(det.precio_unitario_base)}
+            </Text>
+          </Stack>
+
+          <Stack
+            gap={0}
+            px="xs"
+            py={4}
+            className="bg-emerald-700 rounded-lg shadow-md border border-emerald-500/20"
+          >
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">
+              Subtotal
+            </Text>
+            <Text size="xs" fw={800} className="text-white">
+              {cot.moneda === "Soles" ? "S/. " : "$ "}
+              {formatNumber(det.cantidad * det.precio_unitario)}
+            </Text>
+          </Stack>
+        </Group>
+
+        <TextInput
+          label="Comentario (Opcional)"
+          placeholder="Marca, color, etc..."
+          size="xs"
+          radius="lg"
+          classNames={inputStyles}
+          value={det.comentario || ""}
+          onChange={(e) =>
+            onUpdateDetail(
+              cotIdx,
+              prod.id_producto,
+              "comentario",
+              e.currentTarget.value,
+            )
+          }
+          leftSection={
+            <ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-zinc-600" />
+          }
+        />
+      </Stack>
+    </>
+  );
+};
