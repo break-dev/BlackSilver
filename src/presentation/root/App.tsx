@@ -20,29 +20,29 @@ import {
   ComprasLayout,
 } from "../layouts/logistica.layout";
 // Vistas
-import { LoginPage } from "../../views/login/presentation/login.page";
+import { LoginPage } from "../../modules/login/presentation/login.page";
 import { HomePage } from "../pages/home/home.page";
-import { ConcesionesPage } from "../../views/concesiones/presentation/concesiones.page";
-import { MinasPage } from "../../views/minas-labores/presentation/minas.page";
-import { EmpresasPage } from "../../views/empresas/presentation/empresas.page";
-import { CategoriasPage } from "../../views/categorias/presentation/categorias.page";
-import { EmpleadosPage } from "../../views/empleados/presentation/empleados.page";
-import { AlmacenesPage } from "../../views/almacenes/presentation/almacenes.page";
-import { ProductosPage } from "../../views/productos/presentation/productos.page";
-import OrganigramaPage from "../../views/organigrama/presentation/organigrama.page";
-import { LotesPage } from "../../views/lotes-productos/presentation/lotes-page/lotes.page";
-import { RequerimientosAlmacenPage } from "../../views/requerimientos-almacen/presentation/requerimientos-almacen.page";
-import { RequerimientosAlmacenAtencionPage } from "../../views/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
-import { KardexProductosPage } from "../../views/kardex-productos/presentation/kardex.page";
-import { RolesPage } from "../../views/roles/presentation/roles.page";
-import { CuentasPage } from "../../views/cuentas/presentation/cuentas.page";
-import { SolicitudesReabastecimientoPage } from "../../views/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
-import { PerfilPage } from "../../views/perfil/presentation/perfil.page";
-import { SolicitudesReabastecimientoAtencionPage } from "../../views/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
-import { AtencionPrestamosPage } from "../../views/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
-import { PrestamosAlmacenPage } from "../../views/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
-import { ProveedoresPage } from "../../views/proveedores/presentation/proveedores-page/proveedores.page.tsx";
-import CotizacionesPage from "../../views/cotizaciones/presentation/cotizaciones.page";
+import { ConcesionesPage } from "../../modules/concesiones/presentation/concesiones.page";
+import { MinasPage } from "../../modules/minas-labores/presentation/minas.page";
+import { EmpresasPage } from "../../modules/empresas/presentation/empresas.page";
+import { CategoriasPage } from "../../modules/categorias/presentation/categorias.page";
+import { EmpleadosPage } from "../../modules/empleados/presentation/empleados.page";
+import { AlmacenesPage } from "../../modules/almacenes/presentation/almacenes.page";
+import { ProductosPage } from "../../modules/productos/presentation/productos.page";
+import OrganigramaPage from "../../modules/organigrama/presentation/organigrama.page";
+import { LotesPage } from "../../modules/lotes-productos/presentation/lotes-page/lotes.page";
+import { RequerimientosAlmacenPage } from "../../modules/requerimientos-almacen/presentation/requerimientos-almacen.page";
+import { RequerimientosAlmacenAtencionPage } from "../../modules/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page";
+import { KardexProductosPage } from "../../modules/kardex-productos/presentation/kardex.page";
+import { RolesPage } from "../../modules/roles/presentation/roles.page";
+import { CuentasPage } from "../../modules/cuentas/presentation/cuentas.page";
+import { SolicitudesReabastecimientoPage } from "../../modules/solicitudes-reabastecimiento/presentation/solicitudes-reabastecimiento.page";
+import { PerfilPage } from "../../modules/perfil/presentation/perfil.page";
+import { SolicitudesReabastecimientoAtencionPage } from "../../modules/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page";
+import { AtencionPrestamosPage } from "../../modules/prestamos-almacen-atencion/presentation/atencion-prestamos.page";
+import { PrestamosAlmacenPage } from "../../modules/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
+import { ProveedoresPage } from "../../modules/proveedores/presentation/proveedores-page/proveedores.page.tsx";
+import CotizacionesPage from "../../modules/cotizaciones/presentation/cotizaciones.page";
 
 export const App = () => {
   return (

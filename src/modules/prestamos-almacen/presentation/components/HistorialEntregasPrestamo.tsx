@@ -32,7 +32,7 @@ import type {
   RES_HistorialRecepcionPrestamo,
   RES_DetalleRecepcionPrestamo,
 } from "../../service/prestamos.responses";
-import type { IArchivo } from "../../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../../service/responses/menu-navegacion";
 
 interface HistorialProps {
   idPrestamo: number;

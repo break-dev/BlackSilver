@@ -1,6 +1,10 @@
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type {
+  Estado_PrestamoEntregaRecepcion,
+  Estado_PrestamoEntregaRecepcionDetalle,
+} from "../../../shared/enums/prestamo-almacen/prestamo-entrega-recepcion";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
-export interface RES_PrestamoEntrega_Recepcion {
+export interface RES_PrestamoEntregaRecepcion {
   id_recepcion: number;
   id_prestamo_almacen_entrega: number;
   //
@@ -11,12 +15,12 @@ export interface RES_PrestamoEntrega_Recepcion {
   evidencias: IArchivo[] | null;
   con_incidencia: boolean;
   created_at: string;
-  estado: string;
+  estado: Estado_PrestamoEntregaRecepcion;
   // Insertado por la api
-  detalles: RES_PrestamoEntrega_RecepcionDetalle[];
+  detalles: RES_PrestamoEntregaRecepcionDetalle[];
 }
 
-export interface RES_PrestamoEntrega_RecepcionDetalle {
+export interface RES_PrestamoEntregaRecepcionDetalle {
   id_recepcion_detalle: number;
   id_prestamo_almacen_entrega_detalle: number;
   id_prestamo_almacen_recepcion: number;
@@ -34,5 +38,5 @@ export interface RES_PrestamoEntrega_RecepcionDetalle {
   unidad_medida_pr_abv: string;
   cantidad_recepcionada_pr: number;
   //
-  estado: string;
+  estado: Estado_PrestamoEntregaRecepcionDetalle;
 }

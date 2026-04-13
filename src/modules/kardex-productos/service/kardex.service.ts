@@ -1,5 +1,5 @@
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_MovimientoKardex, RES_Almacen } from "./kardex.responses";
 
 export class KardexService {

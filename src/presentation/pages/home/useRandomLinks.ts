@@ -23,27 +23,27 @@ export const useRandomLinks = () => {
     if (!menu || !Array.isArray(menu)) return [];
 
     const accesses: IAccesoRapido[] = [];
-    menu.forEach((mod) => {
-      if (!Array.isArray(mod.submodulos)) return;
+    menu.forEach((menuItem) => {
+      if (!Array.isArray(menuItem.submenus)) return;
 
-      const modIconData = iconos_menu_navegacion.find(
-        (i) => i.modulo_path === mod.path,
+      const menuIconData = iconos_menu_navegacion.find(
+        (i) => i.menu_path === menuItem.path,
       );
 
-      mod.submodulos.forEach((sub) => {
-        if (!Array.isArray(sub.secciones)) return;
+      menuItem.submenus.forEach((submenu) => {
+        if (!Array.isArray(submenu.modulos)) return;
 
-        const subIconData = modIconData?.submodulos?.find(
-          (s) => s.submodulo_path === sub.path,
+        const submenuIconData = menuIconData?.submenus?.find(
+          (s) => s.submenu_path === submenu.path,
         );
-        const icon = subIconData?.icono || CubeIcon;
+        const icon = submenuIconData?.icono || CubeIcon;
 
-        sub.secciones.forEach((sec) => {
+        submenu.modulos.forEach((modulo) => {
           accesses.push({
-            title: sec.nombre,
-            desc: sub.nombre,
+            title: modulo.nombre,
+            desc: submenu.nombre,
             icon: icon,
-            url: sec.url,
+            url: modulo.url,
           });
         });
       });

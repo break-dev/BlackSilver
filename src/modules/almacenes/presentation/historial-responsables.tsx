@@ -2,7 +2,7 @@ import { Badge, Text, Group, Stack, Skeleton } from "@mantine/core";
 import { UserIcon, ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import type { IMessage } from "../../../shared/interfaces/menu-navegacion";
+import type { IMessage } from "../../../stores/ui.store";
 import type {
   RES_Almacen,
   RES_ResponsableAlmacen,

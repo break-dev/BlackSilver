@@ -22,7 +22,7 @@ import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
 import { useAtencionPrestamos } from "../hooks/useAtencionPrestamos";
-import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -65,7 +65,7 @@ export const AtencionPrestamosPage = () => {
     [filteredRecords, selectedId],
   );
 
-  const columns: DataTableColumn<RES_PrestamoAtencion>[] = useMemo(
+  const columns: DataTableColumn<RES_Prestamo>[] = useMemo(
     () => [
       {
         accessor: "index",

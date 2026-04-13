@@ -1,6 +1,6 @@
 # Black Silver - Frontend (React + Vite)
 
-Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS diseñada para la gestión integral de operaciones mineras. Este proyecto utiliza un stack moderno y una arquitectura de **Aislamiento por Vista** para garantizar la escalabilidad y mantenibilidad.
+Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS diseñada para la gestión integral de operaciones mineras. Este proyecto utiliza un stack moderno y una arquitectura de **Aislamiento por Modulo** para garantizar la escalabilidad y mantenibilidad.
 
 ---
 
@@ -25,38 +25,38 @@ Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS dis
 
 ---
 
-## 🏗️ Arquitectura: Aislamiento por Vista
+## 🏗️ Arquitectura: Aislamiento por Modulo
 
-El proyecto sigue estrictamente el principio de **Aislamiento por Vista**. Cada vista de la aplicación reside en su propio directorio y debe ser autosuficiente.
+El proyecto sigue estrictamente el principio de **Aislamiento por Modulo**. Cada modulo de la aplicación reside en su propio directorio y debe ser autosuficiente.
 
-### Ubicación: `src/views/[nombre-vista-kebab-case]`
+### Ubicación: `src/modules/[nombre-modulo-kebab-case]`
 
-Cada vista se divide obligatoriamente en tres capas para separar responsabilidades:
+Cada modulo se divide obligatoriamente en tres capas para separar responsabilidades:
 
 #### 1. Presentation (`components/` y `.page.tsx`)
 
 - **Responsabilidad:** UI/UX y renderizado.
 - **Regla:** No debe contener lógica compleja, cálculos pesados ni manejo de estado de negocio.
-- **Archivos:** El componente principal es `[nombre-vista].page.tsx`. Los sub-componentes son `[nombre-componente].tsx`.
+- **Archivos:** El componente principal es `[nombre-modulo].page.tsx`. Los sub-componentes son `[nombre-componente].tsx`.
 - **Escalabilidad:** Si un componente se vuelve complejo, crea una carpeta con su nombre, coloca el `.tsx` ahí dentro, y crea una subcarpeta `components/` para los elementos que lo integran.
 
 #### 2. Hooks (`hooks/`)
 
 - **Responsabilidad:** El "Cerebro" del componente. Maneja el estado local, efectos y validaciones.
-- **Regla:** Los hooks son **por cada componente complejo de la vista**, no uno general por vista. (Ej: `useRegistroEntregaLogistica.ts`).
+- **Regla:** Los hooks son **por cada componente complejo de la modulo**, no uno general por modulo. (Ej: `useRegistroEntregaLogistica.ts`).
 
 #### 3. Service (`service/`)
 
 - **Responsabilidad:** Comunicación con la API y definición de modelos de datos.
-- **Regla:** Solo deben existir **3 archivos** nombrados con el nombre de la vista:
-  1. `[nombre-vista].service.ts`
-  2. `[nombre-vista].requests.ts`
-  3. `[nombre-vista].responses.ts` (Debe ser **exactamente** lo que la API envía).
+- **Regla:** Solo deben existir **3 archivos** nombrados con el nombre de la modulo:
+  1. `[nombre-modulo].service.ts`
+  2. `[nombre-modulo].requests.ts`
+  3. `[nombre-modulo].responses.ts` (Debe ser **exactamente** lo que la API envía).
 
 > [!IMPORTANT]
 > **Reglas de Oro:**
 >
-> 1. **Prohibido reutilizar componentes de negocio** entre diferentes vistas (ej. entregas de requerimientos vs. entregas de préstamos), aunque se parezcan. Se debe tomar como referencia y crear uno nuevo en la vista correspondiente.
+> 1. **Prohibido reutilizar componentes de negocio** entre diferentes modulos (ej. entregas de requerimientos vs. entregas de préstamos), aunque se parezcan. Se debe tomar como referencia y crear uno nuevo en la modulo correspondiente.
 > 2. **Componentes Abstractos:** Solo se reutilizan componentes sin lógica de procesos específicos (Modal, Datatable, CustomDatePicker, FileUpload) desde `src/presentation` o `src/shared`.
 
 ---
@@ -68,7 +68,7 @@ Cada vista se divide obligatoriamente en tres capas para separar responsabilidad
 - `src/service`: Instancia de Axios y servicios core del sistema.
 - `src/shared`: Constantes, utilidades, tipos globales y **Enums** (que deben mantener similitud estricta con los de la API).
 - `src/stores`: Stores globales (ej. sesión de usuario, configuración).
-- `src/views`: Vistas de la aplicación organizadas por funcionalidad.
+- `src/modules`: Modulos de la aplicación organizadas por funcionalidad.
 
 ---
 
@@ -93,12 +93,12 @@ El flujo debe ser siempre unidireccional:
 
 ---
 
-## 🚀 Workflow: Crear una Nueva Vista
+## 🚀 Workflow: Crear una Nueva Modulo
 
-1. **Crear Carpeta:** En `src/views/nueva-vista`.
-2. **Definir Service:** Crea `nueva-vista.responses.ts`, `nueva-vista.requests.ts` y `nueva-vista.service.ts`.
-3. **Crear Hook:** Implementa los hooks necesarios para cada componente complejo de la vista en la carpeta `hooks/`.
-4. **Implementar Vista:** Crea `nueva-vista.page.tsx` y sus sub-componentes. Usa `useTitlePage` y `useNotify`.
+1. **Crear Carpeta:** En `src/modules/nueva-modulo`.
+2. **Definir Service:** Crea `nueva-modulo.responses.ts`, `nueva-modulo.requests.ts` y `nueva-modulo.service.ts`.
+3. **Crear Hook:** Implementa los hooks necesarios para cada componente complejo de la modulo en la carpeta `hooks/`.
+4. **Implementar Modulo:** Crea `nueva-modulo.page.tsx` y sus sub-componentes. Usa `useTitlePage` y `useNotify`.
 5. **Registrar Ruta:** Añade la nueva ruta en el enrutador principal.
 
 ---

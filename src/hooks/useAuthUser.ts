@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/auth.store";
 import { useMenuNavegacionStore } from "../stores/menu.store";
-import { usePerfilStore } from "../views/perfil/hooks/usePerfilStore";
+import { usePerfilStore } from "../modules/perfil/hooks/usePerfilStore";
 import { useCallback, useMemo } from "react";
 
 export const useAuthUser = () => {
@@ -32,10 +32,10 @@ export const useAuthUser = () => {
 
     // Aplanamos el menú para obtener todas las URLs autorizadas
     const authorizedUrls: string[] = [];
-    menu.forEach((modulo) => {
-      modulo.submodulos?.forEach((submodulo) => {
-        submodulo.secciones?.forEach((seccion) => {
-          if (seccion.url) authorizedUrls.push(seccion.url);
+    menu.forEach((menuItem) => {
+      menuItem.submenus?.forEach((submenu) => {
+        submenu.modulos?.forEach((modulo) => {
+          if (modulo.url) authorizedUrls.push(modulo.url);
         });
       });
     });

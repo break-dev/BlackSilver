@@ -1,5 +1,5 @@
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../service/responses/menu-navegacion";
 import type { DTO_CrearProducto } from "./productos.requests";
 import type {
   RES_Producto,

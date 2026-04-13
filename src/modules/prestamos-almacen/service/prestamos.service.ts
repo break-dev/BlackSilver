@@ -1,5 +1,5 @@
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../service/responses/menu-navegacion";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
 import type {

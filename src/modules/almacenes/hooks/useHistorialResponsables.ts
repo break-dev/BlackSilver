@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
-import { EstadoBase } from "../../../shared/enums/estados";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 export const useHistorialResponsables = (id_almacen: number) => {
   const { notify } = useNotify();

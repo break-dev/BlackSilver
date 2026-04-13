@@ -9,7 +9,7 @@ import {
 import { CubeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMinasAbastecidas } from "../hooks/useMinasAbastecidas";
 import { AbastecerMina } from "./abastecer-mina";
-import type { IMessage } from "../../../shared/interfaces/menu-navegacion";
+import type { IMessage } from "../../../stores/ui.store";
 import type {
   RES_Almacen,
   RES_MinaAbastecida,

@@ -25,7 +25,7 @@ import type { RES_MovimientoKardex } from "../service/kardex.responses";
 
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
-import { TipoMovimiento } from "../../../shared/enums/tipos";
+import { Kardex_TipoMovimiento } from "../../../shared/enums/kardex";
 import { MESES } from "../../../shared/variables/meses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 
@@ -141,7 +141,8 @@ export const KardexProductosPage = () => {
         textAlign: "center",
         width: 160,
         render: (record) => {
-          const isIngreso = record.tipo_movimiento === TipoMovimiento.Ingreso;
+          const isIngreso =
+            record.tipo_movimiento === Kardex_TipoMovimiento.Ingreso;
           return (
             <div className="flex flex-row items-end gap-2.5 justify-center">
               {record.unidad_base !== record.unidad_lote && (

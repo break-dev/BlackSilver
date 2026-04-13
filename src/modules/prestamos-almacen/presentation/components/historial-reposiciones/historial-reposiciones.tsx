@@ -28,7 +28,7 @@ import type {
   RES_HistorialReposicion,
   RES_DetalleReposicion,
 } from "../../../service/prestamos.responses";
-import type { IArchivo } from "../../../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../../../service/responses/menu-navegacion";
 
 interface HistorialReposicionesProps {
   idPrestamo: number;

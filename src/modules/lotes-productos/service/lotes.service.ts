@@ -1,6 +1,6 @@
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../service/responses/menu-navegacion";
 import type { DTO_AjustarStock, DTO_CrearLote } from "./lotes.requests";
 import type {
   RES_Lote,

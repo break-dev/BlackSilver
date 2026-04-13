@@ -11,30 +11,32 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 
-// Asociacion de iconos a cada modulo y submodulo, mediante
-// el campo "path". Visible en el menu de navegacion
+// Asociacion de iconos a cada nivel de menú mediante
+// el campo "path". Visible en el menu de navegacion.
+// modulo_path -> menu_path
+// submodulo_path -> submenu_path
 export const iconos_menu_navegacion = [
   {
-    modulo_path: "configuracion",
+    menu_path: "configuracion",
     icono: Cog6ToothIcon,
-    submodulos: [
-      { submodulo_path: "empresas", icono: BuildingOffice2Icon },
-      { submodulo_path: "personal", icono: UserGroupIcon },
-      { submodulo_path: "usuarios", icono: UsersIcon },
+    submenus: [
+      { submenu_path: "empresas", icono: BuildingOffice2Icon },
+      { submenu_path: "personal", icono: UserGroupIcon },
+      { submenu_path: "usuarios", icono: UsersIcon },
     ],
   },
   {
-    modulo_path: "logistica",
+    menu_path: "logistica",
     icono: TruckIcon,
-    submodulos: [
-      { submodulo_path: "inventario", icono: ClipboardDocumentListIcon },
-      { submodulo_path: "requerimiento_almacen", icono: DocumentTextIcon },
+    submenus: [
+      { submenu_path: "inventario", icono: ClipboardDocumentListIcon },
+      { submenu_path: "requerimiento_almacen", icono: DocumentTextIcon },
       {
-        submodulo_path: "solicitud_reabastecimiento",
+        submenu_path: "solicitud_reabastecimiento",
         icono: ArrowsRightLeftIcon,
       },
-      { submodulo_path: "prestamos_almacen", icono: ReceiptRefundIcon },
-      { submodulo_path: "compras", icono: ShoppingCartIcon },
+      { submenu_path: "prestamos_almacen", icono: ReceiptRefundIcon },
+      { submenu_path: "compras", icono: ShoppingCartIcon },
     ],
   },
 ];

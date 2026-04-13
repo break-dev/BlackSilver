@@ -1,4 +1,4 @@
-import { TipoMineral } from "../../../shared/enums/tipos";
+import { TipoMineral } from "../../../shared/enums/_generic/tipo-mineral";
 
 export interface RES_Concesion {
   id_concesion: number;

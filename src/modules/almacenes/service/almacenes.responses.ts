@@ -1,4 +1,4 @@
-import { EstadoBase } from "../../../shared/enums/estados";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 // Un almacen
 export interface RES_Almacen {

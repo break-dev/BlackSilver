@@ -9,18 +9,28 @@ import {
   Accordion,
   Box,
 } from "@mantine/core";
-import { RectangleGroupIcon, ShieldCheckIcon, DocumentTextIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
+import {
+  RectangleGroupIcon,
+  ShieldCheckIcon,
+  DocumentTextIcon,
+  CheckBadgeIcon,
+} from "@heroicons/react/24/outline";
+import type {
+  RES_MenuEstructura,
+  RES_Modulo,
+  RES_Submenu,
+} from "../service/roles.responses";
 
 interface RegistroRolProps {
-  estructura: any[];
+  estructura: RES_MenuEstructura[];
   loadingEstructura: boolean;
   nombre: string;
   setNombre: (val: string) => void;
   descripcion: string;
   setDescripcion: (val: string) => void;
-  seccionesSeleccionadas: number[];
-  onToggleSeccion: (id: number) => void;
-  onToggleSubmodulo: (ids: number[], checked: boolean) => void;
+  modulosSeleccionados: number[];
+  onToggleModulo: (id: number) => void;
+  onToggleSubmenu: (ids: number[], checked: boolean) => void;
   onSave: () => void;
   onCancel: () => void;
   loading: boolean;
@@ -34,9 +44,9 @@ export const RegistroRol = ({
   setNombre,
   descripcion,
   setDescripcion,
-  seccionesSeleccionadas,
-  onToggleSeccion,
-  onToggleSubmodulo,
+  modulosSeleccionados,
+  onToggleModulo,
+  onToggleSubmenu,
   onSave,
   onCancel,
   loading,
@@ -50,7 +60,6 @@ export const RegistroRol = ({
 
   return (
     <Stack gap="md">
-
       <TextInput
         label="Nombre del Rol"
         placeholder="Ej: Administrador de Almacén"
@@ -82,89 +91,153 @@ export const RegistroRol = ({
           Configuración de Permisos
         </Text>
         <Text size="xs" color="dimmed">
-          Seleccione los módulos y vistas a las que este rol tendrá acceso
+          Seleccione los menús y módulos a las que este rol tendrá acceso
         </Text>
       </div>
 
       <div>
         {loadingEstructura ? (
           <div className="flex flex-col items-center justify-center py-10 gap-2">
-             <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-             <Text size="xs" fw={500} color="dimmed">Cargando estructura...</Text>
+            <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+            <Text size="xs" fw={500} color="dimmed">
+              Cargando estructura...
+            </Text>
           </div>
         ) : (
-          <Accordion 
-            variant="separated" 
+          <Accordion
+            variant="separated"
             defaultValue={estructura[0]?.nombre}
             classNames={{
               item: "border-zinc-800/50 bg-zinc-900/20 mb-3 rounded-xl overflow-hidden transition-all hover:border-zinc-700/50",
               control: "py-3 px-4 hover:bg-zinc-800/20",
               panel: "px-4 pb-4 pt-2",
-              chevron: "text-zinc-500"
+              chevron: "text-zinc-500",
             }}
           >
-            {estructura.map((modulo) => (
-              <Accordion.Item key={modulo.id} value={modulo.nombre} className="group">
-                <Accordion.Control icon={<RectangleGroupIcon className="w-5 h-5 text-indigo-400 group-data-[active]:text-indigo-300" />}>
-                  <Text size="sm" fw={700} className="text-zinc-300 group-data-[active]:text-white transition-colors">{modulo.nombre}</Text>
+            {estructura.map((menuItem) => (
+              <Accordion.Item
+                key={menuItem.id}
+                value={menuItem.nombre}
+                className="group"
+              >
+                <Accordion.Control
+                  icon={
+                    <RectangleGroupIcon className="w-5 h-5 text-indigo-400 group-data-active:text-indigo-300" />
+                  }
+                >
+                  <Text
+                    size="sm"
+                    fw={700}
+                    className="text-zinc-300 group-data-active:text-white transition-colors"
+                  >
+                    {menuItem.nombre}
+                  </Text>
                 </Accordion.Control>
                 <Accordion.Panel>
                   <Stack gap="md">
-                    {modulo.submodulos.map((sub: any) => {
-                      const idsSecciones = sub.secciones.map((s: any) => s.id);
-                      const todasSeleccionadas = idsSecciones.every((id: number) => seccionesSeleccionadas.includes(id));
-                      const algunaSeleccionada = idsSecciones.some((id: number) => seccionesSeleccionadas.includes(id));
-                      
+                    {menuItem.submenus.map((submenu: RES_Submenu) => {
+                      const idsModulos = submenu.modulos.map(
+                        (m: RES_Modulo) => m.id,
+                      );
+                      const todosSeleccionados = idsModulos.every(
+                        (id: number) => modulosSeleccionados.includes(id),
+                      );
+                      const algunoSeleccionado = idsModulos.some((id: number) =>
+                        modulosSeleccionados.includes(id),
+                      );
+
                       return (
-                        <Box 
-                          key={sub.id} 
+                        <Box
+                          key={submenu.id}
                           className="bg-zinc-900/40 rounded-2xl border border-zinc-800/40 p-4 relative overflow-hidden group/sub"
                         >
-                          <div className={`absolute inset-0 bg-indigo-500/[0.03] transition-opacity ${algunaSeleccionada ? 'opacity-100' : 'opacity-0'}`} />
+                          <div
+                            className={`absolute inset-0 bg-indigo-500/3 transition-opacity ${algunoSeleccionado ? "opacity-100" : "opacity-0"}`}
+                          />
 
-                          <Group justify="space-between" mb="xs" className="relative z-10">
+                          <Group
+                            justify="space-between"
+                            mb="xs"
+                            className="relative z-10"
+                          >
                             <Group gap="xs">
-                              <div className={`w-2 h-2 rounded-full transition-colors ${todasSeleccionadas ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : algunaSeleccionada ? 'bg-indigo-500/50' : 'bg-zinc-700'}`} />
-                              <Text size="xs" fw={800} className="text-zinc-400 uppercase tracking-tighter transition-colors group-hover/sub:text-zinc-200">{sub.nombre}</Text>
+                              <div
+                                className={`w-2 h-2 rounded-full transition-colors ${todosSeleccionados ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" : algunoSeleccionado ? "bg-indigo-500/50" : "bg-zinc-700"}`}
+                              />
+                              <Text
+                                size="xs"
+                                fw={800}
+                                className="text-zinc-400 uppercase tracking-tighter transition-colors group-hover/sub:text-zinc-200"
+                              >
+                                {submenu.nombre}
+                              </Text>
                             </Group>
-                            
+
                             <Checkbox
                               size="xs"
                               label="Seleccionar Todo"
-                              checked={todasSeleccionadas}
-                              indeterminate={algunaSeleccionada && !todasSeleccionadas}
-                              onChange={(e) => onToggleSubmodulo(idsSecciones, e.currentTarget.checked)}
+                              checked={todosSeleccionados}
+                              indeterminate={
+                                algunoSeleccionado && !todosSeleccionados
+                              }
+                              onChange={(e) =>
+                                onToggleSubmenu(
+                                  idsModulos,
+                                  e.currentTarget.checked,
+                                )
+                              }
                               color="indigo"
                               styles={{
-                                label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: '#71717a' },
-                                input: { cursor: 'pointer', borderWidth: '1.5px' },
-                                icon: { width: '80% !important', height: '80% !important' }
+                                label: {
+                                  fontSize: "10px",
+                                  fontWeight: 800,
+                                  textTransform: "uppercase",
+                                  color: "#71717a",
+                                },
+                                input: {
+                                  cursor: "pointer",
+                                  borderWidth: "1.5px",
+                                },
+                                icon: {
+                                  width: "80% !important",
+                                  height: "80% !important",
+                                },
                               }}
                             />
                           </Group>
-                          
+
                           <div className="grid grid-cols-2 gap-3 relative z-10">
-                            {sub.secciones.map((sec: any) => (
-                              <div 
-                                key={sec.id}
+                            {submenu.modulos.map((modulo: RES_Modulo) => (
+                              <div
+                                key={modulo.id}
                                 className={`flex items-center gap-2 p-2 rounded-lg border transition-all cursor-pointer ${
-                                  seccionesSeleccionadas.includes(sec.id) 
-                                    ? 'bg-indigo-500/10 border-indigo-500/20' 
-                                    : 'bg-zinc-950/20 border-transparent hover:bg-zinc-800/30'
+                                  modulosSeleccionados.includes(modulo.id)
+                                    ? "bg-indigo-500/10 border-indigo-500/20"
+                                    : "bg-zinc-950/20 border-transparent hover:bg-zinc-800/30"
                                 }`}
-                                onClick={() => onToggleSeccion(sec.id)}
+                                onClick={() => onToggleModulo(modulo.id)}
                               >
                                 <Checkbox
-                                  checked={seccionesSeleccionadas.includes(sec.id)}
-                                  onChange={() => {}} 
+                                  checked={modulosSeleccionados.includes(
+                                    modulo.id,
+                                  )}
+                                  onChange={() => {}}
                                   size="xs"
                                   color="indigo"
                                   styles={{
-                                    input: { cursor: 'pointer' }
+                                    input: { cursor: "pointer" },
                                   }}
                                 />
-                                <Text size="xs" fw={500} className={seccionesSeleccionadas.includes(sec.id) ? 'text-indigo-200' : 'text-zinc-400'}>
-                                  {sec.nombre}
+                                <Text
+                                  size="xs"
+                                  fw={500}
+                                  className={
+                                    modulosSeleccionados.includes(modulo.id)
+                                      ? "text-indigo-200"
+                                      : "text-zinc-400"
+                                  }
+                                >
+                                  {modulo.nombre}
                                 </Text>
                               </div>
                             ))}

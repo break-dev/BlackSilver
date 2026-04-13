@@ -1,4 +1,5 @@
-import type { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
+import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 export interface RES_Cotizacion {
   id: number;
@@ -19,7 +20,7 @@ export interface RES_Cotizacion {
   evidencia: string | null;
   fecha_hora_cotizacion: string;
   comparativo_fecha: string;
-  estado: EstadoCotizacion;
+  estado: Estado_Cotizacion;
   created_at: string;
 }
 

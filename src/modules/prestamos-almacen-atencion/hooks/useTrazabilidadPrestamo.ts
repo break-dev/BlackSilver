@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
-import type { RES_TrazabilidadPrestamo } from "../service/prestamos-atencion.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 export const useTrazabilidadPrestamo = () => {
-  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadPrestamo[]>(
+  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>(
     [],
   );
   const [loading, setLoading] = useState(false);

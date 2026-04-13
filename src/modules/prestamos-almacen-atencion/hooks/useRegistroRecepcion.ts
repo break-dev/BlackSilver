@@ -3,22 +3,23 @@ import { formatNumber } from "../../../shared/functions/formatNumber";
 import { useNotify } from "../../../hooks/useNotify";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import type {
-  RES_DetalleReposicionParaRecepcion,
-  RES_LoteRecepcionReposicion,
-} from "../service/prestamos-atencion.responses";
-import type {
   DTO_RecibirEntregaReposicionItem,
   DTO_ItemRecepcionReposicion,
 } from "../service/prestamos-atencion.requests";
-import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+import type {
+  RES_LoteDisponible,
+  RES_TicketLote,
+} from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {
   id_lote_existente: number | null;
   es_nuevo_lote: boolean;
   fecha_ingreso: string;
   descripcion: string;
+  es_perecible: number;
   ajustes?: Record<number, number>; // idLote -> cantidad
 }
 
@@ -28,8 +29,8 @@ export interface GroupedReception {
   producto: string;
   total_entregado_base: number;
   unidad_base_abv: string;
-  es_perecible: number;
-  detalles_origen: RES_DetalleReposicionParaRecepcion[];
+  es_perecible: boolean;
+  detalles_origen: RES_PrestamoEntregaDetalle[];
   lots: DTO_RecibirLotExtendido[];
 }
 
@@ -37,7 +38,7 @@ interface UseRegistroRecepcionProps {
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo" | "Reposicion";
   idAlmacenSolicitante: number;
-  detalles: RES_DetalleReposicionParaRecepcion[];
+  detalles: RES_PrestamoEntregaDetalle[];
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
   isGlobal?: boolean;
 }
@@ -58,7 +59,7 @@ export const useRegistroRecepcion = ({
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [lotesDisponibles, setLotesDisponibles] = useState<
-    RES_LoteRecepcionReposicion[]
+    RES_LoteDisponible[]
   >([]);
   const [loadingLotesDisp, setLoadingLotesDisp] = useState(false);
   const defaultsApplied = useRef(false);
@@ -74,7 +75,7 @@ export const useRegistroRecepcion = ({
             id_producto: d.id_producto,
             producto: d.producto,
             total_entregado_base: 0,
-            unidad_base_abv: d.unidad_base_abv,
+            unidad_base_abv: d.unidad_medida_base_abv,
             es_perecible: d.es_perecible,
             detalles_origen: [],
             lots: [],
@@ -97,12 +98,12 @@ export const useRegistroRecepcion = ({
             cantidad_solicitud: 0,
             id_unidad_medida_lote: g.detalles_origen[0].id_unidad_medida_base,
             id_unidad_medida_solicitada:
-              g.detalles_origen[0].id_unidad_medida_solicitada,
+              g.detalles_origen[0].id_unidad_medida_pr,
             es_nuevo_lote: false,
             cantidad_base: g.total_entregado_base,
             id_lote_existente: null,
             fecha_vencimiento:
-              g.es_perecible === 1 && g.detalles_origen[0].fecha_vencimiento
+              g.es_perecible && g.detalles_origen[0].fecha_vencimiento
                 ? g.detalles_origen[0].fecha_vencimiento
                 : null,
             id_unidad_medida: g.detalles_origen[0].id_unidad_medida_base,
@@ -456,11 +457,7 @@ export const useRegistroRecepcion = ({
           newErrors[`groups.${gIdx}.lots.${lIdx}.fecha_ingreso`] = "Requerido.";
           hasErrors = true;
         }
-        if (
-          lot.es_nuevo_lote &&
-          group.es_perecible === 1 &&
-          !lot.fecha_vencimiento
-        ) {
+        if (lot.es_nuevo_lote && group.es_perecible && !lot.fecha_vencimiento) {
           newErrors[`groups.${gIdx}.lots.${lIdx}.fecha_vencimiento`] =
             "Requerido.";
           hasErrors = true;
@@ -565,7 +562,7 @@ export const useRegistroRecepcion = ({
         if (lot.cantidad_base <= 0) return false;
         if (lot.es_nuevo_lote) {
           if (!lot.fecha_ingreso) return false;
-          if (group.es_perecible === 1 && !lot.fecha_vencimiento) return false;
+          if (group.es_perecible && !lot.fecha_vencimiento) return false;
         } else {
           if (!lot.id_lote_existente) return false;
         }

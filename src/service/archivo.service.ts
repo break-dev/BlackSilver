@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api } from "./_api";
 
 export class ArchivoService {
   private static PATH = "/download-archivo";

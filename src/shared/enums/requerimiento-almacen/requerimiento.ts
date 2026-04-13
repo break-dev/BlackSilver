@@ -8,7 +8,7 @@ export enum Estado_RequerimientoAlm {
   Completado = "Completado",
 }
 
-export enum Estado_RequerimientoAlm_Detalle {
+export enum Estado_RequerimientoAlmDetalle {
   EsperandoAprobacion = "Esperando aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",
@@ -22,7 +22,7 @@ export enum Estado_RequerimientoAlm_Detalle {
   Completado = "Completado",
 }
 
-export enum Estado_RequerimientoAlm_Detalle_Log {
+export enum Estado_RequerimientoAlmDetalleLog {
   EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",

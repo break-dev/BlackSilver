@@ -33,17 +33,18 @@ import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
 } from "../service/cotizaciones.responses";
-import { MetodoPago, EstadoCotizacion } from "../../../shared/enums/estados";
+import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useNotify } from "../../../hooks/useNotify";
 import { CotizacionesService } from "../service/cotizaciones.service";
+import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
   busqueda: string;
-  onUpdateLocal?: (id: number, nuevoEstado: EstadoCotizacion) => void;
+  onUpdateLocal?: (id: number, nuevoEstado: Estado_Cotizacion) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
@@ -51,17 +52,17 @@ const COLOR_BY_STATE: Record<
   string,
   { color: string; label: string; variant: string }
 > = {
-  [EstadoCotizacion.Generada]: {
+  [Estado_Cotizacion.Generada]: {
     color: "indigo",
     label: "Generada",
     variant: "light",
   },
-  [EstadoCotizacion.Aprobada]: {
+  [Estado_Cotizacion.Aprobada]: {
     color: "teal",
     label: "Aprobada",
     variant: "filled",
   },
-  [EstadoCotizacion.Desestimada]: {
+  [Estado_Cotizacion.Desestimada]: {
     color: "red",
     label: "Desestimada",
     variant: "light",
@@ -103,7 +104,7 @@ export const ListadoComparativos = ({
       const res = await CotizacionesService.aprobar_cotizacion(id);
       if (res.success) {
         notifySuccess("Cotización aprobada correctamente.");
-        onUpdateLocal?.(id, EstadoCotizacion.Aprobada);
+        onUpdateLocal?.(id, Estado_Cotizacion.Aprobada);
       } else {
         notifyError(res.message);
       }
@@ -377,8 +378,8 @@ export const ListadoComparativos = ({
                                   <CheckBadgeIcon className="w-3.5 h-3.5" />
                                 }
                                 disabled={
-                                  cot.estado === EstadoCotizacion.Aprobada ||
-                                  cot.estado === EstadoCotizacion.Desestimada
+                                  cot.estado === Estado_Cotizacion.Aprobada ||
+                                  cot.estado === Estado_Cotizacion.Desestimada
                                 }
                                 onClick={(e) => {
                                   e.stopPropagation();

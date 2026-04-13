@@ -2,10 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { RolesService } from "../service/roles.service";
 import { Schema_RegistroRol } from "../service/roles.requests";
-import type {
-  RES_Rol,
-  RES_ModuloEstructura,
-} from "../service/roles.responses";
+import type { RES_Rol, RES_MenuEstructura } from "../service/roles.responses";
 
 interface UseRegistroRolProps {
   onSuccess?: (nuevo: RES_Rol) => void;
@@ -23,13 +20,13 @@ export const useRegistroRol = ({
   const { notify } = useNotify();
 
   // Estructura de permisos (Catálogo)
-  const [estructura, setEstructura] = useState<RES_ModuloEstructura[]>([]);
+  const [estructura, setEstructura] = useState<RES_MenuEstructura[]>([]);
   const [loadingEstructura, setLoadingEstructura] = useState(false);
 
   // Formulario
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [seccionesSeleccionadas, setSeccionesSeleccionadas] = useState<number[]>(
+  const [modulosSeleccionados, setModulosSeleccionados] = useState<number[]>(
     [],
   );
 
@@ -58,7 +55,7 @@ export const useRegistroRol = ({
     try {
       const result = await RolesService.get_permisos_rol(id);
       if (result.success) {
-        setSeccionesSeleccionadas(result.data);
+        setModulosSeleccionados(result.data);
       }
     } catch (err) {
       console.error(err);
@@ -70,7 +67,7 @@ export const useRegistroRol = ({
   const reset = useCallback(() => {
     setNombre("");
     setDescripcion("");
-    setSeccionesSeleccionadas([]);
+    setModulosSeleccionados([]);
   }, []);
 
   useEffect(() => {
@@ -83,26 +80,26 @@ export const useRegistroRol = ({
     }
   }, [rolEdicion, cargarPermisosRol, reset]);
 
-  const handleToggleSeccion = (idSeccion: number) => {
-    setSeccionesSeleccionadas((prev) =>
-      prev.includes(idSeccion)
-        ? prev.filter((id) => id !== idSeccion)
-        : [...prev, idSeccion],
+  const handleToggleModulo = (idModulo: number) => {
+    setModulosSeleccionados((prev) =>
+      prev.includes(idModulo)
+        ? prev.filter((id) => id !== idModulo)
+        : [...prev, idModulo],
     );
   };
 
   /**
-   * Toggle de todas las secciones de un submodulo
+   * Toggle de todos los modulos de un submenu
    */
-  const handleToggleSubmodulo = (idsSecciones: number[], isChecked: boolean) => {
-    setSeccionesSeleccionadas((prev) => {
+  const handleToggleSubmenu = (idsModulos: number[], isChecked: boolean) => {
+    setModulosSeleccionados((prev) => {
       if (isChecked) {
         // Añadir solo los que no están
-        const nuevas = idsSecciones.filter((id) => !prev.includes(id));
+        const nuevas = idsModulos.filter((id) => !prev.includes(id));
         return [...prev, ...nuevas];
       } else {
-        // Quitar todos los de ese submodulo
-        return prev.filter((id) => !idsSecciones.includes(id));
+        // Quitar todos los de ese submenu
+        return prev.filter((id) => !idsModulos.includes(id));
       }
     });
   };
@@ -111,7 +108,7 @@ export const useRegistroRol = ({
     const data = {
       nombre,
       descripcion,
-      secciones: seccionesSeleccionadas,
+      modulos: modulosSeleccionados,
     };
 
     const validation = Schema_RegistroRol.safeParse(data);
@@ -129,7 +126,7 @@ export const useRegistroRol = ({
         // MODO EDICIÓN: Solo actualiza permisos
         const result = await RolesService.actualizar_permisos_rol(
           rolEdicion.id,
-          seccionesSeleccionadas,
+          modulosSeleccionados,
         );
         if (result.success) {
           notify({
@@ -181,9 +178,9 @@ export const useRegistroRol = ({
     setNombre,
     descripcion,
     setDescripcion,
-    seccionesSeleccionadas,
-    handleToggleSeccion,
-    handleToggleSubmodulo,
+    modulosSeleccionados,
+    handleToggleModulo,
+    handleToggleSubmenu,
     handleGuardar,
     loading,
     reset,

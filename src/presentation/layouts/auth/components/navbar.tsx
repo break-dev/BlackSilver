@@ -8,7 +8,7 @@ import {
   ArrowRightEndOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { iconos_menu_navegacion } from "../../../../shared/variables/iconos-menu-navegacion";
-import type { ISubmodulo } from "../../../../shared/interfaces/menu-navegacion";
+import type { RES_Submenu } from "../../../../service/responses/menu-navegacion";
 import { useNavbar } from "../hooks/useNavbar";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -155,164 +155,177 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                 className="space-y-2"
               >
                 {Array.isArray(menu) &&
-                  menu.map((mod) => {
-                    const modIconData = iconos_menu_navegacion.find(
-                      (i) => i.modulo_path === mod.path,
+                  menu.map((menuItem) => {
+                    const menuIconData = iconos_menu_navegacion.find(
+                      (i) => i.menu_path === menuItem.path,
                     );
-                    const ModIcon = modIconData?.icono || CubeIcon;
-                    const isModExpanded = expanded === mod.nombre;
+                    const MenuIcon = menuIconData?.icono || CubeIcon;
+                    const isMenuExpanded = expanded === menuItem.nombre;
 
                     return (
-                      // Modulo
+                      // Menú (Nivel 1)
                       <motion.div
                         variants={itemVariants}
-                        key={mod.id_modulo || mod.nombre}
+                        key={menuItem.id_menu || menuItem.nombre}
                         className="space-y-1"
                       >
                         <button
                           onClick={() => {
-                            setExpanded(isModExpanded ? null : mod.nombre);
+                            setExpanded(
+                              isMenuExpanded ? null : menuItem.nombre,
+                            );
                             setExpandedSub(null);
                           }}
                           className={`group w-full flex items-center justify-between px-4 py-3.5 
                             rounded-2xl transition-all duration-300 ${
-                              isModExpanded
+                              isMenuExpanded
                                 ? "bg-white/5 text-white ring-1 ring-white/10"
                                 : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
                             }`}
                         >
                           <div className="flex items-center gap-3">
-                            <ModIcon
+                            <MenuIcon
                               className={`w-4 h-4 transition-colors ${
-                                isModExpanded
+                                isMenuExpanded
                                   ? "text-blue-400"
                                   : "group-hover:text-blue-400"
                               }`}
                             />
                             <span className="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-                              {mod.nombre || "Sin nombre"}
+                              {menuItem.nombre || "Sin nombre"}
                             </span>
                           </div>
                           <ChevronRightIcon
                             className={`w-4 h-4 transition-all duration-300 ${
-                              isModExpanded
+                              isMenuExpanded
                                 ? "rotate-90 text-blue-400"
                                 : "text-zinc-500"
                             }`}
                           />
                         </button>
 
-                        {/* Submodulos */}
+                        {/* Submenus (Nivel 2) */}
                         <div
                           className={`grid transition-all duration-200 ease-in-out ${
-                            isModExpanded &&
-                            Array.isArray(mod.submodulos) &&
-                            mod.submodulos.length > 0
+                            isMenuExpanded &&
+                            Array.isArray(menuItem.submenus) &&
+                            menuItem.submenus.length > 0
                               ? "grid-rows-[1fr] opacity-100 mt-1"
                               : "grid-rows-[0fr] opacity-0 mt-0"
                           }`}
                         >
                           <div className="overflow-hidden">
                             <div className="ml-4 pl-3 border-l border-white/5 space-y-1">
-                              {Array.isArray(mod.submodulos) &&
-                                mod.submodulos.map((sub: ISubmodulo) => {
-                                  const subIconData = Array.isArray(
-                                    modIconData?.submodulos,
-                                  )
-                                    ? modIconData?.submodulos.find(
-                                        (s) => s.submodulo_path === sub.path,
-                                      )
-                                    : null;
-                                  const SubIcon =
-                                    subIconData?.icono || CubeIcon;
-                                  const isSubExpanded =
-                                    expandedSub === sub.nombre;
+                              {Array.isArray(menuItem.submenus) &&
+                                menuItem.submenus.map(
+                                  (submenu: RES_Submenu) => {
+                                    const submenuIconData = Array.isArray(
+                                      menuIconData?.submenus,
+                                    )
+                                      ? menuIconData?.submenus.find(
+                                          (s) =>
+                                            s.submenu_path === submenu.path,
+                                        )
+                                      : null;
+                                    const SubmenuIcon =
+                                      submenuIconData?.icono || CubeIcon;
+                                    const isSubmenuExpanded =
+                                      expandedSub === submenu.nombre;
 
-                                  return (
-                                    <div
-                                      key={sub.id_submodulo || sub.nombre}
-                                      className="space-y-1"
-                                    >
-                                      {/* Submodule header clickable */}
-                                      <button
-                                        onClick={() =>
-                                          setExpandedSub(
-                                            isSubExpanded ? null : sub.nombre,
-                                          )
+                                    return (
+                                      <div
+                                        key={
+                                          submenu.id_submenu || submenu.nombre
                                         }
-                                        className={`w-full flex items-center justify-between group px-3 py-2 rounded-xl transition-all duration-300 ${
-                                          isSubExpanded
-                                            ? "text-zinc-200 bg-white/5"
-                                            : "text-zinc-500 hover:text-zinc-300 hover:bg-white/2"
-                                        }`}
+                                        className="space-y-1"
                                       >
-                                        <div className="flex items-center gap-2.5 overflow-hidden">
-                                          <SubIcon
-                                            className={`w-3.5 h-3.5 shrink-0 ${
-                                              isSubExpanded
-                                                ? "text-blue-400/70"
-                                                : "group-hover:text-blue-400/70"
+                                        {/* Submenu header clickable */}
+                                        <button
+                                          onClick={() =>
+                                            setExpandedSub(
+                                              isSubmenuExpanded
+                                                ? null
+                                                : submenu.nombre,
+                                            )
+                                          }
+                                          className={`w-full flex items-center justify-between group px-3 py-2 rounded-xl transition-all duration-300 ${
+                                            isSubmenuExpanded
+                                              ? "text-zinc-200 bg-white/5"
+                                              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/2"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2.5 overflow-hidden">
+                                            <SubmenuIcon
+                                              className={`w-3.5 h-3.5 shrink-0 ${
+                                                isSubmenuExpanded
+                                                  ? "text-blue-400/70"
+                                                  : "group-hover:text-blue-400/70"
+                                              }`}
+                                            />
+                                            <span className="text-[13px] font-medium tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
+                                              {submenu.nombre || "Sin nombre"}
+                                            </span>
+                                          </div>
+                                          <ChevronRightIcon
+                                            className={`w-3.5 h-3.5 transition-all duration-300 ${
+                                              isSubmenuExpanded
+                                                ? "rotate-90 text-blue-400/70"
+                                                : "text-zinc-500"
                                             }`}
                                           />
-                                          <span className="text-[13px] font-medium tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {sub.nombre || "Sin nombre"}
-                                          </span>
-                                        </div>
-                                        <ChevronRightIcon
-                                          className={`w-3.5 h-3.5 transition-all duration-300 ${
-                                            isSubExpanded
-                                              ? "rotate-90 text-blue-400/70"
-                                              : "text-zinc-500"
-                                          }`}
-                                        />
-                                      </button>
+                                        </button>
 
-                                      {/* Secciones */}
-                                      <div
-                                        className={`grid transition-all duration-300 ease-in-out ${
-                                          isSubExpanded &&
-                                          Array.isArray(sub.secciones) &&
-                                          sub.secciones.length > 0
-                                            ? "grid-rows-[1fr] opacity-100 py-1"
-                                            : "grid-rows-[0fr] opacity-0 py-0"
-                                        }`}
-                                      >
-                                        <div className="overflow-hidden">
-                                          <div className="ml-2 pl-4 border-l border-white/5 space-y-1">
-                                            {Array.isArray(sub.secciones) &&
-                                              sub.secciones.map((sec) => (
-                                                <Link
-                                                  key={
-                                                    sec.id_seccion || sec.nombre
-                                                  }
-                                                  to={sec.url || "#"}
-                                                  onClick={handleClose}
-                                                  className={`flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-                                                    location.pathname ===
-                                                    sec.url
-                                                      ? "text-blue-400 bg-blue-400/10 font-medium"
-                                                      : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-                                                  }`}
-                                                >
-                                                  <ArrowRightEndOnRectangleIcon
-                                                    className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                                                      location.pathname ===
-                                                      sec.url
-                                                        ? "text-blue-400"
-                                                        : "text-zinc-500"
-                                                    }`}
-                                                  />
-                                                  <span className="text-sm whitespace-nowrap overflow-hidden text-ellipsis block">
-                                                    {sec.nombre || "Sin nombre"}
-                                                  </span>
-                                                </Link>
-                                              ))}
+                                        {/* Módulos (Nivel 3 - Final) */}
+                                        <div
+                                          className={`grid transition-all duration-300 ease-in-out ${
+                                            isSubmenuExpanded &&
+                                            Array.isArray(submenu.modulos) &&
+                                            submenu.modulos.length > 0
+                                              ? "grid-rows-[1fr] opacity-100 py-1"
+                                              : "grid-rows-[0fr] opacity-0 py-0"
+                                          }`}
+                                        >
+                                          <div className="overflow-hidden">
+                                            <div className="ml-2 pl-4 border-l border-white/5 space-y-1">
+                                              {Array.isArray(submenu.modulos) &&
+                                                submenu.modulos.map(
+                                                  (modulo) => (
+                                                    <Link
+                                                      key={
+                                                        modulo.id_modulo ||
+                                                        modulo.nombre
+                                                      }
+                                                      to={modulo.url || "#"}
+                                                      onClick={handleClose}
+                                                      className={`flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                                                        location.pathname ===
+                                                        modulo.url
+                                                          ? "text-blue-400 bg-blue-400/10 font-medium"
+                                                          : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                                                      }`}
+                                                    >
+                                                      <ArrowRightEndOnRectangleIcon
+                                                        className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                                                          location.pathname ===
+                                                          modulo.url
+                                                            ? "text-blue-400"
+                                                            : "text-zinc-500"
+                                                        }`}
+                                                      />
+                                                      <span className="text-sm whitespace-nowrap overflow-hidden text-ellipsis block">
+                                                        {modulo.nombre ||
+                                                          "Sin nombre"}
+                                                      </span>
+                                                    </Link>
+                                                  ),
+                                                )}
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  );
-                                })}
+                                    );
+                                  },
+                                )}
                             </div>
                           </div>
                         </div>

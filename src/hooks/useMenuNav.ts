@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { IModulo } from "../shared/interfaces/menu-navegacion";
+import type { RES_Menu } from "../service/responses/menu-navegacion";
 import { MenuNavService } from "../service/menu-nav.service";
 import { useMenuNavegacionStore } from "../stores/menu.store";
 
@@ -15,7 +15,7 @@ export const useMenuNav = () => {
       const result = await MenuNavService.get_menu_navegacion();
 
       if (result.success) {
-        useMenuNavegacionStore.getState().updateMenu(result.data as IModulo[]);
+        useMenuNavegacionStore.getState().updateMenu(result.data as RES_Menu[]);
       } else {
         setError(result.message);
       }

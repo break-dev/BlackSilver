@@ -1,4 +1,4 @@
-export enum Labor_Tipo {
+export enum TipoLabor {
   Bypass = "Bypass",
   Crucero = "Crucero",
   Tajo = "Tajo",
@@ -6,7 +6,7 @@ export enum Labor_Tipo {
   Chimenea = "Chimenea",
 }
 
-export enum Labor_TipoSostenimiento {
+export enum TipoSostenimiento {
   Convencional = "Convencional",
   Mecanizada = "Mecanizada",
 }

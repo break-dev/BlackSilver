@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
-import type { IMessage } from "../../../shared/interfaces/menu-navegacion";
+import type { IMessage } from "../../../stores/ui.store";
 
 import type { RES_Almacen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";

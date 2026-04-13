@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useMenuNav } from "../../../../hooks/useMenuNav";
 import type {
-  ISubmodulo,
-  ISeccion,
-} from "../../../../shared/interfaces/menu-navegacion";
+  RES_Submenu,
+  RES_Modulo,
+} from "../../../../service/responses/menu-navegacion";
 
 export const useNavbar = (onClose: () => void) => {
   const location = useLocation();
@@ -32,12 +32,12 @@ export const useNavbar = (onClose: () => void) => {
     let foundSubName: string | null = null;
 
     for (const mod of menu) {
-      if (!Array.isArray(mod.submodulos)) continue;
+      if (!Array.isArray(mod.submenus)) continue;
 
-      const activeSub = mod.submodulos.find(
-        (sub: ISubmodulo) =>
-          Array.isArray(sub.secciones) &&
-          sub.secciones.some((sec: ISeccion) => sec.url === location.pathname),
+      const activeSub = mod.submenus.find(
+        (sub: RES_Submenu) =>
+          Array.isArray(sub.modulos) &&
+          sub.modulos.some((sec: RES_Modulo) => sec.url === location.pathname),
       );
 
       if (activeSub) {

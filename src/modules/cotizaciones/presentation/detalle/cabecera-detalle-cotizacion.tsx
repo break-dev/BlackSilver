@@ -9,7 +9,7 @@ import {
   CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import { EstadoCotizacion } from "../../../../shared/enums/estados";
+import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
 
 interface CabeceraDetalleCotizacionProps {
   proveedor: string;
@@ -53,18 +53,18 @@ export const CabeceraDetalleCotizacion = ({
   // Colores para los estados usando el enum
   const getEstadoColor = (est: string) => {
     switch (est) {
-      case EstadoCotizacion.Generada:
+      case Estado_Cotizacion.Generada:
         return "indigo";
-      case EstadoCotizacion.Aprobada:
+      case Estado_Cotizacion.Aprobada:
         return "teal";
-      case EstadoCotizacion.Desestimada:
+      case Estado_Cotizacion.Desestimada:
         return "red";
       default:
         return "zinc";
     }
   };
 
-  const showButton = estado === EstadoCotizacion.Generada;
+  const showButton = estado === Estado_Cotizacion.Generada;
 
   if (isCollapsed) {
     return (

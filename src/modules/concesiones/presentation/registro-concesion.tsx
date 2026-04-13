@@ -1,7 +1,7 @@
 import { Stack, Group, TextInput, Select, Button } from "@mantine/core";
 import { useRegistroConcesion } from "../hooks/useRegistroConcesion";
 import type { RES_Concesion } from "../service/concesiones.responses";
-import { TipoMineral } from "../../../shared/enums/tipos";
+import { TipoMineral } from "../../../shared/enums/_generic/tipo-mineral";
 
 interface RegistroConcesionProps {
   onSuccess: (nueva: RES_Concesion) => void;

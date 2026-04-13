@@ -2,7 +2,7 @@ import type {
   Estado_PrestamoReposicion,
   Estado_PrestamoReposicionDetalle,
 } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 export interface RES_PrestamoReposicion {
   id_reposicion: number;

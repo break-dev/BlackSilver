@@ -4,7 +4,7 @@ import {
   EstadoVencimiento,
 } from "../../../shared/enums/estados";
 import { Premura } from "../../../shared/enums/otros";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../service/responses/menu-navegacion";
 
 export interface RES_Empleado {
   id_empleado: number;

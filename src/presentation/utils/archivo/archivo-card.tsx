@@ -8,9 +8,9 @@ import {
   Loader,
 } from "@mantine/core";
 import { IconEye, IconDownload } from "@tabler/icons-react";
-import { getFileTypeConfig } from "../../shared/variables/file-types";
-import { useDownloadFile } from "../../hooks/useDownloadFile";
-import type { IArchivo } from "../../shared/interfaces/menu-navegacion";
+import { getFileTypeConfig } from "../../../shared/variables/file-types";
+import { useDownloadFile } from "../../../hooks/useDownloadFile";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 interface ArchivoCardProps extends React.ComponentPropsWithoutRef<"div"> {
   archivo: IArchivo;

@@ -1,3 +1,6 @@
+/**
+ * Interface reutilizable para la trazabilidad de cualquier proceso
+ */
 export interface RES_Trazabilidad {
   id_log: number;
   descripcion: string;

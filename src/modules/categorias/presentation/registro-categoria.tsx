@@ -9,7 +9,7 @@ import {
   Checkbox,
   Text,
 } from "@mantine/core";
-import { TipoRequerimiento, TipoBien } from "../../../shared/enums/tipos";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { PlusIcon } from "@heroicons/react/24/outline";
 
 interface RegistroCategoriaProps {
@@ -86,10 +86,14 @@ export const RegistroCategoria = ({
         disabled={loading}
         radius="lg"
         classNames={inputClasses}
-        data={Object.values(TipoRequerimiento)}
+        data={Object.values(TipoBien)}
         value={tipoRequerimiento}
         onChange={setTipoRequerimiento}
-        comboboxProps={{ withinPortal: true, zIndex: 99999, transitionProps: { transition: 'pop', duration: 200 } }}
+        comboboxProps={{
+          withinPortal: true,
+          zIndex: 99999,
+          transitionProps: { transition: "pop", duration: 200 },
+        }}
       />
 
       <Select
@@ -101,12 +105,21 @@ export const RegistroCategoria = ({
         data={Object.values(TipoBien)}
         value={clasificacionBien}
         onChange={setClasificacionBien}
-        comboboxProps={{ withinPortal: true, zIndex: 99999, transitionProps: { transition: 'pop', duration: 200 } }}
+        comboboxProps={{
+          withinPortal: true,
+          zIndex: 99999,
+          transitionProps: { transition: "pop", duration: 200 },
+        }}
       />
 
       <Stack gap="xs">
-        <div className="text-zinc-300 text-sm font-medium">Clasificación Operativa</div>
-        <Group gap="xl" className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-800">
+        <div className="text-zinc-300 text-sm font-medium">
+          Clasificación Operativa
+        </div>
+        <Group
+          gap="xl"
+          className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-800"
+        >
           <Checkbox
             label="Mina"
             checked={paraMina}
@@ -114,7 +127,10 @@ export const RegistroCategoria = ({
             disabled={loading}
             color="indigo"
             size="sm"
-            classNames={{ label: "text-zinc-300 cursor-pointer", input: "cursor-pointer" }}
+            classNames={{
+              label: "text-zinc-300 cursor-pointer",
+              input: "cursor-pointer",
+            }}
           />
           <Checkbox
             label="Cocina"
@@ -123,7 +139,10 @@ export const RegistroCategoria = ({
             disabled={loading}
             color="indigo"
             size="sm"
-            classNames={{ label: "text-zinc-300 cursor-pointer", input: "cursor-pointer" }}
+            classNames={{
+              label: "text-zinc-300 cursor-pointer",
+              input: "cursor-pointer",
+            }}
           />
         </Group>
       </Stack>
@@ -135,7 +154,8 @@ export const RegistroCategoria = ({
               ¿Es un insumo consumible?
             </Text>
             <Text size="xs" className="text-indigo-100/70 leading-snug">
-              Indique si este producto abastece a otras categorías para el control logístico.
+              Indique si este producto abastece a otras categorías para el
+              control logístico.
             </Text>
           </div>
           <Switch
@@ -154,8 +174,13 @@ export const RegistroCategoria = ({
               <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block leading-none mb-1">
                 Control Logístico
               </span>
-              <span className={`text-xs font-semibold truncate block ${!esConsumible ? 'text-zinc-600' : 'text-zinc-300'}`}>
-                {idsConsumidoras.length} {idsConsumidoras.length === 1 ? 'Destino seleccionado' : 'Destinos seleccionados'}
+              <span
+                className={`text-xs font-semibold truncate block ${!esConsumible ? "text-zinc-600" : "text-zinc-300"}`}
+              >
+                {idsConsumidoras.length}{" "}
+                {idsConsumidoras.length === 1
+                  ? "Destino seleccionado"
+                  : "Destinos seleccionados"}
               </span>
             </div>
             <Button

@@ -1,11 +1,11 @@
-import type { EN_KardexOrigenMovimiento } from "../../../shared/enums/kardex";
+import type { Kardex_OrigenMovimiento } from "../../../shared/enums/kardex";
 import type {
-  Estado_PrestamoReposicionDetalle_RecepcionDetalle,
-  Estado_PrestamoReposicion_Recepcion,
+  Estado_PrestamoReposicionRecepcion,
+  Estado_PrestamoReposicionRecepcionDetalle,
 } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion-recepcion";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
-export interface RES_PrestamoReposicion_Recepcion {
+export interface RES_PrestamoReposicionRecepcion {
   id_recepcion: number;
   id_reposicion: number;
   //
@@ -16,12 +16,12 @@ export interface RES_PrestamoReposicion_Recepcion {
   evidencias: IArchivo[] | null;
   con_incidencia: boolean;
   created_at: string;
-  estado: Estado_PrestamoReposicion_Recepcion;
+  estado: Estado_PrestamoReposicionRecepcion;
   // Insertado por la api
-  detalles?: RES_PrestamoReposicion_RecepcionDetalle[];
+  detalles?: RES_PrestamoReposicionRecepcionDetalle[];
 }
 
-export interface RES_PrestamoReposicion_RecepcionDetalle {
+export interface RES_PrestamoReposicionRecepcionDetalle {
   id_recepcion_detalle: number;
   id_recepcion: number;
   id_reposicion_detalle: number;
@@ -34,10 +34,10 @@ export interface RES_PrestamoReposicion_RecepcionDetalle {
   //
   cantidad_recepcionada_base: number;
   // Nuevo Lote o Ajuste de Stock
-  tipo_movimiento: EN_KardexOrigenMovimiento;
+  tipo_movimiento: Kardex_OrigenMovimiento;
   //
   id_lote_producto: number | null;
   lote_correlativo: string | null;
   //
-  estado: Estado_PrestamoReposicionDetalle_RecepcionDetalle;
+  estado: Estado_PrestamoReposicionRecepcionDetalle;
 }

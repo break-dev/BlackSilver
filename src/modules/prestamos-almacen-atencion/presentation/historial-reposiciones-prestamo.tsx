@@ -33,7 +33,7 @@ import {
 } from "../service/prestamos-atencion.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo-card";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../service/responses/menu-navegacion";
 import { useNotify } from "../../../hooks/useNotify";
 import { RegistroRecepcion } from "./registro-recepcion";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";

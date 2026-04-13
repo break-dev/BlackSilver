@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { CotizacionesService } from "../service/cotizaciones.service";
-import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
-import { EstadoCotizacion } from "../../../shared/enums/estados";
+import type {
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+} from "../service/cotizaciones.responses";
+import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
 
 export const useCotizaciones = () => {
   const [cotizaciones, setCotizaciones] = useState<RES_Cotizacion[]>([]);
@@ -28,11 +31,14 @@ export const useCotizaciones = () => {
     fetchCotizaciones();
   }, [fetchCotizaciones]);
 
-  const updateCotizacionLocal = useCallback((id: number, nuevoEstado: EstadoCotizacion) => {
-    setCotizaciones((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado } : c))
-    );
-  }, []);
+  const updateCotizacionLocal = useCallback(
+    (id: number, nuevoEstado: Estado_Cotizacion) => {
+      setCotizaciones((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado } : c)),
+      );
+    },
+    [],
+  );
 
   return {
     cotizaciones,

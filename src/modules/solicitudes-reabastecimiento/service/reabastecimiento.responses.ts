@@ -1,5 +1,5 @@
 import type { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../service/responses/menu-navegacion";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 export type { RES_Almacen, RES_UnidadMedida };

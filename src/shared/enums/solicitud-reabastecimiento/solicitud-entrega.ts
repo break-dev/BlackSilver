@@ -1,10 +1,10 @@
-export enum Estado_SolicitudRbs_Entrega {
+export enum Estado_SolicitudEntrega {
   EnDespacho = "En Despacho",
   RecepcionadoParcialmente = "Recepcionado Parcialmente",
   RecepcionCompleta = "Recepcion Completa",
 }
 
-export enum Estado_SolicitudRbs_Entrega_Detalle {
+export enum Estado_SolicitudEntregaDetalle {
   EnDespacho = "En Despacho",
   RecepcionadoParcialmente = "Recepcionado Parcialmente",
   RecepcionCompleta = "Recepcion Completa",

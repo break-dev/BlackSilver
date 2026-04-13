@@ -27,7 +27,7 @@ import type {
   RecepcionEvento,
   RecepcionDetalle,
 } from "../service/reabastecimiento.responses";
-import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+import type { IArchivo } from "../../../service/responses/menu-navegacion";
 
 interface Props {
   idEntrega: number;

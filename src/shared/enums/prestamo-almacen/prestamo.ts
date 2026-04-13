@@ -1,4 +1,4 @@
-export enum Estado_PrestamoAlm {
+export enum Estado_Prestamo {
   Generado = "Generado",
   EnDespacho = "En Despacho",
   //
@@ -8,7 +8,13 @@ export enum Estado_PrestamoAlm {
   Completado = "Completado",
 }
 
-export enum Estado_PrestamoAlm_Detalle {
+export enum EstadoReposicion_Prestamo {
+  SinReposicion = "Sin Reposicion",
+  ReposicionParcial = "Reposicion Parcial",
+  ReposicionCompleta = "Reposicion Completa",
+}
+
+export enum Estado_PrestamoDetalle {
   EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",
@@ -19,7 +25,7 @@ export enum Estado_PrestamoAlm_Detalle {
   Completado = "Completado",
 }
 
-export enum Estado_PrestamoAlm_Detalle_Log {
+export enum Estado_PrestamoDetalleLog {
   EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",

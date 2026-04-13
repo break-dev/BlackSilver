@@ -1,4 +1,4 @@
-export enum Estado_SolicitudRbs {
+export enum Estado_Solicitud {
   Generada = "Generada",
   EnDespacho = "En Despacho",
   //
@@ -8,7 +8,7 @@ export enum Estado_SolicitudRbs {
   Completada = "Completada",
 }
 
-export enum Estado_SolicitudRbs_Detalle {
+export enum Estado_SolicitudDetalle {
   EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",
@@ -19,7 +19,7 @@ export enum Estado_SolicitudRbs_Detalle {
   Completado = "Completado",
 }
 
-export enum Estado_SolicitudRbs_Detalle_Log {
+export enum Estado_SolicitudDetalleLog {
   EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",

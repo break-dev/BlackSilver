@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { EstadoCotizacion, MetodoPago } from "../../../shared/enums/estados";
+import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 // Detalle de cada producto dentro de una cotización específica
 export const Schema_CotizacionDetalle = z.object({
@@ -26,8 +27,10 @@ export const Schema_CotizacionRequest = z.object({
   monto_igv: z.number(),
   total_despues_igv: z.number(),
   observacion: z.string().optional().nullable(),
-  estado: z.nativeEnum(EstadoCotizacion).default(EstadoCotizacion.Generada),
-  detalles: z.array(Schema_CotizacionDetalle).min(1, "Agregue al menos un producto a la cotización"),
+  estado: z.enum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
+  detalles: z
+    .array(Schema_CotizacionDetalle)
+    .min(1, "Agregue al menos un producto a la cotización"),
 });
 
 // Producto base que se va a comparar (pueden ser varios)
@@ -38,11 +41,19 @@ export const Schema_ProductoComparativo = z.object({
 
 // Objeto raíz para el registro masivo
 export const Schema_RegistrarComparativo = z.object({
-  productos: z.array(Schema_ProductoComparativo).min(1, "Debe agregar productos al comparativo"),
-  cotizaciones: z.array(Schema_CotizacionRequest).min(1, "Debe agregar al menos una cotización"),
+  productos: z
+    .array(Schema_ProductoComparativo)
+    .min(1, "Debe agregar productos al comparativo"),
+  cotizaciones: z
+    .array(Schema_CotizacionRequest)
+    .min(1, "Debe agregar al menos una cotización"),
 });
 
 export type DTO_CotizacionDetalle = z.infer<typeof Schema_CotizacionDetalle>;
 export type DTO_CotizacionRequest = z.infer<typeof Schema_CotizacionRequest>;
-export type DTO_ProductoComparativo = z.infer<typeof Schema_ProductoComparativo>;
-export type DTO_RegistrarComparativo = z.infer<typeof Schema_RegistrarComparativo>;
+export type DTO_ProductoComparativo = z.infer<
+  typeof Schema_ProductoComparativo
+>;
+export type DTO_RegistrarComparativo = z.infer<
+  typeof Schema_RegistrarComparativo
+>;

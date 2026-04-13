@@ -18,7 +18,8 @@ import {
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type { DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
-import { MetodoPago, EstadoCotizacion } from "../../../../shared/enums/estados";
+import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
+import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
 
 interface CabeceraCotizacionProps {
   cot: DTO_CotizacionRequest;
@@ -161,14 +162,14 @@ export const CabeceraCotizacion = ({
                   <Checkbox
                     size="xs"
                     color="green"
-                    checked={cot.estado === EstadoCotizacion.Aprobada}
+                    checked={cot.estado === Estado_Cotizacion.Aprobada}
                     onChange={(e) =>
                       onUpdateHeader(
                         idx,
                         "estado",
                         e.currentTarget.checked
-                          ? EstadoCotizacion.Aprobada
-                          : EstadoCotizacion.Generada,
+                          ? Estado_Cotizacion.Aprobada
+                          : Estado_Cotizacion.Generada,
                       )
                     }
                     styles={{

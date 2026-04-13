@@ -1,5 +1,5 @@
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_RegistroCategoria } from "./categorias.requests";
 import type { RES_Categoria } from "./categorias.responses";
 

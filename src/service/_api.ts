@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth.store";
 import { useMenuNavegacionStore } from "../stores/menu.store";
-import { usePerfilStore } from "../views/perfil/hooks/usePerfilStore";
+import { usePerfilStore } from "../modules/perfil/hooks/usePerfilStore";
 import { useUIStore } from "../stores/ui.store";
 
 const API_URL = import.meta.env.VITE_API_URL;

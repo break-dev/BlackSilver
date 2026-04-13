@@ -22,12 +22,12 @@ import {
 import dayjs from "dayjs";
 import { PrestamosAtencionService } from "../../service/prestamos-atencion.service";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../../presentation/utils/archivo-card";
+import { ArchivoCard } from "../../../../presentation/utils/archivo/archivo-card";
 import type {
-  RES_RecepcionEvento,
-  RES_RecepcionDetalle,
-} from "../../service/prestamos-atencion.responses";
-import type { IArchivo } from "../../../../shared/interfaces/menu-navegacion";
+  RES_PrestamoEntregaRecepcion,
+  RES_PrestamoEntregaRecepcionDetalle,
+} from "../../../../service/responses/prestamos/prestamo-entrega-recepcion";
+import type { IArchivo } from "../../../../shared/interfaces/archivo";
 
 interface Props {
   idEntrega: number;
@@ -35,7 +35,9 @@ interface Props {
 
 export const ResumenRecepciones = ({ idEntrega }: Props) => {
   const [loading, setLoading] = useState(true);
-  const [recepciones, setRecepciones] = useState<RES_RecepcionEvento[]>([]);
+  const [recepciones, setRecepciones] = useState<
+    RES_PrestamoEntregaRecepcion[]
+  >([]);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
 
   const toggleExpand = (id: number) => {
@@ -167,26 +169,28 @@ export const ResumenRecepciones = ({ idEntrega }: Props) => {
 
                   {/* Productos recibidos */}
                   <Group gap={4} wrap="wrap" mt="xs">
-                    {rec.detalles.map((det: RES_RecepcionDetalle) => (
-                      <span
-                        key={det.id_recepcion_detalle}
-                        className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
-                      >
-                        <Text size="xs" className="text-zinc-400">
-                          {det.producto}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={900}
-                          className="text-emerald-400 font-mono"
+                    {rec.detalles.map(
+                      (det: RES_PrestamoEntregaRecepcionDetalle) => (
+                        <span
+                          key={det.id_recepcion_detalle}
+                          className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
                         >
-                          +{formatNumber(det.cantidad_recepcionada_base)}
-                          <span className="text-zinc-500 font-normal ml-0.5">
-                            {det.unidad_medida_base_abv}
-                          </span>
-                        </Text>
-                      </span>
-                    ))}
+                          <Text size="xs" className="text-zinc-400">
+                            {det.producto}
+                          </Text>
+                          <Text
+                            size="xs"
+                            fw={900}
+                            className="text-emerald-400 font-mono"
+                          >
+                            +{formatNumber(det.cantidad_recepcionada_base)}
+                            <span className="text-zinc-500 font-normal ml-0.5">
+                              {det.unidad_medida_base_abv}
+                            </span>
+                          </Text>
+                        </span>
+                      ),
+                    )}
                   </Group>
                 </div>
               </UnstyledButton>

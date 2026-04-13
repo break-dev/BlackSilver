@@ -1,7 +1,7 @@
-import { api } from "../../../service/api";
-import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_RegistroRol } from "./roles.requests";
-import type { RES_Rol, RES_ModuloEstructura } from "./roles.responses";
+import type { RES_Rol, RES_MenuEstructura } from "./roles.responses";
 
 export class RolesService {
   private static PATH = "/roles";
@@ -12,7 +12,7 @@ export class RolesService {
   };
 
   public static get_estructura_permisos = async (): Promise<
-    IRespuesta<RES_ModuloEstructura[]>
+    IRespuesta<RES_MenuEstructura[]>
   > => {
     const { data } = await api.get(`${this.PATH}/estructura-permisos`);
     return data;
@@ -34,10 +34,10 @@ export class RolesService {
 
   public static actualizar_permisos_rol = async (
     id_rol: number,
-    secciones: number[],
+    modulos: number[],
   ): Promise<IRespuesta<null>> => {
     const { data } = await api.patch(`${this.PATH}/permisos/${id_rol}`, {
-      secciones,
+      modulos,
     });
     return data;
   };

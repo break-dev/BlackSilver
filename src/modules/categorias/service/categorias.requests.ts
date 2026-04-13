@@ -1,16 +1,15 @@
 import { z } from "zod";
-
-import { TipoRequerimiento, TipoBien } from "../../../shared/enums/tipos";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export const Schema_RegistroCategoria = z.object({
   nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   descripcion: z.string().optional(),
-  tipo_requerimiento: z.nativeEnum(TipoRequerimiento, {
+  tipo_requerimiento: z.nativeEnum(TipoBien, {
     errorMap: () => ({ message: "Seleccione un tipo válido" }),
   } as any),
   clasificacion_bien: z.preprocess(
     (val) => (val === "" ? null : val),
-    z.nativeEnum(TipoBien).nullable().optional(),
+    z.enum(TipoBien).nullable().optional(),
   ),
   es_consumible: z.boolean().default(false),
   para_cocina: z.boolean().default(false),

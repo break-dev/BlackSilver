@@ -1,6 +1,7 @@
 import type {
   Estado_Prestamo,
   Estado_PrestamoDetalle,
+  EstadoReposicion_Prestamo,
 } from "../../../shared/enums/prestamo-almacen/prestamo";
 
 export interface RES_Prestamo {
@@ -22,7 +23,7 @@ export interface RES_Prestamo {
   registrado_por: string;
   //
   created_at: string;
-  estado_reposicion: string;
+  estado_reposicion: EstadoReposicion_Prestamo;
   estado: Estado_Prestamo;
 }
 
