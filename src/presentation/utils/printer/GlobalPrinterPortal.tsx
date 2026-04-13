@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { usePrinterStore, type PrintJob } from "../../../stores/printer.store";
@@ -10,7 +11,7 @@ const PrintJobRunner = ({ job }: { job: PrintJob }) => {
 
     const run = async () => {
       try {
-        const blob = await pdf(job.document).toBlob();
+        const blob = await pdf(job.document as any).toBlob();
         if (cancelled) return;
 
         const url = URL.createObjectURL(blob);

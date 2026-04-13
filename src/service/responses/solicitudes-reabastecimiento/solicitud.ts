@@ -11,6 +11,7 @@ export interface RES_Solicitud {
   id_almacen_solicitante: number;
   almacen_solicitante: string;
   //
+  id_empleado_solicitante: number;
   solicitado_por: string;
   //
   id_requerimiento_almacen: number | null;

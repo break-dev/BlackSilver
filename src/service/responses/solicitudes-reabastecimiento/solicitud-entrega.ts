@@ -52,5 +52,7 @@ export interface RES_SolicitudEntregaDetalle {
   //
   cantidad_recibida_total_base: number;
   //
+  es_perecible: boolean;
+  //
   estado: Estado_SolicitudEntregaDetalle;
 }

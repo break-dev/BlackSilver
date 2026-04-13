@@ -21,11 +21,11 @@ import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
-import type { RES_SolicitudEntregaDetalle } from "../../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
+import type { HistorialEntregaDetalleItem } from "../../hooks/useHistorialEntregas";
 
 interface Props {
   idAlmacenSolicitante: number;
-  detalles: RES_SolicitudEntregaDetalle[];
+  detalles: HistorialEntregaDetalleItem[];
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;

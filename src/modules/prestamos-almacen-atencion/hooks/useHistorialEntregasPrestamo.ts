@@ -10,9 +10,9 @@ export const useHistorialEntregasPrestamo = () => {
     setLoading(true);
     try {
       const res =
-        await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
+        await PrestamosAtencionService.obtenerHistorialEntregas(idPrestamo);
       if (res.success) {
-        setEntregas([res.data.entregas]);
+        setEntregas(res.data);
       }
     } finally {
       setLoading(false);

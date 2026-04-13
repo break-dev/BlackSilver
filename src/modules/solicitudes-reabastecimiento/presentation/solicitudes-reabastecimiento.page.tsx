@@ -162,6 +162,7 @@ export const SolicitudesReabastecimientoPage = () => {
             [Estado_Solicitud.Cerrada]: "gray",
             [Estado_Solicitud.Anulada]: "red",
             [Estado_Solicitud.EnDespacho]: "blue",
+            [Estado_Solicitud.Completada]: "teal",
           };
           return (
             <Badge

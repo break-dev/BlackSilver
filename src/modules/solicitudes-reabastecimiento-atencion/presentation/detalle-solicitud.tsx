@@ -36,9 +36,7 @@ import { TrazabilidadDetalle } from "./trazabilidad-detalle";
 import { RegistrarPrestamoAlmacen } from "./registrar-prestamo-almacen";
 import { HandRaisedIcon } from "@heroicons/react/24/outline";
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
-import {
-  Estado_SolicitudDetalle,
-} from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
+import { Estado_SolicitudDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 
 interface DetalleSolicitudProps {
   solicitud: RES_Solicitud;
@@ -696,6 +694,7 @@ export const DetalleSolicitud = ({
       >
         <RegistroEntrega
           idSolicitud={solicitud.id_solicitud}
+          idEmpleadoSolicitante={solicitud.id_empleado_solicitante}
           selectedDetalles={detalles.filter((d) =>
             selectedItemsIds.includes(d.id_solicitud_detalle),
           )}

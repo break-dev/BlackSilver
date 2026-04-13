@@ -159,7 +159,8 @@ export const useDetalleSolicitud = ({
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
         ids_detalles: ids,
-        nuevo_estado: Estado_SolicitudDetalleLog.Aprobado,
+        nuevo_estado:
+          Estado_SolicitudDetalleLog.Aprobado as unknown as Estado_SolicitudDetalle,
         comentario_decision: motivo,
       });
       if (res.success) {
@@ -171,7 +172,8 @@ export const useDetalleSolicitud = ({
             ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
-                  estado: Estado_SolicitudDetalleLog.Aprobado,
+                  estado:
+                    Estado_SolicitudDetalleLog.Aprobado as unknown as Estado_SolicitudDetalle,
                   comentario_decision: motivo,
                 }
               : item,
@@ -212,7 +214,8 @@ export const useDetalleSolicitud = ({
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
         ids_detalles: ids,
-        nuevo_estado: Estado_SolicitudDetalleLog.Rechazado,
+        nuevo_estado:
+          Estado_SolicitudDetalleLog.Rechazado as unknown as Estado_SolicitudDetalle,
         comentario_decision: motivo,
       });
       if (res.success) {
@@ -224,7 +227,8 @@ export const useDetalleSolicitud = ({
             ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
-                  estado: Estado_SolicitudDetalleLog.Rechazado,
+                  estado:
+                    Estado_SolicitudDetalleLog.Rechazado as unknown as Estado_SolicitudDetalle,
                   comentario_decision: motivo,
                 }
               : item,

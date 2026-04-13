@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import type { RES_LoteRecepcion } from "../service/reabastecimiento.responses";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 
 interface UseProductoRecepcionCardProps {
-  lotesDisponibles: RES_LoteRecepcion[];
+  lotesDisponibles: RES_LoteDisponible[];
   idProducto: number;
   esNuevoLote: boolean;
   isPerecible: boolean;
@@ -16,12 +16,15 @@ export const useProductoRecepcionCard = ({
   isPerecible,
   targetVencimiento,
 }: UseProductoRecepcionCardProps) => {
-  
   const lotes = useMemo(() => {
     if (esNuevoLote) return [];
 
     // Filtrar los lotes que pertenecen a este producto
-    let filtrados = lotesDisponibles.filter(l => l.id_producto === idProducto);
+    let filtrados = lotesDisponibles.filter(
+      (l) => l.id_producto === idProducto,
+    );
+
+    // Mapear id_lote a lo que espera el componente (si fuera necesario, pero RES_LoteDisponible tiene id_lote)
 
     // Aplicar filtros adicionales de perecibilidad si aplica
     if (isPerecible && targetVencimiento) {
@@ -36,7 +39,13 @@ export const useProductoRecepcionCard = ({
     }
 
     return filtrados;
-  }, [idProducto, esNuevoLote, isPerecible, targetVencimiento, lotesDisponibles]);
+  }, [
+    idProducto,
+    esNuevoLote,
+    isPerecible,
+    targetVencimiento,
+    lotesDisponibles,
+  ]);
 
   return {
     lotes,

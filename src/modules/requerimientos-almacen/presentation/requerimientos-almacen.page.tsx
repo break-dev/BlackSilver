@@ -163,6 +163,7 @@ export const RequerimientosAlmacenPage = () => {
             [Estado_Requerimiento.Cerrado]: "gray",
             [Estado_Requerimiento.Anulado]: "red",
             [Estado_Requerimiento.EnDespacho]: "blue",
+            [Estado_Requerimiento.Completado]: "teal",
           };
           return (
             <Badge

@@ -66,7 +66,7 @@ export const ProductoRecepcionCard = ({
   loadingLotes,
   cantidadTotalError,
 }: ProductoRecepcionCardProps) => {
-  const isPerecible = group.es_perecible === 1;
+  const isPerecible = group.es_perecible;
   const targetVencimiento = group.detalles_origen[0].fecha_vencimiento;
 
   const { lotes } = useProductoRecepcionCard({

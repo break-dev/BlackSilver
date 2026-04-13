@@ -38,9 +38,9 @@ import { TicketLotePDF } from "../../../presentation/utils/ticket-lote-pdf";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import QRCode from "qrcode";
 import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
-import type { RES_PrestamoReposicionRecepcionDetalle } from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
 import { Estado_PrestamoReposicion } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
 import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
+import type { Estado_PrestamoEntregaDetalle } from "../../../shared/enums/prestamo-almacen/prestamo-entrega";
 
 interface Props {
   reposiciones: RES_PrestamoReposicion[];
@@ -97,31 +97,31 @@ export const HistorialReposicionesPrestamo = ({
       return;
     }
 
-    const mapped: RES_PrestamoReposicionRecepcionDetalle[] = repo.detalles.map(
-      (d) => ({
-        id_entrega_detalle: d.id_reposicion_detalle,
-        id_solicitud_reabastecimiento_detalle: d.id_reposicion_detalle,
-        id_reabastecimiento_entrega: repo.id_reposicion,
-        cantidad_base: Number(d.cantidad_base),
-        cantidad_lote: Number(d.cantidad_lote),
-        cantidad_solicitud: Number(d.cantidad_prestamo),
-        estado_entrega_detalle: d.estado,
-        id_producto: d.id_producto,
-        producto: d.producto,
-        es_perecible: d.es_perecible,
-        id_unidad_medida_base: d.id_unidad_medida_base,
-        unidad_base_abv: d.unidad_medida_base_abv,
-        id_unidad_medida_solicitada: d.id_unidad_medida_pr,
-        contenido_por_presentacion_solicitado: 1, // Se asume 1 para préstamos
-        unidad_medida_solicitud_abv: d.unidad_medida_base_abv, // Se asume base
-        id_lote_origen: d.id_lote_producto,
-        correlativo_lote_origen: d.lote_correlativo,
-        unidad_lote_abv: d.unidad_medida_lote_abv,
-        id_unidad_medida_lote: d.id_unidad_medida_lote,
-        fecha_vencimiento: null, // El almacén destino decidirá
-        tipo_entrega: "Reposicion",
-      }),
-    );
+    const mapped: RES_PrestamoEntregaDetalle[] = repo.detalles.map((d) => ({
+      id_entrega_detalle: d.id_reposicion_detalle,
+      id_prestamo_almacen_entrega: repo.id_reposicion,
+      id_prestamo_almacen_detalle: d.id_reposicion_detalle,
+      id_solicitud_reabastecimiento_detalle: d.id_reposicion_detalle,
+      id_producto: d.id_producto,
+      producto: d.producto,
+      es_perecible: !!d.es_perecible,
+      id_lote_producto: d.id_lote_producto,
+      lote_correlativo: d.lote_correlativo,
+      fecha_vencimiento: null,
+      id_unidad_medida_base: d.id_unidad_medida_base,
+      unidad_medida_base_abv: d.unidad_medida_base_abv,
+      cantidad_base: Number(d.cantidad_base),
+      cantidad_total_recepcionada_base: d.cantidad_recibida_total_base || 0,
+      id_unidad_medida_lot: d.id_unidad_medida_lote,
+      unidad_medida_lot_abv: d.unidad_medida_lote_abv,
+      contenido_por_presentacion_lot: 1,
+      cantidad_lot: Number(d.cantidad_lote),
+      id_unidad_medida_pr: d.id_unidad_medida_pr || 0,
+      unidad_medida_pr_abv: d.unidad_medida_pr_abv || "",
+      contenido_por_presentacion_pr: 1,
+      cantidad_prestamo: Number(d.cantidad_prestamo),
+      estado: d.estado as unknown as Estado_PrestamoEntregaDetalle,
+    }));
 
     setDetailsForReception(mapped);
     setSelectedRepo(repo);
@@ -684,9 +684,7 @@ export const HistorialReposicionesPrestamo = ({
           {selectedRepo && (
             <RegistroRecepcion
               idAlmacenSolicitante={idAlmacenLender}
-              detalles={
-                detailsForReception as unknown as RES_PrestamoEntregaDetalle[]
-              }
+              detalles={detailsForReception}
               idEntrega={selectedRepo.id_reposicion}
               tipoEntrega="Reposicion"
               onSuccess={async (lotesNuevos?: RES_TicketLote[]) => {

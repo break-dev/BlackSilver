@@ -26,6 +26,7 @@ export interface DTO_RecibirEntregaItem {
   descripcion?: string | null;
   fecha_ingreso?: string | null;
   max_permitido?: number;
+  es_perecible: boolean;
 }
 
 export interface DTO_RegistrarRecepcion {

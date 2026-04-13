@@ -30,6 +30,7 @@ export interface DTO_RecibirEntregaReposicionItem {
   fecha_vencimiento: string | null;
   descripcion: string;
   contenido_por_presentacion: number;
+  es_perecible: boolean;
 }
 
 export interface DTO_RegistrarRecepcionReposicion {

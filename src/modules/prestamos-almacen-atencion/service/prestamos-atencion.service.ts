@@ -18,9 +18,7 @@ import type {
 } from "../../../service/responses/prestamos/prestamo";
 import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import type {
-  RES_PrestamoReposicion,
-} from "../../../service/responses/prestamos/prestamo-reposicion";
+import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
 import type {
   RES_PrestamoReposicionRecepcion,
   RES_PrestamoReposicionRecepcionDetalle,
@@ -78,9 +76,12 @@ export const PrestamosAtencionService = {
   },
 
   obtenerDetallePrestamo: async (idPrestamo: number) => {
-    const res = await api.get<IRespuesta<RES_PrestamoDetalle>>(`${path}/ver`, {
-      params: { id_prestamo: idPrestamo },
-    });
+    const res = await api.get<IRespuesta<{ detalles: RES_PrestamoDetalle[] }>>(
+      `${path}/ver`,
+      {
+        params: { id_prestamo: idPrestamo },
+      },
+    );
     return res.data;
   },
 

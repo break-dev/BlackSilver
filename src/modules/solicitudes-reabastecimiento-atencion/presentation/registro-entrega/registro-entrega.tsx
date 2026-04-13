@@ -17,6 +17,7 @@ interface RegistroEntregaProps {
 
 export const RegistroEntrega = ({
   idSolicitud,
+  idEmpleadoSolicitante,
   selectedDetalles: baseDetalles,
   onSuccess,
   onCancel,

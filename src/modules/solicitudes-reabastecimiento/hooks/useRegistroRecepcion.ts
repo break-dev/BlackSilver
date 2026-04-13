@@ -8,9 +8,12 @@ import type {
   DTO_RegistrarRecepcion,
 } from "../service/reabastecimiento.requests";
 import type { RES_UnidadMedida } from "../../lotes-productos/service/lotes.responses";
-import type { RES_LoteDisponible, RES_TicketLote } from "../../../service/responses/lote-producto";
+import type {
+  RES_LoteDisponible,
+  RES_TicketLote,
+} from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
-import type { RES_SolicitudEntregaDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
+import type { HistorialEntregaDetalleItem } from "./useHistorialEntregas";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
@@ -21,8 +24,8 @@ export interface GroupedReception {
   producto: string;
   total_entregado_base: number;
   unidad_base_abv: string;
-  es_perecible: number;
-  detalles_origen: RES_SolicitudEntregaDetalle[];
+  es_perecible: boolean;
+  detalles_origen: HistorialEntregaDetalleItem[];
   lots: DTO_RecibirLotExtendido[];
 }
 
@@ -30,7 +33,7 @@ interface UseRegistroRecepcionProps {
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
   idAlmacenSolicitante: number;
-  detalles: RES_SolicitudEntregaDetalle[];
+  detalles: HistorialEntregaDetalleItem[];
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
 }
 
@@ -59,9 +62,9 @@ export const useRegistroRecepcion = ({
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
-  const [lotesDisponibles, setLotesDisponibles] = useState<RES_LoteDisponible[]>(
-    [],
-  );
+  const [lotesDisponibles, setLotesDisponibles] = useState<
+    RES_LoteDisponible[]
+  >([]);
   const [loadingLotes, setLoadingLotes] = useState(false);
 
   useEffect(() => {
@@ -74,6 +77,7 @@ export const useRegistroRecepcion = ({
             ...d,
             unidad_base_abv: d.unidad_medida_base_abv,
             total_entregado_base: 0,
+            es_perecible: d.es_perecible,
             lots: [],
             detalles_origen: [],
           };
@@ -100,7 +104,7 @@ export const useRegistroRecepcion = ({
             id_unidad_medida: g.detalles_origen[0].id_unidad_medida_base,
             contenido_por_presentacion: 1,
             fecha_ingreso: new Date().toISOString(),
-            descripcion: "",
+            es_perecible: g.es_perecible,
             ajustes: {},
           },
         ],

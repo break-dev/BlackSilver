@@ -24,6 +24,7 @@ import { formatNumber } from "../../../shared/functions/formatNumber";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import { Estado_SolicitudEntrega } from "../../../shared/enums/solicitud-reabastecimiento/solicitud-entrega";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -101,16 +102,23 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       <Badge
                         variant="light"
                         color={
-                          h.estado === "Recibida" || h.estado === "Recibido"
+                          (h.estado as any) === "Recibida" ||
+                          (h.estado as any) === "Recibido" ||
+                          h.estado === Estado_SolicitudEntrega.RecepcionCompleta
                             ? "teal"
-                            : h.estado === "Procesada" ||
-                                h.estado === "Recepcionado Parcialmente"
+                            : (h.estado as any) === "Procesada" ||
+                                (h.estado as any) ===
+                                  "Recepcionado Parcialmente" ||
+                                h.estado ===
+                                  Estado_SolicitudEntrega.RecepcionadoParcialmente
                               ? "orange"
                               : "indigo"
                         }
                         size="xs"
                       >
-                        {h.estado === "Recepcionado Parcialmente"
+                        {(h.estado as any) === "Recepcionado Parcialmente" ||
+                        h.estado ===
+                          Estado_SolicitudEntrega.RecepcionadoParcialmente
                           ? "Parcial"
                           : h.estado}
                       </Badge>
@@ -263,7 +271,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                             {d.unidad_medida_lot_abv || "UNI"}
                           </Text>
 
-                          {d.id_unidad_medida_lote !=
+                          {d.id_unidad_medida_lot !=
                             d.id_unidad_medida_base && (
                             <>
                               <div className="w-px h-6 bg-zinc-800/80 mx-1"></div>

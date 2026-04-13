@@ -46,7 +46,10 @@ export interface RES_PrestamoReposicionDetalle {
   cantidad_lote: number;
   //
   id_unidad_medida_pr: number;
+  unidad_medida_pr_abv: string;
   cantidad_prestamo: number;
+  //
+  cantidad_recibida_total_base?: number;
   //
   estado: Estado_PrestamoReposicionDetalle;
 }

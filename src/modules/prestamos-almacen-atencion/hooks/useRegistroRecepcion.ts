@@ -19,7 +19,7 @@ export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionIte
   es_nuevo_lote: boolean;
   fecha_ingreso: string;
   descripcion: string;
-  es_perecible: number;
+  es_perecible: boolean;
   ajustes?: Record<number, number>; // idLote -> cantidad
 }
 
@@ -110,6 +110,7 @@ export const useRegistroRecepcion = ({
             contenido_por_presentacion: 1,
             fecha_ingreso: new Date().toISOString(),
             descripcion: "",
+            es_perecible: g.es_perecible,
             ajustes: {},
           },
         ],

@@ -98,7 +98,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
         const res =
           await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
         if (res.success) {
-          setDetalles([res.data]);
+          setDetalles(res.data.detalles || []);
         }
       } catch {
         notifyError("Error al cargar el detalle del préstamo");
@@ -177,8 +177,8 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
           // Actualización local inmediata para feedback instantáneo
           setDetalles((prev) =>
             prev.map((d) =>
-              d.id_prestamo_detalle === selectedItemId
-                ? { ...d, estado: nuevoEstado }
+              d.id_prestamo_detalle === ids[0] // or handle bulk better if needed, but for local feedback ids[0] is fine if it was a single action
+                ? { ...d, estado: nuevoEstado as Estado_PrestamoDetalle }
                 : d,
             ),
           );
