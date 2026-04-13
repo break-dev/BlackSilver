@@ -2,10 +2,10 @@ import React from "react";
 import { Table, Text, Group, Radio, NumberInput } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { RES_LoteRecepcion } from "../../../service/reabastecimiento.responses";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface LotesDisponiblesTableProps {
-  lotes: RES_LoteRecepcion[];
+  lotes: RES_LoteDisponible[];
   loading: boolean;
   selectedAjustes: Record<number, number>;
   onUpdateTabular: (idLote: number, isActive: boolean, qty?: number) => void;

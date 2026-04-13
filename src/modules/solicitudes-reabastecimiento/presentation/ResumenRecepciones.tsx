@@ -22,12 +22,12 @@ import {
 import dayjs from "dayjs";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo-card";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type {
-  RecepcionEvento,
-  RecepcionDetalle,
-} from "../service/reabastecimiento.responses";
-import type { IArchivo } from "../../../service/responses/menu-navegacion";
+  RES_SolicitudRecepcion,
+  RES_SolicitudRecepcionDetalle,
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega-recepcion";
 
 interface Props {
   idEntrega: number;
@@ -39,7 +39,7 @@ export const ResumenRecepciones = ({
   tipoEntrega = "Solicitud",
 }: Props) => {
   const [loading, setLoading] = useState(true);
-  const [recepciones, setRecepciones] = useState<RecepcionEvento[]>([]);
+  const [recepciones, setRecepciones] = useState<RES_SolicitudRecepcion[]>([]);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
 
   const toggleExpand = (id: number) => {
@@ -178,38 +178,40 @@ export const ResumenRecepciones = ({
 
                   {/* Productos recibidos */}
                   <Group gap={4} wrap="wrap" mt="xs">
-                    {rec.detalles.map((det: RecepcionDetalle, dIdx) => (
-                      <span
-                        key={`det-${rec.id_recepcion}-${det.id_detalle || dIdx}`}
-                        className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
-                      >
-                        <Text size="xs" className="text-zinc-400">
-                          {det.producto}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={900}
-                          className="text-emerald-400 font-mono"
+                    {rec.detalles.map(
+                      (det: RES_SolicitudRecepcionDetalle, dIdx) => (
+                        <span
+                          key={`det-${rec.id_recepcion}-${det.id_recepcion_detalle || dIdx}`}
+                          className="inline-flex items-center gap-1 bg-zinc-900/60 border border-zinc-800/50 px-2 py-0.5 rounded-full"
                         >
-                          +{formatNumber(det.cantidad_recepcionada_base)}
-                          <span className="font-normal ml-0.5">
-                            {det.unidad_medida_base_abv}
-                          </span>
-                          {det.id_unidad_medida_base !=
-                            det.id_unidad_medida_sol && (
-                            <Text span size="10px" c="dimmed" ml={4} fw={500}>
-                              (
-                              {formatNumber(
-                                det.cantidad_recep_sol ||
+                          <Text size="xs" className="text-zinc-400">
+                            {det.producto}
+                          </Text>
+                          <Text
+                            size="xs"
+                            fw={900}
+                            className="text-emerald-400 font-mono"
+                          >
+                            +{formatNumber(det.cantidad_recepcionada_base)}
+                            <span className="font-normal ml-0.5">
+                              {det.unidad_medida_base_abv}
+                            </span>
+                            {det.id_unidad_medida_base !=
+                              det.id_unidad_medida_sol && (
+                              <Text span size="10px" c="dimmed" ml={4} fw={500}>
+                                (
+                                {formatNumber(
                                   det.cantidad_recepcionada_sol ||
-                                  0,
-                              )}{" "}
-                              {det.unidad_medida_sol_abv})
-                            </Text>
-                          )}
-                        </Text>
-                      </span>
-                    ))}
+                                    det.cantidad_recepcionada_sol ||
+                                    0,
+                                )}{" "}
+                                {det.unidad_medida_sol_abv})
+                              </Text>
+                            )}
+                          </Text>
+                        </span>
+                      ),
+                    )}
                   </Group>
                 </div>
               </UnstyledButton>

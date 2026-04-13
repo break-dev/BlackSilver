@@ -23,15 +23,15 @@ import {
 import dayjs from "dayjs";
 import { HistorialEntregas } from "./historial-entregas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import type {
-  RES_SolicitudReabastecimiento,
+  RES_Solicitud,
   RES_SolicitudDetalle,
-} from "../service/reabastecimiento.responses";
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { Estado_SolicitudDetalleLog } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 
 interface DetalleSolicitudProps {
-  headerData: RES_SolicitudReabastecimiento;
+  headerData: RES_Solicitud;
   detalles: RES_SolicitudDetalle[];
   loading: boolean;
   progresoGeneral: number;
@@ -40,19 +40,19 @@ interface DetalleSolicitudProps {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case EstadoSolicitudDetalle.EsperandoAprobacion:
+    case Estado_SolicitudDetalleLog.EsperandoAprobacion:
       return "blue";
-    case EstadoSolicitudDetalle.Aprobado:
+    case Estado_SolicitudDetalleLog.Aprobado:
       return "violet";
-    case EstadoSolicitudDetalle.EnDespacho:
+    case Estado_SolicitudDetalleLog.EnDespacho:
       return "orange";
-    case EstadoSolicitudDetalle.NuevaEntrega:
+    case Estado_SolicitudDetalleLog.NuevaEntrega:
       return "green";
-    case EstadoSolicitudDetalle.Completado:
+    case Estado_SolicitudDetalleLog.Completado:
       return "emerald";
-    case EstadoSolicitudDetalle.Cerrado:
+    case Estado_SolicitudDetalleLog.Cerrado:
       return "zinc";
-    case EstadoSolicitudDetalle.Rechazado:
+    case Estado_SolicitudDetalleLog.Rechazado:
       return "red";
     default:
       return "gray";
@@ -134,7 +134,7 @@ export const DetalleSolicitud = ({
               fw={800}
               className="text-zinc-100 tracking-tight leading-tight"
             >
-              {headerData.solicitante}
+              {headerData.solicitado_por}
             </Text>
           </Stack>
         </Paper>

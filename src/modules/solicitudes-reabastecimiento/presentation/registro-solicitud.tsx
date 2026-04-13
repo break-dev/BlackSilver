@@ -22,13 +22,13 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroSolicitud } from "../hooks/useRegistroSolicitud";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { enPlural } from "../../../shared/functions/en-plural";
-import type { RES_SolicitudReabastecimiento } from "../service/reabastecimiento.responses";
+import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 
 interface RegistroSolicitudProps {
-  onSuccess: (item: RES_SolicitudReabastecimiento) => void;
+  onSuccess: (item: RES_Solicitud) => void;
   onCancel: () => void;
 }
 

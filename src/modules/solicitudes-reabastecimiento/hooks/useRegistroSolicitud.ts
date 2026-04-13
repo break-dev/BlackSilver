@@ -6,16 +6,14 @@ import type {
   DTO_CrearSolicitud,
   DTO_SolicitudDetalle,
 } from "../service/reabastecimiento.requests";
-import type {
-  RES_Producto_Local,
-  RES_SolicitudReabastecimiento,
-} from "../service/reabastecimiento.responses";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Producto } from "../service/reabastecimiento.responses";
 
 interface Props {
-  onSuccess: (item: RES_SolicitudReabastecimiento) => void;
+  onSuccess: (item: RES_Solicitud) => void;
 }
 
 export const useRegistroSolicitud = ({ onSuccess }: Props) => {
@@ -26,7 +24,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
 
   // Catálogos
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [productos, setProductos] = useState<RES_Producto_Local[]>([]);
+  const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   // Estado Formulario Cabecera

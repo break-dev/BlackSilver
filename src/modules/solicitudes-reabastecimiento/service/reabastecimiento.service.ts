@@ -1,20 +1,22 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
-import type {
-  RES_SolicitudReabastecimiento,
-  RES_SolicitudDetalle,
-  RES_TrazabilidadEvento,
-  RES_DataRegistroSolicitud,
-  RES_EntregaReabastecimiento,
-  RES_LoteRecepcion,
-  RecepcionEvento,
-  RES_HistorialEntregas,
-} from "./reabastecimiento.responses";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   DTO_CrearSolicitud,
   DTO_RegistrarRecepcion,
 } from "./reabastecimiento.requests";
-import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+import type {
+  RES_LoteDisponible,
+  RES_TicketLote,
+} from "../../../service/responses/lote-producto";
+import type {
+  RES_Solicitud,
+  RES_SolicitudDetalle,
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type { RES_DataRegistroSolicitud } from "./reabastecimiento.responses";
+import type { RES_SolicitudEntrega } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
+import type { RES_SolicitudRecepcion } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega-recepcion";
 
 const path = "/solicitudes-reabastecimiento";
 
@@ -24,20 +26,14 @@ export const ReabastecimientoService = {
     mes: string;
     yearcito: string;
   }) => {
-    const res = await api.get<IRespuesta<RES_SolicitudReabastecimiento[]>>(
-      path,
-      {
-        params: filters,
-      },
-    );
+    const res = await api.get<IRespuesta<RES_Solicitud[]>>(path, {
+      params: filters,
+    });
     return res.data;
   },
 
   crear: async (dto: DTO_CrearSolicitud) => {
-    const res = await api.post<IRespuesta<RES_SolicitudReabastecimiento>>(
-      path,
-      dto,
-    );
+    const res = await api.post<IRespuesta<RES_Solicitud>>(path, dto);
     return res.data;
   },
 
@@ -52,7 +48,7 @@ export const ReabastecimientoService = {
   },
 
   obtenerTrazabilidad: async (idDetalle: number) => {
-    const res = await api.get<IRespuesta<RES_TrazabilidadEvento[]>>(
+    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
       `${path}/trazabilidad-detalle`,
       {
         params: { id_solicitud_detalle: idDetalle },
@@ -69,7 +65,7 @@ export const ReabastecimientoService = {
   },
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
+    const res = await api.get<IRespuesta<RES_SolicitudEntrega>>(
       `${path}/entregas`,
       {
         params: { id_solicitud_reabastecimiento: idSolicitud },
@@ -79,7 +75,7 @@ export const ReabastecimientoService = {
   },
 
   obtenerEntregasPrestamo: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
+    const res = await api.get<IRespuesta<RES_PrestamoEntrega[]>>(
       "/prestamos-atencion/entregas-solicitud",
       {
         params: { id_solicitud: idSolicitud },
@@ -95,7 +91,7 @@ export const ReabastecimientoService = {
     idAlmacenSolicitante: number,
     idProductos: number[],
   ) => {
-    const res = await api.get<IRespuesta<RES_LoteRecepcion[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/catalogos/lotes-destino`,
       {
         params: {
@@ -159,7 +155,7 @@ export const ReabastecimientoService = {
     idEntrega: number,
     tipoEntrega: string = "Solicitud",
   ) => {
-    const res = await api.get<IRespuesta<RecepcionEvento[]>>(
+    const res = await api.get<IRespuesta<RES_SolicitudRecepcion[]>>(
       `${path}/recepciones/historial`,
       {
         params: {

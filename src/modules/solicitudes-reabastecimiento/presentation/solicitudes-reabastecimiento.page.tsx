@@ -22,19 +22,19 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useSolicitudesPage } from "../hooks/useSolicitudesPage";
-import { Premura } from "../../../shared/enums/otros";
-import { EstadoSolicitud } from "../../../shared/enums/estados";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroSolicitud } from "./registro-solicitud";
 import { DetalleSolicitud } from "./detalle-solicitud";
 import { TrazabilidadSolicitud } from "./trazabilidad-solicitud";
-import type {
-  RES_SolicitudReabastecimiento,
-  RES_SolicitudDetalle,
-} from "../service/reabastecimiento.responses";
 import { MESES } from "../../../shared/variables/meses";
+import { Estado_Solicitud } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
+import type {
+  RES_Solicitud,
+  RES_SolicitudDetalle,
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;
@@ -67,7 +67,7 @@ export const SolicitudesReabastecimientoPage = () => {
   const [openedTrace, { open: openTrace, close: closeTrace }] =
     useDisclosure(false);
 
-  const columns: DataTableColumn<RES_SolicitudReabastecimiento>[] = useMemo(
+  const columns: DataTableColumn<RES_Solicitud>[] = useMemo(
     () => [
       {
         accessor: "index",
@@ -157,15 +157,15 @@ export const SolicitudesReabastecimientoPage = () => {
         title: "Estado",
         width: 130,
         render: (item) => {
-          const colorMap: Record<EstadoSolicitud, string> = {
-            [EstadoSolicitud.Generada]: "green",
-            [EstadoSolicitud.Cerrada]: "gray",
-            [EstadoSolicitud.Anulada]: "red",
-            [EstadoSolicitud.EnProceso]: "blue",
+          const colorMap: Record<Estado_Solicitud, string> = {
+            [Estado_Solicitud.Generada]: "green",
+            [Estado_Solicitud.Cerrada]: "gray",
+            [Estado_Solicitud.Anulada]: "red",
+            [Estado_Solicitud.EnDespacho]: "blue",
           };
           return (
             <Badge
-              color={colorMap[item.estado as EstadoSolicitud] || "gray"}
+              color={colorMap[item.estado as Estado_Solicitud] || "gray"}
               variant="light"
               radius="sm"
               size="sm"

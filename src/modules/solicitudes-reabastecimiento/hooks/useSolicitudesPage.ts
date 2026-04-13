@@ -1,16 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import type {
-  RES_SolicitudReabastecimiento,
+  RES_Solicitud,
   RES_SolicitudDetalle,
-  RES_TrazabilidadEvento,
-} from "../service/reabastecimiento.responses";
-
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 export const useSolicitudesPage = () => {
   const [loading, setLoading] = useState(false);
-  const [solicitudes, setSolicitudes] = useState<
-    RES_SolicitudReabastecimiento[]
-  >([]);
+  const [solicitudes, setSolicitudes] = useState<RES_Solicitud[]>([]);
 
   // Filtros
   const [mes, setMes] = useState<string>(String(new Date().getMonth() + 1));
@@ -20,16 +17,13 @@ export const useSolicitudesPage = () => {
   const [search, setSearch] = useState("");
 
   // Detalles y Trazabilidad (UI)
-  const [selectedReq, setSelectedReq] =
-    useState<RES_SolicitudReabastecimiento | null>(null);
+  const [selectedReq, setSelectedReq] = useState<RES_Solicitud | null>(null);
   const [detalles, setDetalles] = useState<RES_SolicitudDetalle[]>([]);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
 
   const [selectedDetalle, setSelectedDetalle] =
     useState<RES_SolicitudDetalle | null>(null);
-  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadEvento[]>(
-    [],
-  );
+  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>([]);
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   const listar = useCallback(async () => {
@@ -53,7 +47,7 @@ export const useSolicitudesPage = () => {
     listar();
   }, [listar]);
 
-  const verDetalles = async (req: RES_SolicitudReabastecimiento) => {
+  const verDetalles = async (req: RES_Solicitud) => {
     setSelectedReq(req);
     setLoadingDetalle(true);
     try {
@@ -107,7 +101,7 @@ export const useSolicitudesPage = () => {
       (item) =>
         (item.correlativo || "").toLowerCase().includes(q) ||
         (item.correlativo_requerimiento || "").toLowerCase().includes(q) ||
-        (item.solicitante || "").toLowerCase().includes(q),
+        (item.solicitado_por || "").toLowerCase().includes(q),
     );
   }, [solicitudes, search]);
 
@@ -125,7 +119,7 @@ export const useSolicitudesPage = () => {
     },
     actions: {
       listar,
-      addRecord: (record: RES_SolicitudReabastecimiento) => {
+      addRecord: (record: RES_Solicitud) => {
         setSolicitudes((prev) => [record, ...prev]);
       },
       verDetalles,

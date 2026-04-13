@@ -18,9 +18,9 @@ import type {
   GroupedReception,
   DTO_RecibirLotExtendido,
 } from "../../../hooks/useRegistroRecepcion";
-import type { RES_LoteRecepcion } from "../../../service/reabastecimiento.responses";
 import type { RES_UnidadMedida } from "../../../../lotes-productos/service/lotes.responses";
 import { useProductoRecepcionCard } from "../../../hooks/useProductoRecepcionCard";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface ProductoRecepcionCardProps {
   group: GroupedReception;
@@ -47,7 +47,7 @@ interface ProductoRecepcionCardProps {
   ) => string | null;
   unidades: RES_UnidadMedida[];
   loadingUnidades: boolean;
-  allLotes: RES_LoteRecepcion[];
+  allLotes: RES_LoteDisponible[];
   loadingLotes: boolean;
   cantidadTotalError?: string;
 }

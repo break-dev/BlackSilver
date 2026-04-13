@@ -36,7 +36,7 @@ export interface RES_SolicitudEntregaDetalle {
   lote_correlativo: string;
   //
   id_unidad_medida_base: number;
-  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
   cantidad_base: number;
   //
   id_unidad_medida_lot: number;

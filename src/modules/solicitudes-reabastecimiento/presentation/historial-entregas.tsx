@@ -25,8 +25,7 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo-card";
-import type { RES_DetalleEntregaReabastecimiento } from "../service/reabastecimiento.responses";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ResumenRecepciones } from "./ResumenRecepciones";
 import { usePrint } from "../../../hooks/usePrint";
@@ -34,6 +33,8 @@ import { TicketLotePDF } from "../../../presentation/utils/ticket-lote-pdf";
 import { RegistroRecepcion } from "./registro-recepcion";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import QRCode from "qrcode";
+import type { RES_SolicitudEntregaDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
+import { Estado_SolicitudEntregaDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud-entrega";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -65,15 +66,13 @@ export const HistorialEntregas = ({
   const [recepcionData, setRecepcionData] = useState<{
     idEntrega: number;
     tipoEntrega: "Solicitud" | "Prestamo";
-    detallesPendientes: RES_DetalleEntregaReabastecimiento[];
+    detallesPendientes: RES_SolicitudEntregaDetalle[];
   } | null>(null);
 
-  const groupDetailsByProduct = (
-    detalles: RES_DetalleEntregaReabastecimiento[],
-  ) => {
+  const groupDetailsByProduct = (detalles: RES_SolicitudEntregaDetalle[]) => {
     const grouped: Record<
       number,
-      RES_DetalleEntregaReabastecimiento & { total_cantidad_base: number }
+      RES_SolicitudEntregaDetalle & { total_cantidad_base: number }
     > = {};
     detalles.forEach((d) => {
       const key = d.id_solicitud_reabastecimiento_detalle;
@@ -89,7 +88,7 @@ export const HistorialEntregas = ({
   };
 
   const handleOpenRecepcion = (
-    detallesPendientes: RES_DetalleEntregaReabastecimiento[],
+    detallesPendientes: RES_SolicitudEntregaDetalle[],
     idEntrega: number,
     tipoEntrega: "Solicitud" | "Prestamo",
   ) => {
@@ -305,8 +304,10 @@ export const HistorialEntregas = ({
                           {d.producto}
                         </Text>
                         <Group gap={4}>
-                          {d.estado_entrega_detalle === "Recibido" ||
-                          d.estado_entrega_detalle === "Entrega confirmada" ? (
+                          {d.estado ==
+                            Estado_SolicitudEntregaDetalle.EnDespacho ||
+                          d.estado ==
+                            Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
                             <Badge
                               size="xs"
                               variant="light"
@@ -317,8 +318,8 @@ export const HistorialEntregas = ({
                             >
                               Recibido
                             </Badge>
-                          ) : d.estado_entrega_detalle ===
-                            "Recibido Parcialmente" ? (
+                          ) : d.estado ===
+                            Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
                             <Badge
                               size="xs"
                               variant="light"
@@ -329,7 +330,7 @@ export const HistorialEntregas = ({
                               {formatNumber(
                                 d.cantidad_recibida_total_base || 0,
                               )}{" "}
-                              {d.unidad_medida_base_abv}
+                              {d.estado}
                             </Badge>
                           ) : null}
                         </Group>
@@ -345,8 +346,10 @@ export const HistorialEntregas = ({
                             {d.unidad_medida_base_abv}
                           </span>
                         </Text>
-                        {d.estado_entrega_detalle === "Entregado" ||
-                        d.estado_entrega_detalle === "En despacho" ? (
+                        {d.estado ===
+                          Estado_SolicitudEntregaDetalle.EnDespacho ||
+                        d.estado ===
+                          Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
                           <Badge
                             size="xs"
                             variant="dot"
@@ -355,8 +358,8 @@ export const HistorialEntregas = ({
                           >
                             Pendiente
                           </Badge>
-                        ) : d.estado_entrega_detalle ===
-                          "Recibido Parcialmente" ? (
+                        ) : d.estado ===
+                          Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
                           <Badge
                             size="xs"
                             variant="dot"

@@ -19,13 +19,13 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
-import type { RES_DetalleEntregaReabastecimiento } from "../../service/reabastecimiento.responses";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
+import type { RES_SolicitudEntregaDetalle } from "../../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
 
 interface Props {
   idAlmacenSolicitante: number;
-  detalles: RES_DetalleEntregaReabastecimiento[];
+  detalles: RES_SolicitudEntregaDetalle[];
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
