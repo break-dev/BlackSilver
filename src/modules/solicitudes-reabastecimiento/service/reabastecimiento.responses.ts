@@ -1,6 +1,6 @@
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
-export type { RES_Almacen, RES_UnidadMedida };
+import type { RES_Almacen } from "../../../service/responses/almacen";
+
 
 export interface RES_Producto {
   id_producto: number;

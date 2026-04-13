@@ -4,16 +4,13 @@ import { useAuthStore } from "../../../stores/auth.store";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
 import { LotesService } from "../../lotes-productos/service/lotes.service";
 import type {
-  RES_DetalleEntregaReabastecimiento,
-  RES_LoteRecepcion,
-} from "../service/reabastecimiento.responses";
-import type {
   DTO_RecibirEntregaItem,
   DTO_RegistrarRecepcion,
 } from "../service/reabastecimiento.requests";
 import type { RES_UnidadMedida } from "../../lotes-productos/service/lotes.responses";
-import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+import type { RES_LoteDisponible, RES_TicketLote } from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
+import type { RES_SolicitudEntregaDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
@@ -25,7 +22,7 @@ export interface GroupedReception {
   total_entregado_base: number;
   unidad_base_abv: string;
   es_perecible: number;
-  detalles_origen: RES_DetalleEntregaReabastecimiento[];
+  detalles_origen: RES_SolicitudEntregaDetalle[];
   lots: DTO_RecibirLotExtendido[];
 }
 
@@ -33,7 +30,7 @@ interface UseRegistroRecepcionProps {
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo";
   idAlmacenSolicitante: number;
-  detalles: RES_DetalleEntregaReabastecimiento[];
+  detalles: RES_SolicitudEntregaDetalle[];
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
 }
 
@@ -62,7 +59,7 @@ export const useRegistroRecepcion = ({
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
-  const [lotesDisponibles, setLotesDisponibles] = useState<RES_LoteRecepcion[]>(
+  const [lotesDisponibles, setLotesDisponibles] = useState<RES_LoteDisponible[]>(
     [],
   );
   const [loadingLotes, setLoadingLotes] = useState(false);

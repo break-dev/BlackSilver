@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type { RES_HistorialReposicion } from "../service/prestamos.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
 
 export const useHistorialReposicion = (idPrestamo: number) => {
   const [loading, setLoading] = useState(false);
-  const [reposiciones, setReposiciones] = useState<RES_HistorialReposicion[]>(
+  const [reposiciones, setReposiciones] = useState<RES_PrestamoReposicion[]>(
     [],
   );
   const [error, setError] = useState<string | null>(null);

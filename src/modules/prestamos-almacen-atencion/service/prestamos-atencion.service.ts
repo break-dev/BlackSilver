@@ -1,15 +1,6 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
-import type {
-  RES_PrestamoAtencion,
-  RES_DetallePrestamoPorId,
-  RES_EntregaPrestamo,
-  RES_TrazabilidadPrestamo,
-  RES_ReposicionPrestamo,
-  RES_DetalleReposicionParaRecepcion,
-  RES_LoteRecepcionReposicion,
-  RES_RecepcionEvento,
-} from "./prestamos-atencion.responses";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
+
 import type {
   DTO_RegistrarEntrega,
   DTO_RegistrarRecepcionReposicion,
@@ -21,6 +12,20 @@ import type {
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type {
+  RES_Prestamo,
+  RES_PrestamoDetalle,
+} from "../../../service/responses/prestamos/prestamo";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type {
+  RES_PrestamoReposicion,
+} from "../../../service/responses/prestamos/prestamo-reposicion";
+import type {
+  RES_PrestamoReposicionRecepcion,
+  RES_PrestamoReposicionRecepcionDetalle,
+} from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
+import type { RES_PrestamoEntregaRecepcion } from "../../../service/responses/prestamos/prestamo-entrega-recepcion";
 
 const path = "/prestamos-atencion";
 
@@ -66,23 +71,21 @@ export const PrestamosAtencionService = {
     mes: string,
     yearcito: string,
   ) => {
-    const res = await api.get<IRespuesta<RES_PrestamoAtencion[]>>(
-      `${path}/prestamos`,
-      { params: { id_almacen: idAlmacen, mes, yearcito } },
-    );
+    const res = await api.get<IRespuesta<RES_Prestamo[]>>(`${path}/prestamos`, {
+      params: { id_almacen: idAlmacen, mes, yearcito },
+    });
     return res.data;
   },
 
   obtenerDetallePrestamo: async (idPrestamo: number) => {
-    const res = await api.get<IRespuesta<RES_DetallePrestamoPorId>>(
-      `${path}/ver`,
-      { params: { id_prestamo: idPrestamo } },
-    );
+    const res = await api.get<IRespuesta<RES_PrestamoDetalle>>(`${path}/ver`, {
+      params: { id_prestamo: idPrestamo },
+    });
     return res.data;
   },
 
   obtenerHistorialEntregas: async (idPrestamo: number) => {
-    const res = await api.get<IRespuesta<RES_EntregaPrestamo[]>>(
+    const res = await api.get<IRespuesta<RES_PrestamoEntrega[]>>(
       `${path}/historial-entregas`,
       { params: { id_prestamo: idPrestamo } },
     );
@@ -136,7 +139,7 @@ export const PrestamosAtencionService = {
   },
 
   obtenerTrazabilidad: async (idPrestamoDetalle: number) => {
-    const res = await api.get<IRespuesta<RES_TrazabilidadPrestamo[]>>(
+    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
       `${path}/trazabilidad`,
       { params: { id_prestamo_detalle: idPrestamoDetalle } },
     );
@@ -144,7 +147,7 @@ export const PrestamosAtencionService = {
   },
 
   obtenerHistorialReposiciones: async (idPrestamo: number) => {
-    const res = await api.get<IRespuesta<RES_ReposicionPrestamo[]>>(
+    const res = await api.get<IRespuesta<RES_PrestamoReposicion[]>>(
       `/prestamos-almacen/historial-reposiciones`,
       { params: { id_prestamo_almacen: idPrestamo } },
     );
@@ -152,10 +155,11 @@ export const PrestamosAtencionService = {
   },
 
   obtenerDetallesReposicionRecepcion: async (idReposicion: number) => {
-    const res = await api.get<IRespuesta<RES_DetalleReposicionParaRecepcion[]>>(
-      `${path}/recepciones-reposicion/detalles`,
-      { params: { id_reposicion: idReposicion } },
-    );
+    const res = await api.get<
+      IRespuesta<RES_PrestamoReposicionRecepcionDetalle[]>
+    >(`${path}/recepciones-reposicion/detalles`, {
+      params: { id_reposicion: idReposicion },
+    });
     return res.data;
   },
 
@@ -170,7 +174,7 @@ export const PrestamosAtencionService = {
     idAlmacenSolicitante: number,
     idProductos: number[],
   ) => {
-    const res = await api.get<IRespuesta<RES_LoteRecepcionReposicion[]>>(
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/catalogos/lotes-destino`,
       {
         params: {
@@ -207,7 +211,7 @@ export const PrestamosAtencionService = {
   },
 
   obtenerHistorialRecepcionesReposicion: async (idReposicion: number) => {
-    const res = await api.get<IRespuesta<RES_RecepcionEvento[]>>(
+    const res = await api.get<IRespuesta<RES_PrestamoReposicionRecepcion[]>>(
       `${path}/recepciones-reposicion/historial`,
       { params: { id_reposicion: idReposicion } },
     );
@@ -215,7 +219,7 @@ export const PrestamosAtencionService = {
   },
 
   obtenerHistorialRecepcionesEntrega: async (idEntrega: number) => {
-    const res = await api.get<IRespuesta<RES_RecepcionEvento[]>>(
+    const res = await api.get<IRespuesta<RES_PrestamoEntregaRecepcion[]>>(
       `${path}/recepciones`,
       { params: { id_prestamo_entrega: idEntrega } },
     );

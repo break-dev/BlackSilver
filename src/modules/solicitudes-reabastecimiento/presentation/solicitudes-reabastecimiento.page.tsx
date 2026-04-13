@@ -129,7 +129,7 @@ export const SolicitudesReabastecimientoPage = () => {
         width: 200,
         render: (item) => (
           <Text size="sm" className="text-zinc-400">
-            {item.solicitante}
+            {item.solicitado_por}
           </Text>
         ),
       },

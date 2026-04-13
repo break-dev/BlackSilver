@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type { RES_PrestamoDetalle } from "../service/prestamos.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 
 export const useDetallePrestamo = () => {
   const { notifyError } = useNotify();

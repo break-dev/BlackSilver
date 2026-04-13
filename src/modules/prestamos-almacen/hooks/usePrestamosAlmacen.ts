@@ -1,15 +1,13 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type {
-  RES_AlmacenSecundario,
-  RES_PrestamoResumen,
-} from "../service/prestamos.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 
 export const usePrestamosAlmacen = () => {
   const { notifyError } = useNotify();
-  const [almacenes, setAlmacenes] = useState<RES_AlmacenSecundario[]>([]);
-  const [prestamos, setPrestamos] = useState<RES_PrestamoResumen[]>([]);
+  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
+  const [prestamos, setPrestamos] = useState<RES_Prestamo[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
 

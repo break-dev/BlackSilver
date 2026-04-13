@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type { RES_HistorialEntregaPrestamo } from "../service/prestamos.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
 
 export const useHistorialEntregasPrestamo = (idPrestamo: number) => {
   const [loading, setLoading] = useState(true);
-  const [historial, setHistorial] = useState<RES_HistorialEntregaPrestamo[]>(
+  const [historial, setHistorial] = useState<RES_PrestamoEntrega[]>(
     [],
   );
   const [error, setError] = useState("");
