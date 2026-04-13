@@ -23,7 +23,7 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroRequerimiento } from "../hooks/useRegistroRequerimiento";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { formatNumber } from "../../../shared/functions/formatNumber";

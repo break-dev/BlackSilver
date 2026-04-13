@@ -1,18 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type {
-  RES_DetalleSolicitud,
-  RES_SolicitudReabastecimiento,
-  RES_Prestamo,
-  RES_StockTotalAlmacen,
-} from "../service/solicitudes-atencion.responses";
+import type { RES_StockTotalAlmacen } from "../service/solicitudes-atencion.responses";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type {
+  RES_Solicitud,
+  RES_SolicitudDetalle,
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 
 interface UseRegistrarPrestamoProps {
-  solicitud: RES_SolicitudReabastecimiento;
-  detalles: RES_DetalleSolicitud[];
+  solicitud: RES_Solicitud;
+  detalles: RES_SolicitudDetalle[];
   onSuccess: (nuevoPrestamo: RES_Prestamo) => void;
 }
 

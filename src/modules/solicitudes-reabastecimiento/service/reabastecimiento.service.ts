@@ -13,8 +13,10 @@ import type {
   RES_SolicitudDetalle,
 } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import type { RES_DataRegistroSolicitud } from "./reabastecimiento.responses";
-import type { RES_SolicitudEntrega } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega";
+import type {
+  RES_DataRegistroSolicitud,
+  RES_HistorialEntregas,
+} from "./reabastecimiento.responses";
 import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
 import type { RES_SolicitudRecepcion } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega-recepcion";
 
@@ -65,7 +67,7 @@ export const ReabastecimientoService = {
   },
 
   obtenerHistorialEntregas: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_SolicitudEntrega>>(
+    const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
       `${path}/entregas`,
       {
         params: { id_solicitud_reabastecimiento: idSolicitud },

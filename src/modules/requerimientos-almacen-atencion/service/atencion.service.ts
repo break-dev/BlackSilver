@@ -1,12 +1,9 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   RES_RequerimientoAlmacen,
   RES_DetalleRequerimiento,
   RES_Entrega,
-  RES_Empleado,
-  RES_Lote,
-  RES_Trazabilidad,
 } from "./atencion.responses";
 
 import type {
@@ -14,6 +11,9 @@ import type {
   DTO_RegistrarEntrega,
   DTO_CrearSolicitudLogistica,
 } from "./atencion.requests";
+import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 const path = "/requerimientos-atencion";
 
@@ -52,9 +52,12 @@ export const AtencionService = {
     idProducto: number | number[],
     idAlmacen: number,
   ) => {
-    const res = await api.get<IRespuesta<RES_Lote[]>>(`${path}/lotes`, {
-      params: { id_producto: idProducto, id_almacen: idAlmacen },
-    });
+    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
+      `${path}/lotes`,
+      {
+        params: { id_producto: idProducto, id_almacen: idAlmacen },
+      },
+    );
     return res.data;
   },
 

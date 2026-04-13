@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { AtencionService } from "../service/atencion.service";
-import { Premura } from "../../../shared/enums/otros";
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
+import { Premura } from "../../../shared/enums/_generic/premura";
+import { Estado_RequerimientoDetalle } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type { DTO_CrearSolicitudLogistica } from "../service/atencion.requests";
 import type {
   DetalleRequerimientoExtendido,
@@ -44,7 +44,7 @@ export const useRegistrarSolicitudLogistica = ({
 
   const itemsPendientes = detalles.filter(
     (d) =>
-      d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+      d.estado === Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
   );
 
   const itemsSeleccionados = itemsPendientes.filter((d) =>

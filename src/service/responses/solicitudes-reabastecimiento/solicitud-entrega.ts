@@ -34,6 +34,7 @@ export interface RES_SolicitudEntregaDetalle {
   //
   id_lote_producto: number;
   lote_correlativo: string;
+  fecha_vencimiento: string | null;
   //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

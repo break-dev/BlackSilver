@@ -1,4 +1,4 @@
-import type { EstadoBase } from "../../../shared/enums/estados";
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 export interface RES_Producto {
   id_producto: number;

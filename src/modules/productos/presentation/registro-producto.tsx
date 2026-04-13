@@ -12,7 +12,7 @@ import {
 import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_Producto } from "../service/productos.responses";
-import { Periodo } from "../../../shared/enums/otros";
+import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "../../categorias/presentation/registro-categoria";

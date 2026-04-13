@@ -16,7 +16,7 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroReposicion } from "../../../hooks/useRegistroReposicion";
-import type { RES_PrestamoDetalle } from "../../../service/prestamos.responses";
+import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multifile-picker";
 import { ProductoRepoCard } from "./producto-repo-card";
 

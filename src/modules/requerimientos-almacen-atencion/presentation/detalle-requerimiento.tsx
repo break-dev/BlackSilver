@@ -26,7 +26,9 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
+import {
+  Estado_RequerimientoDetalle,
+} from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import { ReqDetalleTrazabilidad } from "./req-detalle-trazabilidad";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistrarEntrega } from "./registrar-entrega/registrar-entrega";
@@ -278,7 +280,7 @@ export const DetalleRequerimiento = ({
             {detalles.some(
               (d) =>
                 d.estado ===
-                EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+                Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
             ) && (
               <>
                 <Button
@@ -318,7 +320,7 @@ export const DetalleRequerimiento = ({
                 !detalles.some(
                   (d) =>
                     d.estado ===
-                    EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+                    Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
                 )
               }
               onClick={logistica.open}
@@ -341,9 +343,9 @@ export const DetalleRequerimiento = ({
                   {detalles.some(
                     (d) =>
                       d.estado ===
-                        EstadoDetalleRequerimiento.Aprobado.toString() ||
+                        Estado_RequerimientoDetalle.Aprobado.toString() ||
                       d.estado ===
-                        EstadoDetalleRequerimiento.EnDespacho.toString(),
+                        Estado_RequerimientoDetalle.EnDespacho.toString(),
                   ) && (
                     <div className="flex justify-center">
                       <Checkbox
@@ -370,7 +372,7 @@ export const DetalleRequerimiento = ({
                     {detalles.some(
                       (d) =>
                         d.estado ===
-                        EstadoDetalleRequerimiento.EsperandoAprobacion.toString(),
+                        Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
                     ) && (
                       <Tooltip label="Seleccionar todos los pendientes">
                         <Checkbox
@@ -397,11 +399,11 @@ export const DetalleRequerimiento = ({
                     </td>
                     <td className="px-4 py-4 text-center">
                       {item.estado ===
-                        EstadoDetalleRequerimiento.Aprobado.toString() ||
+                        Estado_RequerimientoDetalle.Aprobado.toString() ||
                       item.estado ===
-                        EstadoDetalleRequerimiento.AprobadoLogistica.toString() ||
+                        Estado_RequerimientoDetalle.AprobadoLogistica.toString() ||
                       item.estado ===
-                        EstadoDetalleRequerimiento.EnDespacho.toString() ? (
+                        Estado_RequerimientoDetalle.EnDespacho.toString() ? (
                         <Checkbox
                           checked={selectedItemsIds.includes(
                             item.id_requerimiento_almacen_detalle,
@@ -604,7 +606,7 @@ export const DetalleRequerimiento = ({
                         </Tooltip>
 
                         {item.estado ===
-                          EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
+                          Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
                           <>
                             <Tooltip label="Aprobar" position="top" withArrow>
                               <ActionIcon
@@ -641,7 +643,7 @@ export const DetalleRequerimiento = ({
                         )}
 
                         {item.estado ===
-                          EstadoDetalleRequerimiento.EsperandoAprobacion.toString() && (
+                          Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
                           <Tooltip
                             label="Acción masiva"
                             position="top"
@@ -725,7 +727,7 @@ export const DetalleRequerimiento = ({
                 selectedItemId
                   ? handleRechazar
                   : () =>
-                      handleDecisionMasiva(EstadoDetalleRequerimiento.Rechazado)
+                      handleDecisionMasiva(Estado_RequerimientoDetalle.Rechazado)
               }
             >
               Rechazar
@@ -770,7 +772,7 @@ export const DetalleRequerimiento = ({
                 selectedItemId
                   ? handleAprobar
                   : () =>
-                      handleDecisionMasiva(EstadoDetalleRequerimiento.Aprobado)
+                      handleDecisionMasiva(Estado_RequerimientoDetalle.Aprobado)
               }
             >
               Aprobar

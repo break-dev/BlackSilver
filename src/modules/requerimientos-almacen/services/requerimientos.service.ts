@@ -1,9 +1,8 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   RES_RequerimientoAlmacen,
   RES_RequerimientoDetalle,
-  RES_TrazabilidadEvento,
   RES_LaborRelacionada,
   RES_Mina_Local,
   RES_Almacen_Local,
@@ -14,6 +13,7 @@ import type {
   RES_DataByMina,
 } from "./requerimientos.responses";
 import type { DTO_CrearRequerimiento } from "./requerimientos.requests";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 const path = "/requerimientos-almacen";
 
@@ -41,7 +41,7 @@ export const RequerimientosService = {
   },
 
   obtenerTrazabilidad: async (idDetalle: number) => {
-    const res = await api.get<IRespuesta<RES_TrazabilidadEvento[]>>(
+    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
       `${path}/detalle-trazabilidad`,
       {
         params: { id_requerimiento_almacen_detalle: idDetalle },

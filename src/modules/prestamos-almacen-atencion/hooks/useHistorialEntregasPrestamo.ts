@@ -12,7 +12,7 @@ export const useHistorialEntregasPrestamo = () => {
       const res =
         await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
       if (res.success) {
-        setEntregas(res.data.entregas || []);
+        setEntregas([res.data.entregas]);
       }
     } finally {
       setLoading(false);

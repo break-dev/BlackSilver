@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type { RES_DetalleLog } from "../service/solicitudes-atencion.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 export const useTrazabilidadDetalle = (idDetalle: number | null) => {
   const [loading, setLoading] = useState(false);
-  const [eventos, setEventos] = useState<RES_DetalleLog[]>([]);
+  const [eventos, setEventos] = useState<RES_Trazabilidad[]>([]);
 
   const loadData = useCallback(async () => {
     if (!idDetalle) return;

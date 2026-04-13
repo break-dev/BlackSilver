@@ -1,21 +1,19 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type {
-  RES_DetalleSolicitud,
-  DetalleSolicitudExtendido,
-} from "../service/solicitudes-atencion.responses";
+import type { DetalleSolicitudExtendido } from "../service/solicitudes-atencion.responses";
 import type { DTO_EntregasDetalleReabastecimiento } from "../service/solicitudes-atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
   idEmpleadoSolicitante: number;
-  selectedDetalles: RES_DetalleSolicitud[];
+  selectedDetalles: RES_SolicitudDetalle[];
   onSuccess: () => void;
 }
 

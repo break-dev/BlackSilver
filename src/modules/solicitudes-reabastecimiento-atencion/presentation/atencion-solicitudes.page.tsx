@@ -21,15 +21,15 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useAtencionSolicitudes } from "../hooks/useAtencionSolicitudes";
-import type { RES_SolicitudReabastecimiento } from "../service/solicitudes-atencion.responses";
-import { EstadoSolicitud } from "../../../shared/enums/estados";
-import { Premura } from "../../../shared/enums/otros.ts";
+import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud.ts";
 import { useUIStore } from "../../../stores/ui.store";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DetalleSolicitud } from "./detalle-solicitud.tsx";
 import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
+import { Premura } from "../../../shared/enums/_generic/premura.ts";
+import { Estado_Solicitud } from "../../../shared/enums/solicitud-reabastecimiento/solicitud.ts";
 
 export const SolicitudesReabastecimientoAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -58,7 +58,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
     setTitle("Atención de Solicitudes de Reabastecimiento");
   }, [setTitle]);
 
-  const columns: DataTableColumn<RES_SolicitudReabastecimiento>[] = useMemo(
+  const columns: DataTableColumn<RES_Solicitud>[] = useMemo(
     () => [
       {
         accessor: "index",
@@ -85,7 +85,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
           <Group gap="xs" wrap="nowrap">
             <UserCircleIcon className="w-5 h-5 text-emerald-500" />
             <Text size="sm" className="text-zinc-200">
-              {item.solicitante}
+              {item.solicitado_por}
             </Text>
           </Group>
         ),
@@ -154,10 +154,10 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
         width: 130,
         render: (item) => {
           const colors: Record<string, string> = {
-            [EstadoSolicitud.Generada]: "green",
-            [EstadoSolicitud.EnProceso]: "blue",
-            [EstadoSolicitud.Cerrada]: "gray",
-            [EstadoSolicitud.Anulada]: "red",
+            [Estado_Solicitud.Generada]: "green",
+            [Estado_Solicitud.EnDespacho]: "blue",
+            [Estado_Solicitud.Cerrada]: "gray",
+            [Estado_Solicitud.Anulada]: "red",
           };
           return (
             <Badge
@@ -317,7 +317,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
             solicitud={solicitudes.find((s) => s.id_solicitud === selectedId)!}
             onSuccess={() => {
               updateSolicitudLocal(selectedId, {
-                estado: EstadoSolicitud.EnProceso,
+                estado: Estado_Solicitud.EnDespacho,
               });
             }}
           />

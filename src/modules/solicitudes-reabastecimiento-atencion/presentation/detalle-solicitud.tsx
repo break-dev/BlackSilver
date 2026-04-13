@@ -25,23 +25,23 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useDetalleSolicitud } from "../hooks/useDetalleSolicitud";
 import { HeaderCard, InfoItem } from "./components/detail-elements";
-import type {
-  RES_SolicitudReabastecimiento,
-  DetalleSolicitudExtendido,
-} from "../service/solicitudes-atencion.responses";
+import type { DetalleSolicitudExtendido } from "../service/solicitudes-atencion.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { RegistroEntrega } from "./registro-entrega/registro-entrega";
 import { HistorialEntregas } from "./historial-entregas";
 import { TrazabilidadDetalle } from "./trazabilidad-detalle";
 import { RegistrarPrestamoAlmacen } from "./registrar-prestamo-almacen";
 import { HandRaisedIcon } from "@heroicons/react/24/outline";
+import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import {
+  Estado_SolicitudDetalle,
+} from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 
 interface DetalleSolicitudProps {
-  solicitud: RES_SolicitudReabastecimiento;
+  solicitud: RES_Solicitud;
   onSuccess: () => void;
 }
 
@@ -110,7 +110,7 @@ export const DetalleSolicitud = ({
         <HeaderCard
           icon={UserIcon}
           label="Solicitante"
-          value={solicitud.solicitante}
+          value={solicitud.solicitado_por}
           color="indigo"
         />
         <HeaderCard
@@ -256,7 +256,7 @@ export const DetalleSolicitud = ({
             </Button>
 
             {detalles.some(
-              (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+              (d) => d.estado === Estado_SolicitudDetalle.EsperandoAprobacion,
             ) && (
               <>
                 <Button
@@ -302,11 +302,8 @@ export const DetalleSolicitud = ({
                 <th className="px-4 py-4 text-center w-10">
                   {detalles.some(
                     (d) =>
-                      (d.estado === EstadoSolicitudDetalle.Aprobado ||
-                        d.estado === EstadoSolicitudDetalle.EnDespacho ||
-                        d.estado === EstadoSolicitudDetalle.NuevaEntrega ||
-                        d.estado ===
-                          EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+                      (d.estado === Estado_SolicitudDetalle.Aprobado ||
+                        d.estado === Estado_SolicitudDetalle.EnDespacho) &&
                       d.cantidad_solicitada_base - d.cantidad_entregada_base >
                         0,
                   ) && (
@@ -330,7 +327,8 @@ export const DetalleSolicitud = ({
                     <span>Acciones</span>
                     {detalles.some(
                       (d) =>
-                        d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+                        d.estado ===
+                        Estado_SolicitudDetalle.EsperandoAprobacion,
                     ) && (
                       <Tooltip label="Seleccionar todos los pendientes">
                         <Checkbox
@@ -355,11 +353,8 @@ export const DetalleSolicitud = ({
                     {idx + 1}
                   </td>
                   <td className="px-4 py-4 text-center">
-                    {(item.estado === EstadoSolicitudDetalle.Aprobado ||
-                      item.estado === EstadoSolicitudDetalle.EnDespacho ||
-                      item.estado === EstadoSolicitudDetalle.NuevaEntrega ||
-                      item.estado ===
-                        EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+                    {(item.estado === Estado_SolicitudDetalle.Aprobado ||
+                      item.estado === Estado_SolicitudDetalle.EnDespacho) &&
                     item.cantidad_solicitada_base -
                       item.cantidad_entregada_base >
                       0 ? (
@@ -539,7 +534,7 @@ export const DetalleSolicitud = ({
                         </ActionIcon>
                       </Tooltip>
                       {item.estado ===
-                        EstadoSolicitudDetalle.EsperandoAprobacion && (
+                        Estado_SolicitudDetalle.EsperandoAprobacion && (
                         <>
                           <Tooltip label="Aprobar">
                             <ActionIcon
@@ -701,7 +696,6 @@ export const DetalleSolicitud = ({
       >
         <RegistroEntrega
           idSolicitud={solicitud.id_solicitud}
-          idEmpleadoSolicitante={solicitud.id_empleado_solicitante}
           selectedDetalles={detalles.filter((d) =>
             selectedItemsIds.includes(d.id_solicitud_detalle),
           )}

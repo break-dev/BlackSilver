@@ -1,4 +1,4 @@
-import { TipoEntidad } from "../../../shared/enums/tipos";
+import { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 import { z } from "zod";
 
 export const Schema_CrearProveedor = z
@@ -9,7 +9,7 @@ export const Schema_CrearProveedor = z
     razon_social: z.string().min(3, "La razón social o nombre es muy corto"),
     direccion: z.string().optional().nullable(),
     telefono: z.string().optional().nullable(),
-    correo: z.string().email("Correo no válido").optional().or(z.literal("")),
+    correo: z.email("Correo no válido").optional().or(z.literal("")),
   })
   .superRefine((data, ctx) => {
     if (data.tipo_entidad === TipoEntidad.Natural) {

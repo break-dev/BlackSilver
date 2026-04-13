@@ -19,8 +19,8 @@ import {
   PaperAirplaneIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
-import type { RES_Trazabilidad } from "../service/atencion.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import { Estado_RequerimientoDetalleLog } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 
 interface TrazabilidadAlmacenProps {
   productoNombre: string;
@@ -76,7 +76,7 @@ export const ReqDetalleTrazabilidad = ({
 
             return (
               <Timeline.Item
-                key={evento.id_requerimiento_almacen_detalle_log}
+                key={evento.id_log}
                 color={style.color}
                 bullet={
                   <ThemeIcon
@@ -148,21 +148,21 @@ export const ReqDetalleTrazabilidad = ({
 
 const getStatusStyles = (status: string) => {
   switch (status) {
-    case EstadoDetalleRequerimiento.EsperandoAprobacion:
+    case Estado_RequerimientoDetalleLog.EsperandoAprobacion:
       return { color: "blue", variant: "light" as const };
-    case EstadoDetalleRequerimiento.ConsultaLogistica:
+    case Estado_RequerimientoDetalleLog.ConsultaLogistica:
       return { color: "gray", variant: "light" as const };
-    case EstadoDetalleRequerimiento.Aprobado:
+    case Estado_RequerimientoDetalleLog.Aprobado:
       return { color: "violet", variant: "light" as const };
-    case EstadoDetalleRequerimiento.EnDespacho:
+    case Estado_RequerimientoDetalleLog.EnDespacho:
       return { color: "orange", variant: "light" as const };
-    case EstadoDetalleRequerimiento.NuevaEntrega:
+    case Estado_RequerimientoDetalleLog.NuevaEntrega:
       return { color: "green", variant: "light" as const };
-    case EstadoDetalleRequerimiento.Rechazado:
+    case Estado_RequerimientoDetalleLog.Rechazado:
       return { color: "red", variant: "filled" as const };
-    case EstadoDetalleRequerimiento.Completado:
+    case Estado_RequerimientoDetalleLog.Completado:
       return { color: "cyan", variant: "light" as const };
-    case EstadoDetalleRequerimiento.Cerrado:
+    case Estado_RequerimientoDetalleLog.Cerrado:
       return { color: "zinc", variant: "filled" as const };
     default:
       return { color: "gray", variant: "light" as const };
@@ -171,21 +171,21 @@ const getStatusStyles = (status: string) => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case EstadoDetalleRequerimiento.EsperandoAprobacion:
+    case Estado_RequerimientoDetalleLog.EsperandoAprobacion:
       return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.ConsultaLogistica:
+    case Estado_RequerimientoDetalleLog.ConsultaLogistica:
       return <PaperAirplaneIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.Aprobado:
+    case Estado_RequerimientoDetalleLog.Aprobado:
       return <CheckBadgeIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.EnDespacho:
+    case Estado_RequerimientoDetalleLog.EnDespacho:
       return <TruckIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.NuevaEntrega:
+    case Estado_RequerimientoDetalleLog.NuevaEntrega:
       return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.Rechazado:
+    case Estado_RequerimientoDetalleLog.Rechazado:
       return <XCircleIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.Completado:
+    case Estado_RequerimientoDetalleLog.Completado:
       return <CheckCircleIcon className="w-4 h-4 text-white" />;
-    case EstadoDetalleRequerimiento.Cerrado:
+    case Estado_RequerimientoDetalleLog.Cerrado:
       return <CubeIcon className="w-4 h-4 text-white" />;
     default:
       return <div className="w-2 h-2 rounded-full bg-white" />;

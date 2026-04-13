@@ -1,19 +1,23 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
 import { AtencionService } from "../service/atencion.service";
-import type { 
-  RES_Trazabilidad,
-  DetalleRequerimientoExtendido 
-} from "../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../service/atencion.responses";
 import type { AxiosError } from "axios";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import {
+  Estado_RequerimientoDetalle,
+  Estado_RequerimientoDetalleLog,
+} from "../../../shared/enums/requerimiento-almacen/requerimiento";
 
 interface UseGestionAtencionProps {
   idRequerimiento: number;
   onSuccess: (ids?: number[]) => void;
 }
 
-export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAtencionProps) => {
+export const useGestionAtencion = ({
+  idRequerimiento,
+  onSuccess,
+}: UseGestionAtencionProps) => {
   const [loading, setLoading] = useState(true);
   const [detalles, setDetalles] = useState<DetalleRequerimientoExtendido[]>([]);
   const [error, setError] = useState("");
@@ -21,11 +25,20 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   // Modal Control
-  const [openedTrace, { open: openTrace, close: closeTrace }] = useDisclosure(false);
-  const [openedRechazo, { open: openRechazo, close: closeRechazo }] = useDisclosure(false);
-  const [openedAprobar, { open: openAprobar, close: closeAprobar }] = useDisclosure(false);
-  const [openedEntregaBatch, { open: openEntregaBatch, close: closeEntregaBatch }] = useDisclosure(false);
-  const [openedHistorialGlobal, { open: openHistorialGlobal, close: closeHistorialGlobal }] = useDisclosure(false);
+  const [openedTrace, { open: openTrace, close: closeTrace }] =
+    useDisclosure(false);
+  const [openedRechazo, { open: openRechazo, close: closeRechazo }] =
+    useDisclosure(false);
+  const [openedAprobar, { open: openAprobar, close: closeAprobar }] =
+    useDisclosure(false);
+  const [
+    openedEntregaBatch,
+    { open: openEntregaBatch, close: closeEntregaBatch },
+  ] = useDisclosure(false);
+  const [
+    openedHistorialGlobal,
+    { open: openHistorialGlobal, close: closeHistorialGlobal },
+  ] = useDisclosure(false);
   const [isLogisticaModalOpen, setIsLogisticaModalOpen] = useState(false);
 
   // Selected Data
@@ -41,14 +54,14 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const [idsParaAccionMasiva, setIdsParaAccionMasiva] = useState<number[]>([]);
 
   const toggleItemSelection = useCallback((id: number) => {
-    setSelectedItemsIds(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    setSelectedItemsIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   }, []);
 
   const toggleSeleccionMasiva = useCallback((id: number) => {
-    setIdsParaAccionMasiva(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    setIdsParaAccionMasiva((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   }, []);
 
@@ -57,16 +70,27 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   }, []);
 
   const isAllPendingSelected = useMemo(() => {
-    const pendientes = detalles.filter(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString());
-    return pendientes.length > 0 && idsParaAccionMasiva.length === pendientes.length;
+    const pendientes = detalles.filter(
+      (d) =>
+        d.estado === Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
+    );
+    return (
+      pendientes.length > 0 && idsParaAccionMasiva.length === pendientes.length
+    );
   }, [detalles, idsParaAccionMasiva]);
 
   const seleccionarTodoLoPendiente = useCallback(() => {
     if (isAllPendingSelected) {
       setIdsParaAccionMasiva([]);
     } else {
-      const pendientes = detalles.filter(d => d.estado === EstadoDetalleRequerimiento.EsperandoAprobacion.toString());
-      setIdsParaAccionMasiva(pendientes.map(d => d.id_requerimiento_almacen_detalle));
+      const pendientes = detalles.filter(
+        (d) =>
+          d.estado ===
+          Estado_RequerimientoDetalle.EsperandoAprobacion.toString(),
+      );
+      setIdsParaAccionMasiva(
+        pendientes.map((d) => d.id_requerimiento_almacen_detalle),
+      );
     }
   }, [detalles, isAllPendingSelected]);
 
@@ -77,8 +101,8 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   const eligibleForDelivery = useMemo(() => {
     return detalles.filter(
       (d) =>
-        d.estado === EstadoDetalleRequerimiento.Aprobado.toString() ||
-        d.estado === EstadoDetalleRequerimiento.EnDespacho.toString(),
+        d.estado === Estado_RequerimientoDetalle.Aprobado.toString() ||
+        d.estado === Estado_RequerimientoDetalle.EnDespacho.toString(),
     );
   }, [detalles]);
 
@@ -111,12 +135,12 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
   }, [eligibleForDelivery, isAllEligibleSelected]);
 
   const onConsultarLogisticaClick = () => {
-      setIsLogisticaModalOpen(true);
+    setIsLogisticaModalOpen(true);
   };
 
   const handleCloseLogisticaModal = () => {
-      setIsLogisticaModalOpen(false);
-      deselectAllItems();
+    setIsLogisticaModalOpen(false);
+    deselectAllItems();
   };
 
   const onSuccessLogistica = (ids?: number[]) => {
@@ -126,7 +150,7 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
         ids.includes(item.id_requerimiento_almacen_detalle)
           ? {
               ...item,
-              estado: EstadoDetalleRequerimiento.ConsultaLogistica,
+              estado: Estado_RequerimientoDetalle.ConsultaLogistica,
             }
           : item,
       ),
@@ -135,26 +159,36 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     onSuccess(ids);
   };
 
-  const loadData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    try {
-      const resp = await AtencionService.obtenerDetallesRequerimiento(idRequerimiento);
-      if (resp.success) {
-          setDetalles(resp.data.map(d => ({
+  const loadData = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) setLoading(true);
+      try {
+        const resp =
+          await AtencionService.obtenerDetallesRequerimiento(idRequerimiento);
+        if (resp.success) {
+          setDetalles(
+            resp.data.map((d) => ({
               ...d,
-              pendiente_base: d.cantidad_solicitada_base - d.cantidad_entregada_base,
-              equivReq: d.cantidad_solicitada > 0 ? d.cantidad_solicitada_base / d.cantidad_solicitada : 1
-          })));
-      } else {
+              pendiente_base:
+                d.cantidad_solicitada_base - d.cantidad_entregada_base,
+              equivReq:
+                d.cantidad_solicitada > 0
+                  ? d.cantidad_solicitada_base / d.cantidad_solicitada
+                  : 1,
+            })),
+          );
+        } else {
           setError(resp.message || "Error al obtener detalles");
+        }
+      } catch (err) {
+        const axiosError = err as AxiosError<{ message: string }>;
+        setError(axiosError.response?.data?.message || "Error de conexión");
+      } finally {
+        if (!isSilent) setLoading(false);
       }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      setError(axiosError.response?.data?.message || "Error de conexión");
-    } finally {
-      if (!isSilent) setLoading(false);
-    }
-  }, [idRequerimiento]);
+    },
+    [idRequerimiento],
+  );
 
   useEffect(() => {
     loadData();
@@ -187,19 +221,23 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     try {
       const res = await AtencionService.cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: selectedItemId,
-        nuevo_estado: EstadoDetalleRequerimiento.Aprobado,
+        nuevo_estado: Estado_RequerimientoDetalle.Aprobado,
         comentario_decision: comentarioAccion,
       });
       if (res.success) {
         closeAprobar();
         const motivo = comentarioAccion;
         setComentarioAccion("");
-        setDetalles((prev) => 
-            prev.map(item => 
-                item.id_requerimiento_almacen_detalle === selectedItemId 
-                ? { ...item, estado: EstadoDetalleRequerimiento.Aprobado, comentario_decision: motivo } 
-                : item
-            )
+        setDetalles((prev) =>
+          prev.map((item) =>
+            item.id_requerimiento_almacen_detalle === selectedItemId
+              ? {
+                  ...item,
+                  estado: Estado_RequerimientoDetalle.Aprobado,
+                  comentario_decision: motivo,
+                }
+              : item,
+          ),
         );
         onSuccess([selectedItemId]);
       } else {
@@ -220,19 +258,23 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     try {
       const res = await AtencionService.cambiarEstadoDetalle({
         id_requerimiento_almacen_detalle: selectedItemId,
-        nuevo_estado: EstadoDetalleRequerimiento.Rechazado,
+        nuevo_estado: Estado_RequerimientoDetalle.Rechazado,
         comentario_decision: comentarioAccion,
       });
       if (res.success) {
         closeRechazo();
         const motivo = comentarioAccion;
         setComentarioAccion("");
-        setDetalles((prev) => 
-            prev.map(item => 
-                item.id_requerimiento_almacen_detalle === selectedItemId 
-                ? { ...item, estado: EstadoDetalleRequerimiento.Rechazado, comentario_decision: motivo } 
-                : item
-            )
+        setDetalles((prev) =>
+          prev.map((item) =>
+            item.id_requerimiento_almacen_detalle === selectedItemId
+              ? {
+                  ...item,
+                  estado: Estado_RequerimientoDetalle.Rechazado,
+                  comentario_decision: motivo,
+                }
+              : item,
+          ),
         );
         onSuccess([selectedItemId]);
       } else {
@@ -246,91 +288,119 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     }
   }, [selectedItemId, comentarioAccion, closeRechazo, onSuccess]);
 
-  const handleDecisionMasiva = useCallback(async (estado: EstadoDetalleRequerimiento) => {
-    if (idsParaAccionMasiva.length === 0) return;
-    setIsProcessing(-1); // -1 para batch
-    setError("");
-    try {
-      const res = await AtencionService.cambiarEstadoDetalle({
-        ids_detalles: idsParaAccionMasiva,
-        nuevo_estado: estado,
-        comentario_decision: comentarioAccion,
-      });
-      if (res.success) {
-        if (estado === EstadoDetalleRequerimiento.Aprobado) closeAprobar();
-        else closeRechazo();
+  const handleDecisionMasiva = useCallback(
+    async (estado: Estado_RequerimientoDetalle) => {
+      if (idsParaAccionMasiva.length === 0) return;
+      setIsProcessing(-1); // -1 para batch
+      setError("");
+      try {
+        const res = await AtencionService.cambiarEstadoDetalle({
+          ids_detalles: idsParaAccionMasiva,
+          nuevo_estado: estado,
+          comentario_decision: comentarioAccion,
+        });
+        if (res.success) {
+          if (estado === Estado_RequerimientoDetalle.Aprobado) closeAprobar();
+          else closeRechazo();
 
-        const ids = [...idsParaAccionMasiva];
-        const motivo = comentarioAccion;
-        setComentarioAccion("");
-        deseleccionarMasivos();
-        setDetalles((prev) => 
-            prev.map(item => 
-              ids.includes(item.id_requerimiento_almacen_detalle) 
-                ? { ...item, estado, comentario_decision: motivo } 
-                : item
-            )
-        );
-        onSuccess(ids);
-      } else {
-        setError(res.message || "Error al procesar la acción masiva");
-      }
-    } catch (err) {
-      const axiosError = err as AxiosError<{ message: string }>;
-      setError(axiosError.response?.data?.message || "Error de conexión");
-    } finally {
-      setIsProcessing(null);
-    }
-  }, [idsParaAccionMasiva, comentarioAccion, closeAprobar, closeRechazo, onSuccess, deseleccionarMasivos]);
-  
-  const patchDetallesLocales = useCallback((entregados: Record<string | number, number>) => {
-    setDetalles((prevDetails) => {
-      const newDetails = prevDetails.map((item) => {
-        const idKey = item.id_requerimiento_almacen_detalle;
-        // Buscamos el monto entregado asegurando que el ID coincida (como número o string)
-        const amountDelivered = Number(entregados[idKey] ?? entregados[idKey.toString()] ?? 0);
-        
-        if (amountDelivered > 0) {
-          const currentDeliveredBase = Number(item.cantidad_entregada_base || 0);
-          const reqRequestedBase = Number(item.cantidad_solicitada_base || 0);
-          const equiv = Number(item.equivReq || 1);
-          
-          const nuevaCantidadBase = currentDeliveredBase + amountDelivered;
-          const nuevaCantidad = nuevaCantidadBase / equiv;
-          const nuevoProgreso = Math.min(100, Math.round((nuevaCantidadBase / reqRequestedBase) * 100));
-          
-          let nuevoEstado = item.estado;
-          if (nuevoProgreso >= 100) {
-            nuevoEstado = EstadoDetalleRequerimiento.Completado;
-          } else if (nuevaCantidadBase > 0) {
-            nuevoEstado = EstadoDetalleRequerimiento.EnDespacho;
-          }
-
-          return {
-            ...item,
-            cantidad_entregada_base: nuevaCantidadBase,
-            cantidad_entregada: nuevaCantidad,
-            pendiente_base: Math.max(0, reqRequestedBase - nuevaCantidadBase),
-            porcentaje_progreso: nuevoProgreso,
-            estado: nuevoEstado
-          };
+          const ids = [...idsParaAccionMasiva];
+          const motivo = comentarioAccion;
+          setComentarioAccion("");
+          deseleccionarMasivos();
+          setDetalles((prev) =>
+            prev.map((item) =>
+              ids.includes(item.id_requerimiento_almacen_detalle)
+                ? { ...item, estado, comentario_decision: motivo }
+                : item,
+            ),
+          );
+          onSuccess(ids);
+        } else {
+          setError(res.message || "Error al procesar la acción masiva");
         }
-        return item;
+      } catch (err) {
+        const axiosError = err as AxiosError<{ message: string }>;
+        setError(axiosError.response?.data?.message || "Error de conexión");
+      } finally {
+        setIsProcessing(null);
+      }
+    },
+    [
+      idsParaAccionMasiva,
+      comentarioAccion,
+      closeAprobar,
+      closeRechazo,
+      onSuccess,
+      deseleccionarMasivos,
+    ],
+  );
+
+  const patchDetallesLocales = useCallback(
+    (entregados: Record<string | number, number>) => {
+      setDetalles((prevDetails) => {
+        const newDetails = prevDetails.map((item) => {
+          const idKey = item.id_requerimiento_almacen_detalle;
+          // Buscamos el monto entregado asegurando que el ID coincida (como número o string)
+          const amountDelivered = Number(
+            entregados[idKey] ?? entregados[idKey.toString()] ?? 0,
+          );
+
+          if (amountDelivered > 0) {
+            const currentDeliveredBase = Number(
+              item.cantidad_entregada_base || 0,
+            );
+            const reqRequestedBase = Number(item.cantidad_solicitada_base || 0);
+            const equiv = Number(item.equivReq || 1);
+
+            const nuevaCantidadBase = currentDeliveredBase + amountDelivered;
+            const nuevaCantidad = nuevaCantidadBase / equiv;
+            const nuevoProgreso = Math.min(
+              100,
+              Math.round((nuevaCantidadBase / reqRequestedBase) * 100),
+            );
+
+            let nuevoEstado = item.estado;
+            if (nuevoProgreso >= 100) {
+              nuevoEstado = Estado_RequerimientoDetalle.Completado;
+            } else if (nuevaCantidadBase > 0) {
+              nuevoEstado = Estado_RequerimientoDetalle.EnDespacho;
+            }
+
+            return {
+              ...item,
+              cantidad_entregada_base: nuevaCantidadBase,
+              cantidad_entregada: nuevaCantidad,
+              pendiente_base: Math.max(0, reqRequestedBase - nuevaCantidadBase),
+              porcentaje_progreso: nuevoProgreso,
+              estado: nuevoEstado,
+            };
+          }
+          return item;
+        });
+        return newDetails;
       });
-      return newDetails;
-    });
-    
-    // Notificar al padre después de planificar el despacho local
-    onSuccess(Object.keys(entregados).map(Number));
-  }, [onSuccess]);
+
+      // Notificar al padre después de planificar el despacho local
+      onSuccess(Object.keys(entregados).map(Number));
+    },
+    [onSuccess],
+  );
 
   const getStatusColor = (status: string) => {
-    if (status === EstadoDetalleRequerimiento.EsperandoAprobacion.toString()) return "blue";
-    if (status === EstadoDetalleRequerimiento.Aprobado.toString()) return "violet";
-    if (status === EstadoDetalleRequerimiento.EnDespacho.toString()) return "orange";
-    if (status === EstadoDetalleRequerimiento.NuevaEntrega.toString()) return "green";
-    if (status === EstadoDetalleRequerimiento.Completado.toString()) return "teal";
-    if (status === EstadoDetalleRequerimiento.Rechazado.toString()) return "red";
+    if (
+      status === Estado_RequerimientoDetalleLog.EsperandoAprobacion.toString()
+    )
+      return "blue";
+    if (status === Estado_RequerimientoDetalleLog.Aprobado.toString())
+      return "violet";
+    if (status === Estado_RequerimientoDetalleLog.EnDespacho.toString())
+      return "orange";
+    if (status === Estado_RequerimientoDetalleLog.NuevaEntrega.toString())
+      return "green";
+    if (status === Estado_RequerimientoDetalleLog.Completado.toString())
+      return "teal";
+    if (status === Estado_RequerimientoDetalleLog.Rechazado.toString())
+      return "red";
     return "zinc";
   };
 
@@ -339,10 +409,11 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
 
     const itemsAtendibles = detalles.filter(
       (item) =>
-        item.estado !== EstadoDetalleRequerimiento.Rechazado.toString() &&
-        item.estado !== EstadoDetalleRequerimiento.RechazadoLogistica.toString() &&
+        item.estado !== Estado_RequerimientoDetalleLog.Rechazado.toString() &&
         item.estado !==
-          EstadoDetalleRequerimiento.EsperandoAprobacion.toString() &&
+          Estado_RequerimientoDetalleLog.RechazadoLogistica.toString() &&
+        item.estado !==
+          Estado_RequerimientoDetalleLog.EsperandoAprobacion.toString() &&
         (item.estado as string) !== "Anulado",
     );
 
@@ -361,17 +432,37 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     error,
     eventos,
     loadingTrazabilidad,
-    openedTrace, openTrace, closeTrace,
-    openedRechazo, openRechazo, closeRechazo,
-    openedAprobar, openAprobar, closeAprobar,
-    openedEntregaBatch, openEntregaBatch, closeEntregaBatch,
-    openedHistorialGlobal, openHistorialGlobal, closeHistorialGlobal,
-    selectedItemId, setSelectedItemId,
-    selectedItemName, setSelectedItemName,
-    selectedItemsIds, toggleItemSelection, deselectAllItems,
-    isAllEligibleSelected, hasPartialEligibleSelection, toggleSelectAllEligible,
-    idsParaAccionMasiva, toggleSeleccionMasiva, isAllPendingSelected, seleccionarTodoLoPendiente,
-    comentarioAccion, setComentarioAccion,
+    openedTrace,
+    openTrace,
+    closeTrace,
+    openedRechazo,
+    openRechazo,
+    closeRechazo,
+    openedAprobar,
+    openAprobar,
+    closeAprobar,
+    openedEntregaBatch,
+    openEntregaBatch,
+    closeEntregaBatch,
+    openedHistorialGlobal,
+    openHistorialGlobal,
+    closeHistorialGlobal,
+    selectedItemId,
+    setSelectedItemId,
+    selectedItemName,
+    setSelectedItemName,
+    selectedItemsIds,
+    toggleItemSelection,
+    deselectAllItems,
+    isAllEligibleSelected,
+    hasPartialEligibleSelection,
+    toggleSelectAllEligible,
+    idsParaAccionMasiva,
+    toggleSeleccionMasiva,
+    isAllPendingSelected,
+    seleccionarTodoLoPendiente,
+    comentarioAccion,
+    setComentarioAccion,
     isProcessing,
     progresoGeneral,
     handleAprobar,
@@ -380,11 +471,11 @@ export const useGestionAtencion = ({ idRequerimiento, onSuccess }: UseGestionAte
     getStatusColor,
     loadData,
     logistica: {
-        isOpen: isLogisticaModalOpen,
-        open: onConsultarLogisticaClick,
-        close: handleCloseLogisticaModal,
-        onSuccess: onSuccessLogistica
+      isOpen: isLogisticaModalOpen,
+      open: onConsultarLogisticaClick,
+      close: handleCloseLogisticaModal,
+      onSuccess: onSuccessLogistica,
     },
-    patchDetallesLocales
+    patchDetallesLocales,
   };
 };

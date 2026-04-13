@@ -10,12 +10,15 @@ import {
 } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
-import type { RES_Trazabilidad } from "../service/prestamos.responses";
-import { EstadoDetallePrestamo } from "../../../shared/enums/prestamos";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 import {
   getEstadoDetalleColor,
   getEstadoDetalleIcon,
 } from "./utils/prestamos-render";
+import type {
+  Estado_PrestamoDetalle,
+  Estado_PrestamoDetalleLog,
+} from "../../../shared/enums/prestamo-almacen/prestamo";
 
 interface TrazabilidadPrestamoProps {
   productoNombre: string;
@@ -68,7 +71,7 @@ export const TrazabilidadDetalle = ({
         >
           {logs.map((log) => {
             const color = getEstadoDetalleColor(
-              log.estado as EstadoDetallePrestamo,
+              log.estado as Estado_PrestamoDetalle,
             );
 
             return (
@@ -83,7 +86,9 @@ export const TrazabilidadDetalle = ({
                     variant="filled"
                     className="shadow-lg transform transition-transform hover:scale-110"
                   >
-                    {getEstadoDetalleIcon(log.estado as EstadoDetallePrestamo)}
+                    {getEstadoDetalleIcon(
+                      log.estado as Estado_PrestamoDetalleLog,
+                    )}
                   </ThemeIcon>
                 }
                 title={

@@ -1,15 +1,15 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
-  RES_AlmacenSecundario,
-  RES_PrestamoResumen,
+  RES_Prestamo,
   RES_PrestamoDetalle,
-  RES_Trazabilidad,
-  RES_HistorialEntregaPrestamo,
-  RES_HistorialReposicion,
-} from "./prestamos.responses";
+} from "../../../service/responses/prestamos/prestamo";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
+import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
 
 const path = "/prestamos-almacen";
 
@@ -18,7 +18,7 @@ export const PrestamosService = {
    * Obtiene la lista de almacenes secundarios
    */
   getAlmacenesSecundarios: async () => {
-    const response = await api.get<IRespuesta<RES_AlmacenSecundario[]>>(
+    const response = await api.get<IRespuesta<RES_Almacen[]>>(
       `${path}/almacenes-secundarios`,
     );
     return response.data.data;
@@ -32,7 +32,7 @@ export const PrestamosService = {
     mes: number,
     yearcito: number,
   ) => {
-    const response = await api.get<IRespuesta<RES_PrestamoResumen[]>>(
+    const response = await api.get<IRespuesta<RES_Prestamo[]>>(
       `${path}/resumen`,
       {
         params: { id_almacen: idAlmacen, mes, yearcito },
@@ -71,7 +71,7 @@ export const PrestamosService = {
    * Obtiene el historial de entregas de un préstamo
    */
   getHistorialEntregas: async (idPrestamo: number) => {
-    const response = await api.get<IRespuesta<RES_HistorialEntregaPrestamo[]>>(
+    const response = await api.get<IRespuesta<RES_PrestamoEntrega[]>>(
       `${path}/historial-entregas`,
       {
         params: { id_prestamo: idPrestamo },
@@ -98,7 +98,7 @@ export const PrestamosService = {
   },
 
   getHistorialReposiciones: async (idPrestamo: number) => {
-    const { data } = await api.get<IRespuesta<RES_HistorialReposicion[]>>(
+    const { data } = await api.get<IRespuesta<RES_PrestamoReposicion[]>>(
       `/prestamos-almacen/historial-reposiciones`,
       { params: { id_prestamo_almacen: idPrestamo } },
     );

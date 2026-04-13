@@ -30,15 +30,15 @@ import { HistorialEntregasPrestamo } from "./components/HistorialEntregasPrestam
 import { RegistroReposicion } from "./components/registro-reposicion/registro-reposicion";
 import { HistorialReposiciones } from "./components/historial-reposiciones/historial-reposiciones";
 import { MESES } from "../../../shared/variables/meses";
-import type {
-  RES_AlmacenSecundario,
-  RES_PrestamoResumen,
-  RES_PrestamoDetalle,
-} from "../service/prestamos.responses";
-import { EstadoPrestamo } from "../../../shared/enums/prestamos";
+import { Estado_Prestamo } from "../../../shared/enums/prestamo-almacen/prestamo";
 import { getEstadoPrestamoColor } from "./utils/prestamos-render";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import dayjs from "dayjs";
+import type {
+  RES_Prestamo,
+  RES_PrestamoDetalle,
+} from "../../../service/responses/prestamos/prestamo";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;
@@ -121,7 +121,7 @@ export const PrestamosAlmacenPage = () => {
     );
   }, [prestamos, search]);
 
-  const columns: DataTableColumn<RES_PrestamoResumen>[] = useMemo(
+  const columns: DataTableColumn<RES_Prestamo>[] = useMemo(
     () => [
       {
         accessor: "index",
@@ -203,7 +203,7 @@ export const PrestamosAlmacenPage = () => {
         width: 150,
         render: (item) => (
           <Badge
-            color={getEstadoPrestamoColor(item.estado as EstadoPrestamo)}
+            color={getEstadoPrestamoColor(item.estado as Estado_Prestamo)}
             variant="light"
             radius="sm"
             size="sm"
@@ -253,7 +253,7 @@ export const PrestamosAlmacenPage = () => {
             <Select
               label="Almacén Prestamista"
               placeholder="Seleccionar almacén"
-              data={almacenes.map((a: RES_AlmacenSecundario) => ({
+              data={almacenes.map((a: RES_Almacen) => ({
                 value: String(a.id_almacen),
                 label: a.nombre,
               }))}

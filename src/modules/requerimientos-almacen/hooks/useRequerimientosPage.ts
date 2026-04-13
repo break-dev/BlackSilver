@@ -3,9 +3,9 @@ import { RequerimientosService } from "../services/requerimientos.service";
 import type {
   RES_RequerimientoAlmacen,
   RES_RequerimientoDetalle,
-  RES_TrazabilidadEvento,
 } from "../services/requerimientos.responses";
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
+import { Estado_RequerimientoDetalle } from "../../../shared/enums/requerimiento-almacen/requerimiento";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 export const useRequerimientosPage = () => {
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export const useRequerimientosPage = () => {
 
   const [selectedDetalle, setSelectedDetalle] =
     useState<RES_RequerimientoDetalle | null>(null);
-  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadEvento[]>(
+  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>(
     [],
   );
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
@@ -105,9 +105,9 @@ export const useRequerimientosPage = () => {
 
     const itemsAtendibles = detalles.filter(
       (item) =>
-        item.estado !== EstadoDetalleRequerimiento.Rechazado &&
-        item.estado !== EstadoDetalleRequerimiento.EsperandoAprobacion &&
-        (item.estado as string) !== "Anulado"
+        item.estado !== Estado_RequerimientoDetalle.Rechazado &&
+        item.estado !== Estado_RequerimientoDetalle.EsperandoAprobacion &&
+        (item.estado as string) !== "Anulado",
     );
 
     if (itemsAtendibles.length === 0) return 0;
@@ -117,7 +117,7 @@ export const useRequerimientosPage = () => {
       const atendidoBase = Number(item.cantidad_entregada_base || 0);
       const progresoItem = Math.min(
         100,
-        Math.round((atendidoBase / solicitadoBase) * 100)
+        Math.round((atendidoBase / solicitadoBase) * 100),
       );
       return acc + progresoItem;
     }, 0);

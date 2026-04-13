@@ -23,8 +23,8 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useRequerimientosPage } from "../hooks/useRequerimientosPage";
-import { EstadoRequerimiento } from "../../../shared/enums/estados";
-import { Premura } from "../../../shared/enums/otros";
+import { Estado_Requerimiento } from "../../../shared/enums/requerimiento-almacen/requerimiento";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -158,11 +158,11 @@ export const RequerimientosAlmacenPage = () => {
         title: "Estado",
         width: 130,
         render: (item) => {
-          const colorMap: Record<EstadoRequerimiento, string> = {
-            [EstadoRequerimiento.Generado]: "green",
-            [EstadoRequerimiento.Cerrado]: "gray",
-            [EstadoRequerimiento.Anulado]: "red",
-            [EstadoRequerimiento.EnProceso]: "blue",
+          const colorMap: Record<Estado_Requerimiento, string> = {
+            [Estado_Requerimiento.Generado]: "green",
+            [Estado_Requerimiento.Cerrado]: "gray",
+            [Estado_Requerimiento.Anulado]: "red",
+            [Estado_Requerimiento.EnDespacho]: "blue",
           };
           return (
             <Badge

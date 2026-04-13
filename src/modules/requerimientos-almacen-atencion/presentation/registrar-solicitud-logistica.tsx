@@ -17,7 +17,7 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarSolicitudLogistica } from "../hooks/useRegistrarSolicitudLogistica";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import type {
   DetalleRequerimientoExtendido,

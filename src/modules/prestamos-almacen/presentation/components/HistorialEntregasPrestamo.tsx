@@ -25,14 +25,17 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../../presentation/utils/archivo-card";
+import { ArchivoCard } from "../../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../../shared/interfaces/archivo";
 import type {
-  RES_HistorialEntregaPrestamo,
-  RES_DetalleHistorialEntregaPrestamo,
-  RES_HistorialRecepcionPrestamo,
-  RES_DetalleRecepcionPrestamo,
-} from "../../service/prestamos.responses";
-import type { IArchivo } from "../../../../service/responses/menu-navegacion";
+  RES_PrestamoEntrega,
+  RES_PrestamoEntregaDetalle,
+} from "../../../../service/responses/prestamos/prestamo-entrega";
+import { Estado_PrestamoEntrega } from "../../../../shared/enums/prestamo-almacen/prestamo-entrega";
+import type {
+  RES_PrestamoEntregaRecepcion,
+  RES_PrestamoEntregaRecepcionDetalle,
+} from "../../../../service/responses/prestamos/prestamo-entrega-recepcion";
 
 interface HistorialProps {
   idPrestamo: number;
@@ -97,7 +100,7 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
       gap="xl"
       className="font-sans pt-2 pb-6 max-h-[70vh] overflow-y-auto px-2"
     >
-      {historial.map((h: RES_HistorialEntregaPrestamo, index: number) => {
+      {historial.map((h: RES_PrestamoEntrega, index: number) => {
         const expanded = isExpanded(h.id_prestamo_entrega, index);
 
         return (
@@ -134,7 +137,11 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
                       </Text>
                       <Badge
                         variant="light"
-                        color={h.estado === "Procesado" ? "teal" : "violet"}
+                        color={
+                          h.estado == Estado_PrestamoEntrega.EnDespacho
+                            ? "teal"
+                            : "violet"
+                        }
                         radius="sm"
                         className="font-bold"
                         size="xs"
@@ -271,7 +278,7 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
                 </Group>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-6">
-                  {h.detalles?.map((d: RES_DetalleHistorialEntregaPrestamo) => (
+                  {h.detalles?.map((d: RES_PrestamoEntregaDetalle) => (
                     <div
                       key={d.id_entrega_detalle}
                       className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
@@ -371,7 +378,7 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
                         className="animate-in fade-in slide-in-from-top-2 duration-300"
                       >
                         {h.recepciones.map(
-                          (r: RES_HistorialRecepcionPrestamo, idx: number) => (
+                          (r: RES_PrestamoEntregaRecepcion, idx: number) => (
                             <Paper
                               key={r.id_recepcion}
                               radius="xl"
@@ -473,7 +480,7 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
                                 }
                               >
                                 {r.detalles.map(
-                                  (rd: RES_DetalleRecepcionPrestamo) => (
+                                  (rd: RES_PrestamoEntregaRecepcionDetalle) => (
                                     <div
                                       key={rd.id_recepcion_detalle}
                                       className="inline-flex items-center gap-1.5 bg-zinc-950/60 border border-zinc-800/50 px-2.5 py-1 rounded-full transition-colors hover:border-emerald-500/20"
@@ -492,10 +499,10 @@ export const HistorialEntregasPrestamo = ({ idPrestamo }: HistorialProps) => {
                                       >
                                         +
                                         {formatNumber(
-                                          rd.cantidad_recepcionada_sol,
+                                          rd.cantidad_recepcionada_pr,
                                         )}
                                         <span className="font-sans text-[10px] ml-0.5 text-emerald-500/70">
-                                          {rd.unidad_medida_sol_abv}
+                                          {rd.unidad_medida_pr_abv}
                                         </span>
                                       </Text>
                                     </div>

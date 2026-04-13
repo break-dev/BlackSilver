@@ -21,7 +21,7 @@ import {
   PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo-card";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 

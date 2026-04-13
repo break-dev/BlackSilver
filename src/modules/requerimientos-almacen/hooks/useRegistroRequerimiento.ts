@@ -15,7 +15,7 @@ import type {
   RES_Unidad_Local,
   RES_RequerimientoAlmacen,
 } from "../services/requerimientos.responses";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
 
 interface Props {
   onSuccess: (item: RES_RequerimientoAlmacen) => void;

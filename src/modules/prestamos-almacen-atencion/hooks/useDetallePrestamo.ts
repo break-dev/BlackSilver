@@ -98,7 +98,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
         const res =
           await PrestamosAtencionService.obtenerDetallePrestamo(idPrestamo);
         if (res.success) {
-          setDetalles(res.data.detalles);
+          setDetalles([res.data]);
         }
       } catch {
         notifyError("Error al cargar el detalle del préstamo");

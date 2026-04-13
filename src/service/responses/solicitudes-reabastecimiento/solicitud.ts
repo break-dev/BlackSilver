@@ -45,7 +45,10 @@ export interface RES_SolicitudDetalle {
   cantidad_solicitada: number;
   cantidad_entregada: number;
   //
+  cantidad_prestada_total_base: number;
+  //
   porcentaje_progreso: number;
+  stock_disponible_base: number;
   //
   comentario: string | null;
   comentario_decision: string | null;

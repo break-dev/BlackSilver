@@ -1,7 +1,7 @@
 import { Paper, Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { RES_PrestamoDetalle } from "../../../service/prestamos.responses";
+import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import { LotesTableRepo } from "./LotesTableRepo";
 

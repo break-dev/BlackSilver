@@ -23,12 +23,12 @@ import {
 import dayjs from "dayjs";
 import { useHistorialReposicion } from "../../../hooks/useHistorialReposicion";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../../../presentation/utils/archivo-card";
+import { ArchivoCard } from "../../../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../../../shared/interfaces/archivo";
 import type {
-  RES_HistorialReposicion,
-  RES_DetalleReposicion,
-} from "../../../service/prestamos.responses";
-import type { IArchivo } from "../../../../../service/responses/menu-navegacion";
+  RES_PrestamoReposicion,
+  RES_PrestamoReposicionDetalle,
+} from "../../../../../service/responses/prestamos/prestamo-reposicion";
 
 interface HistorialReposicionesProps {
   idPrestamo: number;
@@ -83,7 +83,7 @@ export const HistorialReposiciones = ({
       gap="xl"
       className="font-sans pt-2 pb-6 max-h-[70vh] overflow-y-auto px-2"
     >
-      {reposiciones.map((repo: RES_HistorialReposicion, index: number) => {
+      {reposiciones.map((repo: RES_PrestamoReposicion, index: number) => {
         const expanded = isExpanded(repo.id_reposicion, index);
 
         return (
@@ -259,9 +259,9 @@ export const HistorialReposiciones = ({
                 </Group>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-2">
-                  {repo.detalles?.map((d: RES_DetalleReposicion) => (
+                  {repo.detalles?.map((d: RES_PrestamoReposicionDetalle) => (
                     <div
-                      key={d.id}
+                      key={d.id_reposicion_detalle}
                       className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-teal-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
                     >
                       {/* Highlight lateral en hover item */}

@@ -5,7 +5,7 @@ import {
   Schema_CrearProveedor,
   type CrearProveedorRequest,
 } from "../service/proveedores.requests";
-import { TipoEntidad } from "../../../shared/enums/tipos";
+import { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 import type { ProveedorResponse } from "../service/proveedores.responses";
 
 export const useRegistroProveedor = (

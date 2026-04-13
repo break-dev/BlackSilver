@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type { RES_Trazabilidad } from "../service/prestamos.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 import { useNotify } from "../../../hooks/useNotify";
 
 export const useTrazabilidadPrestamo = () => {
@@ -17,8 +17,8 @@ export const useTrazabilidadPrestamo = () => {
       setLogs(
         data.sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        ),
       );
     } catch {
       notifyError("No se pudo obtener la trazabilidad");

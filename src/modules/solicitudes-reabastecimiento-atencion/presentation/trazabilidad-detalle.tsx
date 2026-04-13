@@ -21,7 +21,10 @@ import {
   CubeIcon,
   BuildingOffice2Icon,
 } from "@heroicons/react/24/solid";
-import { EstadoSolicitudDetalle, EstadoSolicitud } from "../../../shared/enums/estados";
+import {
+  Estado_Solicitud,
+  Estado_SolicitudDetalleLog,
+} from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 
 interface TrazabilidadProps {
   idDetalle: number;
@@ -77,7 +80,7 @@ export const TrazabilidadDetalle = ({
 
             return (
               <Timeline.Item
-                key={evento.id_solicitud_detalle_log || index}
+                key={evento.id_log || index}
                 color={style.color}
                 bullet={
                   <ThemeIcon
@@ -149,24 +152,23 @@ export const TrazabilidadDetalle = ({
 
 const getStatusStyles = (status: string) => {
   switch (status) {
-    case EstadoSolicitudDetalle.EsperandoAprobacion:
+    case Estado_SolicitudDetalleLog.EsperandoAprobacion:
       return { color: "blue", variant: "light" as const };
-    case EstadoSolicitud.Generada:
-    case EstadoSolicitudDetalle.NuevaEntrega:
+    case Estado_SolicitudDetalleLog.NuevaEntrega:
       return { color: "green", variant: "light" as const };
-    case EstadoSolicitudDetalle.Aprobado:
+    case Estado_SolicitudDetalleLog.Aprobado:
       return { color: "violet", variant: "light" as const };
-    case EstadoSolicitudDetalle.EnDespacho:
+    case Estado_SolicitudDetalleLog.EnDespacho:
       return { color: "orange", variant: "light" as const };
-    case EstadoSolicitudDetalle.Completado:
+    case Estado_SolicitudDetalleLog.Completado:
       return { color: "emerald", variant: "light" as const };
-    case EstadoSolicitudDetalle.Rechazado:
+    case Estado_SolicitudDetalleLog.Rechazado:
       return { color: "red", variant: "filled" as const };
-    case EstadoSolicitud.Cerrada:
-    case EstadoSolicitudDetalle.Cerrado:
-    case EstadoSolicitud.Anulada:
+    case Estado_Solicitud.Cerrada:
+    case Estado_SolicitudDetalleLog.Cerrado:
+    case Estado_Solicitud.Anulada:
       return { color: "zinc", variant: "filled" as const };
-    case EstadoSolicitudDetalle.SolicitandoPrestamo:
+    case Estado_SolicitudDetalleLog.SolicitandoPrestamo:
       return { color: "pink", variant: "light" as const };
     default:
       return { color: "gray", variant: "light" as const };
@@ -175,24 +177,24 @@ const getStatusStyles = (status: string) => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case EstadoSolicitudDetalle.EsperandoAprobacion:
+    case Estado_SolicitudDetalleLog.EsperandoAprobacion:
       return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitudDetalle.Rechazado:
+    case Estado_SolicitudDetalleLog.Rechazado:
       return <XCircleIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitudDetalle.Aprobado:
+    case Estado_SolicitudDetalleLog.Aprobado:
       return <CheckBadgeIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitudDetalle.EnDespacho:
+    case Estado_SolicitudDetalleLog.EnDespacho:
       return <TruckIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitud.Generada:
-    case EstadoSolicitudDetalle.NuevaEntrega:
+    case Estado_Solicitud.Generada:
+    case Estado_SolicitudDetalleLog.NuevaEntrega:
       return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitudDetalle.Completado:
+    case Estado_SolicitudDetalleLog.Completado:
       return <CheckCircleIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitud.Cerrada:
-    case EstadoSolicitudDetalle.Cerrado:
-    case EstadoSolicitud.Anulada:
+    case Estado_Solicitud.Cerrada:
+    case Estado_SolicitudDetalleLog.Cerrado:
+    case Estado_Solicitud.Anulada:
       return <CubeIcon className="w-4 h-4 text-white" />;
-    case EstadoSolicitudDetalle.SolicitandoPrestamo:
+    case Estado_SolicitudDetalleLog.SolicitandoPrestamo:
       return <BuildingOffice2Icon className="w-4 h-4 text-white" />;
     default:
       return <ClockIcon className="w-4 h-4 text-white" />;

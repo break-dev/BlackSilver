@@ -29,18 +29,18 @@ import {
   type AlmacenAliado,
 } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import type {
-  RES_DetalleSolicitud,
-  RES_SolicitudReabastecimiento,
-  RES_Prestamo,
-} from "../service/solicitudes-atencion.responses";
-import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
+import { Estado_SolicitudDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { useEffect, useMemo } from "react";
+import type {
+  RES_Solicitud,
+  RES_SolicitudDetalle,
+} from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 
 interface RegistrarPrestamoAlmacenProps {
-  solicitud: RES_SolicitudReabastecimiento;
-  detalles: RES_DetalleSolicitud[];
+  solicitud: RES_Solicitud;
+  detalles: RES_SolicitudDetalle[];
   onSuccess: (nuevoPrestamo: RES_Prestamo) => void;
   onCancel: () => void;
 }
@@ -179,9 +179,9 @@ export const RegistrarPrestamoAlmacen = ({
                     cantidadPrestadaSol;
 
                   return (
-                    item.estado !== EstadoSolicitudDetalle.Rechazado &&
-                    item.estado !== EstadoSolicitudDetalle.Completado &&
-                    item.estado !== EstadoSolicitudDetalle.Cerrado &&
+                    item.estado !== Estado_SolicitudDetalle.Rechazado &&
+                    item.estado !== Estado_SolicitudDetalle.Completado &&
+                    item.estado !== Estado_SolicitudDetalle.Cerrado &&
                     pendiente > 0
                   );
                 })

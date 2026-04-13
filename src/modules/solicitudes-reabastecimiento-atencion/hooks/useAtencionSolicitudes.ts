@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type { RES_SolicitudReabastecimiento } from "../service/solicitudes-atencion.responses";
+import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import dayjs from "dayjs";
 
@@ -8,9 +8,7 @@ export const useAtencionSolicitudes = () => {
   const [loading, setLoading] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [solicitudes, setSolicitudes] = useState<
-    RES_SolicitudReabastecimiento[]
-  >([]);
+  const [solicitudes, setSolicitudes] = useState<RES_Solicitud[]>([]);
 
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
   const [mes, setMes] = useState<string>(String(new Date().getMonth() + 1));
@@ -72,13 +70,13 @@ export const useAtencionSolicitudes = () => {
     return solicitudes.filter(
       (s) =>
         s.correlativo.toLowerCase().includes(lowerBusqueda) ||
-        s.solicitante.toLowerCase().includes(lowerBusqueda) ||
+        s.solicitado_por.toLowerCase().includes(lowerBusqueda) ||
         (s.observacion && s.observacion.toLowerCase().includes(lowerBusqueda)),
     );
   }, [solicitudes, busqueda]);
 
   const updateSolicitudLocal = useCallback(
-    (id: number, data: Partial<RES_SolicitudReabastecimiento>) => {
+    (id: number, data: Partial<RES_Solicitud>) => {
       setSolicitudes((prev) =>
         prev.map((s) => (s.id_solicitud === id ? { ...s, ...data } : s)),
       );

@@ -21,16 +21,16 @@ import {
   TruckIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import type {
-  RES_PrestamoResumen,
-  RES_PrestamoDetalle,
-} from "../service/prestamos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { EstadoDetallePrestamo } from "../../../shared/enums/prestamos";
+import { Estado_PrestamoDetalle } from "../../../shared/enums/prestamo-almacen/prestamo";
 import { getEstadoDetalleColor } from "./utils/prestamos-render";
+import type {
+  RES_Prestamo,
+  RES_PrestamoDetalle,
+} from "../../../service/responses/prestamos/prestamo";
 
 interface DetallePrestamoProps {
-  headerData: RES_PrestamoResumen;
+  headerData: RES_Prestamo;
   detalles: RES_PrestamoDetalle[];
   loading: boolean;
   progresoGeneral: number;
@@ -440,7 +440,7 @@ export const DetallePrestamo = ({
                     <td className="px-6 py-4 text-center">
                       <Badge
                         color={getEstadoDetalleColor(
-                          item.estado as EstadoDetallePrestamo,
+                          item.estado as Estado_PrestamoDetalle,
                         )}
                         variant="light"
                         size="sm"

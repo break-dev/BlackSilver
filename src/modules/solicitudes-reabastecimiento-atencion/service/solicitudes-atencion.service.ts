@@ -1,10 +1,6 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
-  RES_SolicitudReabastecimiento,
-  RES_DetalleSolicitud,
-  RES_DetalleLog,
-  RES_Prestamo,
   RES_HistorialEntregas,
   RES_StockTotalAlmacen,
 } from "./solicitudes-atencion.responses";
@@ -16,6 +12,9 @@ import type {
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Solicitud, RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 
 const path = "/solicitudes-atencion";
 
@@ -25,17 +24,14 @@ export const SolicitudesAtencionService = {
     mes: string,
     yearcito: string,
   ) => {
-    const res = await api.get<IRespuesta<RES_SolicitudReabastecimiento[]>>(
-      `${path}`,
-      {
-        params: { id_almacen: idAlmacen, mes, yearcito },
-      },
-    );
+    const res = await api.get<IRespuesta<RES_Solicitud[]>>(`${path}`, {
+      params: { id_almacen: idAlmacen, mes, yearcito },
+    });
     return res.data;
   },
 
   obtenerDetallesSolicitud: async (idSolicitud: number) => {
-    const res = await api.get<IRespuesta<RES_DetalleSolicitud[]>>(
+    const res = await api.get<IRespuesta<RES_SolicitudDetalle[]>>(
       `${path}/detalles-by-solicitud`,
       {
         params: { id_solicitud: idSolicitud },
@@ -53,7 +49,7 @@ export const SolicitudesAtencionService = {
   },
 
   obtenerTrazabilidad: async (idDetalle: number) => {
-    const res = await api.get<IRespuesta<RES_DetalleLog[]>>(
+    const res = await api.get<IRespuesta<RES_Trazabilidad[]>>(
       `${path}/trazabilidad`,
       {
         params: { id_solicitud_detalle: idDetalle },

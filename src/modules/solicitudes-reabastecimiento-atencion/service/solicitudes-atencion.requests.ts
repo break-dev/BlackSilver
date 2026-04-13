@@ -1,9 +1,9 @@
-import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
+import { Estado_SolicitudDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 
 export interface DTO_DecisionDetalle {
   id_solicitud_detalle?: number;
   ids_detalles?: number[];
-  nuevo_estado: EstadoSolicitudDetalle;
+  nuevo_estado: Estado_SolicitudDetalle;
   comentario_decision?: string;
 }
 

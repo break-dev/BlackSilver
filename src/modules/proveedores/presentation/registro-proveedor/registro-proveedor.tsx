@@ -1,7 +1,7 @@
 import { IconDeviceFloppy, IconExclamationCircle } from "@tabler/icons-react";
 import { Button, Grid, Select, TextInput, Alert } from "@mantine/core";
 import { useRegistroProveedor } from "../../hooks/useRegistroProveedor";
-import { TipoEntidad } from "../../../../shared/enums/tipos";
+import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
 import type { ProveedorResponse } from "../../service/proveedores.responses";
 
 interface Props {

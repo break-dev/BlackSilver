@@ -1,6 +1,6 @@
 import { Stack } from "@mantine/core";
 import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
-import type { RES_DetalleSolicitud } from "../../service/solicitudes-atencion.responses";
+import type { RES_SolicitudDetalle } from "../../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import {
   ReceptorInfo,
   ProductoEntregaCard,
@@ -10,14 +10,13 @@ import {
 interface RegistroEntregaProps {
   idSolicitud: number;
   idEmpleadoSolicitante: number;
-  selectedDetalles: RES_DetalleSolicitud[];
+  selectedDetalles: RES_SolicitudDetalle[];
   onSuccess: () => void;
   onCancel?: () => void;
 }
 
 export const RegistroEntrega = ({
   idSolicitud,
-  idEmpleadoSolicitante,
   selectedDetalles: baseDetalles,
   onSuccess,
   onCancel,

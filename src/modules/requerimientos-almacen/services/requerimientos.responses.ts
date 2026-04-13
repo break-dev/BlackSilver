@@ -1,8 +1,5 @@
-import {
-  EstadoRequerimiento,
-  EstadoDetalleRequerimiento,
-} from "../../../shared/enums/estados";
-import { Premura } from "../../../shared/enums/otros";
+import { Premura } from "../../../shared/enums/_generic/premura";
+import type { Estado_Requerimiento, Estado_RequerimientoDetalle } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 
 export interface RES_LaborRelacionada {
   id_labor: number;
@@ -19,7 +16,7 @@ export interface RES_RequerimientoAlmacen {
   almacen_destino: string;
   premura: Premura;
   fecha_entrega_requerida: string;
-  estado: EstadoRequerimiento;
+  estado: Estado_Requerimiento;
   labores: RES_LaborRelacionada[];
   created_at: string;
   observacion?: string;
@@ -38,21 +35,12 @@ export interface RES_RequerimientoDetalle {
   cantidad_entregada: number;
   cantidad_entregada_base: number;
   porcentaje_progreso: number;
-  estado: EstadoDetalleRequerimiento;
+  estado: Estado_RequerimientoDetalle;
   comentario?: string;
   comentario_decision?: string;
   empleado_atencion?: string;
   id_producto_destino?: number | null;
   producto_destino?: string | null;
-}
-
-export interface RES_TrazabilidadEvento {
-  id_trazabilidad: number;
-  empleado: string;
-  tipo_origen: string;
-  descripcion: string;
-  created_at: string;
-  estado: string;
 }
 
 // Interfaces Locales para Catálogos (Aislamiento BFF)

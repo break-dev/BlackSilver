@@ -20,7 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 
-import { EstadoDetalleRequerimiento } from "../../../shared/enums/estados";
+import { Estado_RequerimientoDetalleLog } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type {
   RES_RequerimientoAlmacen,
   RES_RequerimientoDetalle,
@@ -47,19 +47,19 @@ export const DetalleRequerimiento = ({
 }: DetalleRequerimientoProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case EstadoDetalleRequerimiento.EsperandoAprobacion:
+      case Estado_RequerimientoDetalleLog.EsperandoAprobacion:
         return "blue";
-      case EstadoDetalleRequerimiento.Aprobado:
+      case Estado_RequerimientoDetalleLog.Aprobado:
         return "violet";
-      case EstadoDetalleRequerimiento.EnDespacho:
+      case Estado_RequerimientoDetalleLog.EnDespacho:
         return "orange";
-      case EstadoDetalleRequerimiento.NuevaEntrega:
+      case Estado_RequerimientoDetalleLog.NuevaEntrega:
         return "green";
-      case EstadoDetalleRequerimiento.Rechazado:
+      case Estado_RequerimientoDetalleLog.Rechazado:
         return "red";
-      case EstadoDetalleRequerimiento.Completado:
+      case Estado_RequerimientoDetalleLog.Completado:
         return "cyan";
-      case EstadoDetalleRequerimiento.Cerrado:
+      case Estado_RequerimientoDetalleLog.Cerrado:
         return "dark";
       default:
         return "gray";

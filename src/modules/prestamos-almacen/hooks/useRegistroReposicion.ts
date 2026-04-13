@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { PrestamosService } from "../service/prestamos.service";
-import type { RES_PrestamoDetalle } from "../service/prestamos.responses";
+import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 import type { REQ_DetalleReposicionItem } from "../service/prestamos.requests";
 import { useAuthStore } from "../../../stores/auth.store";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";

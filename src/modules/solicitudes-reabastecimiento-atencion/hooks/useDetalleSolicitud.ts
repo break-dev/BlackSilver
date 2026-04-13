@@ -1,6 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { EstadoSolicitudDetalle } from "../../../shared/enums/estados";
+import {
+  Estado_SolicitudDetalle,
+  Estado_SolicitudDetalleLog,
+} from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
 import type { DetalleSolicitudExtendido } from "../service/solicitudes-atencion.responses";
 import type { AxiosError } from "axios";
@@ -65,7 +68,7 @@ export const useDetalleSolicitud = ({
 
   const isAllPendingSelected = useMemo(() => {
     const pendientes = detalles.filter(
-      (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+      (d) => d.estado === Estado_SolicitudDetalle.EsperandoAprobacion,
     );
     return (
       pendientes.length > 0 && idsParaAccionMasiva.length === pendientes.length
@@ -77,7 +80,7 @@ export const useDetalleSolicitud = ({
       setIdsParaAccionMasiva([]);
     } else {
       const pendientes = detalles.filter(
-        (d) => d.estado === EstadoSolicitudDetalle.EsperandoAprobacion,
+        (d) => d.estado === Estado_SolicitudDetalle.EsperandoAprobacion,
       );
       setIdsParaAccionMasiva(pendientes.map((d) => d.id_solicitud_detalle));
     }
@@ -86,10 +89,8 @@ export const useDetalleSolicitud = ({
   const eligibleForDelivery = useMemo(() => {
     return detalles.filter(
       (d) =>
-        (d.estado === EstadoSolicitudDetalle.Aprobado ||
-          d.estado === EstadoSolicitudDetalle.EnDespacho ||
-          d.estado === EstadoSolicitudDetalle.NuevaEntrega ||
-          d.estado === EstadoSolicitudDetalle.SolicitandoPrestamo) &&
+        (d.estado === Estado_SolicitudDetalle.Aprobado ||
+          d.estado === Estado_SolicitudDetalle.EnDespacho) &&
         d.cantidad_solicitada_base - d.cantidad_entregada_base > 0,
     );
   }, [detalles]);
@@ -158,7 +159,7 @@ export const useDetalleSolicitud = ({
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
         ids_detalles: ids,
-        nuevo_estado: EstadoSolicitudDetalle.Aprobado,
+        nuevo_estado: Estado_SolicitudDetalleLog.Aprobado,
         comentario_decision: motivo,
       });
       if (res.success) {
@@ -170,7 +171,7 @@ export const useDetalleSolicitud = ({
             ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
-                  estado: EstadoSolicitudDetalle.Aprobado,
+                  estado: Estado_SolicitudDetalleLog.Aprobado,
                   comentario_decision: motivo,
                 }
               : item,
@@ -211,7 +212,7 @@ export const useDetalleSolicitud = ({
     try {
       const res = await SolicitudesAtencionService.guardarDecisionDetalle({
         ids_detalles: ids,
-        nuevo_estado: EstadoSolicitudDetalle.Rechazado,
+        nuevo_estado: Estado_SolicitudDetalleLog.Rechazado,
         comentario_decision: motivo,
       });
       if (res.success) {
@@ -223,7 +224,7 @@ export const useDetalleSolicitud = ({
             ids.includes(item.id_solicitud_detalle)
               ? {
                   ...item,
-                  estado: EstadoSolicitudDetalle.Rechazado,
+                  estado: Estado_SolicitudDetalleLog.Rechazado,
                   comentario_decision: motivo,
                 }
               : item,
@@ -253,20 +254,22 @@ export const useDetalleSolicitud = ({
   ]);
 
   const getStatusColor = (status: string) => {
-    if (status === EstadoSolicitudDetalle.EsperandoAprobacion) return "blue";
-    if (status === EstadoSolicitudDetalle.Aprobado) return "violet";
-    if (status === EstadoSolicitudDetalle.EnDespacho) return "orange";
-    if (status === EstadoSolicitudDetalle.NuevaEntrega) return "green";
-    if (status === EstadoSolicitudDetalle.Completado) return "teal";
-    if (status === EstadoSolicitudDetalle.Rechazado) return "red";
-    if (status === EstadoSolicitudDetalle.SolicitandoPrestamo) return "pink";
+    if (status === Estado_SolicitudDetalleLog.EsperandoAprobacion)
+      return "blue";
+    if (status === Estado_SolicitudDetalleLog.Aprobado) return "violet";
+    if (status === Estado_SolicitudDetalleLog.EnDespacho) return "orange";
+    if (status === Estado_SolicitudDetalleLog.NuevaEntrega) return "green";
+    if (status === Estado_SolicitudDetalleLog.Completado) return "teal";
+    if (status === Estado_SolicitudDetalleLog.Rechazado) return "red";
+    if (status === Estado_SolicitudDetalleLog.SolicitandoPrestamo)
+      return "pink";
     return "zinc";
   };
 
   const progresoGeneral = useMemo(() => {
     if (detalles.length === 0) return 0;
     const itemsAtendibles = detalles.filter(
-      (item) => item.estado !== EstadoSolicitudDetalle.Rechazado,
+      (item) => item.estado !== Estado_SolicitudDetalle.Rechazado,
     );
     if (itemsAtendibles.length === 0) return 0;
     const sumaProgreso = itemsAtendibles.reduce(

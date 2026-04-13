@@ -22,8 +22,8 @@ import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEntregas } from "../hooks/useEntregas";
 import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
-import { EstadoRequerimiento } from "../../../shared/enums/estados";
-import { Premura } from "../../../shared/enums/otros.ts";
+import { Estado_Requerimiento } from "../../../shared/enums/requerimiento-almacen/requerimiento";
+import { Premura } from "../../../shared/enums/_generic/premura.ts";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -169,9 +169,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
         width: 130,
         render: (item) => {
           const colors: Record<string, string> = {
-            [EstadoRequerimiento.Generado]: "green",
-            [EstadoRequerimiento.Cerrado]: "gray",
-            [EstadoRequerimiento.Anulado]: "red",
+            [Estado_Requerimiento.Generado]: "green",
+            [Estado_Requerimiento.Cerrado]: "gray",
+            [Estado_Requerimiento.Anulado]: "red",
           };
           const color =
             item.estado && colors[item.estado] ? colors[item.estado] : "gray";
@@ -342,7 +342,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
             onSuccess={() => {
               // Actualizamos localmente el estado a 'En Proceso' para evitar re-fetch de la lista general
               updateRequirementLocal(selectedId, {
-                estado: EstadoRequerimiento.EnProceso,
+                estado: Estado_Requerimiento.EnDespacho,
               });
             }}
           />

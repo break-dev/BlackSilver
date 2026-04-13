@@ -1,37 +1,10 @@
-import {
-  EstadoRequerimiento,
-  EstadoDetalleRequerimiento,
-  EstadoVencimiento,
-} from "../../../shared/enums/estados";
-import { Premura } from "../../../shared/enums/otros";
-import type { IArchivo } from "../../../service/responses/menu-navegacion";
-
-export interface RES_Empleado {
-  id_empleado: number;
-  nombre_completo: string;
-  dni: string;
-  path_foto: string | null;
-}
-
-export interface RES_Lote {
-  id_lote: number;
-  id_producto: number;
-  correlativo: string;
-  stock_actual: number;
-  stock_actual_base: number;
-  contenido_por_presentacion: number;
-  id_unidad_medida_base: number;
-  unidad_medida_base: string;
-  unidad_medida_base_abv: string;
-  id_unidad_medida_lote: number;
-  unidad_medida_lote: string;
-  unidad_medida_lote_abv: string;
-  unidad_medida_abv?: string; // Alias para compatibilidad
-  fecha_hora_ingreso: string;
-  fecha_vencimiento: string | null;
-  dias_para_vencer: number | null;
-  estado_vencimiento: string;
-}
+import type { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
+import { Premura } from "../../../shared/enums/_generic/premura";
+import type {
+  Estado_Requerimiento,
+  Estado_RequerimientoDetalle,
+} from "../../../shared/enums/requerimiento-almacen/requerimiento";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 export interface RES_LaborRelacionada {
   id_labor: number;
@@ -52,7 +25,7 @@ export interface RES_RequerimientoAlmacen {
   solicitante: string;
   premura: Premura;
   fecha_entrega_requerida: string | null;
-  estado: EstadoRequerimiento;
+  estado: Estado_Requerimiento;
   created_at: string;
   labores?: RES_LaborRelacionada[];
 }
@@ -81,7 +54,7 @@ export interface RES_DetalleRequerimiento {
   producto_destino: string | null;
   comentario: string | null;
   comentario_decision: string | null;
-  estado: EstadoDetalleRequerimiento;
+  estado: Estado_RequerimientoDetalle;
 }
 
 /**
@@ -118,7 +91,7 @@ export interface RES_DetalleEntrega {
   producto: string;
   fecha_vencimiento: string | null;
   dias_para_vencer: number | null;
-  estado_vencimiento: EstadoVencimiento;
+  estado_vencimiento: EstadoVencimientoProducto;
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_requerimiento: number;
