@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useMenuNav } from "../../../../hooks/useMenuNav";
-import type { ISubmodulo, ISeccion } from "../../../../shared/interfaces";
+import type {
+  ISubmodulo,
+  ISeccion,
+} from "../../../../shared/interfaces/menu-navegacion";
 
 export const useNavbar = (onClose: () => void) => {
   const location = useLocation();

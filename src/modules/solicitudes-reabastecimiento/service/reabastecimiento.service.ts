@@ -1,0 +1,173 @@
+import { api } from "../../../service/api";
+import type { IRespuesta } from "../../../shared/interfaces/menu-navegacion";
+import type {
+  RES_SolicitudReabastecimiento,
+  RES_SolicitudDetalle,
+  RES_TrazabilidadEvento,
+  RES_DataRegistroSolicitud,
+  RES_EntregaReabastecimiento,
+  RES_LoteRecepcion,
+  RecepcionEvento,
+  RES_HistorialEntregas,
+} from "./reabastecimiento.responses";
+import type {
+  DTO_CrearSolicitud,
+  DTO_RegistrarRecepcion,
+} from "./reabastecimiento.requests";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+
+const path = "/solicitudes-reabastecimiento";
+
+export const ReabastecimientoService = {
+  listar: async (filters: {
+    id_almacen_solicitante?: number;
+    mes: string;
+    yearcito: string;
+  }) => {
+    const res = await api.get<IRespuesta<RES_SolicitudReabastecimiento[]>>(
+      path,
+      {
+        params: filters,
+      },
+    );
+    return res.data;
+  },
+
+  crear: async (dto: DTO_CrearSolicitud) => {
+    const res = await api.post<IRespuesta<RES_SolicitudReabastecimiento>>(
+      path,
+      dto,
+    );
+    return res.data;
+  },
+
+  obtenerDetalles: async (idSolicitud: number) => {
+    const res = await api.get<IRespuesta<RES_SolicitudDetalle[]>>(
+      `${path}/detalles-solicitud`,
+      {
+        params: { id_solicitud_reabastecimiento: idSolicitud },
+      },
+    );
+    return res.data;
+  },
+
+  obtenerTrazabilidad: async (idDetalle: number) => {
+    const res = await api.get<IRespuesta<RES_TrazabilidadEvento[]>>(
+      `${path}/trazabilidad-detalle`,
+      {
+        params: { id_solicitud_detalle: idDetalle },
+      },
+    );
+    return res.data;
+  },
+
+  obtenerCatalogos: async () => {
+    const res = await api.get<IRespuesta<RES_DataRegistroSolicitud>>(
+      `${path}/catalogos`,
+    );
+    return res.data;
+  },
+
+  obtenerHistorialEntregas: async (idSolicitud: number) => {
+    const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
+      `${path}/entregas`,
+      {
+        params: { id_solicitud_reabastecimiento: idSolicitud },
+      },
+    );
+    return res.data;
+  },
+
+  obtenerEntregasPrestamo: async (idSolicitud: number) => {
+    const res = await api.get<IRespuesta<RES_EntregaReabastecimiento[]>>(
+      "/prestamos-atencion/entregas-solicitud",
+      {
+        params: { id_solicitud: idSolicitud },
+      },
+    );
+    return res.data;
+  },
+
+  /**
+   * Obtiene los lotes disponibles en el almacen destino para una entrega
+   */
+  getLotesDestino: async (
+    idAlmacenSolicitante: number,
+    idProductos: number[],
+  ) => {
+    const res = await api.get<IRespuesta<RES_LoteRecepcion[]>>(
+      `${path}/catalogos/lotes-destino`,
+      {
+        params: {
+          id_almacen_solicitante: idAlmacenSolicitante,
+          id_productos: idProductos,
+        },
+      },
+    );
+    return res.data;
+  },
+
+  /**
+   * Registrar una recepción de stock para una entrega de LOGÍSTICA
+   */
+  registrarRecepcionLogistica: async (
+    id_empleado_registro: number,
+    recepcion: DTO_RegistrarRecepcion,
+    evidencias: File[],
+  ) => {
+    const formData = new FormData();
+    formData.append("id_empleado_registro", id_empleado_registro.toString());
+    formData.append("recepcion", JSON.stringify(recepcion));
+
+    evidencias.forEach((file) => {
+      formData.append("evidencias[]", file);
+    });
+
+    const res = await api.post<IRespuesta<RES_TicketLote[]>>(
+      `${path}/recepciones/registrar-recepcion-logistica`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
+
+  /**
+   * Registrar una recepción de stock para una entrega de PRÉSTAMO
+   */
+  registrarRecepcionPrestamo: async (
+    id_empleado_registro: number,
+    recepcion: DTO_RegistrarRecepcion,
+    evidencias: File[],
+  ) => {
+    const formData = new FormData();
+    formData.append("id_empleado_registro", id_empleado_registro.toString());
+    formData.append("recepcion", JSON.stringify(recepcion));
+
+    evidencias.forEach((file) => {
+      formData.append("evidencias[]", file);
+    });
+
+    const res = await api.post<IRespuesta<RES_TicketLote[]>>(
+      `${path}/recepciones/registrar-recepcion-prestamo`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return res.data;
+  },
+
+  getHistorialRecepcionesEntrega: async (
+    idEntrega: number,
+    tipoEntrega: string = "Solicitud",
+  ) => {
+    const res = await api.get<IRespuesta<RecepcionEvento[]>>(
+      `${path}/recepciones/historial`,
+      {
+        params: {
+          id_reabastecimiento_entrega: idEntrega,
+          tipo_entrega: tipoEntrega,
+        },
+      },
+    );
+    return res.data;
+  },
+};

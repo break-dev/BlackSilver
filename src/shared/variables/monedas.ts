@@ -7,8 +7,4 @@ export const MONEDAS = {
     label: "Dólares",
     symbol: "$",
   },
-  //   EUR: {
-  //     label: "Euros",
-  //     symbol: "€",
-  //   },
 };

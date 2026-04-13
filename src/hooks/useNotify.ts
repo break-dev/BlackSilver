@@ -1,5 +1,4 @@
-import { useUIStore } from "../stores/ui.store";
-import type { IMessage } from "../shared/interfaces";
+import { useUIStore, type IMessage } from "../stores/ui.store";
 
 export const useNotify = () => {
   const notify = useUIStore((state) => state.notify);

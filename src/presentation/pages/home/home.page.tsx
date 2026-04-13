@@ -5,7 +5,7 @@ import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useRandomLinks, type ILinkView } from "./useRandomLinks";
 import { motion } from "motion/react";
-import { BlackcitoMascot } from "../../components/BlackcitoMascot";
+import { BlackcitoMascot } from "../../utils/blackcito-pet";
 
 const containerVariants = {
   hidden: { opacity: 0 },

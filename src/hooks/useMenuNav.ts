@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { IModulo } from "../shared/interfaces";
+import type { IModulo } from "../shared/interfaces/menu-navegacion";
 import { MenuNavService } from "../service/menu-nav.service";
 import { useMenuNavegacionStore } from "../stores/menu.store";
 

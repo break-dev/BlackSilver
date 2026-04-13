@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { useMenuNav } from "../../../hooks/useMenuNav";
-import { iconos_menu_navegacion } from "../../variables/iconos-menu-navegacion";
+import { iconos_menu_navegacion } from "../../../shared/variables/iconos-menu-navegacion";
 
 export interface IAccesoRapido {
   title: string;

@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import type { IMessage } from "../shared/interfaces";
+
+export interface IMessage {
+  type: "success" | "info" | "error" | "";
+  content: string;
+}
 
 interface UIState {
   title: string;

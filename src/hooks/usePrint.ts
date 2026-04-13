@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { usePrinterStore, type PrintConfig } from "../stores/printer.store";
-import { preparePrinterWindow } from "../presentation/utils/printer-utils";
+import { preparePrinterWindow } from "../presentation/utils/printer/printer-utils";
 
 /**
  * Encola un <Document> de @react-pdf/renderer para generar

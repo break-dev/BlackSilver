@@ -1,0 +1,246 @@
+import { useMemo } from "react";
+import { ActionIcon, Badge, Group, Stack, Text } from "@mantine/core";
+import {
+  CalendarDaysIcon,
+  ClockIcon,
+  PencilSquareIcon,
+  PrinterIcon,
+} from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
+import { type DataTableColumn } from "mantine-datatable";
+
+import type { RES_Lote } from "../service/lotes.responses";
+import { formatNumber } from "../../../shared/functions/formatNumber";
+
+interface UseLotesColumnsProps {
+  onPrint: (lote: RES_Lote) => void;
+  onEditAjuste: (lote: RES_Lote) => void;
+}
+
+export const useLotesColumns = ({
+  onPrint,
+  onEditAjuste,
+}: UseLotesColumnsProps) => {
+  return useMemo(() => {
+    const columns: DataTableColumn<RES_Lote>[] = [
+      {
+        accessor: "index",
+        title: "#",
+        textAlign: "center",
+        width: 60,
+      },
+      {
+        accessor: "ticket",
+        title: "",
+        width: 35,
+        render: (record) => (
+          <ActionIcon
+            variant="subtle"
+            color="indigo"
+            size="lg"
+            onClick={() => onPrint(record)}
+            className="hover:bg-indigo-900/30 transition-colors rounded-xl"
+          >
+            <PrinterIcon className="w-5 h-5 text-indigo-400" />
+          </ActionIcon>
+        ),
+      },
+      {
+        accessor: "codigo_lote",
+        title: "Cód. Lote",
+        textAlign: "center",
+        width: 130,
+        render: (record) => (
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="md"
+            className="font-bold border border-indigo-500/20 py-3 mx-auto"
+          >
+            {record.correlativo}
+          </Badge>
+        ),
+      },
+      {
+        accessor: "stock_actual",
+        title: "Stock Disponible",
+        textAlign: "center",
+        width: 320,
+        render: (record) => {
+          return (
+            <div className="flex flex-row justify-center">
+              <Group gap="lg" wrap="nowrap" justify="center">
+                {record.unidad_medida_base !== record.unidad_medida && (
+                  <>
+                    <Badge
+                      variant="filled"
+                      color="teal.9"
+                      radius="md"
+                      className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
+                    >
+                      {formatNumber(record.stock_actual)} {record.unidad_medida}
+                    </Badge>
+
+                    <div className="flex items-center gap-1 mt-1 px-1">
+                      <Text size="10px" c="white" fw={800}>
+                        {formatNumber(record.contenido_por_presentacion)}{" "}
+                        {record.unidad_medida_base} x {record.unidad_medida}
+                      </Text>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col items-center">
+                  <Badge
+                    variant="light"
+                    color="pink.6"
+                    radius="md"
+                    className="font-bold h-7 border border-pink-500/20"
+                  >
+                    {formatNumber(record.stock_actual_base)}{" "}
+                    {record.unidad_medida_base}
+                  </Badge>
+                </div>
+
+                <ActionIcon
+                  variant="subtle"
+                  color="zinc"
+                  size="lg"
+                  onClick={() => onEditAjuste(record)}
+                  className="hover:bg-zinc-800 transition-colors rounded-xl"
+                >
+                  <PencilSquareIcon className="w-5 h-5 text-zinc-400" />
+                </ActionIcon>
+              </Group>
+            </div>
+          );
+        },
+      },
+      {
+        accessor: "fecha_ingreso",
+        title: "Ingreso",
+        textAlign: "center",
+        width: 140,
+        render: (record) => (
+          <Group gap={8} wrap="nowrap" justify="center">
+            <div className="p-1.5 bg-zinc-800/50 rounded-lg border border-zinc-700/30">
+              <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+            </div>
+            <div className="flex flex-col items-start gap-0.5">
+              <Text size="11px" fw={700} className="text-zinc-200">
+                {dayjs(record.fecha_hora_ingreso).format("DD MMM YYYY")}
+              </Text>
+              <Text
+                size="11px"
+                c="dimmed"
+                fw={700}
+                className="uppercase tracking-tighter"
+              >
+                {dayjs(record.fecha_hora_ingreso).format("HH:mm")}
+              </Text>
+            </div>
+          </Group>
+        ),
+      },
+      {
+        accessor: "fecha_vencimiento",
+        title: "Vencimiento",
+        textAlign: "center",
+        width: 150,
+        render: (record) => {
+          if (!record.fecha_vencimiento) {
+            return (
+              <Text size="xs" c="dimmed" fs="italic">
+                No aplica
+              </Text>
+            );
+          }
+          const isVencido = record.estado_vencimiento === "Vencido";
+          return (
+            <Group gap={8} wrap="nowrap" justify="center">
+              <div
+                className={`p-1.5 rounded-lg border ${isVencido ? "bg-red-500/10 border-red-500/30" : "bg-orange-500/10 border-orange-500/30"}`}
+              >
+                <ClockIcon
+                  className={`w-4 h-4 ${isVencido ? "text-red-500" : "text-orange-400"}`}
+                />
+              </div>
+              <div className="flex flex-col items-start gap-0.5">
+                <Text
+                  size="11px"
+                  fw={800}
+                  className={isVencido ? "text-red-500" : "text-orange-400"}
+                >
+                  {dayjs(record.fecha_vencimiento).format("DD/MM/YYYY")}
+                </Text>
+                <Text
+                  size="9px"
+                  fw={900}
+                  className={`uppercase tracking-widest ${isVencido ? "text-red-700" : "text-orange-800"}`}
+                >
+                  {record.estado_vencimiento}
+                </Text>
+              </div>
+            </Group>
+          );
+        },
+      },
+      {
+        accessor: "plazo",
+        title: "Plazo",
+        textAlign: "center",
+        width: 150,
+        render: (record) => {
+          if (!record.fecha_vencimiento || record.dias_para_vencer === null) {
+            return (
+              <Text size="xs" c="dimmed" fs="italic">
+                ---
+              </Text>
+            );
+          }
+          return (
+            <Stack gap={2} align="center">
+              <Text
+                size="10px"
+                fw={900}
+                className={
+                  record.dias_para_vencer <= 0
+                    ? "text-red-500"
+                    : "text-zinc-300"
+                }
+              >
+                {record.dias_para_vencer <= 0
+                  ? "VENCIDO"
+                  : `QUEDAN: ${record.dias_para_vencer} DÍAS`}
+              </Text>
+              {record.dias_espera_vencimiento && (
+                <Text size="10px" c="dimmed" fw={700} className="uppercase">
+                  Aviso: {record.dias_espera_vencimiento}d. antes
+                </Text>
+              )}
+            </Stack>
+          );
+        },
+      },
+      {
+        accessor: "estado",
+        title: "Estado",
+        textAlign: "center",
+        width: 100,
+        render: (record) => (
+          <Badge
+            color={record.estado === "Activo" ? "teal.9" : "grow.9"}
+            variant="filled"
+            size="xs"
+            radius="sm"
+            className="font-black border border-zinc-800 shadow-md mx-auto"
+          >
+            {record.estado.toUpperCase()}
+          </Badge>
+        ),
+      },
+    ];
+
+    return columns;
+  }, [onPrint, onEditAjuste]);
+};

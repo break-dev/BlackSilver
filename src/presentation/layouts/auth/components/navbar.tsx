@@ -7,8 +7,8 @@ import {
   CubeIcon,
   ArrowRightEndOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-import { iconos_menu_navegacion } from "../../../variables/iconos-menu-navegacion";
-import type { ISubmodulo } from "../../../../shared/interfaces";
+import { iconos_menu_navegacion } from "../../../../shared/variables/iconos-menu-navegacion";
+import type { ISubmodulo } from "../../../../shared/interfaces/menu-navegacion";
 import { useNavbar } from "../hooks/useNavbar";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -223,7 +223,8 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                         (s) => s.submodulo_path === sub.path,
                                       )
                                     : null;
-                                  const SubIcon = subIconData?.icono || CubeIcon;
+                                  const SubIcon =
+                                    subIconData?.icono || CubeIcon;
                                   const isSubExpanded =
                                     expandedSub === sub.nombre;
 

@@ -4,7 +4,7 @@ import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
 import { useAuthLayout } from "./hooks/useAuthLayout";
-import { GlobalPrinterPortal } from "../../utils/GlobalPrinterPortal";
+import { GlobalPrinterPortal } from "../../utils/printer/GlobalPrinterPortal";
 
 export const AuthLayout = () => {
   const { open, setOpen } = useAuthLayout();

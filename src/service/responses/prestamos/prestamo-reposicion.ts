@@ -1,0 +1,50 @@
+import type {
+  Estado_PrestamoReposicion,
+  Estado_PrestamoReposicionDetalle,
+} from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
+import type { IArchivo } from "../../../shared/interfaces/menu-navegacion";
+
+export interface RES_PrestamoReposicion {
+  id_reposicion: number;
+  id_prestamo_almacen: number;
+  //
+  id_almacen_entrega: number;
+  almacen_entrega: string;
+  //
+  correlativo: string;
+  fecha_hora_reposicion: string;
+  observacion: string | null;
+  evidencias: IArchivo[] | null;
+  registrado_por: string;
+  created_at: string;
+  estado: Estado_PrestamoReposicion;
+  // Insertado por la api
+  detalles: RES_PrestamoReposicionDetalle[];
+}
+
+export interface RES_PrestamoReposicionDetalle {
+  id_reposicion_detalle: number;
+  id_prestamo_almacen_detalle: number;
+  //
+  id_producto: number;
+  producto: string;
+  es_perecible: boolean;
+  //
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
+  cantidad_base: number;
+  //
+  id_lote_producto: number;
+  lote_correlativo: string;
+  //
+  id_unidad_medida_lote: number;
+  unidad_medida_lote: string;
+  unidad_medida_lote_abv: string;
+  cantidad_lote: number;
+  //
+  id_unidad_medida_pr: number;
+  cantidad_prestamo: number;
+  //
+  estado: Estado_PrestamoReposicionDetalle;
+}
