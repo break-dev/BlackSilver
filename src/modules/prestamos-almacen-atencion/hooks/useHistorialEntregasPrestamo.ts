@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
-import type { RES_EntregaPrestamo } from "../service/prestamos-atencion.responses";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
 
 export const useHistorialEntregasPrestamo = () => {
-  const [entregas, setEntregas] = useState<RES_EntregaPrestamo[]>([]);
+  const [entregas, setEntregas] = useState<RES_PrestamoEntrega[]>([]);
   const [loading, setLoading] = useState(false);
 
   const cargarHistorial = useCallback(async (idPrestamo: number) => {

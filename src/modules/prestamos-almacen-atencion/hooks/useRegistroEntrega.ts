@@ -1,15 +1,15 @@
 import { useState, useCallback, useMemo } from "react";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
-import type { RES_DetallePrestamo } from "../service/prestamos-atencion.responses";
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
   selectedItemsIds: number[];
-  detallesPrestamo: RES_DetallePrestamo[];
+  detallesPrestamo: RES_PrestamoDetalle[];
   idEmpleadoDefault?: number | null;
   onSuccess: () => void;
 }

@@ -27,13 +27,9 @@ import {
   InboxArrowDownIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
-import {
-  type RES_ReposicionPrestamo,
-  type RES_DetalleReposicionParaRecepcion,
-} from "../service/prestamos-atencion.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo-card";
-import type { IArchivo } from "../../../service/responses/menu-navegacion";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import { useNotify } from "../../../hooks/useNotify";
 import { RegistroRecepcion } from "./registro-recepcion";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -41,9 +37,13 @@ import { usePrint } from "../../../hooks/usePrint";
 import { TicketLotePDF } from "../../../presentation/utils/ticket-lote-pdf";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import QRCode from "qrcode";
+import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
+import type { RES_PrestamoReposicionRecepcionDetalle } from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
+import { Estado_PrestamoReposicion } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
+import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
 
 interface Props {
-  reposiciones: RES_ReposicionPrestamo[];
+  reposiciones: RES_PrestamoReposicion[];
   loading?: boolean;
   onSuccess: () => void;
   idAlmacenLender: number; // El almacén que está recibiendo (linder del préstamo original)
@@ -65,9 +65,9 @@ export const HistorialReposicionesPrestamo = ({
     Record<number, boolean>
   >({});
   const [selectedRepo, setSelectedRepo] =
-    useState<RES_ReposicionPrestamo | null>(null);
+    useState<RES_PrestamoReposicion | null>(null);
   const [detailsForReception, setDetailsForReception] = useState<
-    RES_DetalleReposicionParaRecepcion[]
+    RES_PrestamoEntregaDetalle[]
   >([]);
   const [openedRecepcion, setOpenedRecepcion] = useState(false);
 
@@ -91,13 +91,13 @@ export const HistorialReposicionesPrestamo = ({
     return index === 0;
   };
 
-  const handleOpenRecepcion = (repo: RES_ReposicionPrestamo) => {
+  const handleOpenRecepcion = (repo: RES_PrestamoReposicion) => {
     if (!repo.detalles || repo.detalles.length === 0) {
       notifyError("Esta reposición no tiene productos registrados");
       return;
     }
 
-    const mapped: RES_DetalleReposicionParaRecepcion[] = repo.detalles.map(
+    const mapped: RES_PrestamoReposicionRecepcionDetalle[] = repo.detalles.map(
       (d) => ({
         id_entrega_detalle: d.id_reposicion_detalle,
         id_solicitud_reabastecimiento_detalle: d.id_reposicion_detalle,
@@ -111,7 +111,7 @@ export const HistorialReposicionesPrestamo = ({
         es_perecible: d.es_perecible,
         id_unidad_medida_base: d.id_unidad_medida_base,
         unidad_base_abv: d.unidad_medida_base_abv,
-        id_unidad_medida_solicitada: d.id_unidad_medida_solicitada,
+        id_unidad_medida_solicitada: d.id_unidad_medida_pr,
         contenido_por_presentacion_solicitado: 1, // Se asume 1 para préstamos
         unidad_medida_solicitud_abv: d.unidad_medida_base_abv, // Se asume base
         id_lote_origen: d.id_lote_producto,
@@ -216,7 +216,10 @@ export const HistorialReposicionesPrestamo = ({
                         <Badge
                           variant="light"
                           color={
-                            h.estado === "Recepcionado" ? "teal" : "orange"
+                            h.estado ==
+                            Estado_PrestamoReposicion.RecepcionCompleta
+                              ? "teal"
+                              : "orange"
                           }
                           radius="sm"
                           className="font-bold"
@@ -682,7 +685,7 @@ export const HistorialReposicionesPrestamo = ({
             <RegistroRecepcion
               idAlmacenSolicitante={idAlmacenLender}
               detalles={
-                detailsForReception as unknown as RES_DetalleReposicionParaRecepcion[]
+                detailsForReception as unknown as RES_PrestamoEntregaDetalle[]
               }
               idEntrega={selectedRepo.id_reposicion}
               tipoEntrega="Reposicion"

@@ -1,13 +1,13 @@
 import { NumberInput, Text, Badge, Stack, Group } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { RES_DetallePrestamo } from "../../../service/prestamos-atencion.responses";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 
 interface LoteRowProps {
   lote: RES_LoteDisponible;
   idDetalle: number;
-  detalle: RES_DetallePrestamo;
+  detalle: RES_PrestamoDetalle;
   entregaCantidades: Record<number, Record<number, number>>;
   handleCantLoteChange: (
     idDetalle: number,

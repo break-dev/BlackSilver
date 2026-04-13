@@ -19,10 +19,10 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
-import { type RES_TrazabilidadPrestamo } from "../service/prestamos-atencion.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 interface Props {
-  eventos: RES_TrazabilidadPrestamo[];
+  eventos: RES_Trazabilidad[];
   loading?: boolean;
   productoNombre?: string;
 }
@@ -117,12 +117,12 @@ export const TrazabilidadPrestamo = ({
                     c="zinc.100"
                     className="leading-relaxed"
                   >
-                    {evento.comentario || getSystemMessage(evento.estado)}
+                    {evento.descripcion || getSystemMessage(evento.estado)}
                   </Text>
                   <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
                       <Text size="10px" fw={800} c="zinc.5">
-                        {evento.nombre_empleado?.charAt(0) || "?"}
+                        {evento.empleado?.charAt(0) || "?"}
                       </Text>
                     </div>
                     <Text size="xs" c="zinc.5" fw={500}>
@@ -134,7 +134,7 @@ export const TrazabilidadPrestamo = ({
                       c="zinc.3"
                       className="italic underline underline-offset-4 decoration-indigo-500/20"
                     >
-                      {evento.nombre_empleado || "Sistema"}
+                      {evento.empleado || "Sistema"}
                     </Text>
                   </div>
                 </Paper>

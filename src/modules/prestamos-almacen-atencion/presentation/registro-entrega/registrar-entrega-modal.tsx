@@ -1,15 +1,14 @@
 import { useEffect } from "react";
 import { Loader, Stack, Text } from "@mantine/core";
 import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
-import type { RES_DetallePrestamo } from "../../service/prestamos-atencion.responses";
 import { ReceptorInfo, ProductoEntregaCard, FormActions } from "./components";
+import type { RES_PrestamoDetalle } from "../../../../service/responses/prestamos/prestamo";
 
 interface Props {
   idPrestamo: number;
   idAlmacenPrestamista: number;
   selectedItemsIds: number[];
-  detallesPrestamo: RES_DetallePrestamo[];
-  idEmpleadoDefault: number | null;
+  detallesPrestamo: RES_PrestamoDetalle[];
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -19,7 +18,6 @@ export const RegistrarEntregaModal = ({
   idAlmacenPrestamista,
   selectedItemsIds,
   detallesPrestamo,
-  idEmpleadoDefault,
   onSuccess,
   onCancel,
 }: Props) => {
@@ -45,7 +43,6 @@ export const RegistrarEntregaModal = ({
     idAlmacenPrestamista,
     selectedItemsIds,
     detallesPrestamo,
-    idEmpleadoDefault,
     onSuccess,
   });
 

@@ -27,7 +27,6 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
 import { useDetallePrestamo } from "../hooks/useDetallePrestamo";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistrarEntregaModal } from "./registro-entrega/registrar-entrega-modal";
@@ -37,9 +36,10 @@ import { TrazabilidadPrestamo } from "./trazabilidad-prestamo";
 import { PrestamoStatusBadge } from "./components/prestamo-status-badge";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { HeaderCard } from "./components/detail-elements";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 
 interface Props {
-  prestamo: RES_PrestamoAtencion;
+  prestamo: RES_Prestamo;
   idAlmacenPrestamista: number;
   onDespachoRegistrado: () => void;
 }
@@ -227,7 +227,7 @@ export const DetallePrestamo = ({
               radius="sm"
               className="font-black"
             >
-              {prestamo.solicitud_correlativo}
+              {prestamo.correlativo}
             </Badge>
           </Stack>
         </div>
@@ -469,7 +469,7 @@ export const DetallePrestamo = ({
                             c="zinc.5"
                             className="uppercase tracking-wider"
                           >
-                            {d.unidad_medida}
+                            {d.unidad_medida_base_abv}
                           </Text>
                           {d.comentario && (
                             <Tooltip label={d.comentario}>
@@ -494,9 +494,10 @@ export const DetallePrestamo = ({
                         className="font-black px-4"
                       >
                         {formatNumber(d.cantidad_solicitada)}{" "}
-                        {d.unidad_medida_abv}
+                        {d.unidad_medida_base_abv}
                       </Badge>
-                      {d.unidad_medida_base_abv !== d.unidad_medida_abv && (
+                      {d.unidad_medida_base_abv !==
+                        d.unidad_medida_base_abv && (
                         <>
                           <Badge
                             variant="filled"
@@ -508,7 +509,7 @@ export const DetallePrestamo = ({
                             {formatNumber(d.contenido_por_presentacion)}{" "}
                             {d.unidad_medida_base_abv}{" "}
                             <span className="lowercase font-bold">x</span>{" "}
-                            {d.unidad_medida_abv}
+                            {d.unidad_medida_base_abv}
                           </Badge>
 
                           <Badge
@@ -533,9 +534,10 @@ export const DetallePrestamo = ({
                             className="tabular-nums"
                           >
                             Atendido:{" "}
-                            {d.unidad_medida_base_abv !== d.unidad_medida_abv
+                            {d.unidad_medida_base_abv !==
+                            d.unidad_medida_base_abv
                               ? `${formatNumber(d.cantidad_prestada_base)} ${d.unidad_medida_base_abv}`
-                              : `${formatNumber(d.cantidad_prestada)} ${d.unidad_medida_abv}`}
+                              : `${formatNumber(d.cantidad_prestada)} ${d.unidad_medida_base_abv}`}
                           </Text>
                           <Text size="10px" fw={900} c="indigo.4">
                             {porcentaje}%
@@ -768,7 +770,6 @@ export const DetallePrestamo = ({
           idAlmacenPrestamista={idAlmacenPrestamista}
           selectedItemsIds={selectedItemsIds}
           detallesPrestamo={detalles}
-          idEmpleadoDefault={prestamo.id_empleado_recibe_default}
           onSuccess={() => {
             deselectAllItems(); // Limpiar selección tras éxito
             cargarDatos(); // Recargar datos locales del préstamo

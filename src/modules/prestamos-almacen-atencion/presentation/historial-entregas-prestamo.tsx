@@ -20,14 +20,18 @@ import {
   ChevronUpIcon,
   PaperClipIcon,
 } from "@heroicons/react/24/outline";
-import { type RES_EntregaPrestamo } from "../service/prestamos-atencion.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo-card";
-import type { IArchivo } from "../../../service/responses/menu-navegacion";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import { ResumenRecepciones } from "./components/ResumenRecepciones";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
+import {
+  Estado_PrestamoEntrega,
+  Estado_PrestamoEntregaDetalle,
+} from "../../../shared/enums/prestamo-almacen/prestamo-entrega";
 
 interface Props {
-  entregas: RES_EntregaPrestamo[];
+  entregas: RES_PrestamoEntrega[];
   loading?: boolean;
 }
 
@@ -114,7 +118,9 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                       <Badge
                         variant="light"
                         color={
-                          h.estado === "Entrega completa" ? "teal" : "violet"
+                          h.estado === Estado_PrestamoEntrega.RecepcionCompleta
+                            ? "teal"
+                            : "violet"
                         }
                         radius="sm"
                         className="font-bold"
@@ -285,7 +291,7 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                             size="sm"
                             className="font-bold tracking-wider"
                           >
-                            {d.correlativo_lote}
+                            {d.lote_correlativo}
                           </Badge>
                         </Group>
                       </div>
@@ -305,7 +311,7 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                             c="zinc.5"
                             className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
                           >
-                            {d.unidad_medida_abv || "UNI"}
+                            {d.unidad_medida_base_abv || "UNI"}
                           </Text>
                         </Group>
                       </div>
@@ -316,10 +322,11 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                 {/* Trazabilidad de Recepciones — si hay algo recibido (parcial o total) */}
                 {h.detalles?.some(
                   (d) =>
-                    d.estado === "Recibido" ||
-                    d.estado === "Entrega confirmada" ||
-                    d.estado === "Recibido Parcialmente" ||
-                    d.estado === "En despacho",
+                    d.estado === Estado_PrestamoEntregaDetalle.EnDespacho ||
+                    d.estado ===
+                      Estado_PrestamoEntregaDetalle.RecepcionCompleta ||
+                    d.estado ===
+                      Estado_PrestamoEntregaDetalle.RecepcionadoParcialmente,
                 ) && (
                   <div className="px-4 pb-3 mt-4">
                     <UnstyledButton

@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { MinasService } from "../service/minas.service";
 import type { RES_HistorialResponsable } from "../service/minas.responses";
-
-import { EstadoBase } from "../../../shared/enums/estados";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface Props {
   idMina: number;

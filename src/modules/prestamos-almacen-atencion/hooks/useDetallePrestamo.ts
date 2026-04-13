@@ -1,14 +1,12 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
-import type {
-  RES_DetallePrestamo,
-  RES_EntregaPrestamo,
-  RES_TrazabilidadPrestamo,
-  RES_ReposicionPrestamo,
-} from "../service/prestamos-atencion.responses";
 import { useNotify } from "../../../hooks/useNotify";
-import { EstadoDetallePrestamo } from "../../../shared/enums/prestamos";
+import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
+import type { RES_PrestamoReposicion } from "../../../service/responses/prestamos/prestamo-reposicion";
+import { Estado_PrestamoDetalle } from "../../../shared/enums/prestamo-almacen/prestamo";
+import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 interface Props {
   idPrestamo: number;
@@ -18,8 +16,8 @@ interface Props {
 export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   const { notifyError, notifySuccess } = useNotify();
   const [loading, setLoading] = useState(true);
-  const [detalles, setDetalles] = useState<RES_DetallePrestamo[]>([]);
-  const [entregas, setEntregas] = useState<RES_EntregaPrestamo[]>([]);
+  const [detalles, setDetalles] = useState<RES_PrestamoDetalle[]>([]);
+  const [entregas, setEntregas] = useState<RES_PrestamoEntrega[]>([]);
 
   // Modales
   const [openedTrace, { open: openTrace, close: closeTrace }] =
@@ -39,7 +37,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     { open: openHistorialRepos, close: closeHistorialRepos },
   ] = useDisclosure(false);
 
-  const [reposiciones, setReposiciones] = useState<RES_ReposicionPrestamo[]>(
+  const [reposiciones, setReposiciones] = useState<RES_PrestamoReposicion[]>(
     [],
   );
   const [loadingRepos, setLoadingRepos] = useState(false);
@@ -49,9 +47,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   const [selectedItemName, setSelectedItemName] = useState("");
   const [comentarioAccion, setComentarioAccion] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [trazabilidad, setTrazabilidad] = useState<RES_TrazabilidadPrestamo[]>(
-    [],
-  );
+  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>([]);
   const [loadingTrace, setLoadingTrace] = useState(false);
 
   // Selección múltiple para despacho
@@ -68,7 +64,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
 
   const pendingItemsIds = useMemo(() => {
     return detalles
-      .filter((d) => d.estado === EstadoDetallePrestamo.Pendiente)
+      .filter((d) => d.estado === Estado_PrestamoDetalle.EsperandoAprobacion)
       .map((d) => d.id_prestamo_detalle);
   }, [detalles]);
 
@@ -171,12 +167,12 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
           nuevo_estado: nuevoEstado,
           comentario: comentarioAccion,
         });
-          if (res.success) {
-            notifySuccess(res.message || "Estado actualizado");
-            setComentarioAccion("");
-            setIdsParaAccionMasiva([]); // Limpiar selección masiva tras éxito
-            closeAprobar();
-            closeRechazo();
+        if (res.success) {
+          notifySuccess(res.message || "Estado actualizado");
+          setComentarioAccion("");
+          setIdsParaAccionMasiva([]); // Limpiar selección masiva tras éxito
+          closeAprobar();
+          closeRechazo();
 
           // Actualización local inmediata para feedback instantáneo
           setDetalles((prev) =>
@@ -237,15 +233,15 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
     return isNaN(calculado) ? 0 : calculado;
   }, [detalles]);
 
-  const isItemEligibleForDelivery = useCallback((d: RES_DetallePrestamo) => {
+  const isItemEligibleForDelivery = useCallback((d: RES_PrestamoDetalle) => {
     const isApprovedToDispatch =
-      d.estado === EstadoDetallePrestamo.Aprobado ||
-      d.estado === EstadoDetallePrestamo.DespachoIniciado;
+      d.estado === Estado_PrestamoDetalle.Aprobado ||
+      d.estado === Estado_PrestamoDetalle.EnDespacho;
 
     const isFinished =
-      d.estado === EstadoDetallePrestamo.EntregaCompleta ||
-      d.estado === EstadoDetallePrestamo.Cerrado ||
-      d.estado === EstadoDetallePrestamo.Rechazado;
+      d.estado === Estado_PrestamoDetalle.Completado ||
+      d.estado === Estado_PrestamoDetalle.Cerrado ||
+      d.estado === Estado_PrestamoDetalle.Rechazado;
 
     return isApprovedToDispatch && !isFinished;
   }, []);

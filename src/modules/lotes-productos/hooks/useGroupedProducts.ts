@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { RES_Lote } from "../service/lotes.responses";
 import type { GroupedProduct } from "../presentation/lotes-page/product-group-card/product-group-card";
-import { EstadoVencimiento } from "../../../shared/enums/estados";
+import { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
 
 export const useGroupedProducts = (records: RES_Lote[]) => {
   return useMemo(() => {
@@ -30,14 +30,14 @@ export const useGroupedProducts = (records: RES_Lote[]) => {
 
       // Solo contabilizamos si el lote tiene stock positivo
       if (Number(lote.stock_actual_base) > 0) {
-        if (lote.estado_vencimiento === EstadoVencimiento.Vencido) {
+        if (lote.estado_vencimiento === EstadoVencimientoProducto.Vencido) {
           group.vencidos++;
-        } else if (lote.estado_vencimiento === EstadoVencimiento.PorVencer) {
+        } else if (lote.estado_vencimiento === EstadoVencimientoProducto.PorVencer) {
           group.por_vencer++;
         } else if (
-          lote.estado_vencimiento === EstadoVencimiento.Vigente ||
-          lote.estado_vencimiento === EstadoVencimiento.NA ||
-          lote.estado_vencimiento === EstadoVencimiento.SinFecha
+          lote.estado_vencimiento === EstadoVencimientoProducto.Vigente ||
+          lote.estado_vencimiento === EstadoVencimientoProducto.NA ||
+          lote.estado_vencimiento === EstadoVencimientoProducto.SinFecha
         ) {
           group.vigentes++;
         }

@@ -1,4 +1,4 @@
-import type { EstadoVencimiento } from "../../../shared/enums/estados";
+import type { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
 
 export interface RES_Lote {
   id_lote: number;
@@ -22,7 +22,7 @@ export interface RES_Lote {
   stock_minimo: number;
   dias_espera_vencimiento: number | null;
   dias_para_vencer: number | null;
-  estado_vencimiento: EstadoVencimiento;
+  estado_vencimiento: EstadoVencimientoProducto;
 }
 
 export interface RES_ProductoDisponible {

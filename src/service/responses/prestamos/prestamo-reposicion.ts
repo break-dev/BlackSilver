@@ -3,6 +3,7 @@ import type {
   Estado_PrestamoReposicionDetalle,
 } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
+import type { RES_PrestamoReposicionRecepcion } from "./prestamo-reposicion-recepcion";
 
 export interface RES_PrestamoReposicion {
   id_reposicion: number;
@@ -19,6 +20,7 @@ export interface RES_PrestamoReposicion {
   created_at: string;
   estado: Estado_PrestamoReposicion;
   // Insertado por la api
+  recepciones: RES_PrestamoReposicionRecepcion[];
   detalles: RES_PrestamoReposicionDetalle[];
 }
 

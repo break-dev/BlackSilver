@@ -2,12 +2,12 @@ import { Badge, Group, Paper, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { LotesTable } from "./LotesTable";
-import type { RES_DetallePrestamo } from "../../../service/prestamos-atencion.responses";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 
 interface ProductoEntregaCardProps {
   idDetalle: number;
-  detalle: RES_DetallePrestamo;
+  detalle: RES_PrestamoDetalle;
   lotes: RES_LoteDisponible[];
   loadingLotes: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
@@ -66,12 +66,12 @@ export const ProductoEntregaCard = ({
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
             >
               Min: {formatNumber(detalle.stock_minimo / ratio)}{" "}
-              {detalle.unidad_medida_abv}
+              {detalle.unidad_medida_base_abv}
             </Badge>
             <Badge
               variant="dot"
               color={
-                (detalle.stock_disponible || 0) <= detalle.stock_minimo
+                (detalle.stock_disponible_base || 0) <= detalle.stock_minimo
                   ? "orange"
                   : "teal"
               }
@@ -79,8 +79,8 @@ export const ProductoEntregaCard = ({
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
             >
               Disponible:{" "}
-              {formatNumber((detalle.stock_disponible || 0) / ratio)}{" "}
-              {detalle.unidad_medida_abv}
+              {formatNumber((detalle.stock_disponible_base || 0) / ratio)}{" "}
+              {detalle.unidad_medida_pr_abv}
             </Badge>
           </Group>
         </div>
@@ -96,7 +96,7 @@ export const ProductoEntregaCard = ({
               className="font-black h-8 bg-zinc-800/30 border border-zinc-700/50 text-white"
             >
               {formatNumber(detalle.cantidad_solicitada)}{" "}
-              {detalle.unidad_medida_abv}
+              {detalle.unidad_medida_pr_abv}
             </Badge>
           </Group>
 
@@ -126,7 +126,7 @@ export const ProductoEntregaCard = ({
                     c="zinc.5"
                     className="uppercase opacity-60"
                   >
-                    {detalle.unidad_medida_abv}
+                    {detalle.unidad_medida_pr_abv}
                   </Text>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export const ProductoEntregaCard = ({
                     c="zinc.5"
                     className="uppercase opacity-60"
                   >
-                    {detalle.unidad_medida_abv}
+                    {detalle.unidad_medida_pr_abv}
                   </Text>
                 </div>
               </div>
@@ -182,7 +182,7 @@ export const ProductoEntregaCard = ({
           loading={loadingLotes}
           entregaCantidades={entregaCantidades}
           handleCantLoteChange={handleCantLoteChange}
-          unidadAbv={detalle.unidad_medida_abv}
+          unidadAbv={detalle.unidad_medida_pr_abv}
           baseAbv={detalle.unidad_medida_base_abv}
           contenidoPorPresentacion={ratio}
         />

@@ -93,17 +93,6 @@ export interface DetalleRequerimientoExtendido extends RES_DetalleRequerimiento 
 }
 
 /**
- * La trazabilidad de un detalle de requerimiento (Logs)
- */
-export interface RES_Trazabilidad {
-  id_requerimiento_almacen_detalle_log: number;
-  empleado: string | null;
-  descripcion: string;
-  created_at: string;
-  estado: string;
-}
-
-/**
  * Representa una entrega de materiales
  */
 export interface RES_Entrega {

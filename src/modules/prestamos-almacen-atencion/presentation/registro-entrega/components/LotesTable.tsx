@@ -1,14 +1,14 @@
 import { Table, Stack, Center, Loader, Text } from "@mantine/core";
 import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 import { LoteRow } from "./LoteRow";
-import type { RES_DetallePrestamo } from "../../../service/prestamos-atencion.responses";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import { JsonScanner } from "../../../../../presentation/utils/json-scanner";
 import { useJsonScanner } from "../../../../../hooks/useJsonScanner";
 
 interface LotesTableProps {
   idDetalle: number;
-  detalle: RES_DetallePrestamo;
+  detalle: RES_PrestamoDetalle;
   lotes: RES_LoteDisponible[];
   loading: boolean;
   entregaCantidades: Record<number, Record<number, number>>;

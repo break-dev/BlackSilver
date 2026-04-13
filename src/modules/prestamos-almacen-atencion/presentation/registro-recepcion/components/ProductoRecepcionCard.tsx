@@ -18,9 +18,9 @@ import type {
   GroupedReception,
   DTO_RecibirLotExtendido,
 } from "../../../hooks/useRegistroRecepcion";
-import type { RES_LoteRecepcionReposicion } from "../../../service/prestamos-atencion.responses";
 import { useProductoRecepcionCard } from "../../../hooks/useProductoRecepcionCard";
 import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface ProductoRecepcionCardProps {
   grouped: GroupedReception;
@@ -45,7 +45,7 @@ interface ProductoRecepcionCardProps {
     lotIndex: number,
     field: keyof DTO_RecibirLotExtendido,
   ) => string | null;
-  lotesDisponibles: RES_LoteRecepcionReposicion[];
+  lotesDisponibles: RES_LoteDisponible[];
   loadingLotes: boolean;
   unidades: RES_UnidadMedida[];
   loadingUnidades: boolean;
@@ -66,7 +66,7 @@ export const ProductoRecepcionCard = ({
   loadingUnidades,
   cantidadTotalError,
 }: ProductoRecepcionCardProps) => {
-  const isPerecible = grouped.es_perecible === 1;
+  const isPerecible = grouped.es_perecible;
   const targetVencimiento = grouped.detalles_origen[0].fecha_vencimiento;
 
   const { lotes } = useProductoRecepcionCard({

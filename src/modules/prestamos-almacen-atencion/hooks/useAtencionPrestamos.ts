@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import dayjs from "dayjs";
-import type { RES_PrestamoAtencion } from "../service/prestamos-atencion.responses";
+import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import { useNotify } from "../../../hooks/useNotify";
 
@@ -20,7 +20,7 @@ export const useAtencionPrestamos = () => {
   const [busqueda, setBusqueda] = useState("");
 
   // -- Datos de la tabla --
-  const [prestamos, setPrestamos] = useState<RES_PrestamoAtencion[]>([]);
+  const [prestamos, setPrestamos] = useState<RES_Prestamo[]>([]);
   const [loading, setLoading] = useState(false);
 
   // --------------------------------------------------

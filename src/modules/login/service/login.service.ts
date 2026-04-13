@@ -1,5 +1,5 @@
 import { api } from "../../../service/_api";
-import type { IRespuesta } from "../../../service/responses/menu-navegacion";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_Login } from "./login.requests";
 import type { RES_Login } from "./login.responses";
 
