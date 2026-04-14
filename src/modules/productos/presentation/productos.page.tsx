@@ -223,7 +223,7 @@ export const ProductosPage = () => {
         opened={openedRegistro}
         close={closeRegistro}
         title="Registrar Producto"
-        size="md"
+        size="32rem"
       >
         <RegistroProducto
           onSuccess={(nuevo) => {

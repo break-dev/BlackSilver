@@ -1,11 +1,7 @@
 import { Stack } from "@mantine/core";
 import { useRegistroEntrega } from "../../hooks/useRegistroEntrega";
 import type { RES_SolicitudDetalle } from "../../../../service/responses/solicitudes-reabastecimiento/solicitud";
-import {
-  ReceptorInfo,
-  ProductoEntregaCard,
-  FormActions,
-} from "../registro-entrega/components";
+import { ReceptorInfo, ProductoEntregaCard, FormActions } from "./components";
 
 interface RegistroEntregaProps {
   idSolicitud: number;

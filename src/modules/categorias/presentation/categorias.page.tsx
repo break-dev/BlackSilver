@@ -104,7 +104,7 @@ export const CategoriasPage = () => {
                 <div className="pr-14">
                   {/* Áreas Operativas Arriba */}
                   <Group gap={6} mb={8}>
-                    {cat.para_mina && (
+                    {!!cat.para_mina && (
                       <Badge
                         variant="light"
                         color="blue"
@@ -115,7 +115,7 @@ export const CategoriasPage = () => {
                         Mina
                       </Badge>
                     )}
-                    {cat.para_cocina && (
+                    {!!cat.para_cocina && (
                       <Badge
                         variant="light"
                         color="orange"
@@ -128,7 +128,10 @@ export const CategoriasPage = () => {
                     )}
                   </Group>
 
-                  <h3 className="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition-colors uppercase tracking-tight">
+                  <h3
+                    className="text-sm font-bold text-white truncate group-hover:text-indigo-300 
+                    transition-colors uppercase tracking-tight"
+                  >
                     {cat.nombre}
                   </h3>
                   <p className="text-xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
@@ -137,10 +140,17 @@ export const CategoriasPage = () => {
                 </div>
 
                 {/* Control Logístico (Pattern Organigrama) */}
-                {cat.es_consumible && (
-                  <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 group-hover:border-indigo-400/40 transition-all duration-200 mt-1">
+                {!!cat.es_consumible && (
+                  <div
+                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-xl 
+                  bg-indigo-500/10 border border-indigo-500/20 group-hover:border-indigo-400/40 
+                    transition-all duration-200"
+                  >
                     <div className="min-w-0">
-                      <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block leading-none mb-0.5">
+                      <span
+                        className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider 
+                        block leading-none mb-0.5"
+                      >
                         Destinos de Consumo
                       </span>
                       <span className="text-xs font-semibold text-zinc-300 truncate block">

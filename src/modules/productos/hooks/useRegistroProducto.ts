@@ -10,6 +10,7 @@ import type {
   RES_CategoriaBien,
   RES_UnidadMedida,
 } from "../service/productos.responses";
+import { Periodo } from "../../../shared/enums/_generic/periodo";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
@@ -67,7 +68,17 @@ export const useRegistroProducto = (
     field: K,
     value: DTO_CrearProducto[K],
   ) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const newForm = { ...prev, [field]: value };
+
+      // Lógica específica para productos perecibles
+      if (field === "es_perecible" && value === true) {
+        newForm.periodo_espera_vencimiento = Periodo.Semanal;
+        newForm.tiempo_espera_vencimiento = 1;
+      }
+
+      return newForm;
+    });
   };
 
   const handleSubmit = async () => {

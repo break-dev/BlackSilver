@@ -20,11 +20,11 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
-import { useAtencionSolicitudes } from "../hooks/useAtencionSolicitudes";
+import { useAtencionSolicitudes } from "../hooks/useAtencionSolicitudes.ts";
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud.ts";
-import { useUIStore } from "../../../stores/ui.store";
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
-import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { useUIStore } from "../../../stores/ui.store.ts";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar.tsx";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar.tsx";
 import { DetalleSolicitud } from "./detalle-solicitud.tsx";
 import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";

@@ -10,6 +10,7 @@ import {
   Checkbox,
 } from "@mantine/core";
 import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "motion/react";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_Producto } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
@@ -57,127 +58,133 @@ export const RegistroProducto = ({
     onClose: closeAddCat,
   });
 
-  const categoriasParaConsumo = useMemo(() =>
-    categorias.map(c => ({ value: String(c.id_categoria), label: c.nombre })),
-    [categorias]);
+  const categoriasParaConsumo = useMemo(
+    () =>
+      categorias.map((c) => ({
+        value: String(c.id_categoria),
+        label: c.nombre,
+      })),
+    [categorias],
+  );
 
-  const getDiasVencimiento = () => {
-    if (!form.tiempo_espera_vencimiento) return 0;
-    const qty = form.tiempo_espera_vencimiento;
-    switch (form.periodo_espera_vencimiento) {
-      case Periodo.Diario:
-        return qty;
-      case Periodo.Semanal:
-        return qty * 7;
-      case Periodo.Mensual:
-        return qty * 30;
-      case Periodo.Anual:
-        return qty * 365;
-      default:
-        return 0;
-    }
-  };
+  // const getDiasVencimiento = () => {
+  //   if (!form.tiempo_espera_vencimiento) return 0;
+  //   const qty = form.tiempo_espera_vencimiento;
+  //   switch (form.periodo_espera_vencimiento) {
+  //     case Periodo.Diario:
+  //       return qty;
+  //     case Periodo.Semanal:
+  //       return qty * 7;
+  //     case Periodo.Mensual:
+  //       return qty * 30;
+  //     case Periodo.Anual:
+  //       return qty * 365;
+  //     default:
+  //       return 0;
+  //   }
+  // };
 
   return (
     <Stack gap="lg" mt="xs">
-      <div className="flex flex-col gap-1 w-full">
-        <LabelForm text="Categoría" required />
-        <div className="flex gap-2 items-center">
-          <Select
-            placeholder={
-              loadingCategorias
-                ? "Cargando..."
-                : "Seleccione categoría de bienes"
-            }
-            data={categorias.map((c) => ({
-              value: c.id_categoria.toString(),
-              label: c.nombre,
-            }))}
-            value={
-              form.id_categoria === 0 ? null : form.id_categoria.toString()
-            }
-            onChange={(val) => setField("id_categoria", Number(val))}
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-            radius="lg"
-            searchable
-            clearable
-            comboboxProps={{
-              withinPortal: true,
-              transitionProps: { transition: "pop", duration: 200 },
-            }}
-            disabled={loadingCategorias}
-            className="flex-1"
-          />
-          <ActionIcon
-            size={36}
-            radius="md"
-            variant="filled"
-            color="indigo"
-            className="shrink-0"
-            onClick={openAddCat}
-          >
-            <PlusIcon className="w-5 h-5" />
-          </ActionIcon>
+      {/* Fila 1: Categoría y Nombre */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <LabelForm text="Categoría" required />
+          <div className="flex gap-2 items-center">
+            <Select
+              placeholder={
+                loadingCategorias ? "Cargando..." : "Seleccione categoría"
+              }
+              data={categorias.map((c) => ({
+                value: c.id_categoria.toString(),
+                label: c.nombre,
+              }))}
+              value={
+                form.id_categoria === 0 ? null : form.id_categoria.toString()
+              }
+              onChange={(val) => setField("id_categoria", Number(val))}
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+              }}
+              radius="lg"
+              searchable
+              clearable
+              comboboxProps={{
+                withinPortal: true,
+                transitionProps: { transition: "pop", duration: 200 },
+              }}
+              disabled={loadingCategorias}
+              className="flex-1"
+            />
+            <ActionIcon
+              size={40}
+              radius="lg"
+              variant="filled"
+              color="indigo"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors"
+              onClick={openAddCat}
+            >
+              <PlusIcon className="w-5 h-5 text-white" />
+            </ActionIcon>
+          </div>
         </div>
+
+        <TextInput
+          label={<LabelForm text="Nombre del Producto" required />}
+          placeholder="Ej: Dinamita 7/8 Famesa"
+          value={form.nombre}
+          onChange={(e) => setField("nombre", e.currentTarget.value)}
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+          }}
+          radius="lg"
+        />
       </div>
 
-      <TextInput
-        label={<LabelForm text="Nombre del Producto" required />}
-        placeholder="Ej: Dinamita 7/8 Famesa"
-        value={form.nombre}
-        onChange={(e) => setField("nombre", e.currentTarget.value)}
-        classNames={{
-          input:
-            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-        }}
-        radius="lg"
-      />
+      {/* Fila 2: Unidad y Stock */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select
+          label={<LabelForm text="Unidad de Medida" required />}
+          placeholder={loadingUnidades ? "Cargando..." : "Seleccione Unidad"}
+          data={unidades.map((u) => ({
+            value: u.id_unidad_medida.toString(),
+            label: `${u.nombre} (${u.abreviatura})`,
+          }))}
+          value={
+            form.id_unidad_medida_base === 0
+              ? null
+              : form.id_unidad_medida_base.toString()
+          }
+          onChange={(val) => setField("id_unidad_medida_base", Number(val))}
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+          }}
+          radius="lg"
+          searchable
+          clearable
+          comboboxProps={{
+            withinPortal: true,
+            transitionProps: { transition: "pop", duration: 200 },
+          }}
+          disabled={loadingUnidades}
+        />
 
-      <Select
-        label={<LabelForm text="Unidad de Medida" required />}
-        placeholder={
-          loadingUnidades ? "Cargando..." : "Seleccione Unidad de Medida"
-        }
-        data={unidades.map((u) => ({
-          value: u.id_unidad_medida.toString(),
-          label: `${u.nombre} (${u.abreviatura})`,
-        }))}
-        value={
-          form.id_unidad_medida_base === 0
-            ? null
-            : form.id_unidad_medida_base.toString()
-        }
-        onChange={(val) => setField("id_unidad_medida_base", Number(val))}
-        classNames={{
-          input:
-            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-        }}
-        radius="lg"
-        searchable
-        clearable
-        comboboxProps={{
-          withinPortal: true,
-          transitionProps: { transition: "pop", duration: 200 },
-        }}
-        disabled={loadingUnidades}
-      />
-
-      <NumberInput
-        label="Stock mínimo"
-        placeholder="0"
-        value={form.stock_minimo}
-        onChange={(val) => setField("stock_minimo", Number(val))}
-        classNames={{
-          input:
-            "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 text-center",
-        }}
-        radius="lg"
-        min={0}
-        className="w-32"
-      />
+        <NumberInput
+          label={<LabelForm text="Stock Mínimo" />}
+          placeholder="0"
+          value={form.stock_minimo}
+          onChange={(val) => setField("stock_minimo", Number(val))}
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+          }}
+          radius="lg"
+          min={0}
+        />
+      </div>
 
       <div className="border border-zinc-800/80 rounded-2xl p-5 space-y-6 mt-2 bg-zinc-950/20">
         <Text
@@ -188,7 +195,7 @@ export const RegistroProducto = ({
           Indicadores del Producto
         </Text>
 
-        <Stack gap="md" mt={"12px"}>
+        <Group grow gap="xl" mt={"12px"}>
           <Checkbox
             label="Producto Fiscalizado"
             description="Requiere control y reporte"
@@ -220,76 +227,88 @@ export const RegistroProducto = ({
               description: "text-zinc-600 text-[11px] mt-0.5",
             }}
           />
-        </Stack>
+        </Group>
 
-        {form.es_perecible && (
-          <div className="pt-2 border-t border-zinc-800/80 space-y-5 animate-fade-in">
-            <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-xl p-4 flex gap-3">
-              <InformationCircleIcon className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-              <Text size="sm" className="text-indigo-100 font-medium">
-                Define con cuánta antelación deseas recibir avisos antes del
-                vencimiento real.
-              </Text>
-            </div>
+        <AnimatePresence>
+          {form.es_perecible && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="pt-2 border-t border-zinc-800/80 space-y-5">
+                <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-xl p-4 flex gap-3">
+                  <InformationCircleIcon className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                  <Text size="sm" className="text-indigo-100 font-medium">
+                    Define con cuánta antelación deseas recibir avisos antes del
+                    vencimiento real.
+                  </Text>
+                </div>
 
-            <Group grow align="flex-start">
-              <NumberInput
-                label={<LabelForm text="Anticipar alerta por" required />}
-                placeholder="Ej. 2"
-                value={form.tiempo_espera_vencimiento || undefined}
-                onChange={(val) =>
-                  setField("tiempo_espera_vencimiento", Number(val))
-                }
-                classNames={{
-                  input:
-                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-                }}
-                radius="lg"
-                min={1}
-                withAsterisk={false}
-              />
-              <Select
-                label={<LabelForm text="Periodo" required />}
-                placeholder="Seleccione"
-                data={[
-                  { value: Periodo.Diario, label: "Días" },
-                  { value: Periodo.Semanal, label: "Semanas" },
-                  { value: Periodo.Mensual, label: "Meses" },
-                  { value: Periodo.Anual, label: "Años" },
-                ]}
-                value={form.periodo_espera_vencimiento}
-                onChange={(val) => setField("periodo_espera_vencimiento", val)}
-                classNames={{
-                  input:
-                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-                }}
-                radius="lg"
-                comboboxProps={{
-                  withinPortal: true,
-                  transitionProps: { transition: "pop", duration: 200 },
-                }}
-                withAsterisk={false}
-              />
-            </Group>
+                <Group grow align="flex-start">
+                  <NumberInput
+                    label={<LabelForm text="Anticipar alerta por" required />}
+                    placeholder="Ej. 2"
+                    value={form.tiempo_espera_vencimiento || undefined}
+                    onChange={(val) =>
+                      setField("tiempo_espera_vencimiento", Number(val))
+                    }
+                    classNames={{
+                      input:
+                        "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                    }}
+                    radius="lg"
+                    min={1}
+                    withAsterisk={false}
+                  />
+                  <Select
+                    label={<LabelForm text="Periodo" required />}
+                    placeholder="Seleccione"
+                    data={[
+                      { value: Periodo.Diario, label: "Día(s)" },
+                      { value: Periodo.Semanal, label: "Semana(s)" },
+                      { value: Periodo.Mensual, label: "Mes(es)" },
+                      { value: Periodo.Anual, label: "Año(s)" },
+                    ]}
+                    value={form.periodo_espera_vencimiento}
+                    onChange={(val) =>
+                      setField("periodo_espera_vencimiento", val)
+                    }
+                    classNames={{
+                      input:
+                        "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                    }}
+                    radius="lg"
+                    comboboxProps={{
+                      withinPortal: true,
+                      transitionProps: { transition: "pop", duration: 200 },
+                    }}
+                    withAsterisk={false}
+                  />
+                </Group>
 
-            <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl py-3 px-4 text-center mt-2">
-              <Text size="sm" fw={600} className="text-zinc-200">
-                Resumen de la Configuración:
-              </Text>
-              <Text size="sm" className="text-zinc-300 mt-0.5">
-                Se avisará el vencimiento de{" "}
-                <span className="text-indigo-400 font-medium">
-                  este producto
-                </span>{" "}
-                con{" "}
-                <span className="text-indigo-400 font-medium">
-                  {getDiasVencimiento()} días
-                </span>{" "}
-                de anticipación.
-              </Text>
-            </div>
-          </div>
-        )}
+                {/* <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-xl py-3 px-4 text-center mt-2">
+                  <Text size="sm" fw={600} className="text-zinc-200">
+                    Resumen de la Configuración:
+                  </Text>
+                  <Text size="sm" className="text-zinc-300 mt-0.5">
+                    Se avisará el vencimiento de{" "}
+                    <span className="text-indigo-400 font-medium">
+                      este producto
+                    </span>{" "}
+                    con{" "}
+                    <span className="text-indigo-400 font-medium">
+                      {getDiasVencimiento()} días
+                    </span>{" "}
+                    de anticipación.
+                  </Text>
+                </div> */}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <Group justify="flex-end" gap="md" mt="xl">

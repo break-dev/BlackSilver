@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
 
 interface RegistroCategoriaProps {
   nombre: string;
@@ -67,7 +68,7 @@ export const RegistroCategoria = ({
   return (
     <Stack gap="md">
       <TextInput
-        label="Nombre de la Categoría"
+        label="Nombre"
         placeholder="Ej. Herramientas, EPP, Consumibles..."
         required
         withAsterisk
@@ -79,14 +80,14 @@ export const RegistroCategoria = ({
       />
 
       <Select
-        label="Tipo de Requerimiento"
+        label="Tipo"
         placeholder="Seleccione un tipo..."
         required
         withAsterisk
         disabled={loading}
         radius="lg"
         classNames={inputClasses}
-        data={Object.values(TipoBien)}
+        data={Object.values(TipoProducto)}
         value={tipoRequerimiento}
         onChange={setTipoRequerimiento}
         comboboxProps={{
@@ -97,7 +98,7 @@ export const RegistroCategoria = ({
       />
 
       <Select
-        label="Clasificación del Bien (Opcional)"
+        label="Clasificación (opc.)"
         placeholder="Seleccione una clasificación ..."
         disabled={loading}
         radius="lg"
@@ -113,9 +114,7 @@ export const RegistroCategoria = ({
       />
 
       <Stack gap="xs">
-        <div className="text-zinc-300 text-sm font-medium">
-          Clasificación Operativa
-        </div>
+        <div className="text-zinc-300 text-sm font-medium">Destino de Uso</div>
         <Group
           gap="xl"
           className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-800"
@@ -151,11 +150,10 @@ export const RegistroCategoria = ({
         <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg flex items-center justify-between transition-all duration-200">
           <div className="flex flex-col gap-1 pr-4">
             <Text size="sm" fw={600} className="text-indigo-200">
-              ¿Es un insumo consumible?
+              Trazabilidad de consumo
             </Text>
             <Text size="xs" className="text-indigo-100/70 leading-snug">
-              Indique si este producto abastece a otras categorías para el
-              control logístico.
+              Indique si esta categoría abastece a otras.
             </Text>
           </div>
           <Switch
@@ -168,12 +166,9 @@ export const RegistroCategoria = ({
           />
         </div>
 
-        <div className="pt-2">
+        <div className="">
           <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800 transition-all duration-200">
             <div className="min-w-0">
-              <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block leading-none mb-1">
-                Control Logístico
-              </span>
               <span
                 className={`text-xs font-semibold truncate block ${!esConsumible ? "text-zinc-600" : "text-zinc-300"}`}
               >

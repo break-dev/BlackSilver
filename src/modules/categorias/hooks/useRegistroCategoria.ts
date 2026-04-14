@@ -3,6 +3,8 @@ import { useNotify } from "../../../hooks/useNotify";
 import { CategoriasService } from "../service/categorias.service";
 import { Schema_RegistroCategoria } from "../service/categorias.requests";
 import type { RES_Categoria } from "../service/categorias.responses";
+import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface UseRegistroCategoriaProps {
   onSuccess?: (nueva: RES_Categoria) => void;
@@ -19,10 +21,10 @@ export const useRegistroCategoria = ({
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipoRequerimiento, setTipoRequerimiento] = useState<string | null>(
-    null,
+    TipoProducto.Bien,
   );
   const [clasificacionBien, setClasificacionBien] = useState<string | null>(
-    null,
+    TipoBien.Suministro,
   );
   const [esConsumible, setEsConsumible] = useState(false);
   const [paraCocina, setParaCocina] = useState(false);
