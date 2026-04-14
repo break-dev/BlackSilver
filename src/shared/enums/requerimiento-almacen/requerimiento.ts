@@ -9,7 +9,7 @@ export enum Estado_Requerimiento {
 }
 
 export enum Estado_RequerimientoDetalle {
-  EsperandoAprobacion = "Esperando aprobación",
+  EsperandoAprobacion = "Esperando Aprobación",
   Rechazado = "Rechazado",
   Aprobado = "Aprobado",
   //

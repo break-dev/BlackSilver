@@ -17,6 +17,7 @@ export enum Estado_SolicitudDetalle {
   //
   Cerrado = "Cerrado",
   Completado = "Completado",
+  SolicitandoPrestamo = "Solicitando Préstamo",
 }
 
 export enum Estado_SolicitudDetalleLog {

@@ -90,8 +90,9 @@ export const useDetalleSolicitud = ({
     return detalles.filter(
       (d) =>
         (d.estado === Estado_SolicitudDetalle.Aprobado ||
-          d.estado === Estado_SolicitudDetalle.EnDespacho) &&
-        d.cantidad_solicitada_base - d.cantidad_entregada_base > 0,
+          d.estado === Estado_SolicitudDetalle.EnDespacho ||
+          d.estado === Estado_SolicitudDetalle.SolicitandoPrestamo) &&
+        d.pendiente_base > 0,
     );
   }, [detalles]);
 
@@ -127,9 +128,9 @@ export const useDetalleSolicitud = ({
             resp.data.map((d) => ({
               ...d,
               pendiente_base:
-                d.cantidad_solicitada_base -
+                Number(d.cantidad_solicitada_base) -
                 (Number(d.cantidad_entregada_base) +
-                  Number(d.cantidad_prestada_total_base)),
+                  Number(d.cantidad_prestada_total_base || 0)),
             })),
           );
         } else {

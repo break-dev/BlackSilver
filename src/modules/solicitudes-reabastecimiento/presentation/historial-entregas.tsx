@@ -130,9 +130,12 @@ export const HistorialEntregas = ({
         const detailsGrouped = groupDetailsByProduct(h.detalles || []);
         const pendientes = (h.detalles || []).filter(
           (d) =>
+            d.estado === Estado_SolicitudEntregaDetalle.EnDespacho ||
+            d.estado ===
+              Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ||
             d.estado_entrega_detalle === "Entregado" ||
-            d.estado_entrega_detalle === "En despacho" ||
-            d.estado_entrega_detalle === "Recibido Parcialmente",
+            d.estado_entrega_detalle === "En despacho" || // Compatibilidad manual
+            d.estado_entrega_detalle === "Recibido Parcialmente", // Compatibilidad manual
         );
 
         return (
@@ -164,23 +167,16 @@ export const HistorialEntregas = ({
                       <Badge
                         variant="light"
                         color={
-                          h.estado === "Recibida" ||
                           h.estado === Estado_SolicitudEntrega.RecepcionCompleta
                             ? "teal"
-                            : h.estado === "Procesada" ||
-                                h.estado === "Recepcionado Parcialmente" ||
-                                h.estado ===
-                                  Estado_SolicitudEntrega.RecepcionadoParcialmente
+                            : h.estado ===
+                                Estado_SolicitudEntrega.RecepcionadoParcialmente
                               ? "orange"
                               : "indigo"
                         }
                         size="xs"
                       >
-                        {h.estado === "Recepcionado Parcialmente" ||
-                        h.estado ===
-                          Estado_SolicitudEntrega.RecepcionadoParcialmente
-                          ? "Parcial"
-                          : h.estado}
+                        {h.estado}
                       </Badge>
                     </Group>
                     <Group gap="xs" className="text-zinc-400 mt-0.5">
@@ -310,9 +306,7 @@ export const HistorialEntregas = ({
                           {d.producto}
                         </Text>
                         <Group gap={4}>
-                          {d.estado ==
-                            Estado_SolicitudEntregaDetalle.EnDespacho ||
-                          d.estado ==
+                          {d.estado ===
                             Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
                             <Badge
                               size="xs"
@@ -324,10 +318,13 @@ export const HistorialEntregas = ({
                             >
                               Recibido
                             </Badge>
-                          ) : d.estado_entrega_detalle ===
-                              "Recibido Parcialmente" ||
-                            d.estado ===
-                              Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
+                          ) : d.estado ===
+                            Estado_SolicitudEntregaDetalle.EnDespacho ? (
+                            <Badge size="xs" variant="light" color="indigo">
+                              En Despacho
+                            </Badge>
+                          ) : d.estado ===
+                            Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
                             <Badge
                               size="xs"
                               variant="light"
@@ -355,18 +352,16 @@ export const HistorialEntregas = ({
                           </span>
                         </Text>
                         {d.estado ===
-                        Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
+                          Estado_SolicitudEntregaDetalle.EnDespacho ? (
                           <Badge
                             size="xs"
                             variant="dot"
                             color="orange"
                             className="mt-1"
                           >
-                            Pendiente
+                            Pendiente Ingreso
                           </Badge>
-                        ) : d.estado_entrega_detalle ===
-                            "Recibido Parcialmente" ||
-                          d.estado ===
+                        ) : d.estado ===
                             Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
                           <Badge
                             size="xs"

@@ -202,7 +202,7 @@ export const useRegistroEntrega = ({
 
             detallesParaApi.push({
               id_prestamo_detalle: idDetalle,
-              id_lote_salida: numIdLote,
+              id_lote_producto: numIdLote,
               cantidad_base: cantBase,
               cantidad_lote: cantBase / ratioLote,
               cantidad_solicitud: cantBase / ratioItem,

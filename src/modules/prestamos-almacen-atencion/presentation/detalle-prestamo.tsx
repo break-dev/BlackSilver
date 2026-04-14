@@ -37,6 +37,7 @@ import { PrestamoStatusBadge } from "./components/prestamo-status-badge";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { HeaderCard } from "./components/detail-elements";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
+import { Estado_PrestamoDetalle } from "../../../shared/enums/prestamo-almacen/prestamo";
 
 interface Props {
   prestamo: RES_Prestamo;
@@ -314,7 +315,9 @@ export const DetallePrestamo = ({
               Nueva Entrega ({selectedItemsIds.length})
             </Button>
 
-            {detalles.some((d) => d.estado.toLowerCase() === "pendiente") && (
+            {detalles.some(
+              (d) => d.estado === Estado_PrestamoDetalle.EsperandoAprobacion,
+            ) && (
               <>
                 <Button
                   color="green"
@@ -393,7 +396,8 @@ export const DetallePrestamo = ({
                   <Group gap={4} justify="center">
                     <span>Acciones</span>
                     {detalles.some(
-                      (d) => d.estado.toLowerCase() === "pendiente",
+                      (d) =>
+                        d.estado === Estado_PrestamoDetalle.EsperandoAprobacion,
                     ) && (
                       <Tooltip
                         label="Seleccionar todos los pendientes para acción masiva"
@@ -415,9 +419,8 @@ export const DetallePrestamo = ({
             <tbody className="divide-y divide-zinc-800/30">
               {detalles.map((d, idx) => {
                 const isApprovedToDispatch =
-                  d.estado.toLowerCase().includes("aprobado") ||
-                  d.estado.toLowerCase().includes("iniciado") ||
-                  d.estado.toLowerCase().includes("entrega");
+                  d.estado === Estado_PrestamoDetalle.Aprobado ||
+                  d.estado === Estado_PrestamoDetalle.EnDespacho;
                 const porcentaje =
                   Math.round(
                     (d.cantidad_prestada_base / d.cantidad_solicitada_base) *
@@ -435,7 +438,7 @@ export const DetallePrestamo = ({
                     <td className="px-4 py-4 text-center">
                       {porcentaje >= 100 ||
                       !isApprovedToDispatch ||
-                      d.estado.toLowerCase().includes("rechazado") ? (
+                      d.estado === Estado_PrestamoDetalle.Rechazado ? (
                         <div className="flex justify-center opacity-40">
                           <NoSymbolIcon className="w-5 h-5 text-zinc-600" />
                         </div>
@@ -573,7 +576,7 @@ export const DetallePrestamo = ({
                           </ActionIcon>
                         </Tooltip>
 
-                        {d.estado.toLowerCase().includes("pendiente") && (
+                        {d.estado === Estado_PrestamoDetalle.EsperandoAprobacion && (
                           <Tooltip
                             label="Acción masiva"
                             position="top"

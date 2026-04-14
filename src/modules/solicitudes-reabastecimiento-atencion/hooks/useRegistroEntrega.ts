@@ -55,7 +55,10 @@ export const useRegistroEntrega = ({
   const selectedDetalles = useMemo<DetalleExt[]>(() => {
     return baseDetalles.map((d) => ({
       ...d,
-      pendiente_base: d.cantidad_solicitada_base - d.cantidad_entregada_base,
+      pendiente_base:
+        Number(d.cantidad_solicitada_base) -
+        (Number(d.cantidad_entregada_base) +
+          Number(d.cantidad_prestada_total_base || 0)),
       equivSolicitud:
         d.cantidad_solicitada > 0
           ? d.cantidad_solicitada_base / d.cantidad_solicitada

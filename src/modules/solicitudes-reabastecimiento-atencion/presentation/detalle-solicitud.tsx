@@ -301,9 +301,9 @@ export const DetalleSolicitud = ({
                   {detalles.some(
                     (d) =>
                       (d.estado === Estado_SolicitudDetalle.Aprobado ||
-                        d.estado === Estado_SolicitudDetalle.EnDespacho) &&
-                      d.cantidad_solicitada_base - d.cantidad_entregada_base >
-                        0,
+                        d.estado === Estado_SolicitudDetalle.EnDespacho ||
+                        d.estado === Estado_SolicitudDetalle.SolicitandoPrestamo) &&
+                      d.pendiente_base > 0,
                   ) && (
                     <div className="flex justify-center">
                       <Checkbox
@@ -352,10 +352,9 @@ export const DetalleSolicitud = ({
                   </td>
                   <td className="px-4 py-4 text-center">
                     {(item.estado === Estado_SolicitudDetalle.Aprobado ||
-                      item.estado === Estado_SolicitudDetalle.EnDespacho) &&
-                    item.cantidad_solicitada_base -
-                      item.cantidad_entregada_base >
-                      0 ? (
+                      item.estado === Estado_SolicitudDetalle.EnDespacho ||
+                      item.estado === Estado_SolicitudDetalle.SolicitandoPrestamo) &&
+                    item.pendiente_base > 0 ? (
                       <Checkbox
                         checked={selectedItemsIds.includes(
                           item.id_solicitud_detalle,
