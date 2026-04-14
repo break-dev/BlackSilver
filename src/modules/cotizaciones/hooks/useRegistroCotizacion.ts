@@ -14,9 +14,14 @@ import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
 import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
+import { usePrint } from "../../../hooks/usePrint";
+import { OrdenCompraPDF } from "../presentation/orden-compra-pdf";
+import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
+import React from "react";
 
 export const useRegistroCotizacion = (onSuccess: () => void) => {
   const { notify } = useNotify();
+  const { print, prepare } = usePrint();
   const [loading, setLoading] = useState(false);
   const [loadingMaestros, setLoadingMaestros] = useState(true);
 
@@ -363,6 +368,14 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       return;
     }
 
+    // 4. Previsión de Impresión (Para evitar popup blocker)
+    let printerWin: Window | null = null;
+    const tieneAprobadas = cotizaciones.some(c => c.estado === Estado_Cotizacion.Aprobada);
+    
+    if (tieneAprobadas) {
+      printerWin = prepare("OrdenCompraPDF");
+    }
+
     setLoading(true);
     try {
       const payload: DTO_RegistrarComparativo = {
@@ -404,19 +417,83 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const resp = await CotizacionesService.registrar_comparativo(payload);
 
       if (resp.success) {
-        notify({
-          type: "success",
-          content: "Comparativo registrado correctamente.",
-        });
+        // 4. Imprimir reportes de los aprobados si existen
+          if (resp.data?.ids_aprobadas && resp.data.ids_aprobadas.length > 0) {
+            resp.data.ids_aprobadas.forEach((aprobada: { id: number; correlativo: string }) => {
+              // Vamos a intentar encontrar la cotización en el estado local que fue marcada como Aprobada
+              const cotLocal = cotizaciones.find(c => c.estado === Estado_Cotizacion.Aprobada);
+              if (cotLocal && resp.data) {
+                const prov = maestros.proveedores.find(p => p.id_proveedor === cotLocal.id_proveedor);
+                
+                const resCot: RES_Cotizacion = {
+                  id: aprobada.id,
+                  id_comparativo: resp.data.id_comparativo,
+                  id_proveedor: cotLocal.id_proveedor,
+                  proveedor_nombre: prov?.razon_social || "Desconocido",
+                  moneda: cotLocal.moneda,
+                  correlativo: aprobada.correlativo,
+                  numero_correlativo: 0,
+                  metodo_pago: cotLocal.metodo_pago,
+                  fecha_vencimiento_pago: (cotLocal.fecha_vencimiento_pago as string | null) || null,
+                  total_antes_igv: cotLocal.total_antes_igv,
+                  incluye_igv: cotLocal.incluye_igv,
+                  porcentaje_igv: cotLocal.porcentaje_igv,
+                  monto_igv: cotLocal.monto_igv,
+                  total_despues_igv: cotLocal.total_despues_igv,
+                  observacion: cotLocal.observacion || null,
+                  evidencias: null,
+                  fecha_hora_cotizacion: new Date().toISOString(),
+                  comparativo_fecha: new Date().toISOString(),
+                  estado: Estado_Cotizacion.Aprobada,
+                  created_at: new Date().toISOString()
+                };
+
+                const resDetalles: RES_CotizacionDetalle[] = cotLocal.detalles
+                  .filter(d => !d.no_cotiza)
+                  .map((d, idx) => {
+                    const prod = maestros.catalogo.find(p => p.id_producto === d.id_producto);
+                    const uni = maestros.unidades.find(u => u.id_unidad_medida === d.id_unidad_medida);
+                    return {
+                      id: idx,
+                      id_cotizacion: aprobada.id,
+                      id_comparativo_detalle: 0,
+                      id_unidad_medida: d.id_unidad_medida,
+                      producto_nombre: prod?.nombre || "Producto",
+                      unidad_medida_nombre: uni?.nombre || "UM",
+                      unidad_medida_abv: uni?.abreviatura || "UM",
+                      cantidad: d.cantidad,
+                      contenido_por_presentacion: d.contenido_por_presentacion,
+                      cantidad_base: d.cantidad_base,
+                      precio_unitario: d.precio_unitario,
+                      precio_unitario_base: d.precio_unitario_base,
+                      comentario: d.comentario || null,
+                      no_cotiza: 0,
+                      unidad_medida_base_abv: prod?.unidad_medida_abreviatura || "UND"
+                    };
+                  });
+
+              print(React.createElement(OrdenCompraPDF, { 
+                cotizacion: resCot, 
+                detalles: resDetalles 
+              }), {
+                documentTitle: `Orden de Compra - ${aprobada.correlativo}`,
+                target: "OrdenCompraPDF"
+              });
+            }
+          });
+        }
+
         onSuccess();
       } else {
         notify({ type: "error", content: resp.message });
+        printerWin?.close();
       }
     } catch {
       notify({
         type: "error",
         content: "Ocurrió un error al guardar el comparativo.",
       });
+      printerWin?.close();
     } finally {
       setLoading(false);
     }

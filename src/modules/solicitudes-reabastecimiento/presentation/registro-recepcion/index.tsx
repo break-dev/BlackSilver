@@ -158,7 +158,7 @@ export const RegistroRecepcion = (props: Props) => {
               >
                 <Text size="xs" fw={500}>
                   Al marcar como incidencia, es obligatorio detallarla en la
-                  observación y adjuntar al menos una evidencia.
+                  observación y adjuntar al menos una evidencias.
                 </Text>
               </Alert>
             )}

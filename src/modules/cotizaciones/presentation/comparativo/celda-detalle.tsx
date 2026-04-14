@@ -7,6 +7,7 @@ import {
   Switch,
   Tooltip,
   TextInput,
+  Skeleton,
 } from "@mantine/core";
 import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -17,15 +18,15 @@ import type {
 } from "../../service/cotizaciones.requests";
 
 interface CeldaDetalleProps {
-  det: DTO_CotizacionDetalle;
-  prod: DTO_ProductoComparativo & {
+  det?: DTO_CotizacionDetalle;
+  prod?: DTO_ProductoComparativo & {
     nombre: string;
     codigo: string;
     id_unidad_medida_base: number;
     unidad_medida_base: string;
     unidad_medida_abreviatura: string;
   };
-  cot: DTO_CotizacionRequest;
+  cot?: DTO_CotizacionRequest;
   cotIdx: number;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
@@ -35,6 +36,7 @@ interface CeldaDetalleProps {
     value: DTO_CotizacionDetalle[K],
   ) => void;
   onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
+  isSkeleton?: boolean;
 }
 
 const inputStyles = {
@@ -52,7 +54,32 @@ export const CeldaDetalle = ({
   unidadesMedida,
   onUpdateDetail,
   onToggleNoCotiza,
+  isSkeleton = false,
 }: CeldaDetalleProps) => {
+  if (isSkeleton) {
+    return (
+      <Stack gap="sm" className="w-full">
+        <Group grow align="flex-end" gap="xs">
+          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" />
+        </Group>
+        <Group grow align="flex-end" gap="xs">
+          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" />
+        </Group>
+        <Group grow wrap="nowrap" gap="xs">
+          <Skeleton h={40} radius="md" />
+          <Skeleton h={40} radius="md" />
+          <Skeleton h={40} radius="md" />
+        </Group>
+        <Skeleton h={32} radius="lg" />
+      </Stack>
+    );
+  }
+
+  // Si no es esqueleto, validamos que existan det, prod y cot
+  if (!det || !prod || !cot) return null;
+
   const currentUnit = unidadesMedida.find(
     (u) => u.value === String(det.id_unidad_medida),
   );
@@ -72,13 +99,6 @@ export const CeldaDetalle = ({
           position="left"
         >
           <Group gap={6} align="center">
-            <Text
-              size="10px"
-              fw={700}
-              className={det.no_cotiza ? "text-zinc-600" : "text-zinc-400"}
-            >
-              {det.no_cotiza ? "OFF" : "¿COTIZAR?"}
-            </Text>
             <Switch
               size="xs"
               color="red"
@@ -102,7 +122,7 @@ export const CeldaDetalle = ({
         {/* Fila 1: Unidad y Cantidad */}
         <Group grow align="flex-end" gap="xs">
           <Select
-            label="Und. de Cotización"
+            label="Und. de Medida"
             data={unidadesMedida}
             value={String(det.id_unidad_medida)}
             onChange={(val) =>
@@ -120,7 +140,7 @@ export const CeldaDetalle = ({
             comboboxProps={{ withinPortal: true, zIndex: 9999 }}
           />
           <NumberInput
-            label={`Cant. x ${abrev}`}
+            label={`Cantidad de ${abrev}`}
             value={det.cantidad}
             onChange={(val) =>
               onUpdateDetail(cotIdx, prod.id_producto, "cantidad", Number(val))
@@ -138,7 +158,7 @@ export const CeldaDetalle = ({
           <NumberInput
             label={
               <Text size="xs" fw={500} className="text-zinc-300">
-                Und x {abrev} <span className="text-red-500">*</span>
+                {baseAbrev} x {abrev} <span className="text-red-500">*</span>
               </Text>
             }
             value={det.contenido_por_presentacion}

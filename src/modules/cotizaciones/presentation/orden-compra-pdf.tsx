@@ -1,0 +1,276 @@
+import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import dayjs from "dayjs";
+import { formatNumber } from "../../../shared/functions/formatNumber";
+import type {
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+} from "../service/cotizaciones.responses";
+
+interface OrdenCompraPDFProps {
+  cotizacion: RES_Cotizacion;
+  detalles: RES_CotizacionDetalle[];
+}
+
+const styles = StyleSheet.create({
+  page: {
+    padding: 30,
+    fontSize: 10,
+    color: "#18181b", // zinc-900
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    borderBottomWidth: 2,
+    borderBottomColor: "#3f3f46", // zinc-700
+    paddingBottom: 10,
+  },
+  companyInfo: {
+    flexDirection: "column",
+  },
+  poTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#0891b2", // cyan-600
+  },
+  section: {
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    backgroundColor: "#f4f4f5", // zinc-100
+    padding: 4,
+    marginBottom: 5,
+    textTransform: "uppercase",
+  },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e4e4e7", // zinc-200
+    paddingVertical: 5,
+    alignItems: "center",
+  },
+  tableHeader: {
+    backgroundColor: "#27272a", // zinc-800
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  col1: { width: "10%", textAlign: "center" },
+  col2: { width: "10%", textAlign: "center" },
+  col3: { width: "50%", textAlign: "left", paddingLeft: 5 },
+  col4: { width: "15%", textAlign: "right", paddingRight: 5 },
+  col5: { width: "15%", textAlign: "right", paddingRight: 5 },
+  totalsContainer: {
+    marginTop: 20,
+    alignSelf: "flex-end",
+    width: "40%",
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 3,
+  },
+  totalLabel: {
+    fontWeight: "bold",
+  },
+  grandTotal: {
+    marginTop: 5,
+    borderTopWidth: 2,
+    borderTopColor: "#0891b2",
+    paddingTop: 5,
+    fontSize: 12,
+    color: "#0891b2",
+  },
+  footer: {
+    position: "absolute",
+    bottom: 30,
+    left: 30,
+    right: 30,
+    textAlign: "center",
+    color: "#71717a", // zinc-500
+    fontSize: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#e4e4e7",
+    paddingTop: 10,
+  },
+});
+
+export const OrdenCompraPDF = ({
+  cotizacion,
+  detalles,
+}: OrdenCompraPDFProps) => {
+  const symbol = cotizacion.moneda === "Soles" ? "S/." : "$";
+
+  return (
+    <Document title={`Orden de Compra - ${cotizacion.correlativo}`}>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.companyInfo}>
+            <Text
+              style={{ fontSize: 16, fontWeight: "bold", color: "#18181b" }}
+            >
+              BLACK SILVER S.A.C.
+            </Text>
+            <Text>RUC: 20604004005</Text>
+            <Text>Dir: Av. Industrial 123, Trujillo, Perú</Text>
+            <Text>Tel: (01) 456-7890</Text>
+          </View>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.poTitle}>ORDEN DE COMPRA</Text>
+            <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+              N° {cotizacion.correlativo}
+            </Text>
+            <Text style={{ marginTop: 5 }}>
+              Fecha:{" "}
+              {dayjs(cotizacion.fecha_hora_cotizacion).format("DD/MM/YYYY")}
+            </Text>
+          </View>
+        </View>
+
+        {/* Info Proveedor y Pago */}
+        <View style={{ flexDirection: "row", gap: 20, marginBottom: 20 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>Proveedor</Text>
+            <Text style={{ fontWeight: "bold" }}>
+              {cotizacion.proveedor_nombre}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>Condiciones de Pago</Text>
+            <Text>Método: {cotizacion.metodo_pago}</Text>
+            <Text>Moneda: {cotizacion.moneda}</Text>
+            {cotizacion.fecha_vencimiento_pago && (
+              <Text>
+                Vencimiento:{" "}
+                {dayjs(cotizacion.fecha_vencimiento_pago).format("DD/MM/YYYY")}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Tabla de Productos */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Detalle de Productos</Text>
+
+          {/* Header Tabla */}
+          <View style={[styles.row, styles.tableHeader]}>
+            <Text style={styles.col1}>Cant.</Text>
+            <Text style={styles.col2}>U.M.</Text>
+            <Text style={styles.col3}>Descripción</Text>
+            <Text style={styles.col4}>P. Unit.</Text>
+            <Text style={styles.col5}>Total</Text>
+          </View>
+
+          {/* Filas */}
+          {detalles.map((det) => (
+            <View key={det.id} style={styles.row}>
+              <Text style={styles.col1}>{formatNumber(det.cantidad)}</Text>
+              <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
+              <View style={styles.col3}>
+                <Text style={{ fontWeight: "bold" }}>
+                  {det.producto_nombre}
+                </Text>
+                {det.comentario && (
+                  <Text
+                    style={{
+                      fontSize: 8,
+                      color: "#71717a",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Obs: {det.comentario}
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.col4}>
+                {symbol} {formatNumber(det.precio_unitario)}
+              </Text>
+              <Text style={styles.col5}>
+                {symbol} {formatNumber(det.cantidad * det.precio_unitario)}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Totales */}
+        <View style={styles.totalsContainer}>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Subtotal:</Text>
+            <Text>
+              {symbol} {formatNumber(cotizacion.total_antes_igv)}
+            </Text>
+          </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>
+              IGV ({cotizacion.porcentaje_igv}%):
+            </Text>
+            <Text>
+              {symbol} {formatNumber(cotizacion.monto_igv)}
+            </Text>
+          </View>
+          <View style={[styles.totalRow, styles.grandTotal]}>
+            <Text style={{ fontWeight: "bold" }}>TOTAL:</Text>
+            <Text style={{ fontWeight: "bold" }}>
+              {symbol} {formatNumber(cotizacion.total_despues_igv)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Observaciones Finales */}
+        {cotizacion.observacion && (
+          <View style={{ marginTop: 20 }}>
+            <Text style={styles.sectionTitle}>Observaciones</Text>
+            <Text style={{ fontSize: 9, fontStyle: "italic" }}>
+              {cotizacion.observacion}
+            </Text>
+          </View>
+        )}
+
+        {/* Firmas */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            marginTop: 50,
+          }}
+        >
+          <View
+            style={{
+              alignItems: "center",
+              borderTopWidth: 1,
+              borderTopColor: "#000",
+              width: 150,
+              paddingTop: 5,
+            }}
+          >
+            <Text>Firma Solicitante</Text>
+          </View>
+          <View
+            style={{
+              alignItems: "center",
+              borderTopWidth: 1,
+              borderTopColor: "#000",
+              width: 150,
+              paddingTop: 5,
+            }}
+          >
+            <Text>Firma Autorizada</Text>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text>
+            Este documento es una representación digital de una Orden de Compra
+            oficial de Black Silver S.A.C.
+          </Text>
+          <Text>
+            Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}
+          </Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};

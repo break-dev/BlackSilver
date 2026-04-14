@@ -5,6 +5,7 @@ import type {
   RES_MaestroProducto,
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
+  RES_RegistroComparativo,
 } from "./cotizaciones.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
 
@@ -23,8 +24,8 @@ export const CotizacionesService = {
    */
   registrar_comparativo: async (
     dto: DTO_RegistrarComparativo,
-  ): Promise<IRespuesta<null>> => {
-    const { data } = await api.post<IRespuesta<null>>(
+  ): Promise<IRespuesta<RES_RegistroComparativo>> => {
+    const { data } = await api.post<IRespuesta<RES_RegistroComparativo>>(
       "/cotizaciones/registrar",
       dto,
     );

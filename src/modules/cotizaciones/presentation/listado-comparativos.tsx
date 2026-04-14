@@ -39,6 +39,9 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useNotify } from "../../../hooks/useNotify";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { usePrint } from "../../../hooks/usePrint";
+import { OrdenCompraPDF } from "./orden-compra-pdf";
+import { DocumentCheckIcon } from "@heroicons/react/24/solid";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
@@ -71,6 +74,7 @@ export const ListadoComparativos = ({
   onUpdateLocal,
 }: ListadoComparativosProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const { print } = usePrint();
   const [loadingApprove, setLoadingApprove] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>(
     {},
@@ -93,6 +97,13 @@ export const ListadoComparativos = ({
     setModalComparativoOpened(true);
   };
 
+  const handlePrintPO = (cot: RES_Cotizacion) => {
+    const cotDetalles = detalles.filter((d) => d.id_cotizacion === cot.id);
+    print(<OrdenCompraPDF cotizacion={cot} detalles={cotDetalles} />, {
+      documentTitle: `Orden de Compra - ${cot.correlativo}`,
+    });
+  };
+
   const handleApprove = async (id: number) => {
     try {
       setLoadingApprove(id);
@@ -100,6 +111,12 @@ export const ListadoComparativos = ({
       if (res.success) {
         notifySuccess("Cotización aprobada correctamente.");
         onUpdateLocal?.(id, Estado_Cotizacion.Aprobada);
+
+        // Disparar impresión automática
+        const cot = cotizaciones.find((c) => c.id === id);
+        if (cot) {
+          handlePrintPO({ ...cot, estado: Estado_Cotizacion.Aprobada });
+        }
       } else {
         notifyError(res.message);
       }
@@ -361,6 +378,24 @@ export const ListadoComparativos = ({
                                   {formatNumber(Number(cot.total_despues_igv))}
                                 </Text>
                               </Stack>
+
+                              {/* Botón Imprimir PO (Solo si está aprobada) */}
+                              {cot.estado === Estado_Cotizacion.Aprobada && (
+                                <Tooltip label="Ver Orden de Compra" withArrow>
+                                  <ActionIcon
+                                    variant="light"
+                                    color="teal"
+                                    radius="xl"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePrintPO(cot);
+                                    }}
+                                  >
+                                    <DocumentCheckIcon className="w-4 h-4" />
+                                  </ActionIcon>
+                                </Tooltip>
+                              )}
 
                               {/* Botón Aprobar */}
                               <Button

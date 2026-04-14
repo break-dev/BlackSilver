@@ -1,6 +1,5 @@
 import { forwardRef, useImperativeHandle } from "react";
-import { Group, Button, Text } from "@mantine/core";
-import { BuildingOffice2Icon } from "@heroicons/react/24/outline";
+import { Group, Button } from "@mantine/core";
 import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo/comparativo-tabla";
 import { ModalSeleccionProductos } from "./modal-seleccion-productos";
@@ -68,39 +67,23 @@ export const RegistroCotizacion = forwardRef<
       <div className="flex flex-col h-[calc(100vh-180px)] overflow-hidden">
         {/* Área de la Tabla (La tabla maneja su propio scroll interno) */}
         <div className="flex-1 min-h-0 pr-1">
-          {productos.length === 0 && cotizaciones.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-zinc-900 rounded-[3rem] bg-zinc-900/5">
-              <BuildingOffice2Icon className="w-20 h-20 text-zinc-800 mb-6 opacity-50" />
-              <Text
-                size="lg"
-                fw={800}
-                className="text-zinc-500 uppercase tracking-widest text-center"
-              >
-                Prepare su comparativo
-              </Text>
-              <Text size="xs" className="text-zinc-600 italic mt-2 text-center">
-                Haga clic en el botón "Añadir Productos" para comenzar
-              </Text>
-            </div>
-          ) : (
-            <ComparativoTabla
-              productos={productosEnriquecidos}
-              cotizaciones={cotizaciones}
-              unidadesMedida={maestros.unidades.map((u) => ({
-                value: String(u.id_unidad_medida),
-                label: u.nombre,
-                abreviatura: u.abreviatura,
-              }))}
-              proveedores={maestros.proveedores}
-              loadingProveedores={loadingMaestros}
-              onUpdateHeader={updateCotizacionHeader}
-              onUpdateDetail={updateCotizacionDetail}
-              onToggleNoCotiza={toggleCotizacionNoCotiza}
-              onRemoveCotizacion={eliminarCotizacion}
-              isCollapsed={isCollapsed}
-              onAutoCollapse={onAutoCollapse}
-            />
-          )}
+          <ComparativoTabla
+            productos={productosEnriquecidos}
+            cotizaciones={cotizaciones}
+            unidadesMedida={maestros.unidades.map((u) => ({
+              value: String(u.id_unidad_medida),
+              label: u.nombre,
+              abreviatura: u.abreviatura,
+            }))}
+            proveedores={maestros.proveedores}
+            loadingProveedores={loadingMaestros}
+            onUpdateHeader={updateCotizacionHeader}
+            onUpdateDetail={updateCotizacionDetail}
+            onToggleNoCotiza={toggleCotizacionNoCotiza}
+            onRemoveCotizacion={eliminarCotizacion}
+            isCollapsed={isCollapsed}
+            onAutoCollapse={onAutoCollapse}
+          />
         </div>
 
         {/* Footer Fijo con Acciones */}

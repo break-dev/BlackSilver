@@ -17,7 +17,7 @@ export interface RES_Cotizacion {
   monto_igv: number;
   total_despues_igv: number;
   observacion: string | null;
-  evidencia: string | null;
+  evidencias: string | null;
   fecha_hora_cotizacion: string;
   comparativo_fecha: string;
   estado: Estado_Cotizacion;
@@ -69,4 +69,9 @@ export interface RES_MaestroProducto {
   id_unidad_medida_base: number;
   unidad_medida_base: string;
   unidad_medida_abreviatura: string;
+}
+
+export interface RES_RegistroComparativo {
+  id_comparativo: number;
+  ids_aprobadas: { id: number; correlativo: string }[];
 }

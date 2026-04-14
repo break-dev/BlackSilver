@@ -9,6 +9,7 @@ import {
   Badge,
   TextInput,
   Checkbox,
+  Skeleton,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -22,7 +23,7 @@ import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
 
 interface CabeceraCotizacionProps {
-  cot: DTO_CotizacionRequest;
+  cot?: DTO_CotizacionRequest;
   idx: number;
   isCollapsed: boolean;
   proveedores: { id_proveedor: number; razon_social: string }[];
@@ -34,6 +35,7 @@ interface CabeceraCotizacionProps {
     value: DTO_CotizacionRequest[K],
   ) => void;
   onRemoveCotizacion: (index: number) => void;
+  isSkeleton?: boolean;
 }
 
 const inputStyles = {
@@ -51,7 +53,48 @@ export const CabeceraCotizacion = ({
   loadingProveedores,
   onUpdateHeader,
   onRemoveCotizacion,
+  isSkeleton = false,
 }: CabeceraCotizacionProps) => {
+  if (isSkeleton) {
+    if (isCollapsed) {
+      return (
+        <Stack gap={4} className="py-2.5 px-4 relative">
+          <Group justify="space-between" wrap="nowrap" gap="xs">
+            <Stack gap={4} className="flex-1 min-w-0">
+              <Skeleton h={12} w="70%" radius="sm" />
+              <Skeleton h={10} w="40%" radius="sm" />
+            </Stack>
+            <Skeleton h={24} w={80} radius="md" />
+          </Group>
+        </Stack>
+      );
+    }
+
+    return (
+      <Stack gap={4} className="pt-0 pb-3 px-4 relative">
+        <Group justify="space-between" align="center">
+          <Skeleton h={16} w={100} radius="md" />
+        </Group>
+        <Stack gap="sm">
+          <Skeleton h={32} radius="lg" />
+          <Group grow gap="md">
+            <Skeleton h={32} radius="lg" />
+            <Skeleton h={32} radius="lg" />
+          </Group>
+          <Skeleton h={32} radius="lg" />
+          <Group grow gap="xs" mt="md">
+            <Skeleton h={40} radius="md" />
+            <Skeleton h={40} radius="md" />
+            <Skeleton h={40} radius="md" />
+          </Group>
+        </Stack>
+      </Stack>
+    );
+  }
+
+  // Si no es esqueleto, nos aseguramos de que 'cot' exista para el resto de la lógica
+  if (!cot) return null;
+
   return (
     <Stack
       gap={4}
@@ -96,7 +139,7 @@ export const CabeceraCotizacion = ({
           <Badge
             variant="light"
             color="cyan"
-            size="xs"
+            size="md"
             className="font-bold shadow-sm h-6"
           >
             {cot.moneda === "Soles" ? "S/. " : "$ "}{" "}
