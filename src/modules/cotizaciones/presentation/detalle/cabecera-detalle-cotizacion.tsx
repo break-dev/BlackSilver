@@ -57,8 +57,6 @@ export const CabeceraDetalleCotizacion = ({
         return "indigo";
       case Estado_Cotizacion.Aprobada:
         return "teal";
-      case Estado_Cotizacion.Desestimada:
-        return "red";
       default:
         return "zinc";
     }

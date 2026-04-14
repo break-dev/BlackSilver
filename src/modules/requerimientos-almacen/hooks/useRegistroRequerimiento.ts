@@ -64,6 +64,11 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
           setMinas(res.data.minas);
           setProductos(res.data.productos);
           setUnidades(res.data.unidades);
+
+          // Auto-elegir la primera mina si hay datos
+          if (res.data.minas.length > 0) {
+            setIdMina(res.data.minas[0].id_mina);
+          }
         }
       } finally {
         setLoadingCatalogs(false);
@@ -86,6 +91,11 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
         if (res.success) {
           setAlmacenes(res.data.almacenes);
           setLabores(res.data.labores);
+
+          // Auto-elegir el primer almacén si hay datos
+          if (res.data.almacenes.length > 0) {
+            setIdAlmacenDestino(res.data.almacenes[0].id_almacen);
+          }
         }
       };
       loadMinaData();

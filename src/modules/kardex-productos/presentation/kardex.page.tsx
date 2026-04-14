@@ -67,7 +67,7 @@ export const KardexProductosPage = () => {
       {
         accessor: "producto",
         title: "Producto",
-        width: 180,
+        width: 160,
         render: (record) => (
           <Group gap="xs" wrap="nowrap">
             <div className="w-9 h-9 rounded-lg bg-zinc-800/80 flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-700">
@@ -91,8 +91,9 @@ export const KardexProductosPage = () => {
       },
       {
         accessor: "correlativo",
-        title: "Cód. Lote",
-        width: 120,
+        title: "Lote",
+        width: 160,
+        textAlign: "center",
         render: (record) => (
           <Badge variant="light" color="violet" radius="sm">
             {record.correlativo}

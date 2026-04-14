@@ -62,11 +62,6 @@ const COLOR_BY_STATE: Record<
     label: "Aprobada",
     variant: "filled",
   },
-  [Estado_Cotizacion.Desestimada]: {
-    color: "red",
-    label: "Desestimada",
-    variant: "light",
-  },
 };
 
 export const ListadoComparativos = ({
@@ -378,8 +373,7 @@ export const ListadoComparativos = ({
                                   <CheckBadgeIcon className="w-3.5 h-3.5" />
                                 }
                                 disabled={
-                                  cot.estado === Estado_Cotizacion.Aprobada ||
-                                  cot.estado === Estado_Cotizacion.Desestimada
+                                  cot.estado === Estado_Cotizacion.Aprobada
                                 }
                                 onClick={(e) => {
                                   e.stopPropagation();

@@ -72,8 +72,8 @@ export const RegistroLote = ({
     <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
-          label="Almacén de destino"
-          placeholder="Seleccione almacén destino..."
+          label="Almacén de Destino"
+          placeholder="Seleccione almacén de destino..."
           withAsterisk
           data={almacenes.map((a) => ({
             value: String(a.id_almacen),
@@ -83,7 +83,6 @@ export const RegistroLote = ({
           value={idAlmacen ? String(idAlmacen) : null}
           onChange={(val) => setIdAlmacen(Number(val))}
           classNames={inputClasses}
-          className="md:col-span-2"
           radius="lg"
           size="sm"
           comboboxProps={{
@@ -106,7 +105,6 @@ export const RegistroLote = ({
           value={idProducto ? String(idProducto) : null}
           onChange={(val) => setIdProducto(Number(val))}
           classNames={inputClasses}
-          className="md:col-span-2"
           radius="lg"
           size="sm"
           comboboxProps={{
@@ -119,7 +117,7 @@ export const RegistroLote = ({
         <Divider className="md:col-span-2 border-zinc-800/40 my-2" />
 
         <Select
-          label="Unidad de medida del lote"
+          label="Unidad de Medida"
           placeholder="Ej: Caja, Bolsa, Saco..."
           data={catalogs.unidades.map((u) => ({
             value: String(u.id_unidad_medida),
