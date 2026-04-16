@@ -9,6 +9,7 @@ import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
 export const useCotizaciones = () => {
   const [cotizaciones, setCotizaciones] = useState<RES_Cotizacion[]>([]);
   const [detalles, setDetalles] = useState<RES_CotizacionDetalle[]>([]);
+  const [empresas, setEmpresas] = useState<{ id_cotizacion: number; id_empresa: number; razon_social: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -19,6 +20,7 @@ export const useCotizaciones = () => {
       if (resp.success && resp.data) {
         setCotizaciones(resp.data.cotizaciones || []);
         setDetalles(resp.data.detalles || []);
+        setEmpresas(resp.data.empresas || []);
       }
     } catch (e) {
       console.error("Error al cargar cotizaciones:", e);
@@ -43,6 +45,7 @@ export const useCotizaciones = () => {
   return {
     cotizaciones,
     detalles,
+    empresas,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,

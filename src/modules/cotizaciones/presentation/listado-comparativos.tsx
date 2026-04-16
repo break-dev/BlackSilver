@@ -46,6 +46,7 @@ import { DocumentCheckIcon } from "@heroicons/react/24/solid";
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
+  empresas: { id_cotizacion: number; id_empresa: number; razon_social: string }[];
   busqueda: string;
   onUpdateLocal?: (id: number, nuevoEstado: Estado_Cotizacion) => void;
 }
@@ -70,6 +71,7 @@ const COLOR_BY_STATE: Record<
 export const ListadoComparativos = ({
   cotizaciones,
   detalles,
+  empresas,
   busqueda,
   onUpdateLocal,
 }: ListadoComparativosProps) => {
@@ -527,6 +529,35 @@ export const ListadoComparativos = ({
                               </Text>
                             </Paper>
                           )}
+
+                          {/* Empresas Compradoras */}
+                          {(() => {
+                            const cotEmpresas = empresas.filter(e => e.id_cotizacion === cot.id);
+                            if (cotEmpresas.length === 0) return null;
+                            return (
+                              <div className="mb-4">
+                                <Group gap="xs" mb="xs" px="xs">
+                                  <BuildingStorefrontIcon className="w-3.5 h-3.5 text-emerald-400/70" />
+                                  <Text size="xs" fw={800} c="zinc.4" className="uppercase tracking-widest">
+                                    Empresas Compradoras ({cotEmpresas.length})
+                                  </Text>
+                                </Group>
+                                <div className="flex flex-wrap gap-2 px-1">
+                                  {cotEmpresas.map(emp => (
+                                    <div 
+                                      key={emp.id_empresa} 
+                                      className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-3 py-2 hover:border-emerald-500/20 transition-colors flex items-center gap-2"
+                                    >
+                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                      <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                                        {emp.razon_social}
+                                      </Text>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
 
                           {/* Tabla de productos */}
                           <Group gap="xs" mb="xs" px="xs">
