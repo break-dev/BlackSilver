@@ -8,7 +8,9 @@ import {
   Tooltip,
   TextInput,
   Skeleton,
+  Checkbox,
 } from "@mantine/core";
+import { Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
 import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type {
@@ -110,12 +112,34 @@ export const CeldaDetalle = ({
         </Tooltip>
       </div>
 
+      <div className="absolute top-1.5 left-2 z-10">
+         {!det.no_cotiza && (
+            <Checkbox
+              size="xs"
+              color="green"
+              label={<Text size="11px" fw={900} className="text-zinc-600 uppercase">Comprar</Text>}
+              checked={det.estado === Estado_Cotizacion_Detalle.Aprobado}
+              className={`transition-all ${det.estado === Estado_Cotizacion_Detalle.Aprobado ? 'opacity-100' : 'opacity-30 hover:opacity-100'}`}
+              onChange={(e) => 
+                onUpdateDetail(
+                  cotIdx, 
+                  prod.id_producto, 
+                  "estado", 
+                  e.currentTarget.checked ? Estado_Cotizacion_Detalle.Aprobado : Estado_Cotizacion_Detalle.Rechazado
+                )
+              }
+            />
+         )}
+      </div>
+
       {/* Campos editables (se ocultan si no cotiza) */}
       <Stack
         gap="sm"
         className={`w-full transition-all duration-300 ${
           det.no_cotiza
             ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
+            : det.estado === Estado_Cotizacion_Detalle.Rechazado
+            ? "opacity-60 grayscale blur-[0.3px]"
             : ""
         }`}
       >

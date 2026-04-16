@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 // Detalle de cada producto dentro de una cotización específica
@@ -13,6 +13,7 @@ export const Schema_CotizacionDetalle = z.object({
   precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
+  estado: z.nullable(z.enum([Estado_Cotizacion_Detalle.Aprobado, Estado_Cotizacion_Detalle.Rechazado])).optional(),
 });
 
 // Cabecera de una cotización (un proveedor)

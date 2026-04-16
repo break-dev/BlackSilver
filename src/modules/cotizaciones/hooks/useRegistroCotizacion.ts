@@ -13,7 +13,7 @@ import type {
 } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import { usePrint } from "../../../hooks/usePrint";
 import { OrdenCompraPDF } from "../presentation/orden-compra-pdf";
@@ -129,6 +129,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
                   precio_unitario_base: 0,
                   no_cotiza: false,
                   comentario: null,
+                  estado: null as import("../../../shared/enums/cotizacion/cotizacion").Estado_Cotizacion_Detalle | null,
                 },
               ],
             })),
@@ -171,6 +172,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             precio_unitario_base: 0,
             no_cotiza: false,
             comentario: null,
+            estado: null as import("../../../shared/enums/cotizacion/cotizacion").Estado_Cotizacion_Detalle | null,
           };
         }),
       };
@@ -212,6 +214,23 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             target.total_antes_igv = sumDetalles;
             target.monto_igv = sumDetalles * (target.porcentaje_igv / 100);
             target.total_despues_igv = sumDetalles + target.monto_igv;
+          }
+        }
+
+        if ((field as string) === "estado") {
+          const isAprobado = value === Estado_Cotizacion.Aprobada;
+          target.detalles = target.detalles.map(d => {
+            if (d.no_cotiza) return d;
+            return {
+              ...d,
+              estado: isAprobado ? Estado_Cotizacion_Detalle.Aprobado : null
+            };
+          });
+          
+          // Validación: No puede pasar a Aprobada si no tiene productos hábiles
+          const hasHabiles = target.detalles.some(d => !d.no_cotiza);
+          if (isAprobado && !hasHabiles) {
+            target.estado = Estado_Cotizacion.Generada;
           }
         }
 
@@ -262,7 +281,26 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
         cot.detalles = detalles;
 
-        const sumDetalles = detalles.reduce((acc, d) => {
+        if ((field as string) === "estado") {
+          const updatedDets = [...detalles];
+          const actualItem = updatedDets.find(d => d.id_producto === prodId);
+          if (actualItem) {
+             actualItem.estado = value as Estado_Cotizacion_Detalle;
+          }
+          
+          const anyAprobado = updatedDets.some(d => d.estado === Estado_Cotizacion_Detalle.Aprobado);
+          cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
+          
+          if (!anyAprobado) {
+             // Si desmarcó el último, devolvemos todo a su origen sin estado
+             cot.detalles = updatedDets.map(d => ({ ...d, estado: null }));
+          } else {
+             // Si hay al menos un aprobado, el resto pasa a rechazado estrictamente (si no estan "no cotiza")
+             cot.detalles = updatedDets.map(d => ({ ...d, estado: d.no_cotiza ? null : (d.estado === Estado_Cotizacion_Detalle.Aprobado ? Estado_Cotizacion_Detalle.Aprobado : Estado_Cotizacion_Detalle.Rechazado) }));
+          }
+        }
+
+        const sumDetalles = cot.detalles.reduce((acc, d) => {
           if (d.no_cotiza) return acc;
           return acc + d.cantidad * d.precio_unitario;
         }, 0);
@@ -292,10 +330,21 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         const cot = { ...p[cotIndex] };
         const detalles = cot.detalles.map((d) => {
           if (d.id_producto !== prodId) return d;
-          return { ...d, no_cotiza: !d.no_cotiza };
+          return { 
+             ...d, 
+             no_cotiza: !d.no_cotiza,
+             estado: !d.no_cotiza ? null : d.estado // Si se vuelve "no_cotiza", le quitamos el estado
+          };
         });
 
         cot.detalles = detalles;
+
+        // Auto-check si al anularlo era el único aprobado
+        const anyAprobado = cot.detalles.some(d => d.estado === Estado_Cotizacion_Detalle.Aprobado);
+        cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
+        if (!anyAprobado) {
+           cot.detalles = cot.detalles.map(d => ({ ...d, estado: null }));
+        }
 
         // Recalcular totales al cambiar estado "no cotiza"
         const sumDetalles = detalles.reduce((acc, d) => {
