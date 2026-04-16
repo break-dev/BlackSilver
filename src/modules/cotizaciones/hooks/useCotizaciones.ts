@@ -4,7 +4,7 @@ import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
 } from "../service/cotizaciones.responses";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 
 export const useCotizaciones = () => {
   const [cotizaciones, setCotizaciones] = useState<RES_Cotizacion[]>([]);
@@ -34,10 +34,20 @@ export const useCotizaciones = () => {
   }, [fetchCotizaciones]);
 
   const updateCotizacionLocal = useCallback(
-    (id: number, nuevoEstado: Estado_Cotizacion) => {
+    (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[]) => {
       setCotizaciones((prev) =>
         prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado } : c)),
       );
+      
+      if (detallesAprobados) {
+        setDetalles((prev) => prev.map(d => {
+          if (d.id_cotizacion === id) {
+            const estaAprobado = detallesAprobados.some(da => da.id === d.id);
+            return { ...d, estado: estaAprobado ? Estado_Cotizacion_Detalle.Aprobado : Estado_Cotizacion_Detalle.Rechazado };
+          }
+          return d;
+        }));
+      }
     },
     [],
   );

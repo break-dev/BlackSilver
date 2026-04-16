@@ -86,9 +86,14 @@ export const CotizacionesService = {
    */
   aprobar_cotizacion: async (
     id_cotizacion: number,
+    payload: {
+      id_empresa_compradora: number;
+      detalles_aprobados: number[];
+    }
   ): Promise<IRespuesta<null>> => {
     const { data } = await api.post<IRespuesta<null>>(
       `/cotizaciones/${id_cotizacion}/aprobar`,
+      payload
     );
     return data;
   },

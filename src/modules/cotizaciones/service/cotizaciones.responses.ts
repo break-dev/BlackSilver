@@ -1,4 +1,4 @@
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 export interface RES_Cotizacion {
@@ -40,6 +40,7 @@ export interface RES_CotizacionDetalle {
   comentario: string | null;
   no_cotiza: number;
   unidad_medida_base_abv: string;
+  estado?: Estado_Cotizacion_Detalle | null;
 }
 
 export interface RES_ListadoComparativo {
