@@ -147,6 +147,7 @@ export const TablaDetalleResumen = ({
                           unidadMedidaBase={prod.unidadBase}
                           comentario={det.comentario}
                           noCotiza={Number(det.no_cotiza) === 1}
+                          estado={det.estado}
                         />
                       ) : (
                         <div className="h-full min-h-[80px] flex items-center justify-center bg-zinc-950/10 rounded-2xl border border-dashed border-zinc-800/40 opacity-30 italic">
