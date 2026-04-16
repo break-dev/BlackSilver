@@ -7,13 +7,14 @@ export interface RES_Almacen {
   descripcion?: string;
   es_principal: boolean | number;
   estado: EstadoBase;
-  responsable_actual?: string; // nombre completo
+  responsables?: string; // nombres completos separados por coma
   minas_count?: number;
 }
 
 // Responsable de un almacen
 export interface RES_ResponsableAlmacen {
   id_responsable_almacen: number;
+  id_empleado: number;
   nombre_completo: string;
   dni?: string;
   path_foto?: string;
@@ -28,7 +29,6 @@ export interface RES_MinaAbastecida {
   nombre: string;
   concesion: string;
 }
-
 
 //
 
@@ -46,4 +46,3 @@ export interface RES_MinaDisponible {
   nombre: string;
   concesion: string;
 }
-

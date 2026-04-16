@@ -3,6 +3,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
 import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import dayjs from "dayjs";
 
 export const useHistorialResponsables = (id_almacen: number) => {
   const { notify } = useNotify();
@@ -10,6 +11,9 @@ export const useHistorialResponsables = (id_almacen: number) => {
     [],
   );
   const [loading, setLoading] = useState(false);
+  const [loadingInactivando, setLoadingInactivando] = useState<number | null>(
+    null,
+  );
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -40,38 +44,60 @@ export const useHistorialResponsables = (id_almacen: number) => {
     nuevo: RES_ResponsableAlmacen,
     onUpdateResponsable?: (nombre: string) => void,
   ) => {
-    // Al agregar uno nuevo, el anterior(es) que estaba activo debe pasar a inactivo visualmente
-    setResponsables((prev) => {
-      const actualizados = prev.map((res) => {
-        // Comparación segura usando el enum
-        if (res.estado === EstadoBase.Activo) {
-          return {
-            ...res,
-            estado: EstadoBase.Inactivo,
-            fecha_fin: nuevo.fecha_inicio, // Se asume que termina cuando empieza el nuevo
-          };
-        }
-        return res;
-      });
-      return [nuevo, ...actualizados];
-    });
-
+    setResponsables((prev) => [nuevo, ...prev]);
     if (onUpdateResponsable) onUpdateResponsable(nuevo.nombre_completo);
+  };
+
+  const handleInactivarResponsable = async (idResponsable: number) => {
+    const fechaFin = dayjs().format("YYYY-MM-DD");
+    setLoadingInactivando(idResponsable);
+
+    try {
+      const res = await AlmacenesService.inactivar_responsable({
+        id_responsable_almacen: idResponsable,
+        fecha_fin: fechaFin,
+      });
+
+      if (res.success) {
+        setResponsables((prev) =>
+          prev.map((r) =>
+            r.id_responsable_almacen === idResponsable
+              ? { ...r, estado: EstadoBase.Inactivo, fecha_fin: fechaFin }
+              : r,
+          ),
+        );
+        notify({ type: "success", content: "Responsable inactivado" });
+        return true;
+      } else {
+        notify({ type: "error", content: res.message });
+      }
+    } catch {
+      notify({ type: "error", content: "Error al inactivar responsable" });
+    } finally {
+      setLoadingInactivando(null);
+    }
+    return false;
   };
 
   const responsablesOrdenados = useMemo(() => {
     return [...responsables].sort((a, b) => {
-      const diff =
-        new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime();
-      return diff !== 0
-        ? diff
-        : b.id_responsable_almacen - a.id_responsable_almacen;
+      const aAtivo = a.estado?.toUpperCase() === "ACTIVO" ? 1 : 0;
+      const bAtivo = b.estado?.toUpperCase() === "ACTIVO" ? 1 : 0;
+
+      if (aAtivo !== bAtivo) {
+        return bAtivo - aAtivo; // Activos primero
+      }
+
+      // Desempate por fecha de inicio descendente
+      return dayjs(b.fecha_inicio).unix() - dayjs(a.fecha_inicio).unix();
     });
   }, [responsables]);
 
   return {
     responsables: responsablesOrdenados,
     loading,
+    loadingInactivando,
     handleSuccess,
+    handleInactivarResponsable,
   };
 };

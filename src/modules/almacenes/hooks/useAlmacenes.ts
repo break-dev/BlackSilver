@@ -107,7 +107,7 @@ export const useAlmacenes = () => {
       (alm) =>
         !q ||
         alm.nombre.toLowerCase().includes(q) ||
-        (alm.responsable_actual || "").toLowerCase().includes(q),
+        (alm.responsables || "").toLowerCase().includes(q),
     );
   }, [almacenes, busqueda]);
 

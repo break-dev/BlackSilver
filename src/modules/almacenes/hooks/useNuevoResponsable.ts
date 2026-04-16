@@ -87,6 +87,12 @@ export const useNuevoResponsable = (id_almacen: number) => {
           type: "success",
           content: result.message || "Responsable asignado",
         });
+
+        // Actualización local: quitar de los disponibles
+        setEmpleados((prev) =>
+          prev.filter((e) => e.id_empleado !== Number(empleadoSeleccionado)),
+        );
+
         resetForm();
         if (onSuccess) onSuccess(result.data);
       } else {
@@ -101,6 +107,14 @@ export const useNuevoResponsable = (id_almacen: number) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const agregarDisponible = (emp: RES_EmpleadoDisponible) => {
+    setEmpleados((prev) => {
+      const existe = prev.some((e) => e.id_empleado === emp.id_empleado);
+      if (existe) return prev;
+      return [...prev, emp];
+    });
   };
 
   const resetForm = () => {
@@ -119,5 +133,6 @@ export const useNuevoResponsable = (id_almacen: number) => {
     setFechaInicio,
     formError,
     handleAsignar,
+    agregarDisponible,
   };
 };

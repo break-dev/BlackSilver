@@ -52,6 +52,14 @@ export const AlmacenesService = {
     return data;
   },
 
+  inactivar_responsable: async (dto: {
+    id_responsable_almacen: number;
+    fecha_fin: string;
+  }): Promise<IRespuesta<null>> => {
+    const { data } = await api.post(`${PATH}/responsables/inactivar`, dto);
+    return data;
+  },
+
   // ABASTECIMIENTO DE MINAS
   get_minas_abastecidas: async (
     id_almacen: number,

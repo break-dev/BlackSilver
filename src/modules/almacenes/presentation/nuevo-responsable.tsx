@@ -1,6 +1,10 @@
+import { forwardRef, useImperativeHandle } from "react";
 import { Button, Select, Text, Stack, Group, Box } from "@mantine/core";
 import { UserIcon } from "@heroicons/react/24/outline";
-import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
+import type {
+  RES_EmpleadoDisponible,
+  RES_ResponsableAlmacen,
+} from "../service/almacenes.responses";
 import { useNuevoResponsable } from "../hooks/useNuevoResponsable";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
@@ -10,11 +14,14 @@ interface NuevoResponsableProps {
   onSuccess: (responsable: RES_ResponsableAlmacen) => void;
 }
 
-export const NuevoResponsable = ({
-  idAlmacen,
-  nombreAlmacen,
-  onSuccess,
-}: NuevoResponsableProps) => {
+export interface NuevoResponsableRef {
+  agregarDisponible: (emp: RES_EmpleadoDisponible) => void;
+}
+
+export const NuevoResponsable = forwardRef<
+  NuevoResponsableRef,
+  NuevoResponsableProps
+>(({ idAlmacen, nombreAlmacen, onSuccess }, ref) => {
   const {
     loading,
     isAssigning,
@@ -25,7 +32,12 @@ export const NuevoResponsable = ({
     setFechaInicio,
     formError,
     handleAsignar,
+    agregarDisponible,
   } = useNuevoResponsable(idAlmacen);
+
+  useImperativeHandle(ref, () => ({
+    agregarDisponible,
+  }));
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,7 +55,11 @@ export const NuevoResponsable = ({
           <UserIcon className="w-4 h-4 text-indigo-400" />
         </Box>
         <Stack gap={0}>
-          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+          <Text
+            size="xs"
+            fw={700}
+            className="text-zinc-300 uppercase tracking-wider"
+          >
             Nueva Asignación
           </Text>
           <Text size="xs" className="text-zinc-500">
@@ -83,6 +99,7 @@ export const NuevoResponsable = ({
         <CustomDatePicker
           label="Fecha de Inicio"
           value={fechaInicio}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onChange={(val: any) => setFechaInicio(val)}
           error={formError && !fechaInicio ? "Requerido" : undefined}
           withAsterisk
@@ -110,4 +127,4 @@ export const NuevoResponsable = ({
       </form>
     </Stack>
   );
-};
+});
