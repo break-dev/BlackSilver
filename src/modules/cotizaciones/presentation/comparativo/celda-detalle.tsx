@@ -9,6 +9,7 @@ import {
   TextInput,
   Skeleton,
 } from "@mantine/core";
+
 import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type {
@@ -113,7 +114,7 @@ export const CeldaDetalle = ({
       {/* Campos editables (se ocultan si no cotiza) */}
       <Stack
         gap="sm"
-        className={`w-full transition-all duration-300 ${
+        className={`w-full pt-6 transition-all duration-300 ${
           det.no_cotiza
             ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
             : ""

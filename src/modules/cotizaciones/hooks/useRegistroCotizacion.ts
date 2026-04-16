@@ -9,19 +9,15 @@ import type {
   RES_MaestroProducto,
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
+  RES_MaestroEmpresa,
 } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
-import { usePrint } from "../../../hooks/usePrint";
-import { OrdenCompraPDF } from "../presentation/orden-compra-pdf";
-import type { RES_Cotizacion, RES_CotizacionDetalle } from "../service/cotizaciones.responses";
-import React from "react";
 
 export const useRegistroCotizacion = (onSuccess: () => void) => {
   const { notify } = useNotify();
-  const { print, prepare } = usePrint();
   const [loading, setLoading] = useState(false);
   const [loadingMaestros, setLoadingMaestros] = useState(true);
 
@@ -30,30 +26,38 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     proveedores: RES_MaestroProveedor[];
     unidades: RES_MaestroUnidadMedida[];
     catalogo: RES_MaestroProducto[];
+    empresas: RES_MaestroEmpresa[];
   }>({
     proveedores: [],
     unidades: [],
     catalogo: [],
+    empresas: [],
   });
 
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
   const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>([]);
+
+  // Estado para el modal Wizard Asistente
+  const [wizardAprobacionOpened, setWizardAprobacionOpened] = useState(false);
+  const [wizardPayload, setWizardPayload] = useState<DTO_RegistrarComparativo | null>(null);
 
   // Carga inicial de maestros
   useEffect(() => {
     const cargarMaestros = async () => {
       try {
         setLoadingMaestros(true);
-        const [resProv, resUni, resProd] = await Promise.all([
+        const [resProv, resUni, resProd, resEmp] = await Promise.all([
           CotizacionesService.get_proveedores_maestro(),
           CotizacionesService.get_unidades_medida_maestro(),
           CotizacionesService.get_productos_maestro(),
+          CotizacionesService.get_empresas_maestro()
         ]);
 
         setMaestros({
           proveedores: resProv.success ? resProv.data : [],
           unidades: resUni.success ? resUni.data : [],
           catalogo: resProd.success ? resProd.data : [],
+          empresas: resEmp.success ? resEmp.data : [],
         });
       } catch (error) {
         console.error("Error al cargar maestros en hook", error);
@@ -124,6 +128,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
                   precio_unitario_base: 0,
                   no_cotiza: false,
                   comentario: null,
+                  estado: Estado_Cotizacion_Detalle.Pendiente,
                 },
               ],
             })),
@@ -141,6 +146,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     setCotizaciones((prev) => {
       const nuevaCot: DTO_CotizacionRequest = {
         id_proveedor: 0,
+        empresas_ids: [],
         moneda: "Soles",
         metodo_pago: MetodoPago.Contado,
         fecha_vencimiento_pago: null, // Ahora será Date | null en el estado del hook
@@ -165,6 +171,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             precio_unitario_base: 0,
             no_cotiza: false,
             comentario: null,
+            estado: Estado_Cotizacion_Detalle.Pendiente,
           };
         }),
       };
@@ -206,6 +213,17 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
             target.total_antes_igv = sumDetalles;
             target.monto_igv = sumDetalles * (target.porcentaje_igv / 100);
             target.total_despues_igv = sumDetalles + target.monto_igv;
+          }
+        }
+
+        if ((field as string) === "estado") {
+          const isAprobado = value === Estado_Cotizacion.Aprobada;
+          // Validación: No puede pasar a Aprobada si no tiene productos hábiles
+          const hasHabiles = target.detalles.some(d => !d.no_cotiza);
+          if (isAprobado && !hasHabiles) {
+            target.estado = Estado_Cotizacion.Generada;
+          } else {
+            target.estado = value as Estado_Cotizacion;
           }
         }
 
@@ -256,7 +274,26 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
 
         cot.detalles = detalles;
 
-        const sumDetalles = detalles.reduce((acc, d) => {
+        if ((field as string) === "estado") {
+          const updatedDets = [...detalles];
+          const actualItem = updatedDets.find(d => d.id_producto === prodId);
+          if (actualItem) {
+             actualItem.estado = value as Estado_Cotizacion_Detalle;
+          }
+          
+          const anyAprobado = updatedDets.some(d => d.estado === Estado_Cotizacion_Detalle.Aprobado);
+          cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
+          
+          if (!anyAprobado) {
+             // Si desmarcó el último, devolvemos todo a su origen pendiente
+             cot.detalles = updatedDets.map(d => ({ ...d, estado: d.no_cotiza ? null : Estado_Cotizacion_Detalle.Pendiente }));
+          } else {
+             // Si hay al menos un aprobado, el resto pasa a pendiente estrictamente (si no estan "no cotiza")
+             cot.detalles = updatedDets.map(d => ({ ...d, estado: d.no_cotiza ? null : (d.estado === Estado_Cotizacion_Detalle.Aprobado ? Estado_Cotizacion_Detalle.Aprobado : Estado_Cotizacion_Detalle.Pendiente) }));
+          }
+        }
+
+        const sumDetalles = cot.detalles.reduce((acc, d) => {
           if (d.no_cotiza) return acc;
           return acc + d.cantidad * d.precio_unitario;
         }, 0);
@@ -286,10 +323,21 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
         const cot = { ...p[cotIndex] };
         const detalles = cot.detalles.map((d) => {
           if (d.id_producto !== prodId) return d;
-          return { ...d, no_cotiza: !d.no_cotiza };
+          return { 
+             ...d, 
+             no_cotiza: !d.no_cotiza,
+             estado: !d.no_cotiza ? null : Estado_Cotizacion_Detalle.Pendiente // Si vuelve a estar activo recae en Pendiente
+          };
         });
 
         cot.detalles = detalles;
+
+        // Auto-check si al anularlo era el único aprobado
+        const anyAprobado = cot.detalles.some(d => d.estado === Estado_Cotizacion_Detalle.Aprobado);
+        cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
+        if (!anyAprobado) {
+           cot.detalles = cot.detalles.map(d => ({ ...d, estado: d.no_cotiza ? null : Estado_Cotizacion_Detalle.Pendiente }));
+        }
 
         // Recalcular totales al cambiar estado "no cotiza"
         const sumDetalles = detalles.reduce((acc, d) => {
@@ -325,6 +373,14 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       notify({
         type: "info",
         content: "Todas las cotizaciones deben tener un proveedor asignado.",
+      });
+      return;
+    }
+
+    if (cotizaciones.some((c) => c.empresas_ids.length === 0)) {
+      notify({
+        type: "info",
+        content: "Todas las cotizaciones deben tener al menos una empresa compradora seleccionada.",
       });
       return;
     }
@@ -368,132 +424,63 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       return;
     }
 
-    // 4. Previsión de Impresión (Para evitar popup blocker)
-    let printerWin: Window | null = null;
+    // 4. Previsión de la Aprobación Múltiple
     const tieneAprobadas = cotizaciones.some(c => c.estado === Estado_Cotizacion.Aprobada);
     
-    if (tieneAprobadas) {
-      printerWin = prepare("OrdenCompraPDF");
-    }
-
-    setLoading(true);
-    try {
-      const payload: DTO_RegistrarComparativo = {
-        productos: productos,
-        cotizaciones: cotizaciones.map((c) => {
-          // Conversión robusta a YYYY-MM-DD para evitar rechazos de la base de datos (Columna DATE)
-          let fechaStr = null;
-          if (
-            c.metodo_pago === MetodoPago.Credito &&
-            c.fecha_vencimiento_pago
-          ) {
-            const d = new Date(c.fecha_vencimiento_pago as unknown as string);
-            if (!isNaN(d.getTime())) {
-              const year = d.getFullYear();
-              const month = String(d.getMonth() + 1).padStart(2, "0");
-              const day = String(d.getDate()).padStart(2, "0");
-              fechaStr = `${year}-${month}-${day}`;
-            }
+    // PREPARAR PAYLOAD GENERAL
+    const payload: DTO_RegistrarComparativo = {
+      productos: productos,
+      cotizaciones: cotizaciones.map((c) => {
+        let fechaStr = null;
+        if (
+          c.metodo_pago === MetodoPago.Credito &&
+          c.fecha_vencimiento_pago
+        ) {
+          const d = new Date(c.fecha_vencimiento_pago as unknown as string);
+          if (!isNaN(d.getTime())) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            fechaStr = `${year}-${month}-${day}`;
           }
-
-          return {
-            ...c,
-            fecha_vencimiento_pago: fechaStr,
-            // AQUÍ FILTRAMOS LO QUE NO SE COTIZA Y REDONDEAMOS DECIMALES
-            detalles: c.detalles
-              .filter((d) => !d.no_cotiza)
-              .map((d) => ({
-                ...d,
-                precio_unitario_base: Number(d.precio_unitario_base.toFixed(2)),
-                cantidad_base: Number(d.cantidad_base.toFixed(2)),
-              })),
-            total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
-            monto_igv: Number(c.monto_igv.toFixed(2)),
-            total_despues_igv: Number(c.total_despues_igv.toFixed(2)),
-          };
-        }),
-      };
-
-      const resp = await CotizacionesService.registrar_comparativo(payload);
-
-      if (resp.success) {
-        // 4. Imprimir reportes de los aprobados si existen
-          if (resp.data?.ids_aprobadas && resp.data.ids_aprobadas.length > 0) {
-            resp.data.ids_aprobadas.forEach((aprobada: { id: number; correlativo: string }) => {
-              // Vamos a intentar encontrar la cotización en el estado local que fue marcada como Aprobada
-              const cotLocal = cotizaciones.find(c => c.estado === Estado_Cotizacion.Aprobada);
-              if (cotLocal && resp.data) {
-                const prov = maestros.proveedores.find(p => p.id_proveedor === cotLocal.id_proveedor);
-                
-                const resCot: RES_Cotizacion = {
-                  id: aprobada.id,
-                  id_comparativo: resp.data.id_comparativo,
-                  id_proveedor: cotLocal.id_proveedor,
-                  proveedor_nombre: prov?.razon_social || "Desconocido",
-                  moneda: cotLocal.moneda,
-                  correlativo: aprobada.correlativo,
-                  numero_correlativo: 0,
-                  metodo_pago: cotLocal.metodo_pago,
-                  fecha_vencimiento_pago: (cotLocal.fecha_vencimiento_pago as string | null) || null,
-                  total_antes_igv: cotLocal.total_antes_igv,
-                  incluye_igv: cotLocal.incluye_igv,
-                  porcentaje_igv: cotLocal.porcentaje_igv,
-                  monto_igv: cotLocal.monto_igv,
-                  total_despues_igv: cotLocal.total_despues_igv,
-                  observacion: cotLocal.observacion || null,
-                  evidencias: null,
-                  fecha_hora_cotizacion: new Date().toISOString(),
-                  comparativo_fecha: new Date().toISOString(),
-                  estado: Estado_Cotizacion.Aprobada,
-                  created_at: new Date().toISOString()
-                };
-
-                const resDetalles: RES_CotizacionDetalle[] = cotLocal.detalles
-                  .filter(d => !d.no_cotiza)
-                  .map((d, idx) => {
-                    const prod = maestros.catalogo.find(p => p.id_producto === d.id_producto);
-                    const uni = maestros.unidades.find(u => u.id_unidad_medida === d.id_unidad_medida);
-                    return {
-                      id: idx,
-                      id_cotizacion: aprobada.id,
-                      id_comparativo_detalle: 0,
-                      id_unidad_medida: d.id_unidad_medida,
-                      producto_nombre: prod?.nombre || "Producto",
-                      unidad_medida_nombre: uni?.nombre || "UM",
-                      unidad_medida_abv: uni?.abreviatura || "UM",
-                      cantidad: d.cantidad,
-                      contenido_por_presentacion: d.contenido_por_presentacion,
-                      cantidad_base: d.cantidad_base,
-                      precio_unitario: d.precio_unitario,
-                      precio_unitario_base: d.precio_unitario_base,
-                      comentario: d.comentario || null,
-                      no_cotiza: 0,
-                      unidad_medida_base_abv: prod?.unidad_medida_abreviatura || "UND"
-                    };
-                  });
-
-              print(React.createElement(OrdenCompraPDF, { 
-                cotizacion: resCot, 
-                detalles: resDetalles 
-              }), {
-                documentTitle: `Orden de Compra - ${aprobada.correlativo}`,
-                target: "OrdenCompraPDF"
-              });
-            }
-          });
         }
 
+        return {
+          ...c,
+          fecha_vencimiento_pago: fechaStr,
+          detalles: c.detalles
+            .filter((d) => !d.no_cotiza)
+            .map((d) => ({
+              ...d,
+              precio_unitario_base: Number(d.precio_unitario_base.toFixed(2)),
+              cantidad_base: Number(d.cantidad_base.toFixed(2)),
+            })),
+          total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
+          monto_igv: Number(c.monto_igv.toFixed(2)),
+          total_despues_igv: Number(c.total_despues_igv.toFixed(2)),
+        };
+      }),
+    };
+
+    // INTERCEPTAR: Si hay alguna Aprobada, lanzamos el Wizard Modal
+    if (tieneAprobadas) {
+      setWizardPayload(payload);
+      setWizardAprobacionOpened(true);
+      return;
+    }
+
+    // SI NO HAY APROBADAS, REGISTRAMOS DIRECTA Y SILENCIOSAMENTE COMO GENERADAS
+    setLoading(true);
+    try {
+      const resp = await CotizacionesService.registrar_comparativo(payload);
+      if (resp.success) {
+        notify({ type: "success", content: "Comparativo y cotizaciones registrados correctamente." });
         onSuccess();
       } else {
-        notify({ type: "error", content: resp.message });
-        printerWin?.close();
+        notify({ type: "error", content: resp.message || "Error al registrar el comparativo" });
       }
     } catch {
-      notify({
-        type: "error",
-        content: "Ocurrió un error al guardar el comparativo.",
-      });
-      printerWin?.close();
+      notify({ type: "error", content: "Ocurrió un error al guardar el comparativo." });
     } finally {
       setLoading(false);
     }
@@ -530,5 +517,8 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     updateCotizacionDetail,
     toggleCotizacionNoCotiza,
     handleSave,
+    wizardAprobacionOpened,
+    setWizardAprobacionOpened,
+    wizardPayload,
   };
 };

@@ -1,0 +1,360 @@
+import { useState, useEffect } from "react";
+import {
+  Stack,
+  Text,
+  Button,
+  Group,
+  Checkbox,
+  Select,
+  Badge,
+  Stepper,
+} from "@mantine/core";
+import { CheckBadgeIcon } from "@heroicons/react/24/solid";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import type { DTO_RegistrarComparativo, DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
+import { CotizacionesService } from "../../service/cotizaciones.service";
+import { useNotify } from "../../../../hooks/useNotify";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
+
+// Tipos para el estado local del Wizard
+interface WizardAprobacionState {
+  originalIndex: number;
+  cotizacion: DTO_CotizacionRequest;
+  selectedEmpresaId: string | null;
+  selectedDetalles: number[]; // IDs de productos
+}
+
+interface ModalAsistenteAprobacionProps {
+  opened: boolean;
+  onClose: () => void;
+  // Todo el formulario original (para registrar la base primero)
+  payloadOriginal: DTO_RegistrarComparativo | null;
+  // Lista de todas las cotizaciones con sus índices para mapearlas al Wizard
+  todasLasCotizaciones: DTO_CotizacionRequest[];
+  // Todos los maestros para resolver nombres
+  maestros: {
+    proveedores: import("../../service/cotizaciones.responses").RES_MaestroProveedor[];
+    catalogo: import("../../service/cotizaciones.responses").RES_MaestroProducto[];
+    unidades: import("../../service/cotizaciones.responses").RES_MaestroUnidadMedida[];
+    empresas: import("../../service/cotizaciones.responses").RES_MaestroEmpresa[];
+  };
+  onSuccessCompleto: () => Promise<void> | void;
+}
+
+export const ModalAsistenteAprobacion = ({
+  opened,
+  onClose,
+  payloadOriginal,
+  todasLasCotizaciones,
+  maestros,
+  onSuccessCompleto,
+}: ModalAsistenteAprobacionProps) => {
+  const { notifySuccess, notifyError } = useNotify();
+
+  const [wizardSteps, setWizardSteps] = useState<WizardAprobacionState[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // Inicializar Wizard basándose en las cotizaciones que llegaron marcadas como Aprobada
+  useEffect(() => {
+    if (opened && todasLasCotizaciones.length > 0) {
+      const steps: WizardAprobacionState[] = [];
+      todasLasCotizaciones.forEach((cot, index) => {
+        if (cot.estado === "Aprobada") {
+          steps.push({
+            originalIndex: index,
+            cotizacion: cot,
+            selectedEmpresaId: cot.empresas_ids.length > 0 ? cot.empresas_ids[0].toString() : null,
+            // Preseleccionar todos los habilitados
+            selectedDetalles: cot.detalles.filter(d => !d.no_cotiza).map(d => d.id_producto),
+          });
+        }
+      });
+      setWizardSteps(steps);
+      setActiveStep(0);
+    }
+  }, [opened, todasLasCotizaciones]);
+
+  if (!opened || !payloadOriginal) return null;
+
+  const handleNext = () => {
+    // Validar el step actual
+    const current = wizardSteps[activeStep];
+    if (!current.selectedEmpresaId) {
+      notifyError("Debe seleccionar una empresa facturadora.");
+      return;
+    }
+    if (current.selectedDetalles.length === 0) {
+      notifyError("Debe seleccionar al menos un producto.");
+      return;
+    }
+    setActiveStep((curr) => curr + 1);
+  };
+
+  const handlePrev = () => setActiveStep((curr) => curr - 1);
+
+  // Manejar edición local
+  const updateCurrentStep = (updater: (prev: WizardAprobacionState) => WizardAprobacionState) => {
+    setWizardSteps(prev => {
+      const copy = [...prev];
+      copy[activeStep] = updater(copy[activeStep]);
+      return copy;
+    });
+  };
+
+  const toggleDetalle = (idProducto: number) => {
+    updateCurrentStep(prev => ({
+      ...prev,
+      selectedDetalles: prev.selectedDetalles.includes(idProducto)
+        ? prev.selectedDetalles.filter(id => id !== idProducto)
+        : [...prev.selectedDetalles, idProducto]
+    }));
+  };
+
+  const currentStepData = wizardSteps[activeStep] || null;
+  const proveedor = currentStepData 
+    ? maestros.proveedores.find((p) => p.id_proveedor === currentStepData.cotizacion.id_proveedor)
+    : null;
+
+  // Lista de empresas para el select basadas en los IDs configurados
+  const empresasDisponibles = currentStepData 
+    ? maestros.empresas.filter((e) => currentStepData.cotizacion.empresas_ids.includes(e.id_empresa))
+    : [];
+
+  const handleFinalSubmit = async () => {
+    // Validar el ultimo step
+    const current = wizardSteps[activeStep];
+    if (!current.selectedEmpresaId) {
+      notifyError("Debe seleccionar una empresa facturadora.");
+      return;
+    }
+    if (current.selectedDetalles.length === 0) {
+      notifyError("Debe seleccionar al menos un producto.");
+      return;
+    }
+
+    // 1. Preparar Payload Ficticio: Convertir TODAS a Generada.
+    // El backend se encarga de registrarlas formalmente listas para su futura aprobacion
+    const payloadRegistrar: DTO_RegistrarComparativo = {
+      ...payloadOriginal,
+      cotizaciones: payloadOriginal.cotizaciones.map(c => ({
+        ...c,
+        estado: "Generada" as import("../../../../shared/enums/cotizacion/cotizacion").Estado_Cotizacion
+      }))
+    };
+
+    setLoading(true);
+
+    try {
+      // 2. Disparar registro
+      const respBase = await CotizacionesService.registrar_comparativo(payloadRegistrar);
+      if (!respBase.success) {
+        notifyError(respBase.message || "Error al registrar el comparativo.");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Obtener el mapeo de IDs (Backend debe darnos cotizaciones_ids)
+      const creadas = respBase.data.cotizaciones_ids || []; 
+      
+      // 4. Procesar Aprobaciones Secuencialmente
+      for (let i = 0; i < wizardSteps.length; i++) {
+        const step = wizardSteps[i];
+        // Buscar el id_cotizacion real que corresponde a esta cotizacion original
+        const dataCreada = creadas.find((c) => c.index === step.originalIndex);
+        if (!dataCreada) continue;
+
+        const mapDetalles = dataCreada.detalles_map || [];
+        const idsDetallesAprobadosBD = step.selectedDetalles
+          .map(idProd => mapDetalles.find((m) => m.id_producto === idProd)?.id_cot_det)
+          .filter((id): id is number => id !== undefined);
+
+        // Mandar el POST a aprobar_cotizacion_parcial
+        const resAprob = await CotizacionesService.aprobar_cotizacion(dataCreada.id, {
+          id_empresa_compradora: Number(step.selectedEmpresaId),
+          detalles_aprobados: idsDetallesAprobadosBD 
+        });
+
+        if (!resAprob.success) {
+          notifyError(`Fallo al aprobar orden para proveedor ${proveedor?.razon_social}`);
+        }
+      }
+
+      notifySuccess("Registro y Aprobación completados correctamente.");
+      onSuccessCompleto();
+      onClose();
+
+    } catch (e) {
+      console.error(e);
+      notifyError("Ocurrió un error general en el Asistente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ModalEstandar
+      opened={opened}
+      close={onClose}
+      onClose={onClose}
+      title="Asistente de Aprobación"
+      size="xl"
+    >
+      {wizardSteps.length === 0 ? (
+        <Stack align="center" py="xl">
+          <Text c="dimmed">Cargando asistente o no hay cotizaciones aprobadas...</Text>
+        </Stack>
+      ) : (
+        <div className="flex flex-col h-[70vh]">
+          {/* Header con el Stepper */}
+          <div className="flex-none p-4 bg-zinc-900 border-b border-zinc-800">
+            <Stepper
+              active={activeStep}
+              onStepClick={setActiveStep}
+              size="sm"
+              color="green"
+              allowNextStepsSelect={false}
+            >
+              {wizardSteps.map((step, idx) => {
+                const prov = maestros.proveedores.find(
+                  (p) => p.id_proveedor === step.cotizacion.id_proveedor,
+                );
+                return (
+                  <Stepper.Step
+                    key={`step-${idx}`}
+                    label={`Proveedor ${idx + 1}`}
+                    description={prov?.razon_social || "Desconocido"}
+                  />
+                );
+              })}
+            </Stepper>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-zinc-700">
+                <Text size="sm" fw={900} className="text-zinc-500">
+                  {activeStep + 1}
+                </Text>
+              </div>
+              <div>
+                <Text size="sm" fw={800} className="text-zinc-100 uppercase tracking-widest">
+                  {proveedor?.razon_social || "Proveedor Desconocido"}
+                </Text>
+                <Text size="xs" className="text-zinc-400">
+                  Configure la empresa facturadora y qué ítems desea adquirir de este proveedor.
+                </Text>
+              </div>
+            </div>
+
+        {/* Seleccion de Empresa */}
+        <Stack gap={4}>
+          <Text size="sm" fw={800} className="text-zinc-200">
+            Empresa Facturadora
+          </Text>
+          <Select
+            placeholder="Seleccione la empresa para la factura"
+            data={empresasDisponibles.map((e) => ({
+              value: e.id_empresa.toString(),
+              label: e.razon_social,
+            }))}
+            value={currentStepData?.selectedEmpresaId || null}
+            onChange={(val) => updateCurrentStep(p => ({ ...p, selectedEmpresaId: val }))}
+            classNames={{
+              input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+              dropdown: "bg-zinc-900 border-zinc-800 dark",
+              option: "hover:bg-indigo-500/20 data-[checked]:bg-indigo-500",
+            }}
+          />
+        </Stack>
+
+        {/* Selección de Productos */}
+        <Stack gap="xs">
+          <Text size="sm" fw={800} className="text-zinc-200">
+            Productos a Adquirir
+          </Text>
+          <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[30vh] overflow-y-auto custom-scrollbar">
+            {currentStepData?.cotizacion.detalles.filter(d => !d.no_cotiza).map((det) => {
+              const prodMaestro = maestros.catalogo.find((p) => p.id_producto === det.id_producto);
+              const isChecked = currentStepData.selectedDetalles.includes(det.id_producto);
+              const subtotal = Number(det.cantidad) * Number(det.precio_unitario);
+
+              return (
+                <div
+                  key={det.id_producto}
+                  className={`p-4 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
+                    isChecked ? "bg-indigo-500/5" : "hover:bg-white/5 opacity-60"
+                  }`}
+                  onClick={() => toggleDetalle(det.id_producto)}
+                >
+                  <Group wrap="nowrap" justify="space-between">
+                    <Group gap="md">
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => toggleDetalle(det.id_producto)}
+                        onClick={(e) => e.stopPropagation()}
+                        color="indigo"
+                        radius="sm"
+                      />
+                      <Stack gap={0}>
+                        <Text size="sm" fw={800} className="text-white">
+                          {prodMaestro?.nombre || `Producto ${det.id_producto}`}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {formatNumber(det.cantidad)} unidades a S/. {formatNumber(Number(det.precio_unitario))} c/u
+                        </Text>
+                      </Stack>
+                    </Group>
+                    <Badge variant="light" color="pink" size="md">
+                      Sub: S/. {formatNumber(subtotal)}
+                    </Badge>
+                  </Group>
+                </div>
+              );
+            })}
+          </div>
+        </Stack>
+
+        <Group justify="space-between" mt="md">
+           <Button variant="subtle" color="zinc" onClick={onClose} disabled={loading}>
+            Cancelar Registro
+          </Button>
+
+          <Group gap="sm">
+            {activeStep > 0 && (
+              <Button variant="outline" color="indigo" onClick={handlePrev} disabled={loading}>
+                Atrás
+              </Button>
+            )}
+            
+            {activeStep < wizardSteps.length - 1 ? (
+              <Button variant="filled" color="indigo" onClick={handleNext}>
+                Siguiente
+              </Button>
+            ) : (
+              <Button
+                variant="filled"
+                color="green"
+                leftSection={<CheckBadgeIcon className="w-4 h-4" />}
+                onClick={handleFinalSubmit}
+                loading={loading}
+                className="shadow-lg shadow-green-900/20"
+              >
+                Finalizar Registro y Órdenes
+              </Button>
+            )}
+          </Group>
+        </Group>
+
+          </div>
+        </div>
+      )}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #52525b; }
+      `}</style>
+    </ModalEstandar>
+  );
+};

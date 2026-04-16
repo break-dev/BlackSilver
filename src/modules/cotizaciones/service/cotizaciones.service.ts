@@ -5,6 +5,7 @@ import type {
   RES_MaestroProducto,
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
+  RES_MaestroEmpresa,
   RES_RegistroComparativo,
 } from "./cotizaciones.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
@@ -69,13 +70,30 @@ export const CotizacionesService = {
   },
 
   /**
+   * Obtener empresas (utiliza el endpoint general de empresas)
+   */
+  get_empresas_maestro: async (): Promise<
+    IRespuesta<RES_MaestroEmpresa[]>
+  > => {
+    const { data } = await api.get<IRespuesta<RES_MaestroEmpresa[]>>(
+      "/empresas",
+    );
+    return data;
+  },
+
+  /**
    * Aprobar una cotización específica (Desestima las otras del mismo grupo)
    */
   aprobar_cotizacion: async (
     id_cotizacion: number,
+    payload: {
+      id_empresa_compradora: number;
+      detalles_aprobados: number[];
+    }
   ): Promise<IRespuesta<null>> => {
     const { data } = await api.post<IRespuesta<null>>(
       `/cotizaciones/${id_cotizacion}/aprobar`,
+      payload
     );
     return data;
   },

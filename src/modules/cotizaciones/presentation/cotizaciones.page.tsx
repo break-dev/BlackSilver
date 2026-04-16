@@ -24,6 +24,7 @@ export const CotizacionesPage = () => {
   const {
     cotizaciones,
     detalles,
+    empresas,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,
@@ -78,6 +79,7 @@ export const CotizacionesPage = () => {
         <ListadoComparativos
           cotizaciones={cotizaciones}
           detalles={detalles}
+          empresas={empresas}
           busqueda={busqueda}
           onUpdateLocal={updateCotizacionLocal}
         />

@@ -3,6 +3,7 @@ import { Group, Button } from "@mantine/core";
 import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo/comparativo-tabla";
 import { ModalSeleccionProductos } from "./modal-seleccion-productos";
+import { ModalAsistenteAprobacion } from "./comparativo/modal-asistente-aprobacion";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;
@@ -42,6 +43,9 @@ export const RegistroCotizacion = forwardRef<
       toggleCotizacionNoCotiza,
       handleSave,
       maestros,
+      wizardAprobacionOpened,
+      setWizardAprobacionOpened,
+      wizardPayload,
     } = useRegistroCotizacion(onSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
@@ -76,6 +80,7 @@ export const RegistroCotizacion = forwardRef<
               abreviatura: u.abreviatura,
             }))}
             proveedores={maestros.proveedores}
+            empresas={maestros.empresas}
             loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
@@ -118,6 +123,15 @@ export const RegistroCotizacion = forwardRef<
           onToggle={(id) => toggleProductoEnComparador(id)}
           seleccionadosActuales={productos.map((p) => p.id_producto)}
           productosBloqueados={productosEnUsoIds}
+        />
+
+        <ModalAsistenteAprobacion
+          opened={wizardAprobacionOpened}
+          onClose={() => setWizardAprobacionOpened(false)}
+          payloadOriginal={wizardPayload}
+          todasLasCotizaciones={wizardPayload?.cotizaciones || []}
+          maestros={maestros}
+          onSuccessCompleto={onSuccess}
         />
       </div>
     );

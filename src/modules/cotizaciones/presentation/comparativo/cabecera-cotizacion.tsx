@@ -4,6 +4,7 @@ import {
   Text,
   NumberInput,
   Select,
+  MultiSelect,
   Switch,
   ActionIcon,
   Badge,
@@ -27,6 +28,7 @@ interface CabeceraCotizacionProps {
   idx: number;
   isCollapsed: boolean;
   proveedores: { id_proveedor: number; razon_social: string }[];
+  empresas: { id_empresa: number; razon_social: string }[];
   loadingProveedores?: boolean;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
@@ -50,6 +52,7 @@ export const CabeceraCotizacion = ({
   idx,
   isCollapsed,
   proveedores,
+  empresas,
   loadingProveedores,
   onUpdateHeader,
   onRemoveCotizacion,
@@ -193,12 +196,23 @@ export const CabeceraCotizacion = ({
                 }}
               />
 
-              <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer">
+              <div 
+                className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
+                onClick={() =>
+                  onUpdateHeader(
+                    idx,
+                    "estado",
+                    cot.estado === Estado_Cotizacion.Aprobada
+                      ? Estado_Cotizacion.Generada
+                      : Estado_Cotizacion.Aprobada,
+                  )
+                }
+              >
                 <Group gap="xs" wrap="nowrap" align="center">
                   <Text
                     size="10px"
                     fw={900}
-                    className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors"
+                    className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
                   >
                     Aprobar
                   </Text>
@@ -206,22 +220,43 @@ export const CabeceraCotizacion = ({
                     size="xs"
                     color="green"
                     checked={cot.estado === Estado_Cotizacion.Aprobada}
-                    onChange={(e) =>
-                      onUpdateHeader(
-                        idx,
-                        "estado",
-                        e.currentTarget.checked
-                          ? Estado_Cotizacion.Aprobada
-                          : Estado_Cotizacion.Generada,
-                      )
-                    }
+                    onChange={() => {
+                      // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
+                    }}
                     styles={{
-                      input: { cursor: "pointer" },
+                      input: { cursor: "pointer", pointerEvents: "none" },
                     }}
                   />
                 </Group>
               </div>
             </Group>
+
+            <MultiSelect
+              placeholder={
+                loadingProveedores
+                  ? "Cargando..."
+                  : "Seleccione empresas compradoras..."
+              }
+              data={empresas.map((e) => ({
+                value: String(e.id_empresa),
+                label: e.razon_social,
+              }))}
+              label="Empresas Asociadas"
+              withAsterisk
+              disabled={loadingProveedores}
+              value={cot.empresas_ids.map(String)}
+              onChange={(vals) =>
+                onUpdateHeader(idx, "empresas_ids", vals.map(Number))
+              }
+              searchable
+              clearable
+              size="xs"
+              radius="lg"
+              classNames={inputStyles}
+              className="w-full"
+              hidePickedOptions
+              maxDropdownHeight={200}
+            />
 
             <Group grow gap="md">
               <Select

@@ -1,4 +1,4 @@
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 export interface RES_Cotizacion {
@@ -40,10 +40,12 @@ export interface RES_CotizacionDetalle {
   comentario: string | null;
   no_cotiza: number;
   unidad_medida_base_abv: string;
+  estado?: Estado_Cotizacion_Detalle | null;
 }
 
 export interface RES_ListadoComparativo {
   cotizaciones: RES_Cotizacion[];
+  empresas: { id_cotizacion: number; id_empresa: number; razon_social: string }[];
   detalles: RES_CotizacionDetalle[];
 }
 
@@ -71,7 +73,18 @@ export interface RES_MaestroProducto {
   unidad_medida_abreviatura: string;
 }
 
+export interface RES_MaestroEmpresa {
+  id_empresa: number;
+  razon_social: string;
+}
+
 export interface RES_RegistroComparativo {
   id_comparativo: number;
   ids_aprobadas: { id: number; correlativo: string }[];
+  cotizaciones_ids?: {
+    index: number;
+    id: number;
+    correlativo: string;
+    detalles_map: { id_producto: number; id_cot_det: number }[];
+  }[];
 }

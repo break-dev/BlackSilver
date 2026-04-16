@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
 // Detalle de cada producto dentro de una cotización específica
@@ -13,6 +13,7 @@ export const Schema_CotizacionDetalle = z.object({
   precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
+  estado: z.nullable(z.enum([Estado_Cotizacion_Detalle.Aprobado, Estado_Cotizacion_Detalle.Rechazado, Estado_Cotizacion_Detalle.Pendiente])).optional(),
 });
 
 // Cabecera de una cotización (un proveedor)
@@ -27,6 +28,7 @@ export const Schema_CotizacionRequest = z.object({
   monto_igv: z.number(),
   total_despues_igv: z.number(),
   observacion: z.string().optional().nullable(),
+  empresas_ids: z.array(z.number()).min(1, "Seleccione al menos una empresa"),
   estado: z.enum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
   detalles: z
     .array(Schema_CotizacionDetalle)

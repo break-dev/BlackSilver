@@ -1,4 +1,5 @@
-import { Group, Stack, Text, Badge, Divider, Button } from "@mantine/core";
+import { useState } from "react";
+import { Group, Stack, Text, Badge, Divider, Button, Collapse } from "@mantine/core";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import {
   BuildingStorefrontIcon,
@@ -7,6 +8,8 @@ import {
   CreditCardIcon,
   ChatBubbleBottomCenterTextIcon,
   CheckBadgeIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
@@ -16,6 +19,7 @@ interface CabeceraDetalleCotizacionProps {
   nroCotizacion: string;
   moneda: string;
   metodoPago: string;
+  empresas: { id_empresa: number; razon_social: string }[];
   vencimiento?: string | null;
   incluyeIgv: boolean;
   porcentajeIgv: number;
@@ -35,6 +39,7 @@ export const CabeceraDetalleCotizacion = ({
   nroCotizacion,
   moneda,
   metodoPago,
+  empresas,
   vencimiento,
   incluyeIgv,
   porcentajeIgv,
@@ -48,6 +53,7 @@ export const CabeceraDetalleCotizacion = ({
   loading,
   isCollapsed,
 }: CabeceraDetalleCotizacionProps) => {
+  const [showEmpresas, setShowEmpresas] = useState(false);
   const smb = moneda === "Soles" ? "S/." : "$";
 
   // Colores para los estados usando el enum
@@ -183,6 +189,43 @@ export const CabeceraDetalleCotizacion = ({
           </>
         )}
       </Group>
+
+      {/* Empresas Compradoras Toggle */}
+      {empresas && empresas.length > 0 && (
+        <Stack gap={0} className="bg-zinc-900/40 rounded-xl border border-zinc-800/50 overflow-hidden">
+          <div 
+            onClick={() => setShowEmpresas(!showEmpresas)}
+            className="p-2 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
+          >
+            <Group gap={4} wrap="nowrap">
+              <BuildingStorefrontIcon className="w-3.5 h-3.5 text-emerald-500" />
+              <Text size="10px" fw={800} className="text-zinc-200 uppercase">
+                Empresas Asociadas ({empresas.length})
+              </Text>
+            </Group>
+            {showEmpresas ? (
+              <ChevronUpIcon className="w-3.5 h-3.5 text-zinc-500" />
+            ) : (
+              <ChevronDownIcon className="w-3.5 h-3.5 text-zinc-500" />
+            )}
+          </div>
+          <Collapse in={showEmpresas}>
+            <div className="p-2 pt-1 flex flex-wrap gap-1.5">
+              {empresas.map((emp) => (
+                <div 
+                  key={emp.id_empresa} 
+                  className="bg-zinc-900/70 rounded-lg border border-zinc-800/80 px-2.5 py-1.5 flex items-center gap-1.5"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shadow-[0_0_4px_rgba(16,185,129,0.5)] shrink-0" />
+                  <Text size="11px" fw={700} className="text-zinc-300 leading-tight truncate">
+                    {emp.razon_social}
+                  </Text>
+                </div>
+              ))}
+            </div>
+          </Collapse>
+        </Stack>
+      )}
 
       {/* Stack de Totales Mejorado */}
       <Stack

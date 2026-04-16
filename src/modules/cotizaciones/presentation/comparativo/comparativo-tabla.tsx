@@ -22,6 +22,7 @@ interface ComparativoTablaProps {
   cotizaciones: DTO_CotizacionRequest[];
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   proveedores: { id_proveedor: number; razon_social: string }[];
+  empresas: { id_empresa: number; razon_social: string }[];
   loadingProveedores?: boolean;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
@@ -45,6 +46,7 @@ export const ComparativoTabla = ({
   cotizaciones,
   unidadesMedida,
   proveedores,
+  empresas,
   loadingProveedores,
   onUpdateHeader,
   onUpdateDetail,
@@ -124,6 +126,7 @@ export const ComparativoTabla = ({
                   idx={idx}
                   isCollapsed={isCollapsed}
                   proveedores={proveedores}
+                  empresas={empresas}
                   loadingProveedores={loadingProveedores}
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
@@ -144,6 +147,7 @@ export const ComparativoTabla = ({
                   isCollapsed={isCollapsed}
                   isSkeleton={true}
                   proveedores={proveedores}
+                  empresas={empresas}
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
                   onRemoveCotizacion={onRemoveCotizacion}

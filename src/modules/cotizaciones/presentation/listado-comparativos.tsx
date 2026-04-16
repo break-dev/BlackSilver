@@ -36,18 +36,22 @@ import type {
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { useNotify } from "../../../hooks/useNotify";
-import { CotizacionesService } from "../service/cotizaciones.service";
-import { Estado_Cotizacion } from "../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { usePrint } from "../../../hooks/usePrint";
 import { OrdenCompraPDF } from "./orden-compra-pdf";
+import { ModalAprobarCotizacion } from "./detalle/modal-aprobar-cotizacion";
 import { DocumentCheckIcon } from "@heroicons/react/24/solid";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
   detalles: RES_CotizacionDetalle[];
+  empresas: {
+    id_cotizacion: number;
+    id_empresa: number;
+    razon_social: string;
+  }[];
   busqueda: string;
-  onUpdateLocal?: (id: number, nuevoEstado: Estado_Cotizacion) => void;
+  onUpdateLocal?: (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[]) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
@@ -70,12 +74,11 @@ const COLOR_BY_STATE: Record<
 export const ListadoComparativos = ({
   cotizaciones,
   detalles,
+  empresas,
   busqueda,
   onUpdateLocal,
 }: ListadoComparativosProps) => {
-  const { notifySuccess, notifyError } = useNotify();
   const { print } = usePrint();
-  const [loadingApprove, setLoadingApprove] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>(
     {},
   );
@@ -85,6 +88,11 @@ export const ListadoComparativos = ({
   const [selectedCompId, setSelectedCompId] = useState<number | null>(null);
   const [resumenDetalleIsCollapsed, setResumenDetalleIsCollapsed] =
     useState(false);
+
+  const [modalAprobarOpened, setModalAprobarOpened] = useState(false);
+  const [selectedCotIdParaAprobar, setSelectedCotIdParaAprobar] = useState<
+    number | null
+  >(null);
 
   const toggleComp = (id: number) =>
     setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -104,28 +112,31 @@ export const ListadoComparativos = ({
     });
   };
 
-  const handleApprove = async (id: number) => {
-    try {
-      setLoadingApprove(id);
-      const res = await CotizacionesService.aprobar_cotizacion(id);
-      if (res.success) {
-        notifySuccess("Cotización aprobada correctamente.");
-        onUpdateLocal?.(id, Estado_Cotizacion.Aprobada);
+  const handleApprove = (id: number) => {
+    setSelectedCotIdParaAprobar(id);
+    setModalAprobarOpened(true);
+  };
 
-        // Disparar impresión automática
-        const cot = cotizaciones.find((c) => c.id === id);
-        if (cot) {
-          handlePrintPO({ ...cot, estado: Estado_Cotizacion.Aprobada });
-        }
-      } else {
-        notifyError(res.message);
-      }
-    } catch (error) {
-      console.error(error);
-      notifyError("No se pudo procesar la aprobación.");
-    } finally {
-      setLoadingApprove(null);
-    }
+  const handleSuccessAprobacion = (
+    id: number,
+    cotizacionModificada: RES_Cotizacion,
+    detallesAprobados: RES_CotizacionDetalle[],
+  ) => {
+    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados);
+
+    // Disparar impresión automática solo con los productos aprobados reales
+    print(
+      <OrdenCompraPDF
+        cotizacion={{
+          ...cotizacionModificada,
+          estado: Estado_Cotizacion.Aprobada,
+        }}
+        detalles={detallesAprobados}
+      />,
+      {
+        documentTitle: `Orden de Compra - ${cotizacionModificada.correlativo}`,
+      },
+    );
   };
 
   // Agrupamos por comparativo
@@ -403,7 +414,6 @@ export const ListadoComparativos = ({
                                 radius="xl"
                                 color="green"
                                 variant="filled"
-                                loading={loadingApprove === cot.id}
                                 leftSection={
                                   <CheckBadgeIcon className="w-3.5 h-3.5" />
                                 }
@@ -528,6 +538,46 @@ export const ListadoComparativos = ({
                             </Paper>
                           )}
 
+                          {/* Empresas Compradoras */}
+                          {(() => {
+                            const cotEmpresas = empresas.filter(
+                              (e) => e.id_cotizacion === cot.id,
+                            );
+                            if (cotEmpresas.length === 0) return null;
+                            return (
+                              <div className="mb-4">
+                                <Group gap="xs" mb="xs" px="xs">
+                                  <BuildingStorefrontIcon className="w-3.5 h-3.5 text-emerald-400/70" />
+                                  <Text
+                                    size="xs"
+                                    fw={800}
+                                    c="zinc.4"
+                                    className="uppercase tracking-widest"
+                                  >
+                                    Empresas Compradoras ({cotEmpresas.length})
+                                  </Text>
+                                </Group>
+                                <div className="flex flex-wrap gap-2 px-1">
+                                  {cotEmpresas.map((emp) => (
+                                    <div
+                                      key={emp.id_empresa}
+                                      className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-3 py-2 hover:border-emerald-500/20 transition-colors flex items-center gap-2"
+                                    >
+                                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                      <Text
+                                        size="11px"
+                                        fw={700}
+                                        className="text-zinc-200 leading-tight"
+                                      >
+                                        {emp.razon_social}
+                                      </Text>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                           {/* Tabla de productos */}
                           <Group gap="xs" mb="xs" px="xs">
                             <CubeIcon className="w-3.5 h-3.5 text-indigo-400/70" />
@@ -554,14 +604,22 @@ export const ListadoComparativos = ({
                                   <div className="flex justify-between items-start gap-4">
                                     {/* Info izquierda */}
                                     <Stack gap={2} className="flex-1">
-                                      <Text
-                                        size="sm"
-                                        fw={800}
-                                        className="text-zinc-100"
-                                      >
-                                        {det.producto_nombre}
-                                      </Text>
-                                      <Text size="xs" c="dimmed">
+                                      <Group gap="xs">
+                                        <Text
+                                          size="sm"
+                                          fw={800}
+                                          className={det.estado === Estado_Cotizacion_Detalle.Rechazado ? "text-zinc-500 line-through" : "text-zinc-100"}
+                                        >
+                                          {det.producto_nombre}
+                                        </Text>
+                                        {det.estado === Estado_Cotizacion_Detalle.Aprobado && (
+                                          <Badge size="xs" color="teal" variant="light" className="border-teal-500/20">Aprobado</Badge>
+                                        )}
+                                        {det.estado === Estado_Cotizacion_Detalle.Rechazado && (
+                                          <Badge size="xs" color="red" variant="dot" className="border-red-500/10">Rechazado</Badge>
+                                        )}
+                                      </Group>
+                                      <Text size="xs" c={det.estado === Estado_Cotizacion_Detalle.Rechazado ? "zinc.6" : "dimmed"}>
                                         {formatNumber(det.cantidad)}{" "}
                                         {det.unidad_medida_abv}
                                         {det.contenido_por_presentacion > 1 &&
@@ -678,17 +736,45 @@ export const ListadoComparativos = ({
             <TablaDetalleResumen
               isCollapsed={resumenDetalleIsCollapsed}
               cotizaciones={comparativosMap[selectedCompId]}
+              empresas={empresas}
               detalles={detalles.filter((d) =>
                 comparativosMap[selectedCompId].some(
                   (c) => c.id === d.id_cotizacion,
                 ),
               )}
               onApprove={handleApprove}
-              loadingApprove={loadingApprove}
+              loadingApprove={null}
             />
           )}
         </div>
       </ModalEstandar>
+
+      {/* Modal Aprobación Parcial y Orden de Compra */}
+      <ModalAprobarCotizacion
+        opened={modalAprobarOpened}
+        onClose={() => setModalAprobarOpened(false)}
+        cotizacion={
+          selectedCotIdParaAprobar
+            ? cotizaciones.find((c) => c.id === selectedCotIdParaAprobar) ||
+              null
+            : null
+        }
+        detalles={
+          selectedCotIdParaAprobar
+            ? detalles.filter(
+                (d) => d.id_cotizacion === selectedCotIdParaAprobar,
+              )
+            : []
+        }
+        empresas={
+          selectedCotIdParaAprobar
+            ? empresas.filter(
+                (e) => e.id_cotizacion === selectedCotIdParaAprobar,
+              )
+            : []
+        }
+        onSuccess={handleSuccessAprobacion}
+      />
     </Stack>
   );
 };

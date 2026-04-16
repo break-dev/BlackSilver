@@ -1,6 +1,7 @@
 import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import { Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
 
 interface CeldaDetalleItemProps {
   cantidad: number;
@@ -11,6 +12,7 @@ interface CeldaDetalleItemProps {
   unidadMedidaBase: string;
   comentario?: string | null;
   noCotiza?: boolean;
+  estado?: Estado_Cotizacion_Detalle | null;
 }
 
 export const CeldaDetalleItem = ({
@@ -22,6 +24,7 @@ export const CeldaDetalleItem = ({
   unidadMedidaBase,
   comentario,
   noCotiza = false,
+  estado,
 }: CeldaDetalleItemProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
 
@@ -45,10 +48,35 @@ export const CeldaDetalleItem = ({
     (unidadMedida !== unidadMedidaBase && unidadMedidaBase) ||
     Number(contenidoPorPresentacion) > 1;
 
+  const isAprobado = estado === Estado_Cotizacion_Detalle.Aprobado;
+  const isRechazado = estado === Estado_Cotizacion_Detalle.Rechazado;
+
+  const bgClass = isAprobado
+    ? "bg-teal-500/10 border-teal-500/20 shadow-teal-900/10"
+    : isRechazado
+    ? "bg-red-500/5 border-red-500/10"
+    : "bg-indigo-500/10 border-indigo-500/20";
+    
+  const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-indigo-400";
+  const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-indigo-100";
+  const dividerColor = isAprobado ? "teal.9" : isRechazado ? "red.9" : "indigo.9";
+
   return (
-    <Stack gap={6} className="w-full h-full min-h-[160px] justify-between p-1">
-      {/* Contenedor Principal Morado (Estilo Mini-Recibo) */}
-      <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between">
+    <Stack gap={6} className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-60 grayscale hover:grayscale-0 transition-all" : ""}`}>
+      {/* Contenedor Principal Morado/Verde (Estilo Mini-Recibo) */}
+      <div className={`${bgClass} border rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between transition-colors relative`}>
+        {/* Etiqueta de Aprobado/Rechazado */}
+        {estado && (
+          <Badge 
+            variant="filled" 
+            color={isAprobado ? "teal" : "red"} 
+            size="xs" 
+            className="absolute -top-2 -right-2 shadow-lg"
+          >
+            {estado}
+          </Badge>
+        )}
+        
         <Stack gap={5}>
           <Group justify="space-between" wrap="nowrap">
             <Text
@@ -90,12 +118,12 @@ export const CeldaDetalleItem = ({
         </Stack>
 
         <Stack gap={4} mt={10}>
-          <Divider color="indigo.9" variant="dashed" opacity={0.3} />
+          <Divider color={dividerColor} variant="dashed" opacity={0.3} />
           <Group justify="space-between" wrap="nowrap" align="flex-end">
-            <Text size="10px" fw={900} className="text-indigo-400 uppercase">
+            <Text size="10px" fw={900} className={`${textClass} uppercase`}>
               Subtotal
             </Text>
-            <Text size="sm" fw={950} className="text-indigo-100 font-mono">
+            <Text size="sm" fw={950} className={`${amountClass} font-mono`}>
               {smb} {formatNumber(subtotal)}
             </Text>
           </Group>
