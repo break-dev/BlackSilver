@@ -9,6 +9,7 @@ import type {
 
 interface TablaDetalleResumenProps {
   cotizaciones: RES_Cotizacion[];
+  empresas: { id_cotizacion: number; id_empresa: number; razon_social: string }[];
   detalles: RES_CotizacionDetalle[];
   isCollapsed: boolean;
   onApprove?: (id: number) => void;
@@ -17,6 +18,7 @@ interface TablaDetalleResumenProps {
 
 export const TablaDetalleResumen = ({
   cotizaciones,
+  empresas,
   detalles,
   isCollapsed,
   onApprove,
@@ -79,6 +81,7 @@ export const TablaDetalleResumen = ({
                     nroCotizacion={cot.correlativo}
                     moneda={cot.moneda}
                     metodoPago={cot.metodo_pago}
+                    empresas={empresas.filter((e) => e.id_cotizacion === cot.id)}
                     vencimiento={cot.fecha_vencimiento_pago}
                     incluyeIgv={Number(cot.incluye_igv) === 1}
                     porcentajeIgv={Number(cot.porcentaje_igv)}

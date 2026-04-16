@@ -709,6 +709,7 @@ export const ListadoComparativos = ({
             <TablaDetalleResumen
               isCollapsed={resumenDetalleIsCollapsed}
               cotizaciones={comparativosMap[selectedCompId]}
+              empresas={empresas}
               detalles={detalles.filter((d) =>
                 comparativosMap[selectedCompId].some(
                   (c) => c.id === d.id_cotizacion,
