@@ -117,7 +117,7 @@ export const CeldaDetalle = ({
             <Checkbox
               size="xs"
               color="green"
-              label={<Text size="11px" fw={900} className="text-zinc-600 uppercase">Comprar</Text>}
+              label={<Text size="11px" fw={900} className="text-white uppercase">Comprar</Text>}
               checked={det.estado === Estado_Cotizacion_Detalle.Aprobado}
               className={`transition-all ${det.estado === Estado_Cotizacion_Detalle.Aprobado ? 'opacity-100' : 'opacity-30 hover:opacity-100'}`}
               onChange={(e) => 
@@ -135,11 +135,9 @@ export const CeldaDetalle = ({
       {/* Campos editables (se ocultan si no cotiza) */}
       <Stack
         gap="sm"
-        className={`w-full transition-all duration-300 ${
+        className={`w-full pt-6 transition-all duration-300 ${
           det.no_cotiza
             ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
-            : det.estado === Estado_Cotizacion_Detalle.Rechazado
-            ? "opacity-60 grayscale blur-[0.3px]"
             : ""
         }`}
       >
