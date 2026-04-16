@@ -27,6 +27,7 @@ export const Schema_CotizacionRequest = z.object({
   monto_igv: z.number(),
   total_despues_igv: z.number(),
   observacion: z.string().optional().nullable(),
+  empresas_ids: z.array(z.number()).min(1, "Seleccione al menos una empresa"),
   estado: z.enum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
   detalles: z
     .array(Schema_CotizacionDetalle)

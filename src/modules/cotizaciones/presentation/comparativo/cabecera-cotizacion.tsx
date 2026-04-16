@@ -4,6 +4,7 @@ import {
   Text,
   NumberInput,
   Select,
+  MultiSelect,
   Switch,
   ActionIcon,
   Badge,
@@ -27,6 +28,7 @@ interface CabeceraCotizacionProps {
   idx: number;
   isCollapsed: boolean;
   proveedores: { id_proveedor: number; razon_social: string }[];
+  empresas: { id_empresa: number; razon_social: string }[];
   loadingProveedores?: boolean;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
@@ -50,6 +52,7 @@ export const CabeceraCotizacion = ({
   idx,
   isCollapsed,
   proveedores,
+  empresas,
   loadingProveedores,
   onUpdateHeader,
   onRemoveCotizacion,
@@ -222,6 +225,33 @@ export const CabeceraCotizacion = ({
                 </Group>
               </div>
             </Group>
+
+            <MultiSelect
+              placeholder={
+                loadingProveedores
+                  ? "Cargando..."
+                  : "Seleccione empresas compradoras..."
+              }
+              data={empresas.map((e) => ({
+                value: String(e.id_empresa),
+                label: e.razon_social,
+              }))}
+              label="Empresas Asociadas"
+              withAsterisk
+              disabled={loadingProveedores}
+              value={cot.empresas_ids.map(String)}
+              onChange={(vals) =>
+                onUpdateHeader(idx, "empresas_ids", vals.map(Number))
+              }
+              searchable
+              clearable
+              size="xs"
+              radius="lg"
+              classNames={inputStyles}
+              className="w-full"
+              hidePickedOptions
+              maxDropdownHeight={200}
+            />
 
             <Group grow gap="md">
               <Select

@@ -44,6 +44,7 @@ export interface RES_CotizacionDetalle {
 
 export interface RES_ListadoComparativo {
   cotizaciones: RES_Cotizacion[];
+  empresas: { id_cotizacion: number; id_empresa: number; razon_social: string }[];
   detalles: RES_CotizacionDetalle[];
 }
 
@@ -69,6 +70,11 @@ export interface RES_MaestroProducto {
   id_unidad_medida_base: number;
   unidad_medida_base: string;
   unidad_medida_abreviatura: string;
+}
+
+export interface RES_MaestroEmpresa {
+  id_empresa: number;
+  razon_social: string;
 }
 
 export interface RES_RegistroComparativo {

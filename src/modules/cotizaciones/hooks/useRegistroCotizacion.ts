@@ -9,6 +9,7 @@ import type {
   RES_MaestroProducto,
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
+  RES_MaestroEmpresa,
 } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
@@ -30,10 +31,12 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     proveedores: RES_MaestroProveedor[];
     unidades: RES_MaestroUnidadMedida[];
     catalogo: RES_MaestroProducto[];
+    empresas: RES_MaestroEmpresa[];
   }>({
     proveedores: [],
     unidades: [],
     catalogo: [],
+    empresas: [],
   });
 
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
@@ -44,16 +47,18 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     const cargarMaestros = async () => {
       try {
         setLoadingMaestros(true);
-        const [resProv, resUni, resProd] = await Promise.all([
+        const [resProv, resUni, resProd, resEmp] = await Promise.all([
           CotizacionesService.get_proveedores_maestro(),
           CotizacionesService.get_unidades_medida_maestro(),
           CotizacionesService.get_productos_maestro(),
+          CotizacionesService.get_empresas_maestro()
         ]);
 
         setMaestros({
           proveedores: resProv.success ? resProv.data : [],
           unidades: resUni.success ? resUni.data : [],
           catalogo: resProd.success ? resProd.data : [],
+          empresas: resEmp.success ? resEmp.data : [],
         });
       } catch (error) {
         console.error("Error al cargar maestros en hook", error);
@@ -141,6 +146,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
     setCotizaciones((prev) => {
       const nuevaCot: DTO_CotizacionRequest = {
         id_proveedor: 0,
+        empresas_ids: [],
         moneda: "Soles",
         metodo_pago: MetodoPago.Contado,
         fecha_vencimiento_pago: null, // Ahora será Date | null en el estado del hook
@@ -325,6 +331,14 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       notify({
         type: "info",
         content: "Todas las cotizaciones deben tener un proveedor asignado.",
+      });
+      return;
+    }
+
+    if (cotizaciones.some((c) => c.empresas_ids.length === 0)) {
+      notify({
+        type: "info",
+        content: "Todas las cotizaciones deben tener al menos una empresa compradora seleccionada.",
       });
       return;
     }

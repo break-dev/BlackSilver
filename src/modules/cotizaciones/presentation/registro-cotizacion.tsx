@@ -76,6 +76,7 @@ export const RegistroCotizacion = forwardRef<
               abreviatura: u.abreviatura,
             }))}
             proveedores={maestros.proveedores}
+            empresas={maestros.empresas}
             loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}

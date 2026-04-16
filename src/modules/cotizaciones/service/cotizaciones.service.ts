@@ -5,6 +5,7 @@ import type {
   RES_MaestroProducto,
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
+  RES_MaestroEmpresa,
   RES_RegistroComparativo,
 } from "./cotizaciones.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
@@ -64,6 +65,18 @@ export const CotizacionesService = {
   > => {
     const { data } = await api.get<IRespuesta<RES_MaestroProducto[]>>(
       "/cotizaciones/productos",
+    );
+    return data;
+  },
+
+  /**
+   * Obtener empresas (utiliza el endpoint general de empresas)
+   */
+  get_empresas_maestro: async (): Promise<
+    IRespuesta<RES_MaestroEmpresa[]>
+  > => {
+    const { data } = await api.get<IRespuesta<RES_MaestroEmpresa[]>>(
+      "/empresas",
     );
     return data;
   },
