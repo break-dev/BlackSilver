@@ -13,7 +13,7 @@ export const Schema_CotizacionDetalle = z.object({
   precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
-  estado: z.nullable(z.enum([Estado_Cotizacion_Detalle.Aprobado, Estado_Cotizacion_Detalle.Rechazado])).optional(),
+  estado: z.nullable(z.enum([Estado_Cotizacion_Detalle.Aprobado, Estado_Cotizacion_Detalle.Rechazado, Estado_Cotizacion_Detalle.Pendiente])).optional(),
 });
 
 // Cabecera de una cotización (un proveedor)

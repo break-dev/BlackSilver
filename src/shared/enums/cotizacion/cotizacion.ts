@@ -6,4 +6,5 @@ export enum Estado_Cotizacion {
 export enum Estado_Cotizacion_Detalle {
   Aprobado = "Aprobado",
   Rechazado = "Rechazado",
+  Pendiente = "Pendiente",
 }
