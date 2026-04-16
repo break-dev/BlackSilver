@@ -5,6 +5,7 @@ import {
   TextInput,
   Tooltip,
   Skeleton,
+  ScrollArea,
 } from "@mantine/core";
 import {
   PlusIcon,
@@ -16,12 +17,12 @@ import {
   InboxStackIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
-import { useMinas } from "../hooks/useMinas";
+import { useMinas } from "../hooks/minas/useMinas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroMina } from "./registro-mina";
-import { EmpresasEjecutoras } from "./empresas-ejecutoras";
-import { HistorialResponsables } from "./historial-responsables";
-import { GestionLabores } from "./labores";
+import { EmpresasEjecutoras } from "./empresas-ejecutoras/empresas-ejecutoras";
+import { HistorialResponsables } from "./responsables/historial-responsables";
+import { GestionLabores } from "./labores/labores";
 
 export const MinasPage = () => {
   useTitlePage("Minas y Labores");
@@ -163,14 +164,18 @@ export const MinasPage = () => {
                       </Badge>
                     </Tooltip>
                     {mina.almacenes_suministradores && (
-                      <Tooltip label={`Almacenes: ${mina.almacenes_suministradores}`}>
+                      <Tooltip
+                        label={`Almacenes: ${mina.almacenes_suministradores}`}
+                      >
                         <Badge
                           size="xs"
                           variant="light"
                           color="cyan"
                           radius="sm"
                           className="font-bold border-cyan-500/20"
-                          leftSection={<InboxStackIcon className="w-3.5 h-3.5" />}
+                          leftSection={
+                            <InboxStackIcon className="w-3.5 h-3.5" />
+                          }
                         >
                           Abastecido
                         </Badge>
@@ -187,20 +192,46 @@ export const MinasPage = () => {
 
                 {/* Responsable */}
                 <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${mina.responsable
-                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                      : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50"
-                    }`}>
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
+                      mina.responsables
+                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                        : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50"
+                    }`}
+                  >
                     <UserIcon className="w-3.5 h-3.5" />
                   </div>
-                  <div className="min-w-0">
-                    <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block">
-                      Responsable
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block mb-1">
+                      Responsables
                     </span>
-                    <span className={`text-xs font-semibold truncate block ${mina.responsable ? "text-zinc-300" : "text-zinc-600 italic"
-                      }`}>
-                      {mina.responsable || "Sin asignar"}
-                    </span>
+                    {mina.responsables ? (
+                      <ScrollArea
+                        w="100%"
+                        type="never"
+                        scrollbarSize={0}
+                        offsetScrollbars={false}
+                      >
+                        <div className="flex items-center gap-1.5 pb-0.5">
+                          {mina.responsables.split(", ").map((resp, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="filled"
+                              color="indigo.9"
+                              size="xs"
+                              radius="sm"
+                              className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
+                            >
+                              {resp}
+                            </Badge>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <span className="text-xs font-semibold text-zinc-600 italic block">
+                        Sin asignar
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -210,11 +241,15 @@ export const MinasPage = () => {
                   <div className="flex items-center gap-3 text-xs text-zinc-600">
                     <span className="flex items-center gap-1">
                       <Squares2X2Icon className="w-3.5 h-3.5" />
-                      {mina.cantidad_labores} {mina.cantidad_labores === 1 ? 'labor' : 'labores'}
+                      {mina.cantidad_labores}{" "}
+                      {mina.cantidad_labores === 1 ? "labor" : "labores"}
                     </span>
                     <span className="flex items-center gap-1">
                       <BuildingOffice2Icon className="w-3.5 h-3.5" />
-                      {mina.cantidad_empresas_ejecutoras} {mina.cantidad_empresas_ejecutoras === 1 ? 'empresa' : 'empresas'}
+                      {mina.cantidad_empresas_ejecutoras}{" "}
+                      {mina.cantidad_empresas_ejecutoras === 1
+                        ? "empresa"
+                        : "empresas"}
                     </span>
                   </div>
 
@@ -287,7 +322,9 @@ export const MinasPage = () => {
             idMina={selectedMina.id_mina}
             idConcesion={selectedMina.id_concesion}
             minaNombre={selectedMina.nombre}
-            onEmpresasActualizadas={() => handleEmpresaAsignada(selectedMina.id_mina)}
+            onEmpresasActualizadas={() =>
+              handleEmpresaAsignada(selectedMina.id_mina)
+            }
           />
         )}
       </ModalEstandar>
@@ -317,9 +354,9 @@ export const MinasPage = () => {
         size="90%"
       >
         {selectedMina && (
-          <GestionLabores 
-            mina={selectedMina} 
-            onLaborCreada={handleLaborRegistrada} 
+          <GestionLabores
+            mina={selectedMina}
+            onLaborCreada={handleLaborRegistrada}
             onLaborFinalizada={handleLaborFinalizada}
           />
         )}

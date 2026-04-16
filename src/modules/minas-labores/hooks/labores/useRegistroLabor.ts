@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
-import { useNotify } from "../../../hooks/useNotify";
-import { MinasService } from "../service/minas.service";
-import { Schema_CrearLabor } from "../service/minas.requests";
+import { useNotify } from "../../../../hooks/useNotify";
+import { MinasService } from "../../service/minas.service";
+import { Schema_CrearLabor } from "../../service/minas.requests";
 import type {
   RES_EmpresaEjecutora,
   RES_Labor,
   RES_TipoLabor,
-} from "../service/minas.responses";
+} from "../../service/minas.responses";
 
 interface Props {
   idMina: number;

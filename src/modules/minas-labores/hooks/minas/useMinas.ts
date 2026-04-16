@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { useUIStore } from "../../../stores/ui.store";
-import { useNotify } from "../../../hooks/useNotify";
-import { MinasService } from "../service/minas.service";
+import { useUIStore } from "../../../../stores/ui.store";
+import { useNotify } from "../../../../hooks/useNotify";
+import { MinasService } from "../../service/minas.service";
 import type {
   RES_ConcesionItem,
   RES_ResumenMina,
-} from "../service/minas.responses";
+} from "../../service/minas.responses";
 
 export const useMinas = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -21,8 +21,13 @@ export const useMinas = () => {
   const [busqueda, setBusqueda] = useState("");
 
   // Modales
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
+  const [openedCreate, { open: openModalCreate, close: closeCreate }] =
     useDisclosure(false);
+
+  const openCreate = () => {
+    cargarConcesiones();
+    openModalCreate();
+  };
   const [openedEmpresas, { open: openEmpresas, close: closeEmpresas }] =
     useDisclosure(false);
   const [
@@ -69,9 +74,8 @@ export const useMinas = () => {
 
   useEffect(() => {
     setTitle("Minas y Labores");
-    cargarConcesiones();
     cargarMinas();
-  }, [setTitle, cargarConcesiones, cargarMinas]);
+  }, [setTitle, cargarMinas]);
 
   const minasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase();
@@ -139,7 +143,12 @@ export const useMinas = () => {
     setMinas((prev) =>
       prev.map((m) =>
         m.id_mina === id_mina
-          ? { ...m, responsable: nuevoNombreResponsable }
+          ? {
+            ...m,
+            responsables: m.responsables
+              ? `${nuevoNombreResponsable}, ${m.responsables}`
+              : nuevoNombreResponsable,
+          }
           : m,
       ),
     );

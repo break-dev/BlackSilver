@@ -1,7 +1,10 @@
 import { useState, useCallback } from "react";
-import { MinasService } from "../service/minas.service";
-import { Schema_CrearMina } from "../service/minas.requests";
-import type { RES_ConcesionItem, RES_ResumenMina } from "../service/minas.responses";
+import { MinasService } from "../../service/minas.service";
+import { Schema_CrearMina } from "../../service/minas.requests";
+import type {
+  RES_ConcesionItem,
+  RES_ResumenMina,
+} from "../../service/minas.responses";
 
 interface Props {
   concesiones: RES_ConcesionItem[];

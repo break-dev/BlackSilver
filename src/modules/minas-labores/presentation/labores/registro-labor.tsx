@@ -7,9 +7,9 @@ import {
   Loader,
   Stack,
 } from "@mantine/core";
-import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import { useRegistroLabor } from "../hooks/useRegistroLabor";
-import type { RES_Labor } from "../service/minas.responses";
+import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
+import { useRegistroLabor } from "../../hooks/labores/useRegistroLabor";
+import type { RES_Labor } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;

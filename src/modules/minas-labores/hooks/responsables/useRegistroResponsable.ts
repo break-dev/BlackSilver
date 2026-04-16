@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import dayjs from "dayjs";
-import { MinasService } from "../service/minas.service";
-import { Schema_AsignarResponsable } from "../service/minas.requests";
+import { MinasService } from "../../service/minas.service";
+import { Schema_AsignarResponsable } from "../../service/minas.requests";
 import type {
   RES_EmpleadoDisponible,
   RES_HistorialResponsable,
-} from "../service/minas.responses";
+} from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
@@ -53,6 +53,13 @@ export const useRegistroResponsable = ({
     onCancel();
   };
 
+  const agregarDisponible = (empleado: RES_EmpleadoDisponible) => {
+    setEmpleadosDisponibles((prev) => {
+      if (prev.find((e) => e.id_empleado === empleado.id_empleado)) return prev;
+      return [empleado, ...prev];
+    });
+  };
+
   const handleSubmit = async () => {
     setFormError("");
     const validation = Schema_AsignarResponsable.safeParse({
@@ -74,7 +81,11 @@ export const useRegistroResponsable = ({
       if (res.success) {
         onSuccess(res.data);
         resetForm();
-        cargarDisponibles(); // Recargar la lista de la API
+        // Actualizamos la lista local de disponibles eliminando al que ya fue asignado
+        // así evitamos una petición extra a la red (getEmpleadosDisponibles)
+        setEmpleadosDisponibles((prev) =>
+          prev.filter((e) => e.id_empleado !== idEmpleado),
+        );
       } else {
         setFormError(res.message);
       }
@@ -96,5 +107,6 @@ export const useRegistroResponsable = ({
     isSubmitting,
     handleSubmit,
     handleCancel,
+    agregarDisponible,
   };
 };

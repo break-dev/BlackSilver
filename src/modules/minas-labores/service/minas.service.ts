@@ -23,7 +23,7 @@ export const MinasService = {
   // Minas
   getConcesionesSesion: async () => {
     const res = await api.get<IRespuesta<RES_ConcesionItem[]>>(
-      `${BASE_MINAS}/concesiones`,
+      `${BASE_MINAS}/aux/concesiones`,
     );
     return res.data;
   },
@@ -94,6 +94,17 @@ export const MinasService = {
     const res = await api.post<IRespuesta<RES_HistorialResponsable>>(
       `${BASE_MINAS}/responsables/asignar-responsable`,
       dto,
+    );
+    return res.data;
+  },
+
+  inactivarResponsable: async (
+    id_responsable_mina: number,
+    fecha_fin: string,
+  ) => {
+    const res = await api.post<IRespuesta<null>>(
+      `${BASE_MINAS}/responsables/inactivar-responsable`,
+      { id_responsable_mina, fecha_fin },
     );
     return res.data;
   },

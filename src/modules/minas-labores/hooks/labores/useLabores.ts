@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { useNotify } from "../../../hooks/useNotify";
-import { MinasService } from "../service/minas.service";
-import type { RES_Labor } from "../service/minas.responses";
+import { useNotify } from "../../../../hooks/useNotify";
+import { MinasService } from "../../service/minas.service";
+import type { RES_Labor } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;

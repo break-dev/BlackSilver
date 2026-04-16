@@ -1,8 +1,8 @@
 import { Button, Select, Loader, Stack, Group, Box, Text } from "@mantine/core";
 import { BriefcaseIcon } from "@heroicons/react/24/outline";
-import { useNotify } from "../../../hooks/useNotify";
-import { useRegistroEmpresaEjecutora } from "../hooks/useRegistroEmpresaEjecutora";
-import type { RES_EmpresaEjecutora } from "../service/minas.responses";
+import { useNotify } from "../../../../hooks/useNotify";
+import { useRegistroEmpresaEjecutora } from "../../hooks/empresas-ejecutoras/useRegistroEmpresaEjecutora";
+import type { RES_EmpresaEjecutora } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
@@ -61,11 +61,16 @@ export const RegistroEmpresaEjecutora = ({
           <BriefcaseIcon className="w-4 h-4 text-cyan-400" />
         </Box>
         <Stack gap={0}>
-          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-tight">
+          <Text
+            size="xs"
+            fw={700}
+            className="text-zinc-300 uppercase tracking-tight"
+          >
             Vincular Contratista
           </Text>
           <Text size="xs" className="text-zinc-500 leading-tight">
-            Asignar empresa a la mina <span className="text-pink-500 font-bold">{minaNombre}</span>
+            Asignar empresa a la mina{" "}
+            <span className="text-pink-500 font-bold">{minaNombre}</span>
           </Text>
         </Stack>
       </Group>

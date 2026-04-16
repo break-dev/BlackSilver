@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { MinasService } from "../service/minas.service";
-import type { RES_EmpresaDisponible } from "../service/minas.responses";
+import { MinasService } from "../../service/minas.service";
+import type { RES_EmpresaDisponible } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;

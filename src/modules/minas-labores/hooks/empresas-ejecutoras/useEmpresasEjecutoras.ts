@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNotify } from "../../../hooks/useNotify";
-import { MinasService } from "../service/minas.service";
-import type { RES_EmpresaEjecutora } from "../service/minas.responses";
+import { useNotify } from "../../../../hooks/useNotify";
+import { MinasService } from "../../service/minas.service";
+import type { RES_EmpresaEjecutora } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;

@@ -1,6 +1,16 @@
-import { Stack, Group, Select, TextInput, Textarea, Button } from "@mantine/core";
-import type { RES_ConcesionItem, RES_ResumenMina } from "../service/minas.responses";
-import { useRegistroMina } from "../hooks/useRegistroMina";
+import {
+  Stack,
+  Group,
+  Select,
+  TextInput,
+  Textarea,
+  Button,
+} from "@mantine/core";
+import type {
+  RES_ConcesionItem,
+  RES_ResumenMina,
+} from "../service/minas.responses";
+import { useRegistroMina } from "../hooks/minas/useRegistroMina";
 
 interface Props {
   concesiones: RES_ConcesionItem[];

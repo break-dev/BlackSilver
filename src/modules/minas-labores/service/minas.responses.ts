@@ -11,10 +11,7 @@ export interface RES_ResumenMina {
   concesion: string;
   nombre: string;
   descripcion: string | null;
-  responsable: string | null;
-  dni_responsable: string | null;
-  path_foto_responsable: string | null;
-  fecha_inicio_responsabilidad: string | null;
+  responsables: string | null;
   cantidad_labores: number;
   cantidad_empresas_ejecutoras: number;
   almacenes_suministradores: string | null;
@@ -40,6 +37,7 @@ export interface RES_EmpresaDisponible {
 // Historial de responsables de la mina
 export interface RES_HistorialResponsable {
   id_responsable_mina: number;
+  id_empleado: number;
   empleado: string;
   dni: string;
   path_foto: string | null;

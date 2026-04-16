@@ -1,7 +1,7 @@
 import { Text, Stack, Group, Skeleton } from "@mantine/core";
 import { BriefcaseIcon, IdentificationIcon } from "@heroicons/react/24/outline";
 import { RegistroEmpresaEjecutora } from "./registro-empresa-ejecutora";
-import { useEmpresasEjecutoras } from "../hooks/useEmpresasEjecutoras";
+import { useEmpresasEjecutoras } from "../../hooks/empresas-ejecutoras/useEmpresasEjecutoras";
 
 interface Props {
   idMina: number;
@@ -10,8 +10,17 @@ interface Props {
   onEmpresasActualizadas: () => void;
 }
 
-export const EmpresasEjecutoras = ({ idMina, idConcesion, minaNombre, onEmpresasActualizadas }: Props) => {
-  const { ejecutoras, loading, handleEmpresaAsignada: onAsignadaSuccess } = useEmpresasEjecutoras({
+export const EmpresasEjecutoras = ({
+  idMina,
+  idConcesion,
+  minaNombre,
+  onEmpresasActualizadas,
+}: Props) => {
+  const {
+    ejecutoras,
+    loading,
+    handleEmpresaAsignada: onAsignadaSuccess,
+  } = useEmpresasEjecutoras({
     idMina,
   });
 
