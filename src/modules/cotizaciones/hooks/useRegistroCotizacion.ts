@@ -10,24 +10,33 @@ import type {
   RES_MaestroProveedor,
   RES_MaestroUnidadMedida,
   RES_MaestroEmpresa,
+  RES_RegistroComparativo,
 } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
 import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 
-export const useRegistroCotizacion = (onSuccess: () => void) => {
+interface MaestrosState {
+  proveedores: RES_MaestroProveedor[];
+  unidades: RES_MaestroUnidadMedida[];
+  catalogo: RES_MaestroProducto[];
+  empresas: RES_MaestroEmpresa[];
+}
+
+export const useRegistroCotizacion = (
+  onSuccess: (
+    data: RES_RegistroComparativo,
+    payload: DTO_RegistrarComparativo,
+    currentMaestros: MaestrosState,
+  ) => void,
+) => {
   const { notify } = useNotify();
   const [loading, setLoading] = useState(false);
   const [loadingMaestros, setLoadingMaestros] = useState(true);
 
   // Estados para maestros
-  const [maestros, setMaestros] = useState<{
-    proveedores: RES_MaestroProveedor[];
-    unidades: RES_MaestroUnidadMedida[];
-    catalogo: RES_MaestroProducto[];
-    empresas: RES_MaestroEmpresa[];
-  }>({
+  const [maestros, setMaestros] = useState<MaestrosState>({
     proveedores: [],
     unidades: [],
     catalogo: [],
@@ -475,7 +484,7 @@ export const useRegistroCotizacion = (onSuccess: () => void) => {
       const resp = await CotizacionesService.registrar_comparativo(payload);
       if (resp.success) {
         notify({ type: "success", content: "Comparativo y cotizaciones registrados correctamente." });
-        onSuccess();
+        onSuccess(resp.data, payload, maestros);
       } else {
         notify({ type: "error", content: resp.message || "Error al registrar el comparativo" });
       }
