@@ -50,26 +50,29 @@ export const CeldaDetalleItem = ({
 
   const isAprobado = estado === Estado_Cotizacion_Detalle.Aprobado;
   const isRechazado = estado === Estado_Cotizacion_Detalle.Rechazado;
+  const isPendiente = estado === Estado_Cotizacion_Detalle.Pendiente;
 
   const bgClass = isAprobado
     ? "bg-teal-500/10 border-teal-500/20 shadow-teal-900/10"
     : isRechazado
-    ? "bg-red-500/5 border-red-500/10"
-    : "bg-indigo-500/10 border-indigo-500/20";
+    ? "bg-red-500/10 border-red-500/20"
+    : "bg-zinc-800/30 border-zinc-700/50"; // Gris bonito para pendiente
     
-  const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-indigo-400";
-  const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-indigo-100";
-  const dividerColor = isAprobado ? "teal.9" : isRechazado ? "red.9" : "indigo.9";
+  const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-zinc-400";
+  const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-zinc-200";
+  const dividerColor = isAprobado ? "teal.9" : isRechazado ? "red.9" : "zinc.7";
+
+  const badgeColor = isAprobado ? "teal" : isRechazado ? "red" : "gray";
 
   return (
-    <Stack gap={6} className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-60 grayscale hover:grayscale-0 transition-all" : ""}`}>
+    <Stack gap={6} className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-70 transition-all" : ""}`}>
       {/* Contenedor Principal Morado/Verde (Estilo Mini-Recibo) */}
       <div className={`${bgClass} border rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between transition-colors relative`}>
-        {/* Etiqueta de Aprobado/Rechazado */}
+        {/* Etiqueta de Aprobado/Rechazado/Pendiente */}
         {estado && (
           <Badge 
-            variant="filled" 
-            color={isAprobado ? "teal" : "red"} 
+            variant={isPendiente ? "light" : "filled"} 
+            color={badgeColor} 
             size="xs" 
             className="absolute -top-2 -right-2 shadow-lg"
           >

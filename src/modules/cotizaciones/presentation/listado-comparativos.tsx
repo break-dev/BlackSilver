@@ -616,7 +616,10 @@ export const ListadoComparativos = ({
                                           <Badge size="xs" color="teal" variant="light" className="border-teal-500/20">Aprobado</Badge>
                                         )}
                                         {det.estado === Estado_Cotizacion_Detalle.Rechazado && (
-                                          <Badge size="xs" color="red" variant="dot" className="border-red-500/10">Rechazado</Badge>
+                                          <Badge size="xs" color="red" variant="light" className="border-red-500/20">Rechazado</Badge>
+                                        )}
+                                        {det.estado === Estado_Cotizacion_Detalle.Pendiente && (
+                                          <Badge size="xs" color="gray" variant="light" className="border-zinc-500/20 text-zinc-300">Pendiente</Badge>
                                         )}
                                       </Group>
                                       <Text size="xs" c={det.estado === Estado_Cotizacion_Detalle.Rechazado ? "zinc.6" : "dimmed"}>
