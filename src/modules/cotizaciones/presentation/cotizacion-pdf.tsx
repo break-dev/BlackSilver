@@ -42,12 +42,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 10,
+    fontWeight: 700,
     backgroundColor: "#f4f4f5", // zinc-100
-    padding: 4,
+    padding: 3,
     marginBottom: 5,
-    textTransform: "uppercase",
   },
   row: {
     flexDirection: "row",
@@ -89,12 +88,13 @@ const styles = StyleSheet.create({
     color: "#6366f1",
   },
   signatureSection: {
-    marginTop: 40,
+    marginTop: 30,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
+    paddingHorizontal: 50,
   },
   signatureBox: {
-    width: "30%",
+    width: "40%",
     alignItems: "center",
   },
   signatureLine: {
@@ -104,12 +104,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   signatureName: {
-    fontSize: 8,
-    fontWeight: "bold",
+    fontSize: 10,
+    fontWeight: 700,
     textAlign: "center",
   },
   signatureRole: {
-    fontSize: 7,
+    fontSize: 10,
     color: "#71717a",
     textAlign: "center",
   },
@@ -171,13 +171,13 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             {/* Info Proveedor y Pago */}
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={styles.sectionTitle}>Proveedor</Text>
+                <Text style={styles.sectionTitle}>PROVEEDOR</Text>
                 <Text style={{ fontWeight: 700 }}>
                   {cotizacion.proveedor_nombre}
                 </Text>
               </View>
               <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.sectionTitle}>Condiciones de Pago</Text>
+                <Text style={styles.sectionTitle}>CONDICIONES DE PAGO</Text>
                 <Text>Método: {cotizacion.metodo_pago}</Text>
                 <Text>Moneda: {cotizacion.moneda}</Text>
                 {cotizacion.metodo_pago === "Crédito" && cotizacion.fecha_vencimiento_pago && (
@@ -193,7 +193,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
             {/* Tabla de Productos */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Detalle de Productos</Text>
+              <Text style={styles.sectionTitle}>DETALLE DE PRODUCTOS</Text>
 
               {/* Header Tabla */}
               <View style={[styles.row, styles.tableHeader]}>
@@ -260,9 +260,19 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               </View>
             </View>
 
+            {/* Observaciones Finales */}
+            {cotizacion.observacion && (
+              <View style={{ marginTop: 15 }}>
+                <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
+                <Text style={{ fontSize: 9, fontStyle: "italic" }}>
+                  {cotizacion.observacion}
+                </Text>
+              </View>
+            )}
+
             {/* Firmas */}
-            <View style={{ marginTop: 30 }}>
-              <Text style={styles.sectionTitle}>Autorizado por:</Text>
+            <View style={{ marginTop: 25 }}>
+              <Text style={styles.sectionTitle}>AUTORIZADO POR:</Text>
               <View style={styles.signatureSection}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
@@ -274,19 +284,17 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                   <Text style={styles.signatureName}>Carlos Avalos</Text>
                   <Text style={styles.signatureRole}>Area Logistica</Text>
                 </View>
-                <View style={{ width: "30%" }} />
               </View>
             </View>
 
-            <View style={{ marginTop: 40 }}>
-              <Text style={styles.sectionTitle}>Elaborado por:</Text>
-              <View style={styles.signatureSection}>
+            <View style={{ marginTop: 30 }}>
+              <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
+              <View style={{ ...styles.signatureSection, justifyContent: 'center' }}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
                   <Text style={styles.signatureRole}>Area Contable</Text>
                 </View>
-                <View style={{ flex: 1 }} />
               </View>
             </View>
 
