@@ -21,7 +21,7 @@ import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { usePrint } from "../../../../hooks/usePrint";
 import { CotizacionPDF } from "../cotizacion-pdf";
 import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Cotizacion, RES_CotizacionDetalle } from "../../service/cotizaciones.responses";
+import type { RES_Cotizacion, RES_CotizacionDetalle, RES_MaestroEmpresa } from "../../service/cotizaciones.responses";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -211,6 +211,9 @@ export const ModalAsistenteAprobacion = ({
       // --- AUTO-PRINT: FORMATO COTIZACIÓN (Todas las registradas) ---
       const cotizacionesPDFData = payloadRegistrar.cotizaciones.map((c, idx) => {
         const dataCreada = creadas.find((rc: { index: number; id: number; correlativo: string }) => rc.index === idx);
+        const nombresEmpresas = (c.empresas_ids || []).map((id: number) => 
+          (maestros?.empresas || []).find((e: RES_MaestroEmpresa) => e.id_empresa === id)?.razon_social || "---"
+        );
         const cotRes: RES_Cotizacion = {
           id: dataCreada?.id || 0,
           correlativo: dataCreada?.correlativo || "---",
@@ -256,7 +259,7 @@ export const ModalAsistenteAprobacion = ({
               estado: Estado_Cotizacion_Detalle.Pendiente
            } as unknown as RES_CotizacionDetalle;
         });
-        return { cotizacion: cotRes, detalles: detallesRes };
+        return { cotizacion: cotRes, detalles: detallesRes, empresas: nombresEmpresas };
       });
 
       if (cotizacionesPDFData.length > 0) {

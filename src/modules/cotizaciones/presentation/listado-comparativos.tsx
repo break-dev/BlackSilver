@@ -113,9 +113,19 @@ export const ListadoComparativos = ({
 
   const handlePrintCotizacion = (cot: RES_Cotizacion) => {
     const cotDetalles = detalles.filter((d) => d.id_cotizacion === cot.id);
+    const nombresEmpresas = (empresas || [])
+      .filter((e) => e.id_cotizacion === cot.id)
+      .map((e) => e.razon_social);
+
     print(
       <CotizacionPDF
-        cotizaciones={[{ cotizacion: cot, detalles: cotDetalles }]}
+        cotizaciones={[
+          {
+            cotizacion: cot,
+            detalles: cotDetalles,
+            empresas: nombresEmpresas,
+          },
+        ]}
       />,
       {
         documentTitle: `Cotización - ${cot.correlativo}`,

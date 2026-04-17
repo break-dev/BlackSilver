@@ -58,6 +58,9 @@ export const RegistroCotizacion = forwardRef<
         const creadas = data.cotizaciones_ids || [];
         const cotizacionesPDFData = payload.cotizaciones.map((c, idx) => {
           const dataCreada = creadas.find((rc) => rc.index === idx);
+          const nombresEmpresas = (c.empresas_ids || []).map((id: number) => 
+            (currentMaestros?.empresas || []).find((e: RES_MaestroEmpresa) => e.id_empresa === id)?.razon_social || "---"
+          );
           const cotRes: RES_Cotizacion = {
             id: dataCreada?.id || 0,
             correlativo: dataCreada?.correlativo || "---",
@@ -105,7 +108,7 @@ export const RegistroCotizacion = forwardRef<
              } as unknown as RES_CotizacionDetalle;
           });
 
-          return { cotizacion: cotRes, detalles: detallesRes };
+          return { cotizacion: cotRes, detalles: detallesRes, empresas: nombresEmpresas };
         });
 
         if (cotizacionesPDFData.length > 0) {
