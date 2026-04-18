@@ -1,11 +1,11 @@
 import { Badge, Group, Paper, Stack, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
-import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
-import { DetalleEntregaSection } from "./DetalleEntregaSection";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { formatNumber } from "../../../../../../shared/functions/formatNumber";
+import type { DetalleRequerimientoExtendido } from "../../../../service/atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../../service/responses/lote-producto";
+import { GroupByDetalleRequerimiento } from "./group-by-detalle-req";
 
-interface ProductoEntregaCardProps {
+interface GroupByProductoProps {
   idProducto: number;
   group: {
     name: string;
@@ -24,14 +24,14 @@ interface ProductoEntregaCardProps {
   ) => void;
 }
 
-export const ProductoEntregaCard = ({
+export const GroupByProducto = ({
   idProducto,
   group,
   lotesPorProducto,
   entregaCantidades,
   handleCantChange,
   handleCantLoteChange,
-}: ProductoEntregaCardProps) => {
+}: GroupByProductoProps) => {
   const lotes = lotesPorProducto[idProducto] || [];
 
   return (
@@ -85,7 +85,7 @@ export const ProductoEntregaCard = ({
 
       <Stack gap="0">
         {group.details.map((detalle_req, index) => (
-          <DetalleEntregaSection
+          <GroupByDetalleRequerimiento
             key={detalle_req.id_requerimiento_almacen_detalle}
             detalle_req={detalle_req}
             lotes={lotes}

@@ -19,8 +19,8 @@ import {
   PaperAirplaneIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
-import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import { Estado_RequerimientoDetalleLog } from "../../../shared/enums/requerimiento-almacen/requerimiento";
+import type { RES_Trazabilidad } from "../../../../../service/responses/_generic/trazabilidad";
+import { Estado_RequerimientoDetalleLog } from "../../../../../shared/enums/requerimiento-almacen/requerimiento";
 
 interface TrazabilidadAlmacenProps {
   productoNombre: string;

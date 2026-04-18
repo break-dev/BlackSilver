@@ -25,34 +25,32 @@ import {
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-
-import {
-  Estado_RequerimientoDetalle,
-} from "../../../shared/enums/requerimiento-almacen/requerimiento";
-import { ReqDetalleTrazabilidad } from "./req-detalle-trazabilidad";
-import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistrarEntrega } from "./registrar-entrega/registrar-entrega";
-import { HistorialEntregasRequerimiento } from "./historial-entregas-requerimiento";
-import { RegistrarSolicitudLogistica } from "./registrar-solicitud-logistica";
-import { useGestionAtencion } from "../hooks/useGestionAtencion";
-import { HeaderCard, InfoItem } from "./components/detail-elements";
+import { Estado_RequerimientoDetalle } from "../../../../shared/enums/requerimiento-almacen/requerimiento";
+import { ReqDetalleTrazabilidad } from "./detalle/detalle-log";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { RegistrarEntrega } from "../entregas/registrar-entrega/registrar-entrega";
+import { HistorialEntregasRequerimiento } from "../entregas/historial-entregas";
+import { RegistrarSolicitudLogistica } from "../solicitud-reabastecimiento/registrar-solicitud-logistica";
+import { useGestionAtencion } from "../../hooks/useGestionAtencion";
+import { HeaderCard } from "../../../prestamos-almacen-atencion/presentation/components/detail-elements";
+import { BadgeField } from "./header/badge-field";
 import type {
   RES_RequerimientoAlmacen,
   DetalleRequerimientoExtendido,
-} from "../service/atencion.responses";
-import { formatNumber } from "../../../shared/functions/formatNumber";
+} from "../../service/atencion.responses";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 
-interface GestionAtencionProps {
+interface InfoRequerimientoProps {
   requerimiento: RES_RequerimientoAlmacen;
   idAlmacen: number;
   onSuccess: (ids?: number[]) => void;
 }
 
-export const DetalleRequerimiento = ({
+export const InfoRequerimiento = ({
   requerimiento,
   idAlmacen,
   onSuccess,
-}: GestionAtencionProps) => {
+}: InfoRequerimientoProps) => {
   const {
     loading,
     detalles,
@@ -130,7 +128,7 @@ export const DetalleRequerimiento = ({
         />
         <HeaderCard
           icon={MapPinIcon}
-          label="Mina Destino"
+          label="Mina"
           value={requerimiento.mina}
           color="amber"
         />
@@ -176,12 +174,16 @@ export const DetalleRequerimiento = ({
         className="bg-transparent border border-zinc-800/50 mx-2"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <InfoItem
+          <BadgeField
             label="Prioridad"
             value={requerimiento.premura}
             color="orange"
           />
-          <InfoItem label="Estado" value={requerimiento.estado} color="green" />
+          <BadgeField
+            label="Estado"
+            value={requerimiento.estado}
+            color="green"
+          />
           <Stack gap={4} className="lg:col-span-1">
             <Text
               size="xs"
@@ -210,7 +212,7 @@ export const DetalleRequerimiento = ({
               )}
             </Group>
           </Stack>
-          <InfoItem
+          <BadgeField
             label="Fecha de Registro"
             value={dayjs(requerimiento.created_at).format("DD/MM/YYYY HH:mm")}
             icon={ClockIcon}
@@ -727,7 +729,9 @@ export const DetalleRequerimiento = ({
                 selectedItemId
                   ? handleRechazar
                   : () =>
-                      handleDecisionMasiva(Estado_RequerimientoDetalle.Rechazado)
+                      handleDecisionMasiva(
+                        Estado_RequerimientoDetalle.Rechazado,
+                      )
               }
             >
               Rechazar

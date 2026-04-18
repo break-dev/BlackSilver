@@ -16,14 +16,14 @@ import {
   ClipboardDocumentListIcon,
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
-import { useRegistrarSolicitudLogistica } from "../hooks/useRegistrarSolicitudLogistica";
-import { Premura } from "../../../shared/enums/_generic/premura";
-import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import { useRegistrarSolicitudLogistica } from "../../hooks/useRegistrarSolicitudLogistica";
+import { Premura } from "../../../../shared/enums/_generic/premura";
+import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import type {
   DetalleRequerimientoExtendido,
   RES_RequerimientoAlmacen,
-} from "../service/atencion.responses";
-import { formatNumber } from "../../../shared/functions/formatNumber";
+} from "../../service/atencion.responses";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 
 interface RegistrarSolicitudLogisticaProps {
   requerimiento: RES_RequerimientoAlmacen;

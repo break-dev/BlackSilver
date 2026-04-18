@@ -1,9 +1,9 @@
 import { Table } from "@mantine/core";
-import { LoteRow } from "./LoteRow";
-import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
-import { JsonScanner } from "../../../../../presentation/utils/json-scanner";
-import { useJsonScanner } from "../../../../../hooks/useJsonScanner";
+import { LoteRow } from "./lote-row";
+import type { DetalleRequerimientoExtendido } from "../../../../../service/atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../../../service/responses/lote-producto";
+import { JsonScanner } from "../../../../../../../presentation/utils/json-scanner";
+import { useJsonScanner } from "../../../../../../../hooks/useJsonScanner";
 
 interface LotesTableProps {
   lotes: RES_LoteDisponible[];

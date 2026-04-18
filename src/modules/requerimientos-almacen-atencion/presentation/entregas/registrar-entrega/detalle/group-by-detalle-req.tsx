@@ -1,10 +1,10 @@
 import { Badge, Group, Text } from "@mantine/core";
-import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
-import { LotesTable } from "./LotesTable";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { formatNumber } from "../../../../../../shared/functions/formatNumber";
+import type { DetalleRequerimientoExtendido } from "../../../../service/atencion.responses";
+import { LotesTable } from "./lotes/lotes-table";
+import type { RES_LoteDisponible } from "../../../../../../service/responses/lote-producto";
 
-interface DetalleEntregaSectionProps {
+interface GroupByDetalleRequerimientoProps {
   detalle_req: DetalleRequerimientoExtendido;
   lotes: RES_LoteDisponible[];
   index: number;
@@ -17,14 +17,14 @@ interface DetalleEntregaSectionProps {
   ) => void;
 }
 
-export const DetalleEntregaSection = ({
+export const GroupByDetalleRequerimiento = ({
   detalle_req,
   lotes,
   index,
   entregaCantidades,
   handleCantChange,
   handleCantLoteChange,
-}: DetalleEntregaSectionProps) => {
+}: GroupByDetalleRequerimientoProps) => {
   const idDetalleReq = detalle_req.id_requerimiento_almacen_detalle;
   const pendienteBase = detalle_req.pendiente_base;
 

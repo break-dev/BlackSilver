@@ -10,7 +10,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import dayjs from "dayjs";
-import { useHistorialEntregasRequerimiento } from "../hooks/useHistorialEntregasRequerimiento";
+import { useHistorialEntregasRequerimiento } from "../../hooks/useHistorialEntregasRequerimiento";
 import {
   TruckIcon,
   CalendarDaysIcon,
@@ -20,8 +20,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
-import { formatNumber } from "../../../shared/functions/formatNumber";
-import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { ArchivoCard } from "../../../../presentation/utils/archivo/archivo-card";
 import { PaperClipIcon } from "@heroicons/react/24/outline";
 
 interface HistorialProps {

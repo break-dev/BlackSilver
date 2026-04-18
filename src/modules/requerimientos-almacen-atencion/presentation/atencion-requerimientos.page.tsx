@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Badge,
   Group,
@@ -9,6 +9,7 @@ import {
   Tooltip,
   Select,
   Loader,
+  Button,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -17,19 +18,24 @@ import {
   CalendarDaysIcon,
   PlayCircleIcon,
   CheckBadgeIcon,
+  PlusIcon,
+  PaperClipIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEntregas } from "../hooks/useEntregas.ts";
 import type { RES_RequerimientoAlmacen } from "../service/atencion.responses.ts";
+import type { IArchivo } from "../../../shared/interfaces/archivo.ts";
 import { Estado_Requerimiento } from "../../../shared/enums/requerimiento-almacen/requerimiento.ts";
 import { Premura } from "../../../shared/enums/_generic/premura.ts";
 import { useTitlePage } from "../../../hooks/useTitlePage.ts";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar.tsx";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar.tsx";
-import { DetalleRequerimiento } from "./detalle-requerimiento.tsx";
+import { InfoRequerimiento } from "./info-requerimiento/info-requerimiento.tsx";
 import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
+import { RegistroRequerimiento } from "./registrar-requerimiento/registro-requerimiento.tsx";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card.tsx";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   useTitlePage("Atención de Requerimientos");
@@ -38,6 +44,15 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const [openedGestion, { open: openGestion, close: closeGestion }] =
     useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const [openedRegistro, { open: openReg, close: closeReg }] =
+    useDisclosure(false);
+
+  const [
+    openedEvidencias,
+    { open: openEvidencias, close: closeEvidencias },
+  ] = useDisclosure(false);
+  const [evidenciasActuales, setEvidenciasActuales] = useState<IArchivo[]>([]);
 
   const {
     idAlmacen,
@@ -50,16 +65,11 @@ export const RequerimientosAlmacenAtencionPage = () => {
     setBusqueda,
     filteredRecords,
     loading,
-    obtenerAlmacenesAutorizados,
     almacenes,
     loadingAlmacenes,
     updateRequirementLocal,
+    addRequirementLocal,
   } = useEntregas({ setError: setErrorLocal });
-
-  // Use effect remains for fetching stores but title is managed by hook
-  useEffect(() => {
-    obtenerAlmacenesAutorizados();
-  }, [obtenerAlmacenesAutorizados]);
 
   // Ya no manejamos 'page' localmente ni disclosures
 
@@ -96,7 +106,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
       },
       {
         accessor: "mina",
-        title: "Mina Destino",
+        title: "Mina",
         width: 180,
         render: (item) => (
           <Group gap="xs" wrap="nowrap">
@@ -169,9 +179,11 @@ export const RequerimientosAlmacenAtencionPage = () => {
         width: 130,
         render: (item) => {
           const colors: Record<string, string> = {
-            [Estado_Requerimiento.Generado]: "green",
-            [Estado_Requerimiento.Cerrado]: "gray",
+            [Estado_Requerimiento.Generado]: "blue",
+            [Estado_Requerimiento.EnDespacho]: "green",
             [Estado_Requerimiento.Anulado]: "red",
+            [Estado_Requerimiento.Cerrado]: "gray",
+            [Estado_Requerimiento.Completado]: "green",
           };
           const color =
             item.estado && colors[item.estado] ? colors[item.estado] : "gray";
@@ -188,30 +200,48 @@ export const RequerimientosAlmacenAtencionPage = () => {
           );
         },
       },
-      {
+    {
         accessor: "acciones",
         title: "Acciones",
         textAlign: "center",
-        width: 80,
+        width: 140,
         render: (item) => (
-          <Tooltip label="Gestionar Atención" position="top" withArrow>
-            <ActionIcon
-              variant="filled"
-              color="indigo"
-              radius="md"
-              onClick={() => {
-                setSelectedId(item.id_requerimiento);
-                openGestion();
-              }}
-              className="shadow-md hover:scale-105 transition-transform"
-            >
-              <PlayCircleIcon className="w-5 h-5 text-white" />
-            </ActionIcon>
-          </Tooltip>
+          <Group gap="xs" justify="center">
+            {item.evidencias && item.evidencias.length > 0 && (
+              <Tooltip label="Ver Evidencias" position="top" withArrow>
+                <ActionIcon
+                  variant="light"
+                  color="teal"
+                  radius="md"
+                  onClick={() => {
+                    setEvidenciasActuales(item.evidencias!);
+                    openEvidencias();
+                  }}
+                  className="shadow-sm hover:scale-105 transition-transform"
+                >
+                  <PaperClipIcon className="w-5 h-5 font-bold" />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            <Tooltip label="Gestionar Atención" position="top" withArrow>
+              <ActionIcon
+                variant="filled"
+                color="indigo"
+                radius="md"
+                onClick={() => {
+                  setSelectedId(item.id_requerimiento);
+                  openGestion();
+                }}
+                className="shadow-md hover:scale-105 transition-transform"
+              >
+                <PlayCircleIcon className="w-5 h-5 text-white" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         ),
       },
     ],
-    [openGestion, setSelectedId],
+    [openGestion, openEvidencias, setSelectedId],
   );
 
   return (
@@ -302,6 +332,17 @@ export const RequerimientosAlmacenAtencionPage = () => {
                 "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
             }}
           />
+
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openReg}
+            radius="xl"
+            size="xs"
+            disabled={!idAlmacen}
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all w-full lg:w-auto px-8"
+          >
+            Nuevo Requerimiento
+          </Button>
         </div>
       </div>
 
@@ -328,13 +369,42 @@ export const RequerimientosAlmacenAtencionPage = () => {
       )}
 
       <ModalEstandar
+        opened={openedRegistro}
+        close={closeReg}
+        title={`${almacenes.find((a) => String(a.id_almacen) === idAlmacen)?.nombre} - Nuevo Requerimiento`}
+        size="80%"
+      >
+        <RegistroRequerimiento
+          idAlmacenFijo={idAlmacen ? Number(idAlmacen) : undefined}
+          onSuccess={(item) => {
+            closeReg();
+            addRequirementLocal(item);
+          }}
+          onCancel={closeReg}
+        />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedEvidencias}
+        close={closeEvidencias}
+        title="Evidencias del Requerimiento"
+        size="lg"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {evidenciasActuales.map((archivo, index) => (
+            <ArchivoCard key={index} archivo={archivo} />
+          ))}
+        </div>
+      </ModalEstandar>
+
+      <ModalEstandar
         opened={openedGestion}
         close={closeGestion}
         title={`Atender Requerimiento de Almacén`}
         size="95%"
       >
         {selectedId && (
-          <DetalleRequerimiento
+          <InfoRequerimiento
             requerimiento={
               filteredRecords.find((r) => r.id_requerimiento === selectedId)!
             }

@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import type { RES_Entrega, RES_DetalleEntrega } from "../service/atencion.responses";
+import type {
+  RES_Entrega,
+  RES_DetalleEntrega,
+} from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
 
 export interface ExtendedRES_Entrega extends RES_Entrega {
-    detalles: (RES_DetalleEntrega & { producto: string })[];
+  detalles: (RES_DetalleEntrega & { producto: string })[];
 }
 
 export const useHistorialEntregasRequerimiento = (idRequerimiento: number) => {
@@ -16,7 +19,8 @@ export const useHistorialEntregasRequerimiento = (idRequerimiento: number) => {
     setLoading(true);
     setError("");
     try {
-      const res = await AtencionService.obtenerHistorialEntregas(idRequerimiento);
+      const res =
+        await AtencionService.obtenerHistorialEntregas(idRequerimiento);
       if (res.success) {
         setHistorial(res.data as unknown as ExtendedRES_Entrega[]);
       } else {

@@ -1,3 +1,5 @@
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type {
@@ -6,10 +8,48 @@ import type {
 } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 
-export interface RES_LaborRelacionada {
+// Interfaces Locales para Catálogos (Aislamiento BFF)
+export interface RES_Mina {
+  id_mina: number;
+  nombre: string;
+}
+
+export interface RES_Labor {
   id_labor: number;
   nombre: string;
   correlativo: string;
+  estado: string;
+}
+
+export interface RES_EmpleadoSimple {
+  id_empleado: number;
+  empleado: string;
+}
+
+export interface RES_DataByAlmacen {
+  minas: RES_Mina[];
+}
+
+export interface RES_DataByMinaAtencion {
+  responsables: RES_EmpleadoSimple[];
+  labores: RES_Labor[];
+}
+
+export interface RES_Producto {
+  id_producto: number;
+  id_unidad_medida_base: number;
+  nombre: string;
+  unidad_medida_base_abv: string;
+  unidad_medida_base: string;
+  id_categoria: number;
+  es_consumible: boolean;
+  ids_categorias_consumidoras: string | null; // Viene como "1,2,3" desde PHP GROUP_CONCAT
+}
+
+export interface RES_DataRegistro {
+  almacenes: RES_Almacen[];
+  productos: RES_Producto[];
+  unidades: RES_UnidadMedida[];
 }
 
 /**
@@ -17,17 +57,25 @@ export interface RES_LaborRelacionada {
  */
 export interface RES_RequerimientoAlmacen {
   id_requerimiento: number;
+  //
   id_almacen_destino: number;
-  correlativo: string;
-  observacion: string | null;
-  mina: string;
-  id_empleado_solicitante: number;
+  almacen_destino: string;
+  //
   solicitante: string;
+  responsable: string;
+  //
+  id_mina: number;
+  mina: string;
+  //
+  correlativo: string;
+  evidencias: IArchivo[] | null;
+  observacion: string | null;
   premura: Premura;
   fecha_entrega_requerida: string | null;
   estado: Estado_Requerimiento;
   created_at: string;
-  labores?: RES_LaborRelacionada[];
+  // Insertado por la api
+  labores?: RES_Labor[];
 }
 
 /**

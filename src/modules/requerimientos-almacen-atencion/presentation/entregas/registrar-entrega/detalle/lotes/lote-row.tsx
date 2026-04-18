@@ -1,8 +1,8 @@
 import { Badge, NumberInput, Text } from "@mantine/core";
 import dayjs from "dayjs";
-import { formatNumber } from "../../../../../shared/functions/formatNumber";
-import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
-import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
+import type { DetalleRequerimientoExtendido } from "../../../../../service/atencion.responses";
+import type { RES_LoteDisponible } from "../../../../../../../service/responses/lote-producto";
 
 interface LoteRowProps {
   lote: RES_LoteDisponible;

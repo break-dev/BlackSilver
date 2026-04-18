@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { IconUpload, IconTrash, IconFile } from "@tabler/icons-react";
 
-interface ReceptorInfoProps {
+interface EntregaHeaderProps {
   empleados: { value: string; label: string }[];
   idEmpleadoRecibe: string | null;
   setIdEmpleadoRecibe: (val: string | null) => void;
@@ -20,7 +20,7 @@ interface ReceptorInfoProps {
   setEvidencias: (val: File[]) => void;
 }
 
-export const ReceptorInfo = ({
+export const EntregaHeader = ({
   empleados,
   idEmpleadoRecibe,
   setIdEmpleadoRecibe,
@@ -28,7 +28,7 @@ export const ReceptorInfo = ({
   setObservacion,
   evidencias,
   setEvidencias,
-}: ReceptorInfoProps) => {
+}: EntregaHeaderProps) => {
   const handleRemoveFile = (index: number) => {
     setEvidencias(evidencias.filter((_, i) => i !== index));
   };
@@ -107,7 +107,12 @@ export const ReceptorInfo = ({
                 >
                   <Group gap="xs" wrap="nowrap" className="overflow-hidden">
                     <IconFile size={16} className="text-zinc-500 shrink-0" />
-                    <Text size="xs" c="zinc.4" truncate className="max-w-[120px]">
+                    <Text
+                      size="xs"
+                      c="zinc.4"
+                      truncate
+                      className="max-w-[120px]"
+                    >
                       {file.name}
                     </Text>
                   </Group>

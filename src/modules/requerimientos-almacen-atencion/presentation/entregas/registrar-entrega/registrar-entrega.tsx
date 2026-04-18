@@ -1,10 +1,12 @@
-import { Loader, Stack, Text } from "@mantine/core";
-import { useRegistrarEntregaBatch } from "../../hooks/useRegistrarEntrega";
+import { Button, Group, Loader, Stack, Text } from "@mantine/core";
+import { useRegistrarEntregaBatch } from "../../../hooks/useRegistrarEntrega";
 import type {
-  RES_DetalleRequerimiento,
   DetalleRequerimientoExtendido,
-} from "../../service/atencion.responses";
-import { ReceptorInfo, ProductoEntregaCard, FormActions } from "./components";
+  RES_DetalleRequerimiento,
+} from "../../../service/atencion.responses";
+import { EntregaHeader } from "./header/entrega-header";
+import { GroupByProducto } from "./detalle/group-by-producto";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
@@ -91,7 +93,7 @@ export const RegistrarEntrega = ({
 
   return (
     <Stack gap="lg" className="font-sans">
-      <ReceptorInfo
+      <EntregaHeader
         empleados={empleados}
         idEmpleadoRecibe={idEmpleadoRecibe}
         setIdEmpleadoRecibe={setIdEmpleadoRecibe}
@@ -103,7 +105,7 @@ export const RegistrarEntrega = ({
 
       <Stack gap="xl">
         {Object.entries(groupedByProduct).map(([id_prod, group]) => (
-          <ProductoEntregaCard
+          <GroupByProducto
             key={id_prod}
             idProducto={Number(id_prod)}
             group={group}
@@ -115,12 +117,34 @@ export const RegistrarEntrega = ({
         ))}
       </Stack>
 
-      <FormActions
-        onCancel={onCancel}
-        handleConfirmar={handleConfirmar}
-        isProcessing={isProcessing}
-        canSave={!!idEmpleadoRecibe && totalEntregaGeneralBase > 0}
-      />
+      <Group
+        justify="flex-end"
+        gap="md"
+        className="pt-6 border-t border-zinc-800 mt-2"
+      >
+        <Button
+          variant="subtle"
+          radius="lg"
+          size="sm"
+          onClick={onCancel}
+          className="text-zinc-400 hover:text-white px-8 font-bold"
+        >
+          Cancelar
+        </Button>
+        <Button
+          size="sm"
+          radius="lg"
+          leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
+          disabled={
+            (!!idEmpleadoRecibe && totalEntregaGeneralBase > 0) || isProcessing
+          }
+          loading={isProcessing}
+          onClick={handleConfirmar}
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
+        >
+          Guardar Entrega
+        </Button>
+      </Group>
 
       {error && (
         <Text

@@ -2,9 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type { AxiosError } from "axios";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import type {
-  RES_RequerimientoAlmacen
-} from "../service/atencion.responses";
+import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
 
 import { AtencionService } from "../service/atencion.service";
 
@@ -14,9 +12,11 @@ export interface IUseHook {
 
 export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const navigate = useNavigate();
-  
+
   // -- Estados de Catálogos --
-  const [almacenes, setAlmacenes] = useState<{ id_almacen: number; nombre: string }[]>([]);
+  const [almacenes, setAlmacenes] = useState<
+    { id_almacen: number; nombre: string }[]
+  >([]);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
 
   // -- Estados de la Vista (Atención Page) --
@@ -34,18 +34,18 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     if (error && externalSetError) externalSetError(error);
   }, [error, externalSetError]);
 
-
   // 0. Obtener Almacenes Autorizados (donde es responsable)
   const obtenerAlmacenesAutorizados = useCallback(async () => {
     setLoadingAlmacenes(true);
     try {
-      const data = await AtencionService.obtenerAlmacenesAutorizados();
-      if (data.success) {
-        setAlmacenes(data.data);
-        if (data.data.length === 1) {
-          setIdAlmacen(String(data.data[0].id_almacen));
+      const resp = await AtencionService.obtenerAlmacenesAutorizados();
+      if (resp.success) {
+        setAlmacenes(resp.data);
+        // Solo auto-elegimos si no hay uno ya seleccionado
+        if (resp.data.length > 0 && !idAlmacen) {
+          setIdAlmacen(String(resp.data[0].id_almacen));
         }
-        return data.data;
+        return resp.data;
       }
       return [];
     } catch {
@@ -55,13 +55,23 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     }
   }, []);
 
+  // -- Carga Inicial de Catálogos --
+
+  useEffect(() => {
+    obtenerAlmacenesAutorizados();
+  }, [obtenerAlmacenesAutorizados]);
+
   // -- Lógica de Carga de Datos --
   const loadData = useCallback(async () => {
     if (!idAlmacen || !mes || !yearcito) return;
     setLoading(true);
     setError("");
     try {
-      const dataResp = await AtencionService.obtenerRequerimientos(idAlmacen, mes, yearcito);
+      const dataResp = await AtencionService.obtenerRequerimientos(
+        idAlmacen,
+        mes,
+        yearcito,
+      );
       if (dataResp.success) {
         setData(dataResp.data || []);
       } else {
@@ -88,42 +98,53 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
       (item) =>
         item.correlativo.toLowerCase().includes(q) ||
         item.solicitante.toLowerCase().includes(q) ||
-        item.mina.toLowerCase().includes(q)
+        item.mina.toLowerCase().includes(q),
     );
   }, [data, busqueda]);
 
-    // -- Local State Updates --
-    const updateRequirementLocal = useCallback((id: number, newData: Partial<RES_RequerimientoAlmacen>) => {
-      setData((prev) => 
-        prev.map((item) => 
-          item.id_requerimiento === id ? { ...item, ...newData } : item
-        )
+  // -- Local State Updates --
+  const updateRequirementLocal = useCallback(
+    (id: number, newData: Partial<RES_RequerimientoAlmacen>) => {
+      setData((prev) =>
+        prev.map((item) =>
+          item.id_requerimiento === id ? { ...item, ...newData } : item,
+        ),
       );
-    }, []);
+    },
+    [],
+  );
 
-    return {
-      // Estados
-      idAlmacen,
-      setIdAlmacen,
-      mes,
-      setMes,
-      yearcito,
-      setYearcito,
-      busqueda,
-      setBusqueda,
-      data,
-      filteredRecords,
-      loading,
-      error,
-      setError,
+  const addRequirementLocal = useCallback(
+    (newItem: RES_RequerimientoAlmacen) => {
+      setData((prev) => [newItem, ...prev]);
+    },
+    [],
+  );
 
-      // Métodos
-      loadData,
-      obtenerAlmacenesAutorizados,
-      updateRequirementLocal,
-      
-      // Catálogos
-      almacenes,
-      loadingAlmacenes,
-    };
+  return {
+    // Estados
+    idAlmacen,
+    setIdAlmacen,
+    mes,
+    setMes,
+    yearcito,
+    setYearcito,
+    busqueda,
+    setBusqueda,
+    data,
+    filteredRecords,
+    loading,
+    error,
+    setError,
+
+    // Métodos
+    loadData,
+    obtenerAlmacenesAutorizados,
+    updateRequirementLocal,
+    addRequirementLocal,
+
+    // Catálogos
+    almacenes,
+    loadingAlmacenes,
   };
+};
