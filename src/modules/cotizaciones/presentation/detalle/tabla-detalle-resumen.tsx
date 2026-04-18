@@ -53,9 +53,9 @@ export const TablaDetalleResumen = ({
               <Table.Th
                 className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-110 shadow-xl"
                 style={{
-                  width: 200,
-                  minWidth: 200,
-                  maxWidth: 200,
+                  width: 140,
+                  minWidth: 140,
+                  maxWidth: 140,
                   verticalAlign: "middle",
                 }}
               >
@@ -108,9 +108,9 @@ export const TablaDetalleResumen = ({
                 <Table.Td
                   className="p-4 border-r border-b border-zinc-800 align-middle bg-zinc-950 sticky left-0 z-20 shadow-xl text-left"
                   style={{
-                    width: 200,
-                    minWidth: 200,
-                    maxWidth: 200,
+                    width: 140,
+                    minWidth: 140,
+                    maxWidth: 140,
                     verticalAlign: "middle",
                   }}
                 >

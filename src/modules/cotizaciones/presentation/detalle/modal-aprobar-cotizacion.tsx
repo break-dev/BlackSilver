@@ -169,73 +169,94 @@ export const ModalAprobarCotizacion = ({
         </Stack>
 
         {/* Selección de Productos */}
-        <Stack gap="xs">
-          <Group justify="space-between" align="flex-end">
-            <Text size="sm" fw={800} className="text-zinc-200">
-              Productos Cotizados
-            </Text>
-            <Button
-              variant="subtle"
-              color="indigo"
-              size="xs"
-              onClick={toggleAll}
-            >
-              {selectedDetalles.length === detalles.length
-                ? "Deseleccionar Todos"
-                : "Seleccionar Todos"}
-            </Button>
-          </Group>
+        {(() => {
+          const allSelected = detalles.length > 0 && selectedDetalles.length === detalles.length;
+          const indeterminate = selectedDetalles.length > 0 && selectedDetalles.length < detalles.length;
 
-          <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[40vh] overflow-y-auto custom-scrollbar">
-            {detalles.map((det) => {
-              const isChecked = selectedDetalles.includes(det.id);
-              const subtotal =
-                Number(det.cantidad) * Number(det.precio_unitario);
+          return (
+            <Stack gap="xs">
+              <Group justify="space-between" align="center">
+                <Text size="sm" fw={800} className="text-zinc-200">
+                  Productos Cotizados
+                </Text>
+                <Checkbox
+                  size="sm"
+                  color="indigo"
+                  checked={allSelected}
+                  indeterminate={indeterminate}
+                  label={
+                    <Text size="xs" c="dimmed" fw={700}>
+                      Seleccionar Todos
+                    </Text>
+                  }
+                  onChange={toggleAll}
+                  classNames={{ label: "cursor-pointer" }}
+                />
+              </Group>
 
-              return (
-                <div
-                  key={det.id}
-                  className={`p-4 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
-                    isChecked
-                      ? "bg-indigo-500/5"
-                      : "hover:bg-white/5 opacity-60"
-                  }`}
-                  onClick={() => toggleDetalle(det.id)}
-                >
-                  <Group wrap="nowrap" justify="space-between">
-                    <Group gap="md">
-                      <Checkbox
-                        checked={isChecked}
-                        onChange={() => toggleDetalle(det.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        color="indigo"
-                        radius="sm"
-                      />
-                      <Stack gap={0}>
-                        <Text size="sm" fw={800} className="text-white">
-                          {det.producto_nombre}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(det.cantidad)} {det.unidad_medida_abv}
-                          {" · a "}
-                          <span className="text-zinc-300">
-                            {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
-                            {formatNumber(Number(det.precio_unitario))}
-                          </span>{" "}
-                          c/u
-                        </Text>
-                      </Stack>
-                    </Group>
-                    <Badge variant="light" color="pink" size="md">
-                      Sub: {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
-                      {formatNumber(subtotal)}
-                    </Badge>
-                  </Group>
-                </div>
-              );
-            })}
-          </div>
-        </Stack>
+              <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[40vh] overflow-y-auto custom-scrollbar">
+                {detalles.map((det) => {
+                  const isChecked = selectedDetalles.includes(det.id);
+                  const subtotal =
+                    Number(det.cantidad) * Number(det.precio_unitario);
+
+                  return (
+                    <div
+                      key={det.id}
+                      className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
+                        isChecked
+                          ? "bg-indigo-500/5"
+                          : "hover:bg-white/5 opacity-80 hover:opacity-100"
+                      }`}
+                      onClick={() => toggleDetalle(det.id)}
+                    >
+                      <Group wrap="nowrap" justify="space-between">
+                        <Group gap="sm">
+                          <Checkbox
+                            size="sm"
+                            checked={isChecked}
+                            onChange={() => toggleDetalle(det.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            color="indigo"
+                            radius="sm"
+                          />
+                          <Stack gap={0}>
+                            <Text
+                              size="xs"
+                              fw={800}
+                              className={
+                                isChecked ? "text-indigo-100" : "text-zinc-300"
+                              }
+                            >
+                              {det.producto_nombre}
+                            </Text>
+                            <Text size="11px" c="dimmed">
+                              {formatNumber(det.cantidad)} {det.unidad_medida_abv}
+                              {" · a "}
+                              <span className="text-zinc-300">
+                                {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
+                                {formatNumber(Number(det.precio_unitario))}
+                              </span>{" "}
+                              c/u
+                            </Text>
+                          </Stack>
+                        </Group>
+                        <Badge
+                          variant="light"
+                          color={isChecked ? "indigo" : "gray"}
+                          size="sm"
+                        >
+                          Sub: {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
+                          {formatNumber(subtotal)}
+                        </Badge>
+                      </Group>
+                    </div>
+                  );
+                })}
+              </div>
+            </Stack>
+          );
+        })()}
 
         <Group justify="flex-end" mt="md" gap="sm">
           <Button

@@ -36,11 +36,13 @@ import type {
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../shared/enums/cotizacion/cotizacion";
 import { usePrint } from "../../../hooks/usePrint";
-import { OrdenCompraPDF } from "./orden-compra-pdf";
+import { CotizacionPDF } from "./cotizacion-pdf";
 import { ModalAprobarCotizacion } from "./detalle/modal-aprobar-cotizacion";
-import { DocumentCheckIcon } from "@heroicons/react/24/solid";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
@@ -51,7 +53,11 @@ interface ListadoComparativosProps {
     razon_social: string;
   }[];
   busqueda: string;
-  onUpdateLocal?: (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[]) => void;
+  onUpdateLocal?: (
+    id: number,
+    nuevoEstado: Estado_Cotizacion,
+    detallesAprobados?: RES_CotizacionDetalle[],
+  ) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
@@ -105,11 +111,26 @@ export const ListadoComparativos = ({
     setModalComparativoOpened(true);
   };
 
-  const handlePrintPO = (cot: RES_Cotizacion) => {
+  const handlePrintCotizacion = (cot: RES_Cotizacion) => {
     const cotDetalles = detalles.filter((d) => d.id_cotizacion === cot.id);
-    print(<OrdenCompraPDF cotizacion={cot} detalles={cotDetalles} />, {
-      documentTitle: `Orden de Compra - ${cot.correlativo}`,
-    });
+    const nombresEmpresas = (empresas || [])
+      .filter((e) => e.id_cotizacion === cot.id)
+      .map((e) => e.razon_social);
+
+    print(
+      <CotizacionPDF
+        cotizaciones={[
+          {
+            cotizacion: cot,
+            detalles: cotDetalles,
+            empresas: nombresEmpresas,
+          },
+        ]}
+      />,
+      {
+        documentTitle: `Cotización - ${cot.correlativo}`,
+      },
+    );
   };
 
   const handleApprove = (id: number) => {
@@ -119,24 +140,19 @@ export const ListadoComparativos = ({
 
   const handleSuccessAprobacion = (
     id: number,
-    cotizacionModificada: RES_Cotizacion,
+    _cotizacionModificada: RES_Cotizacion,
     detallesAprobados: RES_CotizacionDetalle[],
   ) => {
     onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados);
 
-    // Disparar impresión automática solo con los productos aprobados reales
+    // Disparar impresión automática de la Orden de Compra (se implementará futuro pdf)
+    // Por ahora comentado para no mezclar con Cotización pura
+    /*
     print(
-      <OrdenCompraPDF
-        cotizacion={{
-          ...cotizacionModificada,
-          estado: Estado_Cotizacion.Aprobada,
-        }}
-        detalles={detallesAprobados}
-      />,
-      {
-        documentTitle: `Orden de Compra - ${cotizacionModificada.correlativo}`,
-      },
+      <OrdenCompraPDF ... />,
+      { documentTitle: `Orden de Compra - ${cotizacionModificada.correlativo}` }
     );
+    */
   };
 
   // Agrupamos por comparativo
@@ -390,23 +406,21 @@ export const ListadoComparativos = ({
                                 </Text>
                               </Stack>
 
-                              {/* Botón Imprimir PO (Solo si está aprobada) */}
-                              {cot.estado === Estado_Cotizacion.Aprobada && (
-                                <Tooltip label="Ver Orden de Compra" withArrow>
-                                  <ActionIcon
-                                    variant="light"
-                                    color="teal"
-                                    radius="xl"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePrintPO(cot);
-                                    }}
-                                  >
-                                    <DocumentCheckIcon className="w-4 h-4" />
-                                  </ActionIcon>
-                                </Tooltip>
-                              )}
+                              {/* Botón Imprimir Cotizacion */}
+                              <Tooltip label="Ver Cotización" withArrow>
+                                <ActionIcon
+                                  variant="light"
+                                  color="indigo"
+                                  radius="xl"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrintCotizacion(cot);
+                                  }}
+                                >
+                                  <DocumentMagnifyingGlassIcon className="w-4 h-4" />
+                                </ActionIcon>
+                              </Tooltip>
 
                               {/* Botón Aprobar */}
                               <Button
@@ -608,18 +622,58 @@ export const ListadoComparativos = ({
                                         <Text
                                           size="sm"
                                           fw={800}
-                                          className={det.estado === Estado_Cotizacion_Detalle.Rechazado ? "text-zinc-500 line-through" : "text-zinc-100"}
+                                          className={
+                                            det.estado ===
+                                            Estado_Cotizacion_Detalle.Rechazado
+                                              ? "text-zinc-500 line-through"
+                                              : "text-zinc-100"
+                                          }
                                         >
                                           {det.producto_nombre}
                                         </Text>
-                                        {det.estado === Estado_Cotizacion_Detalle.Aprobado && (
-                                          <Badge size="xs" color="teal" variant="light" className="border-teal-500/20">Aprobado</Badge>
+                                        {det.estado ===
+                                          Estado_Cotizacion_Detalle.Aprobado && (
+                                          <Badge
+                                            size="xs"
+                                            color="teal"
+                                            variant="light"
+                                            className="border-teal-500/20"
+                                          >
+                                            Aprobado
+                                          </Badge>
                                         )}
-                                        {det.estado === Estado_Cotizacion_Detalle.Rechazado && (
-                                          <Badge size="xs" color="red" variant="dot" className="border-red-500/10">Rechazado</Badge>
+                                        {det.estado ===
+                                          Estado_Cotizacion_Detalle.Rechazado && (
+                                          <Badge
+                                            size="xs"
+                                            color="red"
+                                            variant="light"
+                                            className="border-red-500/20"
+                                          >
+                                            Rechazado
+                                          </Badge>
+                                        )}
+                                        {det.estado ===
+                                          Estado_Cotizacion_Detalle.Pendiente && (
+                                          <Badge
+                                            size="xs"
+                                            color="gray"
+                                            variant="light"
+                                            className="border-zinc-500/20 text-zinc-300"
+                                          >
+                                            Pendiente
+                                          </Badge>
                                         )}
                                       </Group>
-                                      <Text size="xs" c={det.estado === Estado_Cotizacion_Detalle.Rechazado ? "zinc.6" : "dimmed"}>
+                                      <Text
+                                        size="xs"
+                                        c={
+                                          det.estado ===
+                                          Estado_Cotizacion_Detalle.Rechazado
+                                            ? "zinc.6"
+                                            : "dimmed"
+                                        }
+                                      >
                                         {formatNumber(det.cantidad)}{" "}
                                         {det.unidad_medida_abv}
                                         {det.contenido_por_presentacion > 1 &&

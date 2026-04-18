@@ -72,32 +72,41 @@ export const CabeceraDetalleCotizacion = ({
 
   if (isCollapsed) {
     return (
-      <div className="py-2 px-3 group-header cursor-pointer hover:bg-white/2 transition-colors">
-        <Group justify="space-between" wrap="nowrap">
-          <Stack gap={0} className="flex-1 min-w-0">
-            <Group gap={6} wrap="nowrap">
+      <div className="py-3 px-4 group-header cursor-pointer hover:bg-white/2 transition-colors">
+        <Group justify="space-between" wrap="nowrap" align="flex-start">
+          <Stack gap={4} className="flex-1 min-w-0">
+            <Group gap={6} wrap="nowrap" align="center">
+              <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400 shrink-0" />
               <Text
-                size="xs"
+                size="sm"
                 fw={900}
-                className="text-white truncate uppercase"
+                className="text-indigo-100 uppercase tracking-tight truncate"
               >
                 {proveedor}
               </Text>
               <Badge
-                variant="outline"
+                variant="filled"
+                color="indigo.9"
+                size="xs"
+                radius="sm"
+                className="font-bold border border-indigo-500/30 shrink-0"
+              >
+                {nroCotizacion}
+              </Badge>
+            </Group>
+            <Group gap={8} wrap="nowrap">
+              <Badge
+                variant="light"
                 color={getEstadoColor(estado)}
-                size="9px"
+                size="xs"
                 radius="xs"
-                className="font-bold"
+                className="font-bold border border-current/10"
               >
                 {estado}
               </Badge>
             </Group>
-            <Text size="10px" c="dimmed" fw={700}>
-              {nroCotizacion}
-            </Text>
           </Stack>
-          <Badge variant="filled" color="cyan" size="xs">
+          <Badge variant="filled" color="cyan" size="md" className="mt-1 shrink-0 font-mono shadow-md">
             {smb} {formatNumber(totalDespuesIgv)}
           </Badge>
         </Group>

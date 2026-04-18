@@ -4,6 +4,19 @@ import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
 import { ComparativoTabla } from "./comparativo/comparativo-tabla";
 import { ModalSeleccionProductos } from "./modal-seleccion-productos";
 import { ModalAsistenteAprobacion } from "./comparativo/modal-asistente-aprobacion";
+import { usePrint } from "../../../hooks/usePrint";
+import { CotizacionPDF } from "./cotizacion-pdf";
+import type { 
+  RES_Cotizacion, 
+  RES_CotizacionDetalle, 
+  RES_RegistroComparativo,
+  RES_MaestroProveedor,
+  RES_MaestroProducto,
+  RES_MaestroUnidadMedida,
+  RES_MaestroEmpresa
+} from "../service/cotizaciones.responses";
+import type { DTO_RegistrarComparativo } from "../service/cotizaciones.requests";
+import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;
@@ -29,6 +42,84 @@ export const RegistroCotizacion = forwardRef<
     },
     ref,
   ) => {
+    const { print } = usePrint();
+
+    const handleInternalSuccess = (
+      data: RES_RegistroComparativo,
+      payload: DTO_RegistrarComparativo,
+      currentMaestros: {
+        proveedores: RES_MaestroProveedor[];
+        catalogo: RES_MaestroProducto[];
+        unidades: RES_MaestroUnidadMedida[];
+        empresas: RES_MaestroEmpresa[];
+      },
+    ) => {
+      if (data && payload) {
+        const creadas = data.cotizaciones_ids || [];
+        const cotizacionesPDFData = payload.cotizaciones.map((c, idx) => {
+          const dataCreada = creadas.find((rc) => rc.index === idx);
+          const nombresEmpresas = (c.empresas_ids || []).map((id: number) => 
+            (currentMaestros?.empresas || []).find((e: RES_MaestroEmpresa) => e.id_empresa === id)?.razon_social || "---"
+          );
+          const cotRes: RES_Cotizacion = {
+            id: dataCreada?.id || 0,
+            correlativo: dataCreada?.correlativo || "---",
+            numero_correlativo: 0,
+            id_proveedor: c.id_proveedor,
+            proveedor_nombre: currentMaestros.proveedores.find((p) => p.id_proveedor === c.id_proveedor)?.razon_social || "Desconocido",
+            id_comparativo: data.id_comparativo,
+            comparativo_fecha: new Date().toISOString(),
+            moneda: c.moneda,
+            metodo_pago: c.metodo_pago,
+            fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
+            total_antes_igv: c.total_antes_igv,
+            incluye_igv: c.incluye_igv,
+            porcentaje_igv: c.porcentaje_igv,
+            monto_igv: c.monto_igv,
+            total_despues_igv: c.total_despues_igv,
+            observacion: c.observacion ?? null,
+            estado: Estado_Cotizacion.Generada,
+            evidencias: null,
+            fecha_hora_cotizacion: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          };
+          
+          const detallesRes: RES_CotizacionDetalle[] = c.detalles.map((d) => {
+             const maestro = currentMaestros.catalogo.find((m) => m.id_producto === d.id_producto);
+             const uni = currentMaestros.unidades.find((u) => u.id_unidad_medida === d.id_unidad_medida);
+             return {
+                id: 0,
+                id_cotizacion: cotRes.id,
+                id_producto: d.id_producto,
+                id_comparativo_detalle: 0,
+                producto_nombre: maestro?.nombre || "---",
+                cantidad: d.cantidad,
+                id_unidad_medida: d.id_unidad_medida,
+                unidad_medida_nombre: uni?.nombre || "---",
+                unidad_medida_abv: uni?.abreviatura || "---",
+                unidad_medida_base_abv: uni?.abreviatura || "---",
+                contenido_por_presentacion: d.contenido_por_presentacion,
+                cantidad_base: d.cantidad_base,
+                precio_unitario: d.precio_unitario,
+                precio_unitario_base: d.precio_unitario_base,
+                no_cotiza: d.no_cotiza ? 1 : 0,
+                comentario: d.comentario ?? null,
+                estado: Estado_Cotizacion_Detalle.Pendiente
+             } as unknown as RES_CotizacionDetalle;
+          });
+
+          return { cotizacion: cotRes, detalles: detallesRes, empresas: nombresEmpresas };
+        });
+
+        if (cotizacionesPDFData.length > 0) {
+          print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
+            documentTitle: "Cotizaciones Generadas",
+          });
+        }
+      }
+      onSuccess();
+    };
+
     const {
       productos,
       cotizaciones,
@@ -46,7 +137,7 @@ export const RegistroCotizacion = forwardRef<
       wizardAprobacionOpened,
       setWizardAprobacionOpened,
       wizardPayload,
-    } = useRegistroCotizacion(onSuccess);
+    } = useRegistroCotizacion(handleInternalSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
     useImperativeHandle(ref, () => ({
