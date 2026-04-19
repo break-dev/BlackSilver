@@ -64,10 +64,10 @@ export const CabeceraCotizacion = ({
         <Stack gap={4} className="py-2.5 px-4 relative">
           <Group justify="space-between" wrap="nowrap" gap="xs">
             <Stack gap={4} className="flex-1 min-w-0">
-              <Skeleton h={12} w="70%" radius="sm" />
-              <Skeleton h={10} w="40%" radius="sm" />
+              <Skeleton h={12} w="70%" radius="sm" animate={false} />
+              <Skeleton h={10} w="40%" radius="sm" animate={false} />
             </Stack>
-            <Skeleton h={24} w={80} radius="md" />
+            <Skeleton h={24} w={80} radius="md" animate={false} />
           </Group>
         </Stack>
       );
@@ -76,19 +76,19 @@ export const CabeceraCotizacion = ({
     return (
       <Stack gap={4} className="pt-0 pb-3 px-4 relative">
         <Group justify="space-between" align="center">
-          <Skeleton h={16} w={100} radius="md" />
+          <Skeleton h={16} w={100} radius="md" animate={false} />
         </Group>
         <Stack gap="sm">
-          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" animate={false} />
           <Group grow gap="md">
-            <Skeleton h={32} radius="lg" />
-            <Skeleton h={32} radius="lg" />
+            <Skeleton h={32} radius="lg" animate={false} />
+            <Skeleton h={32} radius="lg" animate={false} />
           </Group>
-          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" animate={false} />
           <Group grow gap="xs" mt="md">
-            <Skeleton h={40} radius="md" />
-            <Skeleton h={40} radius="md" />
-            <Skeleton h={40} radius="md" />
+            <Skeleton h={40} radius="md" animate={false} />
+            <Skeleton h={40} radius="md" animate={false} />
+            <Skeleton h={40} radius="md" animate={false} />
           </Group>
         </Stack>
       </Stack>

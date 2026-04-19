@@ -56,7 +56,7 @@ export const ComparativoTabla = ({
   onAutoCollapse,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
-  const numSkeletons = Math.max(0, 3 - numCotizaciones);
+  const numSkeletons = Math.max(0, 4 - numCotizaciones);
   const totalCols = numCotizaciones + numSkeletons;
   const totalWidth = 120 + totalCols * 400;
 
@@ -165,7 +165,7 @@ export const ComparativoTabla = ({
                 style={{ width: 120, minWidth: 120 }}
                 className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950/90 shadow-xl backdrop-blur-md p-4"
               >
-                <Skeleton h={14} radius="md" />
+                <div className="h-3 w-3/4 bg-zinc-800/50 rounded-full" />
               </Table.Td>
 
               {/* Celdas esqueleto si no hay productos */}
