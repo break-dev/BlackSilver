@@ -1,6 +1,7 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { MONEDAS } from "../../../shared/variables/monedas";
 import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
@@ -137,7 +138,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
       }
     >
       {cotizaciones.map(({ cotizacion, detalles, empresas }) => {
-        const symbol = cotizacion.moneda === "Soles" ? "S/." : "$";
+        const symbol = Object.values(MONEDAS).find((m) => m.label === cotizacion.moneda)?.symbol ?? "S/";
 
         return (
           <Page key={cotizacion.id} size="A4" style={styles.page}>
