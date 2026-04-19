@@ -22,6 +22,8 @@ import { usePrint } from "../../../../hooks/usePrint";
 import { CotizacionPDF } from "../cotizacion-pdf";
 import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
 import type { RES_Cotizacion, RES_CotizacionDetalle, RES_MaestroEmpresa } from "../../service/cotizaciones.responses";
+import { OrdenCompraService } from "../../../orden-compra/service/orden-compra.service";
+import { OrdenCompraPDF } from "../../../orden-compra/presentation/orden-compra-pdf";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -205,6 +207,23 @@ export const ModalAsistenteAprobacion = ({
           notifyError(
             `Fallo al aprobar orden para proveedor ${proveedor?.razon_social}`,
           );
+        } else {
+          // Lanzar PDF de OC automáticamente por cada aprobación
+          const ocId = resAprob.data?.id_orden_compra;
+          const ocCorrelativo = resAprob.data?.correlativo;
+          if (ocId) {
+            const resDetalles = await OrdenCompraService.get_detalles(ocId);
+            const resOrden = await OrdenCompraService.get_ordenes();
+            if (resDetalles.success && resOrden.success) {
+              const ordenData = resOrden.data.ordenes.find((o) => o.id === ocId);
+              if (ordenData) {
+                print(
+                  <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
+                  { documentTitle: `OC - ${ocCorrelativo}` }
+                );
+              }
+            }
+          }
         }
       }
 

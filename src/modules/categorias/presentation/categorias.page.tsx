@@ -1,4 +1,4 @@
-import { Badge, Button, TextInput, Tooltip, Group } from "@mantine/core";
+import { Badge, Button, TextInput, Tooltip, Group, Skeleton, Stack } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -71,8 +71,25 @@ export const CategoriasPage = () => {
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
               key={i}
-              className="h-44 rounded-2xl bg-zinc-900/30 animate-pulse border border-zinc-800/50"
-            />
+              className="h-44 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 p-4"
+            >
+              <Stack gap="xs">
+                 <Group justify="space-between">
+                    <Skeleton h={14} w={80} radius="sm" />
+                    <Skeleton h={16} w={40} radius="sm" />
+                 </Group>
+                 <Skeleton h={18} w="90%" radius="sm" mt={10} />
+                 <Skeleton h={12} w="100%" radius="sm" />
+                 <Skeleton h={12} w="60%" radius="sm" />
+                 
+                 <div className="mt-auto pt-2 border-t border-zinc-800/50">
+                    <Group justify="space-between">
+                       <Skeleton h={10} w={60} radius="sm" />
+                       <Skeleton h={16} w={30} radius="sm" />
+                    </Group>
+                 </div>
+              </Stack>
+            </div>
           ))}
         </div>
       ) : categoriasFiltradas.length === 0 ? (

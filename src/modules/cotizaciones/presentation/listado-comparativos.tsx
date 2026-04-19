@@ -26,6 +26,7 @@ import {
   TableCellsIcon,
   ReceiptPercentIcon,
   ListBulletIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../shared/functions/formatNumber";
@@ -43,6 +44,10 @@ import {
 import { usePrint } from "../../../hooks/usePrint";
 import { CotizacionPDF } from "./cotizacion-pdf";
 import { ModalAprobarCotizacion } from "./detalle/modal-aprobar-cotizacion";
+import { OrdenCompraService } from "../../orden-compra/service/orden-compra.service";
+import { OrdenCompraPDF } from "../../orden-compra/presentation/orden-compra-pdf";
+import { MONEDAS } from "../../../shared/variables/monedas";
+import { useNotify } from "../../../hooks/useNotify";
 
 interface ListadoComparativosProps {
   cotizaciones: RES_Cotizacion[];
@@ -57,6 +62,7 @@ interface ListadoComparativosProps {
     id: number,
     nuevoEstado: Estado_Cotizacion,
     detallesAprobados?: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
   ) => void;
 }
 
@@ -85,6 +91,8 @@ export const ListadoComparativos = ({
   onUpdateLocal,
 }: ListadoComparativosProps) => {
   const { print } = usePrint();
+  const { notify } = useNotify();
+  const [printingOCId, setPrintingOCId] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>(
     {},
   );
@@ -142,17 +150,34 @@ export const ListadoComparativos = ({
     id: number,
     _cotizacionModificada: RES_Cotizacion,
     detallesAprobados: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
   ) => {
-    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados);
+    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados, id_orden_compra);
+  };
 
-    // Disparar impresión automática de la Orden de Compra (se implementará futuro pdf)
-    // Por ahora comentado para no mezclar con Cotización pura
-    /*
-    print(
-      <OrdenCompraPDF ... />,
-      { documentTitle: `Orden de Compra - ${cotizacionModificada.correlativo}` }
-    );
-    */
+  const handlePrintOC = async (id_orden_compra: number) => {
+    setPrintingOCId(id_orden_compra);
+    try {
+      const [resOrden, resDetalles] = await Promise.all([
+        OrdenCompraService.get_orden(id_orden_compra),
+        OrdenCompraService.get_detalles(id_orden_compra),
+      ]);
+      if (resOrden.success && resDetalles.success) {
+        const ordenData = resOrden.data;
+        if (ordenData) {
+          print(
+            <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
+            { documentTitle: `OC - ${ordenData.correlativo}` }
+          );
+        }
+      } else {
+        notify({ type: "error", content: "No se pudo cargar la Orden de Compra." });
+      }
+    } catch {
+      notify({ type: "error", content: "Error al generar el PDF de la OC." });
+    } finally {
+      setPrintingOCId(null);
+    }
   };
 
   // Agrupamos por comparativo
@@ -401,7 +426,7 @@ export const ListadoComparativos = ({
                                   fw={900}
                                   className="text-emerald-400 font-mono"
                                 >
-                                  {cot.moneda === "Soles" ? "S/." : "$"}{" "}
+                                  {Object.values(MONEDAS).find((m) => m.label === cot.moneda)?.symbol ?? "S/"}{" "}
                                   {formatNumber(Number(cot.total_despues_igv))}
                                 </Text>
                               </Stack>
@@ -421,6 +446,25 @@ export const ListadoComparativos = ({
                                   <DocumentMagnifyingGlassIcon className="w-4 h-4" />
                                 </ActionIcon>
                               </Tooltip>
+
+                              {/* Botón Ver Orden de Compra (solo cuando ya fue aprobada) */}
+                              {cot.id_orden_compra && (
+                                <Tooltip label="Ver Orden de Compra" withArrow>
+                                  <ActionIcon
+                                    variant="light"
+                                    color="teal"
+                                    radius="xl"
+                                    size="sm"
+                                    loading={printingOCId === cot.id_orden_compra}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePrintOC(cot.id_orden_compra!);
+                                    }}
+                                  >
+                                    <ClipboardDocumentCheckIcon className="w-4 h-4" />
+                                  </ActionIcon>
+                                </Tooltip>
+                              )}
 
                               {/* Botón Aprobar */}
                               <Button

@@ -61,19 +61,19 @@ export const CeldaDetalle = ({
     return (
       <Stack gap="sm" className="w-full">
         <Group grow align="flex-end" gap="xs">
-          <Skeleton h={32} radius="lg" />
-          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" animate={false} />
+          <Skeleton h={32} radius="lg" animate={false} />
         </Group>
         <Group grow align="flex-end" gap="xs">
-          <Skeleton h={32} radius="lg" />
-          <Skeleton h={32} radius="lg" />
+          <Skeleton h={32} radius="lg" animate={false} />
+          <Skeleton h={32} radius="lg" animate={false} />
         </Group>
         <Group grow wrap="nowrap" gap="xs">
-          <Skeleton h={40} radius="md" />
-          <Skeleton h={40} radius="md" />
-          <Skeleton h={40} radius="md" />
+          <Skeleton h={40} radius="md" animate={false} />
+          <Skeleton h={40} radius="md" animate={false} />
+          <Skeleton h={40} radius="md" animate={false} />
         </Group>
-        <Skeleton h={32} radius="lg" />
+        <Skeleton h={32} radius="lg" animate={false} />
       </Stack>
     );
   }

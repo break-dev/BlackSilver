@@ -8,6 +8,7 @@ import type {
   RES_MaestroEmpresa,
   RES_RegistroComparativo,
 } from "./cotizaciones.responses";
+import type { RES_AprobacionCotizacion } from "../../orden-compra/service/orden-compra.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
 
 export const CotizacionesService = {
@@ -90,8 +91,8 @@ export const CotizacionesService = {
       id_empresa_compradora: number;
       detalles_aprobados: number[];
     }
-  ): Promise<IRespuesta<null>> => {
-    const { data } = await api.post<IRespuesta<null>>(
+  ): Promise<IRespuesta<RES_AprobacionCotizacion>> => {
+    const { data } = await api.post<IRespuesta<RES_AprobacionCotizacion>>(
       `/cotizaciones/${id_cotizacion}/aprobar`,
       payload
     );

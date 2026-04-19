@@ -34,9 +34,9 @@ export const useCotizaciones = () => {
   }, [fetchCotizaciones]);
 
   const updateCotizacionLocal = useCallback(
-    (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[]) => {
+    (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[], id_orden_compra?: number) => {
       setCotizaciones((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado } : c)),
+        prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado, id_orden_compra: id_orden_compra ?? c.id_orden_compra } : c)),
       );
       
       if (detallesAprobados) {

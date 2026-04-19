@@ -22,6 +22,7 @@ export interface RES_Cotizacion {
   comparativo_fecha: string;
   estado: Estado_Cotizacion;
   created_at: string;
+  id_orden_compra?: number | null;
 }
 
 export interface RES_CotizacionDetalle {
