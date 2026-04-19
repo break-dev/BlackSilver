@@ -152,7 +152,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                   <UserIcon className="w-4 h-4 text-zinc-500" />
                   <Text size="xs" c="dimmed">
                     Entregado a:{" "}
-                    <span className="text-white">{h.empleado_recibe}</span>
+                    <span className="text-white">{h.personal_recibe}</span>
                   </Text>
                 </Group>
                 {h.observacion && (

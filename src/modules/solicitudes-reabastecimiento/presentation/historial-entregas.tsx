@@ -233,7 +233,7 @@ export const HistorialEntregas = ({
                   <UserIcon className="w-4 h-4 text-zinc-500" />
                   <Text size="xs" c="dimmed">
                     Entregado a:{" "}
-                    <span className="text-white">{h.empleado_recibe}</span>
+                    <span className="text-white">{h.personal_recibe}</span>
                   </Text>
                 </Group>
                 {h.observacion && (
@@ -307,7 +307,7 @@ export const HistorialEntregas = ({
                         </Text>
                         <Group gap={4}>
                           {d.estado ===
-                            Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
+                          Estado_SolicitudEntregaDetalle.RecepcionCompleta ? (
                             <Badge
                               size="xs"
                               variant="light"
@@ -352,7 +352,7 @@ export const HistorialEntregas = ({
                           </span>
                         </Text>
                         {d.estado ===
-                          Estado_SolicitudEntregaDetalle.EnDespacho ? (
+                        Estado_SolicitudEntregaDetalle.EnDespacho ? (
                           <Badge
                             size="xs"
                             variant="dot"
@@ -362,7 +362,7 @@ export const HistorialEntregas = ({
                             Pendiente Ingreso
                           </Badge>
                         ) : d.estado ===
-                            Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
+                          Estado_SolicitudEntregaDetalle.RecepcionadoParcialmente ? (
                           <Badge
                             size="xs"
                             variant="dot"

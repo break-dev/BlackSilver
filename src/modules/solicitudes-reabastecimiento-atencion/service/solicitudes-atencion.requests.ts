@@ -10,7 +10,7 @@ export interface DTO_DecisionDetalle {
 export interface DTO_RegistrarEntregaReabastecimiento {
   id_solicitud: number;
   id_almacen_entrega: number;
-  id_empleado_recibe: number;
+  id_personal_recibe: number;
   fecha_hora_entrega: string;
   observacion?: string;
   evidencias?: File[];

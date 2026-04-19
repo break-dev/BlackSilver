@@ -12,7 +12,7 @@ export interface RES_SolicitudEntrega {
   almacen_entrega: string;
   //
   empleado_entrega: string;
-  empleado_recibe: string;
+  personal_recibe: string;
   //
   correlativo: string;
   fecha_hora_entrega: string;

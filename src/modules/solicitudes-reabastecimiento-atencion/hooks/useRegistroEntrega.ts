@@ -262,7 +262,7 @@ export const useRegistroEntrega = ({
       const res = await SolicitudesAtencionService.registrarEntrega({
         id_solicitud: idSolicitud,
         id_almacen_entrega: Number(idAlmacenEntrega),
-        id_empleado_recibe: Number(idEmpleadoRecibe),
+        id_personal_recibe: Number(idEmpleadoRecibe),
         fecha_hora_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
         evidencias,
