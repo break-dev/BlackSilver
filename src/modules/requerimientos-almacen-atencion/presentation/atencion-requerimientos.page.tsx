@@ -20,6 +20,7 @@ import {
   CheckBadgeIcon,
   PlusIcon,
   PaperClipIcon,
+  PrinterIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
@@ -36,6 +37,9 @@ import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
 import { RegistroRequerimiento } from "./registrar-requerimiento/registro-requerimiento.tsx";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card.tsx";
+import { useImprimirRequerimiento } from "../hooks/useImprimirRequerimiento.tsx";
+import { usePrint } from "../../../hooks/usePrint.ts";
+import { RequerimientoPDF } from "./requerimiento-pdf.tsx";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   useTitlePage("Atención de Requerimientos");
@@ -48,10 +52,8 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const [openedRegistro, { open: openReg, close: closeReg }] =
     useDisclosure(false);
 
-  const [
-    openedEvidencias,
-    { open: openEvidencias, close: closeEvidencias },
-  ] = useDisclosure(false);
+  const [openedEvidencias, { open: openEvidencias, close: closeEvidencias }] =
+    useDisclosure(false);
   const [evidenciasActuales, setEvidenciasActuales] = useState<IArchivo[]>([]);
 
   const {
@@ -70,6 +72,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
     updateRequirementLocal,
     addRequirementLocal,
   } = useEntregas({ setError: setErrorLocal });
+
+  const { imprimir, imprimiendo } = useImprimirRequerimiento();
+  const { print } = usePrint();
 
   // Ya no manejamos 'page' localmente ni disclosures
 
@@ -200,7 +205,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           );
         },
       },
-    {
+      {
         accessor: "acciones",
         title: "Acciones",
         textAlign: "center",
@@ -223,6 +228,21 @@ export const RequerimientosAlmacenAtencionPage = () => {
                 </ActionIcon>
               </Tooltip>
             )}
+            <Tooltip label="Imprimir Documento" position="top" withArrow>
+              <ActionIcon
+                variant="light"
+                color="cyan"
+                radius="md"
+                onClick={() => {
+                  setSelectedId(item.id_requerimiento);
+                  imprimir(item);
+                }}
+                loading={imprimiendo && selectedId === item.id_requerimiento}
+                className="shadow-sm hover:scale-105 transition-transform"
+              >
+                <PrinterIcon className="w-5 h-5 font-bold" />
+              </ActionIcon>
+            </Tooltip>
             <Tooltip label="Gestionar Atención" position="top" withArrow>
               <ActionIcon
                 variant="filled"
@@ -241,7 +261,14 @@ export const RequerimientosAlmacenAtencionPage = () => {
         ),
       },
     ],
-    [openGestion, openEvidencias, setSelectedId],
+    [
+      openGestion,
+      openEvidencias,
+      setSelectedId,
+      imprimir,
+      imprimiendo,
+      selectedId,
+    ],
   );
 
   return (
@@ -376,9 +403,15 @@ export const RequerimientosAlmacenAtencionPage = () => {
       >
         <RegistroRequerimiento
           idAlmacenFijo={idAlmacen ? Number(idAlmacen) : undefined}
-          onSuccess={(item) => {
+          onSuccess={(item, printTarget, printWin) => {
             closeReg();
             addRequirementLocal(item);
+            if (printTarget && printWin) {
+              print(<RequerimientoPDF requerimiento={item} />, {
+                documentTitle: `Requerimiento_${item.correlativo}`,
+                target: printTarget,
+              });
+            }
           }}
           onCancel={closeReg}
         />

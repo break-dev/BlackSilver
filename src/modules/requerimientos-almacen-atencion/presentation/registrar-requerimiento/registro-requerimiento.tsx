@@ -36,7 +36,11 @@ import type { RES_Producto } from "../../service/atencion.responses";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
 
 interface RegistroRequerimientoProps {
-  onSuccess: (item: RES_RequerimientoAlmacen) => void;
+  onSuccess: (
+    item: RES_RequerimientoAlmacen,
+    printerTarget?: string,
+    printerWin?: Window | null,
+  ) => void;
   onCancel: () => void;
   idAlmacenFijo?: number;
 }

@@ -157,7 +157,7 @@ export const getPrinterLoadingHtml = () => `
     <div class="blob blob-3"></div>
     <div class="container">
       <div class="loader-ring"></div>
-      <div class="status-text">Cargando Documento</div>
+      <div class="status-text">Cargando...</div>
     </div>
   </body>
 </html>

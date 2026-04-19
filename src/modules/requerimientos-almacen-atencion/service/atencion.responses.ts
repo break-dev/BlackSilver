@@ -47,7 +47,7 @@ export interface RES_Producto {
 }
 
 export interface RES_DataRegistro {
-  almacenes: RES_Almacen[];
+  almacenes?: RES_Almacen[];
   productos: RES_Producto[];
   unidades: RES_UnidadMedida[];
 }
@@ -77,6 +77,7 @@ export interface RES_RequerimientoAlmacen {
   created_at: string;
   // Insertado por la api
   labores?: RES_Labor[];
+  detalles?: RES_DetalleRequerimiento[];
 }
 
 /**

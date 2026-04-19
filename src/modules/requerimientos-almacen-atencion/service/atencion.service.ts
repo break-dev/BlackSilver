@@ -245,7 +245,7 @@ export const AtencionService = {
 
   obtenerDataByMina: async (idMina: number) => {
     const res = await api.get<IRespuesta<RES_DataByMinaAtencion>>(
-      `${path}/responsables-by-mina`,
+      `${path}/data-by-mina`,
       {
         params: { id_mina: idMina },
       },

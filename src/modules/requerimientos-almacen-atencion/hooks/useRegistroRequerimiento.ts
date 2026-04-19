@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { usePrint } from "../../../hooks/usePrint";
 import { useNotify } from "../../../hooks/useNotify";
 import { Schema_CrearRequerimiento } from "../service/atencion.requests";
 import type {
@@ -19,7 +20,11 @@ import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida"
 import { AtencionService } from "../service/atencion.service";
 
 interface Props {
-  onSuccess: (item: RES_RequerimientoAlmacen) => void;
+  onSuccess: (
+    item: RES_RequerimientoAlmacen,
+    printerTarget: string,
+    printerWin: Window | null,
+  ) => void;
   idAlmacenFijo?: number;
 }
 
@@ -27,6 +32,7 @@ export const useRegistroRequerimiento = ({
   onSuccess,
   idAlmacenFijo,
 }: Props) => {
+  const { prepare } = usePrint();
   const { notifySuccess, notifyError } = useNotify();
   const [submitting, setSubmitting] = useState(false);
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
@@ -73,12 +79,12 @@ export const useRegistroRequerimiento = ({
       try {
         const res = await AtencionService.obtenerDataRegistro();
         if (res.success) {
-          setAlmacenes(res.data.almacenes);
+          setAlmacenes(res.data.almacenes || []);
           setProductos(res.data.productos);
           setUnidades(res.data.unidades);
 
           // Solo auto-seleccionar si no hay un almacén destino ya fijado
-          if (res.data.almacenes.length > 0 && idAlmacenDestino === 0) {
+          if (res.data.almacenes && res.data.almacenes.length > 0 && idAlmacenDestino === 0) {
             setIdAlmacenDestino(res.data.almacenes[0].id_almacen);
           }
         }
@@ -100,6 +106,7 @@ export const useRegistroRequerimiento = ({
             await AtencionService.obtenerMinasPorAlmacen(idAlmacenDestino);
           if (res.success) {
             setMinas(res.data.minas);
+            // Auto seleccionar primera mina si no hay una seleccionada
             if (res.data.minas.length > 0 && idMina === 0) {
               setIdMina(res.data.minas[0].id_mina);
             }
@@ -113,8 +120,9 @@ export const useRegistroRequerimiento = ({
       setMinas([]);
       setIdMina(0);
     }
+    // Remove idMina from dependencies to prevent double-fetching when auto-selecting
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idAlmacenDestino]);
-
 
   // 3. Cargar Responsables y Labores al elegir Mina
   useEffect(() => {
@@ -127,7 +135,10 @@ export const useRegistroRequerimiento = ({
             setResponsables(res.data.responsables);
             setLabores(res.data.labores);
 
-            if (res.data.responsables.length > 0 && idEmpleadoSolicitante === 0) {
+            if (
+              res.data.responsables.length > 0 &&
+              idEmpleadoSolicitante === 0
+            ) {
               setIdEmpleadoSolicitante(res.data.responsables[0].id_empleado);
             }
           }
@@ -142,8 +153,9 @@ export const useRegistroRequerimiento = ({
       setIdEmpleadoSolicitante(0);
       setIdLabores([]);
     }
+    // Remove idEmpleadoSolicitante from dependencies to prevent double-fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idMina]);
-
 
   // 4. Lógica de Unidades al elegir Producto/Unidad
   const productoSeleccionado = productos.find(
@@ -331,15 +343,20 @@ export const useRegistroRequerimiento = ({
       return;
     }
 
+    const printerTarget = "NuevoRequerimientoPrinter";
+    const printerWin = prepare(printerTarget);
+
     try {
       const res = await AtencionService.registrarRequerimiento(dto);
       if (res.success) {
         notifySuccess("Requerimiento registrado correctamente");
-        onSuccess(res.data);
+        onSuccess(res.data, printerTarget, printerWin);
       } else {
+        printerWin?.close();
         setError(res.message);
       }
     } catch (err) {
+      printerWin?.close();
       setError("Error al registrar requerimiento");
       console.error(err);
     } finally {
@@ -357,6 +374,7 @@ export const useRegistroRequerimiento = ({
     evidencias,
     onSuccess,
     notifySuccess,
+    prepare,
   ]);
 
   return {
