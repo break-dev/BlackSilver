@@ -62,6 +62,7 @@ interface ListadoComparativosProps {
     id: number,
     nuevoEstado: Estado_Cotizacion,
     detallesAprobados?: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
   ) => void;
 }
 
@@ -149,8 +150,9 @@ export const ListadoComparativos = ({
     id: number,
     _cotizacionModificada: RES_Cotizacion,
     detallesAprobados: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
   ) => {
-    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados);
+    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados, id_orden_compra);
   };
 
   const handlePrintOC = async (id_orden_compra: number) => {

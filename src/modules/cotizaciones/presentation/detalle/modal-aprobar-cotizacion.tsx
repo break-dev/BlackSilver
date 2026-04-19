@@ -35,6 +35,7 @@ interface ModalAprobarCotizacionProps {
     id_cotizacion: number,
     cotizacionModificada: RES_Cotizacion,
     detallesAprobados: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
   ) => void;
 }
 
@@ -126,7 +127,7 @@ export const ModalAprobarCotizacion = ({
         const cotDetallesAprobados = detalles.filter((d) =>
           selectedDetalles.includes(d.id),
         );
-        onSuccess(cotizacion.id, cotizacion, cotDetallesAprobados);
+        onSuccess(cotizacion.id, cotizacion, cotDetallesAprobados, ocId);
         onClose();
       } else {
         notifyError(res.message);
