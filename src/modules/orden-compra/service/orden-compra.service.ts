@@ -4,6 +4,7 @@ import type {
   RES_ListadoOrdenCompra,
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
+  RES_OrdenCompraSeguimiento,
 } from "./orden-compra.responses";
 
 export const OrdenCompraService = {
@@ -31,6 +32,14 @@ export const OrdenCompraService = {
     const { data } = await api.get<IRespuesta<{ detalles: RES_OrdenCompraDetalle[] }>>(
       `/orden-compra/detalles?id_orden_compra=${id_orden_compra}`
     );
+    return data;
+  },
+
+  /**
+   * Obtener el seguimiento de un detalle de OC
+   */
+  get_seguimiento: async (id_detalle: number): Promise<IRespuesta<RES_OrdenCompraSeguimiento[]>> => {
+    const { data } = await api.get<IRespuesta<RES_OrdenCompraSeguimiento[]>>(`/orden-compra/seguimiento?id_detalle=${id_detalle}`);
     return data;
   },
 };

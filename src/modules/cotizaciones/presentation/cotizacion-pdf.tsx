@@ -207,34 +207,44 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               </View>
 
               {/* Filas */}
-              {detalles.map((det, idx) => (
-                <View key={det.id} style={styles.row}>
-                  <Text style={styles.col0}>{idx + 1}</Text>
-                  <Text style={styles.col1}>{formatNumber(det.cantidad)}</Text>
-                  <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
-                  <View style={styles.col3}>
-                    <Text style={{ fontWeight: 600 }}>
-                      {det.producto_nombre}
-                    </Text>
-                    {det.comentario && (
-                      <Text
-                        style={{
-                          fontSize: 8,
-                          color: "#71717a",
-                        }}
-                      >
-                        Obs: {det.comentario}
+              {detalles.map((det, idx) => {
+                const hasEquivalence = det.unidad_medida_abv !== det.unidad_medida_base_abv;
+
+                return (
+                  <View key={det.id} style={styles.row}>
+                    <Text style={styles.col0}>{idx + 1}</Text>
+                    <Text style={styles.col1}>{formatNumber(det.cantidad)}</Text>
+                    <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
+                    <View style={styles.col3}>
+                      <Text style={{ fontWeight: 600 }}>
+                        {det.producto_nombre}
                       </Text>
-                    )}
+                      {hasEquivalence && (
+                        <Text style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}>
+                          Eq: {formatNumber(det.contenido_por_presentacion)} {det.unidad_medida_base_abv} x {det.unidad_medida_abv}
+                        </Text>
+                      )}
+                      {det.comentario && (
+                        <Text
+                          style={{
+                            fontSize: 8,
+                            color: "#71717a",
+                            marginTop: hasEquivalence ? 1 : 2,
+                          }}
+                        >
+                          Obs: {det.comentario}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={styles.col4}>
+                      {symbol} {formatNumber(det.precio_unitario)}
+                    </Text>
+                    <Text style={styles.col5}>
+                      {symbol} {formatNumber(det.cantidad * det.precio_unitario)}
+                    </Text>
                   </View>
-                  <Text style={styles.col4}>
-                    {symbol} {formatNumber(det.precio_unitario)}
-                  </Text>
-                  <Text style={styles.col5}>
-                    {symbol} {formatNumber(det.cantidad * det.precio_unitario)}
-                  </Text>
-                </View>
-              ))}
+                );
+              })}
             </View>
 
             {/* Totales */}

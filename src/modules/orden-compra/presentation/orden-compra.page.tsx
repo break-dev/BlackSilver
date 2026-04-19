@@ -106,12 +106,12 @@ export const OrdenCompraPage = () => {
     },
     {
       accessor: "correlativo",
-      title: "Orden",
+      title: "Código",
       width: 140,
       render: (item) => (
-        <Text size="sm" fw={900} className="text-emerald-400 font-mono">
+        <Badge variant="light" color="indigo" radius="sm">
           {item.correlativo}
-        </Text>
+        </Badge>
       ),
     },
     {
@@ -134,33 +134,44 @@ export const OrdenCompraPage = () => {
       title: "Cotización",
       width: 130,
       render: (item) => (
-        <Badge variant="light" color="indigo" radius="sm" className="font-mono">
+        <Badge variant="light" color="pink" radius="sm">
           {item.correlativo_cotizacion}
         </Badge>
       ),
     },
     {
       accessor: "fecha_hora_orden",
-      title: "Fecha",
-      width: 150,
+      title: "Fecha y Hora",
+      width: 180,
       render: (item) => (
-        <Group gap={6}>
-          <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-          <Text size="xs" fw={600} className="text-zinc-200">
-            {dayjs(item.fecha_hora_orden).format("DD/MM/YYYY")}
+        <Stack gap={2}>
+          <Group gap={6}>
+            <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+            <Text size="xs" fw={600} className="text-zinc-200">
+              {dayjs(item.fecha_hora_orden).format("DD/MM/YYYY")}
+            </Text>
+          </Group>
+          <Text size="xs" c="dimmed" ml={22}>
+            Hora: {dayjs(item.fecha_hora_orden).format("HH:mm")}
           </Text>
-        </Group>
+        </Stack>
       ),
     },
     {
       accessor: "total_despues_igv",
       title: "Total",
       textAlign: "right",
-      width: 130,
+      width: 140,
       render: (item) => (
-        <Text size="sm" fw={900} className="text-emerald-400 font-mono">
+        <Badge 
+          variant="filled" 
+          color="cyan" 
+          radius="sm" 
+          size="md"
+          className="font-bold px-4 h-8"
+        >
           {item.moneda === "Soles" ? "S/." : "$"} {formatNumber(Number(item.total_despues_igv))}
-        </Text>
+        </Badge>
       ),
     },
     {
@@ -296,8 +307,8 @@ export const OrdenCompraPage = () => {
       <ModalEstandar
         opened={openedDetalle}
         close={closeDet}
-        title={`Detalle de Orden de Compra: ${selectedOrden?.correlativo}`}
-        size="80%"
+        title="Detalle de Orden de Compra"
+        size="95%"
       >
         {selectedOrden && (
           <DetalleOrdenCompra 

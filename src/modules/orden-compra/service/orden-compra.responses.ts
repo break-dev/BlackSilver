@@ -29,14 +29,26 @@ export interface RES_OrdenCompraDetalle {
   contenido_por_presentacion: number;
   cantidad_requerida: number;
   cantidad_requerida_base: number;
+  precio_unitario: number;
   estado: string;
   // Producto
   id_producto: number;
   producto_nombre: string;
+  id_unidad_medida_base: number;
   // Unidad de medida
   id_unidad_medida: number;
   unidad_medida_nombre: string;
   unidad_medida_abv: string;
+  unidad_medida_base_abv: string;
+}
+
+export interface RES_OrdenCompraSeguimiento {
+  id: number;
+  descripcion: string;
+  created_at: string;
+  estado: string;
+  empleado: string;
+  path_foto: string | null;
 }
 
 export interface RES_ListadoOrdenCompra {

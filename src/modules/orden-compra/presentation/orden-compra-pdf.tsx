@@ -166,19 +166,31 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
             <Text style={styles.col1}>Cant.</Text>
             <Text style={styles.col2}>U.M.</Text>
             <Text style={styles.col3}>Descripción</Text>
-            <Text style={styles.col4}>Cant. Base</Text>
-            <Text style={styles.col5}>U.M. Pres.</Text>
+            <Text style={styles.col4}>P. Unit.</Text>
+            <Text style={styles.col5}>Total</Text>
           </View>
-          {detalles.map((det, idx) => (
-            <View key={det.id} style={styles.row}>
-              <Text style={styles.col0}>{idx + 1}</Text>
-              <Text style={styles.col1}>{formatNumber(det.cantidad_requerida)}</Text>
-              <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
-              <Text style={styles.col3}>{det.producto_nombre}</Text>
-              <Text style={styles.col4}>{formatNumber(det.cantidad_requerida_base)}</Text>
-              <Text style={styles.col5}>{formatNumber(det.contenido_por_presentacion)}</Text>
-            </View>
-          ))}
+          {detalles.map((det, idx) => {
+            const hasEquivalence = det.id_unidad_medida !== det.id_unidad_medida_base;
+            const subtotalItem = det.cantidad_requerida * det.precio_unitario;
+
+            return (
+              <View key={det.id} style={styles.row}>
+                <Text style={styles.col0}>{idx + 1}</Text>
+                <Text style={styles.col1}>{formatNumber(det.cantidad_requerida)}</Text>
+                <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
+                <View style={styles.col3}>
+                  <Text style={{ fontWeight: 700 }}>{det.producto_nombre}</Text>
+                  {hasEquivalence && (
+                    <Text style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}>
+                      Eq: {formatNumber(det.contenido_por_presentacion)} {det.unidad_medida_base_abv} x {det.unidad_medida_abv}
+                    </Text>
+                  )}
+                </View>
+                <Text style={styles.col4}>{symbol} {formatNumber(det.precio_unitario)}</Text>
+                <Text style={styles.col5}>{symbol} {formatNumber(subtotalItem)}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Totales */}
