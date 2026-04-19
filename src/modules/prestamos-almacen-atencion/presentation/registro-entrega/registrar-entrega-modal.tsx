@@ -26,9 +26,9 @@ export const RegistrarEntregaModal = ({
     itemsAEntregar,
     lotes,
     entregaCantidades,
-    empleados,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    personal,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
     observacion,
     setObservacion,
     evidencias,
@@ -39,6 +39,7 @@ export const RegistrarEntregaModal = ({
     cargarDatosIniciales,
     handleCantLoteChange,
     registrarEntrega,
+    handleCrearPersonal,
   } = useRegistroEntrega({
     idAlmacenPrestamista,
     selectedItemsIds,
@@ -72,9 +73,10 @@ export const RegistrarEntregaModal = ({
     <Stack gap="xl" className="font-sans py-2">
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
-        empleados={empleados}
-        idEmpleadoRecibe={idEmpleadoRecibe}
-        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
+        personal={personal}
+        idPersonalRecibe={idPersonalRecibe}
+        setIdPersonalRecibe={setIdPersonalRecibe}
+        onAddPersonal={handleCrearPersonal}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -101,7 +103,7 @@ export const RegistrarEntregaModal = ({
         onCancel={onCancel}
         handleConfirmar={() => registrarEntrega(idPrestamo)}
         isProcessing={submitting}
-        canSave={!!idEmpleadoRecibe && totalEntregaGeneralBase > 0}
+        canSave={!!idPersonalRecibe && totalEntregaGeneralBase > 0}
       />
 
       {error && (

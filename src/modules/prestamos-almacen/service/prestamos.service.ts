@@ -3,6 +3,7 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type {
   RES_Prestamo,
   RES_PrestamoDetalle,
@@ -114,5 +115,24 @@ export const PrestamosService = {
       },
     });
     return data;
+  },
+
+  obtenerPersonalExterno: async () => {
+    const res = await api.get<IRespuesta<RES_PersonalExterno[]>>(
+      `${path}/personal-externo`,
+    );
+    return res.data;
+  },
+
+  crearPersonalExterno: async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    const res = await api.post<IRespuesta<RES_PersonalExterno>>(
+      `${path}/personal-externo`,
+      dto,
+    );
+    return res.data;
   },
 };

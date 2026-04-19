@@ -2,6 +2,7 @@ export interface REQ_RegistrarReposicion {
   id_prestamo_almacen: number;
   id_almacen_entrega: number;
   id_empleado_registro: number;
+  id_personal_recibe: number;
   fecha_hora_reposicion: string;
   items: REQ_DetalleReposicionItem[];
   observacion?: string;

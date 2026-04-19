@@ -8,17 +8,23 @@ import {
   Alert,
   Loader,
   Textarea,
+  ActionIcon,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { useState } from "react";
 import {
   BuildingStorefrontIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
   XCircleIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroReposicion } from "../../../hooks/useRegistroReposicion";
 import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multifile-picker";
 import { ProductoRepoCard } from "./producto-repo-card";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { FormPersonalExterno } from "../../../../../presentation/utils/form-personal-externo";
 
 interface RegistroReposicionProps {
   idPrestamo: number;
@@ -37,11 +43,15 @@ export const RegistroReposicion = ({
     loadingAlmacenes,
     loadingLotes,
     almacenesPrincipales,
+    personal,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
     lotesPorProducto,
     reposicionCantidades,
     handleUpdateLoteQuantity,
+    handleCrearPersonal,
     handleConfirmar,
     isProcessing,
     errorLocal,
@@ -55,7 +65,26 @@ export const RegistroReposicion = ({
     onSuccess,
   });
 
-  const canSubmit = !!idAlmacenEntrega && !isProcessing;
+  const [opened, { open, close }] = useDisclosure(false);
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [dni, setDni] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCreateNew = async () => {
+    if (!nombre.trim()) return;
+    setIsSubmitting(true);
+    const success = await handleCrearPersonal({ nombre, apellido, dni });
+    if (success) {
+      close();
+      setNombre("");
+      setApellido("");
+      setDni("");
+    }
+    setIsSubmitting(false);
+  };
+
+  const canSubmit = !!idAlmacenEntrega && !!idPersonalRecibe && !isProcessing;
 
   return (
     <Stack gap="xl" className="py-2">
@@ -91,10 +120,39 @@ export const RegistroReposicion = ({
               value={idAlmacenEntrega}
               onChange={setIdAlmacenEntrega}
               rightSection={loadingAlmacenes ? <Loader size="xs" /> : undefined}
-              radius="md"
-              className="w-full sm:w-[300px]"
+              radius="lg"
               size="sm"
             />
+            <div className="flex items-end gap-2 w-full sm:w-[300px]">
+              <Select
+                className="flex-1"
+                label="¿Quién recibe los materiales?"
+                labelProps={{
+                  className: "text-zinc-400 font-bold mb-1",
+                  size: "xs",
+                }}
+                placeholder="Buscar por Nombre"
+                data={personal}
+                searchable
+                required
+                withAsterisk
+                value={idPersonalRecibe}
+                onChange={setIdPersonalRecibe}
+                size="sm"
+                radius="lg"
+              />
+              <ActionIcon
+                size="36"
+                radius="lg"
+                variant="light"
+                color="indigo"
+                onClick={open}
+                title="Agregar nuevo personal"
+                className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20"
+              >
+                <PlusIcon className="w-5 h-5" />
+              </ActionIcon>
+            </div>
             <Textarea
               label="Observación"
               labelProps={{
@@ -104,7 +162,7 @@ export const RegistroReposicion = ({
               placeholder="Comentario opcional..."
               value={observacion}
               onChange={(e) => setObservacion(e.currentTarget.value)}
-              radius="md"
+              radius="lg"
               size="sm"
               autosize
               minRows={2}
@@ -190,6 +248,23 @@ export const RegistroReposicion = ({
           Registrar Reposición
         </Button>
       </Group>
+
+      <ModalEstandar
+        opened={opened}
+        close={close}
+        title="Registrar Personal Externo"
+      >
+        <FormPersonalExterno
+          nombre={nombre}
+          apellido={apellido}
+          dni={dni}
+          setNombre={setNombre}
+          setApellido={setApellido}
+          setDni={setDni}
+          onSubmit={handleCreateNew}
+          isSubmitting={isSubmitting}
+        />
+      </ModalEstandar>
     </Stack>
   );
 };

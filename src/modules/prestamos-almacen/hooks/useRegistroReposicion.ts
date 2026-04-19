@@ -4,6 +4,7 @@ import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/p
 import type { REQ_DetalleReposicionItem } from "../service/prestamos.requests";
 import { useAuthStore } from "../../../stores/auth.store";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistroReposicionProps {
@@ -18,9 +19,10 @@ export const useRegistroReposicion = ({
   onSuccess,
 }: UseRegistroReposicionProps) => {
   const { usuario } = useAuthStore();
-  const { notifySuccess } = useNotify();
+  const { notifySuccess, notifyError } = useNotify();
 
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
   const [loadingLotes, setLoadingLotes] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorLocal, setErrorLocal] = useState<string | null>(null);
@@ -28,7 +30,12 @@ export const useRegistroReposicion = ({
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     { id_almacen: number; nombre: string }[]
   >([]);
+  const [personal, setPersonal] = useState<{ value: string; label: string }[]>(
+    [],
+  );
+
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
+  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
 
   const [lotesPorProducto, setLotesPorProducto] = useState<
     Record<number, RES_LoteDisponible[]>
@@ -60,7 +67,28 @@ export const useRegistroReposicion = ({
         setLoadingAlmacenes(false);
       }
     };
+
+    const fetchPersonal = async () => {
+      setLoadingPersonal(true);
+      try {
+        const res = await PrestamosService.obtenerPersonalExterno();
+        if (res.success) {
+          setPersonal(
+            res.data.map((p: RES_PersonalExterno) => ({
+              value: String(p.id_personal),
+              label: `${p.nombre_completo} | ${p.dni || "S/N"}`,
+            })),
+          );
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+
     fetchAlmacenes();
+    fetchPersonal();
   }, []);
 
   // Cargar lotes cuando cambie el almacén
@@ -118,8 +146,35 @@ export const useRegistroReposicion = ({
     });
   };
 
+  const handleCrearPersonal = async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    try {
+      const res = await PrestamosService.crearPersonalExterno(dto);
+      if (res.success) {
+        notifySuccess("Personal registrado correctamente");
+        const nuevo = res.data as unknown as RES_PersonalExterno;
+        setPersonal((prev) => [
+          ...prev,
+          {
+            value: String(nuevo.id_personal),
+            label: `${nuevo.nombre_completo} - DNI: ${nuevo.dni || "S/N"}`,
+          },
+        ]);
+        setIdPersonalRecibe(String(nuevo.id_personal));
+        return true;
+      }
+      return false;
+    } catch {
+      notifyError("Error al registrar personal externo");
+      return false;
+    }
+  };
+
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !usuario) return;
+    if (!idAlmacenEntrega || !idPersonalRecibe || !usuario) return;
 
     setErrorLocal(null);
     setIsProcessing(true);
@@ -161,6 +216,7 @@ export const useRegistroReposicion = ({
         id_prestamo_almacen: idPrestamo,
         id_almacen_entrega: Number(idAlmacenEntrega),
         id_empleado_registro: usuario.id_empleado,
+        id_personal_recibe: Number(idPersonalRecibe),
         fecha_hora_reposicion: new Date().toISOString(),
         items: itemsFinal,
         observacion: observacion.trim() || undefined,
@@ -187,13 +243,18 @@ export const useRegistroReposicion = ({
 
   return {
     loadingAlmacenes,
+    loadingPersonal,
     loadingLotes,
     almacenesPrincipales,
+    personal,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
     lotesPorProducto,
     reposicionCantidades,
     handleUpdateLoteQuantity,
+    handleCrearPersonal,
     handleConfirmar,
     isProcessing,
     errorLocal,

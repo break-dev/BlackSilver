@@ -10,7 +10,6 @@ import type {
   RES_TicketLote,
 } from "../../../service/responses/lote-producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
-import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type {
   RES_Prestamo,
@@ -24,6 +23,7 @@ import type {
   RES_PrestamoReposicionRecepcionDetalle,
 } from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
 import type { RES_PrestamoEntregaRecepcion } from "../../../service/responses/prestamos/prestamo-entrega-recepcion";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
 const path = "/prestamos-atencion";
 
@@ -35,8 +35,22 @@ export const PrestamosAtencionService = {
     return res.data;
   },
 
-  obtenerEmpleados: async () => {
-    const res = await api.get<IRespuesta<RES_Empleado[]>>(`${path}/empleados`);
+  obtenerPersonalExterno: async () => {
+    const res = await api.get<IRespuesta<RES_PersonalExterno[]>>(
+      `${path}/personal-externo`,
+    );
+    return res.data;
+  },
+
+  crearPersonalExterno: async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    const res = await api.post<IRespuesta<RES_PersonalExterno>>(
+      `${path}/personal-externo`,
+      dto,
+    );
     return res.data;
   },
 
@@ -97,7 +111,7 @@ export const PrestamosAtencionService = {
     if (evidencias && evidencias.length > 0) {
       const formData = new FormData();
       formData.append("id_prestamo", dto.id_prestamo.toString());
-      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      formData.append("id_personal_recibe", dto.id_personal_recibe.toString());
       if (dto.fecha_hora_entrega)
         formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);

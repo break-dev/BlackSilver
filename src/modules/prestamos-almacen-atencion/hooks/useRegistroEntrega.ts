@@ -3,7 +3,7 @@ import { PrestamosAtencionService } from "../service/prestamos-atencion.service"
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 
 interface UseRegistroEntregaProps {
@@ -24,12 +24,12 @@ export const useRegistroEntrega = ({
   const { notifySuccess, notifyError } = useNotify();
 
   const [loading, setLoading] = useState(false);
-  const [empleados, setEmpleados] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const [personal, setPersonal] = useState<{ value: string; label: string }[]>(
+    [],
+  );
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
 
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
@@ -56,28 +56,28 @@ export const useRegistroEntrega = ({
     setLoading(true);
     setError("");
     try {
-      const [resEmps, resLotes] = await Promise.all([
-        PrestamosAtencionService.obtenerEmpleados(),
+      const [resPers, resLotes] = await Promise.all([
+        PrestamosAtencionService.obtenerPersonalExterno(),
         PrestamosAtencionService.obtenerLotesDisponiblesBatch(
           idsProductos,
           idAlmacenPrestamista,
         ),
       ]);
 
-      if (resEmps.success) {
-        const empsMapped = resEmps.data.map((e: RES_Empleado) => ({
-          value: String(e.id_empleado),
-          label: `${e.nombre_completo} - ${e.dni}`,
+      if (resPers.success) {
+        const persMapped = resPers.data.map((p: RES_PersonalExterno) => ({
+          value: String(p.id_personal),
+          label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
         }));
-        setEmpleados(empsMapped);
+        setPersonal(persMapped);
 
-        // AUTO-SELECCIÓN: Si tenemos un empleado por defecto, lo buscamos en la lista
+        // AUTO-SELECCIÓN: Si tenemos un personal por defecto (omitido en prestamos normalmente, o dejado null)
         if (idEmpleadoDefault) {
-          const exists = empsMapped.some(
+          const exists = persMapped.some(
             (e: { value: string }) => e.value === String(idEmpleadoDefault),
           );
           if (exists) {
-            setIdEmpleadoRecibe(String(idEmpleadoDefault));
+            setIdPersonalRecibe(String(idEmpleadoDefault));
           }
         }
       }
@@ -111,6 +111,33 @@ export const useRegistroEntrega = ({
       setLoading(false);
     }
   }, [idsProductos, idAlmacenPrestamista, itemsAEntregar, idEmpleadoDefault]);
+
+  const handleCrearPersonal = async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    try {
+      const res = await PrestamosAtencionService.crearPersonalExterno(dto);
+      if (res.success) {
+        notifySuccess("Personal registrado correctamente");
+        const nuevo = res.data as unknown as RES_PersonalExterno;
+        setPersonal((prev) => [
+          ...prev,
+          {
+            value: String(nuevo.id_personal),
+            label: `${nuevo.nombre_completo} - DNI: ${nuevo.dni || "S/N"}`,
+          },
+        ]);
+        setIdPersonalRecibe(String(nuevo.id_personal));
+        return true;
+      }
+      return false;
+    } catch {
+      notifyError("Error al registrar personal externo");
+      return false;
+    }
+  };
 
   const handleCantLoteChange = useCallback(
     (idDetalle: number, idLote: number, valLote: number) => {
@@ -178,7 +205,7 @@ export const useRegistroEntrega = ({
 
   const registrarEntrega = useCallback(
     async (idPrestamo: number) => {
-      if (!idEmpleadoRecibe) {
+      if (!idPersonalRecibe) {
         notifyError("Debe seleccionar el receptor");
         return;
       }
@@ -221,7 +248,7 @@ export const useRegistroEntrega = ({
         const res = await PrestamosAtencionService.registrarEntrega(
           {
             id_prestamo: idPrestamo,
-            id_empleado_recibe: Number(idEmpleadoRecibe),
+            id_personal_recibe: Number(idPersonalRecibe),
             fecha_hora_entrega: undefined, // Backend usará now()
             observacion: observacion || undefined,
             detalles: detallesParaApi,
@@ -242,7 +269,7 @@ export const useRegistroEntrega = ({
       }
     },
     [
-      idEmpleadoRecibe,
+      idPersonalRecibe,
       entregaCantidades,
       itemsAEntregar,
       lotes,
@@ -259,9 +286,9 @@ export const useRegistroEntrega = ({
     itemsAEntregar,
     lotes,
     entregaCantidades,
-    empleados,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    personal,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
     observacion,
     setObservacion,
     submitting,
@@ -270,6 +297,7 @@ export const useRegistroEntrega = ({
     cargarDatosIniciales,
     handleCantLoteChange,
     registrarEntrega,
+    handleCrearPersonal,
     // Evidencias
     evidencias,
     setEvidencias,
