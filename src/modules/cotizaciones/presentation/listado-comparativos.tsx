@@ -159,11 +159,11 @@ export const ListadoComparativos = ({
     setPrintingOCId(id_orden_compra);
     try {
       const [resOrden, resDetalles] = await Promise.all([
-        OrdenCompraService.get_ordenes(),
+        OrdenCompraService.get_orden(id_orden_compra),
         OrdenCompraService.get_detalles(id_orden_compra),
       ]);
       if (resOrden.success && resDetalles.success) {
-        const ordenData = resOrden.data.ordenes.find((o) => o.id === id_orden_compra);
+        const ordenData = resOrden.data;
         if (ordenData) {
           print(
             <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
