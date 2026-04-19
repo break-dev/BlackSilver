@@ -9,7 +9,7 @@ import type {
   DTO_RegistrarEntregaReabastecimiento,
   DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
-import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
@@ -114,9 +114,21 @@ export const SolicitudesAtencionService = {
     return res.data;
   },
 
-  obtenerEmpleados: async () => {
-    const res = await api.get<IRespuesta<RES_Empleado[]>>(
-      `${path}/auxiliares/empleados`,
+  obtenerPersonalExterno: async () => {
+    const res = await api.get<IRespuesta<RES_PersonalExterno[]>>(
+      `${path}/auxiliares/personal-externo`,
+    );
+    return res.data;
+  },
+
+  crearPersonalExterno: async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    const res = await api.post<IRespuesta<RES_PersonalExterno>>(
+      `${path}/auxiliares/personal-externo`,
+      dto,
     );
     return res.data;
   },

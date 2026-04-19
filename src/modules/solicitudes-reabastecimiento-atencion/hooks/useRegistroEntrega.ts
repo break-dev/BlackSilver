@@ -6,7 +6,7 @@ import type { DTO_EntregasDetalleReabastecimiento } from "../service/solicitudes
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 
@@ -32,17 +32,17 @@ export const useRegistroEntrega = ({
   const { notifySuccess } = useNotify();
 
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(true);
-  const [loadingEmpleados, setLoadingEmpleados] = useState(true);
+  const [loadingPersonal, setLoadingPersonal] = useState(true);
   const [loadingLotes, setLoadingLotes] = useState(false);
 
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     RES_Almacen[]
   >([]);
-  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [personal, setPersonal] = useState<RES_PersonalExterno[]>([]);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
@@ -88,37 +88,48 @@ export const useRegistroEntrega = ({
       }
     };
 
-    const loadEmpleados = async () => {
-      setLoadingEmpleados(true);
+    const loadPersonal = async () => {
+      setLoadingPersonal(true);
       try {
-        const resEmp = await SolicitudesAtencionService.obtenerEmpleados();
+        const resEmp =
+          await SolicitudesAtencionService.obtenerPersonalExterno();
         if (resEmp.success) {
-          const filtered = resEmp.data.filter(
-            (e) => e.id_empleado !== loggedEmployeeId,
-          );
-          setEmpleados(filtered);
-
-          // Auto-seleccionamos al empleado solicitante si está en la lista y no hay selección previa
-          if (idEmpleadoSolicitante && !idEmpleadoRecibe) {
-            const solicitante = filtered.find(
-              (e) => e.id_empleado === idEmpleadoSolicitante,
-            );
-            if (solicitante) {
-              setIdEmpleadoRecibe(String(solicitante.id_empleado));
-            }
-          }
+          setPersonal(resEmp.data);
         }
       } catch (err) {
         console.error(err);
       } finally {
-        setLoadingEmpleados(false);
+        setLoadingPersonal(false);
       }
     };
 
     loadAlmacenes();
-    loadEmpleados();
+    loadPersonal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedEmployeeId, idEmpleadoSolicitante]);
+
+  const handleCrearPersonal = async (dto: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    try {
+      const res = await SolicitudesAtencionService.crearPersonalExterno(dto);
+      if (res.success) {
+        notifySuccess("Personal registrado correctamente");
+        // Update the list with the new entry
+        const nuevoPersonal = res.data as unknown as RES_PersonalExterno;
+        setPersonal((prev) => [...prev, nuevoPersonal]);
+        setIdPersonalRecibe(String(nuevoPersonal.id_personal));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      setErrorLocal("Error al registrar personal externo");
+      return false;
+    }
+  };
 
   useEffect(() => {
     if (idAlmacenEntrega && idsProductos.length > 0) {
@@ -220,7 +231,7 @@ export const useRegistroEntrega = ({
   }, [lotes]);
 
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !idEmpleadoRecibe) {
+    if (!idAlmacenEntrega || !idPersonalRecibe) {
       setErrorLocal("Complete todos los campos obligatorios");
       return;
     }
@@ -262,7 +273,7 @@ export const useRegistroEntrega = ({
       const res = await SolicitudesAtencionService.registrarEntrega({
         id_solicitud: idSolicitud,
         id_almacen_entrega: Number(idAlmacenEntrega),
-        id_personal_recibe: Number(idEmpleadoRecibe),
+        id_personal_recibe: Number(idPersonalRecibe),
         fecha_hora_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
         evidencias,
@@ -285,15 +296,16 @@ export const useRegistroEntrega = ({
 
   return {
     loadingAlmacenes,
-    loadingEmpleados,
+    loadingPersonal,
     loadingLotes,
     almacenesPrincipales,
-    empleados,
+    personal,
     lotesPorProducto,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
+    handleCrearPersonal,
     observacion,
     setObservacion,
     evidencias,

@@ -20,15 +20,16 @@ export const RegistroEntrega = ({
 }: RegistroEntregaProps) => {
   const {
     loadingAlmacenes,
-    loadingEmpleados,
+    loadingPersonal,
     loadingLotes,
     almacenesPrincipales,
-    empleados,
+    personal,
     lotesPorProducto,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    idPersonalRecibe,
+    setIdPersonalRecibe,
+    handleCrearPersonal,
     observacion,
     setObservacion,
     entregaCantidades,
@@ -47,7 +48,7 @@ export const RegistroEntrega = ({
     onSuccess,
   });
 
-  const canSubmit = !!idAlmacenEntrega && !!idEmpleadoRecibe && !isProcessing;
+  const canSubmit = !!idAlmacenEntrega && !!idPersonalRecibe && !isProcessing;
 
   return (
     <Stack gap="xl" className="font-sans py-2">
@@ -59,13 +60,14 @@ export const RegistroEntrega = ({
         idAlmacenEntrega={idAlmacenEntrega}
         setIdAlmacenEntrega={setIdAlmacenEntrega}
         loadingAlmacenes={loadingAlmacenes}
-        empleados={empleados.map((e) => ({
-          value: String(e.id_empleado),
-          label: e.nombre_completo,
+        personal={personal.map((p) => ({
+          value: String(p.id_personal),
+          label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
         }))}
-        idEmpleadoRecibe={idEmpleadoRecibe}
-        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
-        loadingEmpleados={loadingEmpleados}
+        idPersonalRecibe={idPersonalRecibe}
+        setIdPersonalRecibe={setIdPersonalRecibe}
+        loadingPersonal={loadingPersonal}
+        onAddPersonal={handleCrearPersonal}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
