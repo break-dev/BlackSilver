@@ -25,7 +25,7 @@ import { usePrint } from "../../../hooks/usePrint";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { useOrdenCompra } from "../hooks/useOrdenCompra";
 import { OrdenCompraService } from "../service/orden-compra.service";
-import { OrdenCompraPDF } from "./orden-compra-pdf";
+import { OrdenCompraPDF } from "../../../presentation/utils/orden-compra-pdf.tsx";
 import { useNotify } from "../../../hooks/useNotify";
 import { Estado_OrdenCompra } from "../../../shared/enums/orden-compra/orden-compra";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";

@@ -1,11 +1,11 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import dayjs from "dayjs";
-import { formatNumber } from "../../../shared/functions/formatNumber";
-import { MONEDAS } from "../../../shared/variables/monedas";
+import { formatNumber } from "../../shared/functions/formatNumber";
+import { MONEDAS } from "../../shared/variables/monedas";
 import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
-} from "../../../service/responses/ordenes-compra/orden-compra";
+} from "../../service/responses/ordenes-compra/orden-compra";
 
 interface OrdenCompraPDFProps {
   orden: RES_OrdenCompra;

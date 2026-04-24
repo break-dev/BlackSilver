@@ -42,7 +42,7 @@ import { usePrint } from "../../../hooks/usePrint";
 import { CotizacionPDF } from "./cotizacion-pdf";
 import { ModalAprobarCotizacion } from "./detalle/modal-aprobar-cotizacion";
 import { CotizacionesService } from "../service/cotizaciones.service";
-import { OrdenCompraPDF } from "../../orden-compra/presentation/orden-compra-pdf";
+import { OrdenCompraPDF } from "../../../presentation/utils/orden-compra-pdf";
 import { MONEDAS } from "../../../shared/variables/monedas";
 import { useNotify } from "../../../hooks/useNotify";
 import type {
@@ -239,9 +239,8 @@ export const ListadoComparativos = ({
                   <Group gap="md" wrap="nowrap">
                     {/* Ícono */}
                     <div
-                      className={`p-3 rounded-2xl ${
-                        tieneAprobada ? "bg-teal-500/10" : "bg-indigo-500/10"
-                      }`}
+                      className={`p-3 rounded-2xl ${tieneAprobada ? "bg-teal-500/10" : "bg-indigo-500/10"
+                        }`}
                     >
                       {tieneAprobada ? (
                         <CheckBadgeIcon className="w-6 h-6 text-teal-400" />
@@ -705,7 +704,7 @@ export const ListadoComparativos = ({
                                           fw={800}
                                           className={
                                             det.estado ===
-                                            Estado_Cotizacion_Detalle.Rechazado
+                                              Estado_Cotizacion_Detalle.Rechazado
                                               ? "text-zinc-500 line-through"
                                               : "text-zinc-100"
                                           }
@@ -714,37 +713,37 @@ export const ListadoComparativos = ({
                                         </Text>
                                         {det.estado ===
                                           Estado_Cotizacion_Detalle.Aprobado && (
-                                          <Badge
-                                            size="xs"
-                                            color="teal"
-                                            variant="light"
-                                            className="border-teal-500/20"
-                                          >
-                                            Aprobado
-                                          </Badge>
-                                        )}
+                                            <Badge
+                                              size="xs"
+                                              color="teal"
+                                              variant="light"
+                                              className="border-teal-500/20"
+                                            >
+                                              Aprobado
+                                            </Badge>
+                                          )}
                                         {det.estado ===
                                           Estado_Cotizacion_Detalle.Rechazado && (
-                                          <Badge
-                                            size="xs"
-                                            color="red"
-                                            variant="light"
-                                            className="border-red-500/20"
-                                          >
-                                            Rechazado
-                                          </Badge>
-                                        )}
+                                            <Badge
+                                              size="xs"
+                                              color="red"
+                                              variant="light"
+                                              className="border-red-500/20"
+                                            >
+                                              Rechazado
+                                            </Badge>
+                                          )}
                                         {det.estado ===
                                           Estado_Cotizacion_Detalle.Pendiente && (
-                                          <Badge
-                                            size="xs"
-                                            color="gray"
-                                            variant="light"
-                                            className="border-zinc-500/20 text-zinc-300"
-                                          >
-                                            Pendiente
-                                          </Badge>
-                                        )}
+                                            <Badge
+                                              size="xs"
+                                              color="gray"
+                                              variant="light"
+                                              className="border-zinc-500/20 text-zinc-300"
+                                            >
+                                              Pendiente
+                                            </Badge>
+                                          )}
                                         {det.es_fiscalizado && (
                                           <Badge
                                             size="xs"
@@ -770,7 +769,7 @@ export const ListadoComparativos = ({
                                         size="xs"
                                         c={
                                           det.estado ===
-                                          Estado_Cotizacion_Detalle.Rechazado
+                                            Estado_Cotizacion_Detalle.Rechazado
                                             ? "zinc.6"
                                             : "dimmed"
                                         }
@@ -791,10 +790,10 @@ export const ListadoComparativos = ({
                                               {Boolean(
                                                 det.para_un_almacen_principal,
                                               ) && (
-                                                <span className="text-indigo-400/70 ml-1">
-                                                  (principal)
-                                                </span>
-                                              )}
+                                                  <span className="text-indigo-400/70 ml-1">
+                                                    (principal)
+                                                  </span>
+                                                )}
                                             </Text>
                                           </Group>
                                         )}
@@ -966,25 +965,25 @@ export const ListadoComparativos = ({
         cotizacion={
           selectedCotIdParaAprobar
             ? comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
-              null
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
+            null
             : null
         }
         detalles={
           selectedCotIdParaAprobar
             ? (comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-                ?.detalles ?? [])
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+              ?.detalles ?? [])
             : []
         }
         empresas={
           selectedCotIdParaAprobar
             ? (comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-                ?.empresas ?? [])
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+              ?.empresas ?? [])
             : []
         }
         onSuccess={handleSuccessAprobacion}
