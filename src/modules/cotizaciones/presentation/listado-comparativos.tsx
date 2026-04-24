@@ -41,7 +41,7 @@ import {
 import { usePrint } from "../../../hooks/usePrint";
 import { CotizacionPDF } from "./cotizacion-pdf";
 import { ModalAprobarCotizacion } from "./detalle/modal-aprobar-cotizacion";
-import { OrdenCompraService } from "../../orden-compra/service/orden-compra.service";
+import { CotizacionesService } from "../service/cotizaciones.service";
 import { OrdenCompraPDF } from "../../orden-compra/presentation/orden-compra-pdf";
 import { MONEDAS } from "../../../shared/variables/monedas";
 import { useNotify } from "../../../hooks/useNotify";
@@ -153,21 +153,16 @@ export const ListadoComparativos = ({
   const handlePrintOC = async (id_orden_compra: number) => {
     setPrintingOCId(id_orden_compra);
     try {
-      const [resOrden, resDetalles] = await Promise.all([
-        OrdenCompraService.get_orden(id_orden_compra),
-        OrdenCompraService.get_detalles(id_orden_compra),
-      ]);
-      if (resOrden.success && resDetalles.success) {
-        const ordenData = resOrden.data;
-        if (ordenData) {
-          print(
-            <OrdenCompraPDF
-              orden={ordenData}
-              detalles={resDetalles.data.detalles}
-            />,
-            { documentTitle: `OC - ${ordenData.correlativo}` },
-          );
-        }
+      const response = await CotizacionesService.get_orden_compra(id_orden_compra);
+      if (response.success && response.data) {
+        const ordenData = response.data;
+        print(
+          <OrdenCompraPDF
+            orden={ordenData}
+            detalles={ordenData.detalles || []}
+          />,
+          { documentTitle: `OC - ${ordenData.correlativo}` },
+        );
       } else {
         notify({
           type: "error",

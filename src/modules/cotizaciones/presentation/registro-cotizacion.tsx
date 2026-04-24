@@ -12,7 +12,7 @@ import type {
 } from "../../../service/responses/cotizaciones/cotizacion";
 
 interface RegistroCotizacionProps {
-  onSuccess: () => void;
+  onSuccess: (data: RES_Comparativo[]) => void;
   onCancel: () => void;
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
@@ -54,7 +54,7 @@ export const RegistroCotizacion = forwardRef<
           });
         }
       }
-      onSuccess();
+      onSuccess(data);
     };
 
     const {

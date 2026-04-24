@@ -7,6 +7,10 @@ import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida"
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
+import type {
+  RES_OrdenCompra,
+  RES_OrdenCompraDetalle,
+} from "../../../service/responses/ordenes-compra/orden-compra";
 
 export const CotizacionesService = {
   /**
@@ -101,12 +105,25 @@ export const CotizacionesService = {
       id_empresa_compradora: number;
       detalles_aprobados: number[];
     },
-  ): Promise<IRespuesta<number>> => {
-    // id de la orden de compra generada
-    const { data } = await api.post<IRespuesta<number>>(
-      `/cotizaciones/${id_cotizacion}/aprobar`,
-      payload,
-    );
+  ): Promise<IRespuesta<{ id_orden_compra: number; correlativo: string }>> => {
+    // Retorna un objeto con id_orden_compra y correlativo de la OC generada
+    const { data } = await api.post<
+      IRespuesta<{ id_orden_compra: number; correlativo: string }>
+    >(`/cotizaciones/${id_cotizacion}/aprobar`, payload);
+    return data;
+  },
+
+  /**
+   * Obtener una orden de compra generada desde cotizaciones con sus detalles
+   */
+  get_orden_compra: async (
+    id_orden_compra: number,
+  ): Promise<
+    IRespuesta<RES_OrdenCompra & { detalles: RES_OrdenCompraDetalle[] }>
+  > => {
+    const { data } = await api.get<
+      IRespuesta<RES_OrdenCompra & { detalles: RES_OrdenCompraDetalle[] }>
+    >(`/cotizaciones/ordenes-compra/${id_orden_compra}`);
     return data;
   },
 };

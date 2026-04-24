@@ -24,13 +24,14 @@ import {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
 } from "../../../../shared/enums/cotizacion/cotizacion";
-import { OrdenCompraService } from "../../../orden-compra/service/orden-compra.service";
-import { OrdenCompraPDF } from "../../../orden-compra/presentation/orden-compra-pdf";
 import type { RES_Proveedor } from "../../../../service/responses/proveedor";
 import type { RES_Producto } from "../../../../service/responses/producto";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
 import type { RES_Empresa } from "../../service/cotizaciones.responses";
-import type { RES_Cotizacion } from "../../../../service/responses/cotizaciones/cotizacion";
+import type {
+  RES_Cotizacion,
+  RES_Comparativo,
+} from "../../../../service/responses/cotizaciones/cotizacion";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -54,7 +55,7 @@ interface ModalAsistenteAprobacionProps {
     unidades: RES_UnidadMedida[];
     empresas: RES_Empresa[];
   };
-  onSuccessCompleto: () => Promise<void> | void;
+  onSuccessCompleto: (data: RES_Comparativo[]) => Promise<void> | void;
 }
 
 export const ModalAsistenteAprobacion = ({
@@ -230,33 +231,8 @@ export const ModalAsistenteAprobacion = ({
         });
       }
 
-      // --- AUTO-PRINT: ORDEN DE COMPRA (Solo las aprobadas que generaron OC) ---
-      const cotizacionesConOC = comparativoData.cotizaciones.filter(
-        (cot: RES_Cotizacion) =>
-          cot.id_orden_compra != null && Number(cot.id_orden_compra) > 0,
-      );
-
-      for (const cot of cotizacionesConOC) {
-        const ocId = Number(cot.id_orden_compra);
-        try {
-          const resDetalles = await OrdenCompraService.get_detalles(ocId);
-          const resOrden = await OrdenCompraService.get_orden(ocId);
-          if (resDetalles.success && resOrden.success && resOrden.data) {
-            print(
-              <OrdenCompraPDF
-                orden={resOrden.data}
-                detalles={resDetalles.data.detalles}
-              />,
-              { documentTitle: `OC - ${cot.correlativo}` },
-            );
-          }
-        } catch (e) {
-          console.error(`Error al generar PDF de OC ${ocId}:`, e);
-        }
-      }
-
       notifySuccess("Registro y Aprobación completados correctamente.");
-      onSuccessCompleto();
+      onSuccessCompleto([comparativoData]);
       onClose();
     } catch (e) {
       console.error(e);

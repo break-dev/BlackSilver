@@ -24,13 +24,14 @@ export const CotizacionesPage = () => {
   const {
     comparativos,
     loading,
-    fetchCotizaciones,
+    //fetchCotizaciones,
     updateCotizacionLocal,
     busqueda,
     setBusqueda,
     mes,
     year,
     cambiarPeriodo,
+    addComparativosLocal,
   } = useCotizaciones();
 
   const [openedCreate, { open: openCreate, close: closeCreate }] =
@@ -154,9 +155,9 @@ export const CotizacionesPage = () => {
           ref={registroRef}
           isCollapsed={isCollapsed}
           onAutoCollapse={setIsCollapsed}
-          onSuccess={() => {
+          onSuccess={(data) => {
             closeCreate();
-            fetchCotizaciones();
+            addComparativosLocal(data);
           }}
           onCancel={closeCreate}
           modalProductosOpened={openedProductos}

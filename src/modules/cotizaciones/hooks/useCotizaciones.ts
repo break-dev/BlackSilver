@@ -84,6 +84,14 @@ export const useCotizaciones = () => {
     [fetchCotizaciones],
   );
 
+  const addComparativosLocal = useCallback((nuevos: RES_Comparativo[]) => {
+    setComparativos((prev) => {
+      const idsActuales = new Set(prev.map((c) => c.id_comparativo));
+      const filtrados = nuevos.filter((c) => !idsActuales.has(c.id_comparativo));
+      return [...filtrados, ...prev].sort((a, b) => b.id_comparativo - a.id_comparativo);
+    });
+  }, []);
+
   return {
     comparativos,
     loading,
@@ -94,5 +102,6 @@ export const useCotizaciones = () => {
     mes,
     year,
     cambiarPeriodo,
+    addComparativosLocal,
   };
 };
