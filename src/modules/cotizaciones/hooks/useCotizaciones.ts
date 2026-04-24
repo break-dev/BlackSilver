@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { CotizacionesService } from "../service/cotizaciones.service";
-import type { RES_Comparativo } from "../service/cotizaciones.responses";
 import {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
 } from "../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
 
 export const useCotizaciones = () => {
   const [comparativos, setComparativos] = useState<RES_Comparativo[]>([]);

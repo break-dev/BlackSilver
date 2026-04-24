@@ -5,10 +5,7 @@ import type {
   DTO_CotizacionDetalle,
   DTO_RegistrarComparativo,
 } from "../service/cotizaciones.requests";
-import type {
-  RES_Comparativo,
-  RES_Empresa,
-} from "../service/cotizaciones.responses";
+import type { RES_Empresa } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
 import {
@@ -23,6 +20,7 @@ import type { RES_Proveedor } from "../../../service/responses/proveedor";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
 
 interface MaestrosState {
   proveedores: RES_Proveedor[];

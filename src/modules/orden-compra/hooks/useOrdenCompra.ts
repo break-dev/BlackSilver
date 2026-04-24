@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { OrdenCompraService } from "../service/orden-compra.service";
-import type { RES_OrdenCompra } from "../service/orden-compra.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_OrdenCompra } from "../../../service/responses/ordenes-compra/orden-compra";
 
 export const useOrdenCompra = () => {
   const { notify } = useNotify();
@@ -18,17 +18,20 @@ export const useOrdenCompra = () => {
   const fetchOrdenes = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await OrdenCompraService.get_ordenes({ 
-        mes, 
-        year: yearcito 
+      const res = await OrdenCompraService.get_ordenes({
+        mes,
+        year: yearcito,
       });
       if (res.success) {
-        setOrdenes(res.data.ordenes ?? []);
+        setOrdenes(res.data ?? []);
       } else {
         notify({ type: "error", content: res.message });
       }
     } catch {
-      notify({ type: "error", content: "Error al cargar las Órdenes de Compra." });
+      notify({
+        type: "error",
+        content: "Error al cargar las Órdenes de Compra.",
+      });
     } finally {
       setLoading(false);
     }
@@ -44,15 +47,15 @@ export const useOrdenCompra = () => {
     return ordenes.filter(
       (item) =>
         (item.correlativo || "").toLowerCase().includes(q) ||
-        (item.empresa_nombre || "").toLowerCase().includes(q) ||
-        (item.correlativo_cotizacion || "").toLowerCase().includes(q)
+        (item.empresa || "").toLowerCase().includes(q) ||
+        (item.correlativo_cotizacion || "").toLowerCase().includes(q),
     );
   }, [ordenes, search]);
 
-  return { 
-    ordenes, 
+  return {
+    ordenes,
     filteredRecords,
-    loading, 
+    loading,
     fetchOrdenes,
     filters: {
       mes,
@@ -61,6 +64,6 @@ export const useOrdenCompra = () => {
       setYearcito,
       search,
       setSearch,
-    }
+    },
   };
 };

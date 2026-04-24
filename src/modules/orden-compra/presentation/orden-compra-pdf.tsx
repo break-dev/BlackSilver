@@ -2,7 +2,10 @@ import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { MONEDAS } from "../../../shared/variables/monedas";
-import type { RES_OrdenCompra, RES_OrdenCompraDetalle } from "../service/orden-compra.responses";
+import type {
+  RES_OrdenCompra,
+  RES_OrdenCompraDetalle,
+} from "../../../service/responses/ordenes-compra/orden-compra";
 
 interface OrdenCompraPDFProps {
   orden: RES_OrdenCompra;
@@ -47,7 +50,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: 700,
   },
-  col0: { width: "5%",  textAlign: "center" },
+  col0: { width: "5%", textAlign: "center" },
   col1: { width: "10%", textAlign: "center" },
   col2: { width: "10%", textAlign: "center" },
   col3: { width: "45%", textAlign: "left", paddingLeft: 5 },
@@ -104,17 +107,18 @@ const styles = StyleSheet.create({
 });
 
 export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
-  const symbol = Object.values(MONEDAS).find((m) => m.label === orden.moneda)?.symbol ?? "S/";
+  const symbol =
+    Object.values(MONEDAS).find((m) => m.label === orden.moneda)?.symbol ??
+    "S/";
 
   return (
     <Document title={`Orden de Compra - ${orden.correlativo}`}>
       <Page size="A4" style={styles.page}>
-
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}>
-              {orden.empresa_nombre.toUpperCase()}
+              {orden.empresa.toUpperCase()}
             </Text>
             {orden.empresa_ruc && (
               <Text style={{ fontSize: 9, color: "#52525b", marginTop: 2 }}>
@@ -141,9 +145,11 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         <View style={{ flexDirection: "row", marginBottom: 20 }}>
           <View style={{ flex: 1, marginRight: 10 }}>
             <Text style={styles.sectionTitle}>EMITIR FACTURA A NOMBRE DE:</Text>
-            <Text style={{ fontWeight: 700 }}>{orden.empresa_nombre}</Text>
+            <Text style={{ fontWeight: 700 }}>{orden.empresa}</Text>
             {orden.empresa_ruc && (
-              <Text style={{ fontSize: 9, color: "#52525b" }}>RUC: {orden.empresa_ruc}</Text>
+              <Text style={{ fontSize: 9, color: "#52525b" }}>
+                RUC: {orden.empresa_ruc}
+              </Text>
             )}
           </View>
           <View style={{ flex: 1, marginLeft: 10 }}>
@@ -170,24 +176,34 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
             <Text style={styles.col5}>Total</Text>
           </View>
           {detalles.map((det, idx) => {
-            const hasEquivalence = det.id_unidad_medida !== det.id_unidad_medida_base;
+            const hasEquivalence =
+              det.id_unidad_medida_base !== det.id_unidad_medida_oc;
             const subtotalItem = det.cantidad_requerida * det.precio_unitario;
 
             return (
-              <View key={det.id} style={styles.row}>
+              <View key={det.id_orden_compra_detalle} style={styles.row}>
                 <Text style={styles.col0}>{idx + 1}</Text>
-                <Text style={styles.col1}>{formatNumber(det.cantidad_requerida)}</Text>
-                <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
+                <Text style={styles.col1}>
+                  {formatNumber(det.cantidad_requerida)}
+                </Text>
+                <Text style={styles.col2}>{det.unidad_medida_oc_abv}</Text>
                 <View style={styles.col3}>
-                  <Text style={{ fontWeight: 700 }}>{det.producto_nombre}</Text>
+                  <Text style={{ fontWeight: 700 }}>{det.producto}</Text>
                   {hasEquivalence && (
-                    <Text style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}>
-                      Eq: {formatNumber(det.contenido_por_presentacion)} {det.unidad_medida_base_abv} x {det.unidad_medida_abv}
+                    <Text
+                      style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}
+                    >
+                      Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
+                      {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
                     </Text>
                   )}
                 </View>
-                <Text style={styles.col4}>{symbol} {formatNumber(det.precio_unitario)}</Text>
-                <Text style={styles.col5}>{symbol} {formatNumber(subtotalItem)}</Text>
+                <Text style={styles.col4}>
+                  {symbol} {formatNumber(det.precio_unitario)}
+                </Text>
+                <Text style={styles.col5}>
+                  {symbol} {formatNumber(subtotalItem)}
+                </Text>
               </View>
             );
           })}
@@ -197,15 +213,23 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         <View style={styles.totalsContainer}>
           <View style={styles.totalRow}>
             <Text style={{ fontWeight: 700 }}>Subtotal:</Text>
-            <Text>{symbol} {formatNumber(orden.total_antes_igv)}</Text>
+            <Text>
+              {symbol} {formatNumber(orden.total_antes_igv)}
+            </Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={{ fontWeight: 700 }}>IGV ({orden.porcentaje_igv}%):</Text>
-            <Text>{symbol} {formatNumber(orden.monto_igv)}</Text>
+            <Text style={{ fontWeight: 700 }}>
+              IGV ({orden.porcentaje_igv}%):
+            </Text>
+            <Text>
+              {symbol} {formatNumber(orden.monto_igv)}
+            </Text>
           </View>
           <View style={[styles.totalRow, styles.grandTotal]}>
             <Text style={{ fontWeight: 700 }}>TOTAL:</Text>
-            <Text style={{ fontWeight: 700 }}>{symbol} {formatNumber(orden.total_despues_igv)}</Text>
+            <Text style={{ fontWeight: 700 }}>
+              {symbol} {formatNumber(orden.total_despues_igv)}
+            </Text>
           </View>
         </View>
 
@@ -215,7 +239,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View style={styles.signatureSection}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+              <Text style={styles.signatureName}>
+                Rosa Maria Henriquez Acosta
+              </Text>
               <Text style={styles.signatureRole}>Gerencia</Text>
             </View>
             <View style={styles.signatureBox}>
@@ -228,7 +254,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
 
         <View style={{ marginTop: 30 }}>
           <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
-          <View style={{ ...styles.signatureSection, justifyContent: "center" }}>
+          <View
+            style={{ ...styles.signatureSection, justifyContent: "center" }}
+          >
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
               <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
@@ -239,8 +267,12 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>Este documento es una Orden de Compra oficial de Black Silver S.A.C.</Text>
-          <Text>Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}</Text>
+          <Text>
+            Este documento es una Orden de Compra oficial de Black Silver S.A.C.
+          </Text>
+          <Text>
+            Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}
+          </Text>
         </View>
       </Page>
     </Document>

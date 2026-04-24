@@ -5,7 +5,7 @@ import { MONEDAS } from "../../../shared/variables/monedas";
 import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
-} from "../service/cotizaciones.responses";
+} from "../../../service/responses/cotizaciones/cotizacion";
 
 interface CotizacionData {
   cotizacion: RES_Cotizacion;

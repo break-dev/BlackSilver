@@ -24,15 +24,13 @@ import {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
 } from "../../../../shared/enums/cotizacion/cotizacion";
-import type {
-  RES_CotizacionDetalle,
-  RES_Empresa,
-} from "../../service/cotizaciones.responses";
 import { OrdenCompraService } from "../../../orden-compra/service/orden-compra.service";
 import { OrdenCompraPDF } from "../../../orden-compra/presentation/orden-compra-pdf";
 import type { RES_Proveedor } from "../../../../service/responses/proveedor";
 import type { RES_Producto } from "../../../../service/responses/producto";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
+import type { RES_Empresa } from "../../service/cotizaciones.responses";
+import type { RES_Cotizacion } from "../../../../service/responses/cotizaciones/cotizacion";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -218,11 +216,13 @@ export const ModalAsistenteAprobacion = ({
       const comparativoData = resp.data[0];
 
       // --- AUTO-PRINT: FORMATO COTIZACIÓN (Todas las registradas) ---
-      const cotizacionesPDFData = comparativoData.cotizaciones.map((cot) => ({
-        cotizacion: cot,
-        detalles: cot.detalles as RES_CotizacionDetalle[],
-        empresas: cot.empresas.map((e) => e.razon_social),
-      }));
+      const cotizacionesPDFData = comparativoData.cotizaciones.map(
+        (cot: RES_Cotizacion) => ({
+          cotizacion: cot,
+          detalles: cot.detalles,
+          empresas: cot.empresas.map((e) => e.razon_social),
+        }),
+      );
 
       if (cotizacionesPDFData.length > 0) {
         print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
@@ -232,7 +232,8 @@ export const ModalAsistenteAprobacion = ({
 
       // --- AUTO-PRINT: ORDEN DE COMPRA (Solo las aprobadas que generaron OC) ---
       const cotizacionesConOC = comparativoData.cotizaciones.filter(
-        (cot) => cot.id_orden_compra != null && Number(cot.id_orden_compra) > 0,
+        (cot: RES_Cotizacion) =>
+          cot.id_orden_compra != null && Number(cot.id_orden_compra) > 0,
       );
 
       for (const cot of cotizacionesConOC) {

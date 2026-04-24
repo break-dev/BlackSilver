@@ -16,10 +16,10 @@ import {
   CubeIcon,
 } from "@heroicons/react/24/solid";
 import dayjs from "dayjs";
-import type { RES_OrdenCompraSeguimiento } from "../service/orden-compra.responses";
+import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 
 interface Props {
-  eventos: RES_OrdenCompraSeguimiento[];
+  eventos: RES_Trazabilidad[];
   loading?: boolean;
   productoNombre?: string;
 }
@@ -74,7 +74,7 @@ export const TrazabilidadOrdenCompra = ({
             const style = getStatusStyles(evento.estado);
             return (
               <Timeline.Item
-                key={evento.id || idx}
+                key={evento.id_log || idx}
                 color={style.color}
                 bullet={
                   <ThemeIcon

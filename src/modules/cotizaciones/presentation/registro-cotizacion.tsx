@@ -9,7 +9,7 @@ import { CotizacionPDF } from "./cotizacion-pdf";
 import type {
   RES_Comparativo,
   RES_CotizacionDetalle,
-} from "../service/cotizaciones.responses";
+} from "../../../service/responses/cotizaciones/cotizacion";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;

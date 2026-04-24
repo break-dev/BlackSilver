@@ -31,11 +31,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import type {
-  RES_Comparativo,
-  RES_Cotizacion,
-  RES_CotizacionDetalle,
-} from "../service/cotizaciones.responses";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import { TablaDetalleResumen } from "./detalle/tabla-detalle-resumen";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -50,6 +45,11 @@ import { OrdenCompraService } from "../../orden-compra/service/orden-compra.serv
 import { OrdenCompraPDF } from "../../orden-compra/presentation/orden-compra-pdf";
 import { MONEDAS } from "../../../shared/variables/monedas";
 import { useNotify } from "../../../hooks/useNotify";
+import type {
+  RES_Comparativo,
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+} from "../../../service/responses/cotizaciones/cotizacion";
 
 interface ListadoComparativosProps {
   comparativos: RES_Comparativo[];
@@ -381,8 +381,15 @@ export const ListadoComparativos = ({
                                   )}
                                 </Group>
                                 <Group gap="xs" wrap="nowrap">
-                                  <Text size="xs" c="dimmed" className="font-mono">
-                                    {cot.tipo_entidad_proveedor === "Jurídica" ? "RUC" : "DNI"}: {cot.documento_proveedor}
+                                  <Text
+                                    size="xs"
+                                    c="dimmed"
+                                    className="font-mono"
+                                  >
+                                    {cot.tipo_entidad_proveedor === "Jurídica"
+                                      ? "RUC"
+                                      : "DNI"}
+                                    : {cot.documento_proveedor}
                                   </Text>
                                 </Group>
                                 <Group gap="xs">
@@ -744,12 +751,20 @@ export const ListadoComparativos = ({
                                           </Badge>
                                         )}
                                         {det.es_fiscalizado && (
-                                          <Badge size="xs" color="orange" variant="dot">
+                                          <Badge
+                                            size="xs"
+                                            color="orange"
+                                            variant="dot"
+                                          >
                                             Fiscalizado
                                           </Badge>
                                         )}
                                         {det.es_perecible && (
-                                          <Badge size="xs" color="pink" variant="dot">
+                                          <Badge
+                                            size="xs"
+                                            color="pink"
+                                            variant="dot"
+                                          >
                                             Perecible
                                           </Badge>
                                         )}
@@ -778,8 +793,12 @@ export const ListadoComparativos = ({
                                             <BuildingStorefrontIcon className="w-3 h-3 text-zinc-500 shrink-0" />
                                             <Text size="xs" c="dimmed">
                                               {det.almacen_recepcionista}
-                                              {Boolean(det.para_un_almacen_principal) && (
-                                                <span className="text-indigo-400/70 ml-1">(principal)</span>
+                                              {Boolean(
+                                                det.para_un_almacen_principal,
+                                              ) && (
+                                                <span className="text-indigo-400/70 ml-1">
+                                                  (principal)
+                                                </span>
                                               )}
                                             </Text>
                                           </Group>
@@ -790,20 +809,27 @@ export const ListadoComparativos = ({
                                             <Text size="xs" c="dimmed">
                                               {det.tipo_despacho}
                                               {det.lugar_recojo && (
-                                                <span className="text-zinc-400 ml-1">· {det.lugar_recojo}</span>
+                                                <span className="text-zinc-400 ml-1">
+                                                  · {det.lugar_recojo}
+                                                </span>
                                               )}
                                             </Text>
                                           </Group>
                                         )}
                                         {det.tiempo_entrega_dias !== null &&
                                           det.tiempo_entrega_dias > 0 && (
-                                          <Group gap={4} wrap="nowrap">
-                                            <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
-                                            <Text size="xs" c="dimmed">
-                                              {det.tiempo_entrega} {det.tiempo_entrega_periodo} · {det.tiempo_entrega_dias} día{det.tiempo_entrega_dias !== 1 ? "s" : ""}
-                                            </Text>
-                                          </Group>
-                                        )}
+                                            <Group gap={4} wrap="nowrap">
+                                              <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                                              <Text size="xs" c="dimmed">
+                                                {det.tiempo_entrega}{" "}
+                                                {det.tiempo_entrega_periodo} ·{" "}
+                                                {det.tiempo_entrega_dias} día
+                                                {det.tiempo_entrega_dias !== 1
+                                                  ? "s"
+                                                  : ""}
+                                              </Text>
+                                            </Group>
+                                          )}
                                       </Group>
                                     </Stack>
 

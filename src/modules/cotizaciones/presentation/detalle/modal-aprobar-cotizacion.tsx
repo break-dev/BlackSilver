@@ -10,16 +10,16 @@ import {
 } from "@mantine/core";
 import { CheckBadgeIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
-import type {
-  RES_Cotizacion,
-  RES_CotizacionDetalle,
-} from "../../service/cotizaciones.responses";
 import { CotizacionesService } from "../../service/cotizaciones.service";
 import { useNotify } from "../../../../hooks/useNotify";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { usePrint } from "../../../../hooks/usePrint";
 import { OrdenCompraService } from "../../../orden-compra/service/orden-compra.service";
 import { OrdenCompraPDF } from "../../../orden-compra/presentation/orden-compra-pdf";
+import type {
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+} from "../../../../service/responses/cotizaciones/cotizacion";
 
 interface ModalAprobarCotizacionProps {
   opened: boolean;
@@ -111,13 +111,15 @@ export const ModalAprobarCotizacion = ({
         notifySuccess("Orden de compra generada correctamente.");
 
         // Lanzar PDF de OC automáticamente
-        const ocId = res.data?.id_orden_compra;
-        const ocCorrelativo = res.data?.correlativo;
+        const ocId = res.data;
+        const ocCorrelativo = cotizacion.correlativo;
         if (ocId) {
           const resDetalles = await OrdenCompraService.get_detalles(ocId);
           const resOrden = await OrdenCompraService.get_ordenes();
           if (resDetalles.success && resOrden.success) {
-            const ordenData = resOrden.data.ordenes.find((o) => o.id === ocId);
+            const ordenData = resOrden.data.find(
+              (o) => o.id_orden_compra === ocId,
+            );
             if (ordenData) {
               print(
                 <OrdenCompraPDF

@@ -5,7 +5,7 @@ import { CeldaDetalleItem } from "./celda-detalle-item";
 import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
-} from "../../service/cotizaciones.responses";
+} from "../../../../service/responses/cotizaciones/cotizacion";
 
 interface TablaDetalleResumenProps {
   cotizaciones: RES_Cotizacion[];
@@ -150,13 +150,17 @@ export const TablaDetalleResumen = ({
                           precioUnitario={Number(det.precio_unitario)}
                           moneda={cot.moneda}
                           unidadMedida={det.unidad_medida_ctz_abv}
-                          contenidoPorPresentacion={Number(det.contenido_por_presentacion)}
+                          contenidoPorPresentacion={Number(
+                            det.contenido_por_presentacion,
+                          )}
                           unidadMedidaBase={prod.unidadBase}
                           comentario={det.comentario}
                           noCotiza={false}
                           estado={det.estado}
                           almacenRecepcionista={det.almacen_recepcionista}
-                          esAlmacenPrincipal={Boolean(det.para_un_almacen_principal)}
+                          esAlmacenPrincipal={Boolean(
+                            det.para_un_almacen_principal,
+                          )}
                           tipoDespacho={det.tipo_despacho}
                           lugarRecojo={det.lugar_recojo}
                           tiempoEntrega={det.tiempo_entrega}

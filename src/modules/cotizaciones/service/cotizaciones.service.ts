@@ -1,15 +1,12 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type {
-  RES_Comparativo,
-  RES_Empresa,
-} from "./cotizaciones.responses";
-import type { RES_AprobacionCotizacion } from "../../orden-compra/service/orden-compra.responses";
+import type { RES_Empresa } from "./cotizaciones.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
 import type { RES_Proveedor } from "../../../service/responses/proveedor";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
 
 export const CotizacionesService = {
   /**
@@ -48,7 +45,7 @@ export const CotizacionesService = {
    */
   get_proveedores_maestro: async (): Promise<IRespuesta<RES_Proveedor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Proveedor[]>>(
-      "/cotizaciones/proveedores",
+      "/cotizaciones/aux/proveedores",
     );
     return data;
   },
@@ -60,7 +57,7 @@ export const CotizacionesService = {
     IRespuesta<RES_UnidadMedida[]>
   > => {
     const { data } = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      "/cotizaciones/unidades-medida",
+      "/cotizaciones/aux/unidades-medida",
     );
     return data;
   },
@@ -70,7 +67,7 @@ export const CotizacionesService = {
    */
   get_productos_maestro: async (): Promise<IRespuesta<RES_Producto[]>> => {
     const { data } = await api.get<IRespuesta<RES_Producto[]>>(
-      "/cotizaciones/productos",
+      "/cotizaciones/aux/productos",
     );
     return data;
   },
@@ -80,7 +77,7 @@ export const CotizacionesService = {
    */
   get_empresas_maestro: async (): Promise<IRespuesta<RES_Empresa[]>> => {
     const { data } = await api.get<IRespuesta<RES_Empresa[]>>(
-      "/cotizaciones/empresas",
+      "/cotizaciones/aux/empresas",
     );
     return data;
   },
@@ -90,7 +87,7 @@ export const CotizacionesService = {
    */
   get_almacenes_maestro: async (): Promise<IRespuesta<RES_Almacen[]>> => {
     const { data } = await api.get<IRespuesta<RES_Almacen[]>>(
-      "/cotizaciones/almacenes",
+      "/cotizaciones/aux/almacenes",
     );
     return data;
   },
@@ -104,8 +101,9 @@ export const CotizacionesService = {
       id_empresa_compradora: number;
       detalles_aprobados: number[];
     },
-  ): Promise<IRespuesta<RES_AprobacionCotizacion>> => {
-    const { data } = await api.post<IRespuesta<RES_AprobacionCotizacion>>(
+  ): Promise<IRespuesta<number>> => {
+    // id de la orden de compra generada
+    const { data } = await api.post<IRespuesta<number>>(
       `/cotizaciones/${id_cotizacion}/aprobar`,
       payload,
     );
