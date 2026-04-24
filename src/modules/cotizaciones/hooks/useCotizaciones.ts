@@ -1,65 +1,98 @@
 import { useState, useCallback, useEffect } from "react";
 import { CotizacionesService } from "../service/cotizaciones.service";
-import type {
-  RES_Cotizacion,
-  RES_CotizacionDetalle,
-} from "../service/cotizaciones.responses";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Comparativo } from "../service/cotizaciones.responses";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../shared/enums/cotizacion/cotizacion";
 
 export const useCotizaciones = () => {
-  const [cotizaciones, setCotizaciones] = useState<RES_Cotizacion[]>([]);
-  const [detalles, setDetalles] = useState<RES_CotizacionDetalle[]>([]);
-  const [empresas, setEmpresas] = useState<{ id_cotizacion: number; id_empresa: number; razon_social: string }[]>([]);
+  const [comparativos, setComparativos] = useState<RES_Comparativo[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [mes, setMes] = useState(new Date().getMonth() + 1);
+  const [year, setYear] = useState(new Date().getFullYear());
 
-  const fetchCotizaciones = useCallback(async () => {
-    setLoading(true);
-    try {
-      const resp = await CotizacionesService.get_cotizaciones();
-      if (resp.success && resp.data) {
-        setCotizaciones(resp.data.cotizaciones || []);
-        setDetalles(resp.data.detalles || []);
-        setEmpresas(resp.data.empresas || []);
+  const fetchCotizaciones = useCallback(
+    async (m?: number, y?: number) => {
+      setLoading(true);
+      try {
+        const resp = await CotizacionesService.get_cotizaciones(
+          m ?? mes,
+          y ?? year,
+        );
+        if (resp.success && resp.data) {
+          setComparativos(resp.data);
+        }
+      } catch (e) {
+        console.error("Error al cargar cotizaciones:", e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error("Error al cargar cotizaciones:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [mes, year],
+  );
 
   useEffect(() => {
     fetchCotizaciones();
   }, [fetchCotizaciones]);
 
+  /**
+   * Actualiza el estado de una cotización dentro del árbol local
+   */
   const updateCotizacionLocal = useCallback(
-    (id: number, nuevoEstado: Estado_Cotizacion, detallesAprobados?: RES_CotizacionDetalle[], id_orden_compra?: number) => {
-      setCotizaciones((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, estado: nuevoEstado, id_orden_compra: id_orden_compra ?? c.id_orden_compra } : c)),
+    (
+      id_cotizacion: number,
+      nuevoEstado: Estado_Cotizacion,
+      idsDetallesAprobados?: number[],
+      id_orden_compra?: number,
+    ) => {
+      setComparativos((prev) =>
+        prev.map((comp) => ({
+          ...comp,
+          cotizaciones: comp.cotizaciones.map((cot) => {
+            if (cot.id_cotizacion !== id_cotizacion) return cot;
+
+            const detallesActualizados = idsDetallesAprobados
+              ? cot.detalles.map((d) => ({
+                  ...d,
+                  estado: idsDetallesAprobados.includes(d.id_cotizacion_detalle)
+                    ? Estado_Cotizacion_Detalle.Aprobado
+                    : Estado_Cotizacion_Detalle.Rechazado,
+                }))
+              : cot.detalles;
+
+            return {
+              ...cot,
+              estado: nuevoEstado,
+              id_orden_compra: id_orden_compra ?? cot.id_orden_compra,
+              detalles: detallesActualizados,
+            };
+          }),
+        })),
       );
-      
-      if (detallesAprobados) {
-        setDetalles((prev) => prev.map(d => {
-          if (d.id_cotizacion === id) {
-            const estaAprobado = detallesAprobados.some(da => da.id === d.id);
-            return { ...d, estado: estaAprobado ? Estado_Cotizacion_Detalle.Aprobado : Estado_Cotizacion_Detalle.Rechazado };
-          }
-          return d;
-        }));
-      }
     },
     [],
   );
 
+  const cambiarPeriodo = useCallback(
+    (nuevoMes: number, nuevoYear: number) => {
+      setMes(nuevoMes);
+      setYear(nuevoYear);
+      fetchCotizaciones(nuevoMes, nuevoYear);
+    },
+    [fetchCotizaciones],
+  );
+
   return {
-    cotizaciones,
-    detalles,
-    empresas,
+    comparativos,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,
     busqueda,
     setBusqueda,
+    mes,
+    year,
+    cambiarPeriodo,
   };
 };

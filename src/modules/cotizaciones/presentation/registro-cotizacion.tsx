@@ -6,17 +6,20 @@ import { ModalSeleccionProductos } from "./modal-seleccion-productos";
 import { ModalAsistenteAprobacion } from "./comparativo/modal-asistente-aprobacion";
 import { usePrint } from "../../../hooks/usePrint";
 import { CotizacionPDF } from "./cotizacion-pdf";
-import type { 
-  RES_Cotizacion, 
-  RES_CotizacionDetalle, 
+import type {
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+  RES_Empresa,
   RES_RegistroComparativo,
-  RES_MaestroProveedor,
-  RES_MaestroProducto,
-  RES_MaestroUnidadMedida,
-  RES_MaestroEmpresa
 } from "../service/cotizaciones.responses";
 import type { DTO_RegistrarComparativo } from "../service/cotizaciones.requests";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Proveedor } from "../../../service/responses/proveedor";
+import type { RES_Producto } from "../../../service/responses/producto";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;
@@ -48,27 +51,33 @@ export const RegistroCotizacion = forwardRef<
       data: RES_RegistroComparativo,
       payload: DTO_RegistrarComparativo,
       currentMaestros: {
-        proveedores: RES_MaestroProveedor[];
-        catalogo: RES_MaestroProducto[];
-        unidades: RES_MaestroUnidadMedida[];
-        empresas: RES_MaestroEmpresa[];
+        proveedores: RES_Proveedor[];
+        catalogo: RES_Producto[];
+        unidades: RES_UnidadMedida[];
+        empresas: RES_Empresa[];
       },
     ) => {
       if (data && payload) {
         const creadas = data.cotizaciones_ids || [];
         const cotizacionesPDFData = payload.cotizaciones.map((c, idx) => {
           const dataCreada = creadas.find((rc) => rc.index === idx);
-          const nombresEmpresas = (c.empresas_ids || []).map((id: number) => 
-            (currentMaestros?.empresas || []).find((e: RES_MaestroEmpresa) => e.id_empresa === id)?.razon_social || "---"
+          const nombresEmpresas = (c.empresas_ids || []).map(
+            (id: number) =>
+              (currentMaestros?.empresas || []).find(
+                (e: RES_Empresa) => e.id_empresa === id,
+              )?.razon_social || "---",
           );
           const cotRes: RES_Cotizacion = {
-            id: dataCreada?.id || 0,
+            id_cotizacion: dataCreada?.id || 0,
             correlativo: dataCreada?.correlativo || "---",
-            numero_correlativo: 0,
             id_proveedor: c.id_proveedor,
-            proveedor_nombre: currentMaestros.proveedores.find((p) => p.id_proveedor === c.id_proveedor)?.razon_social || "Desconocido",
+            tipo_entidad_proveedor: c.tipo_entidad_proveedor,
+            proveedor:
+              currentMaestros.proveedores.find(
+                (p) => p.id_proveedor === c.id_proveedor,
+              )?.razon_social || "Desconocido",
             id_comparativo: data.id_comparativo,
-            comparativo_fecha: new Date().toISOString(),
+            id_orden_compra: null,
             moneda: c.moneda,
             metodo_pago: c.metodo_pago,
             fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
@@ -81,34 +90,51 @@ export const RegistroCotizacion = forwardRef<
             estado: Estado_Cotizacion.Generada,
             evidencias: null,
             fecha_hora_cotizacion: new Date().toISOString(),
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            documento_proveedor: "",
+            costo_flete: c.costo_flete ?? 0,
+            otros_gastos: c.otros_gastos ?? 0,
+            empresas: nombresEmpresas.map((razon_social, i) => ({
+              id_cotizacion: dataCreada?.id || 0,
+              id_empresa: c.empresas_ids[i] ?? 0,
+              razon_social,
+            })),
+            detalles: [],
           };
-          
+
           const detallesRes: RES_CotizacionDetalle[] = c.detalles.map((d) => {
-             const maestro = currentMaestros.catalogo.find((m) => m.id_producto === d.id_producto);
-             const uni = currentMaestros.unidades.find((u) => u.id_unidad_medida === d.id_unidad_medida);
-             return {
-                id: 0,
-                id_cotizacion: cotRes.id,
-                id_producto: d.id_producto,
-                id_comparativo_detalle: 0,
-                producto_nombre: maestro?.nombre || "---",
-                cantidad: d.cantidad,
-                id_unidad_medida: d.id_unidad_medida,
-                unidad_medida_nombre: uni?.nombre || "---",
-                unidad_medida_abv: uni?.abreviatura || "---",
-                unidad_medida_base_abv: uni?.abreviatura || "---",
-                contenido_por_presentacion: d.contenido_por_presentacion,
-                cantidad_base: d.cantidad_base,
-                precio_unitario: d.precio_unitario,
-                precio_unitario_base: d.precio_unitario_base,
-                no_cotiza: d.no_cotiza ? 1 : 0,
-                comentario: d.comentario ?? null,
-                estado: Estado_Cotizacion_Detalle.Pendiente
-             } as unknown as RES_CotizacionDetalle;
+            const maestro = currentMaestros.catalogo.find(
+              (m) => m.id_producto === d.id_producto,
+            );
+            const uni = currentMaestros.unidades.find(
+              (u) => u.id_unidad_medida === d.id_unidad_medida,
+            );
+            return {
+              id: 0,
+              id_cotizacion: cotRes.id_cotizacion,
+              id_producto: d.id_producto,
+              id_comparativo_detalle: 0,
+              producto_nombre: maestro?.nombre || "---",
+              cantidad: d.cantidad,
+              id_unidad_medida: d.id_unidad_medida,
+              unidad_medida_nombre: uni?.nombre || "---",
+              unidad_medida_abv: uni?.abreviatura || "---",
+              unidad_medida_base_abv: uni?.abreviatura || "---",
+              contenido_por_presentacion: d.contenido_por_presentacion,
+              cantidad_base: d.cantidad_base,
+              precio_unitario: d.precio_unitario,
+              precio_unitario_base: d.precio_unitario_base,
+              no_cotiza: d.no_cotiza ? 1 : 0,
+              comentario: d.comentario ?? null,
+              estado: Estado_Cotizacion_Detalle.Pendiente,
+            } as unknown as RES_CotizacionDetalle;
           });
 
-          return { cotizacion: cotRes, detalles: detallesRes, empresas: nombresEmpresas };
+          return {
+            cotizacion: cotRes,
+            detalles: detallesRes,
+            empresas: nombresEmpresas,
+          };
         });
 
         if (cotizacionesPDFData.length > 0) {
@@ -151,10 +177,10 @@ export const RegistroCotizacion = forwardRef<
       return {
         ...p,
         nombre: maestro?.nombre || "Producto desconocido",
-        codigo: maestro?.codigo || "---",
+        codigo: "",
         id_unidad_medida_base: maestro?.id_unidad_medida_base || 0,
         unidad_medida_base: maestro?.unidad_medida_base || "unidades",
-        unidad_medida_abreviatura: maestro?.unidad_medida_abreviatura || "UND",
+        unidad_medida_abreviatura: maestro?.unidad_medida_base_abv || "UND",
       };
     });
 
@@ -170,6 +196,7 @@ export const RegistroCotizacion = forwardRef<
               label: u.nombre,
               abreviatura: u.abreviatura,
             }))}
+            almacenes={maestros.almacenes}
             proveedores={maestros.proveedores}
             empresas={maestros.empresas}
             loadingProveedores={loadingMaestros}

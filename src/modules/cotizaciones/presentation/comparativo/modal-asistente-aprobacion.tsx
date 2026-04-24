@@ -20,10 +20,20 @@ import { useNotify } from "../../../../hooks/useNotify";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { usePrint } from "../../../../hooks/usePrint";
 import { CotizacionPDF } from "../cotizacion-pdf";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Cotizacion, RES_CotizacionDetalle, RES_MaestroEmpresa } from "../../service/cotizaciones.responses";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../../shared/enums/cotizacion/cotizacion";
+import type {
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+  RES_Empresa,
+} from "../../service/cotizaciones.responses";
 import { OrdenCompraService } from "../../../orden-compra/service/orden-compra.service";
 import { OrdenCompraPDF } from "../../../orden-compra/presentation/orden-compra-pdf";
+import type { RES_Proveedor } from "../../../../service/responses/proveedor";
+import type { RES_Producto } from "../../../../service/responses/producto";
+import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -42,10 +52,10 @@ interface ModalAsistenteAprobacionProps {
   todasLasCotizaciones: DTO_CotizacionRequest[];
   // Todos los maestros para resolver nombres
   maestros: {
-    proveedores: import("../../service/cotizaciones.responses").RES_MaestroProveedor[];
-    catalogo: import("../../service/cotizaciones.responses").RES_MaestroProducto[];
-    unidades: import("../../service/cotizaciones.responses").RES_MaestroUnidadMedida[];
-    empresas: import("../../service/cotizaciones.responses").RES_MaestroEmpresa[];
+    proveedores: RES_Proveedor[];
+    catalogo: RES_Producto[];
+    unidades: RES_UnidadMedida[];
+    empresas: RES_Empresa[];
   };
   onSuccessCompleto: () => Promise<void> | void;
 }
@@ -215,11 +225,16 @@ export const ModalAsistenteAprobacion = ({
             const resDetalles = await OrdenCompraService.get_detalles(ocId);
             const resOrden = await OrdenCompraService.get_ordenes();
             if (resDetalles.success && resOrden.success) {
-              const ordenData = resOrden.data.ordenes.find((o) => o.id === ocId);
+              const ordenData = resOrden.data.ordenes.find(
+                (o) => o.id === ocId,
+              );
               if (ordenData) {
                 print(
-                  <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
-                  { documentTitle: `OC - ${ocCorrelativo}` }
+                  <OrdenCompraPDF
+                    orden={ordenData}
+                    detalles={resDetalles.data.detalles}
+                  />,
+                  { documentTitle: `OC - ${ocCorrelativo}` },
                 );
               }
             }
@@ -228,39 +243,62 @@ export const ModalAsistenteAprobacion = ({
       }
 
       // --- AUTO-PRINT: FORMATO COTIZACIÓN (Todas las registradas) ---
-      const cotizacionesPDFData = payloadRegistrar.cotizaciones.map((c, idx) => {
-        const dataCreada = creadas.find((rc: { index: number; id: number; correlativo: string }) => rc.index === idx);
-        const nombresEmpresas = (c.empresas_ids || []).map((id: number) => 
-          (maestros?.empresas || []).find((e: RES_MaestroEmpresa) => e.id_empresa === id)?.razon_social || "---"
-        );
-        const cotRes: RES_Cotizacion = {
-          id: dataCreada?.id || 0,
-          correlativo: dataCreada?.correlativo || "---",
-          numero_correlativo: 0,
-          id_proveedor: c.id_proveedor,
-          proveedor_nombre: maestros.proveedores.find(p => p.id_proveedor === c.id_proveedor)?.razon_social || "Desconocido",
-          id_comparativo: respBase.data.id_comparativo,
-          comparativo_fecha: new Date().toISOString(),
-          moneda: c.moneda,
-          metodo_pago: c.metodo_pago,
-          fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
-          total_antes_igv: c.total_antes_igv,
-          incluye_igv: c.incluye_igv,
-          porcentaje_igv: c.porcentaje_igv,
-          monto_igv: c.monto_igv,
-          total_despues_igv: c.total_despues_igv,
-          observacion: c.observacion ?? null,
-          estado: Estado_Cotizacion.Generada,
-          evidencias: null,
-          fecha_hora_cotizacion: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        };
-        const detallesRes: RES_CotizacionDetalle[] = c.detalles.map(d => {
-           const maestro = maestros.catalogo.find(m => m.id_producto === d.id_producto);
-           const uni = maestros.unidades.find(u => u.id_unidad_medida === d.id_unidad_medida);
-           return {
+      const cotizacionesPDFData = payloadRegistrar.cotizaciones.map(
+        (c, idx) => {
+          const dataCreada = creadas.find(
+            (rc: { index: number; id: number; correlativo: string }) =>
+              rc.index === idx,
+          );
+          const nombresEmpresas = (c.empresas_ids || []).map(
+            (id: number) =>
+              (maestros?.empresas || []).find(
+                (e: RES_Empresa) => e.id_empresa === id,
+              )?.razon_social || "---",
+          );
+          const cotRes: RES_Cotizacion = {
+            id_cotizacion: dataCreada?.id || 0,
+            correlativo: dataCreada?.correlativo || "---",
+            id_proveedor: c.id_proveedor,
+            proveedor:
+              maestros.proveedores.find(
+                (p) => p.id_proveedor === c.id_proveedor,
+              )?.razon_social || "Desconocido",
+            id_comparativo: respBase.data.id_comparativo,
+            id_orden_compra: null,
+            tipo_entidad_proveedor: c.tipo_entidad_proveedor,
+            documento_proveedor: "",
+            moneda: c.moneda,
+            metodo_pago: c.metodo_pago,
+            fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
+            costo_flete: c.costo_flete ?? 0,
+            otros_gastos: c.otros_gastos ?? 0,
+            total_antes_igv: c.total_antes_igv,
+            incluye_igv: c.incluye_igv,
+            porcentaje_igv: c.porcentaje_igv,
+            monto_igv: c.monto_igv,
+            total_despues_igv: c.total_despues_igv,
+            observacion: c.observacion ?? null,
+            estado: Estado_Cotizacion.Generada,
+            evidencias: null,
+            fecha_hora_cotizacion: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            empresas: nombresEmpresas.map((razon_social, i) => ({
+              id_cotizacion: dataCreada?.id || 0,
+              id_empresa: c.empresas_ids[i] ?? 0,
+              razon_social,
+            })),
+            detalles: [],
+          };
+          const detallesRes: RES_CotizacionDetalle[] = c.detalles.map((d) => {
+            const maestro = maestros.catalogo.find(
+              (m) => m.id_producto === d.id_producto,
+            );
+            const uni = maestros.unidades.find(
+              (u) => u.id_unidad_medida === d.id_unidad_medida,
+            );
+            return {
               id: 0,
-              id_cotizacion: cotRes.id,
+              id_cotizacion: cotRes.id_cotizacion,
               id_producto: d.id_producto,
               id_comparativo_detalle: 0,
               producto_nombre: maestro?.nombre || "---",
@@ -275,11 +313,16 @@ export const ModalAsistenteAprobacion = ({
               precio_unitario_base: d.precio_unitario_base,
               no_cotiza: 0,
               comentario: d.comentario ?? null,
-              estado: Estado_Cotizacion_Detalle.Pendiente
-           } as unknown as RES_CotizacionDetalle;
-        });
-        return { cotizacion: cotRes, detalles: detallesRes, empresas: nombresEmpresas };
-      });
+              estado: Estado_Cotizacion_Detalle.Pendiente,
+            } as unknown as RES_CotizacionDetalle;
+          });
+          return {
+            cotizacion: cotRes,
+            detalles: detallesRes,
+            empresas: nombresEmpresas,
+          };
+        },
+      );
 
       if (cotizacionesPDFData.length > 0) {
         print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
@@ -356,7 +399,8 @@ export const ModalAsistenteAprobacion = ({
                   Generación de Orden de Compra
                 </Text>
                 <Text size="xs" className="text-zinc-400">
-                  Seleccione la empresa compradora y verifique los productos que desea incluir en esta compra.
+                  Seleccione la empresa compradora y verifique los productos que
+                  desea incluir en esta compra.
                 </Text>
               </div>
             </div>

@@ -16,6 +16,8 @@ import {
   XMarkIcon,
   ClipboardDocumentCheckIcon,
   IdentificationIcon,
+  TruckIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -196,7 +198,7 @@ export const CabeceraCotizacion = ({
                 }}
               />
 
-              <div 
+              <div
                 className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
                 onClick={() =>
                   onUpdateHeader(
@@ -322,6 +324,40 @@ export const CabeceraCotizacion = ({
               size="xs"
               radius="lg"
             />
+
+            {/* Costos adicionales (Flete y Otros Gastos) */}
+            <Group grow gap="md">
+              <NumberInput
+                label="Costo de Flete (Opcional)"
+                placeholder="0.00"
+                leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                value={cot.costo_flete ?? 0}
+                onChange={(val) =>
+                  onUpdateHeader(idx, "costo_flete", Number(val))
+                }
+                min={0}
+                decimalScale={2}
+                size="xs"
+                radius="lg"
+                classNames={inputStyles}
+              />
+              <NumberInput
+                label="Otros Gastos (Opcional)"
+                placeholder="0.00"
+                leftSection={
+                  <CurrencyDollarIcon className="w-4 h-4 text-zinc-500" />
+                }
+                value={cot.otros_gastos ?? 0}
+                onChange={(val) =>
+                  onUpdateHeader(idx, "otros_gastos", Number(val))
+                }
+                min={0}
+                decimalScale={2}
+                size="xs"
+                radius="lg"
+                classNames={inputStyles}
+              />
+            </Group>
           </Stack>
 
           {/* Resumen de Totales y Tax */}

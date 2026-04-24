@@ -7,6 +7,7 @@ import type {
 } from "../../service/cotizaciones.requests";
 import { CabeceraCotizacion } from "./cabecera-cotizacion";
 import { CeldaDetalle } from "./celda-detalle";
+import type { RES_Almacen } from "../../../../service/responses/almacen";
 
 interface ComparativoTablaProps {
   productos: (
@@ -21,6 +22,7 @@ interface ComparativoTablaProps {
   )[];
   cotizaciones: DTO_CotizacionRequest[];
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
+  almacenes: RES_Almacen[];
   proveedores: { id_proveedor: number; razon_social: string }[];
   empresas: { id_empresa: number; razon_social: string }[];
   loadingProveedores?: boolean;
@@ -45,6 +47,7 @@ export const ComparativoTabla = ({
   productos,
   cotizaciones,
   unidadesMedida,
+  almacenes,
   proveedores,
   empresas,
   loadingProveedores,
@@ -96,7 +99,11 @@ export const ComparativoTabla = ({
         horizontalSpacing="md"
         layout="fixed"
         className="border-separate border-spacing-0"
-        style={{ width: totalWidth, minWidth: totalWidth, tableLayout: "fixed" }}
+        style={{
+          width: totalWidth,
+          minWidth: totalWidth,
+          tableLayout: "fixed",
+        }}
       >
         <Table.Thead className="z-50">
           <Table.Tr>
@@ -118,7 +125,12 @@ export const ComparativoTabla = ({
             {cotizaciones.map((cot, idx) => (
               <Table.Th
                 key={`real-col-${idx}`}
-                style={{ width: 400, minWidth: 400, maxWidth: 400, verticalAlign: "top" }}
+                style={{
+                  width: 400,
+                  minWidth: 400,
+                  maxWidth: 400,
+                  verticalAlign: "top",
+                }}
                 className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-70"
               >
                 <CabeceraCotizacion
@@ -139,7 +151,12 @@ export const ComparativoTabla = ({
             {Array.from({ length: numSkeletons }).map((_, i) => (
               <Table.Th
                 key={`sk-col-${numCotizaciones + i}`}
-                style={{ width: 400, minWidth: 400, maxWidth: 400, verticalAlign: "top" }}
+                style={{
+                  width: 400,
+                  minWidth: 400,
+                  maxWidth: 400,
+                  verticalAlign: "top",
+                }}
                 className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-70"
               >
                 <CabeceraCotizacion
@@ -178,6 +195,7 @@ export const ComparativoTabla = ({
                   <CeldaDetalle
                     cotIdx={colIdx}
                     unidadesMedida={unidadesMedida}
+                    almacenes={almacenes}
                     onUpdateDetail={onUpdateDetail}
                     onToggleNoCotiza={onToggleNoCotiza}
                     isSkeleton={true}
@@ -235,6 +253,7 @@ export const ComparativoTabla = ({
                         cot={cot}
                         cotIdx={cotIdx}
                         unidadesMedida={unidadesMedida}
+                        almacenes={almacenes}
                         onUpdateDetail={onUpdateDetail}
                         onToggleNoCotiza={onToggleNoCotiza}
                       />
@@ -281,6 +300,7 @@ export const ComparativoTabla = ({
                     <CeldaDetalle
                       cotIdx={numCotizaciones + i}
                       unidadesMedida={unidadesMedida}
+                      almacenes={almacenes}
                       onUpdateDetail={onUpdateDetail}
                       onToggleNoCotiza={onToggleNoCotiza}
                       isSkeleton={true}

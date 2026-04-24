@@ -137,27 +137,45 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
           : "Cotizaciones por Comparativo"
       }
     >
-      {cotizaciones.map(({ cotizacion, detalles, empresas }) => {
-        const symbol = Object.values(MONEDAS).find((m) => m.label === cotizacion.moneda)?.symbol ?? "S/";
+      {cotizaciones.map(({ cotizacion, detalles, empresas }, pageIdx) => {
+        const symbol =
+          Object.values(MONEDAS).find((m) => m.label === cotizacion.moneda)
+            ?.symbol ?? "S/";
 
         return (
-          <Page key={cotizacion.id} size="A4" style={styles.page}>
+          <Page
+            key={cotizacion.id_cotizacion ?? pageIdx}
+            size="A4"
+            style={styles.page}
+          >
             {/* Header */}
             <View style={styles.header}>
               <View style={[styles.companyInfo, { flex: 1 }]}>
                 <Text
                   style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}
                 >
-                  {(empresas && empresas.length > 0 ? empresas.join(" - ") : "BLACK SILVER S.A.C.").toUpperCase()}
+                  {(empresas && empresas.length > 0
+                    ? empresas.join(" - ")
+                    : "BLACK SILVER S.A.C."
+                  ).toUpperCase()}
                 </Text>
-                <View style={{ marginTop: 10, flexDirection: 'row', gap: 10 }}>
-                   {/* Espacio reservado o info extra si se requiere luego */}
+                <View style={{ marginTop: 10, flexDirection: "row", gap: 10 }}>
+                  {/* Espacio reservado o info extra si se requiere luego */}
                 </View>
               </View>
               <View style={{ alignItems: "flex-end", flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 15 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    gap: 15,
+                  }}
+                >
                   <Text style={{ fontSize: 9, marginBottom: 2 }}>
-                    Fecha: {dayjs(cotizacion.fecha_hora_cotizacion).format("DD/MM/YYYY")}
+                    Fecha:{" "}
+                    {dayjs(cotizacion.fecha_hora_cotizacion).format(
+                      "DD/MM/YYYY",
+                    )}
                   </Text>
                   <View style={{ alignItems: "flex-end" }}>
                     <Text style={styles.poTitle}>COTIZACIÓN</Text>
@@ -173,22 +191,21 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
               <View style={{ flex: 1, marginRight: 10 }}>
                 <Text style={styles.sectionTitle}>PROVEEDOR</Text>
-                <Text style={{ fontWeight: 700 }}>
-                  {cotizacion.proveedor_nombre}
-                </Text>
+                <Text style={{ fontWeight: 700 }}>{cotizacion.proveedor}</Text>
               </View>
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.sectionTitle}>CONDICIONES DE PAGO</Text>
                 <Text>Método: {cotizacion.metodo_pago}</Text>
                 <Text>Moneda: {cotizacion.moneda}</Text>
-                {cotizacion.metodo_pago === "Crédito" && cotizacion.fecha_vencimiento_pago && (
-                  <Text style={{ fontWeight: 700, color: "#ef4444" }}>
-                    Fecha de Vencimiento:{" "}
-                    {dayjs(cotizacion.fecha_vencimiento_pago).format(
-                      "DD/MM/YYYY",
-                    )}
-                  </Text>
-                )}
+                {cotizacion.metodo_pago === "Crédito" &&
+                  cotizacion.fecha_vencimiento_pago && (
+                    <Text style={{ fontWeight: 700, color: "#ef4444" }}>
+                      Fecha de Vencimiento:{" "}
+                      {dayjs(cotizacion.fecha_vencimiento_pago).format(
+                        "DD/MM/YYYY",
+                      )}
+                    </Text>
+                  )}
               </View>
             </View>
 
@@ -208,20 +225,29 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
               {/* Filas */}
               {detalles.map((det, idx) => {
-                const hasEquivalence = det.unidad_medida_abv !== det.unidad_medida_base_abv;
+                const hasEquivalence =
+                  det.id_unidad_medida_base !== det.id_unidad_medida_ctz;
 
                 return (
-                  <View key={det.id} style={styles.row}>
+                  <View key={det.id_cotizacion_detalle} style={styles.row}>
                     <Text style={styles.col0}>{idx + 1}</Text>
-                    <Text style={styles.col1}>{formatNumber(det.cantidad)}</Text>
-                    <Text style={styles.col2}>{det.unidad_medida_abv}</Text>
+                    <Text style={styles.col1}>
+                      {formatNumber(det.cantidad)}
+                    </Text>
+                    <Text style={styles.col2}>{det.unidad_medida_ctz_abv}</Text>
                     <View style={styles.col3}>
-                      <Text style={{ fontWeight: 600 }}>
-                        {det.producto_nombre}
-                      </Text>
+                      <Text style={{ fontWeight: 600 }}>{det.producto}</Text>
                       {hasEquivalence && (
-                        <Text style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}>
-                          Eq: {formatNumber(det.contenido_por_presentacion)} {det.unidad_medida_base_abv} x {det.unidad_medida_abv}
+                        <Text
+                          style={{
+                            fontSize: 8,
+                            color: "#71717a",
+                            marginTop: 2,
+                          }}
+                        >
+                          Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
+                          {det.unidad_medida_base_abv} x{" "}
+                          {det.unidad_medida_ctz_abv}
                         </Text>
                       )}
                       {det.comentario && (
@@ -240,7 +266,8 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                       {symbol} {formatNumber(det.precio_unitario)}
                     </Text>
                     <Text style={styles.col5}>
-                      {symbol} {formatNumber(det.cantidad * det.precio_unitario)}
+                      {symbol}{" "}
+                      {formatNumber(det.cantidad * det.precio_unitario)}
                     </Text>
                   </View>
                 );
@@ -287,7 +314,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               <View style={styles.signatureSection}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+                  <Text style={styles.signatureName}>
+                    Rosa Maria Henriquez Acosta
+                  </Text>
                   <Text style={styles.signatureRole}>Gerencia</Text>
                 </View>
                 <View style={styles.signatureBox}>
@@ -300,7 +329,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
             <View style={{ marginTop: 30 }}>
               <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
-              <View style={{ ...styles.signatureSection, justifyContent: 'center' }}>
+              <View
+                style={{ ...styles.signatureSection, justifyContent: "center" }}
+              >
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureName}>Ana Haro Culquitante</Text>

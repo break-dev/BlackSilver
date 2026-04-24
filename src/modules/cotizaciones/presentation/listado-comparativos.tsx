@@ -27,10 +27,12 @@ import {
   ReceiptPercentIcon,
   ListBulletIcon,
   ClipboardDocumentCheckIcon,
+  TruckIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import type {
+  RES_Comparativo,
   RES_Cotizacion,
   RES_CotizacionDetalle,
 } from "../service/cotizaciones.responses";
@@ -50,18 +52,12 @@ import { MONEDAS } from "../../../shared/variables/monedas";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface ListadoComparativosProps {
-  cotizaciones: RES_Cotizacion[];
-  detalles: RES_CotizacionDetalle[];
-  empresas: {
-    id_cotizacion: number;
-    id_empresa: number;
-    razon_social: string;
-  }[];
+  comparativos: RES_Comparativo[];
   busqueda: string;
   onUpdateLocal?: (
     id: number,
     nuevoEstado: Estado_Cotizacion,
-    detallesAprobados?: RES_CotizacionDetalle[],
+    idsDetallesAprobados?: number[],
     id_orden_compra?: number,
   ) => void;
 }
@@ -84,9 +80,7 @@ const COLOR_BY_STATE: Record<
 };
 
 export const ListadoComparativos = ({
-  cotizaciones,
-  detalles,
-  empresas,
+  comparativos,
   busqueda,
   onUpdateLocal,
 }: ListadoComparativosProps) => {
@@ -120,17 +114,13 @@ export const ListadoComparativos = ({
   };
 
   const handlePrintCotizacion = (cot: RES_Cotizacion) => {
-    const cotDetalles = detalles.filter((d) => d.id_cotizacion === cot.id);
-    const nombresEmpresas = (empresas || [])
-      .filter((e) => e.id_cotizacion === cot.id)
-      .map((e) => e.razon_social);
-
+    const nombresEmpresas = cot.empresas.map((e) => e.razon_social);
     print(
       <CotizacionPDF
         cotizaciones={[
           {
             cotizacion: cot,
-            detalles: cotDetalles,
+            detalles: cot.detalles,
             empresas: nombresEmpresas,
           },
         ]}
@@ -152,7 +142,12 @@ export const ListadoComparativos = ({
     detallesAprobados: RES_CotizacionDetalle[],
     id_orden_compra?: number,
   ) => {
-    onUpdateLocal?.(id, Estado_Cotizacion.Aprobada, detallesAprobados, id_orden_compra);
+    onUpdateLocal?.(
+      id,
+      Estado_Cotizacion.Aprobada,
+      detallesAprobados.map((d) => d.id_cotizacion_detalle),
+      id_orden_compra,
+    );
   };
 
   const handlePrintOC = async (id_orden_compra: number) => {
@@ -166,12 +161,18 @@ export const ListadoComparativos = ({
         const ordenData = resOrden.data;
         if (ordenData) {
           print(
-            <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
-            { documentTitle: `OC - ${ordenData.correlativo}` }
+            <OrdenCompraPDF
+              orden={ordenData}
+              detalles={resDetalles.data.detalles}
+            />,
+            { documentTitle: `OC - ${ordenData.correlativo}` },
           );
         }
       } else {
-        notify({ type: "error", content: "No se pudo cargar la Orden de Compra." });
+        notify({
+          type: "error",
+          content: "No se pudo cargar la Orden de Compra.",
+        });
       }
     } catch {
       notify({ type: "error", content: "Error al generar el PDF de la OC." });
@@ -180,34 +181,24 @@ export const ListadoComparativos = ({
     }
   };
 
-  // Agrupamos por comparativo
-  const comparativosMap = cotizaciones.reduce(
-    (acc: Record<number, RES_Cotizacion[]>, curr) => {
-      if (!acc[curr.id_comparativo]) acc[curr.id_comparativo] = [];
-      acc[curr.id_comparativo].push(curr);
-      return acc;
-    },
-    {},
-  );
+  // Filtrado por búsqueda sobre la estructura anidada
+  const comparativosFiltrados = comparativos
+    .slice()
+    .sort((a, b) => b.id_comparativo - a.id_comparativo)
+    .filter((comp) => {
+      if (!busqueda) return true;
+      const term = busqueda.toLowerCase();
+      return (
+        comp.id_comparativo.toString().includes(term) ||
+        comp.cotizaciones.some(
+          (c) =>
+            c.correlativo.toLowerCase().includes(term) ||
+            c.proveedor.toLowerCase().includes(term),
+        )
+      );
+    });
 
-  const idsOrdenados = Object.keys(comparativosMap)
-    .map(Number)
-    .sort((a, b) => b - a);
-
-  // Filtrado por búsqueda
-  const idsFiltrados = idsOrdenados.filter((id) => {
-    const cots = comparativosMap[id];
-    return (
-      id.toString().includes(busqueda) ||
-      cots.some(
-        (c) =>
-          c.correlativo.toLowerCase().includes(busqueda.toLowerCase()) ||
-          c.proveedor_nombre.toLowerCase().includes(busqueda.toLowerCase()),
-      )
-    );
-  });
-
-  if (idsFiltrados.length === 0) {
+  if (comparativosFiltrados.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
         <DocumentMagnifyingGlassIcon className="w-12 h-12 text-zinc-700 mb-4" />
@@ -229,9 +220,10 @@ export const ListadoComparativos = ({
 
   return (
     <Stack gap="lg">
-      {idsFiltrados.map((idComp) => {
-        const cots = comparativosMap[idComp];
-        const fecha = cots[0]?.comparativo_fecha || cots[0]?.created_at;
+      {comparativosFiltrados.map((comp) => {
+        const idComp = comp.id_comparativo;
+        const cots = comp.cotizaciones;
+        const fecha = comp.created_at;
         const tieneAprobada = cots.some((c) => c.estado === "Aprobada");
         const isCompExpanded = expandedComps[idComp] ?? false;
 
@@ -267,7 +259,7 @@ export const ListadoComparativos = ({
                     <Stack gap={2}>
                       <Group gap="xs" wrap="nowrap">
                         <Text size="sm" fw={900} className="text-white">
-                          Comparativo #{idComp}
+                          Comparativo #{comp.numero_correlativo}
                         </Text>
                         <Badge
                           variant="dot"
@@ -324,10 +316,9 @@ export const ListadoComparativos = ({
               <Divider color="zinc.8" mx="md" />
               <Stack gap="sm" p="md">
                 {cots.map((cot) => {
-                  const isCotExpanded = expandedCots[cot.id] ?? false;
-                  const cotDetalles = detalles.filter(
-                    (d) => d.id_cotizacion === cot.id,
-                  );
+                  const isCotExpanded =
+                    expandedCots[cot.id_cotizacion] ?? false;
+                  const cotDetalles = cot.detalles;
                   const cfg = COLOR_BY_STATE[cot.estado] ?? {
                     color: "zinc",
                     label: cot.estado,
@@ -336,7 +327,7 @@ export const ListadoComparativos = ({
 
                   return (
                     <Paper
-                      key={cot.id}
+                      key={cot.id_cotizacion}
                       radius="xl"
                       className="bg-zinc-950/50 border border-zinc-800/60 transition-all hover:border-zinc-700/60 overflow-hidden"
                     >
@@ -344,7 +335,7 @@ export const ListadoComparativos = ({
                       <UnstyledButton
                         component="div"
                         className="w-full"
-                        onClick={() => toggleCot(cot.id)}
+                        onClick={() => toggleCot(cot.id_cotizacion)}
                       >
                         <div className="px-4 py-3">
                           <Group justify="space-between" wrap="nowrap">
@@ -361,13 +352,13 @@ export const ListadoComparativos = ({
                               </div>
 
                               <Stack gap={1}>
-                                <Group gap="sm" wrap="nowrap">
+                                <Group gap="xs" wrap="nowrap">
                                   <Text
                                     size="sm"
                                     fw={800}
                                     className="text-white leading-tight"
                                   >
-                                    {cot.proveedor_nombre}
+                                    {cot.proveedor}
                                   </Text>
                                   <Badge
                                     variant={cfg.variant}
@@ -378,6 +369,21 @@ export const ListadoComparativos = ({
                                   >
                                     {cfg.label}
                                   </Badge>
+                                  {cot.id_orden_compra && (
+                                    <Badge
+                                      variant="light"
+                                      color="teal"
+                                      size="xs"
+                                      radius="sm"
+                                    >
+                                      OC generada
+                                    </Badge>
+                                  )}
+                                </Group>
+                                <Group gap="xs" wrap="nowrap">
+                                  <Text size="xs" c="dimmed" className="font-mono">
+                                    {cot.tipo_entidad_proveedor === "Jurídica" ? "RUC" : "DNI"}: {cot.documento_proveedor}
+                                  </Text>
                                 </Group>
                                 <Group gap="xs">
                                   {/* Método pago */}
@@ -426,7 +432,9 @@ export const ListadoComparativos = ({
                                   fw={900}
                                   className="text-emerald-400 font-mono"
                                 >
-                                  {Object.values(MONEDAS).find((m) => m.label === cot.moneda)?.symbol ?? "S/"}{" "}
+                                  {Object.values(MONEDAS).find(
+                                    (m) => m.label === cot.moneda,
+                                  )?.symbol ?? "S/"}{" "}
                                   {formatNumber(Number(cot.total_despues_igv))}
                                 </Text>
                               </Stack>
@@ -455,7 +463,9 @@ export const ListadoComparativos = ({
                                     color="teal"
                                     radius="xl"
                                     size="sm"
-                                    loading={printingOCId === cot.id_orden_compra}
+                                    loading={
+                                      printingOCId === cot.id_orden_compra
+                                    }
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handlePrintOC(cot.id_orden_compra!);
@@ -480,7 +490,7 @@ export const ListadoComparativos = ({
                                 }
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleApprove(cot.id);
+                                  handleApprove(cot.id_cotizacion);
                                 }}
                               >
                                 Aprobar
@@ -503,8 +513,45 @@ export const ListadoComparativos = ({
                         <div className="px-4 pb-4 pt-0">
                           <Divider color="zinc.8" mb="sm" />
 
-                          {/* Desglose IGV */}
+                          {/* Desglose financiero */}
                           <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3 px-1">
+                            {/* Subtotal */}
+                            <Group gap="xs">
+                              <BanknotesIcon className="w-3.5 h-3.5 text-zinc-500" />
+                              <Text size="xs" c="dimmed">
+                                Subtotal (sin IGV):{" "}
+                                <span className="text-zinc-300 font-bold">
+                                  {cot.moneda === "Soles" ? "S/." : "$"}{" "}
+                                  {formatNumber(Number(cot.total_antes_igv))}
+                                </span>
+                              </Text>
+                            </Group>
+                            {/* Costo flete */}
+                            {Number(cot.costo_flete) > 0 && (
+                              <Group gap="xs">
+                                <TruckIcon className="w-3.5 h-3.5 text-amber-500/70" />
+                                <Text size="xs" c="dimmed">
+                                  Flete:{" "}
+                                  <span className="text-amber-300 font-bold">
+                                    {cot.moneda === "Soles" ? "S/." : "$"}{" "}
+                                    {formatNumber(Number(cot.costo_flete))}
+                                  </span>
+                                </Text>
+                              </Group>
+                            )}
+                            {/* Otros gastos */}
+                            {Number(cot.otros_gastos) > 0 && (
+                              <Group gap="xs">
+                                <CurrencyDollarIcon className="w-3.5 h-3.5 text-amber-500/70" />
+                                <Text size="xs" c="dimmed">
+                                  Otros gastos:{" "}
+                                  <span className="text-amber-300 font-bold">
+                                    {cot.moneda === "Soles" ? "S/." : "$"}{" "}
+                                    {formatNumber(Number(cot.otros_gastos))}
+                                  </span>
+                                </Text>
+                              </Group>
+                            )}
                             {/* Incluye IGV */}
                             <Group gap="xs">
                               <ReceiptPercentIcon className="w-3.5 h-3.5 text-zinc-500" />
@@ -522,17 +569,6 @@ export const ListadoComparativos = ({
                                 >
                                   {cot.incluye_igv ? "Sí" : "No"}
                                 </Badge>
-                              </Text>
-                            </Group>
-                            {/* Subtotal */}
-                            <Group gap="xs">
-                              <BanknotesIcon className="w-3.5 h-3.5 text-zinc-500" />
-                              <Text size="xs" c="dimmed">
-                                Subtotal (sin IGV):{" "}
-                                <span className="text-zinc-300 font-bold">
-                                  {cot.moneda === "Soles" ? "S/." : "$"}{" "}
-                                  {formatNumber(Number(cot.total_antes_igv))}
-                                </span>
                               </Text>
                             </Group>
                             {/* Monto IGV */}
@@ -557,7 +593,7 @@ export const ListadoComparativos = ({
                                 </span>
                               </Text>
                             </Group>
-                            {/* Fecha vencimiento (solo crédito) */}
+                            {/* Vencimiento crédito */}
                             {cot.metodo_pago === MetodoPago.Credito &&
                               cot.fecha_vencimiento_pago && (
                                 <Group gap="xs">
@@ -598,9 +634,7 @@ export const ListadoComparativos = ({
 
                           {/* Empresas Compradoras */}
                           {(() => {
-                            const cotEmpresas = empresas.filter(
-                              (e) => e.id_cotizacion === cot.id,
-                            );
+                            const cotEmpresas = cot.empresas;
                             if (cotEmpresas.length === 0) return null;
                             return (
                               <div className="mb-4">
@@ -656,12 +690,13 @@ export const ListadoComparativos = ({
                                 Number(det.precio_unitario);
                               return (
                                 <div
-                                  key={det.id}
+                                  key={det.id_cotizacion_detalle}
                                   className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-4 py-3 hover:border-indigo-500/20 transition-colors"
                                 >
                                   <div className="flex justify-between items-start gap-4">
                                     {/* Info izquierda */}
-                                    <Stack gap={2} className="flex-1">
+                                    <Stack gap={3} className="flex-1">
+                                      {/* Nombre + estado + flags */}
                                       <Group gap="xs">
                                         <Text
                                           size="sm"
@@ -673,7 +708,7 @@ export const ListadoComparativos = ({
                                               : "text-zinc-100"
                                           }
                                         >
-                                          {det.producto_nombre}
+                                          {det.producto}
                                         </Text>
                                         {det.estado ===
                                           Estado_Cotizacion_Detalle.Aprobado && (
@@ -708,7 +743,19 @@ export const ListadoComparativos = ({
                                             Pendiente
                                           </Badge>
                                         )}
+                                        {det.es_fiscalizado && (
+                                          <Badge size="xs" color="orange" variant="dot">
+                                            Fiscalizado
+                                          </Badge>
+                                        )}
+                                        {det.es_perecible && (
+                                          <Badge size="xs" color="pink" variant="dot">
+                                            Perecible
+                                          </Badge>
+                                        )}
                                       </Group>
+
+                                      {/* Cantidad + unidad */}
                                       <Text
                                         size="xs"
                                         c={
@@ -719,13 +766,48 @@ export const ListadoComparativos = ({
                                         }
                                       >
                                         {formatNumber(det.cantidad)}{" "}
-                                        {det.unidad_medida_abv}
+                                        {det.unidad_medida_ctz_abv}
                                         {det.contenido_por_presentacion > 1 &&
-                                          ` × ${det.contenido_por_presentacion} = ${formatNumber(det.cantidad_base)} und. base`}
+                                          ` × ${det.contenido_por_presentacion} = ${formatNumber(det.cantidad_base)} ${det.unidad_medida_base_abv}`}
                                       </Text>
+
+                                      {/* Logística: almacén, despacho, tiempo */}
+                                      <Group gap="xs" wrap="wrap">
+                                        {det.almacen_recepcionista && (
+                                          <Group gap={4} wrap="nowrap">
+                                            <BuildingStorefrontIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                                            <Text size="xs" c="dimmed">
+                                              {det.almacen_recepcionista}
+                                              {Boolean(det.para_un_almacen_principal) && (
+                                                <span className="text-indigo-400/70 ml-1">(principal)</span>
+                                              )}
+                                            </Text>
+                                          </Group>
+                                        )}
+                                        {det.tipo_despacho && (
+                                          <Group gap={4} wrap="nowrap">
+                                            <TruckIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                                            <Text size="xs" c="dimmed">
+                                              {det.tipo_despacho}
+                                              {det.lugar_recojo && (
+                                                <span className="text-zinc-400 ml-1">· {det.lugar_recojo}</span>
+                                              )}
+                                            </Text>
+                                          </Group>
+                                        )}
+                                        {det.tiempo_entrega_dias !== null &&
+                                          det.tiempo_entrega_dias > 0 && (
+                                          <Group gap={4} wrap="nowrap">
+                                            <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                                            <Text size="xs" c="dimmed">
+                                              {det.tiempo_entrega} {det.tiempo_entrega_periodo} · {det.tiempo_entrega_dias} día{det.tiempo_entrega_dias !== 1 ? "s" : ""}
+                                            </Text>
+                                          </Group>
+                                        )}
+                                      </Group>
                                     </Stack>
 
-                                    {/* Precio unitario + Subtotal — lado a lado */}
+                                    {/* Precio unitario + Subtotal */}
                                     <Group
                                       gap="xs"
                                       wrap="nowrap"
@@ -741,7 +823,7 @@ export const ListadoComparativos = ({
                                         {formatNumber(
                                           Number(det.precio_unitario),
                                         )}{" "}
-                                        / {det.unidad_medida_abv}
+                                        / {det.unidad_medida_ctz_abv}
                                       </Badge>
                                       <Badge
                                         variant="filled"
@@ -756,7 +838,7 @@ export const ListadoComparativos = ({
                                     </Group>
                                   </div>
 
-                                  {/* Comentario (solo si existe) */}
+                                  {/* Comentario */}
                                   {det.comentario && (
                                     <div className="mt-3 pt-2 border-t border-zinc-800/50">
                                       <Text
@@ -797,7 +879,7 @@ export const ListadoComparativos = ({
         opened={modalComparativoOpened}
         onClose={() => setModalComparativoOpened(false)}
         close={() => setModalComparativoOpened(false)}
-        title="Cuadro comparativo de Cotizaciones"
+        title="Comparativo de Cotizaciones"
         size="95%"
         rightSection={
           <Group gap="xs" mr="xl">
@@ -830,20 +912,29 @@ export const ListadoComparativos = ({
         }
       >
         <div style={{ height: "70vh" }}>
-          {selectedCompId && (
-            <TablaDetalleResumen
-              isCollapsed={resumenDetalleIsCollapsed}
-              cotizaciones={comparativosMap[selectedCompId]}
-              empresas={empresas}
-              detalles={detalles.filter((d) =>
-                comparativosMap[selectedCompId].some(
-                  (c) => c.id === d.id_cotizacion,
-                ),
-              )}
-              onApprove={handleApprove}
-              loadingApprove={null}
-            />
-          )}
+          {selectedCompId &&
+            (() => {
+              const compSeleccionado = comparativos.find(
+                (c) => c.id_comparativo === selectedCompId,
+              );
+              if (!compSeleccionado) return null;
+              const allDetalles = compSeleccionado.cotizaciones.flatMap(
+                (c) => c.detalles,
+              );
+              const allEmpresas = compSeleccionado.cotizaciones.flatMap(
+                (c) => c.empresas,
+              );
+              return (
+                <TablaDetalleResumen
+                  isCollapsed={resumenDetalleIsCollapsed}
+                  cotizaciones={compSeleccionado.cotizaciones}
+                  empresas={allEmpresas}
+                  detalles={allDetalles}
+                  onApprove={handleApprove}
+                  loadingApprove={null}
+                />
+              );
+            })()}
         </div>
       </ModalEstandar>
 
@@ -853,22 +944,26 @@ export const ListadoComparativos = ({
         onClose={() => setModalAprobarOpened(false)}
         cotizacion={
           selectedCotIdParaAprobar
-            ? cotizaciones.find((c) => c.id === selectedCotIdParaAprobar) ||
+            ? comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
               null
             : null
         }
         detalles={
           selectedCotIdParaAprobar
-            ? detalles.filter(
-                (d) => d.id_cotizacion === selectedCotIdParaAprobar,
-              )
+            ? (comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.detalles ?? [])
             : []
         }
         empresas={
           selectedCotIdParaAprobar
-            ? empresas.filter(
-                (e) => e.id_cotizacion === selectedCotIdParaAprobar,
-              )
+            ? (comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.empresas ?? [])
             : []
         }
         onSuccess={handleSuccessAprobacion}
