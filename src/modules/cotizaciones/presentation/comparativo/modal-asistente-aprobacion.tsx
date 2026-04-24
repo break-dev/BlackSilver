@@ -25,7 +25,6 @@ import {
   Estado_Cotizacion_Detalle,
 } from "../../../../shared/enums/cotizacion/cotizacion";
 import type {
-  RES_Cotizacion,
   RES_CotizacionDetalle,
   RES_Empresa,
 } from "../../service/cotizaciones.responses";
@@ -138,11 +137,6 @@ export const ModalAsistenteAprobacion = ({
   };
 
   const currentStepData = wizardSteps[activeStep] || null;
-  const proveedor = currentStepData
-    ? maestros.proveedores.find(
-        (p) => p.id_proveedor === currentStepData.cotizacion.id_proveedor,
-      )
-    : null;
 
   // Lista de empresas para el select basadas en los IDs configurados
   const empresasDisponibles = currentStepData
@@ -163,166 +157,72 @@ export const ModalAsistenteAprobacion = ({
       return;
     }
 
-    // 1. Preparar Payload Ficticio: Convertir TODAS a Generada.
-    // El backend se encarga de registrarlas formalmente listas para su futura aprobacion
+    // Construir mapa de wizard: originalIndex → config de aprobación
+    const wizardMap = new Map<
+      number,
+      { empresaId: number; productosAprobados: number[] }
+    >();
+    for (const step of wizardSteps) {
+      wizardMap.set(step.originalIndex, {
+        empresaId: Number(step.selectedEmpresaId),
+        productosAprobados: step.selectedDetalles,
+      });
+    }
+
+    // Construir el payload UNIFICADO con estados finales reales
     const payloadRegistrar: DTO_RegistrarComparativo = {
       ...payloadOriginal,
-      cotizaciones: payloadOriginal.cotizaciones.map((c) => ({
-        ...c,
-        estado:
-          "Generada" as import("../../../../shared/enums/cotizacion/cotizacion").Estado_Cotizacion,
-      })),
+      cotizaciones: payloadOriginal.cotizaciones.map((c, idx) => {
+        const wizardConfig = wizardMap.get(idx);
+
+        if (wizardConfig) {
+          // Esta cotización fue aprobada en el wizard
+          return {
+            ...c,
+            estado: Estado_Cotizacion.Aprobada,
+            id_empresa_compradora: wizardConfig.empresaId,
+            detalles: c.detalles.map((d) => ({
+              ...d,
+              estado: wizardConfig.productosAprobados.includes(d.id_producto)
+                ? Estado_Cotizacion_Detalle.Aprobado
+                : Estado_Cotizacion_Detalle.Rechazado,
+            })),
+          };
+        }
+
+        // Las cotizaciones NO aprobadas se envían como Generada
+        return {
+          ...c,
+          estado: Estado_Cotizacion.Generada,
+          detalles: c.detalles.map((d) => ({
+            ...d,
+            estado: Estado_Cotizacion_Detalle.Pendiente,
+          })),
+        };
+      }),
     };
 
     setLoading(true);
 
     try {
-      // 2. Disparar registro
-      const respBase =
+      // UN SOLO REQUEST: registra + aprueba + crea OC todo de una vez
+      const resp =
         await CotizacionesService.registrar_comparativo(payloadRegistrar);
-      if (!respBase.success) {
-        notifyError(respBase.message || "Error al registrar el comparativo.");
+
+      if (!resp.success) {
+        notifyError(resp.message || "Error al registrar el comparativo.");
         setLoading(false);
         return;
       }
 
-      // 3. Obtener el mapeo de IDs (Backend debe darnos cotizaciones_ids)
-      const creadas = respBase.data.cotizaciones_ids || [];
-
-      // 4. Procesar Aprobaciones Secuencialmente
-      for (let i = 0; i < wizardSteps.length; i++) {
-        const step = wizardSteps[i];
-        // Buscar el id_cotizacion real que corresponde a esta cotizacion original
-        const dataCreada = creadas.find((c) => c.index === step.originalIndex);
-        if (!dataCreada) continue;
-
-        const mapDetalles = dataCreada.detalles_map || [];
-        const idsDetallesAprobadosBD = step.selectedDetalles
-          .map(
-            (idProd) =>
-              mapDetalles.find((m) => m.id_producto === idProd)?.id_cot_det,
-          )
-          .filter((id): id is number => id !== undefined);
-
-        // Mandar el POST a aprobar_cotizacion_parcial
-        const resAprob = await CotizacionesService.aprobar_cotizacion(
-          dataCreada.id,
-          {
-            id_empresa_compradora: Number(step.selectedEmpresaId),
-            detalles_aprobados: idsDetallesAprobadosBD,
-          },
-        );
-
-        if (!resAprob.success) {
-          notifyError(
-            `Fallo al aprobar orden para proveedor ${proveedor?.razon_social}`,
-          );
-        } else {
-          // Lanzar PDF de OC automáticamente por cada aprobación
-          const ocId = resAprob.data?.id_orden_compra;
-          const ocCorrelativo = resAprob.data?.correlativo;
-          if (ocId) {
-            const resDetalles = await OrdenCompraService.get_detalles(ocId);
-            const resOrden = await OrdenCompraService.get_ordenes();
-            if (resDetalles.success && resOrden.success) {
-              const ordenData = resOrden.data.ordenes.find(
-                (o) => o.id === ocId,
-              );
-              if (ordenData) {
-                print(
-                  <OrdenCompraPDF
-                    orden={ordenData}
-                    detalles={resDetalles.data.detalles}
-                  />,
-                  { documentTitle: `OC - ${ocCorrelativo}` },
-                );
-              }
-            }
-          }
-        }
-      }
+      const comparativoData = resp.data[0];
 
       // --- AUTO-PRINT: FORMATO COTIZACIÓN (Todas las registradas) ---
-      const cotizacionesPDFData = payloadRegistrar.cotizaciones.map(
-        (c, idx) => {
-          const dataCreada = creadas.find(
-            (rc: { index: number; id: number; correlativo: string }) =>
-              rc.index === idx,
-          );
-          const nombresEmpresas = (c.empresas_ids || []).map(
-            (id: number) =>
-              (maestros?.empresas || []).find(
-                (e: RES_Empresa) => e.id_empresa === id,
-              )?.razon_social || "---",
-          );
-          const cotRes: RES_Cotizacion = {
-            id_cotizacion: dataCreada?.id || 0,
-            correlativo: dataCreada?.correlativo || "---",
-            id_proveedor: c.id_proveedor,
-            proveedor:
-              maestros.proveedores.find(
-                (p) => p.id_proveedor === c.id_proveedor,
-              )?.razon_social || "Desconocido",
-            id_comparativo: respBase.data.id_comparativo,
-            id_orden_compra: null,
-            tipo_entidad_proveedor: c.tipo_entidad_proveedor,
-            documento_proveedor: "",
-            moneda: c.moneda,
-            metodo_pago: c.metodo_pago,
-            fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
-            costo_flete: c.costo_flete ?? 0,
-            otros_gastos: c.otros_gastos ?? 0,
-            total_antes_igv: c.total_antes_igv,
-            incluye_igv: c.incluye_igv,
-            porcentaje_igv: c.porcentaje_igv,
-            monto_igv: c.monto_igv,
-            total_despues_igv: c.total_despues_igv,
-            observacion: c.observacion ?? null,
-            estado: Estado_Cotizacion.Generada,
-            evidencias: null,
-            fecha_hora_cotizacion: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            empresas: nombresEmpresas.map((razon_social, i) => ({
-              id_cotizacion: dataCreada?.id || 0,
-              id_empresa: c.empresas_ids[i] ?? 0,
-              razon_social,
-            })),
-            detalles: [],
-          };
-          const detallesRes: RES_CotizacionDetalle[] = c.detalles.map((d) => {
-            const maestro = maestros.catalogo.find(
-              (m) => m.id_producto === d.id_producto,
-            );
-            const uni = maestros.unidades.find(
-              (u) => u.id_unidad_medida === d.id_unidad_medida,
-            );
-            return {
-              id: 0,
-              id_cotizacion: cotRes.id_cotizacion,
-              id_producto: d.id_producto,
-              id_comparativo_detalle: 0,
-              producto_nombre: maestro?.nombre || "---",
-              cantidad: d.cantidad,
-              id_unidad_medida: d.id_unidad_medida,
-              unidad_medida_nombre: uni?.nombre || "---",
-              unidad_medida_abv: uni?.abreviatura || "---",
-              unidad_medida_base_abv: uni?.abreviatura || "---",
-              contenido_por_presentacion: d.contenido_por_presentacion,
-              cantidad_base: d.cantidad_base,
-              precio_unitario: d.precio_unitario,
-              precio_unitario_base: d.precio_unitario_base,
-              no_cotiza: 0,
-              comentario: d.comentario ?? null,
-              estado: Estado_Cotizacion_Detalle.Pendiente,
-            } as unknown as RES_CotizacionDetalle;
-          });
-          return {
-            cotizacion: cotRes,
-            detalles: detallesRes,
-            empresas: nombresEmpresas,
-          };
-        },
-      );
+      const cotizacionesPDFData = comparativoData.cotizaciones.map((cot) => ({
+        cotizacion: cot,
+        detalles: cot.detalles as RES_CotizacionDetalle[],
+        empresas: cot.empresas.map((e) => e.razon_social),
+      }));
 
       if (cotizacionesPDFData.length > 0) {
         print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
@@ -330,8 +230,29 @@ export const ModalAsistenteAprobacion = ({
         });
       }
 
-      // --- TODO: AUTO-PRINT: ORDEN DE COMPRA (Solo las aprobadas) ---
-      // Se abrirá en una pestaña separada cuando el formato esté listo.
+      // --- AUTO-PRINT: ORDEN DE COMPRA (Solo las aprobadas que generaron OC) ---
+      const cotizacionesConOC = comparativoData.cotizaciones.filter(
+        (cot) => cot.id_orden_compra != null && Number(cot.id_orden_compra) > 0,
+      );
+
+      for (const cot of cotizacionesConOC) {
+        const ocId = Number(cot.id_orden_compra);
+        try {
+          const resDetalles = await OrdenCompraService.get_detalles(ocId);
+          const resOrden = await OrdenCompraService.get_orden(ocId);
+          if (resDetalles.success && resOrden.success && resOrden.data) {
+            print(
+              <OrdenCompraPDF
+                orden={resOrden.data}
+                detalles={resDetalles.data.detalles}
+              />,
+              { documentTitle: `OC - ${cot.correlativo}` },
+            );
+          }
+        } catch (e) {
+          console.error(`Error al generar PDF de OC ${ocId}:`, e);
+        }
+      }
 
       notifySuccess("Registro y Aprobación completados correctamente.");
       onSuccessCompleto();

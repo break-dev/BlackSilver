@@ -3,7 +3,6 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   RES_Comparativo,
   RES_Empresa,
-  RES_RegistroComparativo,
 } from "./cotizaciones.responses";
 import type { RES_AprobacionCotizacion } from "../../orden-compra/service/orden-compra.responses";
 import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
@@ -31,12 +30,13 @@ export const CotizacionesService = {
   },
 
   /**
-   * Registrar un comparativo masivo con sus cotizaciones
+   * Registrar un comparativo masivo con sus cotizaciones.
+   * El response tiene el mismo formato que el listado (RES_Comparativo[]).
    */
   registrar_comparativo: async (
     dto: DTO_RegistrarComparativo,
-  ): Promise<IRespuesta<RES_RegistroComparativo>> => {
-    const { data } = await api.post<IRespuesta<RES_RegistroComparativo>>(
+  ): Promise<IRespuesta<RES_Comparativo[]>> => {
+    const { data } = await api.post<IRespuesta<RES_Comparativo[]>>(
       "/cotizaciones/registrar",
       dto,
     );

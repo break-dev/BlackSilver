@@ -6,8 +6,8 @@ import type {
   DTO_RegistrarComparativo,
 } from "../service/cotizaciones.requests";
 import type {
+  RES_Comparativo,
   RES_Empresa,
-  RES_RegistroComparativo,
 } from "../service/cotizaciones.responses";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import { useNotify } from "../../../hooks/useNotify";
@@ -100,7 +100,7 @@ function recalcularTotales(
 
 export const useRegistroCotizacion = (
   onSuccess: (
-    data: RES_RegistroComparativo,
+    data: RES_Comparativo[],
     payload: DTO_RegistrarComparativo,
     currentMaestros: MaestrosState,
   ) => void,

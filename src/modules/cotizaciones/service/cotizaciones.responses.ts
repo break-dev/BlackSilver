@@ -111,17 +111,4 @@ export interface RES_Comparativo {
   cotizaciones: RES_Cotizacion[];
 }
 
-// -------------------------------------------------------
-// RESPUESTAS DE OPERACIONES
-// -------------------------------------------------------
 
-export interface RES_RegistroComparativo {
-  id_comparativo: number;
-  ids_aprobadas: { id: number; correlativo: string }[];
-  cotizaciones_ids?: {
-    index: number;
-    id: number;
-    correlativo: string;
-    detalles_map: { id_producto: number; id_cot_det: number }[];
-  }[];
-}

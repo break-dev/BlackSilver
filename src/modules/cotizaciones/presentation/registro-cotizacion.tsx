@@ -7,19 +7,9 @@ import { ModalAsistenteAprobacion } from "./comparativo/modal-asistente-aprobaci
 import { usePrint } from "../../../hooks/usePrint";
 import { CotizacionPDF } from "./cotizacion-pdf";
 import type {
-  RES_Cotizacion,
+  RES_Comparativo,
   RES_CotizacionDetalle,
-  RES_Empresa,
-  RES_RegistroComparativo,
 } from "../service/cotizaciones.responses";
-import type { DTO_RegistrarComparativo } from "../service/cotizaciones.requests";
-import {
-  Estado_Cotizacion,
-  Estado_Cotizacion_Detalle,
-} from "../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Proveedor } from "../../../service/responses/proveedor";
-import type { RES_Producto } from "../../../service/responses/producto";
-import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 interface RegistroCotizacionProps {
   onSuccess: () => void;
@@ -47,95 +37,16 @@ export const RegistroCotizacion = forwardRef<
   ) => {
     const { print } = usePrint();
 
-    const handleInternalSuccess = (
-      data: RES_RegistroComparativo,
-      payload: DTO_RegistrarComparativo,
-      currentMaestros: {
-        proveedores: RES_Proveedor[];
-        catalogo: RES_Producto[];
-        unidades: RES_UnidadMedida[];
-        empresas: RES_Empresa[];
-      },
-    ) => {
-      if (data && payload) {
-        const creadas = data.cotizaciones_ids || [];
-        const cotizacionesPDFData = payload.cotizaciones.map((c, idx) => {
-          const dataCreada = creadas.find((rc) => rc.index === idx);
-          const nombresEmpresas = (c.empresas_ids || []).map(
-            (id: number) =>
-              (currentMaestros?.empresas || []).find(
-                (e: RES_Empresa) => e.id_empresa === id,
-              )?.razon_social || "---",
-          );
-          const cotRes: RES_Cotizacion = {
-            id_cotizacion: dataCreada?.id || 0,
-            correlativo: dataCreada?.correlativo || "---",
-            id_proveedor: c.id_proveedor,
-            tipo_entidad_proveedor: c.tipo_entidad_proveedor,
-            proveedor:
-              currentMaestros.proveedores.find(
-                (p) => p.id_proveedor === c.id_proveedor,
-              )?.razon_social || "Desconocido",
-            id_comparativo: data.id_comparativo,
-            id_orden_compra: null,
-            moneda: c.moneda,
-            metodo_pago: c.metodo_pago,
-            fecha_vencimiento_pago: c.fecha_vencimiento_pago ?? null,
-            total_antes_igv: c.total_antes_igv,
-            incluye_igv: c.incluye_igv,
-            porcentaje_igv: c.porcentaje_igv,
-            monto_igv: c.monto_igv,
-            total_despues_igv: c.total_despues_igv,
-            observacion: c.observacion ?? null,
-            estado: Estado_Cotizacion.Generada,
-            evidencias: null,
-            fecha_hora_cotizacion: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            documento_proveedor: "",
-            costo_flete: c.costo_flete ?? 0,
-            otros_gastos: c.otros_gastos ?? 0,
-            empresas: nombresEmpresas.map((razon_social, i) => ({
-              id_cotizacion: dataCreada?.id || 0,
-              id_empresa: c.empresas_ids[i] ?? 0,
-              razon_social,
-            })),
-            detalles: [],
-          };
-
-          const detallesRes: RES_CotizacionDetalle[] = c.detalles.map((d) => {
-            const maestro = currentMaestros.catalogo.find(
-              (m) => m.id_producto === d.id_producto,
-            );
-            const uni = currentMaestros.unidades.find(
-              (u) => u.id_unidad_medida === d.id_unidad_medida,
-            );
-            return {
-              id: 0,
-              id_cotizacion: cotRes.id_cotizacion,
-              id_producto: d.id_producto,
-              id_comparativo_detalle: 0,
-              producto_nombre: maestro?.nombre || "---",
-              cantidad: d.cantidad,
-              id_unidad_medida: d.id_unidad_medida,
-              unidad_medida_nombre: uni?.nombre || "---",
-              unidad_medida_abv: uni?.abreviatura || "---",
-              unidad_medida_base_abv: uni?.abreviatura || "---",
-              contenido_por_presentacion: d.contenido_por_presentacion,
-              cantidad_base: d.cantidad_base,
-              precio_unitario: d.precio_unitario,
-              precio_unitario_base: d.precio_unitario_base,
-              no_cotiza: d.no_cotiza ? 1 : 0,
-              comentario: d.comentario ?? null,
-              estado: Estado_Cotizacion_Detalle.Pendiente,
-            } as unknown as RES_CotizacionDetalle;
-          });
-
-          return {
-            cotizacion: cotRes,
-            detalles: detallesRes,
-            empresas: nombresEmpresas,
-          };
-        });
+    const handleInternalSuccess = (data: RES_Comparativo[]) => {
+      // El response ya viene con el formato completo del listado.
+      // Generar PDF de cotizaciones directamente desde los datos del response.
+      if (data && data.length > 0) {
+        const comp = data[0];
+        const cotizacionesPDFData = comp.cotizaciones.map((cot) => ({
+          cotizacion: cot,
+          detalles: cot.detalles as RES_CotizacionDetalle[],
+          empresas: cot.empresas.map((e) => e.razon_social),
+        }));
 
         if (cotizacionesPDFData.length > 0) {
           print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
