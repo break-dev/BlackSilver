@@ -1,27 +1,53 @@
 import { z } from "zod";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../shared/enums/cotizacion/cotizacion";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../shared/enums/cotizacion/cotizacion";
 import { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
+import { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../shared/enums/_generic/periodo";
+import { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 
 // Detalle de cada producto dentro de una cotización específica
 export const Schema_CotizacionDetalle = z.object({
   id_producto: z.number().min(1, "Producto no válido"),
   id_unidad_medida: z.number().min(1, "Seleccione una unidad de medida"),
+  // Almacén y despacho
+  id_almacen_recepcionista: z
+    .number()
+    .min(1, "Seleccione un almacén de recepción"),
+  tipo_despacho: z.nativeEnum(TipoDespachoCompra),
+  lugar_recojo: z.string().optional().nullable(),
+  // Tiempo de entrega
+  tiempo_entrega: z.number().min(1, "Indique el tiempo de entrega"),
+  tiempo_entrega_periodo: z.nativeEnum(Periodo),
+  tiempo_entrega_dias: z.number().min(0), // calculado
+  // Cantidades
   cantidad: z.number().min(0.01, "La cantidad debe ser mayor a 0"),
   contenido_por_presentacion: z.number().min(0.01, "Mínimo 1"),
   cantidad_base: z.number(), // Calculado: cantidad * contenido
+  // Precios
   precio_unitario: z.number().min(0, "Precio no válido"),
   precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
+  // Extra
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
-  estado: z.nullable(z.enum([Estado_Cotizacion_Detalle.Aprobado, Estado_Cotizacion_Detalle.Rechazado, Estado_Cotizacion_Detalle.Pendiente])).optional(),
+  estado: z.nullable(z.nativeEnum(Estado_Cotizacion_Detalle)).optional(),
 });
 
 // Cabecera de una cotización (un proveedor)
 export const Schema_CotizacionRequest = z.object({
   id_proveedor: z.number().min(1, "Seleccione un proveedor"),
+  tipo_entidad_proveedor: z
+    .nativeEnum(TipoEntidad)
+    .default(TipoEntidad.Juridica),
   moneda: z.string().min(1, "Seleccione una moneda"),
   metodo_pago: z.nativeEnum(MetodoPago),
   fecha_vencimiento_pago: z.string().optional().nullable(),
+  // Costos adicionales (opcionales)
+  costo_flete: z.number().min(0).default(0),
+  otros_gastos: z.number().min(0).default(0),
+  // Totales
   total_antes_igv: z.number(),
   incluye_igv: z.boolean().default(true),
   porcentaje_igv: z.number().default(18),
@@ -29,7 +55,7 @@ export const Schema_CotizacionRequest = z.object({
   total_despues_igv: z.number(),
   observacion: z.string().optional().nullable(),
   empresas_ids: z.array(z.number()).min(1, "Seleccione al menos una empresa"),
-  estado: z.enum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
+  estado: z.nativeEnum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
   detalles: z
     .array(Schema_CotizacionDetalle)
     .min(1, "Agregue al menos un producto a la cotización"),

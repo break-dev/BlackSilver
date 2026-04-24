@@ -9,7 +9,11 @@ import type {
 
 interface TablaDetalleResumenProps {
   cotizaciones: RES_Cotizacion[];
-  empresas: { id_cotizacion: number; id_empresa: number; razon_social: string }[];
+  empresas: {
+    id_cotizacion: number;
+    id_empresa: number;
+    razon_social: string;
+  }[];
   detalles: RES_CotizacionDetalle[];
   isCollapsed: boolean;
   onApprove?: (id: number) => void;
@@ -27,13 +31,16 @@ export const TablaDetalleResumen = ({
   const productosUnicos = useMemo(() => {
     const map = new Map();
     detalles.forEach((d) => {
-        if (!map.has(d.id_comparativo_detalle) || !map.get(d.id_comparativo_detalle).unidadBase) {
-          map.set(d.id_comparativo_detalle, {
-            id: d.id_comparativo_detalle,
-            nombre: d.producto_nombre,
-            unidadBase: d.unidad_medida_base_abv,
-          });
-        }
+      if (
+        !map.has(d.id_comparativo_detalle) ||
+        !map.get(d.id_comparativo_detalle).unidadBase
+      ) {
+        map.set(d.id_comparativo_detalle, {
+          id: d.id_comparativo_detalle,
+          nombre: d.producto,
+          unidadBase: d.unidad_medida_base_abv,
+        });
+      }
     });
     return Array.from(map.values());
   }, [detalles]);
@@ -71,17 +78,19 @@ export const TablaDetalleResumen = ({
               {/* Columnas de Cotización: Sólidas y pegadas arriba */}
               {cotizaciones.map((cot) => (
                 <Table.Th
-                  key={cot.id}
+                  key={cot.id_cotizacion}
                   className="p-0 border-b border-r border-zinc-800 align-top sticky top-0 z-40 bg-zinc-950"
                   style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                 >
                   <CabeceraDetalleCotizacion
-                    proveedor={cot.proveedor_nombre}
-                    idCotizacion={cot.id}
+                    proveedor={cot.proveedor}
+                    idCotizacion={cot.id_cotizacion}
                     nroCotizacion={cot.correlativo}
                     moneda={cot.moneda}
                     metodoPago={cot.metodo_pago}
-                    empresas={empresas.filter((e) => e.id_cotizacion === cot.id)}
+                    empresas={empresas.filter(
+                      (e) => e.id_cotizacion === cot.id_cotizacion,
+                    )}
                     vencimiento={cot.fecha_vencimiento_pago}
                     incluyeIgv={Number(cot.incluye_igv) === 1}
                     porcentajeIgv={Number(cot.porcentaje_igv)}
@@ -91,7 +100,7 @@ export const TablaDetalleResumen = ({
                     observacion={cot.observacion}
                     estado={cot.estado}
                     onApprove={onApprove}
-                    loading={loadingApprove === cot.id}
+                    loading={loadingApprove === cot.id_cotizacion}
                     isCollapsed={isCollapsed}
                   />
                 </Table.Th>
@@ -126,12 +135,12 @@ export const TablaDetalleResumen = ({
                 {cotizaciones.map((cot) => {
                   const det = detalles.find(
                     (d) =>
-                      d.id_cotizacion === cot.id &&
+                      d.id_cotizacion === cot.id_cotizacion &&
                       d.id_comparativo_detalle === prod.id,
                   );
                   return (
                     <Table.Td
-                      key={cot.id}
+                      key={cot.id_cotizacion}
                       className="p-4 border-r border-b border-zinc-800 align-top"
                       style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                     >
@@ -140,14 +149,21 @@ export const TablaDetalleResumen = ({
                           cantidad={Number(det.cantidad)}
                           precioUnitario={Number(det.precio_unitario)}
                           moneda={cot.moneda}
-                          unidadMedida={det.unidad_medida_abv}
-                          contenidoPorPresentacion={Number(
-                            det.contenido_por_presentacion,
-                          )}
+                          unidadMedida={det.unidad_medida_ctz_abv}
+                          contenidoPorPresentacion={Number(det.contenido_por_presentacion)}
                           unidadMedidaBase={prod.unidadBase}
                           comentario={det.comentario}
-                          noCotiza={Number(det.no_cotiza) === 1}
+                          noCotiza={false}
                           estado={det.estado}
+                          almacenRecepcionista={det.almacen_recepcionista}
+                          esAlmacenPrincipal={Boolean(det.para_un_almacen_principal)}
+                          tipoDespacho={det.tipo_despacho}
+                          lugarRecojo={det.lugar_recojo}
+                          tiempoEntrega={det.tiempo_entrega}
+                          tiempoEntregaPeriodo={det.tiempo_entrega_periodo}
+                          tiempoEntregaDias={det.tiempo_entrega_dias}
+                          esFiscalizado={Boolean(det.es_fiscalizado)}
+                          esPerecible={Boolean(det.es_perecible)}
                         />
                       ) : (
                         <div className="h-full min-h-[80px] flex items-center justify-center bg-zinc-950/10 rounded-2xl border border-dashed border-zinc-800/40 opacity-30 italic">

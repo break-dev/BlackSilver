@@ -1,6 +1,11 @@
 import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
-import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import {
+  ChatBubbleBottomCenterTextIcon,
+  BuildingStorefrontIcon,
+  TruckIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 import { Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
 
 interface CeldaDetalleItemProps {
@@ -13,6 +18,16 @@ interface CeldaDetalleItemProps {
   comentario?: string | null;
   noCotiza?: boolean;
   estado?: Estado_Cotizacion_Detalle | null;
+  // Logística
+  almacenRecepcionista?: string | null;
+  esAlmacenPrincipal?: boolean;
+  tipoDespacho?: string | null;
+  lugarRecojo?: string | null;
+  tiempoEntrega?: number | null;
+  tiempoEntregaPeriodo?: string | null;
+  tiempoEntregaDias?: number | null;
+  esFiscalizado?: boolean;
+  esPerecible?: boolean;
 }
 
 export const CeldaDetalleItem = ({
@@ -25,18 +40,22 @@ export const CeldaDetalleItem = ({
   comentario,
   noCotiza = false,
   estado,
+  almacenRecepcionista,
+  esAlmacenPrincipal,
+  tipoDespacho,
+  lugarRecojo,
+  tiempoEntrega,
+  tiempoEntregaPeriodo,
+  tiempoEntregaDias,
+  esFiscalizado,
+  esPerecible,
 }: CeldaDetalleItemProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
 
   if (noCotiza) {
     return (
       <div className="flex items-center justify-center p-4 bg-zinc-950/20 rounded-2xl border border-dashed border-red-900/40 min-h-[160px]">
-        <Badge
-          variant="dot"
-          color="red"
-          size="sm"
-          className="font-bold opacity-60"
-        >
+        <Badge variant="dot" color="red" size="sm" className="font-bold opacity-60">
           No Cotiza
         </Badge>
       </div>
@@ -56,37 +75,46 @@ export const CeldaDetalleItem = ({
     ? "bg-teal-500/10 border-teal-500/20 shadow-teal-900/10"
     : isRechazado
     ? "bg-red-500/10 border-red-500/20"
-    : "bg-zinc-800/30 border-zinc-700/50"; // Gris bonito para pendiente
-    
+    : "bg-zinc-800/30 border-zinc-700/50";
+
   const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-zinc-400";
   const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-zinc-200";
   const dividerColor = isAprobado ? "teal.9" : isRechazado ? "red.9" : "zinc.7";
-
   const badgeColor = isAprobado ? "teal" : isRechazado ? "red" : "gray";
+
+  const hasLogistica = almacenRecepcionista || tipoDespacho || (tiempoEntregaDias && tiempoEntregaDias > 0);
 
   return (
     <Stack gap={6} className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-70 transition-all" : ""}`}>
-      {/* Contenedor Principal Morado/Verde (Estilo Mini-Recibo) */}
+      {/* Mini recibo de precio */}
       <div className={`${bgClass} border rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between transition-colors relative`}>
-        {/* Etiqueta de Aprobado/Rechazado/Pendiente */}
+        {/* Badge estado */}
         {estado && (
-          <Badge 
-            variant={isPendiente ? "light" : "filled"} 
-            color={badgeColor} 
-            size="xs" 
+          <Badge
+            variant={isPendiente ? "light" : "filled"}
+            color={badgeColor}
+            size="xs"
             className="absolute -top-2 -right-2 shadow-lg"
           >
             {estado}
           </Badge>
         )}
-        
+
+        {/* Flags: Fiscalizado / Perecible */}
+        {(esFiscalizado || esPerecible) && (
+          <Group gap={4} mb={4}>
+            {esFiscalizado && (
+              <Badge size="xs" color="orange" variant="dot">Fiscalizado</Badge>
+            )}
+            {esPerecible && (
+              <Badge size="xs" color="pink" variant="dot">Perecible</Badge>
+            )}
+          </Group>
+        )}
+
         <Stack gap={5}>
           <Group justify="space-between" wrap="nowrap">
-            <Text
-              size="10px"
-              fw={800}
-              className="text-zinc-500 uppercase tracking-tighter"
-            >
+            <Text size="10px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
               Precio x {unidadMedida}
             </Text>
             <Text size="xs" fw={800} className="text-zinc-200">
@@ -95,11 +123,7 @@ export const CeldaDetalleItem = ({
           </Group>
 
           <Group justify="space-between" wrap="nowrap">
-            <Text
-              size="10px"
-              fw={800}
-              className="text-zinc-500 uppercase tracking-tighter"
-            >
+            <Text size="10px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
               Total {unidadMedida}
             </Text>
             <Text size="xs" fw={800} className="text-zinc-200">
@@ -108,14 +132,8 @@ export const CeldaDetalleItem = ({
           </Group>
 
           {showConversion && (
-            <Text
-              size="9px"
-              c="dimmed"
-              fw={700}
-              className="italic opacity-70 mt-0.5 leading-none"
-            >
-              * 1 {unidadMedida} = {formatNumber(contenidoPorPresentacion)}{" "}
-              {unidadMedidaBase}
+            <Text size="9px" c="dimmed" fw={700} className="italic opacity-70 mt-0.5 leading-none">
+              * 1 {unidadMedida} = {formatNumber(contenidoPorPresentacion)} {unidadMedidaBase}
             </Text>
           )}
         </Stack>
@@ -133,7 +151,43 @@ export const CeldaDetalleItem = ({
         </Stack>
       </div>
 
-      {/* Comentario Directo */}
+      {/* Logística */}
+      {hasLogistica && (
+        <Stack gap={3} px={2}>
+          {almacenRecepcionista && (
+            <Group gap={5} wrap="nowrap">
+              <BuildingStorefrontIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+              <Text size="10px" c="dimmed" className="leading-tight">
+                {almacenRecepcionista}
+                {esAlmacenPrincipal && (
+                  <span className="text-indigo-400/70 ml-1">(principal)</span>
+                )}
+              </Text>
+            </Group>
+          )}
+          {tipoDespacho && (
+            <Group gap={5} wrap="nowrap">
+              <TruckIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+              <Text size="10px" c="dimmed" className="leading-tight">
+                {tipoDespacho}
+                {lugarRecojo && (
+                  <span className="text-zinc-400 ml-1">· {lugarRecojo}</span>
+                )}
+              </Text>
+            </Group>
+          )}
+          {tiempoEntregaDias !== null && tiempoEntregaDias !== undefined && tiempoEntregaDias > 0 && (
+            <Group gap={5} wrap="nowrap">
+              <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+              <Text size="10px" c="dimmed" className="leading-tight">
+                {tiempoEntrega} {tiempoEntregaPeriodo} · {tiempoEntregaDias} día{tiempoEntregaDias !== 1 ? "s" : ""}
+              </Text>
+            </Group>
+          )}
+        </Stack>
+      )}
+
+      {/* Comentario */}
       {comentario && (
         <Stack gap={2} px={4} className="mt-1">
           <Group gap={4}>

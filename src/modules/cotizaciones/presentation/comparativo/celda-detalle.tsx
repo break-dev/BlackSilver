@@ -10,13 +10,22 @@ import {
   Skeleton,
 } from "@mantine/core";
 
-import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import {
+  ChatBubbleBottomCenterTextIcon,
+  BuildingStorefrontIcon,
+  TruckIcon,
+  MapPinIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type {
   DTO_CotizacionRequest,
   DTO_CotizacionDetalle,
   DTO_ProductoComparativo,
 } from "../../service/cotizaciones.requests";
+import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../shared/enums/_generic/periodo";
+import type { RES_Almacen } from "../../../../service/responses/almacen";
 
 interface CeldaDetalleProps {
   det?: DTO_CotizacionDetalle;
@@ -30,6 +39,7 @@ interface CeldaDetalleProps {
   cot?: DTO_CotizacionRequest;
   cotIdx: number;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
+  almacenes: RES_Almacen[];
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
     cotIndex: number,
     prodId: number,
@@ -47,12 +57,20 @@ const inputStyles = {
   description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
 };
 
+const PERIODO_OPTIONS = [
+  { value: Periodo.Diario, label: "Día(s)" },
+  { value: Periodo.Semanal, label: "Semana(s)" },
+  { value: Periodo.Mensual, label: "Mes(es)" },
+  { value: Periodo.Anual, label: "Año(s)" },
+];
+
 export const CeldaDetalle = ({
   det,
   prod,
   cot,
   cotIdx,
   unidadesMedida,
+  almacenes,
   onUpdateDetail,
   onToggleNoCotiza,
   isSkeleton = false,
@@ -68,6 +86,12 @@ export const CeldaDetalle = ({
           <Skeleton h={32} radius="lg" animate={false} />
           <Skeleton h={32} radius="lg" animate={false} />
         </Group>
+        <Skeleton h={32} radius="lg" animate={false} />
+        <Group grow align="flex-end" gap="xs">
+          <Skeleton h={32} radius="lg" animate={false} />
+          <Skeleton h={32} radius="lg" animate={false} />
+        </Group>
+        <Skeleton h={32} radius="lg" animate={false} />
         <Group grow wrap="nowrap" gap="xs">
           <Skeleton h={40} radius="md" animate={false} />
           <Skeleton h={40} radius="md" animate={false} />
@@ -78,7 +102,6 @@ export const CeldaDetalle = ({
     );
   }
 
-  // Si no es esqueleto, validamos que existan det, prod y cot
   if (!det || !prod || !cot) return null;
 
   const currentUnit = unidadesMedida.find(
@@ -86,10 +109,11 @@ export const CeldaDetalle = ({
   );
   const abrev = currentUnit?.abreviatura || "---";
   const baseAbrev = prod.unidad_medida_abreviatura || "UND";
+  const esRecojo = det.tipo_despacho === TipoDespachoCompra.Recojo;
 
   return (
     <>
-      {/* Switch de Inhabilitación (Arriba a la derecha) */}
+      {/* Switch de Inhabilitación */}
       <div className="absolute top-2 right-2 z-10">
         <Tooltip
           label={
@@ -111,7 +135,7 @@ export const CeldaDetalle = ({
         </Tooltip>
       </div>
 
-      {/* Campos editables (se ocultan si no cotiza) */}
+      {/* Campos editables */}
       <Stack
         gap="sm"
         className={`w-full pt-6 transition-all duration-300 ${
@@ -201,7 +225,131 @@ export const CeldaDetalle = ({
           />
         </Group>
 
-        {/* Fila 3: Tarjetas de Resultados Financieros */}
+        {/* Fila 3: Almacén recepcionista */}
+        <Select
+          label="Almacén de Recepción"
+          placeholder="Seleccione almacén..."
+          withAsterisk
+          leftSection={
+            <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+          }
+          data={almacenes.map((a) => ({
+            value: String(a.id_almacen),
+            label: a.es_principal ? `${a.nombre} ★` : a.nombre,
+          }))}
+          value={
+            det.id_almacen_recepcionista === 0
+              ? null
+              : String(det.id_almacen_recepcionista)
+          }
+          onChange={(val) =>
+            onUpdateDetail(
+              cotIdx,
+              prod.id_producto,
+              "id_almacen_recepcionista",
+              Number(val),
+            )
+          }
+          size="xs"
+          radius="lg"
+          classNames={inputStyles}
+          searchable
+          comboboxProps={{ withinPortal: true, zIndex: 9999 }}
+        />
+
+        {/* Fila 4: Tipo de despacho y tiempo de entrega */}
+        <Group grow align="flex-end" gap="xs">
+          <Select
+            label="Tipo de Despacho"
+            withAsterisk
+            leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+            data={[
+              { value: TipoDespachoCompra.Envio, label: "Envío" },
+              { value: TipoDespachoCompra.Recojo, label: "Recojo" },
+            ]}
+            value={det.tipo_despacho}
+            onChange={(val) =>
+              onUpdateDetail(
+                cotIdx,
+                prod.id_producto,
+                "tipo_despacho",
+                val as TipoDespachoCompra,
+              )
+            }
+            size="xs"
+            radius="lg"
+            classNames={inputStyles}
+            comboboxProps={{ withinPortal: true, zIndex: 9999 }}
+          />
+          <Group grow gap={4} align="flex-end">
+            <NumberInput
+              label={
+                <Group gap={4} wrap="nowrap">
+                  <ClockIcon className="w-3 h-3 text-zinc-500" />
+                  <Text size="xs" fw={500} className="text-zinc-300">
+                    Entrega
+                  </Text>
+                </Group>
+              }
+              value={det.tiempo_entrega}
+              onChange={(val) =>
+                onUpdateDetail(
+                  cotIdx,
+                  prod.id_producto,
+                  "tiempo_entrega",
+                  Number(val),
+                )
+              }
+              min={1}
+              size="xs"
+              radius="lg"
+              classNames={inputStyles}
+              className="flex-[0.4]"
+            />
+            <Select
+              label=" "
+              data={PERIODO_OPTIONS}
+              value={det.tiempo_entrega_periodo}
+              onChange={(val) =>
+                onUpdateDetail(
+                  cotIdx,
+                  prod.id_producto,
+                  "tiempo_entrega_periodo",
+                  val as Periodo,
+                )
+              }
+              size="xs"
+              radius="lg"
+              classNames={inputStyles}
+              className="flex-[0.6]"
+              comboboxProps={{ withinPortal: true, zIndex: 9999 }}
+            />
+          </Group>
+        </Group>
+
+        {/* Lugar de recojo (solo si tipo_despacho === Recojo) */}
+        {esRecojo && (
+          <TextInput
+            label="Lugar de Recojo"
+            placeholder="Dirección, local, etc..."
+            withAsterisk
+            leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+            value={det.lugar_recojo || ""}
+            onChange={(e) =>
+              onUpdateDetail(
+                cotIdx,
+                prod.id_producto,
+                "lugar_recojo",
+                e.currentTarget.value,
+              )
+            }
+            size="xs"
+            radius="lg"
+            classNames={inputStyles}
+          />
+        )}
+
+        {/* Fila 5: Tarjetas de Resultados Financieros */}
         <Group grow wrap="nowrap" gap="xs">
           <Stack
             gap={0}
@@ -259,6 +407,14 @@ export const CeldaDetalle = ({
             </Text>
           </Stack>
         </Group>
+
+        {/* Tiempo de entrega calculado */}
+        {det.tiempo_entrega_dias > 0 && (
+          <Text size="11px" className="text-zinc-500 text-center">
+            ≈ {det.tiempo_entrega_dias} día
+            {det.tiempo_entrega_dias !== 1 ? "s" : ""} de entrega estimados
+          </Text>
+        )}
 
         <TextInput
           label="Comentario (Opcional)"

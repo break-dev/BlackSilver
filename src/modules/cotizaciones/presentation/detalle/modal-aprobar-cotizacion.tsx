@@ -59,7 +59,7 @@ export const ModalAprobarCotizacion = ({
   useEffect(() => {
     if (opened && cotizacion) {
       // Iniciar con todos los detalles checkeados
-      const ids = detalles.map((d) => d.id);
+      const ids = detalles.map((d) => d.id_cotizacion_detalle);
       setSelectedDetalles(ids);
 
       // Iniciar con la primera empresa seleccionada si existe
@@ -81,7 +81,7 @@ export const ModalAprobarCotizacion = ({
     if (selectedDetalles.length === detalles.length) {
       setSelectedDetalles([]); // Deseleccionar todos
     } else {
-      setSelectedDetalles(detalles.map((d) => d.id)); // Seleccionar todos
+      setSelectedDetalles(detalles.map((d) => d.id_cotizacion_detalle)); // Seleccionar todos
     }
   };
 
@@ -99,10 +99,13 @@ export const ModalAprobarCotizacion = ({
 
     try {
       setLoading(true);
-      const res = await CotizacionesService.aprobar_cotizacion(cotizacion.id, {
-        id_empresa_compradora: Number(selectedEmpresaId),
-        detalles_aprobados: selectedDetalles,
-      });
+      const res = await CotizacionesService.aprobar_cotizacion(
+        cotizacion.id_cotizacion,
+        {
+          id_empresa_compradora: Number(selectedEmpresaId),
+          detalles_aprobados: selectedDetalles,
+        },
+      );
 
       if (res.success) {
         notifySuccess("Orden de compra generada correctamente.");
@@ -117,17 +120,25 @@ export const ModalAprobarCotizacion = ({
             const ordenData = resOrden.data.ordenes.find((o) => o.id === ocId);
             if (ordenData) {
               print(
-                <OrdenCompraPDF orden={ordenData} detalles={resDetalles.data.detalles} />,
-                { documentTitle: `OC - ${ocCorrelativo}` }
+                <OrdenCompraPDF
+                  orden={ordenData}
+                  detalles={resDetalles.data.detalles}
+                />,
+                { documentTitle: `OC - ${ocCorrelativo}` },
               );
             }
           }
         }
 
         const cotDetallesAprobados = detalles.filter((d) =>
-          selectedDetalles.includes(d.id),
+          selectedDetalles.includes(d.id_cotizacion_detalle),
         );
-        onSuccess(cotizacion.id, cotizacion, cotDetallesAprobados, ocId);
+        onSuccess(
+          cotizacion.id_cotizacion,
+          cotizacion,
+          cotDetallesAprobados,
+          ocId,
+        );
         onClose();
       } else {
         notifyError(res.message);
@@ -192,8 +203,11 @@ export const ModalAprobarCotizacion = ({
 
         {/* Selección de Productos */}
         {(() => {
-          const allSelected = detalles.length > 0 && selectedDetalles.length === detalles.length;
-          const indeterminate = selectedDetalles.length > 0 && selectedDetalles.length < detalles.length;
+          const allSelected =
+            detalles.length > 0 && selectedDetalles.length === detalles.length;
+          const indeterminate =
+            selectedDetalles.length > 0 &&
+            selectedDetalles.length < detalles.length;
 
           return (
             <Stack gap="xs">
@@ -218,26 +232,30 @@ export const ModalAprobarCotizacion = ({
 
               <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[40vh] overflow-y-auto custom-scrollbar">
                 {detalles.map((det) => {
-                  const isChecked = selectedDetalles.includes(det.id);
+                  const isChecked = selectedDetalles.includes(
+                    det.id_cotizacion_detalle,
+                  );
                   const subtotal =
                     Number(det.cantidad) * Number(det.precio_unitario);
 
                   return (
                     <div
-                      key={det.id}
+                      key={det.id_cotizacion_detalle}
                       className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
                         isChecked
                           ? "bg-indigo-500/5"
                           : "hover:bg-white/5 opacity-80 hover:opacity-100"
                       }`}
-                      onClick={() => toggleDetalle(det.id)}
+                      onClick={() => toggleDetalle(det.id_cotizacion_detalle)}
                     >
                       <Group wrap="nowrap" justify="space-between">
                         <Group gap="sm">
                           <Checkbox
                             size="sm"
                             checked={isChecked}
-                            onChange={() => toggleDetalle(det.id)}
+                            onChange={() =>
+                              toggleDetalle(det.id_cotizacion_detalle)
+                            }
                             onClick={(e) => e.stopPropagation()}
                             color="indigo"
                             radius="sm"
@@ -250,10 +268,11 @@ export const ModalAprobarCotizacion = ({
                                 isChecked ? "text-indigo-100" : "text-zinc-300"
                               }
                             >
-                              {det.producto_nombre}
+                              {det.producto}
                             </Text>
                             <Text size="11px" c="dimmed">
-                              {formatNumber(det.cantidad)} {det.unidad_medida_abv}
+                              {formatNumber(det.cantidad)}{" "}
+                              {det.unidad_medida_ctz_abv}
                               {" · a "}
                               <span className="text-zinc-300">
                                 {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}

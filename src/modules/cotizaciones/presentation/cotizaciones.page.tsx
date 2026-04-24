@@ -22,14 +22,15 @@ export const CotizacionesPage = () => {
   useTitlePage("Cotizaciones");
 
   const {
-    cotizaciones,
-    detalles,
-    empresas,
+    comparativos,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,
     busqueda,
     setBusqueda,
+    mes,
+    year,
+    cambiarPeriodo,
   } = useCotizaciones();
 
   const [openedCreate, { open: openCreate, close: closeCreate }] =
@@ -45,6 +46,9 @@ export const CotizacionesPage = () => {
         busqueda={busqueda}
         setBusqueda={setBusqueda}
         openCreate={openCreate}
+        mes={mes}
+        year={year}
+        onCambiarPeriodo={cambiarPeriodo}
       />
 
       {loading ? (
@@ -61,7 +65,7 @@ export const CotizacionesPage = () => {
             Consultando Comparativos...
           </Text>
         </Stack>
-      ) : cotizaciones.length === 0 && !busqueda ? (
+      ) : comparativos.length === 0 && !busqueda ? (
         <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
           <ClipboardDocumentListIcon className="w-12 h-12 text-zinc-700 mb-4" />
           <Text
@@ -77,9 +81,7 @@ export const CotizacionesPage = () => {
         </div>
       ) : (
         <ListadoComparativos
-          cotizaciones={cotizaciones}
-          detalles={detalles}
-          empresas={empresas}
+          comparativos={comparativos}
           busqueda={busqueda}
           onUpdateLocal={updateCotizacionLocal}
         />
@@ -106,7 +108,7 @@ export const CotizacionesPage = () => {
               onMouseEnter={() => setOpenedProductosHover(true)}
               onMouseLeave={() => setOpenedProductosHover(false)}
               radius="xl"
-              size="sm"
+              size="xs"
             >
               Añadir Productos
             </Button>
