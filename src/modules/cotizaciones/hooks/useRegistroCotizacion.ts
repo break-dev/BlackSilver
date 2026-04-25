@@ -159,11 +159,11 @@ export const useRegistroCotizacion = (
 
         if (existe) {
           const tieneDatos = cotizaciones.some((cot) => {
-            const det = cot.detalles.find((d) => d.id_producto === id_producto);
-            return (
-              det &&
-              (det.precio_unitario > 0 ||
-                (det.comentario && det.comentario.trim() !== ""))
+            return cot.detalles.some(
+              (d) =>
+                d.id_producto === id_producto &&
+                (d.precio_unitario > 0 ||
+                  (d.comentario && d.comentario.trim() !== ""))
             );
           });
           if (tieneDatos) return prev;
@@ -235,6 +235,16 @@ export const useRegistroCotizacion = (
 
   const eliminarCotizacion = useCallback((index: number) => {
     setCotizaciones((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const eliminarFilaProducto = useCallback((rowIndex: number) => {
+    setProductos((prev) => prev.filter((_, i) => i !== rowIndex));
+    setCotizaciones((prevCots) =>
+      prevCots.map((cot) => ({
+        ...cot,
+        detalles: cot.detalles.filter((_, i) => i !== rowIndex),
+      }))
+    );
   }, []);
 
   // Actualización de cabeceras (incluyendo costo_flete y otros_gastos)
@@ -572,14 +582,12 @@ export const useRegistroCotizacion = (
       productos
         .filter((p) =>
           cotizaciones.some((cot) => {
-            const det = cot.detalles.find(
-              (d) => d.id_producto === p.id_producto,
-            );
-            return (
-              det &&
-              !det.no_cotiza &&
-              (det.precio_unitario > 0 ||
-                (det.comentario && det.comentario.trim() !== ""))
+            return cot.detalles.some(
+              (d) =>
+                d.id_producto === p.id_producto &&
+                !d.no_cotiza &&
+                (d.precio_unitario > 0 ||
+                  (d.comentario && d.comentario.trim() !== ""))
             );
           }),
         )
@@ -597,6 +605,7 @@ export const useRegistroCotizacion = (
     productosEnUsoIds,
     agregarCotizacion,
     eliminarCotizacion,
+    eliminarFilaProducto,
     updateCotizacionHeader,
     updateCotizacionDetail,
     toggleCotizacionNoCotiza,

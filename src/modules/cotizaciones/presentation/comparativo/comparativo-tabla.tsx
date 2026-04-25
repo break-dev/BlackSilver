@@ -1,5 +1,5 @@
 import { Table, Text, Skeleton, Tooltip, ActionIcon } from "@mantine/core";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import type {
   DTO_CotizacionRequest,
@@ -41,6 +41,7 @@ interface ComparativoTablaProps {
   onToggleNoCotiza: (cotIndex: number, rowIndex: number) => void;
   onRemoveCotizacion: (index: number) => void;
   onDuplicarFila?: (rowIndex: number) => void;
+  onEliminarFila?: (rowIndex: number) => void;
 }
 
 export const ComparativoTabla = ({
@@ -56,6 +57,7 @@ export const ComparativoTabla = ({
   onToggleNoCotiza,
   onRemoveCotizacion,
   onDuplicarFila,
+  onEliminarFila,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
@@ -193,20 +195,36 @@ export const ComparativoTabla = ({
                       <Text size="xs" fw={700} className="text-zinc-200 text-center">
                         {prod.nombre}
                       </Text>
-                      {onDuplicarFila && (
-                        <Tooltip label="Agregar otro destino" position="right">
-                          <ActionIcon
-                            variant="light"
-                            color="cyan"
-                            size="sm"
-                            radius="xl"
-                            onClick={() => onDuplicarFila(pIdx)}
-                            className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400"
-                          >
-                            <PlusIcon className="w-4 h-4" />
-                          </ActionIcon>
-                        </Tooltip>
-                      )}
+                      <div className="flex gap-2">
+                        {onDuplicarFila && (
+                          <Tooltip label="Agregar otro destino" position="bottom">
+                            <ActionIcon
+                              variant="light"
+                              color="cyan"
+                              size="sm"
+                              radius="xl"
+                              onClick={() => onDuplicarFila(pIdx)}
+                              className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400"
+                            >
+                              <PlusIcon className="w-4 h-4" />
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                        {onEliminarFila && (
+                          <Tooltip label="Eliminar fila" position="bottom">
+                            <ActionIcon
+                              variant="light"
+                              color="red"
+                              size="sm"
+                              radius="xl"
+                              onClick={() => onEliminarFila(pIdx)}
+                              className="bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="p-4">

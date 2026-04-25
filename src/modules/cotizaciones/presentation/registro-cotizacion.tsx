@@ -62,6 +62,7 @@ export const RegistroCotizacion = forwardRef<
       productosEnUsoIds,
       agregarCotizacion,
       eliminarCotizacion,
+      eliminarFilaProducto,
       updateCotizacionHeader,
       updateCotizacionDetail,
       toggleCotizacionNoCotiza,
@@ -113,6 +114,7 @@ export const RegistroCotizacion = forwardRef<
             onToggleNoCotiza={toggleCotizacionNoCotiza}
             onRemoveCotizacion={eliminarCotizacion}
             onDuplicarFila={duplicarFilaProducto}
+            onEliminarFila={eliminarFilaProducto}
           />
         </div>
 
@@ -148,6 +150,7 @@ export const RegistroCotizacion = forwardRef<
           onToggle={(id) => toggleProductoEnComparador(id)}
           seleccionadosActuales={productos.map((p) => p.id_producto)}
           productosBloqueados={productosEnUsoIds}
+          catalogoProductos={maestros.catalogo}
         />
 
         <ModalAsistenteAprobacion

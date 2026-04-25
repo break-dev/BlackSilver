@@ -87,8 +87,8 @@ export const ModalAsistenteAprobacion = ({
                 : null,
             // Preseleccionar todos los habilitados
             selectedDetalles: cot.detalles
-              .filter((d) => !d.no_cotiza)
-              .map((d) => d.id_producto),
+              .map((d, dIdx) => !d.no_cotiza ? dIdx : null)
+              .filter((val) => val !== null) as number[],
           });
         }
       });
@@ -126,12 +126,12 @@ export const ModalAsistenteAprobacion = ({
     });
   };
 
-  const toggleDetalle = (idProducto: number) => {
+  const toggleDetalle = (rowIndex: number) => {
     updateCurrentStep((prev) => ({
       ...prev,
-      selectedDetalles: prev.selectedDetalles.includes(idProducto)
-        ? prev.selectedDetalles.filter((id) => id !== idProducto)
-        : [...prev.selectedDetalles, idProducto],
+      selectedDetalles: prev.selectedDetalles.includes(rowIndex)
+        ? prev.selectedDetalles.filter((id) => id !== rowIndex)
+        : [...prev.selectedDetalles, rowIndex],
     }));
   };
 
@@ -180,9 +180,9 @@ export const ModalAsistenteAprobacion = ({
             ...c,
             estado: Estado_Cotizacion.Aprobada,
             id_empresa_compradora: wizardConfig.empresaId,
-            detalles: c.detalles.map((d) => ({
+            detalles: c.detalles.map((d, dIdx) => ({
               ...d,
-              estado: wizardConfig.productosAprobados.includes(d.id_producto)
+              estado: wizardConfig.productosAprobados.includes(dIdx)
                 ? Estado_Cotizacion_Detalle.Aprobado
                 : Estado_Cotizacion_Detalle.Rechazado,
             })),
@@ -331,8 +331,8 @@ export const ModalAsistenteAprobacion = ({
             {(() => {
               const detallesCotizables =
                 currentStepData?.cotizacion.detalles
-                  .filter((d) => !d.no_cotiza)
-                  .map((d) => d.id_producto) || [];
+                  .map((d, dIdx) => !d.no_cotiza ? dIdx : null)
+                  .filter((val) => val !== null) as number[] || [];
               const numSelected = currentStepData?.selectedDetalles.length || 0;
               const allSelected =
                 detallesCotizables.length > 0 &&
@@ -369,27 +369,27 @@ export const ModalAsistenteAprobacion = ({
                   </Group>
                   <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[30vh] overflow-y-auto custom-scrollbar">
                     {currentStepData?.cotizacion.detalles
-                      .filter((d) => !d.no_cotiza)
-                      .map((det) => {
+                      .map((det, dIdx) => {
+                        if (det.no_cotiza) return null;
                         const prodMaestro = maestros.catalogo.find(
                           (p) => p.id_producto === det.id_producto,
                         );
                         const isChecked =
                           currentStepData.selectedDetalles.includes(
-                            det.id_producto,
+                            dIdx,
                           );
                         const subtotal =
                           Number(det.cantidad) * Number(det.precio_unitario);
 
                         return (
                           <div
-                            key={det.id_producto}
+                            key={`${det.id_producto}-${dIdx}`}
                             className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
                               isChecked
                                 ? "bg-indigo-500/5"
                                 : "hover:bg-white/5 opacity-80 hover:opacity-100"
                             }`}
-                            onClick={() => toggleDetalle(det.id_producto)}
+                            onClick={() => toggleDetalle(dIdx)}
                           >
                             <Group wrap="nowrap" justify="space-between">
                               <Group gap="sm">
@@ -397,7 +397,7 @@ export const ModalAsistenteAprobacion = ({
                                   size="sm"
                                   checked={isChecked}
                                   onChange={() =>
-                                    toggleDetalle(det.id_producto)
+                                    toggleDetalle(dIdx)
                                   }
                                   onClick={(e) => e.stopPropagation()}
                                   color="indigo"

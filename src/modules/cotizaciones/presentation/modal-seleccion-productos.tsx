@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Stack,
   TextInput,
@@ -15,7 +15,6 @@ import {
   LockClosedIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { CotizacionesService } from "../service/cotizaciones.service";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import type { RES_Producto } from "../../../service/responses/producto";
@@ -26,6 +25,7 @@ interface ModalSeleccionProductosProps {
   onToggle: (id_producto: number) => void;
   seleccionadosActuales: number[];
   productosBloqueados?: number[];
+  catalogoProductos: RES_Producto[];
 }
 
 export const ModalSeleccionProductos = ({
@@ -34,39 +34,20 @@ export const ModalSeleccionProductos = ({
   onToggle,
   seleccionadosActuales,
   productosBloqueados = [],
+  catalogoProductos,
 }: ModalSeleccionProductosProps) => {
-  const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const cargarProductos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const resp = await CotizacionesService.get_productos_maestro();
-      if (resp.success) {
-        setProductos(resp.data);
-      }
-    } catch (error) {
-      console.error("Error al cargar productos", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (opened) cargarProductos();
-  }, [opened, cargarProductos]);
 
   // Extraemos categorías únicas del catálogo cargado
   const categoriasDisponibles = useMemo(() => {
-    const list = productos.map((p) => p.categoria);
+    const list = catalogoProductos.map((p) => p.categoria);
     const unique = Array.from(new Set(list)).sort();
     return unique.map((c) => ({ value: c, label: c }));
-  }, [productos]);
+  }, [catalogoProductos]);
 
   const filtrados = useMemo(() => {
-    return productos.filter((p) => {
+    return catalogoProductos.filter((p) => {
       const matchTexto =
         p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         p.id_producto.toString().toLowerCase().includes(busqueda.toLowerCase());
@@ -74,7 +55,7 @@ export const ModalSeleccionProductos = ({
 
       return matchTexto && matchCategoria;
     });
-  }, [productos, busqueda, categoriaId]);
+  }, [catalogoProductos, busqueda, categoriaId]);
 
   const handleToggle = (id: number) => {
     const isChecked = seleccionadosActuales.includes(id);
@@ -216,7 +197,7 @@ export const ModalSeleccionProductos = ({
           idAccessor="id_producto"
           columns={columns}
           records={filtrados}
-          loading={loading}
+          loading={false}
           initialPageSize={10}
           minHeight={350}
         />
