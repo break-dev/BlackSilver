@@ -16,8 +16,10 @@ Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS dis
 ### Diseño y UI/UX
 - **Mantine 8:** Framework de componentes UI completo y accesible.
 - **Tailwind CSS 4:** Estilado rápido y consistente mediante utilidades.
-- **Motion 12 (Framer Motion):** Orquestación de animaciones suaves y micro-interacciones.
-- **HeroIcons & Tabler Icons:** Sets de iconos vectoriales para una interfaz limpia.
+- **Motion 12 (Framer Motion) & GSAP:** Orquestación de animaciones suaves, micro-interacciones y animaciones complejas (como GSAP timelines).
+- **HeroIcons, Tabler Icons & Lucide React:** Sets de iconos vectoriales para una interfaz limpia y moderna.
+- **Lottie React:** Integración de animaciones JSON exportadas desde After Effects/Lottie para interacciones premium.
+- **Use Sound:** Hooks para integrar efectos de sonido y retroalimentación auditiva a las micro-interacciones.
 
 ### Funcionalidad Avanzada
 - **Mantine DataTable:** Tablas de alto rendimiento con soporte para ordenamiento y filtrado.
