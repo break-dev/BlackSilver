@@ -8,6 +8,9 @@ import {
   Tooltip,
   TextInput,
   Skeleton,
+  Popover,
+  ActionIcon,
+  Indicator,
 } from "@mantine/core";
 
 import {
@@ -42,11 +45,11 @@ interface CeldaDetalleProps {
   almacenes: RES_Almacen[];
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
     cotIndex: number,
-    prodId: number,
+    rowIndex: number,
     field: K,
     value: DTO_CotizacionDetalle[K],
   ) => void;
-  onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
+  onToggleNoCotiza: (cotIndex: number, rowIndex: number) => void;
   isSkeleton?: boolean;
 }
 
@@ -74,30 +77,24 @@ export const CeldaDetalle = ({
   onUpdateDetail,
   onToggleNoCotiza,
   isSkeleton = false,
-}: CeldaDetalleProps) => {
+  rowIndex,
+}: CeldaDetalleProps & { rowIndex: number }) => {
   if (isSkeleton) {
     return (
-      <Stack gap="sm" className="w-full">
+      <Stack gap={8} className="w-full pt-4">
         <Group grow align="flex-end" gap="xs">
-          <Skeleton h={32} radius="lg" animate={false} />
-          <Skeleton h={32} radius="lg" animate={false} />
+          <Skeleton h={50} radius="lg" animate={false} className="opacity-20" />
+          <Skeleton h={50} radius="lg" animate={false} className="opacity-20" />
         </Group>
         <Group grow align="flex-end" gap="xs">
-          <Skeleton h={32} radius="lg" animate={false} />
-          <Skeleton h={32} radius="lg" animate={false} />
+          <Skeleton h={50} radius="lg" animate={false} className="opacity-20" />
+          <Skeleton h={50} radius="lg" animate={false} className="opacity-20" />
         </Group>
-        <Skeleton h={32} radius="lg" animate={false} />
-        <Group grow align="flex-end" gap="xs">
-          <Skeleton h={32} radius="lg" animate={false} />
-          <Skeleton h={32} radius="lg" animate={false} />
+        <Group grow wrap="nowrap" gap="xs" className="mt-0">
+          <Skeleton h={40} radius="md" animate={false} className="opacity-20" />
+          <Skeleton h={40} radius="md" animate={false} className="opacity-20" />
+          <Skeleton h={40} radius="md" animate={false} className="opacity-20" />
         </Group>
-        <Skeleton h={32} radius="lg" animate={false} />
-        <Group grow wrap="nowrap" gap="xs">
-          <Skeleton h={40} radius="md" animate={false} />
-          <Skeleton h={40} radius="md" animate={false} />
-          <Skeleton h={40} radius="md" animate={false} />
-        </Group>
-        <Skeleton h={32} radius="lg" animate={false} />
       </Stack>
     );
   }
@@ -128,7 +125,7 @@ export const CeldaDetalle = ({
               size="xs"
               color="red"
               checked={!det.no_cotiza}
-              onChange={() => onToggleNoCotiza(cotIdx, prod.id_producto)}
+              onChange={() => onToggleNoCotiza(cotIdx, rowIndex)}
               className="hover:scale-110 transition-transform cursor-pointer"
             />
           </Group>
@@ -153,7 +150,7 @@ export const CeldaDetalle = ({
             onChange={(val) =>
               onUpdateDetail(
                 cotIdx,
-                prod.id_producto,
+                rowIndex,
                 "id_unidad_medida",
                 Number(val),
               )
@@ -168,7 +165,7 @@ export const CeldaDetalle = ({
             label={`Cantidad de ${abrev}`}
             value={det.cantidad}
             onChange={(val) =>
-              onUpdateDetail(cotIdx, prod.id_producto, "cantidad", Number(val))
+              onUpdateDetail(cotIdx, rowIndex, "cantidad", Number(val))
             }
             min={0}
             size="xs"
@@ -183,14 +180,14 @@ export const CeldaDetalle = ({
           <NumberInput
             label={
               <Text size="xs" fw={500} className="text-zinc-300">
-                {baseAbrev} x {abrev} <span className="text-red-500">*</span>
+                {baseAbrev} x {abrev}
               </Text>
             }
             value={det.contenido_por_presentacion}
             onChange={(val) =>
               onUpdateDetail(
                 cotIdx,
-                prod.id_producto,
+                rowIndex,
                 "contenido_por_presentacion",
                 Number(val),
               )
@@ -204,14 +201,14 @@ export const CeldaDetalle = ({
           <NumberInput
             label={
               <Text size="xs" fw={500} className="text-zinc-300">
-                Precio x {abrev} <span className="text-red-500">*</span>
+                Precio x {abrev}
               </Text>
             }
             value={det.precio_unitario}
             onChange={(val) =>
               onUpdateDetail(
                 cotIdx,
-                prod.id_producto,
+                rowIndex,
                 "precio_unitario",
                 Number(val),
               )
@@ -225,216 +222,262 @@ export const CeldaDetalle = ({
           />
         </Group>
 
-        {/* Fila 3: Almacén recepcionista */}
-        <Select
-          label="Almacén de Recepción"
-          placeholder="Seleccione almacén..."
-          withAsterisk
-          leftSection={
-            <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
-          }
-          data={almacenes.map((a) => ({
-            value: String(a.id_almacen),
-            label: a.es_principal ? `${a.nombre} ★` : a.nombre,
-          }))}
-          value={
-            det.id_almacen_recepcionista === 0
-              ? null
-              : String(det.id_almacen_recepcionista)
-          }
-          onChange={(val) =>
-            onUpdateDetail(
-              cotIdx,
-              prod.id_producto,
-              "id_almacen_recepcionista",
-              Number(val),
-            )
-          }
-          size="xs"
-          radius="lg"
-          classNames={inputStyles}
-          searchable
-          comboboxProps={{ withinPortal: true, zIndex: 9999 }}
-        />
+        {/* Totales y Botones de Popover */}
+        <Group justify="space-between" align="center" className="mt-1" wrap="nowrap">
+          {/* Tarjetas de Resultados Financieros */}
+          <Group grow wrap="nowrap" gap="xs" className="flex-1 overflow-hidden">
+            <Stack
+              gap={0}
+              px="xs"
+              py={4}
+              className="bg-cyan-600 rounded-lg shadow-sm border border-cyan-400/20 min-w-0"
+            >
+              <Text
+                size="9px"
+                fw={800}
+                className="text-white uppercase truncate opacity-90"
+              >
+                Total {baseAbrev}
+              </Text>
+              <Text size="xs" fw={800} className="text-white truncate">
+                {det.cantidad * det.contenido_por_presentacion} {baseAbrev}
+              </Text>
+            </Stack>
 
-        {/* Fila 4: Tipo de despacho y tiempo de entrega */}
-        <Group grow align="flex-end" gap="xs">
-          <Select
-            label="Tipo de Despacho"
-            withAsterisk
-            leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
-            data={[
-              { value: TipoDespachoCompra.Envio, label: "Envío" },
-              { value: TipoDespachoCompra.Recojo, label: "Recojo" },
-            ]}
-            value={det.tipo_despacho}
-            onChange={(val) =>
-              onUpdateDetail(
-                cotIdx,
-                prod.id_producto,
-                "tipo_despacho",
-                val as TipoDespachoCompra,
-              )
-            }
-            size="xs"
-            radius="lg"
-            classNames={inputStyles}
-            comboboxProps={{ withinPortal: true, zIndex: 9999 }}
-          />
-          <Group grow gap={4} align="flex-end">
-            <NumberInput
-              label={
-                <Group gap={4} wrap="nowrap">
-                  <ClockIcon className="w-3 h-3 text-zinc-500" />
-                  <Text size="xs" fw={500} className="text-zinc-300">
-                    Entrega
+            <Stack
+              gap={0}
+              px="xs"
+              py={4}
+              className="bg-teal-600 rounded-lg shadow-sm border border-teal-400/20 min-w-0"
+            >
+              <Text
+                size="9px"
+                fw={800}
+                className="text-white uppercase truncate opacity-90"
+              >
+                Precio x {baseAbrev}
+              </Text>
+              <Text size="xs" fw={800} className="text-white truncate">
+                {cot.moneda === "Soles" ? "S/. " : "$ "}
+                {formatNumber(det.precio_unitario_base)}
+              </Text>
+            </Stack>
+
+            <Stack
+              gap={0}
+              px="xs"
+              py={4}
+              className="bg-emerald-700 rounded-lg shadow-md border border-emerald-500/20 min-w-0"
+            >
+              <Text
+                size="9px"
+                fw={800}
+                className="text-white uppercase truncate opacity-90"
+              >
+                Subtotal
+              </Text>
+              <Text size="xs" fw={800} className="text-white truncate">
+                {cot.moneda === "Soles" ? "S/. " : "$ "}
+                {formatNumber(det.cantidad * det.precio_unitario)}
+              </Text>
+            </Stack>
+          </Group>
+
+          <Group gap="xs" className="flex-none">
+            {/* Popover de Logística */}
+            <Popover width={320} position="bottom" withArrow shadow="md">
+              <Popover.Target>
+                <Tooltip label="Configurar Logística (Almacén, Despacho, Entrega)" withArrow>
+                  <Indicator color="red" size={8} offset={2} zIndex={10} disabled={!esRecojo && det.tiempo_entrega === 0}>
+                    <ActionIcon
+                      variant="light"
+                      color="cyan"
+                      radius="md"
+                      size="md"
+                      className="border border-cyan-500/20"
+                    >
+                      <TruckIcon className="w-4 h-4" />
+                    </ActionIcon>
+                  </Indicator>
+                </Tooltip>
+              </Popover.Target>
+              <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
+                <Stack gap="sm">
+                  <Text size="sm" fw={800} className="text-white mb-1">
+                    Logística y Despacho
                   </Text>
-                </Group>
-              }
-              value={det.tiempo_entrega}
-              onChange={(val) =>
-                onUpdateDetail(
-                  cotIdx,
-                  prod.id_producto,
-                  "tiempo_entrega",
-                  Number(val),
-                )
-              }
-              min={1}
-              size="xs"
-              radius="lg"
-              classNames={inputStyles}
-              className="flex-[0.4]"
-            />
-            <Select
-              label=" "
-              data={PERIODO_OPTIONS}
-              value={det.tiempo_entrega_periodo}
-              onChange={(val) =>
-                onUpdateDetail(
-                  cotIdx,
-                  prod.id_producto,
-                  "tiempo_entrega_periodo",
-                  val as Periodo,
-                )
-              }
-              size="xs"
-              radius="lg"
-              classNames={inputStyles}
-              className="flex-[0.6]"
-              comboboxProps={{ withinPortal: true, zIndex: 9999 }}
-            />
+                  <Select
+                    label="Almacén de Recepción"
+                    placeholder="Seleccione almacén..."
+                    withAsterisk
+                    leftSection={
+                      <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+                    }
+                    data={almacenes.map((a) => ({
+                      value: String(a.id_almacen),
+                      label: a.es_principal ? `${a.nombre} ★` : a.nombre,
+                    }))}
+                    value={
+                      det.id_almacen_recepcionista === 0
+                        ? null
+                        : String(det.id_almacen_recepcionista)
+                    }
+                    onChange={(val) =>
+                      onUpdateDetail(
+                        cotIdx,
+                        rowIndex,
+                        "id_almacen_recepcionista",
+                        Number(val),
+                      )
+                    }
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    searchable
+                    comboboxProps={{ withinPortal: false }}
+                  />
+
+                  <Group grow align="flex-end" gap="xs">
+                    <Select
+                      label="Tipo de Despacho"
+                      withAsterisk
+                      leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                      data={[
+                        { value: TipoDespachoCompra.Envio, label: "Envío" },
+                        { value: TipoDespachoCompra.Recojo, label: "Recojo" },
+                      ]}
+                      value={det.tipo_despacho}
+                      onChange={(val) =>
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "tipo_despacho",
+                          val as TipoDespachoCompra,
+                        )
+                      }
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      comboboxProps={{ withinPortal: false }}
+                    />
+                    <Group grow gap={4} align="flex-end">
+                      <NumberInput
+                        label={
+                          <Group gap={4} wrap="nowrap">
+                            <ClockIcon className="w-3 h-3 text-zinc-500" />
+                            <Text size="xs" fw={500} className="text-zinc-300">
+                              Entrega
+                            </Text>
+                          </Group>
+                        }
+                        value={det.tiempo_entrega}
+                        onChange={(val) =>
+                          onUpdateDetail(
+                            cotIdx,
+                            rowIndex,
+                            "tiempo_entrega",
+                            Number(val),
+                          )
+                        }
+                        min={1}
+                        size="xs"
+                        radius="lg"
+                        classNames={inputStyles}
+                        className="flex-[0.4]"
+                      />
+                      <Select
+                        label=" "
+                        data={PERIODO_OPTIONS}
+                        value={det.tiempo_entrega_periodo}
+                        onChange={(val) =>
+                          onUpdateDetail(
+                            cotIdx,
+                            rowIndex,
+                            "tiempo_entrega_periodo",
+                            val as Periodo,
+                          )
+                        }
+                        size="xs"
+                        radius="lg"
+                        classNames={inputStyles}
+                        className="flex-[0.6]"
+                        comboboxProps={{ withinPortal: false }}
+                      />
+                    </Group>
+                  </Group>
+
+                  {esRecojo && (
+                    <TextInput
+                      label="Lugar de Recojo"
+                      placeholder="Dirección, local, etc..."
+                      withAsterisk
+                      leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+                      value={det.lugar_recojo || ""}
+                      onChange={(e) =>
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "lugar_recojo",
+                          e.currentTarget.value,
+                        )
+                      }
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                    />
+                  )}
+
+                  {det.tiempo_entrega_dias > 0 && (
+                    <Text size="11px" className="text-zinc-500 text-center mt-2">
+                      ≈ {det.tiempo_entrega_dias} día
+                      {det.tiempo_entrega_dias !== 1 ? "s" : ""} de entrega estimados
+                    </Text>
+                  )}
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+
+            {/* Popover de Comentario */}
+            <Popover width={300} position="bottom" withArrow shadow="md">
+              <Popover.Target>
+                <Tooltip label="Comentario (Opcional)" withArrow>
+                  <Indicator color="yellow" size={8} offset={2} zIndex={10} disabled={!det.comentario}>
+                    <ActionIcon
+                      variant="light"
+                      color="gray"
+                      radius="md"
+                      size="md"
+                      className="border border-zinc-500/20"
+                    >
+                      <ChatBubbleBottomCenterTextIcon className={`w-4 h-4 ${det.comentario ? "text-yellow-500" : "text-zinc-400"}`} />
+                    </ActionIcon>
+                  </Indicator>
+                </Tooltip>
+              </Popover.Target>
+              <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
+                <TextInput
+                  label="Comentario del Producto"
+                  placeholder="Marca, color, especificaciones..."
+                  size="xs"
+                  radius="lg"
+                  classNames={inputStyles}
+                  value={det.comentario || ""}
+                  onChange={(e) =>
+                    onUpdateDetail(
+                      cotIdx,
+                      rowIndex,
+                      "comentario",
+                      e.currentTarget.value,
+                    )
+                  }
+                  leftSection={
+                    <ChatBubbleBottomCenterTextIcon className="w-4 h-4 text-zinc-500" />
+                  }
+                />
+              </Popover.Dropdown>
+            </Popover>
           </Group>
         </Group>
-
-        {/* Lugar de recojo (solo si tipo_despacho === Recojo) */}
-        {esRecojo && (
-          <TextInput
-            label="Lugar de Recojo"
-            placeholder="Dirección, local, etc..."
-            withAsterisk
-            leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
-            value={det.lugar_recojo || ""}
-            onChange={(e) =>
-              onUpdateDetail(
-                cotIdx,
-                prod.id_producto,
-                "lugar_recojo",
-                e.currentTarget.value,
-              )
-            }
-            size="xs"
-            radius="lg"
-            classNames={inputStyles}
-          />
-        )}
-
-        {/* Fila 5: Tarjetas de Resultados Financieros */}
-        <Group grow wrap="nowrap" gap="xs">
-          <Stack
-            gap={0}
-            px="xs"
-            py={4}
-            className="bg-cyan-600 rounded-lg shadow-sm border border-cyan-400/20"
-          >
-            <Text
-              size="9px"
-              fw={800}
-              className="text-white uppercase truncate opacity-90"
-            >
-              Total {baseAbrev}
-            </Text>
-            <Text size="xs" fw={800} className="text-white">
-              {det.cantidad * det.contenido_por_presentacion} {baseAbrev}
-            </Text>
-          </Stack>
-
-          <Stack
-            gap={0}
-            px="xs"
-            py={4}
-            className="bg-teal-600 rounded-lg shadow-sm border border-teal-400/20"
-          >
-            <Text
-              size="9px"
-              fw={800}
-              className="text-white uppercase truncate opacity-90"
-            >
-              Precio x {baseAbrev}
-            </Text>
-            <Text size="xs" fw={800} className="text-white">
-              {cot.moneda === "Soles" ? "S/. " : "$ "}
-              {formatNumber(det.precio_unitario_base)}
-            </Text>
-          </Stack>
-
-          <Stack
-            gap={0}
-            px="xs"
-            py={4}
-            className="bg-emerald-700 rounded-lg shadow-md border border-emerald-500/20"
-          >
-            <Text
-              size="9px"
-              fw={800}
-              className="text-white uppercase truncate opacity-90"
-            >
-              Subtotal
-            </Text>
-            <Text size="xs" fw={800} className="text-white">
-              {cot.moneda === "Soles" ? "S/. " : "$ "}
-              {formatNumber(det.cantidad * det.precio_unitario)}
-            </Text>
-          </Stack>
-        </Group>
-
-        {/* Tiempo de entrega calculado */}
-        {det.tiempo_entrega_dias > 0 && (
-          <Text size="11px" className="text-zinc-500 text-center">
-            ≈ {det.tiempo_entrega_dias} día
-            {det.tiempo_entrega_dias !== 1 ? "s" : ""} de entrega estimados
-          </Text>
-        )}
-
-        <TextInput
-          label="Comentario (Opcional)"
-          placeholder="Marca, color, etc..."
-          size="xs"
-          radius="lg"
-          classNames={inputStyles}
-          value={det.comentario || ""}
-          onChange={(e) =>
-            onUpdateDetail(
-              cotIdx,
-              prod.id_producto,
-              "comentario",
-              e.currentTarget.value,
-            )
-          }
-          leftSection={
-            <ChatBubbleBottomCenterTextIcon className="w-3 h-3 text-zinc-600" />
-          }
-        />
       </Stack>
     </>
   );

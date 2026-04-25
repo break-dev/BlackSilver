@@ -16,8 +16,6 @@ interface RegistroCotizacionProps {
   onCancel: () => void;
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
-  isCollapsed: boolean;
-  onAutoCollapse?: (collapsed: boolean) => void;
 }
 
 export const RegistroCotizacion = forwardRef<
@@ -30,8 +28,6 @@ export const RegistroCotizacion = forwardRef<
       onCancel,
       modalProductosOpened,
       setModalProductosOpened,
-      isCollapsed,
-      onAutoCollapse,
     },
     ref,
   ) => {
@@ -74,6 +70,7 @@ export const RegistroCotizacion = forwardRef<
       wizardAprobacionOpened,
       setWizardAprobacionOpened,
       wizardPayload,
+      duplicarFilaProducto,
     } = useRegistroCotizacion(handleInternalSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
@@ -115,8 +112,7 @@ export const RegistroCotizacion = forwardRef<
             onUpdateDetail={updateCotizacionDetail}
             onToggleNoCotiza={toggleCotizacionNoCotiza}
             onRemoveCotizacion={eliminarCotizacion}
-            isCollapsed={isCollapsed}
-            onAutoCollapse={onAutoCollapse}
+            onDuplicarFila={duplicarFilaProducto}
           />
         </div>
 

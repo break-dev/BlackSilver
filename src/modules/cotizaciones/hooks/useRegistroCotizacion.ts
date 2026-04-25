@@ -277,11 +277,29 @@ export const useRegistroCotizacion = (
     [],
   );
 
+  const duplicarFilaProducto = useCallback((rowIndex: number) => {
+    setProductos((prev) => {
+      const p = [...prev];
+      p.splice(rowIndex + 1, 0, { ...p[rowIndex] });
+      return p;
+    });
+    setCotizaciones((prevCots) =>
+      prevCots.map((cot) => {
+        const c = { ...cot };
+        const detalles = [...c.detalles];
+        const clone = { ...detalles[rowIndex], estado: Estado_Cotizacion_Detalle.Pendiente };
+        detalles.splice(rowIndex + 1, 0, clone);
+        c.detalles = detalles;
+        return c;
+      })
+    );
+  }, []);
+
   // Actualización de detalles (incluyendo almacén, despacho, tiempo de entrega)
   const updateCotizacionDetail = useCallback(
     <K extends keyof DTO_CotizacionDetalle>(
       cotIndex: number,
-      prodId: number,
+      rowIndex: number,
       field: K,
       value: DTO_CotizacionDetalle[K],
     ) => {
@@ -289,10 +307,9 @@ export const useRegistroCotizacion = (
         const p = [...prev];
         const cot = { ...p[cotIndex] };
 
-        const detalles = cot.detalles.map((d) => {
-          if (d.id_producto !== prodId) return d;
-
-          const upd = { ...d, [field]: value };
+        const detalles = [...cot.detalles];
+        const upd = { ...detalles[rowIndex], [field]: value };
+        const prodId = upd.id_producto;
 
           // Si cambia la unidad y coincide con la base, resetear contenido
           if (field === "id_unidad_medida") {
@@ -331,11 +348,8 @@ export const useRegistroCotizacion = (
                   ).toFixed(2),
                 )
               : 0;
-
-          return upd;
-        });
-
-        cot.detalles = detalles;
+          detalles[rowIndex] = upd;
+          cot.detalles = detalles;
 
         // Estado de la cotización según aprobaciones en detalles
         if ((field as string) === "estado") {
@@ -362,20 +376,19 @@ export const useRegistroCotizacion = (
   );
 
   const toggleCotizacionNoCotiza = useCallback(
-    (cotIndex: number, prodId: number) => {
+    (cotIndex: number, rowIndex: number) => {
       setCotizaciones((prev) => {
         const p = [...prev];
         const cot = { ...p[cotIndex] };
 
-        const detalles = cot.detalles.map((d) => {
-          if (d.id_producto !== prodId) return d;
-          const noC = !d.no_cotiza;
-          return {
-            ...d,
-            no_cotiza: noC,
-            estado: noC ? null : Estado_Cotizacion_Detalle.Pendiente,
-          };
-        });
+        const detalles = [...cot.detalles];
+        const d = detalles[rowIndex];
+        const noC = !d.no_cotiza;
+        detalles[rowIndex] = {
+          ...d,
+          no_cotiza: noC,
+          estado: noC ? null : Estado_Cotizacion_Detalle.Pendiente,
+        };
 
         cot.detalles = detalles;
 
@@ -591,5 +604,6 @@ export const useRegistroCotizacion = (
     wizardAprobacionOpened,
     setWizardAprobacionOpened,
     wizardPayload,
+    duplicarFilaProducto,
   };
 };

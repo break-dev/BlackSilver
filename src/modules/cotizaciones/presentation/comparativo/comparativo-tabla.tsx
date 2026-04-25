@@ -1,5 +1,6 @@
-import { Table, Text, Skeleton } from "@mantine/core";
-import { useRef, useEffect } from "react";
+import { Table, Text, Skeleton, Tooltip, ActionIcon } from "@mantine/core";
+import { PlusIcon } from "@heroicons/react/24/outline";
+
 import type {
   DTO_CotizacionRequest,
   DTO_ProductoComparativo,
@@ -33,14 +34,13 @@ interface ComparativoTablaProps {
   ) => void;
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
     cotIndex: number,
-    prodId: number,
+    rowIndex: number,
     field: K,
     value: DTO_CotizacionDetalle[K],
   ) => void;
-  onToggleNoCotiza: (cotIndex: number, prodId: number) => void;
+  onToggleNoCotiza: (cotIndex: number, rowIndex: number) => void;
   onRemoveCotizacion: (index: number) => void;
-  isCollapsed?: boolean;
-  onAutoCollapse?: (collapsed: boolean) => void;
+  onDuplicarFila?: (rowIndex: number) => void;
 }
 
 export const ComparativoTabla = ({
@@ -55,42 +55,17 @@ export const ComparativoTabla = ({
   onUpdateDetail,
   onToggleNoCotiza,
   onRemoveCotizacion,
-  isCollapsed = false,
-  onAutoCollapse,
+  onDuplicarFila,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
   const totalCols = numCotizaciones + numSkeletons;
   const totalWidth = 120 + totalCols * 400;
 
-  // Referencia para guardar dónde estábamos cuando se expandió
-  const scrollAlExpandir = useRef(0);
-
-  useEffect(() => {
-    if (!isCollapsed) {
-      const container = document.getElementById("comparativo-container");
-      if (container) scrollAlExpandir.current = container.scrollTop;
-    }
-  }, [isCollapsed]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = e.currentTarget.scrollTop;
-
-    // Si estamos en vista detallada, solo colapsamos si el usuario se mueve
-    // significativamente (>40px) desde donde lo abrió.
-    if (!isCollapsed) {
-      const desplazamiento = Math.abs(scrollTop - scrollAlExpandir.current);
-      if (desplazamiento > 40) {
-        onAutoCollapse?.(true);
-      }
-    }
-  };
-
   return (
     <div
       id="comparativo-container"
       className="h-full overflow-auto rounded-2xl border border-zinc-800 bg-zinc-950/50 shadow-xl custom-scrollbar relative"
-      onScroll={handleScroll}
     >
       <Table
         withColumnBorders
@@ -136,7 +111,6 @@ export const ComparativoTabla = ({
                 <CabeceraCotizacion
                   cot={cot}
                   idx={idx}
-                  isCollapsed={isCollapsed}
                   proveedores={proveedores}
                   empresas={empresas}
                   loadingProveedores={loadingProveedores}
@@ -161,7 +135,6 @@ export const ComparativoTabla = ({
               >
                 <CabeceraCotizacion
                   idx={numCotizaciones + i}
-                  isCollapsed={isCollapsed}
                   isSkeleton={true}
                   proveedores={proveedores}
                   empresas={empresas}
@@ -199,6 +172,7 @@ export const ComparativoTabla = ({
                     onUpdateDetail={onUpdateDetail}
                     onToggleNoCotiza={onToggleNoCotiza}
                     isSkeleton={true}
+                    rowIndex={0}
                   />
                 </Table.Td>
               ))}
@@ -206,7 +180,7 @@ export const ComparativoTabla = ({
           ) : (
             productos.map((prod, pIdx) => (
               <Table.Tr
-                key={prod?.id_producto || `sk-prod-${pIdx}`}
+                key={`${prod?.id_producto}-${pIdx}`}
                 className="border-b border-zinc-900 hover:bg-zinc-900/10 transition-colors"
               >
                 {/* Columna fija del producto */}
@@ -215,9 +189,25 @@ export const ComparativoTabla = ({
                   className="border-r border-zinc-800 sticky left-0 z-20 bg-zinc-950/90 shadow-xl backdrop-blur-md"
                 >
                   {prod ? (
-                    <Text size="xs" fw={700} className="text-zinc-200 p-4">
-                      {prod.nombre}
-                    </Text>
+                    <div className="p-4 flex flex-col items-center justify-center gap-2">
+                      <Text size="xs" fw={700} className="text-zinc-200 text-center">
+                        {prod.nombre}
+                      </Text>
+                      {onDuplicarFila && (
+                        <Tooltip label="Agregar otro destino" position="right">
+                          <ActionIcon
+                            variant="light"
+                            color="cyan"
+                            size="sm"
+                            radius="xl"
+                            onClick={() => onDuplicarFila(pIdx)}
+                            className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400"
+                          >
+                            <PlusIcon className="w-4 h-4" />
+                          </ActionIcon>
+                        </Tooltip>
+                      )}
+                    </div>
                   ) : (
                     <div className="p-4">
                       <Skeleton h={12} radius="md" />
@@ -227,9 +217,7 @@ export const ComparativoTabla = ({
 
                 {/* Renderizar Celdas Reales */}
                 {cotizaciones.map((cot, cotIdx) => {
-                  const det = cot.detalles.find(
-                    (d) => d.id_producto === prod?.id_producto,
-                  );
+                  const det = cot.detalles[pIdx];
                   if (!det || !prod)
                     return (
                       <Table.Td
@@ -256,6 +244,7 @@ export const ComparativoTabla = ({
                         almacenes={almacenes}
                         onUpdateDetail={onUpdateDetail}
                         onToggleNoCotiza={onToggleNoCotiza}
+                        rowIndex={pIdx}
                       />
 
                       {/* Overlay de 'No Cotiza' */}
@@ -304,6 +293,7 @@ export const ComparativoTabla = ({
                       onUpdateDetail={onUpdateDetail}
                       onToggleNoCotiza={onToggleNoCotiza}
                       isSkeleton={true}
+                      rowIndex={0}
                     />
                   </Table.Td>
                 ))}
