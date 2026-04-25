@@ -6,12 +6,23 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/solid";
 import { useNotify } from "../../../../hooks/useNotify";
+import { useSound } from "react-sounds";
 
 export const GlobalNotification = () => {
   const { message, clearMessage } = useNotify();
 
+  // Modern, subtle, futuristic notification sounds
+  const { play: playSuccess } = useSound("ui/success_blip");
+  const { play: playError } = useSound("ui/blocked");
+  const { play: playInfo } = useSound("ui/pop_open");
+
   useEffect(() => {
     if (!message.type || !message.content) return;
+
+    // Trigger subtle sound based on notification type
+    if (message.type === "success") playSuccess({ volume: 0.35 });
+    else if (message.type === "error") playError({ volume: 0.35 });
+    else playInfo({ volume: 0.35 });
 
     const titleMap: Record<string, string> = {
       success: "Operación Exitosa",
@@ -104,7 +115,7 @@ export const GlobalNotification = () => {
     });
 
     clearMessage();
-  }, [message, clearMessage]);
+  }, [message, clearMessage, playSuccess, playError, playInfo]);
 
   return null;
 };
