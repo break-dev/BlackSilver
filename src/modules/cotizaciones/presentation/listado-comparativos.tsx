@@ -815,12 +815,9 @@ export const ListadoComparativos = ({
                                             <Group gap={4} wrap="nowrap">
                                               <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
                                               <Text size="xs" c="dimmed">
-                                                {det.tiempo_entrega}{" "}
-                                                {det.tiempo_entrega_periodo} ·{" "}
-                                                {det.tiempo_entrega_dias} día
-                                                {det.tiempo_entrega_dias !== 1
-                                                  ? "s"
-                                                  : ""}
+                                                {det.tiempo_entrega_dias === 1
+                                                  ? "1 día"
+                                                  : `${det.tiempo_entrega_dias} días`}
                                               </Text>
                                             </Group>
                                           )}

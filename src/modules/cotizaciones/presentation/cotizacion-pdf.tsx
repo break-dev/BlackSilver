@@ -6,6 +6,7 @@ import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
 } from "../../../service/responses/cotizaciones/cotizacion";
+import { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
 
 interface CotizacionData {
   cotizacion: RES_Cotizacion;
@@ -209,69 +210,94 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               </View>
             </View>
 
-            {/* Tabla de Productos */}
+            {/* Tablas de Productos Agrupadas */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>DETALLE DE PRODUCTOS</Text>
-
-              {/* Header Tabla */}
-              <View style={[styles.row, styles.tableHeader]}>
-                <Text style={styles.col0}>#</Text>
-                <Text style={styles.col1}>Cant.</Text>
-                <Text style={styles.col2}>U.M.</Text>
-                <Text style={styles.col3}>Descripción</Text>
-                <Text style={styles.col4}>P. Unit.</Text>
-                <Text style={styles.col5}>Total</Text>
-              </View>
-
-              {/* Filas */}
-              {detalles.map((det, idx) => {
-                const hasEquivalence =
-                  det.id_unidad_medida_base !== det.id_unidad_medida_ctz;
-
-                return (
-                  <View key={det.id_cotizacion_detalle} style={styles.row}>
-                    <Text style={styles.col0}>{idx + 1}</Text>
-                    <Text style={styles.col1}>
-                      {formatNumber(det.cantidad)}
-                    </Text>
-                    <Text style={styles.col2}>{det.unidad_medida_ctz_abv}</Text>
-                    <View style={styles.col3}>
-                      <Text style={{ fontWeight: 600 }}>{det.producto}</Text>
-                      {hasEquivalence && (
-                        <Text
-                          style={{
-                            fontSize: 8,
-                            color: "#71717a",
-                            marginTop: 2,
-                          }}
-                        >
-                          Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
-                          {det.unidad_medida_base_abv} x{" "}
-                          {det.unidad_medida_ctz_abv}
-                        </Text>
-                      )}
-                      {det.comentario && (
-                        <Text
-                          style={{
-                            fontSize: 8,
-                            color: "#71717a",
-                            marginTop: hasEquivalence ? 1 : 2,
-                          }}
-                        >
-                          Obs: {det.comentario}
-                        </Text>
-                      )}
-                    </View>
-                    <Text style={styles.col4}>
-                      {symbol} {formatNumber(det.precio_unitario)}
-                    </Text>
-                    <Text style={styles.col5}>
-                      {symbol}{" "}
-                      {formatNumber(det.cantidad * det.precio_unitario)}
-                    </Text>
-                  </View>
+              {(() => {
+                const agrupados = detalles.reduce(
+                  (acc, det) => {
+                    const lugar =
+                      det.tipo_despacho === TipoDespachoCompra.Recojo &&
+                        det.lugar_recojo
+                        ? ` [Lugar: ${det.lugar_recojo}]`
+                        : "";
+                    const txtDias =
+                      det.tiempo_entrega_dias === 1
+                        ? "1 día"
+                        : `${det.tiempo_entrega_dias} días`;
+                    const key = `DESTINO: ${det.almacen_recepcionista} | DESPACHO: ${det.tipo_despacho} (Entrega: ${txtDias})${lugar}`;
+                    if (!acc[key]) acc[key] = [];
+                    acc[key].push(det);
+                    return acc;
+                  },
+                  {} as Record<string, typeof detalles>,
                 );
-              })}
+
+                return Object.entries(agrupados).map(([grupoName, items]) => (
+                  <View key={grupoName} style={{ marginBottom: 15 }}>
+                    <Text style={styles.sectionTitle}>{grupoName.toUpperCase()}</Text>
+
+                    {/* Header Tabla */}
+                    <View style={[styles.row, styles.tableHeader]}>
+                      <Text style={styles.col0}>#</Text>
+                      <Text style={styles.col1}>Cant.</Text>
+                      <Text style={styles.col2}>U.M.</Text>
+                      <Text style={styles.col3}>Descripción</Text>
+                      <Text style={styles.col4}>P. Unit.</Text>
+                      <Text style={styles.col5}>Total</Text>
+                    </View>
+
+                    {/* Filas */}
+                    {items.map((det, idx) => {
+                      const hasEquivalence =
+                        det.id_unidad_medida_base !== det.id_unidad_medida_ctz;
+
+                      return (
+                        <View key={det.id_cotizacion_detalle} style={styles.row}>
+                          <Text style={styles.col0}>{idx + 1}</Text>
+                          <Text style={styles.col1}>
+                            {formatNumber(det.cantidad)}
+                          </Text>
+                          <Text style={styles.col2}>{det.unidad_medida_ctz_abv}</Text>
+                          <View style={styles.col3}>
+                            <Text style={{ fontWeight: 600 }}>{det.producto}</Text>
+                            {hasEquivalence && (
+                              <Text
+                                style={{
+                                  fontSize: 8,
+                                  color: "#71717a",
+                                  marginTop: 2,
+                                }}
+                              >
+                                Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
+                                {det.unidad_medida_base_abv} x{" "}
+                                {det.unidad_medida_ctz_abv}
+                              </Text>
+                            )}
+                            {det.comentario && (
+                              <Text
+                                style={{
+                                  fontSize: 8,
+                                  color: "#71717a",
+                                  marginTop: hasEquivalence ? 1 : 2,
+                                }}
+                              >
+                                Obs: {det.comentario}
+                              </Text>
+                            )}
+                          </View>
+                          <Text style={styles.col4}>
+                            {symbol} {formatNumber(det.precio_unitario)}
+                          </Text>
+                          <Text style={styles.col5}>
+                            {symbol}{" "}
+                            {formatNumber(det.cantidad * det.precio_unitario)}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ));
+              })()}
             </View>
 
             {/* Totales */}
@@ -279,9 +305,30 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Subtotal:</Text>
                 <Text>
-                  {symbol} {formatNumber(cotizacion.total_antes_igv)}
+                  {symbol}{" "}
+                  {formatNumber(
+                    cotizacion.total_antes_igv -
+                    Number(cotizacion.costo_flete) -
+                    Number(cotizacion.otros_gastos),
+                  )}
                 </Text>
               </View>
+              {Number(cotizacion.costo_flete) > 0 && (
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Costo de Flete:</Text>
+                  <Text>
+                    {symbol} {formatNumber(cotizacion.costo_flete)}
+                  </Text>
+                </View>
+              )}
+              {Number(cotizacion.otros_gastos) > 0 && (
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>Otros Gastos:</Text>
+                  <Text>
+                    {symbol} {formatNumber(cotizacion.otros_gastos)}
+                  </Text>
+                </View>
+              )}
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>
                   IGV ({cotizacion.porcentaje_igv}%):

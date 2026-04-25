@@ -6,6 +6,7 @@ import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
 } from "../../service/responses/ordenes-compra/orden-compra";
+import { TipoDespachoCompra } from "../../shared/enums/_generic/tipo-despacho-compra";
 
 interface OrdenCompraPDFProps {
   orden: RES_OrdenCompra;
@@ -117,6 +118,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 9, color: "#52525b", marginBottom: 2 }}>
+              EMITIR FACTURA A NOMBRE DE:
+            </Text>
             <Text style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}>
               {orden.empresa.toUpperCase()}
             </Text>
@@ -144,11 +148,11 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Proveedor / Emisión */}
         <View style={{ flexDirection: "row", marginBottom: 20 }}>
           <View style={{ flex: 1, marginRight: 10 }}>
-            <Text style={styles.sectionTitle}>EMITIR FACTURA A NOMBRE DE:</Text>
-            <Text style={{ fontWeight: 700 }}>{orden.empresa}</Text>
-            {orden.empresa_ruc && (
+            <Text style={styles.sectionTitle}>PROVEEDOR</Text>
+            <Text style={{ fontWeight: 700 }}>{orden.proveedor}</Text>
+            {orden.documento_proveedor && (
               <Text style={{ fontSize: 9, color: "#52525b" }}>
-                RUC: {orden.empresa_ruc}
+                RUC / Doc: {orden.documento_proveedor}
               </Text>
             )}
           </View>
@@ -165,48 +169,85 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         </View>
 
         {/* Tabla */}
+        {/* Tabla Agrupada */}
         <View style={{ marginBottom: 15 }}>
-          <Text style={styles.sectionTitle}>DETALLE DE PRODUCTOS</Text>
-          <View style={[styles.row, styles.tableHeader]}>
-            <Text style={styles.col0}>#</Text>
-            <Text style={styles.col1}>Cant.</Text>
-            <Text style={styles.col2}>U.M.</Text>
-            <Text style={styles.col3}>Descripción</Text>
-            <Text style={styles.col4}>P. Unit.</Text>
-            <Text style={styles.col5}>Total</Text>
-          </View>
-          {detalles.map((det, idx) => {
-            const hasEquivalence =
-              det.id_unidad_medida_base !== det.id_unidad_medida_oc;
-            const subtotalItem = det.cantidad_requerida * det.precio_unitario;
-
-            return (
-              <View key={det.id_orden_compra_detalle} style={styles.row}>
-                <Text style={styles.col0}>{idx + 1}</Text>
-                <Text style={styles.col1}>
-                  {formatNumber(det.cantidad_requerida)}
-                </Text>
-                <Text style={styles.col2}>{det.unidad_medida_oc_abv}</Text>
-                <View style={styles.col3}>
-                  <Text style={{ fontWeight: 700 }}>{det.producto}</Text>
-                  {hasEquivalence && (
-                    <Text
-                      style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}
-                    >
-                      Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
-                      {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
-                    </Text>
-                  )}
-                </View>
-                <Text style={styles.col4}>
-                  {symbol} {formatNumber(det.precio_unitario)}
-                </Text>
-                <Text style={styles.col5}>
-                  {symbol} {formatNumber(subtotalItem)}
-                </Text>
-              </View>
+          {(() => {
+            const agrupados = detalles.reduce(
+              (acc, det) => {
+                const lugar =
+                  det.tipo_despacho === TipoDespachoCompra.Recojo &&
+                    det.lugar_recojo
+                    ? ` [Lugar: ${det.lugar_recojo}]`
+                    : "";
+                const txtDias =
+                  det.tiempo_entrega_dias === 1
+                    ? "1 día"
+                    : `${det.tiempo_entrega_dias} días`;
+                const key = `DESTINO: ${det.almacen_recepcionista} | DESPACHO: ${det.tipo_despacho} (Entrega: ${txtDias})${lugar}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(det);
+                return acc;
+              },
+              {} as Record<string, typeof detalles>,
             );
-          })}
+
+            return Object.entries(agrupados).map(([grupoName, items]) => (
+              <View key={grupoName} style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>{grupoName.toUpperCase()}</Text>
+                <View style={[styles.row, styles.tableHeader]}>
+                  <Text style={styles.col0}>#</Text>
+                  <Text style={styles.col1}>Cant.</Text>
+                  <Text style={styles.col2}>U.M.</Text>
+                  <Text style={styles.col3}>Descripción</Text>
+                  <Text style={styles.col4}>P. Unit.</Text>
+                  <Text style={styles.col5}>Total</Text>
+                </View>
+                {items.map((det, idx) => {
+                  const hasEquivalence =
+                    det.id_unidad_medida_base !== det.id_unidad_medida_oc;
+                  const subtotalItem = det.cantidad_requerida * det.precio_unitario;
+
+                  return (
+                    <View key={det.id_orden_compra_detalle} style={styles.row}>
+                      <Text style={styles.col0}>{idx + 1}</Text>
+                      <Text style={styles.col1}>
+                        {formatNumber(det.cantidad_requerida)}
+                      </Text>
+                      <Text style={styles.col2}>{det.unidad_medida_oc_abv}</Text>
+                      <View style={styles.col3}>
+                        <Text style={{ fontWeight: 700 }}>{det.producto}</Text>
+                        {hasEquivalence && (
+                          <Text
+                            style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}
+                          >
+                            Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
+                            {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
+                          </Text>
+                        )}
+                        {det.comentario && (
+                          <Text
+                            style={{
+                              fontSize: 8,
+                              color: "#71717a",
+                              marginTop: hasEquivalence ? 1 : 2,
+                            }}
+                          >
+                            Obs: {det.comentario}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.col4}>
+                        {symbol} {formatNumber(det.precio_unitario)}
+                      </Text>
+                      <Text style={styles.col5}>
+                        {symbol} {formatNumber(subtotalItem)}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            ));
+          })()}
         </View>
 
         {/* Totales */}
@@ -214,9 +255,30 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View style={styles.totalRow}>
             <Text style={{ fontWeight: 700 }}>Subtotal:</Text>
             <Text>
-              {symbol} {formatNumber(orden.total_antes_igv)}
+              {symbol}{" "}
+              {formatNumber(
+                orden.total_antes_igv -
+                Number(orden.costo_flete) -
+                Number(orden.otros_gastos),
+              )}
             </Text>
           </View>
+          {Number(orden.costo_flete) > 0 && (
+            <View style={styles.totalRow}>
+              <Text style={{ fontWeight: 700 }}>Costo de Flete:</Text>
+              <Text>
+                {symbol} {formatNumber(orden.costo_flete)}
+              </Text>
+            </View>
+          )}
+          {Number(orden.otros_gastos) > 0 && (
+            <View style={styles.totalRow}>
+              <Text style={{ fontWeight: 700 }}>Otros Gastos:</Text>
+              <Text>
+                {symbol} {formatNumber(orden.otros_gastos)}
+              </Text>
+            </View>
+          )}
           <View style={styles.totalRow}>
             <Text style={{ fontWeight: 700 }}>
               IGV ({orden.porcentaje_igv}%):

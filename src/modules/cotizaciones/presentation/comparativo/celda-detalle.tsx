@@ -135,11 +135,10 @@ export const CeldaDetalle = ({
       {/* Campos editables */}
       <Stack
         gap="sm"
-        className={`w-full pt-6 transition-all duration-300 ${
-          det.no_cotiza
-            ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
-            : ""
-        }`}
+        className={`w-full pt-6 transition-all duration-300 ${det.no_cotiza
+          ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
+          : ""
+          }`}
       >
         {/* Fila 1: Unidad y Cantidad */}
         <Group grow align="flex-end" gap="xs">
@@ -287,7 +286,7 @@ export const CeldaDetalle = ({
             {/* Popover de Logística */}
             <Popover width={320} position="bottom" withArrow shadow="md">
               <Popover.Target>
-                <Tooltip label="Configurar Logística (Almacén, Despacho, Entrega)" withArrow>
+                <Tooltip label="Configurar (Almacén, Despacho, Entrega)" withArrow>
                   <Indicator color="red" size={8} offset={2} zIndex={10} disabled={!esRecojo && det.tiempo_entrega === 0}>
                     <ActionIcon
                       variant="light"
@@ -304,7 +303,7 @@ export const CeldaDetalle = ({
               <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
                 <Stack gap="sm">
                   <Text size="sm" fw={800} className="text-white mb-1">
-                    Logística y Despacho
+                    Despacho
                   </Text>
                   <Select
                     label="Almacén de Recepción"
@@ -337,39 +336,37 @@ export const CeldaDetalle = ({
                     comboboxProps={{ withinPortal: false }}
                   />
 
-                  <Group grow align="flex-end" gap="xs">
-                    <Select
-                      label="Tipo de Despacho"
-                      withAsterisk
-                      leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
-                      data={[
-                        { value: TipoDespachoCompra.Envio, label: "Envío" },
-                        { value: TipoDespachoCompra.Recojo, label: "Recojo" },
-                      ]}
-                      value={det.tipo_despacho}
-                      onChange={(val) =>
-                        onUpdateDetail(
-                          cotIdx,
-                          rowIndex,
-                          "tipo_despacho",
-                          val as TipoDespachoCompra,
-                        )
-                      }
-                      size="xs"
-                      radius="lg"
-                      classNames={inputStyles}
-                      comboboxProps={{ withinPortal: false }}
-                    />
-                    <Group grow gap={4} align="flex-end">
+                  <Select
+                    label="Tipo de Despacho"
+                    withAsterisk
+                    leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                    data={[
+                      { value: TipoDespachoCompra.Envio, label: "Envío" },
+                      { value: TipoDespachoCompra.Recojo, label: "Recojo" },
+                    ]}
+                    value={det.tipo_despacho}
+                    onChange={(val) =>
+                      onUpdateDetail(
+                        cotIdx,
+                        rowIndex,
+                        "tipo_despacho",
+                        val as TipoDespachoCompra,
+                      )
+                    }
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                  <div>
+                    <Group gap={4} wrap="nowrap" mb={6}>
+                      <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
+                      <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+                        Entrega
+                      </Text>
+                    </Group>
+                    <Group grow gap="xs">
                       <NumberInput
-                        label={
-                          <Group gap={4} wrap="nowrap">
-                            <ClockIcon className="w-3 h-3 text-zinc-500" />
-                            <Text size="xs" fw={500} className="text-zinc-300">
-                              Entrega
-                            </Text>
-                          </Group>
-                        }
                         value={det.tiempo_entrega}
                         onChange={(val) =>
                           onUpdateDetail(
@@ -383,10 +380,8 @@ export const CeldaDetalle = ({
                         size="xs"
                         radius="lg"
                         classNames={inputStyles}
-                        className="flex-[0.4]"
                       />
                       <Select
-                        label=" "
                         data={PERIODO_OPTIONS}
                         value={det.tiempo_entrega_periodo}
                         onChange={(val) =>
@@ -400,11 +395,10 @@ export const CeldaDetalle = ({
                         size="xs"
                         radius="lg"
                         classNames={inputStyles}
-                        className="flex-[0.6]"
                         comboboxProps={{ withinPortal: false }}
                       />
                     </Group>
-                  </Group>
+                  </div>
 
                   {esRecojo && (
                     <TextInput

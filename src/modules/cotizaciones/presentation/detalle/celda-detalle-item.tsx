@@ -44,8 +44,6 @@ export const CeldaDetalleItem = ({
   esAlmacenPrincipal,
   tipoDespacho,
   lugarRecojo,
-  tiempoEntrega,
-  tiempoEntregaPeriodo,
   tiempoEntregaDias,
   esFiscalizado,
   esPerecible,
@@ -74,8 +72,8 @@ export const CeldaDetalleItem = ({
   const bgClass = isAprobado
     ? "bg-teal-500/10 border-teal-500/20 shadow-teal-900/10"
     : isRechazado
-    ? "bg-red-500/10 border-red-500/20"
-    : "bg-zinc-800/30 border-zinc-700/50";
+      ? "bg-red-500/10 border-red-500/20"
+      : "bg-zinc-800/30 border-zinc-700/50";
 
   const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-zinc-400";
   const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-zinc-200";
@@ -180,7 +178,7 @@ export const CeldaDetalleItem = ({
             <Group gap={5} wrap="nowrap">
               <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
               <Text size="10px" c="dimmed" className="leading-tight">
-                {tiempoEntrega} {tiempoEntregaPeriodo} · {tiempoEntregaDias} día{tiempoEntregaDias !== 1 ? "s" : ""}
+                {tiempoEntregaDias === 1 ? "1 día" : `${tiempoEntregaDias} días`}
               </Text>
             </Group>
           )}
