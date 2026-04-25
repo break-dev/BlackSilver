@@ -5,8 +5,6 @@ import {
   ArrowPathIcon,
   CubeIcon,
   PlusIcon,
-  ArrowsPointingInIcon,
-  ArrowsPointingOutIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useRef } from "react";
 import { BlackcitoMascot } from "../../../presentation/utils/blackcito-pet";
@@ -38,7 +36,6 @@ export const CotizacionesPage = () => {
     useDisclosure(false);
   const [openedProductos, setOpenedProductos] = useState(false);
   const [openedProductosHover, setOpenedProductosHover] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const registroRef = useRef<{ agregarCotizacion: () => void } | null>(null);
 
   return (
@@ -128,24 +125,6 @@ export const CotizacionesPage = () => {
                 >
                   Añadir Cotización
                 </Button>
-
-                <Button
-                  variant="subtle"
-                  color="zinc"
-                  radius="xl"
-                  leftSection={
-                    isCollapsed ? (
-                      <ArrowsPointingOutIcon className="w-5 h-5 text-zinc-400" />
-                    ) : (
-                      <ArrowsPointingInIcon className="w-5 h-5 text-zinc-400" />
-                    )
-                  }
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hover:bg-white/5"
-                  size="xs"
-                >
-                  {isCollapsed ? "Vista Detallada" : "Vista Resumida"}
-                </Button>
               </>
             )}
           </Group>
@@ -153,8 +132,6 @@ export const CotizacionesPage = () => {
       >
         <RegistroCotizacion
           ref={registroRef}
-          isCollapsed={isCollapsed}
-          onAutoCollapse={setIsCollapsed}
           onSuccess={(data) => {
             closeCreate();
             addComparativosLocal(data);
