@@ -1,131 +1,128 @@
-# Black Silver - Frontend (React + Vite)
+# Black Silver - Frontend
 
-Este es el repositorio del frontend de **Black Silver**, una plataforma SaaS diseñada para la gestión integral de operaciones mineras. Este proyecto utiliza un stack moderno y una arquitectura de **Aislamiento por Modulo** para garantizar la escalabilidad y mantenibilidad.
+Este es el frontend del sistema **Black Silver**, una plataforma integral de gestión empresarial (ERP) especializada en operaciones mineras y logística.
 
----
+## 🚀 Stack Tecnológico
 
-## 💎 Librerías Relevantes
+- **Framework**: [React 19](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Estilos**:
+  - [Tailwind CSS v4](https://tailwindcss.com/) (Utilidades y diseño fluido)
+  - [Mantine v8](https://mantine.dev/) (Biblioteca de componentes UI y hooks)
+- **Estado Global**: [Zustand](https://zustand-demo.pmnd.rs/) (Arquitectura ligera y escalable)
+- **Enrutamiento**: [React Router DOM v7](https://reactrouter.com/)
+- **Validación**: [Zod](https://zod.dev/)
+- **Comunicación API**: [Axios](https://axios-http.com/)
+- **Animaciones**:
+  - [Motion](https://motion.dev/)
+  - [GSAP](https://gsap.com/)
+  - [Anime.js](https://animejs.com/)
+- **Gestión de Fechas**: [Dayjs](https://day.js.org/)
 
-### Desarrollo y Core
-- **React 19 & Vite 7:** Base del proyecto y herramienta de construcción ultra-rápida.
-- **TypeScript:** Tipado estricto para prevenir errores y mejorar la legibilidad.
-- **Axios:** Cliente HTTP para comunicación con la API.
-- **Zustand 5:** Gestión de estado global simple y escalable.
-- **React Router 7:** Enrutamiento dinámico y manejo de navegación.
+## 📂 Estructura del Proyecto
 
-### Diseño y UI/UX
-- **Mantine 8:** Framework de componentes UI completo y accesible.
-- **Tailwind CSS 4:** Estilado rápido y consistente mediante utilidades.
-- **Motion 12 (Framer Motion) & GSAP:** Orquestación de animaciones suaves, micro-interacciones y animaciones complejas (como GSAP timelines).
-- **HeroIcons, Tabler Icons & Lucide React:** Sets de iconos vectoriales para una interfaz limpia y moderna.
-- **Lottie React:** Integración de animaciones JSON exportadas desde After Effects/Lottie para interacciones premium.
-- **Use Sound:** Hooks para integrar efectos de sonido y retroalimentación auditiva a las micro-interacciones.
+El proyecto sigue una arquitectura **Modular** y **Orientada a Dominios**.
 
-### Funcionalidad Avanzada
-- **Mantine DataTable:** Tablas de alto rendimiento con soporte para ordenamiento y filtrado.
-- **Recharts & Mantine Charts:** Visualización de datos y analíticas.
-- **@react-pdf/renderer:** Generación de documentos PDF complejos directamente en el cliente.
-- **Zod:** Validación de esquemas de datos integrada con formularios.
-- **Day.js:** Manipulación y formateo de fechas de forma ligera.
-- **QRCode.react:** Generación dinámica de códigos QR para trazabilidad.
+### `/src` - Diccionario de Recursos Globales
 
----
+#### 1. Hooks Globales (`/src/hooks`)
 
-## 🏗️ Arquitectura: Aislamiento por Modulo
+Lógica reutilizable en toda la aplicación:
 
-El proyecto sigue estrictamente el principio de **Aislamiento por Modulo**. Cada modulo de la aplicación reside en su propio directorio y debe ser autosuficiente.
+- **`useAuthUser`**: Gestiona la sesión del usuario, el logout y la validación de autorización basada en el menú dinámico.
+- **`useNotify`**: Interfaz simplificada para disparar notificaciones de éxito, error e información mediante Mantine Notifications.
+- **`usePrint`**: Facilita la lógica de impresión de documentos (PDFs, tickets) integrándose con el portal de impresión global.
+- **`useJsonScanner`**: Hook especializado para manejar la entrada de datos desde scanners de códigos QR/Barra que envían información en formato JSON.
+- **`useDownloadFile`**: Utilidad para gestionar la descarga de archivos desde el servidor o mediante blobs locales.
+- **`useTitlePage`**: Sincroniza el título de la pestaña del navegador con la página actual.
 
-### Ubicación: `src/modules/[nombre-modulo-kebab-case]`
+#### 2. Componentes Base de UI (`/src/presentation/utils`)
 
-Cada modulo se divide obligatoriamente en tres capas para separar responsabilidades:
+Componentes altamente configurables que definen el lenguaje visual del sistema:
 
-#### 1. Presentation (`components/` y `.page.tsx`)
+- **`DataTableEstandar`**: Envoltura de `mantine-datatable` con estilos preconfigurados, paginación automática y manejo de estados de carga.
+- **`ModalEstandar`**: Componente de ventana modal con animaciones de entrada y estructura definida para formularios.
+- **`DatePickerInput`**: Input de fecha personalizado y estilizado.
+- **`JsonScanner`**: Componente visual para la captura de datos mediante scanner.
+- **`BlackcitoPet`**: Mascota virtual/asistente que proporciona feedback visual y saludos dinámicos al usuario.
+- **`SegmentedInput`**: Control de entrada segmentado para selecciones rápidas.
 
-- **Responsabilidad:** UI/UX y renderizado.
-- **Regla:** No debe contener lógica compleja, cálculos pesados ni manejo de estado de negocio.
-- **Archivos:** El componente principal es `[nombre-modulo].page.tsx`. Los sub-componentes son `[nombre-componente].tsx`.
-- **Escalabilidad:** Si un componente se vuelve complejo, crea una carpeta con su nombre, coloca el `.tsx` ahí dentro, y crea una subcarpeta `components/` para los elementos que lo integran.
+#### 3. State Management (`/src/stores`)
 
-#### 2. Hooks (`hooks/`)
+Estados persistentes mediante Zustand:
 
-- **Responsabilidad:** El "Cerebro" del componente. Maneja el estado local, efectos y validaciones.
-- **Regla:** Los hooks son **por cada componente complejo de la modulo**, no uno general por modulo. (Ej: `useRegistroEntregaLogistica.ts`).
+- **`auth.store`**: Almacena el token JWT y la información básica del usuario logueado.
+- **`ui.store`**: Controla el estado de la interfaz (sidebar abierto/cerrado) y la cola de notificaciones globales.
+- **`menu.store`**: Almacena la estructura del menú de navegación obtenida desde la API tras el login.
+- **`printer.store`**: Gestiona la cola de impresión y la visibilidad de los portales de impresión.
 
-#### 3. Service (`service/`)
+#### 4. Servicios Centrales (`/src/service`)
 
-- **Responsabilidad:** Comunicación con la API y definición de modelos de datos.
-- **Regla:** Solo deben existir **3 archivos** nombrados con el nombre de la modulo:
-  1. `[nombre-modulo].service.ts`
-  2. `[nombre-modulo].requests.ts`
-  3. `[nombre-modulo].responses.ts` (Debe ser **exactamente** lo que la API envía).
+- **`_api.ts`**: Configuración de Axios con interceptores. Inyecta el token de autorización y maneja automáticamente los errores 401 (Unauthorized) limpiando la sesión.
+- **`archivo.service.ts`**: Gestión de subida y visualización de documentos en el servidor.
+- **`menu-nav.service.ts`**: Servicio para obtener la estructura jerárquica del menú según el rol.
 
-> [!IMPORTANT]
-> **Reglas de Oro:**
->
-> 1. **Prohibido reutilizar componentes de negocio** entre diferentes modulos (ej. entregas de requerimientos vs. entregas de préstamos), aunque se parezcan. Se debe tomar como referencia y crear uno nuevo en la modulo correspondiente.
-> 2. **Componentes Abstractos:** Solo se reutilizan componentes sin lógica de procesos específicos (Modal, Datatable, CustomDatePicker, FileUpload) desde `src/presentation` o `src/shared`.
+#### 5. Shared (`/src/shared`)
 
----
+- **`cn.ts`**: Utilidad para combinar clases de Tailwind de forma limpia (usando `clsx` y `tailwind-merge`).
+- **`formatNumber.ts`**: Funciones para formatear moneda y números según el estándar local.
+- **`interfaces/`**: Contiene contratos de datos globales como `IResponse` y `IArchivo`.
+- **`enums/`**: Definiciones de constantes para estados de requerimientos, órdenes de compra, tipos de movimiento, etc.
 
-## 📂 Estructura de Directorios
+## 🛠 Convenciones y Patrones
 
-- `src/hooks`: Hooks de utilidad global transversales. Destacan `useTitlePage` (para nombre en header y pestaña) y `useNotify` (para alertas UI). **No existe useTheme.**
-- `src/presentation`: Componentes de UI globales y abstractos.
-- `src/service`: Instancia de Axios y servicios core del sistema.
-- `src/shared`: Constantes, utilidades, tipos globales y **Enums** (que deben mantener similitud estricta con los de la API).
-- `src/stores`: Stores globales (ej. sesión de usuario, configuración).
-- `src/modules`: Modulos de la aplicación organizadas por funcionalidad.
+### 1. Estructura de Módulos
 
----
+Cada módulo en `src/modules` es autocontenido:
 
-## 📝 Reglas de Desarrollo
-
-### 1. Convenciones de Nombres
-
-- **Página Principal:** `kebab-case.page.tsx`
-- **Sub-Componentes:** `kebab-case.tsx`
-- **Hooks:** `camelCase.ts` empezando con 'use' (ej. `useRegistroEntrega.ts`).
-- **Servicios:** `kebab-case.service.ts`
-- **Carpetas:** `kebab-case`.
-
-### 2. Tipado Estrictamente Obligatorio
-
-Está prohibido el uso de `any`. Todas las respuestas y requests de la API deben tener una interfaz definida en el respectivo archivo de la capa de servicio.
-
-### 3. Flujo de Datos
-
-El flujo debe ser siempre unidireccional:
-`Componente (UI) -> Hook (Lógica) -> Service (API/Store) -> Backend`.
-
----
-
-## 🚀 Workflow: Crear una Nueva Modulo
-
-1. **Crear Carpeta:** En `src/modules/nueva-modulo`.
-2. **Definir Service:** Crea `nueva-modulo.responses.ts`, `nueva-modulo.requests.ts` y `nueva-modulo.service.ts`.
-3. **Crear Hook:** Implementa los hooks necesarios para cada componente complejo de la modulo en la carpeta `hooks/`.
-4. **Implementar Modulo:** Crea `nueva-modulo.page.tsx` y sus sub-componentes. Usa `useTitlePage` y `useNotify`.
-5. **Registrar Ruta:** Añade la nueva ruta en el enrutador principal.
-
----
-
-## 🔧 Comandos Disponibles
-
-```bash
-# Iniciar servidor de desarrollo
-npm run dev
-
-# Construir para producción
-npm run build
-
-# Ejecutar Linter
-npm run lint
+```text
+module-name/
+├── hooks/        # Hooks de estado local y lógica de negocio específica.
+├── presentation/ # Páginas, componentes y sub-formularios.
+├── service/      # requests.ts (llamadas axios), service.ts (transformaciones).
+└── README.md     # Documentación técnica profunda del módulo.
 ```
 
----
+### 2. Flujo de Datos Estándar
 
-## 💎 Estética y Diseño
+1.  **Vista (`.page.tsx`)**: Define el layout y usa el Hook de Módulo.
+2.  **Hook (`useX.ts`)**: Maneja el estado local (ej. carga, datos), validaciones con Zod y llama al Servicio.
+3.  **Servicio (`X.service.ts`)**: Orquestador que puede combinar múltiples peticiones o transformar datos para la UI.
+4.  **Request (`X.requests.ts`)**: Peticiones atómicas a la API usando la instancia global `api`.
 
-- Mantén la consistencia visual usando los tokens de Mantine.
-- Usa **Motion** para transiciones suaves, animaciones y traslaciones entre estados o navegación.
-- Prioriza la experiencia del usuario (UX) con colores, gradientes y estados de carga en pro de mostrar un sistema moderno, genial y estupendo.
+### 3. Layouts Anidados
+
+El sistema usa `react-router-dom` para manejar layouts jerárquicos:
+
+- **`PublicLayout`**: Para el Login.
+- **`AuthLayout`**: El contenedor principal con Sidebar y Header.
+- **Layouts Secundarios**: Como `LogisticaLayout`, que añaden sub-navegación lateral o pestañas específicas.
+
+## 📦 Módulos del Sistema
+
+| Categoría         | Módulos                                                                    |
+| :---------------- | :------------------------------------------------------------------------- |
+| **Acceso**        | Login, Perfil                                                              |
+| **Configuración** | Empresas, Almacenes, Concesiones, Minas                                    |
+| **Personal**      | Empleados (Trabajadores), Organigrama (Áreas/Cargos)                       |
+| **Usuarios**      | Cuentas, Roles                                                             |
+| **Inventario**    | Productos, Categorías, Lotes, Kardex                                       |
+| **Logística**     | Requerimientos, Reabastecimiento, Préstamos (y sus respectivas Atenciones) |
+| **Compras**       | Proveedores, Cotizaciones, Órdenes de Compra                               |
+
+> [!TIP]
+> Cada módulo cuenta con su propio `README.md` detallado. Es obligatorio actualizarlos al realizar cambios significativos en la lógica del dominio.
+
+## ⚙️ Configuración del Env
+
+Asegúrate de tener un archivo `.env` en la raíz:
+
+```env
+VITE_API_URL=http://tu-api-url/api
+```
+
+## 📜 Scripts Disponibles
+
+- `npm run dev`: Inicia el servidor de desarrollo.
+- `npm run build`: Compila el proyecto para producción.
+- `npm run lint`: Ejecuta el linter para asegurar la calidad del código.
