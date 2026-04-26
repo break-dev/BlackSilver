@@ -1,728 +1,579 @@
 import {
   Badge,
   Group,
+  Loader,
+  Paper,
   Stack,
   Table,
   Text,
-  Paper,
-  Loader,
-  Divider,
   ActionIcon,
-  Grid,
-  Box,
-  Center,
 } from "@mantine/core";
 import {
-  Building2,
-  Calendar,
-  Link2,
-  Truck,
-  FileText,
-  PackageCheck,
-  AlertTriangle,
-  Banknote,
-  ReceiptText,
-  Info,
-  Clock,
-  History,
-  CornerDownRight,
-  ShieldCheck,
-  BoxSelect,
-} from "lucide-react";
+  ClockIcon,
+  CubeIcon,
+  ListBulletIcon,
+  BuildingStorefrontIcon,
+  CheckBadgeIcon,
+  UserIcon,
+  BanknotesIcon,
+  CurrencyDollarIcon,
+  DocumentTextIcon,
+  InformationCircleIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import gsap from "gsap";
-// import useSound from "use-sound"; // Descomentar cuando existan los archivos mp3
-import { OrdenCompraService } from "../../service/orden-compra.service";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
 } from "../../../../service/responses/ordenes-compra/orden-compra";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
-import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
-import { TrazabilidadOrdenCompra } from "./trazabilidad-orden-compra";
-import type { RES_Trazabilidad } from "../../../../service/responses/_generic/trazabilidad";
 
 interface DetalleOrdenCompraProps {
   orden: RES_OrdenCompra;
   detalles: RES_OrdenCompraDetalle[];
   loading: boolean;
+  progresoGeneral?: number;
 }
-
-const STATUS_ITEM_COLORS: Record<string, string> = {
-  Pendiente: "orange",
-  "En Recepción": "pink",
-  Recibido: "emerald",
-  Completado: "emerald",
-};
 
 export const DetalleOrdenCompra = ({
   orden,
   detalles,
   loading,
+  progresoGeneral: propProgreso,
 }: DetalleOrdenCompraProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // const [playClick] = useSound("/sounds/click.mp3", { volume: 0.5 });
-
-  const [openedSeguimiento, { open: openSeg, close: closeSeg }] =
-    useDisclosure(false);
-  const [selectedItem, setSelectedItem] =
-    useState<RES_OrdenCompraDetalle | null>(null);
-  const [logs, setLogs] = useState<RES_Trazabilidad[]>([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-
-  useEffect(() => {
-    if (!loading && containerRef.current) {
-      const cards = gsap.utils.toArray(".gsap-card");
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 50, rotateX: -15 },
-        {
-          opacity: 1,
-          y: 0,
-          rotateX: 0,
-          stagger: 0.1,
-          duration: 0.8,
-          ease: "expo.out",
-        },
-      );
-
-      gsap.fromTo(
-        ".gsap-progress",
-        { scaleX: 0 },
-        { scaleX: 1, duration: 1.5, ease: "power4.inOut", delay: 0.5 },
-      );
-    }
-  }, [loading, detalles]);
-
-  if (loading) {
-    return (
-      <Center py={100} className="flex-col gap-6">
-        <Loader color="indigo" size="xl" type="dots" />
-        <Text
-          c="dimmed"
-          fw={700}
-          className="tracking-widest uppercase animate-pulse"
-        >
-          Sincronizando Orden de Compra...
-        </Text>
-      </Center>
-    );
-  }
-
-  const handleVerSeguimiento = async (item: RES_OrdenCompraDetalle) => {
-    setSelectedItem(item);
-    openSeg();
-    setLoadingLogs(true);
-    try {
-      const res = await OrdenCompraService.get_seguimiento(
-        item.id_orden_compra_detalle,
-      );
-      if (res.success) {
-        setLogs(res.data);
-      }
-    } catch {
-      console.error("Error al cargar seguimiento");
-    } finally {
-      setLoadingLogs(false);
-    }
-  };
-
-  const symbol = orden.moneda === "Soles" ? "S/." : "$";
-
+  // Cálculo interno del progreso si no se recibe por props
   const progresoGeneral =
-    orden.estado === "Completada"
+    propProgreso ??
+    (orden.estado === "Completada"
       ? 100
       : orden.estado === "En Recepción"
         ? 50
-        : 0;
+        : 0);
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader color="indigo" size="lg" />
+      </div>
+    );
+  }
+
+  const symbol = orden.moneda === "Soles" ? "S/." : "$";
 
   return (
-    <Stack
-      gap="xl"
-      className="p-4"
-      ref={containerRef}
-      style={{ perspective: "1000px" }}
-    >
-      {/* SECCIÓN 1: CABECERA PREMIUM */}
-      <Grid gutter="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Paper
-            p="xl"
-            radius="28px"
-            className="gsap-card bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-md relative overflow-hidden h-full shadow-2xl"
-          >
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <FileText size={120} />
-            </div>
-
-            <Stack gap="xl">
-              <Group justify="space-between" align="flex-start">
-                <Stack gap={0}>
-                  <Text
-                    size="xs"
-                    c="indigo.4"
-                    fw={900}
-                    className="uppercase tracking-[0.2em] mb-1"
-                  >
-                    Documento Oficial
-                  </Text>
-                  <Text
-                    size="32px"
-                    fw={900}
-                    className="text-white tracking-tighter leading-none"
-                  >
-                    {orden.correlativo}
-                  </Text>
-                </Stack>
-                <Badge
-                  variant="gradient"
-                  gradient={{ from: "indigo", to: "cyan" }}
-                  size="xl"
-                  radius="md"
-                  className="h-10 px-6 font-black border border-white/10 shadow-lg shadow-indigo-500/20"
-                >
-                  {orden.estado.toUpperCase()}
-                </Badge>
-              </Group>
-
-              <Grid>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Group wrap="nowrap" align="flex-start" gap="md">
-                    <div className="p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                      <Building2 className="text-emerald-400" size={24} />
-                    </div>
-                    <Stack gap={2}>
-                      <Text
-                        size="xs"
-                        c="zinc.5"
-                        fw={800}
-                        className="uppercase tracking-widest"
-                      >
-                        Empresa Emisora
-                      </Text>
-                      <Text size="md" fw={800} className="text-zinc-100">
-                        {orden.empresa}
-                      </Text>
-                      <Text size="xs" c="zinc.6" fw={600}>
-                        RUC: {orden.empresa_ruc}
-                      </Text>
-                    </Stack>
-                  </Group>
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6 }}>
-                  <Group wrap="nowrap" align="flex-start" gap="md">
-                    <div className="p-3 bg-purple-500/10 rounded-2xl border border-purple-500/20">
-                      <Truck className="text-purple-400" size={24} />
-                    </div>
-                    <Stack gap={2}>
-                      <Text
-                        size="xs"
-                        c="zinc.5"
-                        fw={800}
-                        className="uppercase tracking-widest"
-                      >
-                        Proveedor Asignado
-                      </Text>
-                      <Text size="md" fw={800} className="text-zinc-100">
-                        {orden.proveedor}
-                      </Text>
-                      <Text size="xs" c="zinc.6" fw={600}>
-                        ID: {orden.documento_proveedor}
-                      </Text>
-                    </Stack>
-                  </Group>
-                </Grid.Col>
-              </Grid>
-            </Stack>
-          </Paper>
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Paper
-            p="xl"
-            radius="28px"
-            className="gsap-card bg-linear-to-br from-indigo-600/20 to-zinc-900/40 border border-indigo-500/20 backdrop-blur-md h-full shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute -right-6 -bottom-6 text-indigo-500/10 rotate-12">
-              <Calendar size={140} />
-            </div>
-
-            <Stack gap="lg" className="relative z-10">
-              <Group gap={8}>
-                <Calendar className="text-indigo-400" size={18} />
-                <Text
-                  size="sm"
-                  fw={800}
-                  className="text-zinc-200 uppercase tracking-widest"
-                >
-                  Cronología
-                </Text>
-              </Group>
-
-              <Stack gap="xs">
-                <div className="flex justify-between items-center p-3 bg-zinc-950/40 rounded-xl border border-zinc-800">
-                  <Text size="xs" c="zinc.5" fw={700}>
-                    Fecha Emisión
-                  </Text>
-                  <Text size="sm" fw={900} className="text-zinc-200 font-mono">
-                    {dayjs(orden.fecha_hora_orden).format("DD/MM/YYYY")}
-                  </Text>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-zinc-950/40 rounded-xl border border-zinc-800">
-                  <Text size="xs" c="zinc.5" fw={700}>
-                    Método de Pago
-                  </Text>
-                  <Badge
-                    variant="light"
-                    color="indigo"
-                    radius="sm"
-                    className="font-bold"
-                  >
-                    {orden.metodo_pago}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-zinc-950/40 rounded-xl border border-zinc-800">
-                  <Text size="xs" c="zinc.5" fw={700}>
-                    Cotización Ref.
-                  </Text>
-                  <Group gap={4}>
-                    <Link2 size={12} className="text-pink-400" />
-                    <Text
-                      size="sm"
-                      fw={900}
-                      className="text-pink-300 font-mono"
-                    >
-                      {orden.correlativo_cotizacion}
-                    </Text>
-                  </Group>
-                </div>
-              </Stack>
-            </Stack>
-          </Paper>
-        </Grid.Col>
-      </Grid>
-
-      {/* PROGRESO GLOBAL */}
-      <Paper
-        p="lg"
-        radius="20px"
-        className="gsap-card bg-zinc-900/20 border border-zinc-800/50 backdrop-blur-sm overflow-hidden"
-      >
-        <Group justify="space-between" mb="xs">
-          <Group gap="xs">
-            <PackageCheck size={18} className="text-emerald-500" />
-            <Text
-              size="xs"
-              fw={900}
-              className="text-zinc-400 uppercase tracking-tighter"
-            >
-              Estado de Atención Logística
-            </Text>
-          </Group>
-          <Text
-            size="sm"
-            fw={900}
-            className="text-emerald-400 font-mono italic"
-          >
-            {progresoGeneral}% COMPLETADO
-          </Text>
-        </Group>
-        <Box className="relative h-2.5 bg-zinc-950 rounded-full overflow-hidden border border-zinc-800/50">
-          <Box
-            className="gsap-progress absolute inset-y-0 left-0 bg-linear-to-r from-emerald-600 via-teal-400 to-cyan-400 origin-left"
-            style={{ width: `${progresoGeneral}%` }}
-          />
-        </Box>
-      </Paper>
-
-      {/* TABLA DE ITEMS REIMAGINADA */}
-      <div className="space-y-4">
-        <Group justify="space-between" align="center" px="md">
-          <Group gap="md">
-            <div className="p-2.5 bg-zinc-100 rounded-xl">
-              <BoxSelect size={20} className="text-zinc-900" />
-            </div>
-            <Stack gap={0}>
+    <Stack gap="xl" className="animate-fade-in pb-10">
+      {/* Header: Datos Principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-violet-500/6 border border-violet-500/20 relative overflow-hidden group hover:bg-violet-500/10 transition-all"
+        >
+          <CheckBadgeIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-violet-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <CheckBadgeIcon className="w-4 h-4 text-violet-400" />
               <Text
-                size="lg"
-                fw={900}
-                className="text-white tracking-tight italic leading-none"
+                size="xs"
+                c="violet.3"
+                fw={800}
+                className="uppercase tracking-widest"
               >
-                Items Solicitados
+                Cód. Orden
               </Text>
+            </Group>
+            <Text
+              size="md"
+              fw={900}
+              className="text-zinc-100 tracking-tight leading-tight font-mono"
+            >
+              {orden.correlativo}
+            </Text>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-indigo-500/6 border border-indigo-500/20 relative overflow-hidden group hover:bg-indigo-500/10 transition-all"
+        >
+          <BuildingStorefrontIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-indigo-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <BuildingStorefrontIcon className="w-4 h-4 text-indigo-500" />
+              <Text
+                size="xs"
+                c="indigo.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Entidad Emisora
+              </Text>
+            </Group>
+            <Text
+              size="sm"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight line-clamp-1"
+            >
+              {orden.empresa}
+            </Text>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-amber-500/6 border border-amber-500/20 relative overflow-hidden group hover:bg-amber-500/10 transition-all"
+        >
+          <UserIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-amber-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <UserIcon className="w-4 h-4 text-amber-500" />
+              <Text
+                size="xs"
+                c="amber.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Proveedor
+              </Text>
+            </Group>
+            <Text
+              size="sm"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight line-clamp-1"
+            >
+              {orden.proveedor}
+            </Text>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-zinc-500/6 border border-zinc-500/20 relative overflow-hidden group hover:bg-zinc-500/10 transition-all"
+        >
+          <ClockIcon className="absolute -right-2 -bottom-2 w-16 h-16 text-zinc-400/10 rotate-12 group-hover:scale-110 transition-transform" />
+          <Stack gap={2} className="relative z-10">
+            <Group gap={6}>
+              <ClockIcon className="w-4 h-4 text-zinc-500" />
               <Text
                 size="xs"
                 c="zinc.5"
-                fw={700}
-                className="uppercase tracking-widest mt-1"
+                fw={800}
+                className="uppercase tracking-widest"
               >
-                Inventario Detallado
+                Fecha Emisión
               </Text>
-            </Stack>
-          </Group>
-        </Group>
-
-        <Paper
-          radius="24px"
-          className="gsap-card bg-zinc-950/40 border border-zinc-800/80 overflow-hidden shadow-2xl backdrop-blur-xl"
-        >
-          <Table verticalSpacing="lg" horizontalSpacing="xl">
-            <thead className="bg-zinc-900/50 border-b border-zinc-800">
-              <tr>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-center w-12">
-                  #
-                </th>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-left">
-                  Especificación Técnica
-                </th>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-left">
-                  Destino & Logística
-                </th>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-                  Volumen
-                </th>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-right">
-                  Valuación
-                </th>
-                <th className="px-6 py-5 text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-                  Trazabilidad
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-900">
-              {detalles.map((det, index) => {
-                const subtotalItem =
-                  det.cantidad_requerida * det.precio_unitario;
-                const isDiferentUnit =
-                  det.id_unidad_medida_base !== det.id_unidad_medida_oc;
-
-                return (
-                  <tr
-                    key={det.id_orden_compra_detalle}
-                    className="hover:bg-white/2 transition-colors group"
-                  >
-                    <td className="px-6 py-6 text-center text-zinc-600 font-mono text-xs font-bold">
-                      {String(index + 1).padStart(2, "0")}
-                    </td>
-                    <td className="px-6 py-6 text-left">
-                      <Stack gap={6}>
-                        <Text
-                          size="sm"
-                          fw={900}
-                          className="text-zinc-100 leading-tight"
-                        >
-                          {det.producto}
-                        </Text>
-                        <Group gap={6}>
-                          {det.es_fiscalizado && (
-                            <Badge
-                              variant="dot"
-                              color="red"
-                              size="xs"
-                              radius="sm"
-                            >
-                              Fiscalizado
-                            </Badge>
-                          )}
-                          {det.es_perecible && (
-                            <Badge
-                              variant="dot"
-                              color="orange"
-                              size="xs"
-                              radius="sm"
-                            >
-                              Perecible
-                            </Badge>
-                          )}
-                          <Badge
-                            variant="light"
-                            color={STATUS_ITEM_COLORS[det.estado] || "zinc"}
-                            size="xs"
-                            radius="sm"
-                            className="font-black uppercase tracking-widest"
-                          >
-                            {det.estado}
-                          </Badge>
-                        </Group>
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-6 text-left">
-                      <Stack gap={4}>
-                        <Group gap={6} wrap="nowrap">
-                          <CornerDownRight
-                            size={14}
-                            className="text-indigo-500"
-                          />
-                          <Text size="xs" fw={800} className="text-zinc-300">
-                            {det.almacen_recepcionista}
-                          </Text>
-                        </Group>
-                        <Group gap={6} wrap="nowrap">
-                          <Clock size={12} className="text-zinc-500" />
-                          <Text size="10px" c="dimmed" fw={700}>
-                            Plazo: {det.tiempo_entrega}{" "}
-                            {det.tiempo_entrega_periodo}
-                          </Text>
-                        </Group>
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-6 text-center">
-                      <Stack gap={2} align="center">
-                        <Text
-                          size="md"
-                          fw={900}
-                          className="text-white font-mono"
-                        >
-                          {formatNumber(det.cantidad_requerida)}
-                        </Text>
-                        <Text
-                          size="10px"
-                          fw={900}
-                          className="text-indigo-400 uppercase tracking-widest"
-                        >
-                          {det.unidad_medida_oc_abv}
-                        </Text>
-                        {isDiferentUnit && (
-                          <Text
-                            size="9px"
-                            c="dimmed"
-                            fs="italic"
-                            fw={700}
-                            className="mt-1"
-                          >
-                            ({det.contenido_por_presentacion}{" "}
-                            {det.unidad_medida_base_abv} / unid)
-                          </Text>
-                        )}
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-6 text-right">
-                      <Stack gap={2} align="flex-end">
-                        <Text
-                          size="sm"
-                          fw={900}
-                          className="text-emerald-400 font-mono"
-                        >
-                          {symbol} {formatNumber(subtotalItem)}
-                        </Text>
-                        <Text size="10px" c="zinc.6" fw={700}>
-                          Unid: {symbol}
-                          {formatNumber(det.precio_unitario)}
-                        </Text>
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-6 text-center">
-                      <ActionIcon
-                        variant="subtle"
-                        color="zinc"
-                        size="xl"
-                        radius="xl"
-                        onClick={() => handleVerSeguimiento(det)}
-                        className="hover:bg-indigo-500/10 hover:text-indigo-400 transition-all active:scale-90"
-                      >
-                        <History size={20} />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
+            </Group>
+            <Text
+              size="md"
+              fw={800}
+              className="text-zinc-100 tracking-tight leading-tight font-mono"
+            >
+              {dayjs(orden.fecha_hora_orden).format("DD/MM/YYYY")}
+            </Text>
+          </Stack>
         </Paper>
       </div>
 
-      {/* FOOTER FINANCIERO: DISEÑO DE RECIBO PREMIUM */}
-      <Grid gutter="xl">
-        <Grid.Col span={{ base: 12, md: 7 }}>
-          <Paper
-            p="xl"
-            radius="24px"
-            className="gsap-card bg-zinc-900/30 border border-zinc-800/80 backdrop-blur-md h-full"
-          >
-            <Stack gap="md">
-              <Group gap="md">
-                <div className="p-2 bg-zinc-800 rounded-lg">
-                  <Info size={18} className="text-zinc-400" />
-                </div>
-                <Text
-                  size="sm"
-                  fw={900}
-                  className="text-zinc-300 uppercase tracking-widest"
-                >
-                  Observaciones Generales
-                </Text>
-              </Group>
-              <Text
-                size="sm"
-                className="text-zinc-500 leading-relaxed italic border-l-2 border-zinc-800 pl-6 py-2"
-              >
-                {orden.observacion ||
-                  "Sin anotaciones técnicas o logísticas registradas para este movimiento comercial."}
-              </Text>
-            </Stack>
-          </Paper>
-        </Grid.Col>
+      {/* Sub-header: Estados y Condiciones */}
+      <Paper
+        p="md"
+        radius="lg"
+        bg="transparent"
+        className="border border-zinc-800/50 mx-2"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Stack gap={4}>
+            <Text
+              size="xs"
+              c="zinc.5"
+              fw={800}
+              className="uppercase tracking-widest"
+            >
+              Estado de Orden
+            </Text>
+            <Badge
+              color="indigo"
+              variant="light"
+              size="sm"
+              radius="sm"
+              className="font-bold border border-indigo-900/30"
+            >
+              {orden.estado}
+            </Badge>
+          </Stack>
 
-        <Grid.Col span={{ base: 12, md: 5 }}>
-          <Paper
-            p="xl"
-            radius="24px"
-            className="gsap-card bg-linear-to-b from-zinc-800/50 to-zinc-950 border border-zinc-800 shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500" />
-
-            <Stack gap="lg">
+          <Stack gap={4}>
+            <Group gap={6}>
+              <BanknotesIcon className="w-3.5 h-3.5 text-emerald-500" />
               <Text
                 size="xs"
-                fw={900}
                 c="zinc.5"
-                className="uppercase tracking-[0.3em]"
+                fw={800}
+                className="uppercase tracking-widest"
               >
-                Resumen de Inversión
+                Forma de Pago
               </Text>
+            </Group>
+            <Text size="sm" fw={800} className="text-zinc-100 italic">
+              {orden.metodo_pago}
+            </Text>
+          </Stack>
 
-              <Stack gap="xs">
-                <div className="flex justify-between items-center px-2">
-                  <Group gap={8}>
-                    <Banknote size={14} className="text-zinc-600" />
-                    <Text size="sm" c="zinc.4" fw={700}>
-                      Subtotal Mercadería
-                    </Text>
-                  </Group>
-                  <Text size="sm" fw={800} className="text-zinc-200 font-mono">
-                    {symbol} {formatNumber(orden.total_antes_igv)}
-                  </Text>
-                </div>
-
-                {Number(orden.costo_flete) > 0 && (
-                  <div className="flex justify-between items-center px-2">
-                    <Group gap={8}>
-                      <Truck size={14} className="text-orange-500/60" />
-                      <Text size="sm" c="zinc.4" fw={700}>
-                        Servicio Flete / Envío
-                      </Text>
-                    </Group>
-                    <Text
-                      size="sm"
-                      fw={800}
-                      className="text-orange-300 font-mono"
-                    >
-                      + {symbol} {formatNumber(orden.costo_flete)}
-                    </Text>
-                  </div>
-                )}
-
-                {Number(orden.otros_gastos) > 0 && (
-                  <div className="flex justify-between items-center px-2">
-                    <Group gap={8}>
-                      <AlertTriangle size={14} className="text-yellow-500/60" />
-                      <Text size="sm" c="zinc.4" fw={700}>
-                        Gastos Operativos Adicionales
-                      </Text>
-                    </Group>
-                    <Text
-                      size="sm"
-                      fw={800}
-                      className="text-yellow-300 font-mono"
-                    >
-                      + {symbol} {formatNumber(orden.otros_gastos)}
-                    </Text>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center px-2">
-                  <Group gap={8}>
-                    <ReceiptText size={14} className="text-pink-500/60" />
-                    <Text size="sm" c="zinc.4" fw={700}>
-                      Impuesto IGV ({orden.porcentaje_igv}%)
-                    </Text>
-                  </Group>
-                  <Group gap={8} align="center">
-                    {orden.incluye_igv && (
-                      <Badge
-                        size="xs"
-                        color="pink"
-                        variant="dot"
-                        className="font-bold"
-                      >
-                        Incluido
-                      </Badge>
-                    )}
-                    <Text
-                      size="sm"
-                      fw={800}
-                      className="text-pink-300 font-mono"
-                    >
-                      {symbol} {formatNumber(orden.monto_igv)}
-                    </Text>
-                  </Group>
-                </div>
-              </Stack>
-
-              <Divider color="zinc.8" variant="dashed" />
-
-              <Group
-                justify="space-between"
-                align="flex-end"
-                className="bg-white/3 p-4 rounded-2xl border border-white/5"
+          <Stack gap={4}>
+            <Group gap={6}>
+              <CurrencyDollarIcon className="w-3.5 h-3.5 text-cyan-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
               >
-                <Stack gap={0}>
-                  <Text
-                    size="xs"
-                    fw={900}
-                    className="text-indigo-400 uppercase tracking-widest leading-none mb-2"
-                  >
-                    Total Consolidado
+                Moneda
+              </Text>
+            </Group>
+            <Text size="sm" fw={800} className="text-zinc-100 italic">
+              {orden.moneda}
+            </Text>
+          </Stack>
+
+          <Stack gap={4}>
+            <Group gap={6}>
+              <DocumentTextIcon className="w-3.5 h-3.5 text-amber-500" />
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={800}
+                className="uppercase tracking-widest"
+              >
+                Referencia
+              </Text>
+            </Group>
+            <Badge variant="light" color="amber" radius="sm" size="xs">
+              {orden.correlativo_cotizacion || "Sin Ref."}
+            </Badge>
+          </Stack>
+        </div>
+      </Paper>
+
+      {/* Barra de Progreso */}
+      <Paper
+        p="md"
+        radius="xl"
+        className="bg-zinc-900/50 border border-zinc-800 mx-2"
+      >
+        <Group justify="space-between" mb={8} px={4}>
+          <Text
+            size="xs"
+            fw={800}
+            className="text-zinc-400 tracking-tighter uppercase"
+          >
+            Cumplimiento Logístico
+          </Text>
+          <Text size="sm" fw={900} c="indigo.4">
+            {progresoGeneral}%
+          </Text>
+        </Group>
+        <div className="relative h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-linear-to-r from-indigo-500 to-indigo-400 transition-all duration-1000"
+            style={{ width: `${progresoGeneral}%` }}
+          />
+        </div>
+      </Paper>
+
+      {/* Tabla de Items */}
+      <div className="space-y-4 px-2">
+        <Group justify="space-between" align="center" px={4}>
+          <Group gap="xs">
+            <div className="p-1.5 bg-indigo-500/10 rounded-lg">
+              <ListBulletIcon className="w-5 h-5 text-indigo-400" />
+            </div>
+            <Text
+              fw={800}
+              className="text-zinc-100 italic tracking-tight text-lg"
+            >
+              Detalle de Productos
+            </Text>
+          </Group>
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="md"
+            size="sm"
+            className="font-bold py-3 px-4 uppercase tracking-widest"
+          >
+            {detalles.length} {detalles.length === 1 ? "Producto" : "Productos"}
+          </Badge>
+        </Group>
+
+        <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
+          <Table verticalSpacing="md" horizontalSpacing="xl">
+            <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
+              <tr>
+                <th className="px-6 py-4 text-center w-12">#</th>
+                <th className="px-6 py-4 text-left">Producto</th>
+                <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+                <th className="px-6 py-4 text-center">Almacén</th>
+                <th className="px-6 py-4 text-center">Costo Unit.</th>
+                <th className="px-6 py-4 text-center">Subtotal</th>
+                <th className="px-6 py-4 text-center w-16">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/50">
+              {detalles.map((det, index) => (
+                <tr
+                  key={det.id_orden_compra_detalle}
+                  className="hover:bg-zinc-900/40 transition-colors group"
+                >
+                  <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">
+                    {String(index + 1).padStart(2, "0")}
+                  </td>
+                  <td className="px-6 py-4">
+                    <Stack gap={4}>
+                      <Group gap="sm">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-indigo-500/50 transition-all">
+                          <CubeIcon className="w-4 h-4 text-zinc-400" />
+                        </div>
+                        <Text
+                          size="sm"
+                          fw={800}
+                          className="text-zinc-100 tracking-tight"
+                        >
+                          {det.producto}
+                        </Text>
+                      </Group>
+                      <Group gap={4}>
+                        {det.es_fiscalizado && (
+                          <Badge
+                            variant="filled"
+                            color="red"
+                            size="9px"
+                            radius="xs"
+                            className="font-black"
+                          >
+                            FISCALIZADO
+                          </Badge>
+                        )}
+                        {det.es_perecible && (
+                          <Badge
+                            variant="filled"
+                            color="orange"
+                            size="9px"
+                            radius="xs"
+                            className="font-black"
+                          >
+                            PERECIBLE
+                          </Badge>
+                        )}
+                      </Group>
+                    </Stack>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <Stack gap={0} align="center">
+                      <Text size="sm" fw={800} className="text-zinc-100">
+                        {formatNumber(det.cantidad_requerida)}{" "}
+                        {det.unidad_medida_oc_abv}
+                      </Text>
+                      {det.id_unidad_medida_base !==
+                        det.id_unidad_medida_oc && (
+                        <Text size="10px" c="zinc.5" fw={700}>
+                          Equiv: {det.contenido_por_presentacion}{" "}
+                          {det.unidad_medida_base_abv}
+                        </Text>
+                      )}
+                    </Stack>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <Text
+                      size="xs"
+                      fw={700}
+                      c="zinc.4"
+                      className="italic line-clamp-1"
+                    >
+                      {det.almacen_recepcionista}
+                    </Text>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <Text
+                      size="sm"
+                      fw={800}
+                      className="text-zinc-100 font-mono"
+                    >
+                      {symbol} {formatNumber(det.precio_unitario)}
+                    </Text>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <Text
+                      size="sm"
+                      fw={900}
+                      className="text-zinc-100 font-mono"
+                    >
+                      {symbol}{" "}
+                      {formatNumber(
+                        det.precio_unitario * det.cantidad_requerida,
+                      )}
+                    </Text>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <ActionIcon
+                      variant="subtle"
+                      color="zinc"
+                      radius="md"
+                      className="opacity-40 hover:opacity-100"
+                    >
+                      <ArrowPathIcon className="w-4 h-4" />
+                    </ActionIcon>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Resumen Financiero y Observaciones */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-2">
+        <Stack gap="md" className="lg:col-span-7">
+          <Paper
+            p="md"
+            radius="lg"
+            className="bg-zinc-950/20 border border-zinc-800/50"
+          >
+            <Group gap="xs" mb="sm">
+              <InformationCircleIcon className="w-4 h-4 text-zinc-500" />
+              <Text
+                size="xs"
+                fw={800}
+                c="zinc.5"
+                className="uppercase tracking-widest"
+              >
+                Observaciones de la Orden
+              </Text>
+            </Group>
+            <Text
+              size="sm"
+              c="zinc.4"
+              className="italic leading-relaxed whitespace-pre-wrap"
+            >
+              {orden.observacion ||
+                "No se registraron observaciones comerciales o técnicas adicionales."}
+            </Text>
+          </Paper>
+
+          {/* Liquidación de Gastos (opcional si hay flete/otros) */}
+          {(Number(orden.costo_flete) > 0 ||
+            Number(orden.otros_gastos) > 0) && (
+            <Paper
+              p="md"
+              radius="lg"
+              className="bg-zinc-950/20 border border-zinc-800/50"
+            >
+              <Group gap="xs" mb="md">
+                <ArrowPathIcon className="w-4 h-4 text-zinc-500" />
+                <Text
+                  size="xs"
+                  fw={800}
+                  c="zinc.5"
+                  className="uppercase tracking-widest"
+                >
+                  Gastos Logísticos Adicionales
+                </Text>
+              </Group>
+              <div className="grid grid-cols-2 gap-4">
+                <Stack gap={2}>
+                  <Text size="10px" c="zinc.6" fw={700} className="uppercase">
+                    Costo de Flete
                   </Text>
-                  <Text size="sm" c="zinc.5" fw={700} className="leading-none">
-                    Valores Netos ({orden.moneda})
+                  <Text size="sm" fw={800} className="text-zinc-200">
+                    {symbol} {formatNumber(orden.costo_flete)}
                   </Text>
                 </Stack>
-                <Text
-                  size="32px"
-                  fw={900}
-                  className="text-white font-mono drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] leading-none"
-                >
-                  <span className="text-lg mr-1 opacity-50">{symbol}</span>
-                  {formatNumber(orden.total_despues_igv)}
+                <Stack gap={2}>
+                  <Text size="10px" c="zinc.6" fw={700} className="uppercase">
+                    Otros Gastos
+                  </Text>
+                  <Text size="sm" fw={800} className="text-zinc-200">
+                    {symbol} {formatNumber(orden.otros_gastos)}
+                  </Text>
+                </Stack>
+              </div>
+            </Paper>
+          )}
+        </Stack>
+
+        <Paper
+          p="lg"
+          radius="xl"
+          className="lg:col-span-5 bg-indigo-500/3 border border-indigo-500/20 relative overflow-hidden h-full"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+
+          <Stack gap="md">
+            <Text
+              size="xs"
+              fw={900}
+              c="indigo.4"
+              className="uppercase tracking-[0.2em] border-b border-indigo-500/20 pb-2"
+            >
+              Liquidación Económica
+            </Text>
+
+            <div className="space-y-3">
+              <Group justify="space-between">
+                <Text size="xs" c="zinc.5" fw={700} className="uppercase">
+                  Subtotal Gravado
+                </Text>
+                <Text size="sm" fw={800} className="text-zinc-200 font-mono">
+                  {symbol} {formatNumber(orden.total_antes_igv)}
                 </Text>
               </Group>
 
-              <Group
-                gap={6}
-                justify="center"
-                className="opacity-30 hover:opacity-100 transition-opacity cursor-default"
-              >
-                <ShieldCheck size={12} className="text-emerald-500" />
-                <Text
-                  size="10px"
-                  fw={800}
-                  className="uppercase tracking-[0.2em] text-zinc-500"
-                >
-                  Documento Verificado por el Sistema
+              <Group justify="space-between">
+                <Group gap={6}>
+                  <Text size="xs" c="zinc.5" fw={700} className="uppercase">
+                    IGV ({orden.porcentaje_igv}%)
+                  </Text>
+                  {orden.incluye_igv && (
+                    <Badge variant="filled" color="teal" size="9px" radius="xs">
+                      INCLUIDO
+                    </Badge>
+                  )}
+                </Group>
+                <Text size="sm" fw={800} className="text-zinc-200 font-mono">
+                  {symbol} {formatNumber(orden.monto_igv)}
                 </Text>
               </Group>
-            </Stack>
-          </Paper>
-        </Grid.Col>
-      </Grid>
 
-      {/* MODAL DE SEGUIMIENTO */}
-      <ModalEstandar
-        opened={openedSeguimiento}
-        close={closeSeg}
-        title="Historial de Movimientos & Trazabilidad"
-        size="lg"
-      >
-        <TrazabilidadOrdenCompra
-          eventos={logs}
-          loading={loadingLogs}
-          productoNombre={selectedItem?.producto}
-        />
-      </ModalEstandar>
+              <div className="pt-4 mt-4 border-t border-indigo-500/30">
+                <Group justify="space-between">
+                  <Stack gap={0}>
+                    <Text
+                      size="xs"
+                      fw={900}
+                      c="indigo.4"
+                      className="uppercase tracking-widest"
+                    >
+                      Total Orden
+                    </Text>
+                    <Text size="9px" c="zinc.6" fw={700} className="uppercase">
+                      Cifra Final Liquidadas
+                    </Text>
+                  </Stack>
+                  <Text
+                    size="xl"
+                    fw={900}
+                    className="text-white font-mono tracking-tighter"
+                  >
+                    {symbol} {formatNumber(orden.total_despues_igv)}
+                  </Text>
+                </Group>
+              </div>
+            </div>
+          </Stack>
+        </Paper>
+      </div>
     </Stack>
   );
 };

@@ -1,11 +1,5 @@
 import { Badge, Group, Stack, Text, ActionIcon, Tooltip } from "@mantine/core";
-import {
-  FileText,
-  Clock,
-  CircleDollarSign,
-  Eye,
-  TrendingUp,
-} from "lucide-react";
+import { FileText, Eye } from "lucide-react";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -26,7 +20,6 @@ interface GetColumnsProps {
   handlePrintOC: (orden: RES_OrdenCompra) => void;
   printingId: number | null;
 }
-
 export const getOrdenCompraColumns = ({
   handleVerDetalle,
   handlePrintOC,
@@ -40,121 +33,107 @@ export const getOrdenCompraColumns = ({
   },
   {
     accessor: "correlativo",
-    title: "Código",
-    width: 160,
+    title: "Cód. Orden",
+    width: 140,
     render: (item) => (
-      <Group gap="sm" wrap="nowrap">
-        <div className="p-2 bg-indigo-500/10 rounded-lg">
-          <FileText size={16} className="text-indigo-400" />
-        </div>
-        <Stack gap={0}>
-          <Text
-            size="sm"
-            fw={900}
-            className="text-white font-mono tracking-tighter leading-none"
-          >
-            {item.correlativo}
-          </Text>
-        </Stack>
+      <Group gap="xs" wrap="nowrap">
+        <Text
+          size="sm"
+          fw={900}
+          className="text-white font-mono tracking-tighter leading-none"
+        >
+          {item.correlativo}
+        </Text>
       </Group>
     ),
   },
   {
-    accessor: "empresa",
-    title: "Entidad Compradora",
-    width: 280,
+    accessor: "proveedor",
+    title: "Proveedor / Beneficiario",
+    width: 250,
     render: (item) => (
-      <Stack gap={4}>
+      <Stack gap={2}>
         <Text
           size="sm"
           fw={800}
           className="text-zinc-100 truncate leading-tight"
         >
-          {item.empresa}
+          {item.proveedor}
         </Text>
-        <Group gap={6}>
-          <TrendingUp size={12} className="text-emerald-500" />
-          <Text size="10px" c="zinc.5" fw={700}>
-            RUC: {item.empresa_ruc}
-          </Text>
-        </Group>
+        <Text
+          size="10px"
+          c="zinc.5"
+          fw={700}
+          className="uppercase tracking-widest"
+        >
+          {item.documento_proveedor}
+        </Text>
       </Stack>
     ),
   },
   {
     accessor: "correlativo_cotizacion",
-    title: "Ref. Cotización",
-    width: 150,
+    title: "Cotización Ref.",
+    width: 130,
     render: (item) => (
       <Badge
         variant="light"
-        color="pink"
+        color="zinc"
         radius="sm"
-        className="font-black px-3"
+        size="sm"
+        className="font-bold px-2"
       >
-        {item.correlativo_cotizacion}
+        {item.correlativo_cotizacion || "Sin Ref."}
       </Badge>
     ),
   },
   {
     accessor: "fecha_hora_orden",
-    title: "Fecha",
-    width: 180,
+    title: "Emisión",
+    width: 120,
     render: (item) => (
-      <Group gap="sm" wrap="nowrap">
-        <Clock size={16} className="text-zinc-500" />
-        <Stack gap={0}>
-          <Text size="xs" fw={800} className="text-zinc-200">
-            {dayjs(item.fecha_hora_orden).format("DD MMM YYYY")}
-          </Text>
-          <Text size="10px" c="zinc.6" fw={700} className="uppercase">
-            {dayjs(item.fecha_hora_orden).format("HH:mm A")}
-          </Text>
-        </Stack>
-      </Group>
+      <Text size="xs" fw={800} className="text-zinc-200">
+        {dayjs(item.fecha_hora_orden).format("DD/MM/YYYY")}
+      </Text>
     ),
   },
   {
     accessor: "total_despues_igv",
-    title: "Importe",
+    title: "Importe Total",
     textAlign: "right",
-    width: 180,
+    width: 140,
     render: (item) => (
-      <Group justify="flex-end" gap={8}>
-        <Stack gap={0} align="flex-end">
-          <Text
-            size="xs"
-            fw={900}
-            className="text-emerald-400 font-mono leading-none"
-          >
-            {item.moneda === "Soles" ? "S/." : "$"}{" "}
-            {formatNumber(Number(item.total_despues_igv))}
-          </Text>
-        </Stack>
-        <CircleDollarSign size={20} className="text-emerald-500/40" />
-      </Group>
+      <Stack gap={0} align="flex-end">
+        <Text
+          size="sm"
+          fw={900}
+          className="text-zinc-100 font-mono leading-none"
+        >
+          {item.moneda === "Soles" ? "S/." : "$"}{" "}
+          {formatNumber(Number(item.total_despues_igv))}
+        </Text>
+        <Text size="9px" c="zinc.5" fw={700} className="uppercase mt-1">
+          {item.metodo_pago}
+        </Text>
+      </Stack>
     ),
   },
   {
     accessor: "estado",
     title: "Estado",
-    width: 150,
+    width: 130,
     render: (item) => {
       const stateInfo = COLOR_BY_STATE[item.estado] ?? {
-        color: "gray",
+        color: "zinc",
         label: item.estado,
       };
       return (
         <Badge
-          variant="gradient"
-          gradient={
-            item.estado === Estado_OrdenCompra.Completada
-              ? { from: "emerald.7", to: "emerald.9" }
-              : { from: stateInfo.color + ".6", to: stateInfo.color + ".9" }
-          }
-          size="md"
+          variant="light"
+          color={stateInfo.color}
+          size="sm"
           radius="sm"
-          className="font-black tracking-widest"
+          className="font-bold tracking-widest"
         >
           {stateInfo.label.toUpperCase()}
         </Badge>
@@ -163,34 +142,28 @@ export const getOrdenCompraColumns = ({
   },
   {
     accessor: "acciones",
-    title: "Operaciones",
+    title: "Acciones",
     textAlign: "center",
-    width: 140,
+    width: 120,
     render: (item) => (
       <Group gap="xs" justify="center">
-        <Tooltip label="Explorar Detalles" withArrow>
+        <Tooltip label="Ver Detalle" withArrow>
           <ActionIcon
-            variant="filled"
+            variant="subtle"
             color="indigo"
-            radius="xl"
-            size="lg"
             onClick={() => handleVerDetalle(item)}
-            className="shadow-lg hover:scale-110 transition-transform"
           >
-            <Eye size={18} />
+            <Eye size={16} />
           </ActionIcon>
         </Tooltip>
-        <Tooltip label="Exportar a PDF" withArrow>
+        <Tooltip label="Imprimir" withArrow>
           <ActionIcon
-            variant="light"
+            variant="subtle"
             color="zinc"
-            radius="xl"
-            size="lg"
             loading={printingId === item.id_orden_compra}
             onClick={() => handlePrintOC(item)}
-            className="hover:bg-emerald-500/10 hover:text-emerald-400 transition-all"
           >
-            <FileText size={18} />
+            <FileText size={16} />
           </ActionIcon>
         </Tooltip>
       </Group>

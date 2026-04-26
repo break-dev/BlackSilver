@@ -39,7 +39,7 @@ export const OrdenesCompraPage = () => {
       <ModalEstandar
         opened={openedDetalle}
         close={closeDet}
-        title="Panel de Inmersión Logística"
+        title="Detalle de Orden de Compra"
         size="95%"
       >
         {selectedOrden && (

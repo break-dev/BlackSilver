@@ -1,37 +1,36 @@
-# Módulo: Órdenes de Compra
+# Módulo: Órdenes de Compra (OC)
 
-Formaliza la adquisición de bienes y servicios. Es el documento contractual que cierra el proceso de procura y autoriza la recepción de mercadería y el posterior pago.
+Este módulo gestiona la formalización técnica y legal de las adquisiciones. Transforma una cotización adjudicada en un compromiso de compra, vinculando las condiciones comerciales con la ejecución logística y financiera.
 
-## 📝 Funcionalidades Detalladas
+## ⚙️ Proceso Técnico
 
-- **Emisión de Órdenes**: Generación de documentos basados en una **Cotización Ganadora**.
-- **Control de Totales**: Cálculo automático de bases imponibles, IGV, retenciones y montos netos a pagar.
-- **Seguimiento de Entrega**: Monitoreo de si la orden ha sido atendida total o parcialmente por el almacén.
-- **Aprobaciones**: Flujo de estados (Pendiente -> Aprobada -> Emitida) según los niveles de jerarquía definidos.
-- **Formatos de Impresión**: Generación de la Orden de Compra oficial en PDF para envío al proveedor.
+1.  **Origen de Datos**: La OC se genera exclusivamente a partir de una **Cotización Ganadora** (`RES_Cotizacion`). Hereda precios, proveedores y especificaciones técnicas.
+2.  **Estructura del Documento**:
+    -   **Cabecera**: Datos fiscales de la empresa emisora y proveedor, moneda, método de pago y totales.
+    -   **Detalle de Ítems**: Relación de productos con sus unidades de medida (Compra vs Base), tiempos de entrega y almacenes de destino.
+    -   **Costos Adicionales**: Gestión de fletes y otros gastos operativos no incluidos en el precio unitario.
+3.  **Flujo de Estados**:
+    -   `Generada`: Documento creado, pendiente de envío o inicio de recepción.
+    -   `En Recepción`: El almacén ha comenzado a registrar ingresos vinculados a esta OC.
+    -   `Completada`: Todos los ítems han sido recibidos al 100%.
+    -   `Cerrada`: Finalización administrativa (pago procesado o cierre forzado).
+    -   `Anulada`: Invalidación técnica del documento.
 
-## 🏗 Estructura de Archivos
+## 🏗️ Arquitectura de Componentes
 
-### Presentation (UI)
+### Presentación (`/presentation`)
+-   `OrdenesCompraPage`: Contenedor principal. Gestiona el estado global de la vista y la apertura de modales.
+-   `Filtros`: Implementa búsqueda por correlativos, rangos de fecha y filtrado por estado.
+-   `GroupByEmpresa`: Agrupación lógica de órdenes por entidad compradora para facilitar la gestión multicliente.
+-   `DetalleOrdenCompra`: Vista técnica exhaustiva. Desglosa costos, cronogramas de entrega por ítem y trazabilidad de ingresos.
 
-- `ordenes-compra-page.tsx`: Bandeja de control con estados visuales claros (colores por estado).
-- `detalle-orden-compra/`: Vista exhaustiva que muestra items, cronograma de entrega, términos y condiciones.
-- `orden-compra-page/`: Lógica de visualización y filtrado por proveedor, fecha o centro de costos.
-- `src/presentation/utils/orden-compra-pdf.tsx`: (Global) Plantilla técnica para el renderizado del documento PDF.
+### Servicios & Hooks (`/service`, `/hooks`)
+-   `OrdenCompraService`: Abstracción de la API. Métodos para listado, obtención de detalles y seguimiento de trazabilidad.
+-   `useOrdenesCompra`: Hook de control para la lógica de la bandeja (paginación, filtros, agrupamiento).
 
-### Hooks (Lógica)
+## 📊 Reglas de Negocio Aplicadas
 
-- `useOrdenesCompra.ts`: Controla el ciclo de vida de las órdenes y las transiciones de estado.
-- `useDetalleOrdenCompra.ts`: Lógica para procesar la información detallada y prepararla para la impresión.
-
-## ⚙️ Lógica de Negocio
-
-- **Cierre de Ciclo**: Al emitir una Orden de Compra, el requerimiento origen queda vinculado permanentemente, cerrando el flujo logístico.
-- **Compromiso de Gasto**: La orden aprobada afecta el presupuesto del área/labor correspondiente.
-- **Autorización de Ingreso**: El módulo de **Reabastecimiento** utiliza la Orden de Compra como referencia obligatoria para permitir el ingreso de mercadería al almacén.
-
-## 🔒 Reglas de Negocio
-
-- No se puede generar una orden de compra sin una cotización previa aprobada.
-- Los precios y cantidades no pueden exceder lo estipulado en la cotización sin una re-aprobación del flujo.
-- La anulación de una orden de compra requiere una justificación técnica y libera el requerimiento asociado.
+-   **Integridad de Precios**: No se permiten modificaciones de precios unitarios respecto a la cotización origen sin un flujo de rectificación.
+-   **Conversión de Unidades**: Soporta discrepancias entre la unidad de compra (ej. Caja) y la unidad de inventario (ej. Unidades), realizando el cálculo de `cantidad_requerida_base` automáticamente.
+-   **Impacto Logístico**: Una OC activa autoriza al módulo de **Almacén** a generar Notas de Ingreso referenciadas.
+-   **Visibilidad Financiera**: Diferenciación clara entre montos Antes de IGV, IGV y Total Final, incluyendo el flag de `incluye_igv`.

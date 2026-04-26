@@ -1,4 +1,3 @@
-import type { Kardex_OrigenMovimiento } from "../../../shared/enums/kardex";
 import type {
   Estado_PrestamoReposicionRecepcion,
   Estado_PrestamoReposicionRecepcionDetalle,
@@ -33,11 +32,5 @@ export interface RES_PrestamoReposicionRecepcionDetalle {
   unidad_medida_base_abv: string;
   //
   cantidad_recepcionada_base: number;
-  // Nuevo Lote o Ajuste de Stock
-  tipo_movimiento: Kardex_OrigenMovimiento;
-  //
-  id_lote_producto: number | null;
-  lote_correlativo: string | null;
-  //
   estado: Estado_PrestamoReposicionRecepcionDetalle;
 }

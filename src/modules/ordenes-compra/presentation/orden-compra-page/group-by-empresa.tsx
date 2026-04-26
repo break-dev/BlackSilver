@@ -3,6 +3,7 @@ import { Building2, ClipboardCheck } from "lucide-react";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import type { RES_OrdenCompra } from "../../../../service/responses/ordenes-compra/orden-compra";
 import { type DataTableColumn } from "mantine-datatable";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 
 interface GroupByEmpresaProps {
   groupedOrders: { empresa: string; ruc: string; orders: RES_OrdenCompra[] }[];
@@ -96,17 +97,29 @@ export const GroupByEmpresa = ({
                 </Group>
               </Stack>
             </div>
-            <div className="flex items-center gap-4 px-6 py-2 bg-zinc-950/40 rounded-xl border border-zinc-800/50">
+            <div className="flex items-center gap-6 px-6 py-2 bg-zinc-950/40 rounded-xl border border-zinc-800/50">
+              <div className="flex flex-col items-end border-r border-zinc-800 pr-6">
+                <Text
+                  size="9px"
+                  fw={700}
+                  className="text-zinc-600 uppercase tracking-widest"
+                >
+                  Documentos
+                </Text>
+                <Text size="xs" fw={800} className="text-indigo-400">
+                  {group.orders.length} OC(s)
+                </Text>
+              </div>
               <div className="flex flex-col items-end">
                 <Text
                   size="9px"
                   fw={700}
                   className="text-zinc-600 uppercase tracking-widest"
                 >
-                  Órdenes Emitidas
+                  Consolidado Estimado
                 </Text>
-                <Text size="xs" fw={800} className="text-indigo-400">
-                  {group.orders.length} registro(s)
+                <Text size="xs" fw={900} className="text-emerald-500 font-mono">
+                  S/. {formatNumber(group.orders.reduce((acc, curr) => acc + Number(curr.total_despues_igv), 0))}
                 </Text>
               </div>
             </div>
