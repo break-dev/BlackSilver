@@ -36,15 +36,15 @@ export const getOrdenCompraColumns = ({
     title: "Cód. Orden",
     width: 140,
     render: (item) => (
-      <Group gap="xs" wrap="nowrap">
-        <Text
-          size="sm"
-          fw={900}
-          className="text-white font-mono tracking-tighter leading-none"
-        >
-          {item.correlativo}
-        </Text>
-      </Group>
+      <Badge
+        variant="light"
+        color="blue"
+        radius="sm"
+        size="sm"
+        className="font-bold px-2 tracking-widest text-sm"
+      >
+        {item.correlativo}
+      </Badge>
     ),
   },
   {
@@ -78,7 +78,7 @@ export const getOrdenCompraColumns = ({
     render: (item) => (
       <Badge
         variant="light"
-        color="zinc"
+        color="pink"
         radius="sm"
         size="sm"
         className="font-bold px-2"

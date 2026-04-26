@@ -1,7 +1,10 @@
 import type { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import type { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
-import type { Estado_OrdenCompra } from "../../../shared/enums/orden-compra/orden-compra";
+import type {
+  Estado_OrdenCompra,
+  Estado_OrdenCompraDetalle,
+} from "../../../shared/enums/orden-compra/orden-compra";
 
 export interface RES_OrdenCompra {
   id_orden_compra: number;
@@ -72,10 +75,11 @@ export interface RES_OrdenCompraDetalle {
   cantidad_requerida: number;
   contenido_por_presentacion: number;
   cantidad_requerida_base: number;
+  cantidad_recepcionada_base: number;
   //
   precio_unitario: number;
   precio_unitario_base: number;
   //
   comentario: string | null;
-  estado: string;
+  estado: Estado_OrdenCompraDetalle;
 }

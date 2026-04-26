@@ -106,9 +106,14 @@ export const GroupByEmpresa = ({
                 >
                   Documentos
                 </Text>
-                <Text size="xs" fw={800} className="text-indigo-400">
-                  {group.orders.length} OC(s)
-                </Text>
+                <div className="flex items-center gap-1">
+                  <Text size="xs" fw={800} c="blue">
+                    {group.orders.length}
+                  </Text>
+                  <Text size="xs" fw={800}>
+                    OC(s)
+                  </Text>
+                </div>
               </div>
               <div className="flex flex-col items-end">
                 <Text
@@ -119,7 +124,13 @@ export const GroupByEmpresa = ({
                   Consolidado Estimado
                 </Text>
                 <Text size="xs" fw={900} className="text-emerald-500 font-mono">
-                  S/. {formatNumber(group.orders.reduce((acc, curr) => acc + Number(curr.total_despues_igv), 0))}
+                  S/.{" "}
+                  {formatNumber(
+                    group.orders.reduce(
+                      (acc, curr) => acc + Number(curr.total_despues_igv),
+                      0,
+                    ),
+                  )}
                 </Text>
               </div>
             </div>

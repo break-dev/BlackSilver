@@ -1,18 +1,19 @@
 export enum Estado_OrdenCompra {
-  Generada    = "Generada",
+  Generada = "Generada",
   EnRecepcion = "En Recepción",
-  Anulada     = "Anulada",
-  Cerrada     = "Cerrada",
-  Completada  = "Completada",
+  Anulada = "Anulada",
+  Cerrada = "Cerrada",
+  Completada = "Completada",
 }
 
 export enum Estado_OrdenCompraDetalle {
-  Pendiente   = "Pendiente",
+  Pendiente = "Pendiente",
   EnRecepcion = "En Recepción",
+  RecepcionCompleta = "Recepción Completa",
 }
 
 export enum Estado_OrdenCompraDetalleLog {
-  Pendiente      = "Pendiente",
-  EnRecepcion    = "En Recepción",
+  Pendiente = "Pendiente",
+  EnRecepcion = "En Recepción",
   NuevaRecepcion = "Nueva Recepción",
 }

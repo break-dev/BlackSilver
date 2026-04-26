@@ -69,7 +69,13 @@ Estados persistentes mediante Zustand:
 - **`interfaces/`**: Contiene contratos de datos globales como `IResponse` y `IArchivo`.
 - **`enums/`**: Definiciones de constantes para estados de requerimientos, órdenes de compra, tipos de movimiento, etc.
 
-## 🛠 Convenciones y Patrones
+## 🏛️ Convenciones y Patrones
+
+### 🛠️ Reglas de Oro Arquitectónicas
+
+1. **Aislamiento de Módulos (Frontend <-> API)**: Un módulo en el frontend (ej. `src/modules/ordenes-compra`) **SÓLO** puede comunicarse con su equivalente en la API. Está terminantemente prohibido llamar a servicios de otros módulos (ej. no llamar a `AlmacenesService` desde el módulo de OC).
+2. **Endpoints Específicos**: Si un módulo requiere datos que otro módulo ya provee, el controlador del módulo actual en la API debe proveer su propio endpoint para dicha información, incluso si internamente consume lógica compartida. El Frontend **NUNCA** debe realizar "saltos" entre módulos de la API.
+3. **Centralización de Responses**: Las interfaces de respuesta (`Responses`) se centralizan en `src/service/responses` cuando la estructura es idéntica entre dominios, permitiendo la reutilización de tipos pero manteniendo los puntos de acceso (endpoints) aislados.
 
 ### 1. Estructura de Módulos
 
