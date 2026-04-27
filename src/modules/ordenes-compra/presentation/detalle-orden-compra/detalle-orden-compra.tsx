@@ -21,7 +21,6 @@ import {
   CurrencyDollarIcon,
   DocumentTextIcon,
   InformationCircleIcon,
-  ArrowPathIcon,
   ArchiveBoxArrowDownIcon,
   ClockIcon as HistoryIcon,
 } from "@heroicons/react/24/outline";
@@ -608,7 +607,9 @@ export const DetalleOrdenCompra = ({
                           {det.id_unidad_medida_base !==
                             det.id_unidad_medida_oc && (
                             <Text size="10px" c="zinc.5" fw={700}>
-                              Equiv: {det.contenido_por_presentacion * det.cantidad_requerida}{" "}
+                              Equiv:{" "}
+                              {det.contenido_por_presentacion *
+                                det.cantidad_requerida}{" "}
                               {det.unidad_medida_base_abv}
                             </Text>
                           )}
@@ -696,13 +697,13 @@ export const DetalleOrdenCompra = ({
                           variant="subtle"
                           color="indigo"
                           radius="md"
-                          className="opacity-40 hover:opacity-100 hover:bg-indigo-500/10"
+                          className="opacity-60 hover:opacity-100 hover:bg-indigo-500/10"
                           onClick={() =>
                             openTrace(det.id_orden_compra_detalle, det.producto)
                           }
                           title="Ver trazabilidad"
                         >
-                          <ArrowPathIcon className="w-4 h-4" />
+                          <ClockIcon className="w-5 h-5" />
                         </ActionIcon>
                       </td>
                     </tr>

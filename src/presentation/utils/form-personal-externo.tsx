@@ -68,6 +68,7 @@ export const FormPersonalExterno = ({
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 w-full",
             label: "text-zinc-300 mb-1 font-medium text-sm",
           }}
+          maxLength={8}
         />
         <Button
           className="flex-1 font-bold shadow-lg shadow-indigo-500/20"

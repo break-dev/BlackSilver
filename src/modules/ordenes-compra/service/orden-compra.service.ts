@@ -12,6 +12,7 @@ import type { RES_OrdenCompraRecepcion } from "../../../service/responses/ordene
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { REQ_RegistrarRecepcionOC } from "./recepcion.requests";
 import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
+import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
 const path = "/ordenes-compra";
 
@@ -101,6 +102,65 @@ export const OrdenCompraService = {
         id_productos: idProductos,
       },
     });
+    return data;
+  },
+
+  getLotesDisponiblesTransferencia: async (
+    idAlmacen: number,
+    idProductos: number[],
+  ): Promise<IRespuesta<RES_LoteDisponible[]>> => {
+    const { data } = await api.get(`${path}/aux/lotes-destino`, {
+      params: {
+        id_almacen_recepcionista: idAlmacen,
+        id_productos: idProductos,
+      },
+    });
+    return data;
+  },
+
+  registrarTransferencia: async (
+    data: Record<string, unknown>,
+    evidencias: File[],
+  ) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "detalles") {
+        (value as Record<string, unknown>[]).forEach((item, index) => {
+          Object.entries(item).forEach(([k, v]) => {
+            formData.append(`detalles[${index}][${k}]`, String(v));
+          });
+        });
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    evidencias.forEach((file) => {
+      formData.append("evidencias[]", file);
+    });
+
+    const res = await api.post<IRespuesta<unknown>>(
+      `${path}/transferencias`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return res.data;
+  },
+
+  getPersonalExterno: async (): Promise<IRespuesta<RES_PersonalExterno[]>> => {
+    const { data } = await api.get(`${path}/aux/personal-externo`);
+    return data;
+  },
+
+  crearPersonalExterno: async (
+    nuevoPersonal: Record<string, unknown>,
+  ): Promise<IRespuesta<RES_PersonalExterno>> => {
+    const { data } = await api.post(
+      `${path}/aux/personal-externo`,
+      nuevoPersonal,
+    );
     return data;
   },
 };

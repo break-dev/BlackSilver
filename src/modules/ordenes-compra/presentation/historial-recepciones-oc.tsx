@@ -8,7 +8,9 @@ import {
   Loader,
   UnstyledButton,
   Collapse,
+  Button,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import {
   CalendarDaysIcon,
   DocumentTextIcon,
@@ -19,13 +21,19 @@ import {
   ClipboardDocumentCheckIcon,
   PaperClipIcon,
   CubeIcon,
+  ArrowRightEndOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import type { RES_OrdenCompraRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
+import type {
+  RES_OrdenCompraRecepcion,
+  RES_OrdenCompraRecepcionDetalle,
+} from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { OrdenCompraService } from "../service/orden-compra.service";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistrarTransferenciaModal } from "./registro-transferencia/registrar-transferencia-modal";
 
 interface Props {
   idOrdenCompra: number;
@@ -37,6 +45,55 @@ export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
   );
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+
+  const [
+    openedTransferencia,
+    { open: openTransferencia, close: closeTransferencia },
+  ] = useDisclosure(false);
+  const [selectedRecepcion, setSelectedRecepcion] = useState<number | null>(
+    null,
+  );
+  const [selectedAlmacenDestino, setSelectedAlmacenDestino] = useState<
+    number | null
+  >(null);
+  const [selectedAlmacenRecepcionista, setSelectedAlmacenRecepcionista] =
+    useState<number | null>(null);
+  const [selectedAlmacenDestinoNombre, setSelectedAlmacenDestinoNombre] =
+    useState<string | null>(null);
+  const [
+    selectedAlmacenRecepcionistaNombre,
+    setSelectedAlmacenRecepcionistaNombre,
+  ] = useState<string | null>(null);
+  const [selectedItemsIds, setSelectedItemsIds] = useState<number[]>([]);
+  const [selectedDetalles, setSelectedDetalles] = useState<
+    RES_OrdenCompraRecepcionDetalle[]
+  >([]);
+
+  const handleOpenTransferencia = (
+    r: RES_OrdenCompraRecepcion,
+    idAlmacenDestino: number,
+    detalles: RES_OrdenCompraRecepcionDetalle[],
+    nombreAlmacen: string,
+  ) => {
+    setSelectedRecepcion(r.id_recepcion);
+    setSelectedAlmacenRecepcionista(r.id_almacen_recepcionista);
+    setSelectedAlmacenRecepcionistaNombre(r.almacen_recepcionista);
+    setSelectedAlmacenDestino(idAlmacenDestino);
+    setSelectedAlmacenDestinoNombre(nombreAlmacen);
+    setSelectedItemsIds(detalles.map((d) => d.id_recepcion_detalle));
+    setSelectedDetalles(detalles);
+    openTransferencia();
+  };
+
+  const handleTransferenciaSuccess = () => {
+    closeTransferencia();
+    setLoading(true);
+    OrdenCompraService.getHistorialRecepciones(idOrdenCompra)
+      .then((res) => {
+        if (res.success && res.data) setRecepciones(res.data);
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -287,72 +344,162 @@ export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
                   </Text>
                 </Group>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-4">
-                  {r.detalles?.map((det) => (
-                    <div
-                      key={det.id_recepcion_detalle}
-                      className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
-                    >
-                      <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
+                <div className="flex flex-col gap-4 pb-4">
+                  {Object.entries(
+                    (r.detalles || []).reduce(
+                      (acc, det) => {
+                        if (!acc[det.id_almacen_destino]) {
+                          acc[det.id_almacen_destino] = {
+                            almacen_destino: det.almacen_destino,
+                            detalles: [],
+                          };
+                        }
+                        acc[det.id_almacen_destino].detalles.push(det);
+                        return acc;
+                      },
+                      {} as Record<
+                        number,
+                        {
+                          almacen_destino: string;
+                          detalles: NonNullable<typeof r.detalles>;
+                        }
+                      >,
+                    ),
+                  ).map(([idAlmacenDestinoStr, group]) => {
+                    const idAlmacenDestino = Number(idAlmacenDestinoStr);
+                    const requiresTransfer =
+                      idAlmacenDestino !== r.id_almacen_recepcionista;
 
-                      <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
-                        <Text
-                          size="sm"
-                          fw={900}
-                          className="text-white leading-tight"
-                        >
-                          {det.producto}
-                        </Text>
+                    return (
+                      <div
+                        key={idAlmacenDestino}
+                        className="border border-zinc-800/50 rounded-2xl overflow-hidden bg-zinc-900/20"
+                      >
+                        {requiresTransfer && (
+                          <div className="bg-indigo-500/10 px-4 py-2 border-b border-indigo-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <Group gap="xs">
+                              <ArrowRightEndOnRectangleIcon className="w-5 h-5 text-indigo-400" />
+                              <Text size="xs" fw={800} c="indigo.3">
+                                Transferir a {group.almacen_destino}
+                              </Text>
+                            </Group>
+                            <Button
+                              size="xs"
+                              variant="light"
+                              color="indigo"
+                              radius="xl"
+                              onClick={() =>
+                                handleOpenTransferencia(
+                                  r,
+                                  idAlmacenDestino,
+                                  group.detalles,
+                                  group.almacen_destino,
+                                )
+                              }
+                            >
+                              Transferir Stock
+                            </Button>
+                          </div>
+                        )}
+                        <div className="p-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                          {group.detalles.map((det) => (
+                            <div
+                              key={det.id_recepcion_detalle}
+                              className="bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/40 hover:border-indigo-500/30 transition-colors flex justify-between items-center relative overflow-hidden group/item"
+                            >
+                              <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
 
-                        <Group gap="xs" wrap="nowrap" align="center">
-                          <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
-                          <Text
-                            size="11px"
-                            fw={800}
-                            c="zinc.4"
-                            className="uppercase tracking-widest leading-none"
-                          >
-                            Recibido:
-                          </Text>
-                          <Badge
-                            variant="light"
-                            color="indigo"
-                            size="sm"
-                            className="font-bold tracking-wider"
-                          >
-                            {formatNumber(det.cantidad_recepcionada)}{" "}
-                            {det.unidad_medida_oc_abv}
-                          </Badge>
-                        </Group>
+                              <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                                <Text
+                                  size="sm"
+                                  fw={900}
+                                  className="text-white leading-tight"
+                                >
+                                  {det.producto}
+                                </Text>
+
+                                <Group gap="xs" wrap="nowrap" align="center">
+                                  <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                  <Text
+                                    size="11px"
+                                    fw={800}
+                                    c="zinc.4"
+                                    className="uppercase tracking-widest leading-none"
+                                  >
+                                    Recibido:
+                                  </Text>
+                                  <Badge
+                                    variant="light"
+                                    color="indigo"
+                                    size="sm"
+                                    className="font-bold tracking-wider"
+                                  >
+                                    {formatNumber(det.cantidad_recepcionada)}{" "}
+                                    {det.unidad_medida_oc_abv}
+                                  </Badge>
+                                </Group>
+                              </div>
+
+                              <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
+                                <Group gap="xs" wrap="nowrap" align="center">
+                                  <Text
+                                    size="md"
+                                    fw={900}
+                                    className="text-emerald-400 font-mono leading-none"
+                                  >
+                                    +
+                                    {formatNumber(
+                                      det.cantidad_recepcionada_base,
+                                    )}
+                                  </Text>
+                                  <Text
+                                    size="12px"
+                                    fw={800}
+                                    c="zinc.5"
+                                    className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
+                                  >
+                                    {det.unidad_medida_base_abv || "UNI"}
+                                  </Text>
+                                </Group>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-
-                      <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
-                        <Group gap="xs" wrap="nowrap" align="center">
-                          <Text
-                            size="md"
-                            fw={900}
-                            className="text-emerald-400 font-mono leading-none"
-                          >
-                            +{formatNumber(det.cantidad_recepcionada_base)}
-                          </Text>
-                          <Text
-                            size="12px"
-                            fw={800}
-                            c="zinc.5"
-                            className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
-                          >
-                            {det.unidad_medida_base_abv || "UNI"}
-                          </Text>
-                        </Group>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </Collapse>
           </Paper>
         );
       })}
+
+      {selectedRecepcion !== null &&
+        selectedAlmacenDestino !== null &&
+        selectedAlmacenRecepcionista !== null && (
+          <ModalEstandar
+            opened={openedTransferencia}
+            close={closeTransferencia}
+            title={`Transferir a ${selectedAlmacenDestinoNombre || ""}`}
+            size="75%"
+            rightSection={
+              <Badge variant="dot" color="indigo" size="sm" radius="sm">
+                Origen: {selectedAlmacenRecepcionistaNombre || ""}
+              </Badge>
+            }
+          >
+            <RegistrarTransferenciaModal
+              idRecepcion={selectedRecepcion}
+              idAlmacenDestino={selectedAlmacenDestino}
+              idAlmacenRecepcionista={selectedAlmacenRecepcionista}
+              selectedItemsIds={selectedItemsIds}
+              detallesRecepcion={selectedDetalles}
+              onSuccess={handleTransferenciaSuccess}
+              onCancel={closeTransferencia}
+            />
+          </ModalEstandar>
+        )}
     </Stack>
   );
 };

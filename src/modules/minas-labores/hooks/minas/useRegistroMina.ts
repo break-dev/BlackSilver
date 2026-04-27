@@ -12,11 +12,7 @@ interface Props {
   onCancel: () => void;
 }
 
-export const useRegistroMina = ({
-  concesiones: _concesiones,
-  onSuccess,
-  onCancel,
-}: Props) => {
+export const useRegistroMina = ({ onSuccess, onCancel }: Props) => {
   const [idConcesion, setIdConcesion] = useState<string | null>(null);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");

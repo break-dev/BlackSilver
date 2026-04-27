@@ -32,6 +32,8 @@ export interface RES_OrdenCompraRecepcionDetalle {
   id_recepcion_detalle: number;
   id_orden_compra_recepcion: number;
   id_orden_compra_detalle: number;
+  id_almacen_destino: number;
+  almacen_destino: string;
   //
   id_producto: number;
   producto: string;
