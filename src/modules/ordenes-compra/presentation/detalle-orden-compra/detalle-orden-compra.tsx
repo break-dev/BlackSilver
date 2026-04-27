@@ -507,6 +507,7 @@ export const DetalleOrdenCompra = ({
             <Table verticalSpacing="md" horizontalSpacing="xl">
               <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
                 <tr>
+                  <th className="px-6 py-4 text-center w-12">#</th>
                   <th className="px-6 py-4 text-center w-12">
                     <Checkbox
                       checked={allAvailableSelected}
@@ -520,7 +521,7 @@ export const DetalleOrdenCompra = ({
                   </th>
                   <th className="px-6 py-4 text-left">Producto</th>
                   <th className="px-6 py-4 text-center">Cant. Solicitada</th>
-                  <th className="px-6 py-4 text-center">Almacén</th>
+                  <th className="px-6 py-4 text-center">Almacén/Entrega</th>
                   <th className="px-6 py-4 text-center">Costo Unit.</th>
                   <th className="px-6 py-4 text-center">Subtotal</th>
                   <th className="px-6 py-4 text-center">Estado</th>
@@ -528,7 +529,7 @@ export const DetalleOrdenCompra = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {detalles.map((det) => {
+                {detalles.map((det, idx) => {
                   const req = Number(det.cantidad_requerida_base) || 0;
                   const rec = Number(det.cantidad_recepcionada_base) || 0;
                   const isAvailable = rec < req - 0.001;
@@ -541,6 +542,9 @@ export const DetalleOrdenCompra = ({
                       key={det.id_orden_compra_detalle}
                       className={`hover:bg-zinc-900/40 transition-colors group ${isSelected ? "bg-indigo-500/5" : ""}`}
                     >
+                      <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
+                        {idx + 1}
+                      </td>
                       <td className="px-6 py-4 text-center">
                         <Checkbox
                           checked={isSelected}
@@ -604,7 +608,7 @@ export const DetalleOrdenCompra = ({
                           {det.id_unidad_medida_base !==
                             det.id_unidad_medida_oc && (
                             <Text size="10px" c="zinc.5" fw={700}>
-                              Equiv: {det.contenido_por_presentacion}{" "}
+                              Equiv: {det.contenido_por_presentacion * det.cantidad_requerida}{" "}
                               {det.unidad_medida_base_abv}
                             </Text>
                           )}
