@@ -8,6 +8,7 @@ import {
   Text,
   ActionIcon,
   Button,
+  Checkbox,
 } from "@mantine/core";
 import {
   ClockIcon,
@@ -35,6 +36,7 @@ import type {
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar.tsx";
 import { RegistroRecepcionOC } from "../registro-recepcion/registrar-recepcion-oc.tsx";
 import { HistorialRecepcionesOC } from "../historial-recepciones-oc.tsx";
+import { TrazabilidadDetalleOC } from "../trazabilidad-detalle-oc.tsx";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto.ts";
 import { usePrint } from "../../../../hooks/usePrint.ts";
 import { TicketLotePDF } from "../../../../presentation/utils/ticket-lote-pdf.tsx";
@@ -57,16 +59,66 @@ export const DetalleOrdenCompra = ({
 }: DetalleOrdenCompraProps) => {
   const [openedRecepcion, setOpenedRecepcion] = useState(false);
   const [openedHistorial, setOpenedHistorial] = useState(false);
+  const [openedTrace, setOpenedTrace] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [selectedItemName, setSelectedItemName] = useState("");
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const { print } = usePrint();
+
+  const openTrace = (idDetalle: number, nombre: string) => {
+    setSelectedItemId(idDetalle);
+    setSelectedItemName(nombre);
+    setOpenedTrace(true);
+  };
+
+  const closeTrace = () => {
+    setSelectedItemId(null);
+    setSelectedItemName("");
+    setOpenedTrace(false);
+  };
+
+  const detallesDisponibles = detalles.filter((d) => {
+    const req = Number(d.cantidad_requerida_base) || 0;
+    const rec = Number(d.cantidad_recepcionada_base) || 0;
+    return rec < req - 0.001;
+  });
+
+  const allAvailableSelected =
+    detallesDisponibles.length > 0 &&
+    selectedIds.length === detallesDisponibles.length;
+
+  const someAvailableSelected =
+    selectedIds.length > 0 && selectedIds.length < detallesDisponibles.length;
+
+  const handleSelectAll = () => {
+    if (allAvailableSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(detallesDisponibles.map((d) => d.id_orden_compra_detalle));
+    }
+  };
+
+  const handleSelectOne = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
 
   // Cálculo interno del progreso si no se recibe por props
   const progresoGeneral =
     propProgreso ??
-    (orden.estado === "Completada"
-      ? 100
-      : orden.estado === "En Recepción"
-        ? 50
-        : 0);
+    (detalles.length > 0
+      ? Math.min(
+          100,
+          Math.round(
+            detalles.reduce((acc, d) => {
+              const req = Number(d.cantidad_requerida_base) || 1;
+              const rec = Number(d.cantidad_recepcionada_base) || 0;
+              return acc + (rec / req) * 100;
+            }, 0) / detalles.length,
+          ),
+        )
+      : 0);
 
   if (loading) {
     return (
@@ -422,18 +474,22 @@ export const DetalleOrdenCompra = ({
               >
                 Historial de Recepciones
               </Button>
-              <Button
-                variant="gradient"
-                gradient={{ from: "indigo.6", to: "cyan.6" }}
-                size="xs"
-                radius="xl"
-                leftSection={<ArchiveBoxArrowDownIcon className="w-4 h-4" />}
-                className="font-bold shadow-lg shadow-indigo-500/20"
-                onClick={() => setOpenedRecepcion(true)}
-                disabled={orden.estado === "Completada"}
-              >
-                Nueva Recepción
-              </Button>
+              {detallesDisponibles.length > 0 && (
+                <Button
+                  variant="gradient"
+                  gradient={{ from: "indigo.6", to: "cyan.6" }}
+                  size="xs"
+                  radius="xl"
+                  leftSection={<ArchiveBoxArrowDownIcon className="w-4 h-4" />}
+                  className="font-bold shadow-lg shadow-indigo-500/20"
+                  onClick={() => setOpenedRecepcion(true)}
+                  disabled={
+                    selectedIds.length === 0 || orden.estado === "Completada"
+                  }
+                >
+                  Nueva Recepción
+                </Button>
+              )}
               <Badge
                 variant="light"
                 color="indigo"
@@ -451,7 +507,17 @@ export const DetalleOrdenCompra = ({
             <Table verticalSpacing="md" horizontalSpacing="xl">
               <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
                 <tr>
-                  <th className="px-6 py-4 text-center w-12">#</th>
+                  <th className="px-6 py-4 text-center w-12">
+                    <Checkbox
+                      checked={allAvailableSelected}
+                      indeterminate={someAvailableSelected}
+                      onChange={handleSelectAll}
+                      color="indigo"
+                      size="xs"
+                      disabled={detallesDisponibles.length === 0}
+                      className="cursor-pointer"
+                    />
+                  </th>
                   <th className="px-6 py-4 text-left">Producto</th>
                   <th className="px-6 py-4 text-center">Cant. Solicitada</th>
                   <th className="px-6 py-4 text-center">Almacén</th>
@@ -462,131 +528,182 @@ export const DetalleOrdenCompra = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {detalles.map((det, index) => (
-                  <tr
-                    key={det.id_orden_compra_detalle}
-                    className="hover:bg-zinc-900/40 transition-colors group"
-                  >
-                    <td className="px-6 py-4 text-center text-zinc-500 text-xs font-mono">
-                      {String(index + 1).padStart(2, "0")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Stack gap={4}>
-                        <Group gap="sm">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-indigo-500/50 transition-all">
-                            <CubeIcon className="w-4 h-4 text-zinc-400" />
-                          </div>
+                {detalles.map((det) => {
+                  const req = Number(det.cantidad_requerida_base) || 0;
+                  const rec = Number(det.cantidad_recepcionada_base) || 0;
+                  const isAvailable = rec < req - 0.001;
+                  const isSelected = selectedIds.includes(
+                    det.id_orden_compra_detalle,
+                  );
+
+                  return (
+                    <tr
+                      key={det.id_orden_compra_detalle}
+                      className={`hover:bg-zinc-900/40 transition-colors group ${isSelected ? "bg-indigo-500/5" : ""}`}
+                    >
+                      <td className="px-6 py-4 text-center">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() =>
+                            handleSelectOne(det.id_orden_compra_detalle)
+                          }
+                          disabled={!isAvailable}
+                          color="indigo"
+                          size="sm"
+                          className={
+                            isAvailable ? "cursor-pointer" : "opacity-40"
+                          }
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Stack gap={4}>
+                          <Group gap="sm">
+                            <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-indigo-500/50 transition-all">
+                              <CubeIcon className="w-4 h-4 text-zinc-400" />
+                            </div>
+                            <Text
+                              size="sm"
+                              fw={800}
+                              className="text-zinc-100 tracking-tight"
+                            >
+                              {det.producto}
+                            </Text>
+                          </Group>
+                          <Group gap={4}>
+                            {det.es_fiscalizado && (
+                              <Badge
+                                variant="filled"
+                                color="red"
+                                size="9px"
+                                radius="xs"
+                                className="font-black py-1.5!"
+                              >
+                                FISCALIZADO
+                              </Badge>
+                            )}
+                            {det.es_perecible && (
+                              <Badge
+                                variant="filled"
+                                color="orange"
+                                size="9px"
+                                radius="xs"
+                                className="font-black py-1.5!"
+                              >
+                                PERECIBLE
+                              </Badge>
+                            )}
+                          </Group>
+                        </Stack>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Stack gap={0} align="center">
+                          <Text size="sm" fw={800} className="text-zinc-100">
+                            {formatNumber(det.cantidad_requerida)}{" "}
+                            {det.unidad_medida_oc_abv}
+                          </Text>
+                          {det.id_unidad_medida_base !==
+                            det.id_unidad_medida_oc && (
+                            <Text size="10px" c="zinc.5" fw={700}>
+                              Equiv: {det.contenido_por_presentacion}{" "}
+                              {det.unidad_medida_base_abv}
+                            </Text>
+                          )}
+                        </Stack>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Stack gap={0} align="center">
                           <Text
-                            size="sm"
-                            fw={800}
-                            className="text-zinc-100 tracking-tight"
+                            size="xs"
+                            fw={700}
+                            c="zinc.4"
+                            className="italic line-clamp-1"
                           >
-                            {det.producto}
+                            {det.almacen_recepcionista}
                           </Text>
-                        </Group>
-                        <Group gap={4}>
-                          {det.es_fiscalizado && (
+                          <Group gap={4} mt={4} justify="center">
                             <Badge
-                              variant="filled"
-                              color="red"
-                              size="9px"
+                              color="blue"
+                              variant="light"
+                              size="xs"
                               radius="xs"
-                              className="font-black"
+                              className="px-1!"
                             >
-                              FISCALIZADO
+                              {det.tipo_despacho}
                             </Badge>
-                          )}
-                          {det.es_perecible && (
-                            <Badge
-                              variant="filled"
-                              color="orange"
-                              size="9px"
-                              radius="xs"
-                              className="font-black"
+                            <Text size="xs" c="zinc.5" fw={600}>
+                              {det.tiempo_entrega} {det.tiempo_entrega_periodo}
+                            </Text>
+                          </Group>
+                          {det.lugar_recojo && (
+                            <Text
+                              size="xs"
+                              c="zinc.5"
+                              mt={2}
+                              className="line-clamp-1"
+                              title={det.lugar_recojo}
                             >
-                              PERECIBLE
-                            </Badge>
+                              Recojo: {det.lugar_recojo}
+                            </Text>
                           )}
-                        </Group>
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Stack gap={0} align="center">
-                        <Text size="sm" fw={800} className="text-zinc-100">
-                          {formatNumber(det.cantidad_requerida)}{" "}
-                          {det.unidad_medida_oc_abv}
+                        </Stack>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Text
+                          size="sm"
+                          fw={800}
+                          className="text-zinc-100 font-mono"
+                        >
+                          {symbol} {formatNumber(det.precio_unitario)}
                         </Text>
-                        {det.id_unidad_medida_base !==
-                          det.id_unidad_medida_oc && (
-                          <Text size="10px" c="zinc.5" fw={700}>
-                            Equiv: {det.contenido_por_presentacion}{" "}
-                            {det.unidad_medida_base_abv}
-                          </Text>
-                        )}
-                      </Stack>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Text
-                        size="xs"
-                        fw={700}
-                        c="zinc.4"
-                        className="italic line-clamp-1"
-                      >
-                        {det.almacen_recepcionista}
-                      </Text>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Text
-                        size="sm"
-                        fw={800}
-                        className="text-zinc-100 font-mono"
-                      >
-                        {symbol} {formatNumber(det.precio_unitario)}
-                      </Text>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Text
-                        size="sm"
-                        fw={900}
-                        className="text-zinc-100 font-mono"
-                      >
-                        {symbol}{" "}
-                        {formatNumber(
-                          det.precio_unitario * det.cantidad_requerida,
-                        )}
-                      </Text>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Badge
-                        variant="light"
-                        color={
-                          det.estado ===
-                          Estado_OrdenCompraDetalle.RecepcionCompleta
-                            ? "teal"
-                            : det.estado ===
-                                Estado_OrdenCompraDetalle.EnRecepcion
-                              ? "indigo"
-                              : "zinc"
-                        }
-                        size="xs"
-                        radius="sm"
-                        className="font-bold"
-                      >
-                        {det.estado}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <ActionIcon
-                        variant="subtle"
-                        color="zinc"
-                        radius="md"
-                        className="opacity-40 hover:opacity-100"
-                      >
-                        <ArrowPathIcon className="w-4 h-4" />
-                      </ActionIcon>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Text
+                          size="sm"
+                          fw={900}
+                          className="text-zinc-100 font-mono"
+                        >
+                          {symbol}{" "}
+                          {formatNumber(
+                            det.precio_unitario * det.cantidad_requerida,
+                          )}
+                        </Text>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Badge
+                          variant="light"
+                          color={
+                            det.estado ===
+                            Estado_OrdenCompraDetalle.RecepcionCompleta
+                              ? "teal"
+                              : det.estado ===
+                                  Estado_OrdenCompraDetalle.EnRecepcion
+                                ? "indigo"
+                                : "zinc"
+                          }
+                          size="xs"
+                          radius="sm"
+                          className="font-bold"
+                        >
+                          {det.estado}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <ActionIcon
+                          variant="subtle"
+                          color="indigo"
+                          radius="md"
+                          className="opacity-40 hover:opacity-100 hover:bg-indigo-500/10"
+                          onClick={() =>
+                            openTrace(det.id_orden_compra_detalle, det.producto)
+                          }
+                          title="Ver trazabilidad"
+                        >
+                          <ArrowPathIcon className="w-4 h-4" />
+                        </ActionIcon>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </Table>
           </div>
@@ -609,7 +726,9 @@ export const DetalleOrdenCompra = ({
       >
         <RegistroRecepcionOC
           idOrdenCompra={orden.id_orden_compra}
-          detalles={detalles}
+          detalles={detalles.filter((d) =>
+            selectedIds.includes(d.id_orden_compra_detalle),
+          )}
           onSuccess={async (lotesNuevos?: RES_TicketLote[]) => {
             setOpenedRecepcion(false);
             if (onSuccess) onSuccess();
@@ -637,6 +756,20 @@ export const DetalleOrdenCompra = ({
             }
           }}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedTrace}
+        close={closeTrace}
+        title="Trazabilidad del Producto"
+        size="md"
+      >
+        {selectedItemId && (
+          <TrazabilidadDetalleOC
+            idDetalle={selectedItemId}
+            productoNombre={selectedItemName}
+          />
+        )}
       </ModalEstandar>
     </Stack>
   );

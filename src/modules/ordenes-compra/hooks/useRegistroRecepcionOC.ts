@@ -85,7 +85,13 @@ export const useRegistroRecepcionOC = ({
   // 2. Inicializar groupedItems
   useEffect(() => {
     if (detalles && detalles.length > 0 && groupedItems.length === 0) {
-      const initial: GroupedReceptionOC[] = detalles.map((d) => ({
+      const initial: GroupedReceptionOC[] = detalles
+        .filter((d) => {
+          const req = Number(d.cantidad_requerida_base || 0);
+          const rec = Number(d.cantidad_recepcionada_base || 0);
+          return rec < req - 0.001;
+        })
+        .map((d) => ({
         id_orden_compra_detalle: d.id_orden_compra_detalle,
         producto: d.producto,
         cantidad_requerida_base: Number(d.cantidad_requerida_base || 0) - Number(d.cantidad_recepcionada_base || 0),
