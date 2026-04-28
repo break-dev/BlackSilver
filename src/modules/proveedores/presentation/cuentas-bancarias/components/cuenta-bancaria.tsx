@@ -106,7 +106,7 @@ export const CuentaBancaria = ({ cuenta }: Props) => {
             >
               TIPO
             </Text>
-            {!cuenta.es_para_detraccion ? (
+            {cuenta.es_para_detraccion ? (
               <Badge color="yellow.9" variant="dot" size="sm" radius="xl">
                 Detracción
               </Badge>

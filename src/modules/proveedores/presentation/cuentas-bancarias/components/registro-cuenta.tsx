@@ -23,7 +23,6 @@ import type {
 import { useState, forwardRef, useImperativeHandle } from "react";
 import { RegistroBanco } from "./registro-banco";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
-import { SegmentedInput } from "../../../../../presentation/utils/segmented-input";
 
 interface Props {
   idProveedor: number;
@@ -157,11 +156,12 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
             </Grid.Col>
 
             <Grid.Col span={{ base: 14, md: 8 }}>
-              <SegmentedInput
-                label="CCI (Código de Cuenta Interbancario)"
-                lengths={[3, 3, 12, 2]}
+              <TextInput
+                label="Código de Cuenta Interbancario (CCI)"
+                radius="xl"
+                placeholder="Ej. 002-191-23132-41-098"
                 value={payload.cci || ""}
-                onChange={(val) => handleChangeStr("cci", val)}
+                onChange={(e) => handleChangeStr("cci", e.target.value)}
                 disabled={isSubmitting}
               />
             </Grid.Col>
@@ -172,7 +172,10 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
                   label="Es cuenta de detracción"
                   color="yellow"
                   checked={payload.es_para_detraccion === 1}
-                  disabled={!selectedBanco?.es_nacional || payload.moneda !== MONEDAS.PEN.label}
+                  disabled={
+                    !selectedBanco?.es_nacional ||
+                    payload.moneda !== MONEDAS.PEN.label
+                  }
                   onChange={(e) =>
                     handleToggleDetraccion(e.currentTarget.checked)
                   }

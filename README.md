@@ -45,7 +45,6 @@ Componentes altamente configurables que definen el lenguaje visual del sistema:
 - **`DatePickerInput`**: Input de fecha personalizado y estilizado.
 - **`JsonScanner`**: Componente visual para la captura de datos mediante scanner.
 - **`BlackcitoPet`**: Mascota virtual/asistente que proporciona feedback visual y saludos dinámicos al usuario.
-- **`SegmentedInput`**: Control de entrada segmentado para selecciones rápidas.
 
 #### 3. State Management (`/src/stores`)
 

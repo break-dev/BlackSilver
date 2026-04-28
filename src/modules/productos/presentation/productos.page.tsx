@@ -54,14 +54,9 @@ export const ProductosPage = () => {
           <ThemeIcon variant="light" color="indigo" radius="md" size="lg">
             <CubeIcon className="w-5 h-5" />
           </ThemeIcon>
-          <div>
-            <Text size="sm" fw={500} className="text-zinc-200">
-              {r.nombre}
-            </Text>
-            <Text size="xs" className="text-zinc-500">
-              {r.unidad_medida_base} ({r.unidad_medida_abreviatura})
-            </Text>
-          </div>
+          <Text size="sm" fw={500} className="text-zinc-200">
+            {r.nombre}
+          </Text>
         </Group>
       ),
     },
@@ -76,7 +71,7 @@ export const ProductosPage = () => {
     },
     {
       accessor: "vencimiento",
-      title: "Vencimiento",
+      title: "Plazo Alerta Venc.",
       render: (r) => {
         if (!r.es_perecible) {
           return (
@@ -104,34 +99,40 @@ export const ProductosPage = () => {
     {
       accessor: "stock_minimo",
       title: "Stock Mín.",
-      textAlign: "right",
+      textAlign: "center",
       render: (r) => (
-        <Text size="sm" fw={500} className="text-right text-zinc-300">
-          {formatNumber(r.stock_minimo)}
-        </Text>
+        <div className="flex flex-row gap-2 justify-center items-center">
+          <Text size="sm" fw={500} className="text-zinc-300">
+            {formatNumber(r.stock_minimo)}
+          </Text>
+          <Badge size="xs" className="text-zinc-500">
+            {r.unidad_medida_base} ({r.unidad_medida_abreviatura})
+          </Badge>
+        </div>
       ),
     },
     {
       accessor: "indicadores",
       title: "Indicadores",
+      textAlign: "center",
       render: (r) => (
-        <Group gap={4}>
-          {r.es_fiscalizado && (
+        <div className="flex flex-row gap-2 justify-center items-center">
+          {r.es_fiscalizado == true && (
             <Badge color="yellow" variant="light" size="xs">
               Fiscalizado
             </Badge>
           )}
-          {r.es_perecible && (
+          {r.es_perecible == true && (
             <Badge color="red" variant="light" size="xs">
               Perecible
             </Badge>
           )}
-          {!r.es_fiscalizado && !r.es_perecible && (
+          {r.es_fiscalizado == false && r.es_perecible == false && (
             <Text size="xs" className="text-zinc-600 italic">
               Ninguno
             </Text>
           )}
-        </Group>
+        </div>
       ),
     },
     {

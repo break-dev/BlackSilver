@@ -617,14 +617,15 @@ export const DetalleOrdenCompra = ({
                       </td>
                       <td className="px-6 py-4 text-center">
                         <Stack gap={0} align="center">
-                          <Text
+                          <Badge
                             size="xs"
                             fw={700}
-                            c="zinc.4"
+                            variant="outline"
+                            color="green.5"
                             className="italic line-clamp-1"
                           >
                             {det.almacen_recepcionista}
-                          </Text>
+                          </Badge>
                           <Group gap={4} mt={4} justify="center">
                             <Badge
                               color="blue"
