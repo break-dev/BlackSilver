@@ -26,6 +26,7 @@ interface ModalSeleccionProductosProps {
   seleccionadosActuales: number[];
   productosBloqueados?: number[];
   catalogoProductos: RES_Producto[];
+  loading?: boolean;
 }
 
 export const ModalSeleccionProductos = ({
@@ -35,6 +36,7 @@ export const ModalSeleccionProductos = ({
   seleccionadosActuales,
   productosBloqueados = [],
   catalogoProductos,
+  loading = false,
 }: ModalSeleccionProductosProps) => {
   const [busqueda, setBusqueda] = useState("");
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
@@ -197,7 +199,7 @@ export const ModalSeleccionProductos = ({
           idAccessor="id_producto"
           columns={columns}
           records={filtrados}
-          loading={false}
+          loading={loading}
           initialPageSize={10}
           minHeight={350}
         />

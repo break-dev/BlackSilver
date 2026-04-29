@@ -72,6 +72,7 @@ export const RegistroCotizacion = forwardRef<
       setWizardAprobacionOpened,
       wizardPayload,
       duplicarFilaProducto,
+      updateGlobalLogistica,
     } = useRegistroCotizacion(handleInternalSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
@@ -115,6 +116,7 @@ export const RegistroCotizacion = forwardRef<
             onRemoveCotizacion={eliminarCotizacion}
             onDuplicarFila={duplicarFilaProducto}
             onEliminarFila={eliminarFilaProducto}
+            onUpdateGlobalLogistica={updateGlobalLogistica}
           />
         </div>
 
@@ -151,6 +153,7 @@ export const RegistroCotizacion = forwardRef<
           seleccionadosActuales={productos.map((p) => p.id_producto)}
           productosBloqueados={productosEnUsoIds}
           catalogoProductos={maestros.catalogo}
+          loading={loadingMaestros}
         />
 
         <ModalAsistenteAprobacion

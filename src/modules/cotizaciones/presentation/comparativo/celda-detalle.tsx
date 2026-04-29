@@ -11,6 +11,7 @@ import {
   Popover,
   ActionIcon,
   Indicator,
+  Badge,
 } from "@mantine/core";
 
 import {
@@ -60,7 +61,7 @@ const inputStyles = {
   description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
 };
 
-const PERIODO_OPTIONS = [
+export const PERIODO_OPTIONS = [
   { value: Periodo.Diario, label: "Día(s)" },
   { value: Periodo.Semanal, label: "Semana(s)" },
   { value: Periodo.Mensual, label: "Mes(es)" },
@@ -361,7 +362,7 @@ export const CeldaDetalle = ({
                   <div>
                     <Group gap={4} wrap="nowrap" mb={6}>
                       <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
-                      <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
+                      <Text size="xs" fw={700} className="text-zinc-300 tracking-wider">
                         Entrega
                       </Text>
                     </Group>
@@ -422,10 +423,12 @@ export const CeldaDetalle = ({
                   )}
 
                   {det.tiempo_entrega_dias > 0 && (
-                    <Text size="11px" className="text-zinc-500 text-center mt-2">
-                      ≈ {det.tiempo_entrega_dias} día
-                      {det.tiempo_entrega_dias !== 1 ? "s" : ""} de entrega estimados
-                    </Text>
+                    <div className="mt-2 flex justify-center">
+                      <Badge variant="light" color="cyan" size="xs" radius="sm" className="font-bold border border-cyan-500/20">
+                        ≈ {det.tiempo_entrega_dias} día
+                        {det.tiempo_entrega_dias !== 1 ? "s" : ""} estimados
+                      </Badge>
+                    </div>
                   )}
                 </Stack>
               </Popover.Dropdown>

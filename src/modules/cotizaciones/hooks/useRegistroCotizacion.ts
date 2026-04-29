@@ -423,6 +423,43 @@ export const useRegistroCotizacion = (
     [],
   );
 
+  const updateGlobalLogistica = useCallback(
+    (
+      cotIndex: number,
+      data: {
+        id_almacen_recepcionista: number;
+        tipo_despacho: TipoDespachoCompra;
+        tiempo_entrega: number;
+        tiempo_entrega_periodo: Periodo;
+      },
+    ) => {
+      setCotizaciones((prev) => {
+        const p = [...prev];
+        const cot = { ...p[cotIndex] };
+        const dias =
+          data.tiempo_entrega * (DIAS_POR_PERIODO[data.tiempo_entrega_periodo] ?? 1);
+
+        cot.detalles = cot.detalles.map((d) => ({
+          ...d,
+          id_almacen_recepcionista: data.id_almacen_recepcionista,
+          tipo_despacho: data.tipo_despacho,
+          tiempo_entrega: data.tiempo_entrega,
+          tiempo_entrega_periodo: data.tiempo_entrega_periodo,
+          tiempo_entrega_dias: dias,
+          // Si el tipo de despacho no es recojo, limpiamos el lugar de recojo
+          lugar_recojo:
+            data.tipo_despacho === TipoDespachoCompra.Recojo
+              ? d.lugar_recojo
+              : null,
+        }));
+
+        p[cotIndex] = cot;
+        return p;
+      });
+    },
+    [],
+  );
+
   const handleSave = async () => {
     if (cotizaciones.length === 0) {
       notify({ type: "info", content: "Debe añadir al menos una cotización." });
@@ -614,5 +651,6 @@ export const useRegistroCotizacion = (
     setWizardAprobacionOpened,
     wizardPayload,
     duplicarFilaProducto,
+    updateGlobalLogistica,
   };
 };

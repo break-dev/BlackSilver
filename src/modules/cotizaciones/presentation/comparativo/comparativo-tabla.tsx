@@ -9,6 +9,8 @@ import type {
 import { CabeceraCotizacion } from "./cabecera-cotizacion";
 import { CeldaDetalle } from "./celda-detalle";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../shared/enums/_generic/periodo";
 
 interface ComparativoTablaProps {
   productos: (
@@ -42,6 +44,15 @@ interface ComparativoTablaProps {
   onRemoveCotizacion: (index: number) => void;
   onDuplicarFila?: (rowIndex: number) => void;
   onEliminarFila?: (rowIndex: number) => void;
+  onUpdateGlobalLogistica?: (
+    cotIndex: number,
+    data: {
+      id_almacen_recepcionista: number;
+      tipo_despacho: TipoDespachoCompra;
+      tiempo_entrega: number;
+      tiempo_entrega_periodo: Periodo;
+    },
+  ) => void;
 }
 
 export const ComparativoTabla = ({
@@ -58,6 +69,7 @@ export const ComparativoTabla = ({
   onRemoveCotizacion,
   onDuplicarFila,
   onEliminarFila,
+  onUpdateGlobalLogistica,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
@@ -119,6 +131,8 @@ export const ComparativoTabla = ({
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
                   onRemoveCotizacion={onRemoveCotizacion}
+                  almacenes={almacenes}
+                  onUpdateGlobalLogistica={onUpdateGlobalLogistica}
                 />
               </Table.Th>
             ))}

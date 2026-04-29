@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Group,
   Stack,
@@ -12,6 +13,8 @@ import {
   Skeleton,
   Popover,
   Tooltip,
+  Button,
+  Badge,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -20,12 +23,19 @@ import {
   TruckIcon,
   CurrencyDollarIcon,
   Cog6ToothIcon,
+  BuildingStorefrontIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type { DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
 import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Almacen } from "../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../shared/enums/_generic/periodo";
+import { PERIODO_OPTIONS } from "./celda-detalle";
+import { useNotify } from "../../../../hooks/useNotify";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -42,6 +52,16 @@ interface CabeceraCotizacionProps {
   ) => void;
   onRemoveCotizacion: (index: number) => void;
   isSkeleton?: boolean;
+  almacenes?: RES_Almacen[];
+  onUpdateGlobalLogistica?: (
+    cotIndex: number,
+    data: {
+      id_almacen_recepcionista: number;
+      tipo_despacho: TipoDespachoCompra;
+      tiempo_entrega: number;
+      tiempo_entrega_periodo: Periodo;
+    },
+  ) => void;
 }
 
 const inputStyles = {
@@ -61,7 +81,33 @@ export const CabeceraCotizacion = ({
   onUpdateHeader,
   onRemoveCotizacion,
   isSkeleton = false,
+  almacenes = [],
+  onUpdateGlobalLogistica,
 }: CabeceraCotizacionProps) => {
+  const { notify } = useNotify();
+  const [popoverOpened, setPopoverOpened] = useState(false);
+  const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
+  const [globalDespacho, setGlobalDespacho] = useState<TipoDespachoCompra>(
+    TipoDespachoCompra.Envio,
+  );
+  const [globalTiempo, setGlobalTiempo] = useState<number>(1);
+  const [globalPeriodo, setGlobalPeriodo] = useState<Periodo>(Periodo.Semanal);
+
+  const handleApplyGlobalLogistica = () => {
+    if (!globalAlmacen || !onUpdateGlobalLogistica) return;
+    onUpdateGlobalLogistica(idx, {
+      id_almacen_recepcionista: Number(globalAlmacen),
+      tipo_despacho: globalDespacho,
+      tiempo_entrega: globalTiempo,
+      tiempo_entrega_periodo: globalPeriodo,
+    });
+    setPopoverOpened(false);
+    notify({
+      type: "success",
+      content: `Configuración aplicada a todos los productos en Cotización #${idx + 1}`,
+    });
+  };
+
   if (isSkeleton) {
     return (
       <Stack gap={4} className="pt-0 pb-3 px-4 relative">
@@ -272,6 +318,128 @@ export const CabeceraCotizacion = ({
 
         {/* Botón de Configuración Adicional */}
         <Group gap="xs" className="flex-none">
+          <Popover
+            width={320}
+            position="bottom"
+            withArrow
+            shadow="md"
+            opened={popoverOpened}
+            onChange={setPopoverOpened}
+          >
+            <Popover.Target>
+              <Tooltip label="Configuración Global (afecta a todos)" withArrow>
+                <ActionIcon
+                  variant="light"
+                  color="cyan"
+                  radius="md"
+                  size="md"
+                  className="border border-cyan-500/20"
+                  onClick={() => setPopoverOpened((o) => !o)}
+                >
+                  <TruckIcon className="w-4 h-4" />
+                </ActionIcon>
+              </Tooltip>
+            </Popover.Target>
+            <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
+              <Stack gap="sm">
+                <Text size="sm" fw={800} className="text-white mb-1 tracking-wider">
+                  Cambios Globales
+                </Text>
+                <Select
+                  label="Almacén de Recepción"
+                  placeholder={loadingProveedores ? "Cargando almacenes..." : "Seleccione almacén..."}
+                  disabled={loadingProveedores}
+                  withAsterisk
+                  leftSection={<BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />}
+                  data={almacenes.map((a) => ({
+                    value: String(a.id_almacen),
+                    label: a.es_principal ? `${a.nombre} ★` : a.nombre,
+                  }))}
+                  value={globalAlmacen}
+                  onChange={setGlobalAlmacen}
+                  size="xs"
+                  radius="lg"
+                  classNames={inputStyles}
+                  searchable
+                  comboboxProps={{ withinPortal: false }}
+                />
+
+                <Select
+                  label="Tipo de Despacho"
+                  withAsterisk
+                  leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                  data={[
+                    { value: TipoDespachoCompra.Envio, label: "Envío" },
+                    { value: TipoDespachoCompra.Recojo, label: "Recojo" },
+                  ]}
+                  value={globalDespacho}
+                  onChange={(val) => setGlobalDespacho(val as TipoDespachoCompra)}
+                  size="xs"
+                  radius="lg"
+                  classNames={inputStyles}
+                  comboboxProps={{ withinPortal: false }}
+                />
+
+                <div>
+                  <Group gap={4} wrap="nowrap" mb={6}>
+                    <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
+                    <Text size="xs" fw={700} className="text-zinc-300 tracking-wider">
+                      Entrega
+                    </Text>
+                  </Group>
+                  <Group grow gap="xs">
+                    <NumberInput
+                      value={globalTiempo}
+                      onChange={(val) => setGlobalTiempo(Number(val))}
+                      min={1}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                    />
+                    <Select
+                      data={PERIODO_OPTIONS}
+                      value={globalPeriodo}
+                      onChange={(val) => setGlobalPeriodo(val as Periodo)}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      comboboxProps={{ withinPortal: false }}
+                    />
+                  </Group>
+                  <div className="mt-2 flex justify-center">
+                    <Badge variant="light" color="cyan" size="xs" radius="sm" className="font-bold border border-cyan-500/20">
+                      ≈ {globalTiempo * (
+                        globalPeriodo === Periodo.Diario ? 1 :
+                        globalPeriodo === Periodo.Semanal ? 7 :
+                        globalPeriodo === Periodo.Mensual ? 30 :
+                        globalPeriodo === Periodo.Anual ? 365 : 0
+                      )} día{(globalTiempo * (
+                        globalPeriodo === Periodo.Diario ? 1 :
+                        globalPeriodo === Periodo.Semanal ? 7 :
+                        globalPeriodo === Periodo.Mensual ? 30 :
+                        globalPeriodo === Periodo.Anual ? 365 : 0
+                      )) !== 1 ? "s" : ""} estimados
+                    </Badge>
+                  </div>
+                </div>
+
+                <Button
+                  fullWidth
+                  mt="sm"
+                  variant="gradient"
+                  gradient={{ from: "cyan.6", to: "cyan.8" }}
+                  onClick={handleApplyGlobalLogistica}
+                  disabled={!globalAlmacen}
+                  radius="xl"
+                  size="xs"
+                  className="font-bold shadow-lg shadow-cyan-900/20"
+                >
+                  Aplicar cambios a toda la cotización
+                </Button>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+
           <Popover width={350} position="bottom" withArrow shadow="md">
             <Popover.Target>
               <Tooltip label="Configuración y Gastos" withArrow>
