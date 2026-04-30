@@ -19,6 +19,7 @@ interface CotizacionesFilterProps {
 const inputClasses = {
   input:
     "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+  label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
   dropdown:
     "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
   option:
@@ -39,44 +40,43 @@ export const CotizacionesFilter = ({
   onCambiarPeriodo,
 }: CotizacionesFilterProps) => {
   return (
-    <div className="flex flex-col md:flex-row gap-3 items-center">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
       {/* Mes */}
-      <div className="w-full md:w-40 shrink-0">
-        <Select
-          placeholder="Mes"
-          leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
-          data={MESES}
-          value={String(mes)}
-          onChange={(val) => val && onCambiarPeriodo(Number(val), year)}
-          radius="lg"
-          size="sm"
-          classNames={inputClasses}
-        />
-      </div>
+      <Select
+        label="Mes de consulta"
+        placeholder="Mes"
+        leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
+        data={MESES}
+        value={String(mes)}
+        onChange={(val) => val && onCambiarPeriodo(Number(val), year)}
+        radius="lg"
+        size="sm"
+        classNames={inputClasses}
+      />
 
       {/* Año */}
-      <div className="w-full md:w-28 shrink-0">
-        <Select
-          placeholder="Año"
-          data={YEARS}
-          value={String(year)}
-          onChange={(val) => val && onCambiarPeriodo(mes, Number(val))}
-          radius="lg"
-          size="sm"
-          classNames={inputClasses}
-        />
-      </div>
+      <Select
+        label="Año"
+        placeholder="Año"
+        data={YEARS}
+        value={String(year)}
+        onChange={(val) => val && onCambiarPeriodo(mes, Number(val))}
+        radius="lg"
+        size="sm"
+        classNames={inputClasses}
+      />
 
       {/* Búsqueda */}
       <TextInput
-        placeholder="Buscar comparativo por proveedor o correlativo..."
+        label="Buscar comparativo"
+        placeholder="Proveedor o correlativo..."
         leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />}
         value={busqueda}
         onChange={(e) => setBusqueda(e.currentTarget.value)}
         radius="lg"
         size="sm"
         classNames={inputClasses}
-        className="flex-1"
+        className="md:col-span-2"
       />
 
       <Button
@@ -84,7 +84,7 @@ export const CotizacionesFilter = ({
         onClick={openCreate}
         radius="lg"
         size="xs"
-        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold mt-7"
       >
         Nueva Cotización
       </Button>
