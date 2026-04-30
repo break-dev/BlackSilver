@@ -52,10 +52,10 @@ export const EmpleadosPage = () => {
     setBusqueda,
     pushNuevoEmpleado,
     actualizarFoto,
-    recargar,
+    actualizarEmpleadoEnLista,
   } = useEmpleados();
 
-  const asignacion = useAsignacionLabores(() => recargar());
+  const asignacion = useAsignacionLabores(actualizarEmpleadoEnLista);
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -122,21 +122,41 @@ export const EmpleadosPage = () => {
       accessor: "mina",
       title: "Mina",
       width: 180,
-      render: (r) => (
-        <Group gap={6}>
-          <MapPinIcon className="w-4 h-4 text-emerald-400" />
-          <Text size="sm" fw={600} className="text-zinc-200">
-            {r.mina}
-          </Text>
-        </Group>
-      ),
+      render: (r) => {
+        if (!r.id_mina) {
+          return (
+            <Badge variant="outline" color="pink" radius="sm" size="sm">
+              No aplica
+            </Badge>
+          );
+        }
+        return (
+          <Group gap={6}>
+            <MapPinIcon className="w-4 h-4 text-emerald-400" />
+            <Text size="sm" fw={600} className="text-zinc-200">
+              {r.mina}
+            </Text>
+          </Group>
+        );
+      },
     },
     {
       accessor: "labores_asignadas",
       title: "Labores",
       textAlign: "center",
       render: (r) => {
-        const sinAsignar = r.labores_asignadas === "Sin asignar";
+        if (!r.id_mina) {
+          return (
+            <Badge variant="outline" color="pink" radius="sm" size="sm">
+              No aplica
+            </Badge>
+          );
+        }
+
+        const sinAsignar =
+          r.labores_asignadas === "Sin asignar" ||
+          r.labores_asignadas === "No aplica";
+
         return (
           <Group gap={6} justify="center" wrap="nowrap">
             <Stack gap={4} align="center">
@@ -215,13 +235,15 @@ export const EmpleadosPage = () => {
           </Menu.Target>
           <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
             <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<WrenchScrewdriverIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-              onClick={() => asignacion.abrir(r)}
-            >
-              Asignar Labor
-            </Menu.Item>
+            {r.id_mina && (
+              <Menu.Item
+                leftSection={<WrenchScrewdriverIcon className="w-4 h-4" />}
+                className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                onClick={() => asignacion.abrir(r)}
+              >
+                Asignar Labor
+              </Menu.Item>
+            )}
             <Menu.Item
               leftSection={<PencilSquareIcon className="w-4 h-4" />}
               className="text-zinc-300 hover:bg-zinc-800 hover:text-white"

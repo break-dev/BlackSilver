@@ -86,51 +86,6 @@ export const RegistroEmpleado = ({
         </FileButton>
       </div>
 
-      <Select
-        label="Mina"
-        placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
-        data={minas.map((m) => ({
-          value: m.id_mina.toString(),
-          label: m.nombre,
-        }))}
-        value={form.id_mina === 0 ? null : form.id_mina.toString()}
-        onChange={(val) => setField("id_mina", Number(val))}
-        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={fieldClasses}
-        radius="lg"
-        required
-        withAsterisk
-        searchable
-        disabled={loadingMinas || loading}
-      />
-
-      <MultiSelect
-        label="Asignar Labores (Opcional)"
-        placeholder={
-          form.id_mina === 0
-            ? "Primero seleccione mina"
-            : loadingLabores
-              ? "Cargando labores..."
-              : "Seleccione una o más labores"
-        }
-        data={labores.map((l) => ({
-          value: l.id_labor.toString(),
-          label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
-        }))}
-        value={form.ids_labor?.map((id) => id.toString()) || []}
-        onChange={(vals) => setField("ids_labor", vals.map(Number))}
-        leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={{
-          ...fieldClasses,
-          pill: "bg-purple-600 text-white",
-        }}
-        radius="lg"
-        searchable
-        clearable
-        hidePickedOptions
-        disabled={form.id_mina === 0 || loadingLabores || loading}
-      />
-
       {/* Nombres y Apellidos */}
       <Group grow align="flex-start" gap="md">
         <TextInput
@@ -226,6 +181,51 @@ export const RegistroEmpleado = ({
           searchable
         />
       </Group>
+
+      {/* Mina y Labores (Opcionales y al final) */}
+      <Select
+        label="Mina"
+        placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
+        data={minas.map((m) => ({
+          value: m.id_mina.toString(),
+          label: m.nombre,
+        }))}
+        value={form.id_mina === 0 || !form.id_mina ? null : form.id_mina.toString()}
+        onChange={(val) => setField("id_mina", val ? Number(val) : 0)}
+        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={fieldClasses}
+        radius="lg"
+        searchable
+        clearable
+        disabled={loadingMinas || loading}
+      />
+
+      <MultiSelect
+        label="Asignar Labores (Opcional)"
+        placeholder={
+          !form.id_mina || form.id_mina === 0
+            ? "Primero seleccione mina"
+            : loadingLabores
+              ? "Cargando labores..."
+              : "Seleccione una o más labores"
+        }
+        data={labores.map((l) => ({
+          value: l.id_labor.toString(),
+          label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
+        }))}
+        value={form.ids_labor?.map((id) => id.toString()) || []}
+        onChange={(vals) => setField("ids_labor", vals.map(Number))}
+        leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={{
+          ...fieldClasses,
+          pill: "bg-purple-600 text-white",
+        }}
+        radius="lg"
+        searchable
+        clearable
+        hidePickedOptions
+        disabled={!form.id_mina || form.id_mina === 0 || loadingLabores || loading}
+      />
 
       {/* Acciones */}
       <Group justify="flex-end" gap="md" mt="xl">

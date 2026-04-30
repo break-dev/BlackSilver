@@ -91,13 +91,13 @@ export const useRegistroEmpleado = (
 
   // Al cambiar la mina en el form, cargar sus labores
   useEffect(() => {
-    if (form.id_mina > 0) {
+    if (form.id_mina && form.id_mina > 0) {
       cargarLaboresMina(form.id_mina);
     } else {
       setLabores([]);
     }
     // Si se limpia la mina, limpiar los seleccionados de labores
-    setForm(prev => ({ ...prev, ids_labor: [] }));
+    setForm((prev) => ({ ...prev, ids_labor: [] }));
   }, [form.id_mina, cargarLaboresMina]);
 
   const cargarCargos = useCallback(async (areaId: number) => {
@@ -118,6 +118,8 @@ export const useRegistroEmpleado = (
     } else {
       setCargos([]);
     }
+    // Al cambiar de área, reseteamos el cargo seleccionado para evitar errores
+    setForm((prev) => ({ ...prev, id_cargo: 0 }));
   }, [idArea, cargarCargos]);
 
   const setField = <K extends keyof DTO_CrearEmpleado>(

@@ -89,5 +89,6 @@ export const useEmpleados = () => {
     recargar: () => listar(idMina || undefined),
     pushNuevoEmpleado,
     actualizarFoto,
+    actualizarEmpleadoEnLista,
   };
 };

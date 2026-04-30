@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const Schema_CrearEmpleado = z.object({
-  id_mina: z.number().min(1, "Debe seleccionar una mina"),
+  id_mina: z
+    .number()
+    .nullable()
+    .optional()
+    .transform((val) => (val === 0 ? null : val)),
   id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
   nombre: z.string().min(1, "Los nombres son obligatorios"),
   apellido: z.string().min(1, "Los apellidos son obligatorios"),

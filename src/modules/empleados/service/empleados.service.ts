@@ -96,7 +96,7 @@ export class EmpleadosService {
   public static asignar_labores = async (
     idEmpleado: number,
     dto: DTO_AsignarLabores,
-  ): Promise<IRespuesta<RES_LaborEmpleado[]>> => {
+  ): Promise<IRespuesta<RES_Empleado>> => {
     const { data } = await api.post(`${this.PATH}/${idEmpleado}/labores`, dto);
     return data;
   };

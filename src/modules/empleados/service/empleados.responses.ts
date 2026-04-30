@@ -16,6 +16,7 @@ export interface RES_Empleado {
   path_foto: string | null;
   estado: string;
   labores_asignadas: string; // "TA-001 | SN-002" o "Sin asignar"
+  ids_labor_asignadas: string | null;
 }
 
 export interface RES_Mina {

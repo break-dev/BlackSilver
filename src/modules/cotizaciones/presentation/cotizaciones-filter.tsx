@@ -40,7 +40,7 @@ export const CotizacionesFilter = ({
   onCambiarPeriodo,
 }: CotizacionesFilterProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
       {/* Mes */}
       <Select
         label="Mes de consulta"
@@ -76,7 +76,7 @@ export const CotizacionesFilter = ({
         radius="lg"
         size="sm"
         classNames={inputClasses}
-        className="md:col-span-2"
+        className="md:col-span-3"
       />
 
       <Button
@@ -84,7 +84,7 @@ export const CotizacionesFilter = ({
         onClick={openCreate}
         radius="lg"
         size="sm"
-        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold mt-7"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold"
       >
         Nueva Cotización
       </Button>

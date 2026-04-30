@@ -4,10 +4,11 @@ import { EmpleadosService } from "../service/empleados.service";
 import type {
   RES_Empleado,
   RES_Labor,
-  RES_LaborEmpleado,
 } from "../service/empleados.responses";
 
-export const useAsignacionLabores = (onSuccess: () => void) => {
+export const useAsignacionLabores = (
+  onUpdateLocal: (editado: RES_Empleado) => void,
+) => {
   const { notify } = useNotify();
 
   const [empleado, setEmpleado] = useState<RES_Empleado | null>(null);
@@ -19,31 +20,28 @@ export const useAsignacionLabores = (onSuccess: () => void) => {
   const abrir = useCallback(
     async (emp: RES_Empleado) => {
       setEmpleado(emp);
-      setSeleccionados([]);
+      
+      // 1. Pre-cargar seleccionados desde lo que ya viene en el listado (REUTILIZACIÓN)
+      if (emp.ids_labor_asignadas) {
+        const ids = emp.ids_labor_asignadas.split(",").map(Number);
+        setSeleccionados(ids);
+      } else {
+        setSeleccionados([]);
+      }
+
       setLoadingLabores(true);
       try {
-        // 1. Obtener TODAS las labores activas de la mina (sin filtrar por empleado para ver el panorama completo)
+        // 2. Solo necesitamos las labores disponibles de la mina
         const respDisponibles = await EmpleadosService.get_labores_disponibles(
           emp.id_mina,
-        );
-
-        // 2. Obtener las labores que YA TIENE el empleado para marcarlas
-        const respActuales = await EmpleadosService.get_labores_empleado(
-          emp.id_empleado,
         );
 
         if (respDisponibles.success) {
           setLaboresDisponibles(respDisponibles.data);
         }
-
-        if (respActuales.success) {
-          setSeleccionados(
-            respActuales.data.map((l: RES_LaborEmpleado) => l.id_labor),
-          );
-        }
       } catch (err) {
         console.error(err);
-        notify({ type: "error", content: "Error al cargar labores" });
+        notify({ type: "error", content: "Error al cargar catálogo de labores" });
       } finally {
         setLoadingLabores(false);
       }
@@ -70,7 +68,6 @@ export const useAsignacionLabores = (onSuccess: () => void) => {
 
     setLoading(true);
     try {
-      // Sincronizamos: lo que está seleccionado es lo que queda en la BD
       const resp = await EmpleadosService.asignar_labores(
         empleado.id_empleado,
         {
@@ -79,8 +76,9 @@ export const useAsignacionLabores = (onSuccess: () => void) => {
       );
       if (resp.success) {
         notify({ type: "success", content: resp.message });
+        // ACTUALIZACIÓN QUIRÚRGICA: Usamos la respuesta del API (empleado actualizado)
+        onUpdateLocal(resp.data);
         cerrar();
-        onSuccess();
       } else {
         notify({ type: "error", content: resp.message });
       }
