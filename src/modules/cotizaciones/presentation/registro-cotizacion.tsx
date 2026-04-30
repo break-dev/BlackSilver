@@ -73,6 +73,10 @@ export const RegistroCotizacion = forwardRef<
       wizardPayload,
       duplicarFilaProducto,
       updateGlobalLogistica,
+      copySource,
+      iniciarCopia,
+      cancelarCopia,
+      pegarCopia,
     } = useRegistroCotizacion(handleInternalSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
@@ -117,6 +121,10 @@ export const RegistroCotizacion = forwardRef<
             onDuplicarFila={duplicarFilaProducto}
             onEliminarFila={eliminarFilaProducto}
             onUpdateGlobalLogistica={updateGlobalLogistica}
+            copySource={copySource}
+            onIniciarCopia={iniciarCopia}
+            onCancelarCopia={cancelarCopia}
+            onPegarCopia={pegarCopia}
           />
         </div>
 

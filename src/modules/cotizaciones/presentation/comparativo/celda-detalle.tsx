@@ -20,6 +20,8 @@ import {
   TruckIcon,
   MapPinIcon,
   ClockIcon,
+  DocumentDuplicateIcon,
+  NoSymbolIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import type {
@@ -52,6 +54,18 @@ interface CeldaDetalleProps {
   ) => void;
   onToggleNoCotiza: (cotIndex: number, rowIndex: number) => void;
   isSkeleton?: boolean;
+  copySource?: {
+    cotIndex: number;
+    rowIndex: number;
+    id_producto: number;
+    data: Partial<DTO_CotizacionDetalle>;
+  } | null;
+  onIniciarCopia?: (
+    cotIndex: number,
+    rowIndex: number,
+    id_producto: number,
+  ) => void;
+  onCancelarCopia?: () => void;
 }
 
 const inputStyles = {
@@ -60,13 +74,6 @@ const inputStyles = {
   label: "text-zinc-300 mb-1.5 font-medium text-xs",
   description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
 };
-
-export const PERIODO_OPTIONS = [
-  { value: Periodo.Diario, label: "Día(s)" },
-  { value: Periodo.Semanal, label: "Semana(s)" },
-  { value: Periodo.Mensual, label: "Mes(es)" },
-  { value: Periodo.Anual, label: "Año(s)" },
-];
 
 export const CeldaDetalle = ({
   det,
@@ -79,7 +86,17 @@ export const CeldaDetalle = ({
   onToggleNoCotiza,
   isSkeleton = false,
   rowIndex,
+  copySource,
+  onIniciarCopia,
+  onCancelarCopia,
 }: CeldaDetalleProps & { rowIndex: number }) => {
+  const PERIODO_OPTIONS = [
+    { value: Periodo.Diario, label: "Día(s)" },
+    { value: Periodo.Semanal, label: "Semana(s)" },
+    { value: Periodo.Mensual, label: "Mes(es)" },
+    { value: Periodo.Anual, label: "Año(s)" },
+  ];
+
   if (isSkeleton) {
     return (
       <Stack gap={8} className="w-full pt-4">
@@ -109,10 +126,87 @@ export const CeldaDetalle = ({
   const baseAbrev = prod.unidad_medida_abreviatura || "UND";
   const esRecojo = det.tipo_despacho === TipoDespachoCompra.Recojo;
 
+  const isCopyingThis =
+    copySource?.cotIndex === cotIdx && copySource?.rowIndex === rowIndex;
+  const canPasteHere =
+    copySource && copySource.id_producto === prod.id_producto && !isCopyingThis;
+
   return (
-    <>
-      {/* Switch de Inhabilitación */}
-      <div className="absolute top-2 right-2 z-10">
+    <Stack gap={8} className="w-full pt-4 relative group/celda">
+      {/* Botón de Copiar Inteligente / Indicador de Pegar */}
+      <div className="absolute top-1.5 left-2 z-20">
+        {!det.no_cotiza && (
+          <>
+            {isCopyingThis ? (
+              <Tooltip label="Cancelar copia">
+                <ActionIcon
+                  variant="filled"
+                  color="indigo"
+                  size="xs"
+                  radius="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancelarCopia?.();
+                  }}
+                  className="shadow-sm"
+                >
+                  <NoSymbolIcon className="w-3.5 h-3.5" />
+                </ActionIcon>
+              </Tooltip>
+            ) : canPasteHere ? (
+              <>
+                <style>
+                  {`
+                    @keyframes subtlePulse {
+                      0% { opacity: 1; transform: scale(1); }
+                      50% { opacity: 0.85; transform: scale(0.98); }
+                      100% { opacity: 1; transform: scale(1); }
+                    }
+                  `}
+                </style>
+                <Badge
+                  color="indigo"
+                  variant="filled"
+                  size="xs"
+                  h={20}
+                  radius="sm"
+                  style={{ animation: "subtlePulse 2s infinite ease-in-out" }}
+                  className="shadow-lg shadow-indigo-500/40 border border-indigo-400/30"
+                  styles={{
+                    label: {
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                    },
+                  }}
+                >
+                  Pegar aquí
+                </Badge>
+              </>
+            ) : !copySource ? (
+              <Tooltip label="Copiar datos">
+                <ActionIcon
+                  variant="filled"
+                  color="indigo"
+                  size="xs"
+                  radius="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onIniciarCopia?.(cotIdx, rowIndex, prod.id_producto);
+                  }}
+                  className="opacity-0 group-hover/celda:opacity-100 transition-opacity shadow-sm"
+                >
+                  <DocumentDuplicateIcon className="w-3.5 h-3.5" />
+                </ActionIcon>
+              </Tooltip>
+            ) : null}
+          </>
+        )}
+      </div>
+
+      {/* Switch de Inhabilitación (Ubicación Original) */}
+      <div className="absolute top-1.5 right-2 z-20">
         <Tooltip
           label={
             det.no_cotiza
@@ -127,7 +221,7 @@ export const CeldaDetalle = ({
               color="red"
               checked={!det.no_cotiza}
               onChange={() => onToggleNoCotiza(cotIdx, rowIndex)}
-              className="hover:scale-110 transition-transform cursor-pointer"
+              className="cursor-pointer"
             />
           </Group>
         </Tooltip>
@@ -136,9 +230,7 @@ export const CeldaDetalle = ({
       {/* Campos editables */}
       <Stack
         gap="sm"
-        className={`w-full pt-6 transition-all duration-300 ${det.no_cotiza
-          ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
-          : ""
+        className={`w-full pt-6 transition-all duration-300 ${det.no_cotiza ? "opacity-20 pointer-events-none grayscale blur-[0.5px]" : ""
           }`}
       >
         {/* Fila 1: Unidad y Cantidad */}
@@ -476,6 +568,6 @@ export const CeldaDetalle = ({
           </Group>
         </Group>
       </Stack>
-    </>
+    </Stack>
   );
 };

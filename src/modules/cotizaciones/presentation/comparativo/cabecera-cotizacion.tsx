@@ -34,7 +34,6 @@ import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacio
 import type { RES_Almacen } from "../../../../service/responses/almacen";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../shared/enums/_generic/periodo";
-import { PERIODO_OPTIONS } from "./celda-detalle";
 import { useNotify } from "../../../../hooks/useNotify";
 
 interface CabeceraCotizacionProps {
@@ -84,6 +83,13 @@ export const CabeceraCotizacion = ({
   almacenes = [],
   onUpdateGlobalLogistica,
 }: CabeceraCotizacionProps) => {
+  const PERIODO_OPTIONS = [
+    { value: Periodo.Diario, label: "Día(s)" },
+    { value: Periodo.Semanal, label: "Semana(s)" },
+    { value: Periodo.Mensual, label: "Mes(es)" },
+    { value: Periodo.Anual, label: "Año(s)" },
+  ];
+
   const { notify } = useNotify();
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);

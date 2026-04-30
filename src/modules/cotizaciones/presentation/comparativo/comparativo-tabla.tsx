@@ -53,6 +53,19 @@ interface ComparativoTablaProps {
       tiempo_entrega_periodo: Periodo;
     },
   ) => void;
+  copySource?: {
+    cotIndex: number;
+    rowIndex: number;
+    id_producto: number;
+    data: Partial<DTO_CotizacionDetalle>;
+  } | null;
+  onIniciarCopia?: (
+    cotIndex: number,
+    rowIndex: number,
+    id_producto: number,
+  ) => void;
+  onCancelarCopia?: () => void;
+  onPegarCopia?: (targetCotIndex: number, targetRowIndex: number) => void;
 }
 
 export const ComparativoTabla = ({
@@ -70,6 +83,10 @@ export const ComparativoTabla = ({
   onDuplicarFila,
   onEliminarFila,
   onUpdateGlobalLogistica,
+  copySource,
+  onIniciarCopia,
+  onCancelarCopia,
+  onPegarCopia,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
@@ -259,13 +276,29 @@ export const ComparativoTabla = ({
                       />
                     );
 
+                  const isCopyingThis =
+                    copySource?.cotIndex === cotIdx &&
+                    copySource?.rowIndex === pIdx;
+                  const canPasteHere =
+                    copySource &&
+                    copySource.id_producto === prod.id_producto &&
+                    !isCopyingThis &&
+                    !det.no_cotiza;
+
                   return (
                     <Table.Td
                       key={`real-cell-${cotIdx}`}
                       style={{ width: 400, minWidth: 400, maxWidth: 400 }}
                       className={`p-4 align-top relative transition-all duration-300 ${
                         det.no_cotiza ? "bg-zinc-950/30" : ""
+                      } ${
+                        canPasteHere
+                          ? "bg-indigo-500/10 cursor-pointer hover:bg-indigo-500/20 shadow-inner"
+                          : ""
                       }`}
+                      onClick={() =>
+                        canPasteHere && onPegarCopia?.(cotIdx, pIdx)
+                      }
                     >
                       <CeldaDetalle
                         det={det}
@@ -277,6 +310,9 @@ export const ComparativoTabla = ({
                         onUpdateDetail={onUpdateDetail}
                         onToggleNoCotiza={onToggleNoCotiza}
                         rowIndex={pIdx}
+                        copySource={copySource}
+                        onIniciarCopia={onIniciarCopia}
+                        onCancelarCopia={onCancelarCopia}
                       />
 
                       {/* Overlay de 'No Cotiza' */}

@@ -122,6 +122,69 @@ export const useRegistroCotizacion = (
   const [wizardPayload, setWizardPayload] =
     useState<DTO_RegistrarComparativo | null>(null);
 
+  const [copySource, setCopySource] = useState<{
+    cotIndex: number;
+    rowIndex: number;
+    id_producto: number;
+    data: Partial<DTO_CotizacionDetalle>;
+  } | null>(null);
+
+  const iniciarCopia = useCallback(
+    (cotIndex: number, rowIndex: number, id_producto: number) => {
+      const source = cotizaciones[cotIndex]?.detalles[rowIndex];
+      if (!source) return;
+
+      setCopySource({
+        cotIndex,
+        rowIndex,
+        id_producto,
+        data: {
+          id_unidad_medida: source.id_unidad_medida,
+          cantidad: source.cantidad,
+          contenido_por_presentacion: source.contenido_por_presentacion,
+          cantidad_base: source.cantidad_base,
+          precio_unitario: source.precio_unitario,
+          precio_unitario_base: source.precio_unitario_base,
+          id_almacen_recepcionista: source.id_almacen_recepcionista,
+          tipo_despacho: source.tipo_despacho,
+          tiempo_entrega: source.tiempo_entrega,
+          tiempo_entrega_periodo: source.tiempo_entrega_periodo,
+          tiempo_entrega_dias: source.tiempo_entrega_dias,
+          lugar_recojo: source.lugar_recojo,
+        },
+      });
+    },
+    [cotizaciones],
+  );
+
+  const cancelarCopia = useCallback(() => setCopySource(null), []);
+
+  const pegarCopia = useCallback(
+    (targetCotIndex: number, targetRowIndex: number) => {
+      if (!copySource) return;
+
+      setCotizaciones((prev) => {
+        const p = [...prev];
+        const cot = { ...p[targetCotIndex] };
+        const detalles = [...cot.detalles];
+
+        detalles[targetRowIndex] = {
+          ...detalles[targetRowIndex],
+          ...copySource.data,
+        };
+
+        cot.detalles = detalles;
+        Object.assign(cot, recalcularTotales(cot));
+        p[targetCotIndex] = cot;
+        return p;
+      });
+
+      setCopySource(null); // Limpiar copia después de pegar (UX solicitada)
+      notify({ type: "success", content: "Datos copiados con éxito." });
+    },
+    [copySource, notify],
+  );
+
   // Carga inicial de maestros
   useEffect(() => {
     const cargarMaestros = async () => {
@@ -652,5 +715,9 @@ export const useRegistroCotizacion = (
     wizardPayload,
     duplicarFilaProducto,
     updateGlobalLogistica,
+    copySource,
+    iniciarCopia,
+    cancelarCopia,
+    pegarCopia,
   };
 };
