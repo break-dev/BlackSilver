@@ -51,5 +51,6 @@ export const Schema_CrearEmpleado = z.object({
 export type DTO_CrearEmpleado = z.infer<typeof Schema_CrearEmpleado>;
 
 export interface DTO_AsignarLabores {
+  id_mina: number | null;
   ids_labor: number[];
 }

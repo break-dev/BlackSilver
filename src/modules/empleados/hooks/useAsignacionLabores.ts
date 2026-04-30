@@ -12,32 +12,19 @@ export const useAsignacionLabores = (
   const { notify } = useNotify();
 
   const [empleado, setEmpleado] = useState<RES_Empleado | null>(null);
+  const [idMina, setIdMina] = useState<number | null>(null);
   const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
   const [seleccionados, setSeleccionados] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingLabores, setLoadingLabores] = useState(false);
 
-  const abrir = useCallback(
-    async (emp: RES_Empleado) => {
-      setEmpleado(emp);
-      
-      // 1. Pre-cargar seleccionados desde lo que ya viene en el listado (REUTILIZACIÓN)
-      if (emp.ids_labor_asignadas) {
-        const ids = emp.ids_labor_asignadas.split(",").map(Number);
-        setSeleccionados(ids);
-      } else {
-        setSeleccionados([]);
-      }
-
+  const cargarCatalogoLabores = useCallback(
+    async (minaId: number) => {
       setLoadingLabores(true);
       try {
-        // 2. Solo necesitamos las labores disponibles de la mina
-        const respDisponibles = await EmpleadosService.get_labores_disponibles(
-          emp.id_mina,
-        );
-
-        if (respDisponibles.success) {
-          setLaboresDisponibles(respDisponibles.data);
+        const resp = await EmpleadosService.get_labores_disponibles(minaId);
+        if (resp.success) {
+          setLaboresDisponibles(resp.data);
         }
       } catch (err) {
         console.error(err);
@@ -49,8 +36,38 @@ export const useAsignacionLabores = (
     [notify],
   );
 
+  const abrir = useCallback(
+    async (emp: RES_Empleado) => {
+      setEmpleado(emp);
+      setIdMina(emp.id_mina || null);
+
+      // Pre-cargar seleccionados desde lo que ya viene en el listado
+      if (emp.ids_labor_asignadas) {
+        const ids = emp.ids_labor_asignadas.split(",").map(Number);
+        setSeleccionados(ids);
+      } else {
+        setSeleccionados([]);
+      }
+
+      if (emp.id_mina) {
+        cargarCatalogoLabores(emp.id_mina);
+      }
+    },
+    [cargarCatalogoLabores],
+  );
+
+  const handleMinaChange = (val: number | null) => {
+    setIdMina(val);
+    setSeleccionados([]); // Al cambiar de mina, se limpian las labores
+    setLaboresDisponibles([]);
+    if (val) {
+      cargarCatalogoLabores(val);
+    }
+  };
+
   const cerrar = () => {
     setEmpleado(null);
+    setIdMina(null);
     setLaboresDisponibles([]);
     setSeleccionados([]);
   };
@@ -68,15 +85,12 @@ export const useAsignacionLabores = (
 
     setLoading(true);
     try {
-      const resp = await EmpleadosService.asignar_labores(
-        empleado.id_empleado,
-        {
-          ids_labor: seleccionados,
-        },
-      );
+      const resp = await EmpleadosService.asignar_labores(empleado.id_empleado, {
+        id_mina: idMina,
+        ids_labor: seleccionados,
+      });
       if (resp.success) {
         notify({ type: "success", content: resp.message });
-        // ACTUALIZACIÓN QUIRÚRGICA: Usamos la respuesta del API (empleado actualizado)
         onUpdateLocal(resp.data);
         cerrar();
       } else {
@@ -92,6 +106,8 @@ export const useAsignacionLabores = (
 
   return {
     empleado,
+    idMina,
+    onMinaChange: handleMinaChange,
     laboresDisponibles,
     seleccionados,
     loading,

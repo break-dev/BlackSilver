@@ -9,6 +9,7 @@ export const useEmpleados = () => {
   const [loadingMinas, setLoadingMinas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
 
   const cargarMinas = useCallback(async () => {
     setLoadingMinas(true);
@@ -54,8 +55,8 @@ export const useEmpleados = () => {
     );
   }, [empleados, busqueda]);
 
-  const pushNuevoEmpleado = () => {
-    listar(idMina || undefined);
+  const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
+    setEmpleados((prev) => [nuevo, ...prev]);
   };
 
   const actualizarEmpleadoEnLista = (editado: RES_Empleado) => {
@@ -65,6 +66,7 @@ export const useEmpleados = () => {
   };
 
   const actualizarFoto = async (idEmpleado: number, file: File) => {
+    setIdActualizandoFoto(idEmpleado);
     try {
       const resp = await EmpleadosService.actualizar_foto(idEmpleado, file);
       if (resp.success) {
@@ -73,6 +75,8 @@ export const useEmpleados = () => {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setIdActualizandoFoto(null);
     }
     return false;
   };
@@ -90,5 +94,6 @@ export const useEmpleados = () => {
     pushNuevoEmpleado,
     actualizarFoto,
     actualizarEmpleadoEnLista,
+    idActualizandoFoto,
   };
 };

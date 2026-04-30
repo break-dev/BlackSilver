@@ -5,24 +5,19 @@ import {
   Text,
   Badge,
   ActionIcon,
-  Avatar,
   Select,
-  Menu,
-  FileButton,
   Tooltip,
+  Avatar,
+  FileButton,
   Stack,
+  Loader,
 } from "@mantine/core";
 import { useNotify } from "../../../hooks/useNotify";
 import {
   MagnifyingGlassIcon,
-  InformationCircleIcon,
-  PencilSquareIcon,
   PlusIcon,
-  EllipsisVerticalIcon,
-  TrashIcon,
-  PencilIcon,
+  PencilSquareIcon,
   MapPinIcon,
-  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -53,6 +48,7 @@ export const EmpleadosPage = () => {
     pushNuevoEmpleado,
     actualizarFoto,
     actualizarEmpleadoEnLista,
+    idActualizandoFoto,
   } = useEmpleados();
 
   const asignacion = useAsignacionLabores(actualizarEmpleadoEnLista);
@@ -81,136 +77,158 @@ export const EmpleadosPage = () => {
     {
       accessor: "empleado",
       title: "Empleado",
-      render: (r) => (
-        <Group gap="sm">
-          <div className="relative group overflow-hidden rounded-full w-10 h-10 border border-zinc-800">
-            <FileButton
-              onChange={(file) => handleUpdateFoto(r.id_empleado, file)}
-              accept="image/png,image/jpeg,image/jpg"
-            >
-              {(props) => (
-                <div {...props} className="cursor-pointer">
-                  <Avatar
-                    src={r.path_foto}
-                    radius="xl"
-                    color="indigo"
-                    variant="light"
-                    className="w-full h-full"
-                  >
-                    {r.nombre[0]}
-                    {r.apellido[0]}
-                  </Avatar>
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <PencilIcon className="w-4 h-4 text-white" />
-                  </div>
+      width: 230,
+      render: (r) => {
+        const isUpdatingFoto = r.id_empleado === idActualizandoFoto;
+        return (
+          <Group gap="sm">
+            <div className="relative group overflow-hidden rounded-full w-10 h-10 border border-zinc-800">
+              {isUpdatingFoto && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-full z-10">
+                  <Loader size="xs" color="indigo" />
                 </div>
               )}
-            </FileButton>
-          </div>
-          <div>
-            <Text size="sm" fw={500} className="text-zinc-200">
-              {r.nombre} {r.apellido}
-            </Text>
-            <Text size="xs" className="text-zinc-500">
-              DNI: {r.dni || "---"}
-            </Text>
-          </div>
-        </Group>
-      ),
-    },
-    {
-      accessor: "mina",
-      title: "Mina",
-      width: 180,
-      render: (r) => {
-        if (!r.id_mina) {
-          return (
-            <Badge variant="outline" color="pink" radius="sm" size="sm">
-              No aplica
-            </Badge>
-          );
-        }
-        return (
-          <Group gap={6}>
-            <MapPinIcon className="w-4 h-4 text-emerald-400" />
-            <Text size="sm" fw={600} className="text-zinc-200">
-              {r.mina}
-            </Text>
+              <FileButton
+                onChange={(file) => handleUpdateFoto(r.id_empleado, file)}
+                accept="image/png,image/jpeg,image/jpg"
+                disabled={isUpdatingFoto}
+              >
+                {(props) => (
+                  <div
+                    {...props}
+                    className={`w-full h-full cursor-pointer ${isUpdatingFoto ? "pointer-events-none" : ""}`}
+                  >
+                    <Avatar
+                      src={r.path_foto}
+                      radius="xl"
+                      color="indigo"
+                      variant="light"
+                      className="w-full h-full"
+                    >
+                      {r.nombre[0]}
+                      {r.apellido[0]}
+                    </Avatar>
+                    {!isUpdatingFoto && (
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <PencilSquareIcon className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </FileButton>
+            </div>
+            <div>
+              <Text size="sm" fw={500} className="text-zinc-200">
+                {r.nombre} {r.apellido}
+              </Text>
+              <Text size="11px" className="text-zinc-500 font-mono">
+                DNI: {r.dni || "---"}
+              </Text>
+            </div>
           </Group>
         );
       },
     },
     {
-      accessor: "labores_asignadas",
-      title: "Labores",
+      accessor: "operativo",
+      title: "Mina y Labores",
+      width: 380,
       textAlign: "center",
       render: (r) => {
-        if (!r.id_mina) {
-          return (
-            <Badge variant="outline" color="pink" radius="sm" size="sm">
-              No aplica
-            </Badge>
-          );
-        }
-
-        const sinAsignar =
+        const hasMina = r.id_mina && r.id_mina > 0;
+        const sinLabores =
           r.labores_asignadas === "Sin asignar" ||
-          r.labores_asignadas === "No aplica";
+          r.labores_asignadas === "No aplica" ||
+          !r.labores_asignadas;
 
         return (
-          <Group gap={6} justify="center" wrap="nowrap">
-            <Stack gap={4} align="center">
-              {sinAsignar ? (
-                <Badge variant="outline" color="gray" radius="sm" size="sm">
+          <div className="flex flex-row justify-center">
+            <Group gap="lg" wrap="nowrap" justify="center" align="center">
+              {!hasMina ? (
+                <Text size="xs" c="dimmed" fs="italic" className="min-w-[130px]">
                   Sin asignar
-                </Badge>
+                </Text>
               ) : (
-                r.labores_asignadas.split(" | ").map((lab, idx) => (
+                <>
+                  {/* Bloque de Mina */}
                   <Badge
-                    key={idx}
                     variant="light"
-                    color="cyan"
-                    radius="sm"
-                    size="sm"
-                    className="font-bold font-mono"
+                    color="pink.6"
+                    radius="md"
+                    size="md"
+                    className="font-bold h-7 border border-pink-500/20"
+                    leftSection={<MapPinIcon className="w-3.5 h-3.5 text-pink-400" />}
                   >
-                    {lab}
+                    {r.mina}
                   </Badge>
-                ))
+
+                  {/* Bloque de Labores */}
+                  <Stack gap={4} align="center">
+                    {sinLabores ? (
+                      <Text size="xs" c="dimmed" fs="italic">
+                        Sin asignar
+                      </Text>
+                    ) : (
+                      r.labores_asignadas.split(" | ").map((lab, idx) => (
+                        <Badge
+                          key={idx}
+                          variant="light"
+                          color="cyan.6"
+                          radius="sm"
+                          size="xs"
+                          className="font-bold h-6 border border-cyan-500/10"
+                        >
+                          {lab}
+                        </Badge>
+                      ))
+                    )}
+                  </Stack>
+                </>
               )}
-            </Stack>
-            <Tooltip label="Agregar Labores">
-              <ActionIcon
-                variant="subtle"
-                color="indigo"
-                size="sm"
-                onClick={() => asignacion.abrir(r)}
-              >
-                <PlusIcon className="w-4 h-4" />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
+
+              {/* Botón de Acción Estilo Lotes */}
+              <Tooltip label="Asignación de Mina y Labores">
+                <ActionIcon
+                  variant="subtle"
+                  color="zinc"
+                  size="lg"
+                  onClick={() => asignacion.abrir(r)}
+                  className="hover:bg-zinc-800 transition-colors rounded-xl"
+                >
+                  <PencilSquareIcon className="w-5 h-5 text-zinc-400" />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </div>
         );
       },
     },
     {
       accessor: "ubicacion",
       title: "Área / Cargo",
+      width: 200,
       render: (r) => (
-        <div>
-          <Text size="sm" className="text-zinc-200">
+        <Stack gap={4}>
+          <Text size="sm" fw={700} className="text-zinc-100 leading-tight">
             {r.cargo}
           </Text>
-          <Text size="xs" className="text-zinc-500">
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="sm"
+            size="xs"
+            className="font-medium w-fit"
+          >
             {r.area}
-          </Text>
-        </div>
+          </Badge>
+        </Stack>
       ),
     },
     {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
+      width: 110,
       render: (r) => (
         <Badge
           variant="light"
@@ -219,52 +237,6 @@ export const EmpleadosPage = () => {
         >
           {r.estado}
         </Badge>
-      ),
-    },
-    {
-      accessor: "actions",
-      title: "",
-      width: 60,
-      textAlign: "right",
-      render: (r) => (
-        <Menu shadow="md" width={170} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            {r.id_mina && (
-              <Menu.Item
-                leftSection={<WrenchScrewdriverIcon className="w-4 h-4" />}
-                className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                onClick={() => asignacion.abrir(r)}
-              >
-                Asignar Labor
-              </Menu.Item>
-            )}
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<InformationCircleIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Información
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
       ),
     },
   ];
@@ -338,8 +310,8 @@ export const EmpleadosPage = () => {
         size="md"
       >
         <RegistroEmpleado
-          onSuccess={() => {
-            pushNuevoEmpleado();
+          onSuccess={(nuevo) => {
+            pushNuevoEmpleado(nuevo);
             closeRegistro();
           }}
           onCancel={closeRegistro}
@@ -350,12 +322,15 @@ export const EmpleadosPage = () => {
       <ModalEstandar
         opened={asignacion.opened}
         close={asignacion.cerrar}
-        title="Asignar Labores"
+        title="Asignación de Mina y Labores"
         size="sm"
       >
         {asignacion.empleado && (
           <AsignacionLabores
             empleado={asignacion.empleado}
+            minas={minas}
+            idMina={asignacion.idMina}
+            onMinaChange={asignacion.onMinaChange}
             laboresDisponibles={asignacion.laboresDisponibles}
             seleccionados={asignacion.seleccionados}
             loading={asignacion.loading}

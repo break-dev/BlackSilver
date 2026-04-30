@@ -6,12 +6,25 @@ import {
   Button,
   Checkbox,
   Loader,
+  Select,
+  TextInput,
 } from "@mantine/core";
-import { MapPinIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
-import type { RES_Empleado, RES_Labor } from "../service/empleados.responses";
+import {
+  MapPinIcon,
+  WrenchScrewdriverIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import type {
+  RES_Empleado,
+  RES_Labor,
+  RES_Mina,
+} from "../service/empleados.responses";
 
 interface AsignacionLaboresProps {
   empleado: RES_Empleado;
+  minas: RES_Mina[];
+  idMina: number | null;
+  onMinaChange: (val: number | null) => void;
   laboresDisponibles: RES_Labor[];
   seleccionados: number[];
   loading: boolean;
@@ -23,6 +36,9 @@ interface AsignacionLaboresProps {
 
 export const AsignacionLabores = ({
   empleado,
+  minas,
+  idMina,
+  onMinaChange,
   laboresDisponibles,
   seleccionados,
   loading,
@@ -31,38 +47,74 @@ export const AsignacionLabores = ({
   onAsignar,
   onCancelar,
 }: AsignacionLaboresProps) => {
+  const fieldClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
   return (
     <Stack gap="lg" className="px-1">
       {/* Info del empleado */}
-      <div className="bg-zinc-900/60 border border-zinc-800/60 rounded-2xl p-4">
-        <Text
-          size="xs"
-          className="text-zinc-500 uppercase tracking-widest mb-1"
-        >
-          Empleado
-        </Text>
-        <Text size="sm" fw={700} className="text-white">
-          {empleado.apellido}, {empleado.nombre}
-        </Text>
-        <Group gap="xs" mt={6}>
-          <MapPinIcon className="w-3.5 h-3.5 text-emerald-400" />
-          <Text size="xs" className="text-zinc-300">
-            {empleado.mina}
+      <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
+          <UserIcon className="w-5 h-5 text-indigo-400" />
+        </div>
+        <div>
+          <Text
+            size="xs"
+            className="text-zinc-500 font-medium"
+          >
+            Empleado
           </Text>
-        </Group>
+          <Text size="sm" fw={700} className="text-white">
+            {empleado.apellido}, {empleado.nombre}
+          </Text>
+        </div>
       </div>
+
+      {/* Selección de Mina */}
+      <Select
+        label="Mina"
+        placeholder="Seleccione mina (opcional)"
+        data={minas.map((m) => ({
+          value: m.id_mina.toString(),
+          label: m.nombre,
+        }))}
+        value={idMina?.toString() || null}
+        onChange={(val) => onMinaChange(val ? Number(val) : null)}
+        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={fieldClasses}
+        radius="lg"
+        searchable
+        clearable
+        disabled={loading}
+      />
 
       {/* Lista de labores */}
       <Stack gap="sm">
         <Text
-          size="xs"
-          fw={700}
-          className="text-zinc-400 uppercase tracking-widest"
+          size="sm"
+          className="text-zinc-300 font-medium"
         >
-          Labores disponibles en la Mina
+          Labores disponibles
         </Text>
 
-        {loadingLabores ? (
+        {!idMina ? (
+          <TextInput
+            value="No aplica"
+            readOnly
+            leftSection={
+              <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-600" />
+            }
+            classNames={{
+              ...fieldClasses,
+              input: "bg-zinc-900/20 border-dashed border-zinc-800 text-zinc-600 italic",
+            }}
+            radius="lg"
+            description="Sin una mina seleccionada no se pueden asignar labores"
+          />
+        ) : loadingLabores ? (
           <div className="flex items-center justify-center py-10">
             <Loader size="sm" color="indigo" />
           </div>
@@ -71,9 +123,6 @@ export const AsignacionLabores = ({
             <WrenchScrewdriverIcon className="w-8 h-8 text-zinc-700 mb-2" />
             <Text size="sm" className="text-zinc-500 text-center">
               No hay labores activas en esta mina
-            </Text>
-            <Text size="xs" className="text-zinc-600 text-center mt-1">
-              Debe registrar labores en la mina para poder asignarlas
             </Text>
           </div>
         ) : (
@@ -86,10 +135,9 @@ export const AsignacionLabores = ({
                   onClick={() => onToggle(labor.id_labor)}
                   className={`
                     flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all duration-200
-                    ${
-                      isChecked
-                        ? "border-indigo-500/50 bg-indigo-500/10 shadow-sm shadow-indigo-500/5"
-                        : "border-zinc-800/60 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-800/50"
+                    ${isChecked
+                      ? "border-indigo-500/50 bg-indigo-500/10 shadow-sm shadow-indigo-500/5"
+                      : "border-zinc-800/60 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-800/50"
                     }
                   `}
                 >
@@ -154,10 +202,11 @@ export const AsignacionLabores = ({
           size="sm"
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8 transition-all hover:scale-[1.02]"
         >
-          Guardar Cambios{" "}
+          Guardar{" "}
           {seleccionados.length > 0 ? `(${seleccionados.length})` : ""}
         </Button>
       </Group>
     </Stack>
   );
 };
+
