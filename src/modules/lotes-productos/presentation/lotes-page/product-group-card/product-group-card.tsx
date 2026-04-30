@@ -24,6 +24,12 @@ interface ProductGroupCardProps {
   columns: DataTableColumn<RES_Lote>[];
   loading: boolean;
   onPrint: (lotes: RES_Lote | RES_Lote[]) => void;
+  selection: {
+    selectedRecords: RES_Lote[];
+    setSelectedRecords: (
+      val: RES_Lote[] | ((prev: RES_Lote[]) => RES_Lote[]),
+    ) => void;
+  };
 }
 
 export const ProductGroupCard = ({
@@ -31,11 +37,13 @@ export const ProductGroupCard = ({
   columns,
   loading,
   onPrint,
+  selection,
 }: ProductGroupCardProps) => {
   const { enhancedColumns } = useProductGroupSelection({
     lotes: product.lotes,
     columns,
     onPrint,
+    selection,
   });
 
   return (

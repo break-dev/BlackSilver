@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { ActionIcon, Checkbox, Group, Tooltip } from "@mantine/core";
 import { PrinterIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
@@ -8,24 +8,37 @@ interface UseProductGroupSelectionProps {
   lotes: RES_Lote[];
   columns: DataTableColumn<RES_Lote>[];
   onPrint: (lotes: RES_Lote | RES_Lote[]) => void;
+  selection?: {
+    selectedRecords: RES_Lote[];
+    setSelectedRecords: (
+      val: RES_Lote[] | ((prev: RES_Lote[]) => RES_Lote[]),
+    ) => void;
+  };
 }
 
 export const useProductGroupSelection = ({
   lotes,
   columns,
   onPrint,
+  selection,
 }: UseProductGroupSelectionProps) => {
-  const [selectedRecords, setSelectedRecords] = useState<RES_Lote[]>([]);
+  const [internalSelected, setInternalSelected] = useState<RES_Lote[]>([]);
 
-  const handlePrintSelected = useCallback(() => {
-    if (selectedRecords.length === 0) return;
-    onPrint(selectedRecords);
-  }, [selectedRecords, onPrint]);
+  const selectedRecords = selection
+    ? selection.selectedRecords
+    : internalSelected;
+  const setSelectedRecords = selection
+    ? selection.setSelectedRecords
+    : setInternalSelected;
 
-  const allSelected =
-    selectedRecords.length === lotes.length && lotes.length > 0;
-  const isIndeterminate =
-    selectedRecords.length > 0 && selectedRecords.length < lotes.length;
+  const lotesIds = useMemo(() => lotes.map((l) => l.id_lote), [lotes]);
+  const groupSelectedCount = useMemo(
+    () => selectedRecords.filter((r) => lotesIds.includes(r.id_lote)).length,
+    [selectedRecords, lotesIds],
+  );
+
+  const allSelected = groupSelectedCount === lotes.length && lotes.length > 0;
+  const isIndeterminate = groupSelectedCount > 0 && groupSelectedCount < lotes.length;
 
   const enhancedColumns = useMemo(() => {
     return columns.map((col) => {
@@ -41,13 +54,27 @@ export const useProductGroupSelection = ({
                 checked={allSelected}
                 indeterminate={isIndeterminate}
                 onChange={(e) => {
-                  if (e.currentTarget.checked) setSelectedRecords(lotes);
-                  else setSelectedRecords([]);
+                  if (e.currentTarget.checked) {
+                    // Agregar solo los que no están
+                    setSelectedRecords((prev) => {
+                      const others = prev.filter(
+                        (p) => !lotes.some((l) => l.id_lote === p.id_lote),
+                      );
+                      return [...others, ...lotes];
+                    });
+                  } else {
+                    // Quitar solo los de este grupo
+                    setSelectedRecords((prev) =>
+                      prev.filter(
+                        (p) => !lotes.some((l) => l.id_lote === p.id_lote),
+                      ),
+                    );
+                  }
                 }}
               />
-              {selectedRecords.length > 0 && (
+              {groupSelectedCount > 0 && (
                 <Tooltip
-                  label={`Imprimir ${selectedRecords.length} seleccionados`}
+                  label={`Imprimir ${groupSelectedCount} de este grupo`}
                   position="top"
                   withArrow
                 >
@@ -55,7 +82,7 @@ export const useProductGroupSelection = ({
                     variant="filled"
                     color="indigo"
                     size="sm"
-                    onClick={handlePrintSelected}
+                    onClick={() => onPrint(selectedRecords.filter(r => lotes.some(l => l.id_lote === r.id_lote)))}
                     className="shadow-md animate-in zoom-in-50 duration-200"
                   >
                     <PrinterIcon className="w-3.5 h-3.5" />
@@ -93,10 +120,12 @@ export const useProductGroupSelection = ({
   }, [
     columns,
     selectedRecords,
-    handlePrintSelected,
     allSelected,
     isIndeterminate,
     lotes,
+    groupSelectedCount,
+    onPrint,
+    setSelectedRecords,
   ]);
 
   return { enhancedColumns, selectedRecords, setSelectedRecords };

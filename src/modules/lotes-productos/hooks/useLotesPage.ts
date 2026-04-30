@@ -23,6 +23,7 @@ export const useLotesPage = () => {
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [filtroProducto, setFiltroProducto] = useState<string | null>(null);
+  const [selectedLotes, setSelectedLotes] = useState<RES_Lote[]>([]);
 
   // Initial load
   useEffect(() => {
@@ -33,7 +34,6 @@ export const useLotesPage = () => {
         const result = await LotesService.listarAlmacenes();
         if (result.success) {
           setAlmacenes(result.data);
-          // Select first warehouse if none is selected in URL
           if (!initialAlmacenId && result.data.length > 0) {
             setIdAlmacen(String(result.data[0].id_almacen));
           }
@@ -66,6 +66,7 @@ export const useLotesPage = () => {
           setBusqueda("");
           setFiltroCategoria(null);
           setFiltroProducto(null);
+          setSelectedLotes([]);
         } else {
           setError(result.message);
         }
@@ -78,7 +79,7 @@ export const useLotesPage = () => {
     loadLotes();
   }, [idAlmacen]);
 
-  // Derived Data
+  // Derived Data (Filtros)
   const categoriasUnicas = useMemo(() => {
     const unique = new Set(lotes.map((l) => l.categoria).filter(Boolean));
     return Array.from(unique)
@@ -98,30 +99,39 @@ export const useLotesPage = () => {
 
   const filteredRecords = useMemo(() => {
     return lotes.filter((l) => {
-      const matchCategoria =
-        !filtroCategoria || l.categoria === filtroCategoria;
+      const matchCategoria = !filtroCategoria || l.categoria === filtroCategoria;
       const matchProducto = !filtroProducto || l.producto === filtroProducto;
-
       const q = busqueda.toLowerCase();
       const matchBusqueda =
         !busqueda ||
         l.producto.toLowerCase().includes(q) ||
         l.correlativo.toLowerCase().includes(q) ||
         (l.categoria || "").toLowerCase().includes(q);
-
       return matchCategoria && matchProducto && matchBusqueda;
     });
   }, [lotes, busqueda, filtroCategoria, filtroProducto]);
 
+  // LÓGICA DE SELECCIÓN CRÍTICA (Memorizada como en ProductGroupSelection)
+  const visibleIds = useMemo(() => filteredRecords.map(r => r.id_lote), [filteredRecords]);
+  
+  const selectedVisibleCount = useMemo(() => {
+    return selectedLotes.filter(s => visibleIds.includes(s.id_lote)).length;
+  }, [selectedLotes, visibleIds]);
+
+  const isAllSelected = useMemo(() => 
+    visibleIds.length > 0 && selectedVisibleCount === visibleIds.length,
+  [visibleIds, selectedVisibleCount]);
+
+  const isIndeterminate = useMemo(() => 
+    selectedVisibleCount > 0 && !isAllSelected,
+  [selectedVisibleCount, isAllSelected]);
+
   return {
-    // Data
     almacenes,
     records: filteredRecords,
     loading,
     loadingAlmacenes,
     error,
-
-    // Filters
     idAlmacen,
     setIdAlmacen,
     busqueda,
@@ -132,8 +142,6 @@ export const useLotesPage = () => {
     setFiltroProducto,
     categoriasUnicas,
     productosUnicos,
-
-    // Methods
     refresh: async () => {
       if (!idAlmacen) return;
       setLoading(true);
@@ -154,6 +162,20 @@ export const useLotesPage = () => {
         prev.map((l) => (l.id_lote === lote.id_lote ? lote : l)),
       );
     },
+    selectedLotes,
+    setSelectedLotes,
+    toggleSelectAll: () => {
+      if (isAllSelected) {
+        setSelectedLotes(prev => prev.filter(p => !visibleIds.includes(p.id_lote)));
+      } else {
+        setSelectedLotes(prev => {
+          const onlyNew = filteredRecords.filter(r => !prev.some(s => s.id_lote === r.id_lote));
+          return [...prev, ...onlyNew];
+        });
+      }
+    },
+    isAllSelected,
+    isIndeterminate,
     armarTicket: (lote: RES_Lote): RES_TicketLote => ({
       id: lote.id_lote,
       producto: lote.producto,

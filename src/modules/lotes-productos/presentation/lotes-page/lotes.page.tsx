@@ -39,6 +39,11 @@ export const LotesPage = () => {
     addLote,
     updateLote,
     armarTicket,
+    selectedLotes,
+    setSelectedLotes,
+    toggleSelectAll,
+    isAllSelected,
+    isIndeterminate,
   } = useLotesPage();
 
   // Modals Local State (Purely UI)
@@ -90,7 +95,7 @@ export const LotesPage = () => {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in p-1">
+    <div className="space-y-6 animate-fade-in">
       <LotesFilter
         almacenes={almacenes}
         loadingAlmacenes={loadingAlmacenes}
@@ -105,6 +110,12 @@ export const LotesPage = () => {
         filtroProducto={filtroProducto}
         setFiltroProducto={setFiltroProducto}
         openCreate={openCreate}
+        // Masivo
+        selectedCount={selectedLotes.length}
+        onPrintSelected={() => handlePrint(selectedLotes)}
+        onToggleSelectAll={toggleSelectAll}
+        isAllSelected={isAllSelected}
+        isIndeterminate={isIndeterminate}
       />
 
       {loading ? (
@@ -144,6 +155,10 @@ export const LotesPage = () => {
               columns={columns}
               loading={loading}
               onPrint={handlePrint}
+              selection={{
+                selectedRecords: selectedLotes,
+                setSelectedRecords: setSelectedLotes,
+              }}
             />
           ))}
         </Stack>
