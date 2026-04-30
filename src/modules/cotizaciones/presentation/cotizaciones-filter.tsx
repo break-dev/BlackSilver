@@ -83,7 +83,7 @@ export const CotizacionesFilter = ({
         leftSection={<PlusIcon className="w-5 h-5" />}
         onClick={openCreate}
         radius="lg"
-        size="xs"
+        size="sm"
         className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold mt-7"
       >
         Nueva Cotización

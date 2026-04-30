@@ -84,7 +84,7 @@ export const ListadoComparativos = ({
   busqueda,
   onUpdateLocal,
 }: ListadoComparativosProps) => {
-  const { print } = usePrint();
+  const { print, prepare } = usePrint();
   const { notify } = useNotify();
   const [printingOCId, setPrintingOCId] = useState<number | null>(null);
   const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>(
@@ -115,6 +115,9 @@ export const ListadoComparativos = ({
 
   const handlePrintCotizacion = (cot: RES_Cotizacion) => {
     const nombresEmpresas = cot.empresas.map((e) => e.razon_social);
+    const target = `Cotizacion_${cot.id_cotizacion}_${Date.now()}`;
+    prepare(target);
+
     print(
       <CotizacionPDF
         cotizaciones={[
@@ -127,6 +130,7 @@ export const ListadoComparativos = ({
       />,
       {
         documentTitle: `Cotización - ${cot.correlativo}`,
+        target,
       },
     );
   };
@@ -151,7 +155,10 @@ export const ListadoComparativos = ({
   };
 
   const handlePrintOC = async (id_orden_compra: number) => {
+    const target = `OC_${id_orden_compra}_${Date.now()}`;
+    prepare(target);
     setPrintingOCId(id_orden_compra);
+
     try {
       const response = await CotizacionesService.get_orden_compra(id_orden_compra);
       if (response.success && response.data) {
@@ -161,7 +168,10 @@ export const ListadoComparativos = ({
             orden={ordenData}
             detalles={ordenData.detalles || []}
           />,
-          { documentTitle: `OC - ${ordenData.correlativo}` },
+          {
+            documentTitle: `OC - ${ordenData.correlativo}`,
+            target,
+          },
         );
       } else {
         notify({
