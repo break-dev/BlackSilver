@@ -244,9 +244,10 @@ export const EmpleadosPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div className="flex flex-col lg:flex-row gap-4 items-end justify-between">
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
           <Select
+            label="Filtrar por Mina"
             placeholder={loadingMinas ? "Cargando..." : "(Todas las minas)"}
             data={minas.map((m) => ({
               value: m.id_mina.toString(),
@@ -259,6 +260,7 @@ export const EmpleadosPage = () => {
             size="sm"
             className="w-full sm:w-64"
             classNames={{
+              label: "text-zinc-400 mb-1 font-medium",
               input:
                 "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
             }}
@@ -268,6 +270,7 @@ export const EmpleadosPage = () => {
           />
 
           <TextInput
+            label="Buscar empleado"
             placeholder="Buscar por nombre, DNI o cargo..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -278,6 +281,7 @@ export const EmpleadosPage = () => {
             size="sm"
             className="w-full flex-1"
             classNames={{
+              label: "text-zinc-400 mb-1 font-medium",
               input:
                 "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
             }}
@@ -289,7 +293,7 @@ export const EmpleadosPage = () => {
           onClick={openRegistro}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 w-full lg:w-auto px-6 h-[38px]"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 w-full lg:w-auto px-6 h-[38px] mb-[1px]"
         >
           Nuevo Empleado
         </Button>

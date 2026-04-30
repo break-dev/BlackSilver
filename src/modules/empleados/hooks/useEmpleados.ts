@@ -23,10 +23,10 @@ export const useEmpleados = () => {
     }
   }, []);
 
-  const listar = useCallback(async (selectedMina?: number) => {
+  const listar = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await EmpleadosService.get_empleados(selectedMina);
+      const resp = await EmpleadosService.get_empleados();
       if (resp.success) setEmpleados(resp.data);
     } catch (err) {
       console.error(err);
@@ -40,20 +40,31 @@ export const useEmpleados = () => {
   }, [cargarMinas]);
 
   useEffect(() => {
-    listar(idMina || undefined);
-  }, [idMina, listar]);
+    listar();
+  }, [listar]);
 
   const filtrados = useMemo(() => {
+    let results = empleados;
+
+    // Filtro por Mina Local
+    if (idMina) {
+      results = results.filter((e) => e.id_mina === idMina);
+    }
+
+    // Filtro por Búsqueda Local
     const query = busqueda.toLowerCase().trim();
-    if (!query) return empleados;
-    return empleados.filter(
-      (e) =>
-        e.nombre.toLowerCase().includes(query) ||
-        e.apellido.toLowerCase().includes(query) ||
-        e.dni?.includes(query) ||
-        e.cargo.toLowerCase().includes(query),
-    );
-  }, [empleados, busqueda]);
+    if (query) {
+      results = results.filter(
+        (e) =>
+          e.nombre.toLowerCase().includes(query) ||
+          e.apellido.toLowerCase().includes(query) ||
+          e.dni?.includes(query) ||
+          e.cargo.toLowerCase().includes(query),
+      );
+    }
+
+    return results;
+  }, [empleados, idMina, busqueda]);
 
   const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
     setEmpleados((prev) => [nuevo, ...prev]);
@@ -90,7 +101,7 @@ export const useEmpleados = () => {
     loading,
     busqueda,
     setBusqueda,
-    recargar: () => listar(idMina || undefined),
+    recargar: () => listar(),
     pushNuevoEmpleado,
     actualizarFoto,
     actualizarEmpleadoEnLista,
