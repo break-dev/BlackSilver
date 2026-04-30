@@ -28,6 +28,7 @@ interface CeldaDetalleItemProps {
   tiempoEntregaDias?: number | null;
   esFiscalizado?: boolean;
   esPerecible?: boolean;
+  isCheapest?: boolean;
 }
 
 export const CeldaDetalleItem = ({
@@ -47,6 +48,7 @@ export const CeldaDetalleItem = ({
   tiempoEntregaDias,
   esFiscalizado,
   esPerecible,
+  isCheapest,
 }: CeldaDetalleItemProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
 
@@ -149,40 +151,58 @@ export const CeldaDetalleItem = ({
         </Stack>
       </div>
 
-      {/* Logística */}
-      {hasLogistica && (
-        <Stack gap={3} px={2}>
-          {almacenRecepcionista && (
-            <Group gap={5} wrap="nowrap">
-              <BuildingStorefrontIcon className="w-3 h-3 text-zinc-500 shrink-0" />
-              <Text size="10px" c="dimmed" className="leading-tight">
-                {almacenRecepcionista}
-                {esAlmacenPrincipal && (
-                  <span className="text-indigo-400/70 ml-1">(principal)</span>
-                )}
-              </Text>
-            </Group>
+      {/* Logística / Mejor Precio */}
+      {(hasLogistica || isCheapest) && (
+        <Group justify="space-between" align="flex-end" px={2} mt={4}>
+          <Stack gap={4}>
+            {almacenRecepcionista && (
+              <Group gap={6} wrap="nowrap">
+                <BuildingStorefrontIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                  {almacenRecepcionista}
+                  {esAlmacenPrincipal && (
+                    <span className="text-indigo-400 ml-1 font-bold">(principal)</span>
+                  )}
+                </Text>
+              </Group>
+            )}
+            {tipoDespacho && (
+              <Group gap={6} wrap="nowrap">
+                <TruckIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                  {tipoDespacho}
+                  {lugarRecojo && (
+                    <span className="text-zinc-400 ml-1">· {lugarRecojo}</span>
+                  )}
+                </Text>
+              </Group>
+            )}
+            {tiempoEntregaDias !== null &&
+              tiempoEntregaDias !== undefined &&
+              tiempoEntregaDias > 0 && (
+                <Group gap={6} wrap="nowrap">
+                  <ClockIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                    {tiempoEntregaDias === 1
+                      ? "1 día"
+                      : `${tiempoEntregaDias} días`}
+                  </Text>
+                </Group>
+              )}
+          </Stack>
+
+          {isCheapest && !isRechazado && (
+            <Badge
+              variant="filled"
+              color="orange.6"
+              size="sm"
+              radius="sm"
+              className="animate-pulse shadow-lg mb-1 font-black uppercase tracking-tighter"
+            >
+              Mejor Precio
+            </Badge>
           )}
-          {tipoDespacho && (
-            <Group gap={5} wrap="nowrap">
-              <TruckIcon className="w-3 h-3 text-zinc-500 shrink-0" />
-              <Text size="10px" c="dimmed" className="leading-tight">
-                {tipoDespacho}
-                {lugarRecojo && (
-                  <span className="text-zinc-400 ml-1">· {lugarRecojo}</span>
-                )}
-              </Text>
-            </Group>
-          )}
-          {tiempoEntregaDias !== null && tiempoEntregaDias !== undefined && tiempoEntregaDias > 0 && (
-            <Group gap={5} wrap="nowrap">
-              <ClockIcon className="w-3 h-3 text-zinc-500 shrink-0" />
-              <Text size="10px" c="dimmed" className="leading-tight">
-                {tiempoEntregaDias === 1 ? "1 día" : `${tiempoEntregaDias} días`}
-              </Text>
-            </Group>
-          )}
-        </Stack>
+        </Group>
       )}
 
       {/* Comentario */}

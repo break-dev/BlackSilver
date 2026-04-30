@@ -45,6 +45,24 @@ export const TablaDetalleResumen = ({
     return Array.from(map.values());
   }, [detalles]);
 
+  const cheapestPrices = useMemo(() => {
+    const pricesMap = new Map();
+    productosUnicos.forEach((prod) => {
+      const relatedDetalles = detalles.filter(
+        (d) =>
+          d.id_comparativo_detalle === prod.id &&
+          Number(d.precio_unitario) > 0,
+      );
+      if (relatedDetalles.length > 0) {
+        const minPrice = Math.min(
+          ...relatedDetalles.map((d) => Number(d.precio_unitario)),
+        );
+        pricesMap.set(prod.id, minPrice);
+      }
+    });
+    return pricesMap;
+  }, [productosUnicos, detalles]);
+
   return (
     <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden relative">
       <div className="flex-1 overflow-auto custom-scrollbar">
@@ -58,11 +76,11 @@ export const TablaDetalleResumen = ({
             <Table.Tr>
               {/* Esquina PRODUCTOS: Fija without forced height */}
               <Table.Th
-                className="bg-zinc-950 border-b border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-110 shadow-xl"
+                className="bg-zinc-900 border-b-2 border-r border-zinc-800 p-4 text-center sticky top-0 left-0 z-110 shadow-xl"
                 style={{
-                  width: 140,
-                  minWidth: 140,
-                  maxWidth: 140,
+                  width: 100,
+                  minWidth: 100,
+                  maxWidth: 100,
                   verticalAlign: "middle",
                 }}
               >
@@ -79,7 +97,7 @@ export const TablaDetalleResumen = ({
               {cotizaciones.map((cot) => (
                 <Table.Th
                   key={cot.id_cotizacion}
-                  className="p-0 border-b border-r border-zinc-800 align-top sticky top-0 z-40 bg-zinc-950"
+                  className="p-0 border-b-2 border-r border-zinc-800 align-top sticky top-0 z-40 bg-zinc-900"
                   style={{ width: 450, minWidth: 450, maxWidth: 450 }}
                 >
                   <CabeceraDetalleCotizacion
@@ -112,21 +130,21 @@ export const TablaDetalleResumen = ({
             {productosUnicos.map((prod) => (
               <Table.Tr
                 key={prod.id}
-                className="group-tr hover:bg-white/1 transition-colors"
+                className="group-tr hover:bg-zinc-900/40 transition-colors"
               >
                 <Table.Td
-                  className="p-4 border-r border-b border-zinc-800 align-middle bg-zinc-950 sticky left-0 z-20 shadow-xl text-left"
+                  className="p-4 border-r border-b border-zinc-800 align-middle bg-zinc-900/40 sticky left-0 z-20 shadow-xl text-center"
                   style={{
-                    width: 140,
-                    minWidth: 140,
-                    maxWidth: 140,
+                    width: 100,
+                    minWidth: 100,
+                    maxWidth: 100,
                     verticalAlign: "middle",
                   }}
                 >
                   <Text
                     size="xs"
                     fw={900}
-                    className="text-zinc-100 leading-tight"
+                    className="text-zinc-100 leading-tight text-center"
                   >
                     {prod.nombre}
                   </Text>
@@ -138,6 +156,10 @@ export const TablaDetalleResumen = ({
                       d.id_cotizacion === cot.id_cotizacion &&
                       d.id_comparativo_detalle === prod.id,
                   );
+                  const isCheapest =
+                    det &&
+                    Number(det.precio_unitario) === cheapestPrices.get(prod.id);
+
                   return (
                     <Table.Td
                       key={cot.id_cotizacion}
@@ -168,6 +190,7 @@ export const TablaDetalleResumen = ({
                           tiempoEntregaDias={det.tiempo_entrega_dias}
                           esFiscalizado={Boolean(det.es_fiscalizado)}
                           esPerecible={Boolean(det.es_perecible)}
+                          isCheapest={isCheapest}
                         />
                       ) : (
                         <div className="h-full min-h-[80px] flex items-center justify-center bg-zinc-950/10 rounded-2xl border border-dashed border-zinc-800/40 opacity-30 italic">

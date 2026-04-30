@@ -3,6 +3,7 @@ import { Group, Stack, Text, Badge, Divider, Button, Collapse } from "@mantine/c
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import {
   BuildingStorefrontIcon,
+  BuildingOfficeIcon,
   CalendarDaysIcon,
   CurrencyDollarIcon,
   CreditCardIcon,
@@ -106,7 +107,7 @@ export const CabeceraDetalleCotizacion = ({
               </Badge>
             </Group>
           </Stack>
-          <Badge variant="filled" color="cyan" size="md" className="mt-1 shrink-0 font-mono shadow-md">
+          <Badge variant="filled" color="indigo.9" size="md" className="mt-1 shrink-0 font-bold shadow-md border border-indigo-500/30">
             {smb} {formatNumber(totalDespuesIgv)}
           </Badge>
         </Group>
@@ -115,7 +116,7 @@ export const CabeceraDetalleCotizacion = ({
   }
 
   return (
-    <Stack gap="sm" className="p-4 bg-zinc-950 h-full">
+    <Stack gap="sm" className="p-4 bg-transparent h-full">
       {/* Línea Superior: Proveedor, Correlativo y Acción */}
       <Group wrap="nowrap" align="center" justify="space-between">
         <Stack gap={4} className="flex-1 min-w-0">
@@ -207,7 +208,7 @@ export const CabeceraDetalleCotizacion = ({
             className="p-2 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
           >
             <Group gap={4} wrap="nowrap">
-              <BuildingStorefrontIcon className="w-3.5 h-3.5 text-emerald-500" />
+              <BuildingOfficeIcon className="w-3.5 h-3.5 text-pink-400" />
               <Text size="10px" fw={800} className="text-zinc-200 uppercase">
                 Empresas Asociadas ({empresas.length})
               </Text>
@@ -225,7 +226,7 @@ export const CabeceraDetalleCotizacion = ({
                   key={emp.id_empresa} 
                   className="bg-zinc-900/70 rounded-lg border border-zinc-800/80 px-2.5 py-1.5 flex items-center gap-1.5"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 shadow-[0_0_4px_rgba(16,185,129,0.5)] shrink-0" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-pink-400/60 shadow-[0_0_4px_rgba(244,114,182,0.4)] shrink-0" />
                   <Text size="11px" fw={700} className="text-zinc-300 leading-tight truncate">
                     {emp.razon_social}
                   </Text>
@@ -263,10 +264,10 @@ export const CabeceraDetalleCotizacion = ({
         <Divider color="zinc.8" my={2} variant="dashed" />
 
         <Group justify="space-between">
-          <Text size="sm" fw={900} className="text-cyan-400">
+          <Text size="sm" fw={900} className="text-indigo-400">
             TOTAL
           </Text>
-          <Text size="sm" fw={900} className="text-cyan-100 font-mono">
+          <Text size="sm" fw={900} className="text-indigo-100">
             {smb} {formatNumber(totalDespuesIgv)}
           </Text>
         </Group>
@@ -274,7 +275,7 @@ export const CabeceraDetalleCotizacion = ({
         {/* Indicador sutil de origen */}
         <Text
           size="9px"
-          c={incluyeIgv ? "teal.6" : "amber.6"}
+          c="pink.4"
           fw={700}
           className="text-center opacity-80 mt-1 uppercase italic"
         >
