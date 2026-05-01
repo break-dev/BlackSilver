@@ -25,8 +25,6 @@ export const RegistroEmpresa = ({
   setRazonSocial,
   nombreComercial,
   setNombreComercial,
-  abreviatura,
-  setAbreviatura,
   logoFile,
   setLogoFile,
   error,
@@ -75,30 +73,18 @@ export const RegistroEmpresa = ({
         </FileButton>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TextInput
-          label="RUC"
-          placeholder="Ej. 20123456789"
-          required
-          withAsterisk
-          disabled={loading}
-          radius="lg"
-          maxLength={11}
-          classNames={inputClasses}
-          value={ruc}
-          onChange={(e) => setRuc(e.currentTarget.value)}
-        />
-
-        <TextInput
-          label="Abreviatura"
-          placeholder="Ej. BS"
-          disabled={loading}
-          radius="lg"
-          classNames={inputClasses}
-          value={abreviatura}
-          onChange={(e) => setAbreviatura(e.currentTarget.value)}
-        />
-      </div>
+      <TextInput
+        label="RUC"
+        placeholder="Ej. 20123456789"
+        required
+        withAsterisk
+        disabled={loading}
+        radius="lg"
+        maxLength={11}
+        classNames={inputClasses}
+        value={ruc}
+        onChange={(e) => setRuc(e.currentTarget.value)}
+      />
 
       <TextInput
         label="Razón Social"

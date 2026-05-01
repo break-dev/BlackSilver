@@ -1,30 +1,20 @@
 import {
-  ActionIcon,
-  Badge,
   Button,
-  Group,
   TextInput,
+  Skeleton,
   Text,
-  Menu,
-  Avatar,
-  FileButton,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  TrashIcon,
-  PencilSquareIcon,
-  EllipsisVerticalIcon,
-  BuildingOffice2Icon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { type DataTableColumn } from "mantine-datatable";
 import { useTitlePage } from "../../../hooks/useTitlePage";
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroEmpresa } from "./registro-empresa";
 import { useEmpresas } from "../hooks/useEmpresas";
 import { useRegistroEmpresa } from "../hooks/useRegistroEmpresa";
-import type { RES_Empresa } from "../service/empresas.responses";
+import { EmpresaCard } from "./empresa-card";
 
 export const EmpresasPage = () => {
   useTitlePage("Empresas");
@@ -46,148 +36,85 @@ export const EmpresasPage = () => {
     onClose: closeCreate,
   });
 
-  const columns: DataTableColumn<RES_Empresa>[] = [
-    {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_, index) => index + 1,
-    },
-    {
-      accessor: "nombre_comercial",
-      title: "Empresa",
-      width: 250,
-      render: (r) => (
-        <Group gap="sm">
-          <div className="relative group overflow-hidden rounded-full w-10 h-10 border border-zinc-800">
-            <FileButton onChange={(file: File | null) => file && handleUpdateLogo(r.id_empresa, file)} accept="image/png,image/jpeg,image/jpg">
-              {(props: any) => (
-                <div {...props} className="cursor-pointer">
-                  <Avatar 
-                    src={r.path_logo} 
-                    radius="xl" 
-                    color="indigo" 
-                    variant="light"
-                    className="w-full h-full"
-                  >
-                    <BuildingOffice2Icon className="w-5 h-5 text-zinc-500" />
-                  </Avatar>
-                  
-                  {/* Overlay con Lápiz */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <PencilSquareIcon className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-              )}
-            </FileButton>
-          </div>
-          <div>
-            <Text size="sm" fw={500} className="text-zinc-200">
-              {r.nombre_comercial}
-            </Text>
-            <Text size="xs" className="text-zinc-500">
-              {r.razon_social}
-            </Text>
-          </div>
-        </Group>
-      ),
-    },
-    {
-      accessor: "ruc",
-      title: "RUC",
-      width: 150,
-      render: (record) => (
-        <Text size="sm" className="text-zinc-400 font-mono">
-          {record.ruc}
-        </Text>
-      ),
-    },
-    {
-      accessor: "abreviatura",
-      title: "Abrev.",
-      width: 100,
-      render: (record) => (
-        <Badge variant="light" color="cyan" size="sm" radius="sm">
-          {record.abreviatura || "-"}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "actions",
-      title: "",
-      width: 80,
-      textAlign: "right",
-      render: () => (
-        <Menu shadow="md" width={150} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div className="space-y-8 animate-fade-in">
+      {/* Search & Actions Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
+          label="Buscar Empresa"
           placeholder="Buscar empresas por nombre o RUC..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
           }
           value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.currentTarget.value);
-          }}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
           className="flex-1 min-w-64"
-          radius="lg"
+          radius="xl"
           size="sm"
           classNames={{
             input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-11",
           }}
         />
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openCreate}
-          radius="lg"
+          radius="xl"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 h-11 px-6"
         >
           Nueva Empresa
         </Button>
       </div>
 
-      <DataTableEstandar
-        idAccessor="id_empresa"
-        columns={columns}
-        records={empresasFiltradas}
-        loading={loading}
-      />
+      {/* Grid Content */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-6 space-y-6">
+              <div className="flex justify-between items-center">
+                <Skeleton height={20} width={60} radius="md" />
+                <Skeleton height={20} width={20} circle />
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <Skeleton height={100} width={100} circle />
+                <Skeleton height={20} width="70%" radius="md" />
+                <Skeleton height={14} width="40%" radius="md" />
+              </div>
+              <Skeleton height={60} width="100%" radius="2xl" />
+            </div>
+          ))}
+        </div>
+      ) : empresasFiltradas.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-zinc-900/10 rounded-[40px] border border-dashed border-zinc-800/50">
+          <div className="bg-zinc-900/50 p-6 rounded-full mb-4 border border-zinc-800">
+            <Squares2X2Icon className="w-10 h-10 text-zinc-700" />
+          </div>
+          <Text size="sm" fw={600} className="text-zinc-500">
+            No se encontraron empresas registradas
+          </Text>
+          <Text size="xs" className="text-zinc-600 mt-1">
+            Intenta con otro término de búsqueda o registra una nueva
+          </Text>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {empresasFiltradas.map((empresa) => (
+            <EmpresaCard 
+              key={empresa.id_empresa} 
+              empresa={empresa} 
+              onUpdateLogo={handleUpdateLogo} 
+            />
+          ))}
+        </div>
+      )}
 
+      {/* Registration Modal */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
         title="Registrar Empresa"
+        size="lg"
       >
         <RegistroEmpresa
           ruc={registro.ruc}
