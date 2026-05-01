@@ -8,10 +8,13 @@ import {
   Switch,
   Checkbox,
   Text,
+  Badge,
+  ScrollArea,
 } from "@mantine/core";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
+import type { RES_Categoria } from "../service/categorias.responses";
 
 interface RegistroCategoriaProps {
   nombre: string;
@@ -35,6 +38,7 @@ interface RegistroCategoriaProps {
   loading: boolean;
   onSave: () => void;
   onCancel: () => void;
+  todasCategorias: RES_Categoria[]; // Para buscar nombres de destinos
 }
 
 export const RegistroCategoria = ({
@@ -58,6 +62,7 @@ export const RegistroCategoria = ({
   loading,
   onSave,
   onCancel,
+  todasCategorias,
 }: RegistroCategoriaProps) => {
   const inputClasses = {
     input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
@@ -168,15 +173,44 @@ export const RegistroCategoria = ({
 
         <div className="">
           <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800 transition-all duration-200">
-            <div className="min-w-0">
+            <div className="flex-1 min-w-0">
               <span
-                className={`text-xs font-semibold truncate block ${!esConsumible ? "text-zinc-600" : "text-zinc-300"}`}
+                className={`text-[10px] font-bold uppercase tracking-wider block leading-none mb-1.5 ${!esConsumible ? "text-zinc-600" : "text-zinc-400"}`}
               >
-                {idsConsumidoras.length}{" "}
-                {idsConsumidoras.length === 1
-                  ? "Destino seleccionado"
-                  : "Destinos seleccionados"}
+                Destinos seleccionados ({idsConsumidoras.length})
               </span>
+              {esConsumible && idsConsumidoras.length > 0 ? (
+                <ScrollArea
+                  w="100%"
+                  type="never"
+                  scrollbarSize={0}
+                  offsetScrollbars={false}
+                >
+                  <div className="flex items-center gap-1.5 pb-0.5">
+                    {idsConsumidoras.map((id) => {
+                      const cat = todasCategorias.find(
+                        (c) => Number(c.id_categoria) === Number(id),
+                      );
+                      return (
+                        <Badge
+                          key={id}
+                          variant="filled"
+                          color="indigo.9"
+                          size="xs"
+                          radius="sm"
+                          className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
+                        >
+                          {cat?.nombre || "Cargando..."}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <span className="text-xs font-semibold text-zinc-600 italic block">
+                  {esConsumible ? "Sin destinos seleccionados" : "Trazabilidad desactivada"}
+                </span>
+              )}
             </div>
             <Button
               variant="filled"
@@ -188,7 +222,7 @@ export const RegistroCategoria = ({
               onClick={onOpenDestinos}
               disabled={!esConsumible || loading}
             >
-              Gestionar
+              Añadir
             </Button>
           </div>
         </div>

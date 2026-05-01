@@ -1,4 +1,4 @@
-import { Badge, Button, TextInput, Tooltip, Group, Skeleton, Stack } from "@mantine/core";
+import { Badge, Button, TextInput, Tooltip, Group, Skeleton, Stack, ScrollArea } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -41,6 +41,7 @@ export const CategoriasPage = () => {
       {/* Header — Buscador y Nueva Categoría */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <TextInput
+          label="Buscar categoría"
           placeholder="Buscar categorías por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -51,8 +52,9 @@ export const CategoriasPage = () => {
           radius="lg"
           size="sm"
           classNames={{
+            label: "text-zinc-400 mb-1 font-medium",
             input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
         <Button
@@ -163,19 +165,44 @@ export const CategoriasPage = () => {
                   bg-indigo-500/10 border border-indigo-500/20 group-hover:border-indigo-400/40 
                     transition-all duration-200"
                   >
-                    <div className="min-w-0">
+                    <div className="flex-1 min-w-0">
                       <span
                         className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider 
-                        block leading-none mb-0.5"
+                        block leading-none mb-1.5"
                       >
-                        Destinos de Consumo
-                      </span>
-                      <span className="text-xs font-semibold text-zinc-300 truncate block">
-                        {cat.ids_categorias_consumidoras
+                        Destinos de Consumo ({cat.ids_categorias_consumidoras
                           ?.split(",")
-                          .filter(Boolean).length || 0}{" "}
-                        Destinos
+                          .filter(Boolean).length || 0})
                       </span>
+                      {cat.nombres_consumidoras ? (
+                        <ScrollArea
+                          w="100%"
+                          type="never"
+                          scrollbarSize={0}
+                          offsetScrollbars={false}
+                        >
+                          <div className="flex items-center gap-1.5 pb-0.5">
+                            {cat.nombres_consumidoras
+                              .split(", ")
+                              .map((dest, idx) => (
+                                <Badge
+                                  key={idx}
+                                  variant="filled"
+                                  color="indigo.9"
+                                  size="xs"
+                                  radius="sm"
+                                  className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
+                                >
+                                  {dest}
+                                </Badge>
+                              ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <span className="text-xs font-semibold text-zinc-500 italic block">
+                          Sin destinos asignados
+                        </span>
+                      )}
                     </div>
 
                     <Button
@@ -256,6 +283,7 @@ export const CategoriasPage = () => {
             closeCreate();
             registro.reset();
           }}
+          todasCategorias={categorias}
         />
       </ModalEstandar>
 
