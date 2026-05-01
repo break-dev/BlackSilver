@@ -72,6 +72,7 @@ export const AlmacenesPage = () => {
       {/* Header — igual que Minas */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <TextInput
+          label="Buscar almacén"
           placeholder="Buscar almacén por nombre o responsable..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -82,8 +83,9 @@ export const AlmacenesPage = () => {
           radius="lg"
           size="sm"
           classNames={{
+            label: "text-zinc-400 mb-1 font-medium",
             input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
         <Button

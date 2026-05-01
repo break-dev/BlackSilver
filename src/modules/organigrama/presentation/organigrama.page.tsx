@@ -3,6 +3,7 @@ import {
   TextInput,
   Badge,
   Skeleton,
+  ScrollArea,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -45,22 +46,18 @@ export const OrganigramaPage = () => {
   // Hook de Registro de Cargo — Integrado para que no necesite modal extra
   const regCargo = useRegistroCargo(
     onCargoCreado,
-    () => {}, 
+    () => { },
     areaSeleccionada?.id_area,
   );
 
   const regArea = useRegistroArea(onAreaCreada, closeArea);
-
-  const inputClasses = {
-    input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header — Estilo unificado con Minas */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <TextInput
+          label="Buscar área"
           placeholder="Buscar área por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -70,7 +67,11 @@ export const OrganigramaPage = () => {
           className="flex-1 min-w-64"
           radius="lg"
           size="sm"
-          classNames={inputClasses}
+          classNames={{
+            label: "text-zinc-400 mb-1 font-medium",
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+          }}
         />
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
@@ -146,24 +147,48 @@ export const OrganigramaPage = () => {
                   </h3>
                 </div>
 
-                {/* Caja central con contador y botón integrado CYAN */}
-                <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60 group-hover:border-cyan-500/30 transition-all duration-200">
-                  <div className="min-w-0">
-                    <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block leading-none mb-0.5">
+                {/* Caja central con listado de cargos y botón integrado */}
+                <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60 group-hover:border-indigo-500/30 transition-all duration-200">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] text-pink-500 font-bold uppercase tracking-wider block leading-none mb-1.5">
                       Personal y Roles
                     </span>
-                    <span className="text-xs font-semibold text-zinc-300 truncate block">
-                      {area.cantidad_cargos} {area.cantidad_cargos === 1 ? 'Cargo Registrado' : 'Cargos Registrados'}
-                    </span>
+                    {area.nombres_cargos ? (
+                      <ScrollArea
+                        w="100%"
+                        type="never"
+                        scrollbarSize={0}
+                        offsetScrollbars={false}
+                      >
+                        <div className="flex items-center gap-1.5 pb-0.5">
+                          {area.nombres_cargos.split(", ").map((cargo, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="filled"
+                              color="indigo.9"
+                              size="xs"
+                              radius="sm"
+                              className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
+                            >
+                              {cargo}
+                            </Badge>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <span className="text-xs font-semibold text-zinc-600 italic block">
+                        Sin cargos
+                      </span>
+                    )}
                   </div>
 
                   <Button
                     variant="filled"
-                    color="cyan"
+                    color="indigo"
                     size="xs"
                     leftSection={<PlusIcon className="w-3 h-3" />}
                     radius="md"
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20 font-bold px-3 h-7 shrink-0"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 font-bold px-3 h-7 shrink-0"
                     onClick={() => {
                       setAreaSeleccionada(area);
                       openCargos();
