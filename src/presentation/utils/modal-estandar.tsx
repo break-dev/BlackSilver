@@ -3,7 +3,7 @@ import { Modal, type ModalProps } from "@mantine/core";
 interface ModalEstandarProps extends Partial<ModalProps> {
   opened: boolean;
   close: () => void;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
   rightSection?: React.ReactNode;
 }

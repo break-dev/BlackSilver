@@ -1,22 +1,19 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../../hooks/useNotify";
 import { MinasService } from "../../service/minas.service";
 import type { RES_Labor } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
+  busqueda: string;
+  closeCreate: () => void;
 }
 
-export const useLabores = ({ idMina }: Props) => {
+export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
   const { notify } = useNotify();
 
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [loading, setLoading] = useState(false);
-  const [busqueda, setBusqueda] = useState("");
-
-  const [openedCreate, { open: openCreate, close: closeCreate }] =
-    useDisclosure(false);
 
   const cargar = useCallback(async () => {
     setLoading(true);
@@ -66,11 +63,6 @@ export const useLabores = ({ idMina }: Props) => {
   return {
     laboresFiltradas,
     loading,
-    busqueda,
-    setBusqueda,
-    openedCreate,
-    openCreate,
-    closeCreate,
     handleLaborCreada,
     handleLaborFinalizada,
   };

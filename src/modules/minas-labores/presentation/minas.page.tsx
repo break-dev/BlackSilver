@@ -16,6 +16,8 @@ import {
   BuildingOffice2Icon,
   InboxStackIcon,
 } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useMinas } from "../hooks/minas/useMinas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -53,11 +55,16 @@ export const MinasPage = () => {
     handleEmpresaAsignada,
   } = useMinas();
 
+  const [busquedaLabor, setBusquedaLabor] = useState("");
+  const [openedCreateLabor, { open: openCreateLabor, close: closeCreateLabor }] =
+    useDisclosure(false);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header — igual que Empresas / Almacenes */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <TextInput
+          label="Buscar Mina"
           placeholder="Buscar mina por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -193,11 +200,10 @@ export const MinasPage = () => {
                 {/* Responsable */}
                 <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-                      mina.responsables
-                        ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                        : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50"
-                    }`}
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${mina.responsables
+                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                      : "bg-zinc-800/50 text-zinc-600 border-zinc-700/50"
+                      }`}
                   >
                     <UserIcon className="w-3.5 h-3.5" />
                   </div>
@@ -349,15 +355,68 @@ export const MinasPage = () => {
       {/* Modal: Labores */}
       <ModalEstandar
         opened={openedLabores}
-        close={closeLabores}
-        title="Labores"
+        close={() => {
+          closeLabores();
+          setBusquedaLabor("");
+        }}
+        title={
+          selectedMina ? (
+            <>
+              Labores - {selectedMina.nombre}
+              {selectedMina.almacenes_suministradores && (
+                <Badge
+                  variant="transparent"
+                  color="cyan"
+                  size="xs"
+                  className="ml-2 p-0 h-auto font-bold lowercase italic text-zinc-500"
+                  leftSection={<InboxStackIcon className="w-3 h-3" />}
+                >
+                  abastecido por: {selectedMina.almacenes_suministradores}
+                </Badge>
+              )}
+            </>
+          ) : "Labores"
+        }
         size="90%"
+        rightSection={
+          <div className="flex items-center gap-3 mr-4">
+            <TextInput
+              placeholder="Buscar labor..."
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+              }
+              value={busquedaLabor}
+              onChange={(e) => setBusquedaLabor(e.currentTarget.value)}
+              radius="lg"
+              size="xs"
+              className="w-72"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              }}
+            />
+            <Button
+              leftSection={<PlusIcon className="w-4 h-4" />}
+              radius="lg"
+              size="xs"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+              onClick={openCreateLabor}
+            >
+              Nueva Labor
+            </Button>
+          </div>
+        }
       >
         {selectedMina && (
           <GestionLabores
             mina={selectedMina}
             onLaborCreada={handleLaborRegistrada}
             onLaborFinalizada={handleLaborFinalizada}
+            busqueda={busquedaLabor}
+            setBusqueda={setBusquedaLabor}
+            openCreate={openCreateLabor}
+            openedCreate={openedCreateLabor}
+            closeCreate={closeCreateLabor}
           />
         )}
       </ModalEstandar>

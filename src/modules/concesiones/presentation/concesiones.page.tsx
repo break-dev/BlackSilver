@@ -66,23 +66,38 @@ export const ConcesionesPage = () => {
 
       {/* Grid Content */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4">
-              <div className="flex justify-between items-center">
-                <Skeleton height={20} width={100} radius="md" />
-                <Skeleton height={18} width={60} radius="sm" />
+            <div
+              key={i}
+              className="flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-3"
+            >
+              {/* Badges + estado */}
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 flex-1">
+                  <div className="flex gap-2">
+                    <Skeleton height={18} width={120} radius="sm" />
+                    <Skeleton height={18} width={100} radius="sm" />
+                  </div>
+                  <Skeleton height={14} width="70%" radius="sm" />
+                  <Skeleton height={12} width="40%" radius="sm" />
+                </div>
+                <Skeleton height={18} width={50} radius="sm" />
               </div>
-              <div className="space-y-2">
-                <Skeleton height={12} width="40%" radius="md" />
-                <div className="flex gap-2">
-                  <Skeleton height={40} width="100%" radius="md" />
-                  <Skeleton height={40} width="100%" radius="md" />
+
+              {/* Location box */}
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
+                <Skeleton height={28} width={28} circle />
+                <div className="space-y-1 flex-1">
+                  <Skeleton height={8} width={60} radius="xs" />
+                  <Skeleton height={12} width={120} radius="xs" />
                 </div>
               </div>
-              <div className="flex justify-between items-center pt-3 border-t border-zinc-800/50">
-                <Skeleton height={30} width={100} radius="lg" />
-                <Skeleton height={30} width={120} radius="lg" />
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-1 border-t border-zinc-800/50">
+                <Skeleton height={12} width={80} radius="xs" />
+                <Skeleton height={26} width={26} radius="md" />
               </div>
             </div>
           ))}
@@ -98,7 +113,7 @@ export const ConcesionesPage = () => {
           </Text>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {concesiones.map((concesion) => (
             <ConcesionCard
               key={concesion.id_concesion}

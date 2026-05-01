@@ -5,15 +5,11 @@ import {
   Paper,
   Stack,
   Text,
-  TextInput,
 } from "@mantine/core";
 import {
-  PlusIcon,
-  MagnifyingGlassIcon,
   BriefcaseIcon,
   MapIcon,
   BoltIcon,
-  InboxStackIcon,
   FlagIcon,
   CheckCircleIcon,
   ClockIcon,
@@ -40,24 +36,29 @@ interface Props {
   mina: RES_ResumenMina;
   onLaborCreada?: (id_mina: number) => void;
   onLaborFinalizada?: (id_mina: number) => void;
+  busqueda: string;
+  setBusqueda: (v: string) => void;
+  openCreate: () => void;
+  openedCreate: boolean;
+  closeCreate: () => void;
 }
 
 export const GestionLabores = ({
   mina,
   onLaborCreada,
   onLaborFinalizada,
+  busqueda,
+  setBusqueda,
+  openCreate,
+  openedCreate,
+  closeCreate,
 }: Props) => {
   const {
     laboresFiltradas,
     loading,
-    busqueda,
-    setBusqueda,
-    openedCreate,
-    openCreate,
-    closeCreate,
     handleLaborCreada,
     handleLaborFinalizada,
-  } = useLabores({ idMina: mina.id_mina });
+  } = useLabores({ idMina: mina.id_mina, busqueda, closeCreate });
 
   const { notify } = useNotify();
 
@@ -351,59 +352,6 @@ export const GestionLabores = ({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row justify-between items-end gap-4 border-b border-zinc-800 pb-4">
-        <div>
-          <h3 className="text-lg font-bold text-white leading-tight">
-            Labores Operativas
-          </h3>
-          <div className="flex items-center gap-2 mt-0.5">
-            <Text size="xs" color="dimmed" fw={500}>
-              {mina.nombre}
-            </Text>
-            {mina.almacenes_suministradores && (
-              <>
-                <div className="w-1 h-1 rounded-full bg-zinc-700" />
-                <Badge
-                  variant="transparent"
-                  color="cyan"
-                  size="xs"
-                  className="p-0 h-auto font-bold lowercase italic text-zinc-500"
-                  leftSection={<InboxStackIcon className="w-3 h-3" />}
-                >
-                  abastecido por: {mina.almacenes_suministradores}
-                </Badge>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex w-full sm:w-auto items-center gap-3">
-          <TextInput
-            placeholder="Buscar por nombre, veta o nivel..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            className="flex-1"
-            radius="lg"
-            size="sm"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-          />
-          <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            onClick={openCreate}
-            radius="lg"
-            size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
-          >
-            Nueva Labor
-          </Button>
-        </div>
-      </div>
 
       <Stack gap="xl">
         {loading ? (
