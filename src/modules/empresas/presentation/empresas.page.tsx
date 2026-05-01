@@ -71,17 +71,20 @@ export const EmpresasPage = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-6 space-y-6">
-              <div className="flex justify-between items-center">
-                <Skeleton height={20} width={60} radius="md" />
-                <Skeleton height={20} width={20} circle />
+            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4">
+              {/* Badge Skeleton */}
+              <div className="flex justify-start">
+                <Skeleton height={18} width={90} radius="md" />
               </div>
-              <div className="flex flex-col items-center gap-4">
-                <Skeleton height={100} width={100} circle />
-                <Skeleton height={20} width="70%" radius="md" />
-                <Skeleton height={14} width="40%" radius="md" />
+              
+              {/* Content Skeleton (Horizontal) */}
+              <div className="flex items-center gap-5">
+                <Skeleton height={80} width={80} circle />
+                <div className="flex-1 space-y-2">
+                  <Skeleton height={16} width="80%" radius="md" />
+                  <Skeleton height={12} width="50%" radius="md" />
+                </div>
               </div>
-              <Skeleton height={60} width="100%" radius="2xl" />
             </div>
           ))}
         </div>

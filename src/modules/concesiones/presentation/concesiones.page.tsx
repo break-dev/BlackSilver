@@ -1,35 +1,24 @@
 import {
   Button,
-  Group,
   TextInput,
+  Skeleton,
   Text,
-  Badge,
-  ActionIcon,
-  Tooltip,
-  Menu,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
-  InformationCircleIcon,
-  BuildingOfficeIcon,
   PlusIcon,
-  MapPinIcon,
-  EllipsisVerticalIcon,
-  PencilSquareIcon,
-  TrashIcon,
+  Square3Stack3DIcon,
 } from "@heroicons/react/24/outline";
-import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
 import { useState } from "react";
 
 import { useTitlePage } from "../../../hooks/useTitlePage";
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 import { useConcesiones } from "../hooks/useConcesiones";
 import { RegistroConcesion } from "./registro-concesion";
-import type { RES_Concesion } from "../service/concesiones.responses";
 import { HistorialContratos } from "./historial-contratos";
+import { ConcesionCard } from "./concesion-card";
 
 export const ConcesionesPage = () => {
   useTitlePage("Concesiones");
@@ -44,184 +33,24 @@ export const ConcesionesPage = () => {
   const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
     useDisclosure(false);
 
-  const columns: DataTableColumn<RES_Concesion>[] = [
-    {
-      accessor: "index",
-      title: "#",
-      textAlign: "center",
-      width: 50,
-      render: (_, index) => index + 1,
-    },
-    {
-      accessor: "nombre",
-      title: "Nombre Concesión",
-      width: 250,
-      render: (r) => (
-        <Text size="sm" fw={600} className="text-zinc-100">
-          {r.nombre}
-        </Text>
-      ),
-    },
-    {
-      accessor: "codigo_concesion",
-      title: "Cod. Concesión",
-      width: 150,
-      render: (r) => (
-        <Badge
-          variant="light"
-          color="indigo"
-          radius="sm"
-          className="bg-indigo-500/10 border border-indigo-500/20 font-mono"
-        >
-          {r.codigo_concesion}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "codigo_reinfo",
-      title: "Cod. REINFO",
-      width: 150,
-      render: (r) => (
-        <Badge
-          variant="light"
-          color="pink"
-          radius="sm"
-          className="bg-pink-500/10 border border-pink-500/20 font-mono"
-        >
-          {r.codigo_reinfo || "-"}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "tipo_mineral",
-      title: "Tipo De Mineral",
-      width: 150,
-      render: (r) => (
-        <Text size="sm" className="text-zinc-400">
-          {r.tipo_mineral}
-        </Text>
-      ),
-    },
-    {
-      accessor: "ubigeo",
-      title: "Ubicación",
-      width: 150,
-      render: (r) => (
-        <Group gap={6}>
-          <MapPinIcon className="w-4 h-4 text-emerald-500" />
-          <Text size="sm" className="text-zinc-400">
-            {r.ubigeo || "-"}
-          </Text>
-        </Group>
-      ),
-    },
-    {
-      accessor: "contratos_activos",
-      title: "Contrato",
-      width: 150,
-      textAlign: "center",
-      render: (r) => (
-        <Group gap={6} justify="center">
-          <Badge
-            variant="light"
-            color={r.contratos_activos > 0 ? "indigo" : "gray"}
-            radius="sm"
-            size="sm"
-            className="font-bold"
-          >
-            {r.contratos_activos} ASIGN.
-          </Badge>
-          <Tooltip label="Gestionar Contratos">
-            <ActionIcon
-              variant="subtle"
-              color="indigo"
-              size="sm"
-              onClick={() => {
-                setIdSeleccionado(r.id_concesion);
-                setNombreSeleccionado(r.nombre);
-                openContratos();
-              }}
-            >
-              <BuildingOfficeIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
-    },
-    {
-      accessor: "estado",
-      title: "Estado",
-      width: 100,
-      textAlign: "center",
-      render: (r) => (
-        <Badge
-          color={r.estado === "Activo" ? "green" : "red"}
-          variant="light"
-          radius="sm"
-          size="sm"
-          className="font-bold uppercase"
-        >
-          {r.estado}
-        </Badge>
-      ),
-    },
-    {
-      accessor: "actions",
-      title: "",
-      width: 60,
-      textAlign: "right",
-      render: () => (
-        <Menu shadow="md" width={150} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<InformationCircleIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Información
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+    <div className="space-y-8 animate-fade-in">
+      {/* Header & Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
-          placeholder="Buscar por nombre, código o REINFO..."
+          label="Buscar Concesión"
+          placeholder="Buscar por nombre o código..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
           }
           value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.currentTarget.value);
-          }}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
           className="flex-1 min-w-64"
           radius="lg"
           size="sm"
           classNames={{
             input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 text-white placeholder:text-zinc-500",
           }}
         />
         <Button
@@ -229,23 +58,66 @@ export const ConcesionesPage = () => {
           onClick={openRegistro}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[40px]"
         >
           Nueva Concesión
         </Button>
       </div>
 
-      <DataTableEstandar
-        idAccessor="id_concesion"
-        columns={columns}
-        records={concesiones}
-        loading={loading}
-      />
+      {/* Grid Content */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4">
+              <div className="flex justify-between items-center">
+                <Skeleton height={20} width={100} radius="md" />
+                <Skeleton height={18} width={60} radius="sm" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton height={12} width="40%" radius="md" />
+                <div className="flex gap-2">
+                  <Skeleton height={40} width="100%" radius="md" />
+                  <Skeleton height={40} width="100%" radius="md" />
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t border-zinc-800/50">
+                <Skeleton height={30} width={100} radius="lg" />
+                <Skeleton height={30} width={120} radius="lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : concesiones.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-[32px] border border-dashed border-zinc-800">
+          <Square3Stack3DIcon className="w-12 h-12 text-zinc-700 mb-4" />
+          <Text size="lg" fw={600} className="text-zinc-500">
+            No se encontraron concesiones
+          </Text>
+          <Text size="sm" className="text-zinc-600 mt-1">
+            Intenta con otro término de búsqueda o registra una nueva.
+          </Text>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {concesiones.map((concesion) => (
+            <ConcesionCard
+              key={concesion.id_concesion}
+              concesion={concesion}
+              onOpenContratos={(c) => {
+                setIdSeleccionado(c.id_concesion);
+                setNombreSeleccionado(c.nombre);
+                openContratos();
+              }}
+            />
+          ))}
+        </div>
+      )}
 
+      {/* Modal: Contratos */}
       <ModalEstandar
         opened={openedContratos}
         close={closeContratos}
-        title="Contratos"
+        title="Contratos y Asignaciones"
         size="lg"
       >
         {idSeleccionado && (
@@ -258,6 +130,7 @@ export const ConcesionesPage = () => {
         )}
       </ModalEstandar>
 
+      {/* Modal: Registro */}
       <ModalEstandar
         opened={openedRegistro}
         close={closeRegistro}
