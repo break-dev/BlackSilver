@@ -9,6 +9,8 @@ import {
   Text,
   Stack,
   Skeleton,
+  Loader,
+  FileButton,
 } from "@mantine/core";
 import {
   PlusIcon,
@@ -17,6 +19,7 @@ import {
   KeyIcon,
   PencilSquareIcon,
   Squares2X2Icon,
+  CameraIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useCuentas } from "../hooks/useCuentas";
@@ -37,6 +40,8 @@ export const CuentasPage = () => {
     selectedCuenta,
     setSelectedCuenta,
     handleOpenEdit,
+    handleUpdatePhoto,
+    updatingPhoto,
     refresh,
   } = useCuentas();
 
@@ -149,14 +154,48 @@ export const CuentasPage = () => {
 
                 {/* Row 2: Employee Avatar & Identity */}
                 <div className="flex items-center gap-4">
-                  <Avatar
-                    src={cuenta.path_foto}
-                    size="xl"
-                    radius="xl"
-                    className="border-2 border-zinc-800 group-hover:border-indigo-500/40 transition-colors"
-                  >
-                    <UserIcon className="w-8 h-8 text-zinc-700" />
-                  </Avatar>
+                  <div className="relative group/avatar">
+                    <FileButton
+                      onChange={(file) =>
+                        file && handleUpdatePhoto(cuenta.id_empleado, file)
+                      }
+                      accept="image/png,image/jpeg,image/jpg"
+                      disabled={updatingPhoto === cuenta.id_empleado}
+                    >
+                      {(props) => (
+                        <div
+                          {...props}
+                          className={`relative cursor-pointer rounded-full transition-transform active:scale-95 ${updatingPhoto === cuenta.id_empleado ? "pointer-events-none" : ""}`}
+                        >
+                          <Avatar
+                            src={cuenta.path_foto}
+                            size={56}
+                            radius="xl"
+                            className="border-2 border-zinc-800 group-hover/avatar:border-indigo-500/50 transition-all shadow-xl"
+                            imageProps={{ style: { objectFit: "cover" } }}
+                          >
+                            <UserIcon className="w-6 h-6 text-zinc-700" />
+                          </Avatar>
+
+                          {/* Overlay de Carga o Cámara */}
+                          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                            {updatingPhoto === cuenta.id_empleado ? (
+                              <Loader size="xs" color="indigo" />
+                            ) : (
+                              <CameraIcon className="w-5 h-5 text-white" />
+                            )}
+                          </div>
+                          
+                          {/* Spinner persistente si está cargando */}
+                          {updatingPhoto === cuenta.id_empleado && (
+                            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 z-10">
+                              <Loader size="xs" color="indigo" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </FileButton>
+                  </div>
                   <Stack gap={2}>
                     <Text
                       size="sm"

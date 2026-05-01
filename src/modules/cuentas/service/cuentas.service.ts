@@ -38,6 +38,19 @@ export const CuentasService = {
     const res = await api.put<IRespuesta<null>>(`${path}/${id_usuario}`, dto);
     return res.data;
   },
+
+  actualizarFoto: async (id_empleado: number, file: File) => {
+    const formData = new FormData();
+    formData.append("foto", file);
+    const res = await api.post<IRespuesta<{ url: string }>>(
+      `${path}/foto/${id_empleado}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return res.data;
+  },
 };
 
 // --- Zustand Store (Form & State) ---
@@ -61,6 +74,7 @@ interface CuentasState {
   setLoading: (val: boolean) => void;
   setForm: (form: Partial<CuentasState["form"]>) => void;
   resetForm: () => void;
+  updateCuentaFoto: (idEmpleado: number, newPath: string) => void;
 }
 
 export const useCuentasStore = create<CuentasState>((set) => ({
@@ -90,4 +104,10 @@ export const useCuentasStore = create<CuentasState>((set) => ({
         password: "",
       },
     }),
+  updateCuentaFoto: (idEmpleado: number, newPath: string) =>
+    set((state) => ({
+      cuentas: state.cuentas.map((c) =>
+        c.id_empleado === idEmpleado ? { ...c, path_foto: newPath } : c,
+      ),
+    })),
 }));
