@@ -47,6 +47,9 @@ export interface RES_OrdenCompraRecepcionDetalle {
   cantidad_recepcionada: number;
   cantidad_recepcionada_base: number;
   //
+  es_para_otro_almacen: boolean;
+  cantidad_transferida_base: number | null;
+  //
   comentario: string | null;
   estado: Estado_OrdenCompraRecepcionDetalle;
 }
