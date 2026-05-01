@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { Badge, Group, Stack, Text } from "@mantine/core";
 import {
   InboxStackIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import { BlackcitoMascot } from "../../../../../presentation/utils/blackcito-pet";
+import { useBlackcito } from "../../../../../hooks/useBlackcito";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { GroupedProduct } from "./product-group-card";
 
@@ -13,7 +12,7 @@ export const ProductGroupHeader = ({
 }: {
   product: GroupedProduct;
 }) => {
-  const [showBlackcito, setShowBlackcito] = useState(false);
+  const { angry, close } = useBlackcito();
 
   const isBajoStock =
     Number(product.total_stock_base) <= Number(product.stock_minimo);
@@ -50,8 +49,8 @@ export const ProductGroupHeader = ({
                 <>
                   <div
                     className="bg-rose-500/20 border-2 border-rose-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
-                    onMouseEnter={() => setShowBlackcito(true)}
-                    onMouseLeave={() => setShowBlackcito(false)}
+                    onMouseEnter={() => angry(`¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`)}
+                    onMouseLeave={close}
                   >
                     <ExclamationTriangleIcon className="w-3 h-3 text-rose-400" />
                     <Text
@@ -64,12 +63,6 @@ export const ProductGroupHeader = ({
                       ¡Stock crítico!
                     </Text>
                   </div>
-
-                  <BlackcitoMascot
-                    emotion="enojado"
-                    message={`¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`}
-                    visible={showBlackcito}
-                  />
                 </>
               )}
             </Group>

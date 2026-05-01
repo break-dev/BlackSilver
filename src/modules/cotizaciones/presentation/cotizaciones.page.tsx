@@ -7,7 +7,7 @@ import {
   PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useRef } from "react";
-import { BlackcitoMascot } from "../../../presentation/utils/blackcito-pet";
+import { useBlackcito } from "../../../hooks/useBlackcito";
 
 import { useCotizaciones } from "../hooks/useCotizaciones";
 import { useTitlePage } from "../../../hooks/useTitlePage";
@@ -35,7 +35,7 @@ export const CotizacionesPage = () => {
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
   const [openedProductos, setOpenedProductos] = useState(false);
-  const [openedProductosHover, setOpenedProductosHover] = useState(false);
+  const { happy, close } = useBlackcito();
   const registroRef = useRef<{ agregarCotizacion: () => void } | null>(null);
 
   return (
@@ -92,19 +92,14 @@ export const CotizacionesPage = () => {
         size="100%"
         rightSection={
           <Group gap="sm">
-            <BlackcitoMascot
-              emotion="feliz"
-              message="¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito esta pendiente de ti!"
-              visible={openedProductosHover}
-            />
             <Button
               variant="filled"
               color="pink"
               className="shadow-lg shadow-pink-800/20 transition-all duration-300"
               leftSection={<CubeIcon className="w-5 h-5" />}
               onClick={() => setOpenedProductos(true)}
-              onMouseEnter={() => setOpenedProductosHover(true)}
-              onMouseLeave={() => setOpenedProductosHover(false)}
+              onMouseEnter={() => happy("¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito está pendiente de ti!")}
+              onMouseLeave={close}
               radius="xl"
               size="xs"
             >

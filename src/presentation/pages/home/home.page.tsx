@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useRandomLinks, type ILinkView } from "./useRandomLinks";
 import { motion } from "motion/react";
-import { BlackcitoMascot } from "../../utils/blackcito-pet";
+import { useBlackcito } from "../../../hooks/useBlackcito";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,29 +38,20 @@ export const HomePage = () => {
 
   const { randomLinks } = useRandomLinks();
 
-  // --- LÓGICA DE BIENVENIDA DE BLACKCITO ---
-  const [showBlackcito, setShowBlackcito] = useState(() => {
-    // Calculamos el valor inicial de una vez. Si no hay marca en la sesión, devolvemos true.
-    return !sessionStorage.getItem("blackcito_saludo_inicial");
-  });
+  const { happy } = useBlackcito();
 
+  // --- LÓGICA DE BIENVENIDA DE BLACKCITO ---
   useEffect(() => {
-    // Si decidimos mostrarlo, guardamos la marca de una vez
-    if (showBlackcito) {
+    const saludoMostrado = sessionStorage.getItem("blackcito_saludo_inicial");
+    if (!saludoMostrado) {
+      happy(`¡Qué bueno verte por aquí, ${usuario?.nombre || "Colega"}! ¿En qué te ayudo hoy?`);
       sessionStorage.setItem("blackcito_saludo_inicial", "true");
     }
-  }, [showBlackcito]);
+  }, [happy, usuario?.nombre]);
   // ------------------------------------------
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 py-6 px-4">
-      {/* Componente Blackcito (Feliz) */}
-      <BlackcitoMascot
-        emotion="feliz"
-        message={`¡Qué bueno verte por aquí, ${usuario?.nombre || "Colega"}! ¿En qué te ayudo hoy?`}
-        visible={showBlackcito}
-        onClose={() => setShowBlackcito(false)}
-      />
 
       {/* Seccion de bienvenida */}
       <div className="text-center space-y-4 pt-10">

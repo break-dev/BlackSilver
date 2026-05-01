@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Navbar } from "./components/navbar";
 import { Header } from "./components/header";
 import { GlobalNotification } from "./components/global-notification";
+import { GlobalBlackcito } from "./components/global-blackcito";
 import { useAuthLayout } from "./hooks/useAuthLayout";
 import { GlobalPrinterPortal } from "../../utils/printer/GlobalPrinterPortal";
 
@@ -47,6 +48,7 @@ export const AuthLayout = () => {
         <Header onMenuToggle={() => setOpen(true)} />
         {open && <Navbar onClose={() => setOpen(false)} />}
         <GlobalNotification />
+        <GlobalBlackcito />
 
         <main className="flex-1 mx-auto w-full pt-22 px-4 pb-10 overflow-hidden relative">
           <motion.div
