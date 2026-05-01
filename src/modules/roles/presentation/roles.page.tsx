@@ -175,6 +175,7 @@ export const RolesPage = () => {
         <RegistroRol
           estructura={registro.estructura}
           loadingEstructura={registro.loadingEstructura}
+          loadingPermisos={registro.loadingPermisos}
           nombre={registro.nombre}
           setNombre={registro.setNombre}
           descripcion={registro.descripcion}
@@ -184,7 +185,7 @@ export const RolesPage = () => {
           onToggleSubmenu={registro.handleToggleSubmenu}
           onSave={registro.handleGuardar}
           onCancel={closeCreate}
-          loading={registro.loading}
+          saving={registro.saving}
           isEdit={!!selectedRol}
         />
       </ModalEstandar>

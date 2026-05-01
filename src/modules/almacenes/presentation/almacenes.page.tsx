@@ -200,11 +200,7 @@ export const AlmacenesPage = () => {
                     <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider block mb-1">
                       Responsables
                     </span>
-                    {isPrincipal ? (
-                      <span className="text-xs text-zinc-500 italic block">
-                        No aplica
-                      </span>
-                    ) : alm.responsables ? (
+                    {alm.responsables ? (
                       <ScrollArea
                         w="100%"
                         type="never"
@@ -249,19 +245,17 @@ export const AlmacenesPage = () => {
 
                   {/* Acciones */}
                   <div className="flex items-center gap-1.5">
-                    {!isPrincipal && (
-                      <Tooltip label="Gestionar Responsables">
-                        <ActionIcon
-                          variant="filled"
-                          color="violet"
-                          size="sm"
-                          radius="md"
-                          onClick={() => handleOpenResponsables(alm)}
-                        >
-                          <UserIcon className="w-4 h-4" />
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
+                    <Tooltip label="Gestionar Responsables">
+                      <ActionIcon
+                        variant="filled"
+                        color="violet"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenResponsables(alm)}
+                      >
+                        <UserIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
                     {!isPrincipal && (
                       <Tooltip label="Gestionar Alcance (Minas)">
                         <ActionIcon

@@ -24,6 +24,7 @@ import type {
 interface RegistroRolProps {
   estructura: RES_MenuEstructura[];
   loadingEstructura: boolean;
+  loadingPermisos: boolean;
   nombre: string;
   setNombre: (val: string) => void;
   descripcion: string;
@@ -33,13 +34,14 @@ interface RegistroRolProps {
   onToggleSubmenu: (ids: number[], checked: boolean) => void;
   onSave: () => void;
   onCancel: () => void;
-  loading: boolean;
+  saving: boolean;
   isEdit?: boolean;
 }
 
 export const RegistroRol = ({
   estructura,
   loadingEstructura,
+  loadingPermisos,
   nombre,
   setNombre,
   descripcion,
@@ -49,7 +51,7 @@ export const RegistroRol = ({
   onToggleSubmenu,
   onSave,
   onCancel,
-  loading,
+  saving,
   isEdit = false,
 }: RegistroRolProps) => {
   const fieldClasses = {
@@ -95,18 +97,18 @@ export const RegistroRol = ({
         </Text>
       </div>
 
-      <div>
-        {loadingEstructura ? (
+      <div className="relative">
+        {(loadingEstructura || loadingPermisos) ? (
           <div className="flex flex-col items-center justify-center py-10 gap-2">
             <div className="w-8 h-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 animate-spin" />
             <Text size="xs" fw={500} color="dimmed">
-              Cargando estructura...
+              {loadingEstructura ? "Cargando estructura..." : "Cargando permisos del rol..."}
             </Text>
           </div>
         ) : (
           <Accordion
             variant="separated"
-            defaultValue={estructura[0]?.nombre}
+            defaultValue={estructura.find(m => m.nombre.toLowerCase().includes("logística") || m.nombre.toLowerCase().includes("logistica"))?.nombre ?? estructura[0]?.nombre}
             classNames={{
               item: "border-zinc-800/50 bg-zinc-900/20 mb-3 rounded-xl overflow-hidden transition-all hover:border-zinc-700/50",
               control: "py-3 px-4 hover:bg-zinc-800/20",
@@ -257,7 +259,7 @@ export const RegistroRol = ({
         <Button
           variant="subtle"
           onClick={onCancel}
-          disabled={loading}
+          disabled={saving}
           radius="lg"
           size="sm"
           className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
@@ -266,7 +268,7 @@ export const RegistroRol = ({
         </Button>
         <Button
           onClick={onSave}
-          loading={loading}
+          loading={saving}
           radius="lg"
           size="sm"
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8"

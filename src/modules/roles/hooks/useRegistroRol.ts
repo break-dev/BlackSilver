@@ -30,7 +30,8 @@ export const useRegistroRol = ({
     [],
   );
 
-  const [loading, setLoading] = useState(false);
+  const [loadingPermisos, setLoadingPermisos] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const cargarEstructura = useCallback(async () => {
     setLoadingEstructura(true);
@@ -51,7 +52,7 @@ export const useRegistroRol = ({
   }, [cargarEstructura]);
 
   const cargarPermisosRol = useCallback(async (id: number) => {
-    setLoading(true);
+    setLoadingPermisos(true);
     try {
       const result = await RolesService.get_permisos_rol(id);
       if (result.success) {
@@ -60,7 +61,7 @@ export const useRegistroRol = ({
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      setLoadingPermisos(false);
     }
   }, []);
 
@@ -120,7 +121,7 @@ export const useRegistroRol = ({
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
       if (rolEdicion) {
         // MODO EDICIÓN: Solo actualiza permisos
@@ -167,13 +168,14 @@ export const useRegistroRol = ({
       });
       console.error(err);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return {
     estructura,
     loadingEstructura,
+    loadingPermisos,
     nombre,
     setNombre,
     descripcion,
@@ -182,7 +184,7 @@ export const useRegistroRol = ({
     handleToggleModulo,
     handleToggleSubmenu,
     handleGuardar,
-    loading,
+    saving,
     reset,
   };
 };
