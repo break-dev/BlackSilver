@@ -114,7 +114,7 @@ export const EmpresasPage = () => {
         opened={openedCreate}
         close={closeCreate}
         title="Registrar Empresa"
-        size="lg"
+        size="md"
       >
         <RegistroEmpresa
           ruc={registro.ruc}
