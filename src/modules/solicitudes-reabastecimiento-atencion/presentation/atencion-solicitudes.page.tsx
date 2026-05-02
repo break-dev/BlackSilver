@@ -200,11 +200,12 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
-        <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+      <div className="flex flex-col lg:flex-row justify-between gap-3 items-end">
+        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
           <div className="w-full sm:w-72">
             <Select
-              placeholder="Seleccione Almacén"
+              label="Almacén de despacho"
+              placeholder="Seleccionar almacén..."
               leftSection={
                 loadingAlmacenes ? (
                   <Loader size="xs" />
@@ -219,9 +220,11 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
               value={idAlmacen}
               onChange={setIdAlmacen}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
@@ -230,6 +233,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
 
           <div className="w-full sm:w-40">
             <Select
+              label="Mes"
               placeholder="Mes"
               leftSection={
                 <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
@@ -238,9 +242,11 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
               value={mes}
               onChange={(val) => setMes(val || "")}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
@@ -249,6 +255,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
 
           <div className="w-full sm:w-32">
             <Select
+              label="Año"
               placeholder="Año"
               data={Array.from({ length: 5 }, (_, i) => {
                 const y = (dayjs().year() - i).toString();
@@ -257,30 +264,36 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
               value={yearcito}
               onChange={(val) => setYearcito(val || "")}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
             />
           </div>
 
-          <TextInput
-            placeholder="Buscar por código u observacion..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            disabled={!idAlmacen}
-            className="flex-1 min-w-[200px]"
-            radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-          />
+          <div className="flex-1 min-w-[200px] w-full">
+            <TextInput
+              label="Búsqueda"
+              placeholder="Buscar por código u observacion..."
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+              }
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.currentTarget.value)}
+              disabled={!idAlmacen}
+              radius="lg"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              }}
+            />
+          </div>
         </div>
       </div>
 

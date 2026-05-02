@@ -238,78 +238,92 @@ export const PrestamosAlmacenPage = () => {
     [fetchDetalles],
   );
 
-  const inputClasses = {
-    input:
-      "bg-zinc-900/40 backdrop-blur-md border-zinc-800/50 focus:border-indigo-500/50 transition-all text-zinc-100 placeholder:text-zinc-600 shadow-inner",
-    label: "text-zinc-400 font-medium mb-1.5 text-xs uppercase tracking-wider",
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in text-zinc-100 p-2">
+    <div className="space-y-8 animate-fade-in text-zinc-100">
       {/* Container de Filtros */}
-      <div className="bg-zinc-900/30 backdrop-blur-xl border border-zinc-800/50 p-6 rounded-2xl shadow-xl">
-        <div className="flex flex-col lg:flex-row justify-between gap-6 items-end">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 flex-1 w-full">
-            <Select
-              label="Almacén Prestamista"
-              placeholder="Seleccionar almacén"
-              data={almacenes.map((a: RES_Almacen) => ({
-                value: String(a.id_almacen),
-                label: a.nombre,
-              }))}
-              value={idAlmacen}
-              onChange={setIdAlmacen}
-              leftSection={<BuildingStorefrontIcon className="w-4 h-4" />}
-              searchable
-              disabled={loadingAlmacenes}
-              classNames={inputClasses}
-              radius="lg"
-              size="xs"
-            />
+      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 flex-1 w-full">
+          <Select
+            label="Almacén prestamista"
+            placeholder="Seleccionar almacén"
+            data={almacenes.map((a: RES_Almacen) => ({
+              value: String(a.id_almacen),
+              label: a.nombre,
+            }))}
+            value={idAlmacen}
+            onChange={setIdAlmacen}
+            leftSection={<BuildingStorefrontIcon className="w-4 h-4" />}
+            searchable
+            disabled={loadingAlmacenes}
+            radius="lg"
+            size="sm"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
 
-            <Select
-              label="Mes"
-              placeholder="Elegir mes"
-              data={MESES}
-              value={mes}
-              onChange={setMes}
-              leftSection={<CalendarDaysIcon className="w-4 h-4" />}
-              classNames={inputClasses}
-              radius="lg"
-              size="xs"
-            />
+          <Select
+            label="Mes"
+            placeholder="Elegir mes"
+            data={MESES}
+            value={mes}
+            onChange={setMes}
+            leftSection={<CalendarDaysIcon className="w-4 h-4" />}
+            radius="lg"
+            size="sm"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
 
-            <Select
-              label="Año"
-              placeholder="Elegir año"
-              data={YEARS}
-              value={yearcito}
-              onChange={setYearcito}
-              leftSection={<CalendarDaysIcon className="w-4 h-4" />}
-              classNames={inputClasses}
-              radius="lg"
-              size="xs"
-            />
+          <Select
+            label="Año"
+            placeholder="Elegir año"
+            data={YEARS}
+            value={yearcito}
+            onChange={setYearcito}
+            leftSection={<CalendarDaysIcon className="w-4 h-4" />}
+            radius="lg"
+            size="sm"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
 
-            <TextInput
-              label="Búsqueda rápida"
-              placeholder="Código o almacén..."
-              leftSection={
-                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
-              }
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              classNames={inputClasses}
-              radius="lg"
-              size="xs"
-              className="lg:col-span-2"
-            />
-          </div>
+          <TextInput
+            label="Búsqueda"
+            placeholder="Código o almacén..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
+            }
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            radius="lg"
+            size="sm"
+            className="lg:col-span-2"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+            }}
+          />
         </div>
       </div>
 
       {/* Tabla de Resultados */}
-      <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl overflow-hidden shadow-2xl transition-all">
+      <div className="transition-all">
         {filteredRecords.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center p-20 text-zinc-500 gap-4">
             <div className="bg-zinc-900/50 p-6 rounded-full border border-zinc-800 animate-pulse">

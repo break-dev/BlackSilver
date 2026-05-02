@@ -1,10 +1,4 @@
-import {
-  Button,
-  TextInput,
-  Badge,
-  Skeleton,
-  ScrollArea,
-} from "@mantine/core";
+import { Button, TextInput, Badge, Skeleton, ScrollArea } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -46,7 +40,7 @@ export const OrganigramaPage = () => {
   // Hook de Registro de Cargo — Integrado para que no necesite modal extra
   const regCargo = useRegistroCargo(
     onCargoCreado,
-    () => { },
+    () => {},
     areaSeleccionada?.id_area,
   );
 
@@ -55,9 +49,9 @@ export const OrganigramaPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header — Estilo unificado con Minas */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
-          label="Buscar área"
+          label="Buscar Área"
           placeholder="Buscar área por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -68,7 +62,7 @@ export const OrganigramaPage = () => {
           radius="lg"
           size="sm"
           classNames={{
-            label: "text-zinc-400 mb-1 font-medium",
+            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
@@ -78,7 +72,7 @@ export const OrganigramaPage = () => {
           onClick={openArea}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
         >
           Nueva Área
         </Button>
@@ -204,7 +198,12 @@ export const OrganigramaPage = () => {
       )}
 
       {/* MODAL GESTIÓN DE ÁREA */}
-      <ModalEstandar opened={openedArea} close={closeArea} title="Nueva Área" size="md">
+      <ModalEstandar
+        opened={openedArea}
+        close={closeArea}
+        title="Nueva Área"
+        size="md"
+      >
         <RegistroArea
           nombre={regArea.nombre}
           setNombre={regArea.setNombre}

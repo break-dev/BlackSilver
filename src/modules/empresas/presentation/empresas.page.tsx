@@ -39,29 +39,31 @@ export const EmpresasPage = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Search & Actions Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
-        <TextInput
-          label="Buscar Empresa"
-          placeholder="Buscar empresas por nombre o RUC..."
-          leftSection={
-            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-          }
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.currentTarget.value)}
-          className="flex-1 min-w-64"
-          radius="xl"
-          size="sm"
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-11",
-          }}
-        />
+      <div className="flex flex-col sm:flex-row gap-4 items-end justify-between">
+        <div className="flex flex-1 gap-4 w-full">
+          <TextInput
+            label="Buscar Empresa"
+            placeholder="Buscar empresas por nombre o RUC..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            }
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.currentTarget.value)}
+            className="flex-1 min-w-64"
+            radius="lg"
+            size="sm"
+            classNames={{
+              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+            }}
+          />
+        </div>
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openCreate}
-          radius="xl"
+          radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 h-11 px-6"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 px-6 font-semibold h-[38px]"
         >
           Nueva Empresa
         </Button>

@@ -45,9 +45,9 @@ export const RolesPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Search and Action Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
-          label="Buscar rol"
+          label="Buscar Rol"
           placeholder="Buscar rol por nombre o descripción..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -58,7 +58,7 @@ export const RolesPage = () => {
           radius="lg"
           size="sm"
           classNames={{
-            label: "text-zinc-400 mb-1 font-medium",
+            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
@@ -68,7 +68,7 @@ export const RolesPage = () => {
           onClick={openCreate}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
         >
           Nuevo Rol
         </Button>

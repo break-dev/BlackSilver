@@ -1,9 +1,4 @@
-import {
-  Button,
-  TextInput,
-  Skeleton,
-  Text,
-} from "@mantine/core";
+import { Button, TextInput, Skeleton, Text } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -23,8 +18,14 @@ import { ConcesionCard } from "./concesion-card";
 export const ConcesionesPage = () => {
   useTitlePage("Concesiones");
 
-  const { concesiones, loading, busqueda, setBusqueda, pushNuevaConcesion, actualizarContratosActivos } =
-    useConcesiones();
+  const {
+    concesiones,
+    loading,
+    busqueda,
+    setBusqueda,
+    pushNuevaConcesion,
+    actualizarContratosActivos,
+  } = useConcesiones();
 
   const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
   const [nombreSeleccionado, setNombreSeleccionado] = useState("");
@@ -36,29 +37,32 @@ export const ConcesionesPage = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header & Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
-        <TextInput
-          label="Buscar Concesión"
-          placeholder="Buscar por nombre o código..."
-          leftSection={
-            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-          }
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.currentTarget.value)}
-          className="flex-1 min-w-64"
-          radius="lg"
-          size="sm"
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 text-white placeholder:text-zinc-500",
-          }}
-        />
+      <div className="flex flex-col sm:flex-row gap-4 items-end justify-between">
+        <div className="flex flex-1 gap-4 w-full">
+          <TextInput
+            label="Buscar Concesión"
+            placeholder="Buscar por nombre o código..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            }
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.currentTarget.value)}
+            className="flex-1 min-w-64"
+            radius="lg"
+            size="sm"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+            }}
+          />
+        </div>
         <Button
           leftSection={<PlusIcon className="w-5 h-5" />}
           onClick={openRegistro}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[40px]"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[38px] px-6 font-semibold"
         >
           Nueva Concesión
         </Button>
@@ -139,8 +143,12 @@ export const ConcesionesPage = () => {
           <HistorialContratos
             idConcesion={idSeleccionado}
             nombreConcesion={nombreSeleccionado}
-            onContratoCreado={() => actualizarContratosActivos(idSeleccionado, +1)}
-            onContratoTerminado={() => actualizarContratosActivos(idSeleccionado, -1)}
+            onContratoCreado={() =>
+              actualizarContratosActivos(idSeleccionado, +1)
+            }
+            onContratoTerminado={() =>
+              actualizarContratosActivos(idSeleccionado, -1)
+            }
           />
         )}
       </ModalEstandar>

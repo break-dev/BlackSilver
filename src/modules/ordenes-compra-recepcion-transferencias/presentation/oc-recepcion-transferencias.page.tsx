@@ -86,7 +86,7 @@ export const RecepcionTransferenciasOCPage = () => {
       <div className="flex flex-col md:flex-row items-end gap-3 w-full">
         <div className="w-full md:w-64">
           <Select
-            label="Almacén de consulta"
+            label="Almacén de Consulta"
             placeholder="Seleccionar..."
             data={almacenes.map((a) => ({
               value: String(a.id_almacen),

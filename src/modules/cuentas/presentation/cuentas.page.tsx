@@ -48,9 +48,9 @@ export const CuentasPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
-          label="Buscar cuenta"
+          label="Buscar Cuenta"
           placeholder="Buscar por usuario, empleado o rol..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -61,7 +61,7 @@ export const CuentasPage = () => {
           radius="lg"
           size="sm"
           classNames={{
-            label: "text-zinc-400 mb-1 font-medium",
+            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
@@ -74,7 +74,7 @@ export const CuentasPage = () => {
           }}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
         >
           Nueva Cuenta
         </Button>
@@ -187,7 +187,7 @@ export const CuentasPage = () => {
                               <CameraIcon className="w-5 h-5 text-white" />
                             )}
                           </div>
-                          
+
                           {/* Spinner persistente si está cargando */}
                           {updatingPhoto === cuenta.id_empleado && (
                             <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 z-10">

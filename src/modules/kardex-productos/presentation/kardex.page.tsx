@@ -244,79 +244,87 @@ export const KardexProductosPage = () => {
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
       {/* Filtros Principales y Buscador */}
-      <div className="flex flex-col xl:flex-row gap-4 items-center justify-between bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800/50 backdrop-blur-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:flex xl:flex-wrap gap-4 w-full">
-          {/* Almacén */}
-          <div className="w-full sm:w-64">
-            <Select
-              placeholder="Seleccione Almacén"
-              leftSection={
-                loadingAlmacenes ? (
-                  <Loader size="xs" />
-                ) : (
-                  <MapPinIcon className="w-4 h-4 text-zinc-400" />
-                )
-              }
-              data={almacenes.map((a) => ({
-                value: String(a.id_almacen),
-                label: a.nombre,
-              }))}
-              value={idAlmacen}
-              onChange={setIdAlmacen}
-              radius="lg"
-              classNames={{
-                input:
-                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+      <div className="flex flex-col md:flex-row items-end gap-3 w-full">
+        {/* Almacén */}
+        <div className="w-full md:w-64">
+          <Select
+            label="Almacén"
+            placeholder="Seleccionar almacén..."
+            leftSection={
+              loadingAlmacenes ? (
+                <Loader size="xs" />
+              ) : (
+                <MapPinIcon className="w-4 h-4 text-zinc-400" />
+              )
+            }
+            data={almacenes.map((a) => ({
+              value: String(a.id_almacen),
+              label: a.nombre,
+            }))}
+            value={idAlmacen}
+            onChange={setIdAlmacen}
+            radius="lg"
+            size="sm"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
+        </div>
 
-          {/* Mes */}
-          <div className="w-full sm:w-44">
-            <Select
-              placeholder="Mes"
-              leftSection={
-                <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-              }
-              data={MESES}
-              value={mes}
-              onChange={(val) => setMes(val || "")}
-              radius="lg"
-              allowDeselect={false}
-              classNames={{
-                input:
-                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 text-white",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+        {/* Mes */}
+        <div className="w-full md:w-40">
+          <Select
+            label="Mes"
+            placeholder="Mes"
+            leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-500" />}
+            data={MESES}
+            value={mes}
+            onChange={(val) => setMes(val || "")}
+            radius="lg"
+            size="sm"
+            allowDeselect={false}
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
+        </div>
 
-          {/* Año */}
-          <div className="w-full sm:w-32">
-            <Select
-              placeholder="Año"
-              data={Array.from({ length: 5 }, (_, i) => ({
-                value: String(dayjs().year() - i),
-                label: String(dayjs().year() - i),
-              }))}
-              value={yearcito}
-              onChange={(val) => setYearcito(val || "")}
-              radius="lg"
-              allowDeselect={false}
-              classNames={{
-                input:
-                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 text-white",
-                dropdown: "bg-zinc-900 border-zinc-800",
-                option: "text-zinc-300 hover:bg-zinc-800",
-              }}
-            />
-          </div>
+        {/* Año */}
+        <div className="w-full md:w-32">
+          <Select
+            label="Año"
+            placeholder="Año"
+            data={Array.from({ length: 5 }, (_, i) => ({
+              value: String(dayjs().year() - i),
+              label: String(dayjs().year() - i),
+            }))}
+            value={yearcito}
+            onChange={(val) => setYearcito(val || "")}
+            radius="lg"
+            size="sm"
+            allowDeselect={false}
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              dropdown: "bg-zinc-900 border-zinc-800",
+              option: "text-zinc-300 hover:bg-zinc-800",
+            }}
+          />
+        </div>
 
-          {/* Buscador */}
+        {/* Buscador */}
+        <div className="flex-1 min-w-[200px] w-full">
           <TextInput
+            label="Búsqueda"
             placeholder="Producto, lote, glosa..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -324,19 +332,23 @@ export const KardexProductosPage = () => {
             value={busqueda}
             onChange={(e) => setBusqueda(e.currentTarget.value)}
             disabled={!idAlmacen}
-            className="flex-1 min-w-[200px]"
             radius="lg"
+            size="sm"
             classNames={{
               input:
-                "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             }}
           />
+        </div>
 
-          {/* Filtros Dinámicos (solo si hay movimientos) */}
-          {movimientos.length > 0 && (
-            <div className="flex gap-4 w-full xl:w-auto animate-fade-in">
+        {/* Filtros Dinámicos */}
+        {movimientos.length > 0 && (
+          <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto animate-fade-in">
+            <div className="w-full md:w-56">
               <Select
-                placeholder="Filtrar Producto"
+                label="filtrar producto"
+                placeholder="Todos..."
                 data={productosUnicos}
                 value={filtroProducto}
                 onChange={(val) => {
@@ -345,35 +357,40 @@ export const KardexProductosPage = () => {
                 }}
                 searchable
                 clearable
-                className="flex-1 xl:w-60"
                 radius="lg"
+                size="sm"
                 classNames={{
                   input:
-                    "bg-zinc-950/50 border-zinc-700 text-white placeholder:text-zinc-500",
+                    "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+                  label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                   dropdown: "bg-zinc-900 border-zinc-800",
                   option: "text-zinc-300 hover:bg-zinc-800",
                 }}
               />
+            </div>
+            <div className="w-full md:w-44">
               <Select
-                placeholder="Filtrar Lote"
+                label="filtrar lote"
+                placeholder="Todos..."
                 data={lotesUnicos}
                 value={filtroLote}
                 onChange={setFiltroLote}
                 searchable
                 clearable
                 disabled={!filtroProducto && lotesUnicos.length > 50}
-                className="flex-1 xl:w-44"
                 radius="lg"
+                size="sm"
                 classNames={{
                   input:
-                    "bg-zinc-950/50 border-zinc-700 text-white placeholder:text-zinc-500",
+                    "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500",
+                  label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                   dropdown: "bg-zinc-900 border-zinc-800",
                   option: "text-zinc-300 hover:bg-zinc-800",
                 }}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Tabla / Estado Vacío */}

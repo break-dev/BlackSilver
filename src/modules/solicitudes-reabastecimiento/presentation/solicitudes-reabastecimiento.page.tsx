@@ -205,28 +205,30 @@ export const SolicitudesReabastecimientoPage = () => {
     [verDetalles, openDet],
   );
 
-  const inputClasses = {
-    input:
-      "bg-zinc-900/40 backdrop-blur-md border-zinc-800/50 focus:border-indigo-500/50 transition-all text-zinc-100 placeholder:text-zinc-600 shadow-inner",
-    label: "text-zinc-400 font-medium mb-1.5 text-xs uppercase tracking-wider",
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in text-zinc-100 p-2">
+    <div className="space-y-8 animate-fade-in text-zinc-100">
       {/* Container de Filtros */}
-      <div className="bg-zinc-900/30 backdrop-blur-xl border border-zinc-800/50 p-6 rounded-2xl shadow-xl">
-        <div className="flex flex-col lg:flex-row justify-between gap-6 items-end">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-1 w-full">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end">
+        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
+          <div className="w-full sm:w-40">
             <Select
               label="Mes"
               placeholder="Elegir mes"
               data={MESES}
               value={mes}
               onChange={(val) => setMes(val || "1")}
-              classNames={inputClasses}
               radius="lg"
-              size="xs"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
             />
+          </div>
+          <div className="w-full sm:w-32">
             <Select
               label="Año"
               placeholder="Elegir año"
@@ -235,38 +237,50 @@ export const SolicitudesReabastecimientoPage = () => {
               onChange={(val) =>
                 setYearcito(val || String(new Date().getFullYear()))
               }
-              classNames={inputClasses}
               radius="lg"
-              size="xs"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
             />
+          </div>
+          <div className="flex-1 min-w-[200px] w-full">
             <TextInput
-              label="Búsqueda rápida"
+              label="Búsqueda"
               placeholder="Código o solicitante..."
               leftSection={
                 <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
               }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              classNames={inputClasses}
               radius="lg"
-              size="xs"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              }}
             />
           </div>
-
-          <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            onClick={openReg}
-            radius="xl"
-            size="xs"
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all w-full lg:w-auto px-8"
-          >
-            Nueva Solicitud
-          </Button>
         </div>
+
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={openReg}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0 h-[38px]"
+        >
+          Nueva Solicitud
+        </Button>
       </div>
 
       {/* Tabla de Resultados */}
-      <div className="bg-zinc-950/20 border border-zinc-800/30 rounded-2xl overflow-hidden shadow-2xl transition-all">
+      <div className="transition-all">
         {filteredRecords.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center p-20 text-zinc-500 gap-4">
             <div className="bg-zinc-900/50 p-6 rounded-full border border-zinc-800 animate-pulse">

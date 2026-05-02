@@ -1,4 +1,13 @@
-import { Badge, Button, TextInput, Tooltip, Group, Skeleton, Stack, ScrollArea } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  TextInput,
+  Tooltip,
+  Group,
+  Skeleton,
+  Stack,
+  ScrollArea,
+} from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -39,9 +48,9 @@ export const CategoriasPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header — Buscador y Nueva Categoría */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
         <TextInput
-          label="Buscar categoría"
+          label="Buscar Categoría"
           placeholder="Buscar categorías por nombre..."
           leftSection={
             <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
@@ -52,7 +61,7 @@ export const CategoriasPage = () => {
           radius="lg"
           size="sm"
           classNames={{
-            label: "text-zinc-400 mb-1 font-medium",
+            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
@@ -76,20 +85,20 @@ export const CategoriasPage = () => {
               className="h-44 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 p-4"
             >
               <Stack gap="xs">
-                 <Group justify="space-between">
-                    <Skeleton h={14} w={80} radius="sm" />
-                    <Skeleton h={16} w={40} radius="sm" />
-                 </Group>
-                 <Skeleton h={18} w="90%" radius="sm" mt={10} />
-                 <Skeleton h={12} w="100%" radius="sm" />
-                 <Skeleton h={12} w="60%" radius="sm" />
-                 
-                 <div className="mt-auto pt-2 border-t border-zinc-800/50">
-                    <Group justify="space-between">
-                       <Skeleton h={10} w={60} radius="sm" />
-                       <Skeleton h={16} w={30} radius="sm" />
-                    </Group>
-                 </div>
+                <Group justify="space-between">
+                  <Skeleton h={14} w={80} radius="sm" />
+                  <Skeleton h={16} w={40} radius="sm" />
+                </Group>
+                <Skeleton h={18} w="90%" radius="sm" mt={10} />
+                <Skeleton h={12} w="100%" radius="sm" />
+                <Skeleton h={12} w="60%" radius="sm" />
+
+                <div className="mt-auto pt-2 border-t border-zinc-800/50">
+                  <Group justify="space-between">
+                    <Skeleton h={10} w={60} radius="sm" />
+                    <Skeleton h={16} w={30} radius="sm" />
+                  </Group>
+                </div>
               </Stack>
             </div>
           ))}
@@ -170,9 +179,11 @@ export const CategoriasPage = () => {
                         className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider 
                         block leading-none mb-1.5"
                       >
-                        Destinos de Consumo ({cat.ids_categorias_consumidoras
+                        Destinos de Consumo (
+                        {cat.ids_categorias_consumidoras
                           ?.split(",")
-                          .filter(Boolean).length || 0})
+                          .filter(Boolean).length || 0}
+                        )
                       </span>
                       {cat.nombres_consumidoras ? (
                         <ScrollArea

@@ -40,51 +40,58 @@ export const CotizacionesFilter = ({
   onCambiarPeriodo,
 }: CotizacionesFilterProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end w-full animate-fade-in">
       {/* Mes */}
-      <Select
-        label="Mes de consulta"
-        placeholder="Mes"
-        leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
-        data={MESES}
-        value={String(mes)}
-        onChange={(val) => val && onCambiarPeriodo(Number(val), year)}
-        radius="lg"
-        size="sm"
-        classNames={inputClasses}
-      />
+      <div className="w-full sm:w-44">
+        <Select
+          label="Mes"
+          placeholder="Mes"
+          leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
+          data={MESES}
+          value={String(mes)}
+          onChange={(val) => val && onCambiarPeriodo(Number(val), year)}
+          radius="lg"
+          size="sm"
+          classNames={inputClasses}
+        />
+      </div>
 
       {/* Año */}
-      <Select
-        label="Año"
-        placeholder="Año"
-        data={YEARS}
-        value={String(year)}
-        onChange={(val) => val && onCambiarPeriodo(mes, Number(val))}
-        radius="lg"
-        size="sm"
-        classNames={inputClasses}
-      />
+      <div className="w-full sm:w-32">
+        <Select
+          label="Año"
+          placeholder="Año"
+          data={YEARS}
+          value={String(year)}
+          onChange={(val) => val && onCambiarPeriodo(mes, Number(val))}
+          radius="lg"
+          size="sm"
+          classNames={inputClasses}
+        />
+      </div>
 
       {/* Búsqueda */}
-      <TextInput
-        label="Buscar comparativo"
-        placeholder="Proveedor o correlativo..."
-        leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />}
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.currentTarget.value)}
-        radius="lg"
-        size="sm"
-        classNames={inputClasses}
-        className="md:col-span-3"
-      />
+      <div className="flex-1 min-w-[200px] w-full">
+        <TextInput
+          label="Búsqueda"
+          placeholder="Proveedor o correlativo..."
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
+          }
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.currentTarget.value)}
+          radius="lg"
+          size="sm"
+          classNames={inputClasses}
+        />
+      </div>
 
       <Button
         leftSection={<PlusIcon className="w-5 h-5" />}
         onClick={openCreate}
         radius="lg"
         size="sm"
-        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold shrink-0"
       >
         Nueva Cotización
       </Button>

@@ -273,12 +273,13 @@ export const RequerimientosAlmacenAtencionPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end lg:items-center">
-        <div className="flex flex-wrap gap-4 flex-1 w-full lg:w-auto">
+      <div className="flex flex-col lg:flex-row justify-between gap-3 items-end">
+        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
           {/* Almacén Selector */}
           <div className="w-full sm:w-72">
             <Select
-              placeholder="Seleccione Almacén a Atender"
+              label="Almacén de atención"
+              placeholder="Seleccionar almacén..."
               leftSection={
                 loadingAlmacenes ? (
                   <Loader size="xs" />
@@ -293,9 +294,11 @@ export const RequerimientosAlmacenAtencionPage = () => {
               value={idAlmacen}
               onChange={setIdAlmacen}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
@@ -305,6 +308,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           {/* Mes Selector */}
           <div className="w-full sm:w-40">
             <Select
+              label="Mes"
               placeholder="Mes"
               leftSection={
                 <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
@@ -313,9 +317,11 @@ export const RequerimientosAlmacenAtencionPage = () => {
               value={mes}
               onChange={(val) => setMes(val || "")}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
@@ -325,6 +331,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           {/* Año Selector */}
           <div className="w-full sm:w-32">
             <Select
+              label="Año"
               placeholder="Año"
               data={Array.from({ length: 5 }, (_, i) => ({
                 value: String(dayjs().year() - i),
@@ -333,40 +340,46 @@ export const RequerimientosAlmacenAtencionPage = () => {
               value={yearcito}
               onChange={(val) => setYearcito(val || "")}
               radius="lg"
+              size="sm"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
                 dropdown: "bg-zinc-900 border-zinc-800",
                 option: "text-zinc-300 hover:bg-zinc-800",
               }}
             />
           </div>
 
-          <TextInput
-            placeholder="Buscar por código, solicitante o mina..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => {
-              setBusqueda(e.currentTarget.value);
-            }}
-            disabled={!idAlmacen}
-            className="flex-1 min-w-[200px]"
-            radius="lg"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            }}
-          />
+          <div className="flex-1 min-w-[200px] w-full">
+            <TextInput
+              label="Búsqueda"
+              placeholder="Buscar por código, solicitante o mina..."
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+              }
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.currentTarget.value);
+              }}
+              disabled={!idAlmacen}
+              radius="lg"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              }}
+            />
+          </div>
 
           <Button
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openReg}
-            radius="xl"
-            size="xs"
+            radius="lg"
+            size="sm"
             disabled={!idAlmacen}
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all w-full lg:w-auto px-8"
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0"
           >
             Nuevo Requerimiento
           </Button>
