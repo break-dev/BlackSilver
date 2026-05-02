@@ -8,6 +8,8 @@ export interface RES_OCTransferencia {
   id_transferencia: number;
   id_orden_compra_recepcion: number;
   //
+  correlativo: string;
+  //
   id_almacen_destino: number;
   almacen_destino: string;
   es_para_un_almacen_principal: boolean;

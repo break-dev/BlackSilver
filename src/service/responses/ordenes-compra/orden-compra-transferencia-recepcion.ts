@@ -26,6 +26,8 @@ export interface RES_OCTransRecepcionDetalle {
   id_orden_compra_transferencia_recepcion: number;
   id_orden_compra_transferencia_detalle: number;
   //
+  numero_correlativo: number;
+  //
   id_producto: number;
   producto: string;
   //
