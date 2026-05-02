@@ -23,15 +23,15 @@ import {
   DocumentDuplicateIcon,
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
 import type {
   DTO_CotizacionRequest,
   DTO_CotizacionDetalle,
   DTO_ProductoComparativo,
-} from "../../service/cotizaciones.requests";
-import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../shared/enums/_generic/periodo";
-import type { RES_Almacen } from "../../../../service/responses/almacen";
+} from "../../../../../service/cotizaciones.requests";
+import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
+import type { RES_Almacen } from "../../../../../../../service/responses/almacen";
 
 interface CeldaDetalleProps {
   det?: DTO_CotizacionDetalle;
@@ -209,9 +209,7 @@ export const CeldaDetalle = ({
       <div className="absolute top-1.5 right-2 z-20">
         <Tooltip
           label={
-            det.no_cotiza
-              ? "Cotizar este producto"
-              : "No cotizar este producto"
+            det.no_cotiza ? "Cotizar este producto" : "No cotizar este producto"
           }
           position="left"
         >
@@ -230,8 +228,11 @@ export const CeldaDetalle = ({
       {/* Campos editables */}
       <Stack
         gap="sm"
-        className={`w-full pt-6 transition-all duration-300 ${det.no_cotiza ? "opacity-20 pointer-events-none grayscale blur-[0.5px]" : ""
-          }`}
+        className={`w-full pt-6 transition-all duration-300 ${
+          det.no_cotiza
+            ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
+            : ""
+        }`}
       >
         {/* Fila 1: Unidad y Cantidad */}
         <Group grow align="flex-end" gap="xs">
@@ -240,12 +241,7 @@ export const CeldaDetalle = ({
             data={unidadesMedida}
             value={String(det.id_unidad_medida)}
             onChange={(val) =>
-              onUpdateDetail(
-                cotIdx,
-                rowIndex,
-                "id_unidad_medida",
-                Number(val),
-              )
+              onUpdateDetail(cotIdx, rowIndex, "id_unidad_medida", Number(val))
             }
             size="xs"
             radius="lg"
@@ -298,12 +294,7 @@ export const CeldaDetalle = ({
             }
             value={det.precio_unitario}
             onChange={(val) =>
-              onUpdateDetail(
-                cotIdx,
-                rowIndex,
-                "precio_unitario",
-                Number(val),
-              )
+              onUpdateDetail(cotIdx, rowIndex, "precio_unitario", Number(val))
             }
             min={0}
             size="xs"
@@ -315,7 +306,12 @@ export const CeldaDetalle = ({
         </Group>
 
         {/* Totales y Botones de Popover */}
-        <Group justify="space-between" align="center" className="mt-1" wrap="nowrap">
+        <Group
+          justify="space-between"
+          align="center"
+          className="mt-1"
+          wrap="nowrap"
+        >
           {/* Tarjetas de Resultados Financieros */}
           <Group grow wrap="nowrap" gap="xs" className="flex-1 overflow-hidden">
             <Stack
@@ -379,8 +375,17 @@ export const CeldaDetalle = ({
             {/* Popover de Logística */}
             <Popover width={320} position="bottom" withArrow shadow="md">
               <Popover.Target>
-                <Tooltip label="Configurar (Almacén, Despacho, Entrega)" withArrow>
-                  <Indicator color="red" size={8} offset={2} zIndex={10} disabled={!esRecojo && det.tiempo_entrega === 0}>
+                <Tooltip
+                  label="Configurar (Almacén, Despacho, Entrega)"
+                  withArrow
+                >
+                  <Indicator
+                    color="red"
+                    size={8}
+                    offset={2}
+                    zIndex={10}
+                    disabled={!esRecojo && det.tiempo_entrega === 0}
+                  >
                     <ActionIcon
                       variant="light"
                       color="cyan"
@@ -432,7 +437,9 @@ export const CeldaDetalle = ({
                   <Select
                     label="Tipo de Despacho"
                     withAsterisk
-                    leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                    leftSection={
+                      <TruckIcon className="w-4 h-4 text-zinc-500" />
+                    }
                     data={[
                       { value: TipoDespachoCompra.Envio, label: "Envío" },
                       { value: TipoDespachoCompra.Recojo, label: "Recojo" },
@@ -454,7 +461,11 @@ export const CeldaDetalle = ({
                   <div>
                     <Group gap={4} wrap="nowrap" mb={6}>
                       <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
-                      <Text size="xs" fw={700} className="text-zinc-300 tracking-wider">
+                      <Text
+                        size="xs"
+                        fw={700}
+                        className="text-zinc-300 tracking-wider"
+                      >
                         Entrega
                       </Text>
                     </Group>
@@ -498,7 +509,9 @@ export const CeldaDetalle = ({
                       label="Lugar de Recojo"
                       placeholder="Dirección, local, etc..."
                       withAsterisk
-                      leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+                      leftSection={
+                        <MapPinIcon className="w-4 h-4 text-zinc-500" />
+                      }
                       value={det.lugar_recojo || ""}
                       onChange={(e) =>
                         onUpdateDetail(
@@ -516,7 +529,13 @@ export const CeldaDetalle = ({
 
                   {det.tiempo_entrega_dias > 0 && (
                     <div className="mt-2 flex justify-center">
-                      <Badge variant="light" color="cyan" size="xs" radius="sm" className="font-bold border border-cyan-500/20">
+                      <Badge
+                        variant="light"
+                        color="cyan"
+                        size="xs"
+                        radius="sm"
+                        className="font-bold border border-cyan-500/20"
+                      >
                         ≈ {det.tiempo_entrega_dias} día
                         {det.tiempo_entrega_dias !== 1 ? "s" : ""} estimados
                       </Badge>
@@ -530,7 +549,13 @@ export const CeldaDetalle = ({
             <Popover width={300} position="bottom" withArrow shadow="md">
               <Popover.Target>
                 <Tooltip label="Comentario (Opcional)" withArrow>
-                  <Indicator color="yellow" size={8} offset={2} zIndex={10} disabled={!det.comentario}>
+                  <Indicator
+                    color="yellow"
+                    size={8}
+                    offset={2}
+                    zIndex={10}
+                    disabled={!det.comentario}
+                  >
                     <ActionIcon
                       variant="light"
                       color="gray"
@@ -538,7 +563,9 @@ export const CeldaDetalle = ({
                       size="md"
                       className="border border-zinc-500/20"
                     >
-                      <ChatBubbleBottomCenterTextIcon className={`w-4 h-4 ${det.comentario ? "text-yellow-500" : "text-zinc-400"}`} />
+                      <ChatBubbleBottomCenterTextIcon
+                        className={`w-4 h-4 ${det.comentario ? "text-yellow-500" : "text-zinc-400"}`}
+                      />
                     </ActionIcon>
                   </Indicator>
                 </Tooltip>

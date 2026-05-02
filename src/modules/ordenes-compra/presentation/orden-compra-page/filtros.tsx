@@ -1,5 +1,8 @@
 import { Select, TextInput } from "@mantine/core";
-import { Calendar, Search } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { MESES } from "../../../../shared/variables/meses";
 
@@ -21,13 +24,13 @@ export const Filtros = ({
   setSearch,
 }: FiltrosProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end w-full animate-fade-in">
+    <div className="flex flex-col sm:flex-row gap-4 items-end w-full animate-fade-in">
       {/* Periodo */}
       <div className="w-full sm:w-44">
         <Select
           label="Mes"
           placeholder="Mes"
-          leftSection={<Calendar size={16} className="text-zinc-500" />}
+          leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-400" />}
           data={MESES}
           value={mes}
           onChange={(val) => setMes(val || "")}
@@ -35,7 +38,8 @@ export const Filtros = ({
           size="sm"
           allowDeselect={false}
           classNames={{
-            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
             label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             dropdown: "bg-zinc-900 border-zinc-800",
             option: "text-zinc-300 hover:bg-zinc-800",
@@ -57,7 +61,8 @@ export const Filtros = ({
           size="sm"
           allowDeselect={false}
           classNames={{
-            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
             label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             dropdown: "bg-zinc-900 border-zinc-800",
             option: "text-zinc-300 hover:bg-zinc-800",
@@ -70,13 +75,16 @@ export const Filtros = ({
         <TextInput
           label="Búsqueda"
           placeholder="Filtrar por código, razón social o cotización..."
-          leftSection={<Search size={16} className="text-zinc-500" />}
+          leftSection={
+            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+          }
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           radius="lg"
           size="sm"
           classNames={{
-            input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
             label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
           }}
         />

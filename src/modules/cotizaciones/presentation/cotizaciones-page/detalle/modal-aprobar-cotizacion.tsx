@@ -9,15 +9,15 @@ import {
   Badge,
 } from "@mantine/core";
 import { CheckBadgeIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
-import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
-import { CotizacionesService } from "../../service/cotizaciones.service";
-import { useNotify } from "../../../../hooks/useNotify";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { CotizacionesService } from "../../../service/cotizaciones.service";
+import { useNotify } from "../../../../../hooks/useNotify";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
 
 import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
-} from "../../../../service/responses/cotizaciones/cotizacion";
+} from "../../../../../service/responses/cotizaciones/cotizacion";
 
 interface ModalAprobarCotizacionProps {
   opened: boolean;
@@ -105,7 +105,9 @@ export const ModalAprobarCotizacion = ({
       );
 
       if (res.success && res.data) {
-        notifySuccess(`Orden de Compra ${res.data.correlativo} generada correctamente.`);
+        notifySuccess(
+          `Orden de Compra ${res.data.correlativo} generada correctamente.`,
+        );
 
         const ocId = res.data.id_orden_compra;
 

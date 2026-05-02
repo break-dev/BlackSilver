@@ -1,0 +1,296 @@
+import { useState } from "react";
+import { Stack } from "@mantine/core";
+import { TablaDetalleResumen } from "../detalle/tabla-detalle-resumen";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { Estado_Cotizacion } from "../../../../../shared/enums/cotizacion/cotizacion";
+import { usePrint } from "../../../../../hooks/usePrint";
+import { CotizacionPDF } from "../../cotizacion-pdf";
+import { ModalAprobarCotizacion } from "../detalle/modal-aprobar-cotizacion";
+import { CotizacionesService } from "../../../service/cotizaciones.service";
+import { OrdenCompraPDF } from "../../../../../presentation/utils/orden-compra-pdf";
+import { useNotify } from "../../../../../hooks/useNotify";
+import type {
+  RES_Comparativo,
+  RES_Cotizacion,
+  RES_CotizacionDetalle,
+} from "../../../../../service/responses/cotizaciones/cotizacion";
+
+// Components
+import { EmptyState } from "./components/EmptyState";
+import { ComparativoCard } from "./components/ComparativoCard";
+import { ActionIcon, Group, Tooltip } from "@mantine/core";
+import { ListBulletIcon, TableCellsIcon } from "@heroicons/react/24/outline";
+
+interface ListadoComparativosProps {
+  comparativos: RES_Comparativo[];
+  busqueda: string;
+  onUpdateLocal?: (
+    id: number,
+    nuevoEstado: Estado_Cotizacion,
+    idsDetallesAprobados?: number[],
+    id_orden_compra?: number,
+  ) => void;
+}
+
+// ─── Colores y labels por estado ──────────────────────────────────────────────
+const COLOR_BY_STATE: Record<
+  string,
+  { color: string; label: string; variant: string }
+> = {
+  [Estado_Cotizacion.Generada]: {
+    color: "indigo",
+    label: "Generada",
+    variant: "light",
+  },
+  [Estado_Cotizacion.Aprobada]: {
+    color: "teal",
+    label: "Aprobada",
+    variant: "filled",
+  },
+};
+
+export const ListadoComparativos = ({
+  comparativos,
+  busqueda,
+  onUpdateLocal,
+}: ListadoComparativosProps) => {
+  const { print, prepare } = usePrint();
+  const { notify } = useNotify();
+  const [printingOCId, setPrintingOCId] = useState<number | null>(null);
+  const [expandedComps, setExpandedComps] = useState<Record<number, boolean>>(
+    {},
+  );
+  const [expandedCots, setExpandedCots] = useState<Record<number, boolean>>({});
+
+  const [modalComparativoOpened, setModalComparativoOpened] = useState(false);
+  const [selectedCompId, setSelectedCompId] = useState<number | null>(null);
+  const [resumenDetalleIsCollapsed, setResumenDetalleIsCollapsed] =
+    useState(false);
+
+  const [modalAprobarOpened, setModalAprobarOpened] = useState(false);
+  const [selectedCotIdParaAprobar, setSelectedCotIdParaAprobar] = useState<
+    number | null
+  >(null);
+
+  const toggleComp = (id: number) =>
+    setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const toggleCot = (id: number) =>
+    setExpandedCots((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleVerComparativo = (id: number) => {
+    setSelectedCompId(id);
+    setModalComparativoOpened(true);
+  };
+
+  const handlePrintCotizacion = (cot: RES_Cotizacion) => {
+    const nombresEmpresas = cot.empresas.map((e) => e.razon_social);
+    const target = `Cotizacion_${cot.id_cotizacion}_${Date.now()}`;
+    prepare(target);
+
+    print(
+      <CotizacionPDF
+        cotizaciones={[
+          {
+            cotizacion: cot,
+            detalles: cot.detalles,
+            empresas: nombresEmpresas,
+          },
+        ]}
+      />,
+      {
+        documentTitle: `Cotización - ${cot.correlativo}`,
+        target,
+      },
+    );
+  };
+
+  const handleApprove = (id: number) => {
+    setSelectedCotIdParaAprobar(id);
+    setModalAprobarOpened(true);
+  };
+
+  const handleSuccessAprobacion = (
+    id: number,
+    _cotizacionModificada: RES_Cotizacion,
+    detallesAprobados: RES_CotizacionDetalle[],
+    id_orden_compra?: number,
+  ) => {
+    onUpdateLocal?.(
+      id,
+      Estado_Cotizacion.Aprobada,
+      detallesAprobados.map((d) => d.id_cotizacion_detalle),
+      id_orden_compra,
+    );
+  };
+
+  const handlePrintOC = async (id_orden_compra: number) => {
+    const target = `OC_${id_orden_compra}_${Date.now()}`;
+    prepare(target);
+    setPrintingOCId(id_orden_compra);
+
+    try {
+      const response =
+        await CotizacionesService.get_orden_compra(id_orden_compra);
+      if (response.success && response.data) {
+        const ordenData = response.data;
+        print(
+          <OrdenCompraPDF
+            orden={ordenData}
+            detalles={ordenData.detalles || []}
+          />,
+          {
+            documentTitle: `OC - ${ordenData.correlativo}`,
+            target,
+          },
+        );
+      } else {
+        notify({
+          type: "error",
+          content: "No se pudo cargar la Orden de Compra.",
+        });
+      }
+    } catch {
+      notify({ type: "error", content: "Error al generar el PDF de la OC." });
+    } finally {
+      setPrintingOCId(null);
+    }
+  };
+
+  // Filtrado por búsqueda sobre la estructura anidada
+  const comparativosFiltrados = comparativos
+    .slice()
+    .sort((a, b) => b.id_comparativo - a.id_comparativo)
+    .filter((comp) => {
+      if (!busqueda) return true;
+      const term = busqueda.toLowerCase();
+      return (
+        comp.id_comparativo.toString().includes(term) ||
+        comp.cotizaciones.some(
+          (c) =>
+            c.correlativo.toLowerCase().includes(term) ||
+            c.proveedor.toLowerCase().includes(term),
+        )
+      );
+    });
+
+  if (comparativosFiltrados.length === 0) {
+    return <EmptyState busqueda={busqueda} />;
+  }
+
+  return (
+    <Stack gap="lg">
+      {comparativosFiltrados.map((comp) => (
+        <ComparativoCard
+          key={comp.id_comparativo}
+          comp={comp}
+          isExpanded={expandedComps[comp.id_comparativo] ?? false}
+          onToggle={() => toggleComp(comp.id_comparativo)}
+          onVerComparativo={handleVerComparativo}
+          expandedCots={expandedCots}
+          onToggleCot={toggleCot}
+          onPrintCotizacion={handlePrintCotizacion}
+          onPrintOC={handlePrintOC}
+          onApprove={handleApprove}
+          printingOCId={printingOCId}
+          stateConfigs={COLOR_BY_STATE}
+        />
+      ))}
+
+      {/* MODAL DE COMPARATIVO MATRICIAL */}
+      <ModalEstandar
+        opened={modalComparativoOpened}
+        onClose={() => setModalComparativoOpened(false)}
+        close={() => setModalComparativoOpened(false)}
+        title="Comparativo de Cotizaciones"
+        size="95%"
+        rightSection={
+          <Group gap="xs" mr="xl">
+            <Tooltip
+              label={
+                resumenDetalleIsCollapsed
+                  ? "Ver Detalle Extendido"
+                  : "Ver Vista Resumida"
+              }
+              withArrow
+            >
+              <ActionIcon
+                variant="light"
+                color={resumenDetalleIsCollapsed ? "cyan" : "indigo"}
+                size="lg"
+                radius="xl"
+                onClick={() =>
+                  setResumenDetalleIsCollapsed(!resumenDetalleIsCollapsed)
+                }
+                className="shadow-lg active:scale-95 transition-all border border-white/10"
+              >
+                {resumenDetalleIsCollapsed ? (
+                  <ListBulletIcon className="w-5 h-5" />
+                ) : (
+                  <TableCellsIcon className="w-5 h-5" />
+                )}
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        }
+      >
+        <div style={{ height: "70vh" }}>
+          {selectedCompId &&
+            (() => {
+              const compSeleccionado = comparativos.find(
+                (c) => c.id_comparativo === selectedCompId,
+              );
+              if (!compSeleccionado) return null;
+              const allDetalles = compSeleccionado.cotizaciones.flatMap(
+                (c) => c.detalles,
+              );
+              const allEmpresas = compSeleccionado.cotizaciones.flatMap(
+                (c) => c.empresas,
+              );
+              return (
+                <TablaDetalleResumen
+                  isCollapsed={resumenDetalleIsCollapsed}
+                  cotizaciones={compSeleccionado.cotizaciones}
+                  empresas={allEmpresas}
+                  detalles={allDetalles}
+                  onApprove={handleApprove}
+                  loadingApprove={null}
+                />
+              );
+            })()}
+        </div>
+      </ModalEstandar>
+
+      {/* Modal Aprobación Parcial y Orden de Compra */}
+      <ModalAprobarCotizacion
+        opened={modalAprobarOpened}
+        onClose={() => setModalAprobarOpened(false)}
+        cotizacion={
+          selectedCotIdParaAprobar
+            ? comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
+              null
+            : null
+        }
+        detalles={
+          selectedCotIdParaAprobar
+            ? (comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.detalles ?? [])
+            : []
+        }
+        empresas={
+          selectedCotIdParaAprobar
+            ? (comparativos
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.empresas ?? [])
+            : []
+        }
+        onSuccess={handleSuccessAprobacion}
+      />
+    </Stack>
+  );
+};

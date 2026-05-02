@@ -26,15 +26,15 @@ import {
   BuildingStorefrontIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
-import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
-import type { DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
-import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
-import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Almacen } from "../../../../service/responses/almacen";
-import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../shared/enums/_generic/periodo";
-import { useNotify } from "../../../../hooks/useNotify";
+import { CustomDatePicker } from "../../../../../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
+import type { DTO_CotizacionRequest } from "../../../../../service/cotizaciones.requests";
+import { MetodoPago } from "../../../../../../../shared/enums/_generic/metodo-pago";
+import { Estado_Cotizacion } from "../../../../../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Almacen } from "../../../../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
+import { useNotify } from "../../../../../../../hooks/useNotify";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -182,9 +182,7 @@ export const CabeceraCotizacion = ({
               <IdentificationIcon className="w-4 h-4 text-zinc-500" />
             }
             value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
-            onChange={(val) =>
-              onUpdateHeader(idx, "id_proveedor", Number(val))
-            }
+            onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
             searchable
             size="xs"
             radius="lg"
@@ -258,11 +256,15 @@ export const CabeceraCotizacion = ({
           hidePickedOptions
           maxDropdownHeight={200}
         />
-
       </Stack>
 
       {/* Resumen de Totales y Tax (Siempre visibles) */}
-      <Group justify="space-between" align="center" className="mt-2" wrap="nowrap">
+      <Group
+        justify="space-between"
+        align="center"
+        className="mt-2"
+        wrap="nowrap"
+      >
         <Group grow wrap="nowrap" gap="xs" className="flex-1 overflow-hidden">
           <Stack
             gap={0}
@@ -348,15 +350,25 @@ export const CabeceraCotizacion = ({
             </Popover.Target>
             <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
               <Stack gap="sm">
-                <Text size="sm" fw={800} className="text-white mb-1 tracking-wider">
+                <Text
+                  size="sm"
+                  fw={800}
+                  className="text-white mb-1 tracking-wider"
+                >
                   Cambios Globales
                 </Text>
                 <Select
                   label="Almacén de Recepción"
-                  placeholder={loadingProveedores ? "Cargando almacenes..." : "Seleccione almacén..."}
+                  placeholder={
+                    loadingProveedores
+                      ? "Cargando almacenes..."
+                      : "Seleccione almacén..."
+                  }
                   disabled={loadingProveedores}
                   withAsterisk
-                  leftSection={<BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />}
+                  leftSection={
+                    <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+                  }
                   data={almacenes.map((a) => ({
                     value: String(a.id_almacen),
                     label: a.es_principal ? `${a.nombre} ★` : a.nombre,
@@ -379,7 +391,9 @@ export const CabeceraCotizacion = ({
                     { value: TipoDespachoCompra.Recojo, label: "Recojo" },
                   ]}
                   value={globalDespacho}
-                  onChange={(val) => setGlobalDespacho(val as TipoDespachoCompra)}
+                  onChange={(val) =>
+                    setGlobalDespacho(val as TipoDespachoCompra)
+                  }
                   size="xs"
                   radius="lg"
                   classNames={inputStyles}
@@ -389,7 +403,11 @@ export const CabeceraCotizacion = ({
                 <div>
                   <Group gap={4} wrap="nowrap" mb={6}>
                     <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
-                    <Text size="xs" fw={700} className="text-zinc-300 tracking-wider">
+                    <Text
+                      size="xs"
+                      fw={700}
+                      className="text-zinc-300 tracking-wider"
+                    >
                       Entrega
                     </Text>
                   </Group>
@@ -413,18 +431,39 @@ export const CabeceraCotizacion = ({
                     />
                   </Group>
                   <div className="mt-2 flex justify-center">
-                    <Badge variant="light" color="cyan" size="xs" radius="sm" className="font-bold border border-cyan-500/20">
-                      ≈ {globalTiempo * (
-                        globalPeriodo === Periodo.Diario ? 1 :
-                        globalPeriodo === Periodo.Semanal ? 7 :
-                        globalPeriodo === Periodo.Mensual ? 30 :
-                        globalPeriodo === Periodo.Anual ? 365 : 0
-                      )} día{(globalTiempo * (
-                        globalPeriodo === Periodo.Diario ? 1 :
-                        globalPeriodo === Periodo.Semanal ? 7 :
-                        globalPeriodo === Periodo.Mensual ? 30 :
-                        globalPeriodo === Periodo.Anual ? 365 : 0
-                      )) !== 1 ? "s" : ""} estimados
+                    <Badge
+                      variant="light"
+                      color="cyan"
+                      size="xs"
+                      radius="sm"
+                      className="font-bold border border-cyan-500/20"
+                    >
+                      ≈{" "}
+                      {globalTiempo *
+                        (globalPeriodo === Periodo.Diario
+                          ? 1
+                          : globalPeriodo === Periodo.Semanal
+                            ? 7
+                            : globalPeriodo === Periodo.Mensual
+                              ? 30
+                              : globalPeriodo === Periodo.Anual
+                                ? 365
+                                : 0)}{" "}
+                      día
+                      {globalTiempo *
+                        (globalPeriodo === Periodo.Diario
+                          ? 1
+                          : globalPeriodo === Periodo.Semanal
+                            ? 7
+                            : globalPeriodo === Periodo.Mensual
+                              ? 30
+                              : globalPeriodo === Periodo.Anual
+                                ? 365
+                                : 0) !==
+                      1
+                        ? "s"
+                        : ""}{" "}
+                      estimados
                     </Badge>
                   </div>
                 </div>
@@ -539,7 +578,9 @@ export const CabeceraCotizacion = ({
                   <NumberInput
                     label="Flete (Opcional)"
                     placeholder="0.00"
-                    leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                    leftSection={
+                      <TruckIcon className="w-4 h-4 text-zinc-500" />
+                    }
                     value={cot.costo_flete ?? 0}
                     onChange={(val) =>
                       onUpdateHeader(idx, "costo_flete", Number(val))
@@ -568,7 +609,12 @@ export const CabeceraCotizacion = ({
                   />
                 </Group>
 
-                <Group grow align="flex-start" gap="md" className="mt-2 pt-4 border-t border-zinc-800/50">
+                <Group
+                  grow
+                  align="flex-start"
+                  gap="md"
+                  className="mt-2 pt-4 border-t border-zinc-800/50"
+                >
                   <Stack gap={2}>
                     <Text
                       size="xs"
@@ -580,7 +626,11 @@ export const CabeceraCotizacion = ({
                     <Switch
                       checked={cot.incluye_igv}
                       onChange={(e) =>
-                        onUpdateHeader(idx, "incluye_igv", e.currentTarget.checked)
+                        onUpdateHeader(
+                          idx,
+                          "incluye_igv",
+                          e.currentTarget.checked,
+                        )
                       }
                       size="xs"
                       color="indigo"
@@ -612,7 +662,6 @@ export const CabeceraCotizacion = ({
           </Popover>
         </Group>
       </Group>
-
     </Stack>
   );
 };

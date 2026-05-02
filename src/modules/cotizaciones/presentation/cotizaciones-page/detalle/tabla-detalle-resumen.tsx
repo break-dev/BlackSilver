@@ -5,7 +5,7 @@ import { CeldaDetalleItem } from "./celda-detalle-item";
 import type {
   RES_Cotizacion,
   RES_CotizacionDetalle,
-} from "../../../../service/responses/cotizaciones/cotizacion";
+} from "../../../../../service/responses/cotizaciones/cotizacion";
 
 interface TablaDetalleResumenProps {
   cotizaciones: RES_Cotizacion[];
@@ -50,8 +50,7 @@ export const TablaDetalleResumen = ({
     productosUnicos.forEach((prod) => {
       const relatedDetalles = detalles.filter(
         (d) =>
-          d.id_comparativo_detalle === prod.id &&
-          Number(d.precio_unitario) > 0,
+          d.id_comparativo_detalle === prod.id && Number(d.precio_unitario) > 0,
       );
       if (relatedDetalles.length > 0) {
         const minPrice = Math.min(

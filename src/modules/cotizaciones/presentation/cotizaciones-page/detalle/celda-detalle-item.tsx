@@ -1,12 +1,12 @@
 import { Group, Stack, Text, Badge, Divider } from "@mantine/core";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import {
   ChatBubbleBottomCenterTextIcon,
   BuildingStorefrontIcon,
   TruckIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
-import { Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion_Detalle } from "../../../../../shared/enums/cotizacion/cotizacion";
 
 interface CeldaDetalleItemProps {
   cantidad: number;
@@ -55,7 +55,12 @@ export const CeldaDetalleItem = ({
   if (noCotiza) {
     return (
       <div className="flex items-center justify-center p-4 bg-zinc-950/20 rounded-2xl border border-dashed border-red-900/40 min-h-[160px]">
-        <Badge variant="dot" color="red" size="sm" className="font-bold opacity-60">
+        <Badge
+          variant="dot"
+          color="red"
+          size="sm"
+          className="font-bold opacity-60"
+        >
           No Cotiza
         </Badge>
       </div>
@@ -77,17 +82,33 @@ export const CeldaDetalleItem = ({
       ? "bg-red-500/10 border-red-500/20"
       : "bg-zinc-800/30 border-zinc-700/50";
 
-  const textClass = isAprobado ? "text-teal-400" : isRechazado ? "text-red-400" : "text-zinc-400";
-  const amountClass = isAprobado ? "text-teal-100" : isRechazado ? "text-red-200 line-through" : "text-zinc-200";
+  const textClass = isAprobado
+    ? "text-teal-400"
+    : isRechazado
+      ? "text-red-400"
+      : "text-zinc-400";
+  const amountClass = isAprobado
+    ? "text-teal-100"
+    : isRechazado
+      ? "text-red-200 line-through"
+      : "text-zinc-200";
   const dividerColor = isAprobado ? "teal.9" : isRechazado ? "red.9" : "zinc.7";
   const badgeColor = isAprobado ? "teal" : isRechazado ? "red" : "gray";
 
-  const hasLogistica = almacenRecepcionista || tipoDespacho || (tiempoEntregaDias && tiempoEntregaDias > 0);
+  const hasLogistica =
+    almacenRecepcionista ||
+    tipoDespacho ||
+    (tiempoEntregaDias && tiempoEntregaDias > 0);
 
   return (
-    <Stack gap={6} className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-70 transition-all" : ""}`}>
+    <Stack
+      gap={6}
+      className={`w-full h-full min-h-[160px] justify-between p-1 ${isRechazado ? "opacity-70 transition-all" : ""}`}
+    >
       {/* Mini recibo de precio */}
-      <div className={`${bgClass} border rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between transition-colors relative`}>
+      <div
+        className={`${bgClass} border rounded-2xl p-3 shadow-inner flex-1 flex flex-col justify-between transition-colors relative`}
+      >
         {/* Badge estado */}
         {estado && (
           <Badge
@@ -104,17 +125,25 @@ export const CeldaDetalleItem = ({
         {(esFiscalizado || esPerecible) && (
           <Group gap={4} mb={4}>
             {esFiscalizado && (
-              <Badge size="xs" color="orange" variant="dot">Fiscalizado</Badge>
+              <Badge size="xs" color="orange" variant="dot">
+                Fiscalizado
+              </Badge>
             )}
             {esPerecible && (
-              <Badge size="xs" color="pink" variant="dot">Perecible</Badge>
+              <Badge size="xs" color="pink" variant="dot">
+                Perecible
+              </Badge>
             )}
           </Group>
         )}
 
         <Stack gap={5}>
           <Group justify="space-between" wrap="nowrap">
-            <Text size="10px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
+            <Text
+              size="10px"
+              fw={800}
+              className="text-zinc-500 uppercase tracking-tighter"
+            >
               Precio x {unidadMedida}
             </Text>
             <Text size="xs" fw={800} className="text-zinc-200">
@@ -123,7 +152,11 @@ export const CeldaDetalleItem = ({
           </Group>
 
           <Group justify="space-between" wrap="nowrap">
-            <Text size="10px" fw={800} className="text-zinc-500 uppercase tracking-tighter">
+            <Text
+              size="10px"
+              fw={800}
+              className="text-zinc-500 uppercase tracking-tighter"
+            >
               Total {unidadMedida}
             </Text>
             <Text size="xs" fw={800} className="text-zinc-200">
@@ -132,8 +165,14 @@ export const CeldaDetalleItem = ({
           </Group>
 
           {showConversion && (
-            <Text size="9px" c="dimmed" fw={700} className="italic opacity-70 mt-0.5 leading-none">
-              * 1 {unidadMedida} = {formatNumber(contenidoPorPresentacion)} {unidadMedidaBase}
+            <Text
+              size="9px"
+              c="dimmed"
+              fw={700}
+              className="italic opacity-70 mt-0.5 leading-none"
+            >
+              * 1 {unidadMedida} = {formatNumber(contenidoPorPresentacion)}{" "}
+              {unidadMedidaBase}
             </Text>
           )}
         </Stack>
@@ -158,10 +197,16 @@ export const CeldaDetalleItem = ({
             {almacenRecepcionista && (
               <Group gap={6} wrap="nowrap">
                 <BuildingStorefrontIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                <Text
+                  size="11px"
+                  fw={700}
+                  className="text-zinc-200 leading-tight"
+                >
                   {almacenRecepcionista}
                   {esAlmacenPrincipal && (
-                    <span className="text-indigo-400 ml-1 font-bold">(principal)</span>
+                    <span className="text-indigo-400 ml-1 font-bold">
+                      (principal)
+                    </span>
                   )}
                 </Text>
               </Group>
@@ -169,7 +214,11 @@ export const CeldaDetalleItem = ({
             {tipoDespacho && (
               <Group gap={6} wrap="nowrap">
                 <TruckIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                <Text
+                  size="11px"
+                  fw={700}
+                  className="text-zinc-200 leading-tight"
+                >
                   {tipoDespacho}
                   {lugarRecojo && (
                     <span className="text-zinc-400 ml-1">· {lugarRecojo}</span>
@@ -182,7 +231,11 @@ export const CeldaDetalleItem = ({
               tiempoEntregaDias > 0 && (
                 <Group gap={6} wrap="nowrap">
                   <ClockIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                  <Text size="11px" fw={700} className="text-zinc-200 leading-tight">
+                  <Text
+                    size="11px"
+                    fw={700}
+                    className="text-zinc-200 leading-tight"
+                  >
                     {tiempoEntregaDias === 1
                       ? "1 día"
                       : `${tiempoEntregaDias} días`}

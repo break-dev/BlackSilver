@@ -24,10 +24,7 @@ export const OrdenesCompraPage = () => {
   } = useOrdenesCompraPage();
 
   return (
-    <div
-      ref={containerRef}
-      className="space-y-8 p-4 animate-fade-in text-zinc-100"
-    >
+    <div ref={containerRef} className="space-y-8 animate-fade-in text-zinc-100">
       <Filtros {...filters} />
 
       <GroupByEmpresa

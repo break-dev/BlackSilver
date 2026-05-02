@@ -5,12 +5,12 @@ import type {
   DTO_CotizacionRequest,
   DTO_ProductoComparativo,
   DTO_CotizacionDetalle,
-} from "../../service/cotizaciones.requests";
-import { CabeceraCotizacion } from "./cabecera-cotizacion";
-import { CeldaDetalle } from "./celda-detalle";
-import type { RES_Almacen } from "../../../../service/responses/almacen";
-import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../shared/enums/_generic/periodo";
+} from "../../../../service/cotizaciones.requests";
+import { CabeceraCotizacion } from "./components/cabecera-cotizacion";
+import { CeldaDetalle } from "./components/celda-detalle";
+import type { RES_Almacen } from "../../../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../../shared/enums/_generic/periodo";
 
 interface ComparativoTablaProps {
   productos: (
@@ -223,12 +223,19 @@ export const ComparativoTabla = ({
                 >
                   {prod ? (
                     <div className="p-4 flex flex-col items-center justify-center gap-2">
-                      <Text size="xs" fw={700} className="text-zinc-200 text-center">
+                      <Text
+                        size="xs"
+                        fw={700}
+                        className="text-zinc-200 text-center"
+                      >
                         {prod.nombre}
                       </Text>
                       <div className="flex gap-2">
                         {onDuplicarFila && (
-                          <Tooltip label="Agregar otro destino" position="bottom">
+                          <Tooltip
+                            label="Agregar otro destino"
+                            position="bottom"
+                          >
                             <ActionIcon
                               variant="light"
                               color="cyan"

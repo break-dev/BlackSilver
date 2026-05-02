@@ -1,15 +1,19 @@
 import { forwardRef, useImperativeHandle } from "react";
 import { Group, Button } from "@mantine/core";
-import { useRegistroCotizacion } from "../hooks/useRegistroCotizacion";
-import { ComparativoTabla } from "./comparativo/comparativo-tabla";
-import { ModalSeleccionProductos } from "./modal-seleccion-productos";
-import { ModalAsistenteAprobacion } from "./comparativo/modal-asistente-aprobacion";
-import { usePrint } from "../../../hooks/usePrint";
-import { CotizacionPDF } from "./cotizacion-pdf";
+import {
+  useRegistroCotizacion,
+  type MaestrosState,
+} from "../../hooks/registro-cotizacion/useRegistroCotizacion";
+import { ComparativoTabla } from "./components/comparativo-tabla/comparativo-tabla";
+import { ModalSeleccionProductos } from "./components/modal-seleccion-productos";
+import { ModalAsistenteAprobacion } from "./components/modal-asistente-aprobacion";
+import { usePrint } from "../../../../hooks/usePrint";
+import { CotizacionPDF } from "../cotizacion-pdf";
 import type {
   RES_Comparativo,
   RES_CotizacionDetalle,
-} from "../../../service/responses/cotizaciones/cotizacion";
+} from "../../../../service/responses/cotizaciones/cotizacion";
+import type { DTO_RegistrarComparativo } from "../../service/cotizaciones.requests";
 
 interface RegistroCotizacionProps {
   onSuccess: (data: RES_Comparativo[]) => void;
@@ -23,17 +27,17 @@ export const RegistroCotizacion = forwardRef<
   RegistroCotizacionProps
 >(
   (
-    {
-      onSuccess,
-      onCancel,
-      modalProductosOpened,
-      setModalProductosOpened,
-    },
+    { onSuccess, onCancel, modalProductosOpened, setModalProductosOpened },
     ref,
   ) => {
     const { print } = usePrint();
 
-    const handleInternalSuccess = (data: RES_Comparativo[]) => {
+    const handleInternalSuccess = (
+      data: RES_Comparativo[],
+      _payload: DTO_RegistrarComparativo,
+      _maestros: MaestrosState,
+      printTarget?: string,
+    ) => {
       // El response ya viene con el formato completo del listado.
       // Generar PDF de cotizaciones directamente desde los datos del response.
       if (data && data.length > 0) {
@@ -47,6 +51,7 @@ export const RegistroCotizacion = forwardRef<
         if (cotizacionesPDFData.length > 0) {
           print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
             documentTitle: "Cotizaciones Generadas",
+            target: printTarget,
           });
         }
       }
@@ -176,5 +181,3 @@ export const RegistroCotizacion = forwardRef<
     );
   },
 );
-
-RegistroCotizacion.displayName = "RegistroCotizacion";

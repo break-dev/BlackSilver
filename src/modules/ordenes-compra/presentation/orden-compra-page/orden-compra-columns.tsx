@@ -49,15 +49,11 @@ export const getOrdenCompraColumns = ({
   },
   {
     accessor: "proveedor",
-    title: "Proveedor / Beneficiario",
+    title: "Proveedor",
     width: 250,
     render: (item) => (
       <Stack gap={2}>
-        <Text
-          size="sm"
-          fw={800}
-          className="text-zinc-100 truncate leading-tight"
-        >
+        <Text size="xs" fw={700} className="truncate leading-tight" c="lime.3">
           {item.proveedor}
         </Text>
         <Text
@@ -66,7 +62,7 @@ export const getOrdenCompraColumns = ({
           fw={700}
           className="uppercase tracking-widest"
         >
-          {item.documento_proveedor}
+          DNI/RUC: {item.documento_proveedor}
         </Text>
       </Stack>
     ),

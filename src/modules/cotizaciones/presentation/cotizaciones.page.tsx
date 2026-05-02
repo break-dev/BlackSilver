@@ -12,9 +12,9 @@ import { useBlackcito } from "../../../hooks/useBlackcito";
 import { useCotizaciones } from "../hooks/useCotizaciones";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistroCotizacion } from "./registro-cotizacion";
-import { CotizacionesFilter } from "./cotizaciones-filter";
-import { ListadoComparativos } from "./listado-comparativos";
+import { RegistroCotizacion } from "./registro-cotizacion/registro-cotizacion";
+import { CotizacionesFilter } from "./cotizaciones-page/cotizaciones-filter";
+import { ListadoComparativos } from "./cotizaciones-page/listado-comparativo/listado-comparativos";
 
 export const CotizacionesPage = () => {
   useTitlePage("Cotizaciones");
@@ -98,7 +98,11 @@ export const CotizacionesPage = () => {
               className="shadow-lg shadow-pink-800/20 transition-all duration-300"
               leftSection={<CubeIcon className="w-5 h-5" />}
               onClick={() => setOpenedProductos(true)}
-              onMouseEnter={() => happy("¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito está pendiente de ti!")}
+              onMouseEnter={() =>
+                happy(
+                  "¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito está pendiente de ti!",
+                )
+              }
               onMouseLeave={close}
               radius="xl"
               size="xs"

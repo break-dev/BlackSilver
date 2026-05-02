@@ -40,6 +40,7 @@ import type { RES_TicketLote } from "../../../../service/responses/lote-producto
 import { usePrint } from "../../../../hooks/usePrint.ts";
 import { TicketLotePDF } from "../../../../presentation/utils/ticket-lote-pdf.tsx";
 import { Estado_OrdenCompraDetalle } from "../../../../shared/enums/orden-compra/orden-compra.ts";
+import { getNombrePeriodo } from "../../../../shared/functions/get-nombre-periodo.ts";
 
 interface DetalleOrdenCompraProps {
   orden: RES_OrdenCompra;
@@ -618,10 +619,10 @@ export const DetalleOrdenCompra = ({
                       <td className="px-6 py-4 text-center">
                         <Stack gap={0} align="center">
                           <Badge
-                            size="xs"
+                            size="sm"
                             fw={700}
-                            variant="outline"
-                            color="green.5"
+                            variant="light"
+                            color="lime.4"
                             className="italic line-clamp-1"
                           >
                             {det.almacen_recepcionista}
@@ -637,7 +638,8 @@ export const DetalleOrdenCompra = ({
                               {det.tipo_despacho}
                             </Badge>
                             <Text size="xs" c="zinc.5" fw={600}>
-                              {det.tiempo_entrega} {det.tiempo_entrega_periodo}
+                              {det.tiempo_entrega}{" "}
+                              {getNombrePeriodo(det.tiempo_entrega_periodo)}
                             </Text>
                           </Group>
                           {det.lugar_recojo && (

@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { Group, Stack, Text, Badge, Divider, Button, Collapse } from "@mantine/core";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import {
+  Group,
+  Stack,
+  Text,
+  Badge,
+  Divider,
+  Button,
+  Collapse,
+} from "@mantine/core";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import {
   BuildingStorefrontIcon,
   BuildingOfficeIcon,
@@ -13,7 +21,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
-import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
+import { Estado_Cotizacion } from "../../../../../shared/enums/cotizacion/cotizacion";
 
 interface CabeceraDetalleCotizacionProps {
   proveedor: string;
@@ -107,7 +115,12 @@ export const CabeceraDetalleCotizacion = ({
               </Badge>
             </Group>
           </Stack>
-          <Badge variant="filled" color="indigo.9" size="md" className="mt-1 shrink-0 font-bold shadow-md border border-indigo-500/30">
+          <Badge
+            variant="filled"
+            color="indigo.9"
+            size="md"
+            className="mt-1 shrink-0 font-bold shadow-md border border-indigo-500/30"
+          >
             {smb} {formatNumber(totalDespuesIgv)}
           </Badge>
         </Group>
@@ -202,8 +215,11 @@ export const CabeceraDetalleCotizacion = ({
 
       {/* Empresas Compradoras Toggle */}
       {empresas && empresas.length > 0 && (
-        <Stack gap={0} className="bg-zinc-900/40 rounded-xl border border-zinc-800/50 overflow-hidden">
-          <div 
+        <Stack
+          gap={0}
+          className="bg-zinc-900/40 rounded-xl border border-zinc-800/50 overflow-hidden"
+        >
+          <div
             onClick={() => setShowEmpresas(!showEmpresas)}
             className="p-2 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors"
           >
@@ -222,12 +238,16 @@ export const CabeceraDetalleCotizacion = ({
           <Collapse in={showEmpresas}>
             <div className="p-2 pt-1 flex flex-wrap gap-1.5">
               {empresas.map((emp) => (
-                <div 
-                  key={emp.id_empresa} 
+                <div
+                  key={emp.id_empresa}
                   className="bg-zinc-900/70 rounded-lg border border-zinc-800/80 px-2.5 py-1.5 flex items-center gap-1.5"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-400/60 shadow-[0_0_4px_rgba(244,114,182,0.4)] shrink-0" />
-                  <Text size="11px" fw={700} className="text-zinc-300 leading-tight truncate">
+                  <Text
+                    size="11px"
+                    fw={700}
+                    className="text-zinc-300 leading-tight truncate"
+                  >
                     {emp.razon_social}
                   </Text>
                 </div>

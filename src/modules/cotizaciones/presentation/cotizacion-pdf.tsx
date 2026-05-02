@@ -217,7 +217,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                   (acc, det) => {
                     const lugar =
                       det.tipo_despacho === TipoDespachoCompra.Recojo &&
-                        det.lugar_recojo
+                      det.lugar_recojo
                         ? ` [Lugar: ${det.lugar_recojo}]`
                         : "";
                     const txtDias =
@@ -234,7 +234,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
                 return Object.entries(agrupados).map(([grupoName, items]) => (
                   <View key={grupoName} style={{ marginBottom: 15 }}>
-                    <Text style={styles.sectionTitle}>{grupoName.toUpperCase()}</Text>
+                    <Text style={styles.sectionTitle}>
+                      {grupoName.toUpperCase()}
+                    </Text>
 
                     {/* Header Tabla */}
                     <View style={[styles.row, styles.tableHeader]}>
@@ -252,14 +254,21 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                         det.id_unidad_medida_base !== det.id_unidad_medida_ctz;
 
                       return (
-                        <View key={det.id_cotizacion_detalle} style={styles.row}>
+                        <View
+                          key={det.id_cotizacion_detalle}
+                          style={styles.row}
+                        >
                           <Text style={styles.col0}>{idx + 1}</Text>
                           <Text style={styles.col1}>
                             {formatNumber(det.cantidad)}
                           </Text>
-                          <Text style={styles.col2}>{det.unidad_medida_ctz_abv}</Text>
+                          <Text style={styles.col2}>
+                            {det.unidad_medida_ctz_abv}
+                          </Text>
                           <View style={styles.col3}>
-                            <Text style={{ fontWeight: 600 }}>{det.producto}</Text>
+                            <Text style={{ fontWeight: 600 }}>
+                              {det.producto}
+                            </Text>
                             {hasEquivalence && (
                               <Text
                                 style={{
@@ -268,7 +277,8 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                                   marginTop: 2,
                                 }}
                               >
-                                Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
+                                Eq:{" "}
+                                {formatNumber(det.contenido_por_presentacion)}{" "}
                                 {det.unidad_medida_base_abv} x{" "}
                                 {det.unidad_medida_ctz_abv}
                               </Text>
@@ -308,8 +318,8 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                   {symbol}{" "}
                   {formatNumber(
                     cotizacion.total_antes_igv -
-                    Number(cotizacion.costo_flete) -
-                    Number(cotizacion.otros_gastos),
+                      Number(cotizacion.costo_flete) -
+                      Number(cotizacion.otros_gastos),
                   )}
                 </Text>
               </View>

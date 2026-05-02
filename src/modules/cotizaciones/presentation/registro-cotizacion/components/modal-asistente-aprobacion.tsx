@@ -10,28 +10,28 @@ import {
   Stepper,
 } from "@mantine/core";
 import { CheckBadgeIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
-import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
 import type {
   DTO_RegistrarComparativo,
   DTO_CotizacionRequest,
-} from "../../service/cotizaciones.requests";
-import { CotizacionesService } from "../../service/cotizaciones.service";
-import { useNotify } from "../../../../hooks/useNotify";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
-import { usePrint } from "../../../../hooks/usePrint";
-import { CotizacionPDF } from "../cotizacion-pdf";
+} from "../../../service/cotizaciones.requests";
+import { CotizacionesService } from "../../../service/cotizaciones.service";
+import { useNotify } from "../../../../../hooks/useNotify";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import { usePrint } from "../../../../../hooks/usePrint";
+import { CotizacionPDF } from "../../cotizacion-pdf";
 import {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
-} from "../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Proveedor } from "../../../../service/responses/proveedor";
-import type { RES_Producto } from "../../../../service/responses/producto";
-import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
-import type { RES_Empresa } from "../../service/cotizaciones.responses";
+} from "../../../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
+import type { RES_Producto } from "../../../../../service/responses/producto";
+import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
+import type { RES_Empresa } from "../../../service/cotizaciones.responses";
 import type {
   RES_Cotizacion,
   RES_Comparativo,
-} from "../../../../service/responses/cotizaciones/cotizacion";
+} from "../../../../../service/responses/cotizaciones/cotizacion";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
@@ -67,7 +67,7 @@ export const ModalAsistenteAprobacion = ({
   onSuccessCompleto,
 }: ModalAsistenteAprobacionProps) => {
   const { notifySuccess, notifyError } = useNotify();
-  const { print } = usePrint();
+  const { print, prepare } = usePrint();
   const [wizardSteps, setWizardSteps] = useState<WizardAprobacionState[]>([]);
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -87,7 +87,7 @@ export const ModalAsistenteAprobacion = ({
                 : null,
             // Preseleccionar todos los habilitados
             selectedDetalles: cot.detalles
-              .map((d, dIdx) => !d.no_cotiza ? dIdx : null)
+              .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
               .filter((val) => val !== null) as number[],
           });
         }
@@ -201,6 +201,9 @@ export const ModalAsistenteAprobacion = ({
       }),
     };
 
+    const printTarget = `PrinterCotCons_${Date.now()}`;
+    const printerWindow = prepare(printTarget);
+
     setLoading(true);
 
     try {
@@ -211,6 +214,7 @@ export const ModalAsistenteAprobacion = ({
       if (!resp.success) {
         notifyError(resp.message || "Error al registrar el comparativo.");
         setLoading(false);
+        printerWindow?.close();
         return;
       }
 
@@ -228,6 +232,7 @@ export const ModalAsistenteAprobacion = ({
       if (cotizacionesPDFData.length > 0) {
         print(<CotizacionPDF cotizaciones={cotizacionesPDFData} />, {
           documentTitle: "Cotizaciones Consolidadas",
+          target: printTarget,
         });
       }
 
@@ -237,6 +242,7 @@ export const ModalAsistenteAprobacion = ({
     } catch (e) {
       console.error(e);
       notifyError("Ocurrió un error general en el Asistente.");
+      printerWindow?.close();
     } finally {
       setLoading(false);
     }
@@ -330,9 +336,9 @@ export const ModalAsistenteAprobacion = ({
             {/* Selección de Productos */}
             {(() => {
               const detallesCotizables =
-                currentStepData?.cotizacion.detalles
-                  .map((d, dIdx) => !d.no_cotiza ? dIdx : null)
-                  .filter((val) => val !== null) as number[] || [];
+                (currentStepData?.cotizacion.detalles
+                  .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
+                  .filter((val) => val !== null) as number[]) || [];
               const numSelected = currentStepData?.selectedDetalles.length || 0;
               const allSelected =
                 detallesCotizables.length > 0 &&
@@ -368,72 +374,67 @@ export const ModalAsistenteAprobacion = ({
                     />
                   </Group>
                   <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[30vh] overflow-y-auto custom-scrollbar">
-                    {currentStepData?.cotizacion.detalles
-                      .map((det, dIdx) => {
-                        if (det.no_cotiza) return null;
-                        const prodMaestro = maestros.catalogo.find(
-                          (p) => p.id_producto === det.id_producto,
-                        );
-                        const isChecked =
-                          currentStepData.selectedDetalles.includes(
-                            dIdx,
-                          );
-                        const subtotal =
-                          Number(det.cantidad) * Number(det.precio_unitario);
+                    {currentStepData?.cotizacion.detalles.map((det, dIdx) => {
+                      if (det.no_cotiza) return null;
+                      const prodMaestro = maestros.catalogo.find(
+                        (p) => p.id_producto === det.id_producto,
+                      );
+                      const isChecked =
+                        currentStepData.selectedDetalles.includes(dIdx);
+                      const subtotal =
+                        Number(det.cantidad) * Number(det.precio_unitario);
 
-                        return (
-                          <div
-                            key={`${det.id_producto}-${dIdx}`}
-                            className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
-                              isChecked
-                                ? "bg-indigo-500/5"
-                                : "hover:bg-white/5 opacity-80 hover:opacity-100"
-                            }`}
-                            onClick={() => toggleDetalle(dIdx)}
-                          >
-                            <Group wrap="nowrap" justify="space-between">
-                              <Group gap="sm">
-                                <Checkbox
-                                  size="sm"
-                                  checked={isChecked}
-                                  onChange={() =>
-                                    toggleDetalle(dIdx)
-                                  }
-                                  onClick={(e) => e.stopPropagation()}
-                                  color="indigo"
-                                  radius="sm"
-                                />
-                                <Stack gap={0}>
-                                  <Text
-                                    size="xs"
-                                    fw={800}
-                                    className={
-                                      isChecked
-                                        ? "text-indigo-100"
-                                        : "text-zinc-300"
-                                    }
-                                  >
-                                    {prodMaestro?.nombre ||
-                                      `Producto ${det.id_producto}`}
-                                  </Text>
-                                  <Text size="11px" c="dimmed">
-                                    {formatNumber(det.cantidad)} unidades a S/.{" "}
-                                    {formatNumber(Number(det.precio_unitario))}{" "}
-                                    c/u
-                                  </Text>
-                                </Stack>
-                              </Group>
-                              <Badge
-                                variant="light"
-                                color={isChecked ? "indigo" : "gray"}
+                      return (
+                        <div
+                          key={`${det.id_producto}-${dIdx}`}
+                          className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
+                            isChecked
+                              ? "bg-indigo-500/5"
+                              : "hover:bg-white/5 opacity-80 hover:opacity-100"
+                          }`}
+                          onClick={() => toggleDetalle(dIdx)}
+                        >
+                          <Group wrap="nowrap" justify="space-between">
+                            <Group gap="sm">
+                              <Checkbox
                                 size="sm"
-                              >
-                                Sub: S/. {formatNumber(subtotal)}
-                              </Badge>
+                                checked={isChecked}
+                                onChange={() => toggleDetalle(dIdx)}
+                                onClick={(e) => e.stopPropagation()}
+                                color="indigo"
+                                radius="sm"
+                              />
+                              <Stack gap={0}>
+                                <Text
+                                  size="xs"
+                                  fw={800}
+                                  className={
+                                    isChecked
+                                      ? "text-indigo-100"
+                                      : "text-zinc-300"
+                                  }
+                                >
+                                  {prodMaestro?.nombre ||
+                                    `Producto ${det.id_producto}`}
+                                </Text>
+                                <Text size="11px" c="dimmed">
+                                  {formatNumber(det.cantidad)} unidades a S/.{" "}
+                                  {formatNumber(Number(det.precio_unitario))}{" "}
+                                  c/u
+                                </Text>
+                              </Stack>
                             </Group>
-                          </div>
-                        );
-                      })}
+                            <Badge
+                              variant="light"
+                              color={isChecked ? "indigo" : "gray"}
+                              size="sm"
+                            >
+                              Sub: S/. {formatNumber(subtotal)}
+                            </Badge>
+                          </Group>
+                        </div>
+                      );
+                    })}
                   </div>
                 </Stack>
               );
