@@ -1,11 +1,4 @@
-import {
-  Badge,
-  Button,
-  Group,
-  Paper,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Badge, Button, Group, Paper, Stack, Text } from "@mantine/core";
 import {
   BriefcaseIcon,
   MapIcon,
@@ -48,8 +41,6 @@ export const GestionLabores = ({
   onLaborCreada,
   onLaborFinalizada,
   busqueda,
-  setBusqueda,
-  openCreate,
   openedCreate,
   closeCreate,
 }: Props) => {
@@ -352,7 +343,6 @@ export const GestionLabores = ({
 
   return (
     <div className="space-y-5">
-
       <Stack gap="xl">
         {loading ? (
           <div className="p-20 flex flex-col items-center justify-center gap-4">

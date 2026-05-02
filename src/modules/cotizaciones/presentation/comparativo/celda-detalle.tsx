@@ -210,8 +210,8 @@ export const CeldaDetalle = ({
         <Tooltip
           label={
             det.no_cotiza
-              ? "Habilitar para cotizar"
-              : "Marcar como: No cotiza este producto"
+              ? "Cotizar este producto"
+              : "No cotizar este producto"
           }
           position="left"
         >

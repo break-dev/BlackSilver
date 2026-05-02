@@ -165,7 +165,7 @@ export const LotesFilter = ({
               disabled={!idAlmacen}
             />
             
-            <div className="w-[1px] h-4 bg-zinc-800" />
+            <div className="w-px h-4 bg-zinc-800" />
 
             <Tooltip label={selectedCount > 0 ? `Imprimir ${selectedCount} tickets` : "Seleccione lotes para imprimir"}>
               <ActionIcon

@@ -3,6 +3,7 @@ import { OrdenCompraService } from "../service/orden-compra.service";
 import type { RES_OrdenCompraRecepcionDetalle } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
+import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
 
 export const useRegistroTransferenciaOC = ({
@@ -137,7 +138,6 @@ export const useRegistroTransferenciaOC = ({
     };
 
     try {
-      const { useAuthStore } = await import("../../../stores/auth.store");
       const user = useAuthStore.getState().usuario;
       payload.id_empleado_transferencia = user?.id_empleado || 1;
 

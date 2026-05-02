@@ -13,6 +13,7 @@ import { PlusIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "motion/react";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_Producto } from "../service/productos.responses";
+import type { RES_Categoria } from "../../categorias/service/categorias.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -342,6 +343,7 @@ export const RegistroProducto = ({
         zIndex={1001} // Para que se vea por encima del modal de producto
       >
         <RegistroCategoria
+          todasCategorias={categorias as unknown as RES_Categoria[]}
           nombre={registroCat.nombre}
           setNombre={registroCat.setNombre}
           descripcion={registroCat.descripcion}

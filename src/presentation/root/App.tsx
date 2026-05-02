@@ -44,6 +44,7 @@ import { PrestamosAlmacenPage } from "../../modules/prestamos-almacen/presentati
 import { ProveedoresPage } from "../../modules/proveedores/presentation/proveedores-page/proveedores.page.tsx";
 import CotizacionesPage from "../../modules/cotizaciones/presentation/cotizaciones.page.tsx";
 import { OrdenesCompraPage } from "../../modules/ordenes-compra/presentation/ordenes-compra-page.tsx";
+import { RecepcionTransferenciasOCPage } from "../../modules/ordenes-compra-recepcion-transferencias/presentation/oc-recepcion-transferencias.page.tsx";
 
 export const App = () => {
   return (
@@ -156,6 +157,10 @@ export const App = () => {
             <Route path="proveedores" element={<ProveedoresPage />} />
             <Route path="cotizaciones" element={<CotizacionesPage />} />
             <Route path="ordenes-compra" element={<OrdenesCompraPage />} />
+            <Route
+              path="recepcion-transferencias"
+              element={<RecepcionTransferenciasOCPage />}
+            />
           </Route>
         </Route>
 

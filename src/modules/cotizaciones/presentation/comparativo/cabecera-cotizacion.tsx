@@ -141,7 +141,7 @@ export const CabeceraCotizacion = ({
   if (!cot) return null;
 
   return (
-    <Stack gap={4} className="pt-0 pb-3 px-4 relative group-header">
+    <Stack gap={4} className="pt-0 pb-3 px-1 relative group-header">
       {/* Título y Cerrar */}
       <Group justify="space-between" align="center">
         <Text

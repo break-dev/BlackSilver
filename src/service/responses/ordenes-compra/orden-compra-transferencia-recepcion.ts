@@ -8,6 +8,8 @@ export interface RES_OCTransRecepcion {
   id_recepcion: number;
   id_orden_compra_transferencia: number;
   //
+  numero_correlativo: number;
+  //
   empleado_registro: string;
   //
   observacion: string | null;
@@ -25,8 +27,6 @@ export interface RES_OCTransRecepcionDetalle {
   id_recepcion_detalle: number;
   id_orden_compra_transferencia_recepcion: number;
   id_orden_compra_transferencia_detalle: number;
-  //
-  numero_correlativo: number;
   //
   id_producto: number;
   producto: string;

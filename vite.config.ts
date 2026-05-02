@@ -12,4 +12,7 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  build: {
+    chunkSizeWarningLimit: 5000, // Subir el límite de la advertencia a 5MB
+  },
 });
