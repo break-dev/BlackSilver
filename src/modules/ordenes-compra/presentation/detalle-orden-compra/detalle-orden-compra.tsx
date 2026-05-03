@@ -8,7 +8,7 @@ import type {
 } from "../../../../service/responses/ordenes-compra/orden-compra";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar.tsx";
 import { RegistroRecepcionOC } from "../registro-recepcion/registrar-recepcion-oc.tsx";
-import { HistorialRecepcionesOC } from "../historial-recepciones-oc.tsx";
+import { HistorialRecepcionesOC } from "../historial-recepciones/historial-recepciones-oc.tsx";
 import { TrazabilidadDetalleOC } from "../trazabilidad-detalle-oc.tsx";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto.ts";
 import { usePrint } from "../../../../hooks/usePrint.ts";

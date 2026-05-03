@@ -12,7 +12,7 @@ interface Props {
   idAlmacenRecepcionista: number;
   selectedItemsIds: number[];
   detallesRecepcion: RES_OrdenCompraRecepcionDetalle[];
-  onSuccess: () => void;
+  onSuccess: (resumen?: Record<number, number>) => void;
   onCancel: () => void;
 }
 

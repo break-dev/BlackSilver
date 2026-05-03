@@ -15,7 +15,7 @@ export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista: number;
   selectedItemsIds: number[];
   detallesRecepcion: RES_OrdenCompraRecepcionDetalle[];
-  onSuccess: () => void;
+  onSuccess: (resumen?: Record<number, number>) => void;
 }) => {
   const [loading, setLoading] = useState(false);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
@@ -146,7 +146,20 @@ export const useRegistroTransferenciaOC = ({
         evidencias,
       );
       if (res.success) {
-        onSuccess();
+        // Calcular resumen de cantidades transferidas por detalle
+        const resumen: Record<number, number> = {};
+        Object.entries(transferenciaCantidades).forEach(
+          ([idDetalleStr, lotesMap]) => {
+            const idDetalle = Number(idDetalleStr);
+            const total = Object.values(lotesMap).reduce(
+              (sum, cant) => sum + cant,
+              0,
+            );
+            if (total > 0) resumen[idDetalle] = total;
+          },
+        );
+
+        onSuccess(resumen);
       } else {
         setError(res.message);
       }
