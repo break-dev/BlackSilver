@@ -16,7 +16,7 @@ import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type {
   GroupedReceptionOC,
   DTO_RecepcionLotExtendido,
-} from "../../../hooks/useRegistroRecepcionOC";
+} from "../../../hooks/registro-recepcion/useRegistroRecepcionOC";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import { LotesDisponiblesTableOC } from "./LotesDisponiblesTableOC";
 import { NuevoLoteFormOC } from "./NuevoLoteFormOC";
@@ -91,7 +91,7 @@ export const ProductoRecepcionCardOC = ({
               checked={group.selected}
               onChange={toggleSelection}
               color="indigo"
-              size="md"
+              size="sm"
               className="cursor-pointer"
             />
             <div
@@ -102,15 +102,15 @@ export const ProductoRecepcionCardOC = ({
               }`}
             >
               <CubeIcon
-                className={`w-5 h-5 ${
+                className={`w-4 h-4 ${
                   group.selected ? "text-indigo-400" : "text-zinc-500"
                 }`}
               />
             </div>
             <div>
               <Text
-                size="md"
-                fw={900}
+                size="sm"
+                fw={800}
                 className={`${
                   group.selected ? "text-white" : "text-zinc-400"
                 } tracking-tight leading-tight`}
@@ -118,6 +118,18 @@ export const ProductoRecepcionCardOC = ({
                 {group.producto}
               </Text>
               <Group gap="xs" mt={4}>
+                <Badge
+                  variant="dot"
+                  color={group.selected ? "indigo" : "gray"}
+                  size="xs"
+                  className={`${
+                    group.selected
+                      ? "bg-zinc-800/50 border-zinc-700/50 text-indigo-400"
+                      : "bg-zinc-900/50 border-zinc-800/50 text-zinc-500"
+                  } font-bold px-3 py-3 rounded-lg`}
+                >
+                  Para: {group.almacen_recepcionista}
+                </Badge>
                 <Badge
                   variant="dot"
                   color={group.selected ? "teal" : "gray"}
@@ -172,13 +184,8 @@ export const ProductoRecepcionCardOC = ({
                   <Divider color="zinc.8" variant="dashed" mb="md" />
                 )}
                 <div className="flex justify-between items-center mb-2">
-                  <Text
-                    size="xs"
-                    fw={800}
-                    c="dimmed"
-                    className="uppercase tracking-widest"
-                  >
-                    Partida #{lotIndex + 1}
+                  <Text size="xs" fw={800} c="dimmed" className="uppercase">
+                    Partición #{lotIndex + 1}
                   </Text>
                   {group.lots.length > 1 && (
                     <ActionIcon
@@ -199,7 +206,7 @@ export const ProductoRecepcionCardOC = ({
                       fw={700}
                       c={esNuevoLote ? "zinc.4" : "emerald.4"}
                     >
-                      Ingresar a Lote Existente
+                      Ajustar Stock
                     </Text>
                     <Switch
                       checked={esNuevoLote}
@@ -219,7 +226,7 @@ export const ProductoRecepcionCardOC = ({
                       fw={700}
                       c={esNuevoLote ? "indigo.3" : "zinc.4"}
                     >
-                      Generar Lote Nuevo
+                      Nuevo Lote
                     </Text>
                   </Group>
                 </Group>

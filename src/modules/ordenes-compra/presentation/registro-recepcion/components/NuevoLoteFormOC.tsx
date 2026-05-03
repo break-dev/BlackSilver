@@ -1,8 +1,8 @@
-import { Text, NumberInput, Textarea, Group, Badge } from "@mantine/core";
+import { Text, NumberInput, Textarea, Group, TextInput } from "@mantine/core";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
-import type { DTO_RecepcionLotExtendido } from "../../../hooks/useRegistroRecepcionOC";
+import type { DTO_RecepcionLotExtendido } from "../../../hooks/registro-recepcion/useRegistroRecepcionOC";
 
 interface NuevoLoteFormOCProps {
   groupIndex: number;
@@ -63,25 +63,16 @@ export const NuevoLoteFormOC = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 shadow-sm bg-zinc-950/20 p-2 rounded-xl border border-zinc-800/30">
-        <div className="md:col-span-2 flex flex-col justify-center">
-          <Text
-            size="10px"
-            fw={900}
-            c="dimmed"
-            className="uppercase tracking-widest mb-0.5 ml-0.5"
-          >
-            Unidad OC
-          </Text>
-          <Badge
-            variant="filled"
-            color="indigo"
-            radius="md"
-            size="md"
-            className="w-full h-[36px]"
-          >
-            {unidadOCAbv}
-          </Badge>
-        </div>
+        <TextInput
+          label={`Unidad Medida`}
+          value={unidadOCAbv}
+          readOnly
+          classNames={inputClasses}
+          className="md:col-span-2"
+          radius="md"
+          size="xs"
+          leftSection={<ScaleIcon className="w-3.5 h-3.5 text-emerald-500" />}
+        />
 
         {!isBaseUnit && (
           <NumberInput

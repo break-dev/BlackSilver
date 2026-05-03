@@ -16,4 +16,5 @@ export enum Estado_OrdenCompraDetalleLog {
   Pendiente = "Pendiente",
   EnRecepcion = "En Recepción",
   NuevaRecepcion = "Nueva Recepción",
+  RecepcionCompleta = "Recepción Completa",
 }

@@ -8,7 +8,7 @@ import type { RES_OrdenCompra } from "../../../../service/responses/ordenes-comp
 
 export const COLOR_BY_STATE: Record<string, { color: string; label: string }> =
   {
-    [Estado_OrdenCompra.Generada]: { color: "teal", label: "Generada" },
+    [Estado_OrdenCompra.Generada]: { color: "grape", label: "Generada" },
     [Estado_OrdenCompra.EnRecepcion]: { color: "blue", label: "En Recepción" },
     [Estado_OrdenCompra.Anulada]: { color: "red", label: "Anulada" },
     [Estado_OrdenCompra.Cerrada]: { color: "gray", label: "Cerrada" },

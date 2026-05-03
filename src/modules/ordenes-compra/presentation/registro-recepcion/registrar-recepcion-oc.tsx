@@ -19,16 +19,20 @@ import {
   BuildingStorefrontIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
-import { useRegistroRecepcionOC } from "../../hooks/useRegistroRecepcionOC";
+import { useRegistroRecepcionOC } from "../../hooks/registro-recepcion/useRegistroRecepcionOC";
 import { ProductoRecepcionCardOC } from "./components/ProductoRecepcionCardOC";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
+import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
 import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
 
 interface Props {
   idOrdenCompra: number;
   detalles: RES_OrdenCompraDetalle[];
-  onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
+  onSuccess: (
+    lotesNuevos?: RES_TicketLote[],
+    finalItems?: DTO_RecepcionOCItem[],
+  ) => void;
 }
 
 export const RegistroRecepcionOC = (props: Props) => {
@@ -202,10 +206,19 @@ export const RegistroRecepcionOC = (props: Props) => {
                 color="crimson"
                 variant="filled"
                 radius="md"
-                p={5}
+                px={12}
+                py={5}
                 mt={4}
+                classNames={{
+                  wrapper: "items-center gap-2",
+                  icon: "mr-0 w-auto",
+                }}
               >
-                <Text size="xs" fw={700} className="uppercase tracking-wide">
+                <Text
+                  size="xs"
+                  fw={700}
+                  className="uppercase tracking-wide leading-none"
+                >
                   Es obligatorio detallar la incidencia y adjuntar evidencias.
                 </Text>
               </Alert>

@@ -24,7 +24,8 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import type { RES_Trazabilidad } from "../../../../service/responses/_generic/trazabilidad";
+import type { RES_Trazabilidad } from "../../../../../service/responses/_generic/trazabilidad";
+import { Estado_OrdenCompraDetalleLog } from "../../../../../shared/enums/orden-compra/orden-compra";
 
 interface Props {
   eventos: RES_Trazabilidad[];
@@ -262,28 +263,31 @@ export const TrazabilidadOrdenCompra = ({
 };
 
 const getStatusStyles = (status: string) => {
-  const s = status.toLowerCase();
-  if (s.includes("pendiente")) return { color: "orange" };
-  if (s.includes("recepc")) return { color: "pink" };
-  if (
-    s.includes("completad") ||
-    s.includes("recibido") ||
-    s.includes("aprobado")
-  )
-    return { color: "emerald" };
-  return { color: "indigo" };
+  switch (status) {
+    case Estado_OrdenCompraDetalleLog.Pendiente:
+      return { color: "orange" };
+    case Estado_OrdenCompraDetalleLog.EnRecepcion:
+      return { color: "blue" };
+    case Estado_OrdenCompraDetalleLog.NuevaRecepcion:
+      return { color: "indigo" };
+    case Estado_OrdenCompraDetalleLog.RecepcionCompleta:
+      return { color: "emerald" };
+    default:
+      return { color: "zinc" };
+  }
 };
 
 const getStatusIcon = (status: string) => {
-  const s = status.toLowerCase();
-  if (s.includes("pendiente"))
-    return <ClipboardList className="w-5 h-5 text-white" />;
-  if (s.includes("recepc")) return <Truck className="w-5 h-5 text-white" />;
-  if (
-    s.includes("completad") ||
-    s.includes("recibido") ||
-    s.includes("aprobado")
-  )
-    return <CheckCircle2 className="w-5 h-5 text-white" />;
-  return <Package className="w-5 h-5 text-white" />;
+  switch (status) {
+    case Estado_OrdenCompraDetalleLog.Pendiente:
+      return <ClipboardList className="w-5 h-5 text-white" />;
+    case Estado_OrdenCompraDetalleLog.EnRecepcion:
+      return <Truck className="w-5 h-5 text-white" />;
+    case Estado_OrdenCompraDetalleLog.NuevaRecepcion:
+      return <Package className="w-5 h-5 text-white" />;
+    case Estado_OrdenCompraDetalleLog.RecepcionCompleta:
+      return <CheckCircle2 className="w-5 h-5 text-white" />;
+    default:
+      return <Milestone className="w-5 h-5 text-white" />;
+  }
 };

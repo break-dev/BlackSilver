@@ -10,6 +10,11 @@ import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
 } from "../../../service/responses/ordenes-compra/orden-compra.ts";
+import type { DTO_RecepcionOCItem } from "../service/recepcion.requests";
+import {
+  Estado_OrdenCompra,
+  Estado_OrdenCompraDetalle,
+} from "../../../shared/enums/orden-compra/orden-compra";
 
 export const useOrdenesCompraPage = () => {
   const { notify } = useNotify();
@@ -151,6 +156,72 @@ export const useOrdenesCompraPage = () => {
     [columns],
   );
 
+  const updateLocalStateAfterReception = useCallback(
+    (recepcionItems: DTO_RecepcionOCItem[]) => {
+      // 1. Actualizar detalles locales
+      const nuevosDetalles = detalles.map((d) => {
+        const itemsRecibidos = recepcionItems.filter(
+          (ri) => ri.id_orden_compra_detalle === d.id_orden_compra_detalle,
+        );
+
+        if (itemsRecibidos.length === 0) return d;
+
+        const totalRecibidoAhora = itemsRecibidos.reduce(
+          (acc, curr) => acc + (Number(curr.cantidad_base) || 0),
+          0,
+        );
+
+        const nuevaCantRecepcionada =
+          (Number(d.cantidad_recepcionada_base) || 0) + totalRecibidoAhora;
+        const req = Number(d.cantidad_requerida_base) || 0;
+
+        let nuevoEstado = d.estado;
+        if (nuevaCantRecepcionada >= req - 0.001) {
+          nuevoEstado = Estado_OrdenCompraDetalle.RecepcionCompleta;
+        } else if (nuevaCantRecepcionada > 0) {
+          nuevoEstado = Estado_OrdenCompraDetalle.EnRecepcion;
+        }
+
+        return {
+          ...d,
+          cantidad_recepcionada_base: nuevaCantRecepcionada,
+          estado: nuevoEstado,
+        };
+      });
+
+      setDetalles(nuevosDetalles);
+
+      // 2. Determinar nuevo estado de la OC
+      const totalItems = nuevosDetalles.length;
+      const completados = nuevosDetalles.filter(
+        (d) => d.estado === Estado_OrdenCompraDetalle.RecepcionCompleta,
+      ).length;
+
+      let nuevoEstadoOC = Estado_OrdenCompra.EnRecepcion;
+      if (completados === totalItems && totalItems > 0) {
+        nuevoEstadoOC = Estado_OrdenCompra.Completada;
+      }
+
+      // 3. Actualizar selectedOrden si existe
+      if (selectedOrden) {
+        setSelectedOrden({
+          ...selectedOrden,
+          estado: nuevoEstadoOC,
+        });
+      }
+
+      // 4. Actualizar en la lista general de ordenes
+      setOrdenes((prev) =>
+        prev.map((o) =>
+          o.id_orden_compra === selectedOrden?.id_orden_compra
+            ? { ...o, estado: nuevoEstadoOC }
+            : o,
+        ),
+      );
+    },
+    [detalles, selectedOrden],
+  );
+
   return {
     ordenes,
     filteredRecords,
@@ -176,5 +247,6 @@ export const useOrdenesCompraPage = () => {
     columns,
     groupedOrders,
     tableColumns,
+    updateLocalStateAfterReception,
   };
 };

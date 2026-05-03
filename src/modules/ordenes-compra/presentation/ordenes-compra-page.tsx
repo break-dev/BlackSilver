@@ -21,6 +21,7 @@ export const OrdenesCompraPage = () => {
     closeDet,
     groupedOrders,
     tableColumns,
+    updateLocalStateAfterReception,
   } = useOrdenesCompraPage();
 
   return (
@@ -44,6 +45,7 @@ export const OrdenesCompraPage = () => {
             orden={selectedOrden}
             detalles={detalles}
             loading={loadingDetalle}
+            onUpdateLocalState={updateLocalStateAfterReception}
           />
         )}
       </ModalEstandar>

@@ -169,7 +169,7 @@ export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
               >
                 <Group gap="md" wrap="nowrap" className="shrink-0">
                   <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors shrink-0">
-                    <CalendarDaysIcon className="w-6 h-6 text-indigo-400" />
+                    <CalendarDaysIcon className="w-4 h-4 text-indigo-400" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <Group gap="xs">

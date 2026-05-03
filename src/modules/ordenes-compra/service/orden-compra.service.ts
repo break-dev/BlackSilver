@@ -11,7 +11,7 @@ import type {
 import type { RES_OrdenCompraRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { REQ_RegistrarRecepcionOC } from "./recepcion.requests";
-import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
 const path = "/ordenes-compra";
