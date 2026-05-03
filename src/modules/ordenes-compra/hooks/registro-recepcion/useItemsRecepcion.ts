@@ -107,6 +107,8 @@ export const useItemsRecepcion = ({
                 const productLots = res.data!.filter(
                   (l) => l.id_producto === group.id_producto,
                 );
+
+                // Caso 1: No hay lotes -> Forzar "Nuevo Lote"
                 if (productLots.length === 0) {
                   return {
                     ...group,
@@ -116,14 +118,30 @@ export const useItemsRecepcion = ({
                     })),
                   };
                 }
-                return group;
+
+                // Caso 2: Hay lotes -> Auto-seleccionar el primero para "Ajustar Stock"
+                // Sólo si el lote actual no ha sido modificado manualmente
+                return {
+                  ...group,
+                  lots: group.lots.map((lot) => {
+                    if (!lot.es_nuevo_lote && !lot.id_lote_existente) {
+                      const firstLot = productLots[0];
+                      return {
+                        ...lot,
+                        id_lote_existente: firstLot.id_lote,
+                        ajustes: { [firstLot.id_lote]: lot.cantidad_base },
+                      };
+                    }
+                    return lot;
+                  }),
+                };
               }),
             );
           }
         })
         .finally(() => setLoadingLotes(false));
     }
-  }, [selectedAlmacenId, detalles, getInitialGroupedItems]);
+  }, [selectedAlmacenId, detalles]);
 
   const toggleSelection = (index: number) => {
     setGroupedItems((prev) => {

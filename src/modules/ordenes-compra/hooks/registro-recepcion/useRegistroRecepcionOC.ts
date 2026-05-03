@@ -59,18 +59,35 @@ export const useRegistroRecepcionOC = ({
       return;
     }
 
+    // Validaciones detalladas por producto
     selectedGroups.forEach((group) => {
       const gIdx = items.groupedItems.indexOf(group);
       let sumBase = 0;
+
       group.lots.forEach((lot, lIdx) => {
         const cant = Number(lot.cantidad_base) || 0;
         sumBase += cant;
+
         if (cant <= 0) {
           newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] =
             "Debe ser mayor a 0.";
           hasErrors = true;
         }
+
+        if (lot.es_nuevo_lote) {
+          if (!lot.fecha_ingreso) {
+            newErrors[`groups.${gIdx}.lots.${lIdx}.fecha_ingreso`] =
+              "Fecha requerida.";
+            hasErrors = true;
+          }
+        } else {
+          if (!lot.id_lote_existente) {
+            notifyError(`Seleccione un lote para ${group.producto}`);
+            hasErrors = true;
+          }
+        }
       });
+
       if (sumBase > group.cantidad_requerida_base + 0.001) {
         newErrors[`groups.${gIdx}.cantidad_total`] =
           "La suma supera el total requerido.";
@@ -88,7 +105,7 @@ export const useRegistroRecepcionOC = ({
 
     if (hasErrors) {
       items.setErrors(newErrors);
-      notifyError("Revise las cantidades.");
+      notifyError("Revise los datos marcados en rojo.");
       return;
     }
 
@@ -161,48 +178,13 @@ export const useRegistroRecepcionOC = ({
   };
 
   const isFormValid = useMemo(() => {
-    if (!selectedAlmacenId || !header.fechaHoraRecepcion) return false;
-    if (
-      header.conIncidencia &&
-      (!header.observacion.trim() || header.evidencias.length === 0)
-    )
-      return false;
+    // Validamos solo lo esencial para permitir el click y dar feedback con notificaciones
+    const hasWarehouse = !!selectedAlmacenId;
+    const hasDate = !!header.fechaHoraRecepcion;
+    const hasSelectedItems = items.groupedItems.some((g) => g.selected);
 
-    const selectedGroups = items.groupedItems.filter((g) => g.selected);
-    if (selectedGroups.length === 0) return false;
-
-    let allValid = true;
-    for (const group of selectedGroups) {
-      let sumBase = 0;
-      for (const lot of group.lots) {
-        const cant = Number(lot.cantidad_base) || 0;
-        if (cant <= 0) {
-          allValid = false;
-          break;
-        }
-        sumBase += cant;
-        if (lot.es_nuevo_lote) {
-          if (!lot.fecha_ingreso) {
-            allValid = false;
-            break;
-          }
-          if (group.es_perecible && !lot.fecha_vencimiento) {
-            allValid = false;
-            break;
-          }
-        }
-      }
-      if (!allValid) break;
-
-      const maxReq = Number(group.cantidad_requerida_base) || 0;
-      if (sumBase > maxReq + 0.001) {
-        allValid = false;
-        break;
-      }
-    }
-
-    return allValid;
-  }, [selectedAlmacenId, header, items.groupedItems]);
+    return hasWarehouse && hasDate && hasSelectedItems;
+  }, [selectedAlmacenId, header.fechaHoraRecepcion, items.groupedItems]);
 
   return {
     // Almacenes
