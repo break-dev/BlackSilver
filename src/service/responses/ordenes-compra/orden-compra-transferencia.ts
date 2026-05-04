@@ -6,9 +6,15 @@ import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 export interface RES_OCTransferencia {
   id_transferencia: number;
-  id_orden_compra_recepcion: number;
-  //
   correlativo: string;
+  //
+  codigo_orden_compra: string;
+  //
+  id_recepcion: number;
+  numero_recepcion: number;
+  //
+  almacen_origen: string;
+  desde_un_almacen_principal: boolean;
   //
   id_almacen_destino: number;
   almacen_destino: string;

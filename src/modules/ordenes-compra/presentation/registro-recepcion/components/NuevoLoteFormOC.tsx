@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { Text, NumberInput, Textarea, Group, TextInput } from "@mantine/core";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
@@ -38,6 +39,17 @@ export const NuevoLoteFormOC = ({
   esPerecible,
   maxPermitido,
 }: NuevoLoteFormOCProps) => {
+  useEffect(() => {
+    if (!lot.fecha_ingreso) {
+      setLotValue(
+        groupIndex,
+        lotIndex,
+        "fecha_ingreso",
+        new Date().toISOString()
+      );
+    }
+  }, [lot.fecha_ingreso, groupIndex, lotIndex, setLotValue]);
+
   const cantidad_base = Number(lot.cantidad_base) || 0;
 
   const inputClasses = {

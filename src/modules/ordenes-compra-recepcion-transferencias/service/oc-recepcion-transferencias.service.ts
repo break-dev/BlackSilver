@@ -2,16 +2,12 @@ import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
+import type { RES_OCTransRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-transferencia-recepcion";
 import type {
-  RES_OCTransRecepcion,
-} from "../../../service/responses/ordenes-compra/orden-compra-transferencia-recepcion";
-import type {
-  RES_TransferenciaOC,
-  RES_TransferenciaOCDetalle,
-} from "./oc-recepcion-transferencias.responses";
-import type {
-  DTO_RegistrarRecepcionTransferencia,
-} from "./oc-recepcion-transferencias.requests";
+  RES_OCTransferencia,
+  RES_OCTransferenciaDetalle,
+} from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
+import type { DTO_RegistrarRecepcionTransferencia } from "./oc-recepcion-transferencias.requests";
 
 const path = "/oc-trans-recepciones";
 
@@ -43,7 +39,7 @@ export const OCTransService = {
     idAlmacen: number,
     mes: number,
     anio: number,
-  ): Promise<IRespuesta<RES_TransferenciaOC[]>> => {
+  ): Promise<IRespuesta<RES_OCTransferencia[]>> => {
     const { data } = await api.get(`${path}/transferencias`, {
       params: { id_almacen_destino: idAlmacen, mes, anio },
     });
@@ -52,7 +48,7 @@ export const OCTransService = {
 
   getDetallesTransferencia: async (
     id: number,
-  ): Promise<IRespuesta<RES_TransferenciaOCDetalle[]>> => {
+  ): Promise<IRespuesta<RES_OCTransferenciaDetalle[]>> => {
     const { data } = await api.get(`${path}/transferencias/${id}/detalles`);
     return data;
   },
@@ -74,7 +70,10 @@ export const OCTransService = {
   ): Promise<IRespuesta<null>> => {
     const formData = new FormData();
     formData.append("id_transferencia", dto.id_transferencia.toString());
-    formData.append("id_almacen_recepcionista", dto.id_almacen_recepcionista.toString());
+    formData.append(
+      "id_almacen_recepcionista",
+      dto.id_almacen_recepcionista.toString(),
+    );
     formData.append("con_incidencia", dto.con_incidencia ? "1" : "0");
     formData.append("observacion", dto.observacion ?? "");
     formData.append("fecha_hora_recepcion", dto.fecha_hora_recepcion ?? "");

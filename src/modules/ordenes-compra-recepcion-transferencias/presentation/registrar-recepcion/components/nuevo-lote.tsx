@@ -1,9 +1,9 @@
 import React from "react";
-import { Text, NumberInput, Textarea, Group, Badge } from "@mantine/core";
+import { Text, NumberInput, Textarea, Group, TextInput } from "@mantine/core";
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
-import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
-import type { DTO_LoteRecepcionTrans } from "../../hooks/useRegistrarRecepcion";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
+import type { DTO_LoteRecepcionTrans } from "../../../hooks/useRegistrarRecepcion";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
 
 interface Props {
   groupIndex: number;
@@ -29,11 +29,16 @@ interface Props {
 const inputClasses = {
   input:
     "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-  label: "text-zinc-400 mb-0.5 font-bold text-[10px] uppercase tracking-wider",
+  dropdown:
+    "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+  option:
+    "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+  label:
+    "text-zinc-400 mb-0.5 font-bold text-[10px] uppercase tracking-wider",
   description: "text-indigo-400/80 text-[10px] font-bold mt-0.5",
 };
 
-export const NuevoLoteFormOCTrans = ({
+export const NuevoLoteTrans = ({
   groupIndex,
   lotIndex,
   lot,
@@ -44,6 +49,17 @@ export const NuevoLoteFormOCTrans = ({
   contenidoPorPresentacion,
   maxPermitido,
 }: Props) => {
+  React.useEffect(() => {
+    if (!lot.fecha_ingreso) {
+      setLotValue(
+        groupIndex,
+        lotIndex,
+        "fecha_ingreso",
+        new Date().toISOString()
+      );
+    }
+  }, [lot.fecha_ingreso, groupIndex, lotIndex, setLotValue]);
+
   const cantidad_base = Number(lot.cantidad_base) || 0;
   const isBaseUnit = unidadOCAbv === unidadBaseAbv;
 
@@ -55,25 +71,16 @@ export const NuevoLoteFormOCTrans = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2 shadow-sm bg-zinc-950/20 p-2 rounded-xl border border-zinc-800/30">
-        <div className="md:col-span-2 flex flex-col justify-center">
-          <Text
-            size="10px"
-            fw={900}
-            c="dimmed"
-            className="uppercase tracking-widest mb-0.5 ml-0.5"
-          >
-            Unidad OC
-          </Text>
-          <Badge
-            variant="filled"
-            color="indigo"
-            radius="md"
-            size="md"
-            className="w-full h-[36px]"
-          >
-            {unidadOCAbv}
-          </Badge>
-        </div>
+        <TextInput
+          label={`Unidad Medida`}
+          value={unidadOCAbv}
+          readOnly
+          classNames={inputClasses}
+          className="md:col-span-2"
+          radius="md"
+          size="xs"
+          leftSection={<ScaleIcon className="w-3.5 h-3.5 text-emerald-500" />}
+        />
 
         {!isBaseUnit && (
           <NumberInput

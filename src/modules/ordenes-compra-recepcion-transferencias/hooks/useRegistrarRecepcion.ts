@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_TransferenciaOCDetalle } from "../service/oc-recepcion-transferencias.responses";
+import type { RES_OCTransferenciaDetalle } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import type { DTO_ItemRecepcionTransferencia } from "../service/oc-recepcion-transferencias.requests";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
 
@@ -31,7 +31,7 @@ export interface GrupoRecepcionTrans {
 interface UseRegistrarRecepcionProps {
   idTransferencia: number;
   idAlmacenRecepcionista: number;
-  detalles: RES_TransferenciaOCDetalle[];
+  detalles: RES_OCTransferenciaDetalle[];
   onSuccess: () => void;
 }
 
@@ -52,13 +52,17 @@ export const useRegistrarRecepcion = ({
   const [loadingAction, setLoadingAction] = useState(false);
 
   // Cabecera de recepción
-  const [fechaHoraRecepcion, setFechaHoraRecepcion] = useState<Date | null>(new Date());
+  const [fechaHoraRecepcion, setFechaHoraRecepcion] = useState<Date | null>(
+    new Date(),
+  );
   const [conIncidencia, setConIncidencia] = useState(false);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
   // Lotes del almacén destino
-  const [lotesDisponibles, setLotesDisponibles] = useState<RES_LoteDisponible[]>([]);
+  const [lotesDisponibles, setLotesDisponibles] = useState<
+    RES_LoteDisponible[]
+  >([]);
   const [loadingLotes, setLoadingLotes] = useState(false);
 
   // 1. Inicializar grupos desde los detalles de la transferencia
@@ -101,7 +105,9 @@ export const useRegistrarRecepcion = ({
           // Si el producto no tiene lotes, pasar a nuevo lote automáticamente
           setGroupedItems((prev) =>
             prev.map((g) => {
-              const tiene = res.data!.some((l) => l.id_producto === g.id_producto);
+              const tiene = res.data!.some(
+                (l) => l.id_producto === g.id_producto,
+              );
               if (!tiene) {
                 return {
                   ...g,
@@ -142,7 +148,10 @@ export const useRegistrarRecepcion = ({
       let finalValue = value;
       if (field === "cantidad_base") {
         const numVal = Number(value) || 0;
-        finalValue = Math.min(numVal, group.cantidad_transferida_base) as unknown as DTO_LoteRecepcionTrans[K];
+        finalValue = Math.min(
+          numVal,
+          group.cantidad_transferida_base,
+        ) as unknown as DTO_LoteRecepcionTrans[K];
       }
 
       lots[lotIndex] = { ...lots[lotIndex], [field]: finalValue };
@@ -252,12 +261,14 @@ export const useRegistrarRecepcion = ({
         const cant = Number(lot.cantidad_base) || 0;
         sumBase += cant;
         if (cant <= 0) {
-          newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] = "Debe ser mayor a 0.";
+          newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] =
+            "Debe ser mayor a 0.";
           hasErrors = true;
         }
       });
       if (sumBase > group.cantidad_transferida_base + 0.001) {
-        newErrors[`groups.${gIdx}.cantidad_total`] = "La suma supera el total transferido.";
+        newErrors[`groups.${gIdx}.cantidad_total`] =
+          "La suma supera el total transferido.";
         hasErrors = true;
       }
     });
@@ -311,7 +322,8 @@ export const useRegistrarRecepcion = ({
           id_almacen_recepcionista: idAlmacenRecepcionista,
           con_incidencia: conIncidencia,
           observacion,
-          fecha_hora_recepcion: fechaHoraRecepcion?.toISOString() ?? new Date().toISOString(),
+          fecha_hora_recepcion:
+            fechaHoraRecepcion?.toISOString() ?? new Date().toISOString(),
           items: finalItems,
         },
         evidencias,
@@ -349,7 +361,13 @@ export const useRegistrarRecepcion = ({
     }
 
     return true;
-  }, [groupedItems, idAlmacenRecepcionista, fechaHoraRecepcion, conIncidencia, observacion]);
+  }, [
+    groupedItems,
+    idAlmacenRecepcionista,
+    fechaHoraRecepcion,
+    conIncidencia,
+    observacion,
+  ]);
 
   return {
     groupedItems,

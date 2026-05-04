@@ -1,8 +1,8 @@
 import React from "react";
 import { Table, Text, Group, Radio, NumberInput } from "@mantine/core";
 import dayjs from "dayjs";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
-import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 
 interface Props {
   lotes: RES_LoteDisponible[];
@@ -13,7 +13,7 @@ interface Props {
   maxQty?: number;
 }
 
-export const LotesDisponiblesTableOCTrans = ({
+export const LotesDisponiblesTable = ({
   lotes,
   loading,
   selectedAjustes,
@@ -139,8 +139,10 @@ export const LotesDisponiblesTableOCTrans = ({
                           onUpdateTabular(lote.id_lote, true, Number(val))
                         }
                         classNames={{
-                          input: `w-20 rounded-md bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${
-                            !isActive ? "opacity-30" : "opacity-100"
+                          input: `text-center font-mono font-bold bg-zinc-950/50 border-zinc-800 transition-colors ${
+                            isActive
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                              : "focus:border-indigo-500 focus:bg-indigo-500/10 opacity-50"
                           }`,
                         }}
                       />

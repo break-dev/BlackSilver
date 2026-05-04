@@ -3,23 +3,22 @@ import {
   Paper,
   Stack,
   Text,
-  Badge,
   ActionIcon,
   Button,
   Checkbox,
   Alert,
   Switch,
-  Divider,
+  Badge,
 } from "@mantine/core";
 import { PlusIcon, TrashIcon, CubeIcon } from "@heroicons/react/24/outline";
-import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { LotesDisponiblesTable } from "./lotes-disponibles-table";
+import { NuevoLoteTrans } from "./nuevo-lote";
 import type {
-  GrupoRecepcionTrans,
   DTO_LoteRecepcionTrans,
-} from "../../hooks/useRegistrarRecepcion";
-import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
-import { LotesDisponiblesTableOCTrans } from "./LotesDisponiblesTableOCTrans";
-import { NuevoLoteFormOCTrans } from "./NuevoLoteFormOCTrans";
+  GrupoRecepcionTrans,
+} from "../../../hooks/useRegistrarRecepcion";
 
 interface Props {
   group: GrupoRecepcionTrans;
@@ -50,7 +49,7 @@ interface Props {
   cantidadTotalError?: string;
 }
 
-export const ProductoRecepcionCardOCTrans = ({
+export const RecepcionProductoCard = ({
   group,
   groupIndex,
   toggleSelection,
@@ -69,71 +68,63 @@ export const ProductoRecepcionCardOCTrans = ({
 
   return (
     <Paper
-      shadow="md"
+      p={0}
       radius="lg"
-      className={`border overflow-hidden relative transition-all duration-200 ${
+      className={`border overflow-hidden transition-all duration-300 ${
         group.selected
-          ? "bg-zinc-900/30 border-indigo-500/40"
-          : "bg-zinc-950/40 border-zinc-800/80 opacity-70"
+          ? "bg-zinc-900/10 border-zinc-800"
+          : "bg-zinc-950/20 border-zinc-900 opacity-60 grayscale-[0.4]"
       }`}
     >
       {/* Header del Producto */}
       <div
-        className={`border-b p-4 px-5 transition-colors ${
+        className={`p-4 px-5 border-b transition-colors ${
           group.selected
             ? "bg-zinc-900/60 border-zinc-800/50"
-            : "bg-zinc-900/30 border-zinc-800/30"
+            : "bg-transparent border-zinc-900/50"
         }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <Group gap="md" wrap="nowrap" flex={1}>
             <Checkbox
               checked={group.selected}
               onChange={toggleSelection}
               color="indigo"
-              size="md"
+              size="sm"
+              radius="sm"
               className="cursor-pointer"
             />
             <div
-              className={`p-2.5 rounded-xl border shadow-inner transition-colors ${
+              className={`p-2.5 rounded-xl border transition-colors shadow-inner ${
                 group.selected
                   ? "bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border-indigo-500/20"
-                  : "bg-zinc-800/30 border-zinc-700/30"
+                  : "bg-zinc-900/50 border-zinc-800"
               }`}
             >
               <CubeIcon
-                className={`w-5 h-5 ${
-                  group.selected ? "text-indigo-400" : "text-zinc-500"
-                }`}
+                className={`w-5 h-5 ${group.selected ? "text-indigo-400" : "text-zinc-500"}`}
               />
             </div>
             <div>
               <Text
                 size="md"
                 fw={900}
-                className={`${
-                  group.selected ? "text-white" : "text-zinc-400"
-                } tracking-tight leading-tight`}
+                className={`${group.selected ? "text-white" : "text-zinc-400"} tracking-tight leading-tight`}
               >
                 {group.producto}
               </Text>
-              <Group gap="xs" mt={4}>
-                <Badge
-                  variant="dot"
-                  color={group.selected ? "teal" : "gray"}
-                  size="xs"
-                  className={`${
-                    group.selected
-                      ? "bg-zinc-800/50 border-zinc-700/50 text-zinc-300"
-                      : "bg-zinc-900/50 border-zinc-800/50 text-zinc-500"
-                  } font-bold px-3 py-3 rounded-lg`}
-                >
-                  Transferido: {formatNumber(group.cantidad_transferida_base)}{" "}
-                  {group.unidad_medida_base_abv}
-                </Badge>
-              </Group>
+              <Badge
+                variant="dot"
+                color="teal"
+                size="xs"
+                mt={2}
+                className={`bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg ${!group.selected && "opacity-50 grayscale"}`}
+              >
+                Total a Recibir: {formatNumber(group.cantidad_transferida_base)}{" "}
+                {group.unidad_medida_base_abv}
+              </Badge>
             </div>
-          </div>
+          </Group>
 
           {group.selected && (
             <Button
@@ -151,20 +142,20 @@ export const ProductoRecepcionCardOCTrans = ({
       </div>
 
       {group.selected && (
-        <Stack gap={0}>
+        <Stack gap={0} className="divide-y divide-zinc-800/50">
           {group.lots.map((lot, lotIndex) => {
             const esNuevoLote = lot.es_nuevo_lote;
 
             return (
-              <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
-                {lotIndex > 0 && (
-                  <Divider color="zinc.8" variant="dashed" mb="md" />
-                )}
-                <div className="flex justify-between items-center mb-2">
+              <div
+                key={lotIndex}
+                className="p-5 space-y-4 relative group/lot animate-in fade-in duration-300"
+              >
+                <Group justify="space-between">
                   <Text
                     size="xs"
                     fw={800}
-                    c="dimmed"
+                    c="zinc.5"
                     className="uppercase tracking-widest"
                   >
                     Partida #{lotIndex + 1}
@@ -179,7 +170,7 @@ export const ProductoRecepcionCardOCTrans = ({
                       <TrashIcon className="w-4 h-4" />
                     </ActionIcon>
                   )}
-                </div>
+                </Group>
 
                 <Group justify="space-between">
                   <Group gap="xs">
@@ -213,9 +204,9 @@ export const ProductoRecepcionCardOCTrans = ({
                   </Group>
                 </Group>
 
-                {!esNuevoLote && (
+                {!esNuevoLote ? (
                   <div className="bg-zinc-950/20 p-3 rounded-xl border border-zinc-800/30 mb-2 space-y-3">
-                    <LotesDisponiblesTableOCTrans
+                    <LotesDisponiblesTable
                       lotes={productLots}
                       loading={loadingLotes}
                       selectedAjustes={lot.ajustes ?? {}}
@@ -232,24 +223,20 @@ export const ProductoRecepcionCardOCTrans = ({
                       unidadBaseAbv={group.unidad_medida_base_abv}
                     />
                   </div>
-                )}
-
-                {esNuevoLote && (
-                  <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-                    <NuevoLoteFormOCTrans
-                      groupIndex={groupIndex}
-                      lotIndex={lotIndex}
-                      lot={lot}
-                      setLotValue={setLotValue}
-                      getLotError={getLotError}
-                      unidadBaseAbv={group.unidad_medida_base_abv}
-                      unidadOCAbv={group.unidad_medida_oc_abv}
-                      contenidoPorPresentacion={
-                        group.contenido_por_presentacion_oc
-                      }
-                      maxPermitido={group.cantidad_transferida_base}
-                    />
-                  </div>
+                ) : (
+                  <NuevoLoteTrans
+                    groupIndex={groupIndex}
+                    lotIndex={lotIndex}
+                    lot={lot}
+                    setLotValue={setLotValue}
+                    getLotError={getLotError}
+                    unidadBaseAbv={group.unidad_medida_base_abv}
+                    unidadOCAbv={group.unidad_medida_oc_abv}
+                    contenidoPorPresentacion={
+                      group.contenido_por_presentacion_oc
+                    }
+                    maxPermitido={group.cantidad_transferida_base}
+                  />
                 )}
               </div>
             );
@@ -260,10 +247,11 @@ export const ProductoRecepcionCardOCTrans = ({
       {group.selected && cantidadTotalError && (
         <Alert
           color="red"
-          variant="filled"
+          variant="light"
           icon={<CubeIcon className="w-4 h-4" />}
           m="md"
           radius="md"
+          className="border border-red-500/20"
         >
           <Text size="xs" fw={700}>
             {cantidadTotalError}

@@ -2,29 +2,33 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
-import type {
-  RES_TransferenciaOC,
-  RES_TransferenciaOCDetalle,
-} from "../service/oc-recepcion-transferencias.responses";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
+import type {
+  RES_OCTransferencia,
+  RES_OCTransferenciaDetalle,
+} from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 
 export const useListarTransferencias = () => {
   const { notifyError } = useNotify();
 
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
-  const [selectedAlmacenId, setSelectedAlmacenId] = useState<number | null>(null);
+  const [selectedAlmacenId, setSelectedAlmacenId] = useState<number | null>(
+    null,
+  );
   const [mes, setMes] = useState<number>(dayjs().month() + 1); // dayjs months 0-indexed
   const [anio, setAnio] = useState<number>(dayjs().year());
 
-  const [transferencias, setTransferencias] = useState<RES_TransferenciaOC[]>([]);
+  const [transferencias, setTransferencias] = useState<RES_OCTransferencia[]>(
+    [],
+  );
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(true);
   const [loading, setLoading] = useState(false);
 
   // Detalles de la transferencia seleccionada
   const [selectedTransferencia, setSelectedTransferencia] =
-    useState<RES_TransferenciaOC | null>(null);
+    useState<RES_OCTransferencia | null>(null);
   const [detallesTransferencia, setDetallesTransferencia] = useState<
-    RES_TransferenciaOCDetalle[]
+    RES_OCTransferenciaDetalle[]
   >([]);
   const [loadingDetalles, setLoadingDetalles] = useState(false);
 
@@ -59,7 +63,7 @@ export const useListarTransferencias = () => {
   }, [selectedAlmacenId, mes, anio]);
 
   // 3. Cargar detalles al seleccionar una transferencia
-  const seleccionarTransferencia = (t: RES_TransferenciaOC) => {
+  const seleccionarTransferencia = (t: RES_OCTransferencia) => {
     setSelectedTransferencia(t);
     setDetallesTransferencia([]);
     setLoadingDetalles(true);
