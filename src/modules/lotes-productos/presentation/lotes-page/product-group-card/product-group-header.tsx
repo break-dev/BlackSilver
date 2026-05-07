@@ -35,9 +35,9 @@ export const ProductGroupHeader = ({
               {product.producto}
             </Text>
             <Group gap={4} className="flex flex-row self-end gap-3 mb-0.5">
-              {product.es_fiscalizado && (
+              {product.es_auditable && (
                 <Badge color="yellow" variant="light" size="xs">
-                  Fiscalizado
+                  Auditable
                 </Badge>
               )}
               {product.es_perecible && (

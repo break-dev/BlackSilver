@@ -187,7 +187,7 @@ export const TablaDetalleResumen = ({
                           tiempoEntrega={det.tiempo_entrega}
                           tiempoEntregaPeriodo={det.tiempo_entrega_periodo}
                           tiempoEntregaDias={det.tiempo_entrega_dias}
-                          esFiscalizado={Boolean(det.es_fiscalizado)}
+                          esAuditable={Boolean(det.es_auditable)}
                           esPerecible={Boolean(det.es_perecible)}
                           isCheapest={isCheapest}
                         />

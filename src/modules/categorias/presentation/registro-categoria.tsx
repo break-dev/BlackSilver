@@ -21,8 +21,8 @@ interface RegistroCategoriaProps {
   setNombre: (val: string) => void;
   descripcion: string;
   setDescripcion: (val: string) => void;
-  tipoRequerimiento: string | null;
-  setTipoRequerimiento: (val: string | null) => void;
+  tipoProducto: string | null;
+  setTipoProducto: (val: string | null) => void;
   clasificacionBien: string | null;
   setClasificacionBien: (val: string | null) => void;
   esConsumible: boolean;
@@ -46,8 +46,8 @@ export const RegistroCategoria = ({
   setNombre,
   descripcion,
   setDescripcion,
-  tipoRequerimiento,
-  setTipoRequerimiento,
+  tipoProducto,
+  setTipoProducto,
   clasificacionBien,
   setClasificacionBien,
   esConsumible,
@@ -93,8 +93,8 @@ export const RegistroCategoria = ({
         radius="lg"
         classNames={inputClasses}
         data={Object.values(TipoProducto)}
-        value={tipoRequerimiento}
-        onChange={setTipoRequerimiento}
+        value={tipoProducto}
+        onChange={setTipoProducto}
         comboboxProps={{
           withinPortal: true,
           zIndex: 99999,
@@ -208,7 +208,9 @@ export const RegistroCategoria = ({
                 </ScrollArea>
               ) : (
                 <span className="text-xs font-semibold text-zinc-600 italic block">
-                  {esConsumible ? "Sin destinos seleccionados" : "Trazabilidad desactivada"}
+                  {esConsumible
+                    ? "Sin destinos seleccionados"
+                    : "Trazabilidad desactivada"}
                 </span>
               )}
             </div>

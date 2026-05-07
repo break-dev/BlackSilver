@@ -6,7 +6,7 @@ Administración del catálogo maestro de items. Este módulo define las propieda
 
 - **Maestro de Artículos**: Definición de SKU, nombres, marcas, modelos y unidades de medida.
 - **Configuración Logística**: Clasificación por categorías y familias, y definición de stock mínimo de seguridad.
-- **Propiedades Especiales**: Marcado de productos como "Fiscalizados" (sujetos a control estatal), "Perecederos" o que requieren "Control por Lote".
+- **Propiedades Especiales**: Marcado de productos como "Auditables" (sujetos a control estatal), "Perecederos" o que requieren "Control por Lote".
 - **Gestión Documental**: Posibilidad de adjuntar fichas técnicas o imágenes al producto.
 
 ## 🏗 Estructura de Archivos
@@ -35,4 +35,4 @@ Administración del catálogo maestro de items. Este módulo define las propieda
 ## 🔒 Reglas de Negocio
 
 - La unidad de medida es un campo obligatorio y crítico para los cálculos de stock.
-- Los productos fiscalizados requieren campos adicionales de información para el reporte de insumos químicos y bienes fiscalizados (IQBF).
+- Los productos auditables seran ocultados tras colocar al sistema en "Modo Auditoria".

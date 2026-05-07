@@ -249,7 +249,7 @@ export const CategoriasPage = () => {
                       radius="md"
                       className="font-bold px-2.5 h-5 text-white shadow-sm shadow-pink-900/20"
                     >
-                      {cat.tipo_requerimiento || "S.T."}
+                      {cat.tipo_producto || "S.T."}
                     </Badge>
                   </Tooltip>
                 </div>
@@ -270,8 +270,8 @@ export const CategoriasPage = () => {
           setNombre={registro.setNombre}
           descripcion={registro.descripcion}
           setDescripcion={registro.setDescripcion}
-          tipoRequerimiento={registro.tipoRequerimiento}
-          setTipoRequerimiento={registro.setTipoRequerimiento}
+          tipoProducto={registro.tipoProducto}
+          setTipoProducto={registro.setTipoProducto}
           clasificacionBien={registro.clasificacionBien}
           setClasificacionBien={registro.setClasificacionBien}
           esConsumible={registro.esConsumible}

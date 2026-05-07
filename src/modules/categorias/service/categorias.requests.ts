@@ -5,7 +5,7 @@ import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
 export const Schema_RegistroCategoria = z.object({
   nombre: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   descripcion: z.string().optional(),
-  tipo_requerimiento: z.enum(TipoProducto),
+  tipo_producto: z.enum(TipoProducto),
   clasificacion_bien: z.preprocess(
     (val) => (val === "" ? null : val),
     z.enum(TipoBien).nullable().optional(),

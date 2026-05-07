@@ -67,9 +67,9 @@ export const CotizacionDetalleItem = ({
                 Pendiente
               </Badge>
             )}
-            {det.es_fiscalizado && (
+            {det.es_auditable && (
               <Badge size="xs" color="orange" variant="dot">
-                Fiscalizado
+                Auditable
               </Badge>
             )}
             {det.es_perecible && (

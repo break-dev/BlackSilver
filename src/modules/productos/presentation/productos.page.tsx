@@ -117,9 +117,9 @@ export const ProductosPage = () => {
       textAlign: "center",
       render: (r) => (
         <div className="flex flex-row gap-2 justify-center items-center">
-          {r.es_fiscalizado == true && (
+          {r.es_auditable == true && (
             <Badge color="yellow" variant="light" size="xs">
-              Fiscalizado
+              Auditable
             </Badge>
           )}
           {r.es_perecible == true && (
@@ -127,7 +127,7 @@ export const ProductosPage = () => {
               Perecible
             </Badge>
           )}
-          {r.es_fiscalizado == false && r.es_perecible == false && (
+          {r.es_auditable == false && r.es_perecible == false && (
             <Text size="xs" className="text-zinc-600 italic">
               Ninguno
             </Text>

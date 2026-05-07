@@ -26,7 +26,7 @@ interface CeldaDetalleItemProps {
   tiempoEntrega?: number | null;
   tiempoEntregaPeriodo?: string | null;
   tiempoEntregaDias?: number | null;
-  esFiscalizado?: boolean;
+  esAuditable?: boolean;
   esPerecible?: boolean;
   isCheapest?: boolean;
 }
@@ -46,7 +46,7 @@ export const CeldaDetalleItem = ({
   tipoDespacho,
   lugarRecojo,
   tiempoEntregaDias,
-  esFiscalizado,
+  esAuditable,
   esPerecible,
   isCheapest,
 }: CeldaDetalleItemProps) => {
@@ -121,12 +121,12 @@ export const CeldaDetalleItem = ({
           </Badge>
         )}
 
-        {/* Flags: Fiscalizado / Perecible */}
-        {(esFiscalizado || esPerecible) && (
+        {/* Flags: Auditable / Perecible */}
+        {(esAuditable || esPerecible) && (
           <Group gap={4} mb={4}>
-            {esFiscalizado && (
+            {esAuditable && (
               <Badge size="xs" color="orange" variant="dot">
-                Fiscalizado
+                Auditable
               </Badge>
             )}
             {esPerecible && (

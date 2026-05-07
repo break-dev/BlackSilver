@@ -61,7 +61,7 @@ export interface RES_OrdenCompraDetalle {
   //
   id_producto: number;
   producto: string;
-  es_fiscalizado: boolean;
+  es_auditable: boolean;
   es_perecible: boolean;
   //
   id_unidad_medida_oc: number;

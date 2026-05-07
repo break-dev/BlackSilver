@@ -21,7 +21,7 @@ export const useGroupedProducts = (records: RES_Lote[]) => {
           por_vencer: 0,
           vencidos: 0,
           es_perecible: lote.es_perecible,
-          es_fiscalizado: lote.es_fiscalizado,
+          es_auditable: lote.es_auditable,
         };
       }
       const group = groups[lote.id_producto];

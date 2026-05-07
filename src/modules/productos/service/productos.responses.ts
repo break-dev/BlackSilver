@@ -6,7 +6,7 @@ export interface RES_Producto {
   unidad_medida_base: string;
   unidad_medida_abreviatura: string;
   nombre: string;
-  es_fiscalizado: boolean;
+  es_auditable: boolean;
   es_perecible: boolean;
   stock_minimo: number;
   tiempo_espera_vencimiento: number | null;

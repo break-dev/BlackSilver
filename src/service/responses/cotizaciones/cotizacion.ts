@@ -32,7 +32,7 @@ export interface RES_CotizacionDetalle {
   // Producto
   id_producto: number;
   producto: string;
-  es_fiscalizado: boolean;
+  es_auditable: boolean;
   es_perecible: boolean;
   // Unidad de medida (cotización)
   id_unidad_medida_ctz: number;

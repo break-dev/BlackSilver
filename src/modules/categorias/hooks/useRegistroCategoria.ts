@@ -20,7 +20,7 @@ export const useRegistroCategoria = ({
   // Estado del formulario
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [tipoRequerimiento, setTipoRequerimiento] = useState<string | null>(
+  const [tipoProducto, setTipoProducto] = useState<string | null>(
     TipoProducto.Bien,
   );
   const [clasificacionBien, setClasificacionBien] = useState<string | null>(
@@ -37,7 +37,7 @@ export const useRegistroCategoria = ({
   const reset = useCallback(() => {
     setNombre("");
     setDescripcion("");
-    setTipoRequerimiento(null);
+    setTipoProducto(null);
     setClasificacionBien(null);
     setEsConsumible(false);
     setParaCocina(false);
@@ -51,7 +51,7 @@ export const useRegistroCategoria = ({
     const data = {
       nombre,
       descripcion,
-      tipo_requerimiento: tipoRequerimiento || "",
+      tipo_producto: tipoProducto || "",
       clasificacion_bien: clasificacionBien || "",
       es_consumible: esConsumible,
       para_cocina: paraCocina,
@@ -90,8 +90,8 @@ export const useRegistroCategoria = ({
     setNombre,
     descripcion,
     setDescripcion,
-    tipoRequerimiento,
-    setTipoRequerimiento,
+    tipoProducto,
+    setTipoProducto,
     clasificacionBien,
     setClasificacionBien,
     esConsumible,

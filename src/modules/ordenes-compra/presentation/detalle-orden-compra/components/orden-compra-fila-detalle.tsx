@@ -54,7 +54,7 @@ export const OrdenCompraFilaDetalle = ({
             </Text>
           </Group>
           <Group gap={4}>
-            {det.es_fiscalizado && (
+            {det.es_auditable && (
               <Badge
                 variant="filled"
                 color="red"
@@ -62,7 +62,7 @@ export const OrdenCompraFilaDetalle = ({
                 radius="xs"
                 className="font-black py-1.5!"
               >
-                FISCALIZADO
+                AUDITABLE
               </Badge>
             )}
             {det.es_perecible && (

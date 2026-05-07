@@ -16,7 +16,7 @@ const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
   id_unidad_medida_base: 0,
   nombre: "",
-  es_fiscalizado: false,
+  es_auditable: false,
   es_perecible: false,
   stock_minimo: 0,
   tiempo_espera_vencimiento: null,

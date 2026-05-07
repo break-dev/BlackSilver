@@ -2,7 +2,7 @@ export interface RES_Categoria {
   id_categoria: number;
   nombre: string;
   descripcion: string | null;
-  tipo_requerimiento: string;
+  tipo_producto: string;
   clasificacion_bien: string | null;
   estado: string;
   es_consumible: boolean;

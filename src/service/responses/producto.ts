@@ -2,7 +2,7 @@ export interface RES_Producto {
   id_producto: number;
   nombre: string;
   es_perecible: boolean;
-  es_fiscalizado: boolean;
+  es_auditable: boolean;
   //
   id_categoria: number;
   categoria: string;

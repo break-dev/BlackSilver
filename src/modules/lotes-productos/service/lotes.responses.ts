@@ -18,7 +18,7 @@ export interface RES_Lote {
   fecha_vencimiento: string | null;
   estado: string;
   es_perecible: boolean;
-  es_fiscalizado: boolean;
+  es_auditable: boolean;
   stock_minimo: number;
   dias_espera_vencimiento: number | null;
   dias_para_vencer: number | null;
@@ -30,7 +30,7 @@ export interface RES_ProductoDisponible {
   id_unidad_medida_base: number;
   nombre: string;
   es_perecible: 0 | 1;
-  es_fiscalizado: 0 | 1;
+  es_auditable: 0 | 1;
   stock_minimo: number;
   tiempo_espera_vencimiento: number | null;
   periodo_espera_vencimiento: string | null;

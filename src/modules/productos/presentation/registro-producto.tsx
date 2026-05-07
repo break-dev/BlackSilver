@@ -198,11 +198,11 @@ export const RegistroProducto = ({
 
         <Group grow gap="xl" mt={"12px"}>
           <Checkbox
-            label="Producto Fiscalizado"
+            label="Producto Auditable"
             description="Requiere control y reporte"
-            checked={form.es_fiscalizado}
+            checked={form.es_auditable}
             onChange={(e) =>
-              setField("es_fiscalizado", e.currentTarget.checked)
+              setField("es_auditable", e.currentTarget.checked)
             }
             color="red"
             radius="sm"
@@ -348,8 +348,8 @@ export const RegistroProducto = ({
           setNombre={registroCat.setNombre}
           descripcion={registroCat.descripcion}
           setDescripcion={registroCat.setDescripcion}
-          tipoRequerimiento={registroCat.tipoRequerimiento}
-          setTipoRequerimiento={registroCat.setTipoRequerimiento}
+          tipoProducto={registroCat.tipoProducto}
+          setTipoProducto={registroCat.setTipoProducto}
           clasificacionBien={registroCat.clasificacionBien}
           setClasificacionBien={registroCat.setClasificacionBien}
           esConsumible={registroCat.esConsumible}
