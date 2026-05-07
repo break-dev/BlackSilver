@@ -8,7 +8,7 @@ export interface RES_Producto {
   nombre: string;
   es_auditable: boolean;
   es_perecible: boolean;
-  stock_minimo: number;
+  stock_minimo_base: number;
   tiempo_espera_vencimiento: number | null;
   periodo_espera_vencimiento: string | null;
   dias_espera_vencimiento: number | null;

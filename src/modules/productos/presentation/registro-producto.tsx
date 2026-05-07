@@ -176,8 +176,8 @@ export const RegistroProducto = ({
         <NumberInput
           label={<LabelForm text="Stock Mínimo" />}
           placeholder="0"
-          value={form.stock_minimo}
-          onChange={(val) => setField("stock_minimo", Number(val))}
+          value={form.stock_minimo_base}
+          onChange={(val) => setField("stock_minimo_base", Number(val))}
           classNames={{
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
@@ -201,9 +201,7 @@ export const RegistroProducto = ({
             label="Producto Auditable"
             description="Requiere control y reporte"
             checked={form.es_auditable}
-            onChange={(e) =>
-              setField("es_auditable", e.currentTarget.checked)
-            }
+            onChange={(e) => setField("es_auditable", e.currentTarget.checked)}
             color="red"
             radius="sm"
             size="sm"

@@ -19,7 +19,7 @@ export interface RES_Lote {
   estado: string;
   es_perecible: boolean;
   es_auditable: boolean;
-  stock_minimo: number;
+  stock_minimo_base: number;
   dias_espera_vencimiento: number | null;
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimientoProducto;
@@ -31,7 +31,7 @@ export interface RES_ProductoDisponible {
   nombre: string;
   es_perecible: 0 | 1;
   es_auditable: 0 | 1;
-  stock_minimo: number;
+  stock_minimo_base: number;
   tiempo_espera_vencimiento: number | null;
   periodo_espera_vencimiento: string | null;
   dias_espera_vencimiento: number | null;

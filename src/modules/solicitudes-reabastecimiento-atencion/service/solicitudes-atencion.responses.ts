@@ -13,6 +13,6 @@ export interface RES_HistorialEntregas {
 
 export interface RES_StockTotalAlmacen {
   id_producto: number;
-  stock_minimo: number;
+  stock_minimo_base: number;
   stock_total_base: number;
 }

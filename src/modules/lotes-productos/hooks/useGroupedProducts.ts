@@ -14,7 +14,7 @@ export const useGroupedProducts = (records: RES_Lote[]) => {
           producto: lote.producto,
           categoria: lote.categoria,
           unidad_medida_base: lote.unidad_medida_base,
-          stock_minimo: lote.stock_minimo,
+          stock_minimo_base: lote.stock_minimo_base,
           lotes: [],
           total_stock_base: 0,
           vigentes: 0,
@@ -32,7 +32,9 @@ export const useGroupedProducts = (records: RES_Lote[]) => {
       if (Number(lote.stock_actual_base) > 0) {
         if (lote.estado_vencimiento === EstadoVencimientoProducto.Vencido) {
           group.vencidos++;
-        } else if (lote.estado_vencimiento === EstadoVencimientoProducto.PorVencer) {
+        } else if (
+          lote.estado_vencimiento === EstadoVencimientoProducto.PorVencer
+        ) {
           group.por_vencer++;
         } else if (
           lote.estado_vencimiento === EstadoVencimientoProducto.Vigente ||

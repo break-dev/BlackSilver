@@ -32,7 +32,7 @@ export interface RES_PrestamoDetalle {
   id_solicitud_reabastecimiento_detalle: number;
   //
   id_producto: number;
-  stock_minimo: number;
+  stock_minimo_base: number;
   producto: string;
   producto_destino: string;
   stock_disponible_base: number;

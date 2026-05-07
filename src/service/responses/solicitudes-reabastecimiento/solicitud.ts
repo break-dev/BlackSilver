@@ -32,7 +32,7 @@ export interface RES_SolicitudDetalle {
   id_producto: number;
   producto: string;
   producto_destino: string | null;
-  stock_minimo: number;
+  stock_minimo_base: number;
   //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

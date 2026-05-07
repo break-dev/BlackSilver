@@ -445,7 +445,7 @@ export const RegistrarPrestamoAlmacen = ({
 
                     // Lógica de Stock Mínimo (advertencia)
                     const stockMinimoBase = Number(
-                      stockInfo?.stock_minimo || 0,
+                      stockInfo?.stock_minimo_base || 0,
                     );
                     const stockResultanteBase =
                       totalStockExternoBase - pedidoTotalBase;

@@ -9,7 +9,7 @@ interface GroupByProductoProps {
   idProducto: number;
   group: {
     name: string;
-    stock_minimo: number;
+    stock_minimo_base: number;
     stock_disponible: number;
     unidad_medida_base_abv: string;
     details: DetalleRequerimientoExtendido[];
@@ -65,13 +65,15 @@ export const GroupByProducto = ({
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
             >
-              Min: {formatNumber(group.stock_minimo)}{" "}
+              Min: {formatNumber(group.stock_minimo_base)}{" "}
               {group.unidad_medida_base_abv}
             </Badge>
             <Badge
               variant="dot"
               color={
-                group.stock_disponible <= group.stock_minimo ? "orange" : "teal"
+                group.stock_disponible <= group.stock_minimo_base
+                  ? "orange"
+                  : "teal"
               }
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"

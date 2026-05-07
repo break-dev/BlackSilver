@@ -71,7 +71,7 @@ export const RegistrarEntrega = ({
     number,
     {
       name: string;
-      stock_minimo: number;
+      stock_minimo_base: number;
       stock_disponible: number;
       unidad_medida_base_abv: string;
       details: DetalleRequerimientoExtendido[];
@@ -82,7 +82,7 @@ export const RegistrarEntrega = ({
     if (!groupedByProduct[d.id_producto]) {
       groupedByProduct[d.id_producto] = {
         name: d.producto,
-        stock_minimo: d.stock_minimo,
+        stock_minimo_base: d.stock_minimo_base,
         stock_disponible: d.stock_disponible_base,
         unidad_medida_base_abv: d.unidad_medida_base_abv,
         details: [],

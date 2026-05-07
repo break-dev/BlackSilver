@@ -9,7 +9,7 @@ export interface GroupedProduct {
   producto: string;
   categoria: string | null;
   unidad_medida_base: string;
-  stock_minimo: number;
+  stock_minimo_base: number;
   lotes: RES_Lote[];
   total_stock_base: number;
   vigentes: number;

@@ -97,13 +97,13 @@ export const ProductosPage = () => {
       },
     },
     {
-      accessor: "stock_minimo",
+      accessor: "stock_minimo_base",
       title: "Stock Mín.",
       textAlign: "center",
       render: (r) => (
         <div className="flex flex-row gap-2 justify-center items-center">
           <Text size="sm" fw={500} className="text-zinc-300">
-            {formatNumber(r.stock_minimo)}
+            {formatNumber(r.stock_minimo_base)}
           </Text>
           <Badge size="xs" className="text-zinc-500">
             {r.unidad_medida_base} ({r.unidad_medida_abreviatura})

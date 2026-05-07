@@ -60,13 +60,13 @@ export const ProductoEntregaCard = ({
               size="sm"
               className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
             >
-              Min: {formatNumber(detalle.stock_minimo)}{" "}
+              Min: {formatNumber(detalle.stock_minimo_base)}{" "}
               {detalle.unidad_medida_base_abv}
             </Badge>
             <Badge
               variant="dot"
               color={
-                detalle.stock_disponible_base <= detalle.stock_minimo
+                detalle.stock_disponible_base <= detalle.stock_minimo_base
                   ? "orange"
                   : "teal"
               }

@@ -15,7 +15,7 @@ export const ProductGroupHeader = ({
   const { angry, close } = useBlackcito();
 
   const isBajoStock =
-    Number(product.total_stock_base) <= Number(product.stock_minimo);
+    Number(product.total_stock_base) <= Number(product.stock_minimo_base);
 
   return (
     <div className="p-4 bg-zinc-900/20 border-b border-zinc-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -49,7 +49,11 @@ export const ProductGroupHeader = ({
                 <>
                   <div
                     className="bg-rose-500/20 border-2 border-rose-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
-                    onMouseEnter={() => angry(`¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`)}
+                    onMouseEnter={() =>
+                      angry(
+                        `¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`,
+                      )
+                    }
                     onMouseLeave={close}
                   >
                     <ExclamationTriangleIcon className="w-3 h-3 text-rose-400" />
@@ -120,7 +124,8 @@ export const ProductGroupHeader = ({
               Mínimo:
             </Text>
             <Text size="10px" c="pink.5" fw={800}>
-              {formatNumber(product.stock_minimo)} {product.unidad_medida_base}
+              {formatNumber(product.stock_minimo_base)}{" "}
+              {product.unidad_medida_base}
             </Text>
           </div>
         </div>

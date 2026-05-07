@@ -18,7 +18,7 @@ const INITIAL_FORM: DTO_CrearProducto = {
   nombre: "",
   es_auditable: false,
   es_perecible: false,
-  stock_minimo: 0,
+  stock_minimo_base: 0,
   tiempo_espera_vencimiento: null,
   periodo_espera_vencimiento: null,
 };
