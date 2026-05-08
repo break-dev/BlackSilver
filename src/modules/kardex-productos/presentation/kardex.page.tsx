@@ -146,19 +146,20 @@ export const KardexProductosPage = () => {
             record.tipo_movimiento === Kardex_TipoMovimiento.Ingreso;
           return (
             <div className="flex flex-row items-end gap-2.5 justify-center">
-              {record.unidad_base !== record.unidad_lote && (
-                <Badge
-                  variant="filled"
-                  color={isIngreso ? "green.7" : "red.7"}
-                  size="sm"
-                  radius="sm"
-                  className="font-bold shadow-md"
-                >
-                  {isIngreso ? "+" : "-"}{" "}
-                  {formatNumber(record.cantidad_movimiento)}{" "}
-                  {record.unidad_lote_abv}
-                </Badge>
-              )}
+              {record.unidad_base !== record.unidad_lote &&
+                record.contenido_por_presentacion != 1 && (
+                  <Badge
+                    variant="filled"
+                    color={isIngreso ? "green.7" : "red.7"}
+                    size="sm"
+                    radius="sm"
+                    className="font-bold shadow-md"
+                  >
+                    {isIngreso ? "+" : "-"}{" "}
+                    {formatNumber(record.cantidad_movimiento)}{" "}
+                    {record.unidad_lote_abv}
+                  </Badge>
+                )}
               <Text
                 size="xs"
                 c={isIngreso ? "green.4" : "red.4"}
@@ -180,17 +181,19 @@ export const KardexProductosPage = () => {
         width: 170,
         render: (record) => (
           <div className="flex flex-row items-end gap-2.5 justify-center">
-            {record.unidad_base !== record.unidad_lote && (
-              <Badge
-                variant="light"
-                color="cyan"
-                radius="sm"
-                size="sm"
-                className="font-bold border border-cyan-500/30"
-              >
-                {formatNumber(record.stock_resultante)} {record.unidad_lote_abv}
-              </Badge>
-            )}
+            {record.unidad_base !== record.unidad_lote &&
+              record.contenido_por_presentacion != 1 && (
+                <Badge
+                  variant="light"
+                  color="cyan"
+                  radius="sm"
+                  size="sm"
+                  className="font-bold border border-cyan-500/30"
+                >
+                  {formatNumber(record.stock_resultante)}{" "}
+                  {record.unidad_lote_abv}
+                </Badge>
+              )}
             <Badge
               variant="light"
               color="pink"
@@ -201,6 +204,71 @@ export const KardexProductosPage = () => {
               {formatNumber(record.stock_resultante_base)}{" "}
               {record.unidad_base_abv}
             </Badge>
+          </div>
+        ),
+      },
+      {
+        accessor: "costo",
+        title: "Costo",
+        width: 250,
+        textAlign: "center",
+        render: (r) => (
+          <div className="flex flex-row items-center justify-center gap-3">
+            {/* Precio Unitario Base */}
+            <div className="flex flex-col items-center leading-tight">
+              <Text
+                size="9px"
+                fw={700}
+                className="text-zinc-500 uppercase tracking-tighter"
+              >
+                Por {r.unidad_base}
+              </Text>
+              <Text size="xs" fw={600} className="text-zinc-500 italic">
+                S/. {formatNumber(r.costo_promedio_base)}
+              </Text>
+            </div>
+
+            {/* Precio Presentación */}
+            {r.contenido_por_presentacion != 1 && (
+              <>
+                <div className="w-px h-6 bg-zinc-800/60" />
+                <div className="flex flex-col items-center leading-tight">
+                  <Text
+                    size="9px"
+                    fw={700}
+                    className="text-zinc-500 uppercase tracking-tighter"
+                  >
+                    Por {r.unidad_lote}
+                  </Text>
+                  <Text size="xs" fw={600} className="text-zinc-500 italic">
+                    S/.{" "}
+                    {formatNumber(
+                      r.costo_promedio_base * r.contenido_por_presentacion,
+                    )}
+                  </Text>
+                </div>
+              </>
+            )}
+
+            <div className="w-px h-6 bg-indigo-500/20" />
+
+            {/* Total Movimiento */}
+            <div className="flex flex-col items-center leading-tight">
+              <Text
+                size="9px"
+                fw={800}
+                c="indigo.4"
+                className="uppercase tracking-tighter"
+              >
+                Subtotal
+              </Text>
+              <Text size="sm" fw={800} c="teal.6">
+                S/.{" "}
+                {formatNumber(
+                  r.costo_promedio_base * r.cantidad_movimiento_base,
+                )}
+              </Text>
+            </div>
           </div>
         ),
       },

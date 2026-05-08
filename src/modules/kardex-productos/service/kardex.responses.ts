@@ -5,6 +5,7 @@ export interface RES_MovimientoKardex {
   categoria: string;
   producto: string;
   correlativo: string;
+  contenido_por_presentacion: number;
   unidad_lote: string;
   unidad_lote_abv: string;
   unidad_base: string;
@@ -18,6 +19,7 @@ export interface RES_MovimientoKardex {
   cantidad_movimiento_base: number;
   stock_resultante: number;
   stock_resultante_base: number;
+  costo_promedio_base: number;
   created_at: string;
 }
 
