@@ -41,8 +41,8 @@ export const detalleVacio = (
   cantidad: 1,
   contenido_por_presentacion: 1,
   cantidad_base: 1,
-  precio_unitario: 0,
-  precio_unitario_base: 0,
+  precio_unitario: null,
+  precio_unitario_base: null,
   no_cotiza: false,
   comentario: null,
   estado: Estado_Cotizacion_Detalle.Pendiente,
@@ -61,7 +61,7 @@ export function recalcularTotales(
   const items = detalles ?? cot.detalles;
   const subtotal = items.reduce((acc, d) => {
     if (d.no_cotiza) return acc;
-    return acc + d.cantidad * d.precio_unitario;
+    return acc + d.cantidad * (d.precio_unitario || 0);
   }, 0);
 
   const base = subtotal + (cot.costo_flete ?? 0) + (cot.otros_gastos ?? 0);

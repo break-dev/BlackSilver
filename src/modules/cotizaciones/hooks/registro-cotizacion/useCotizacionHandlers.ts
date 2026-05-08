@@ -87,7 +87,7 @@ export const useCotizacionHandlers = (
         upd.cantidad_base = upd.cantidad * upd.contenido_por_presentacion;
         upd.precio_unitario_base =
           upd.contenido_por_presentacion > 0
-            ? Number((upd.precio_unitario / upd.contenido_por_presentacion).toFixed(2))
+            ? Number(((upd.precio_unitario || 0) / upd.contenido_por_presentacion).toFixed(2))
             : 0;
         
         detalles[rowIndex] = upd;

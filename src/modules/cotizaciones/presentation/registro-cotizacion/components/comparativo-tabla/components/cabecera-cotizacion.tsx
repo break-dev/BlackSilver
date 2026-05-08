@@ -35,6 +35,7 @@ import type { RES_Almacen } from "../../../../../../../service/responses/almacen
 import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
 import { useNotify } from "../../../../../../../hooks/useNotify";
+import { MONEDAS } from "../../../../../../../shared/variables/monedas";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -280,7 +281,7 @@ export const CabeceraCotizacion = ({
               Subtotal
             </Text>
             <Text size="xs" fw={800} className="text-white truncate">
-              {cot.moneda === "Soles" ? "S/. " : "$ "}
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
               {formatNumber(cot.total_antes_igv)}
             </Text>
           </Stack>
@@ -299,7 +300,7 @@ export const CabeceraCotizacion = ({
               IGV
             </Text>
             <Text size="xs" fw={800} className="text-white truncate">
-              {cot.moneda === "Soles" ? "S/. " : "$ "}
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
               {formatNumber(cot.monto_igv)}
             </Text>
           </Stack>
@@ -318,7 +319,7 @@ export const CabeceraCotizacion = ({
               Total
             </Text>
             <Text size="xs" fw={800} className="text-white truncate">
-              {cot.moneda === "Soles" ? "S/. " : "$ "}
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
               {formatNumber(cot.total_despues_igv)}
             </Text>
           </Stack>
@@ -508,11 +509,20 @@ export const CabeceraCotizacion = ({
                 <Group grow gap="md">
                   <Select
                     label="Moneda"
-                    data={["Soles", "Dolares"]}
+                    data={Object.values(MONEDAS).map((m) => m.label)}
                     value={cot.moneda}
-                    onChange={(val) =>
-                      onUpdateHeader(idx, "moneda", val ?? "Soles")
-                    }
+                    onChange={(val) => {
+                      onUpdateHeader(idx, "moneda", val ?? MONEDAS.PEN.label);
+                      if (val === MONEDAS.PEN.label) {
+                        onUpdateHeader(idx, "tipo_cambio_venta_referencial", 1);
+                      } else {
+                        onUpdateHeader(
+                          idx,
+                          "tipo_cambio_venta_referencial",
+                          undefined,
+                        );
+                      }
+                    }}
                     classNames={inputStyles}
                     size="xs"
                     radius="lg"
@@ -538,6 +548,29 @@ export const CabeceraCotizacion = ({
                     comboboxProps={{ withinPortal: false }}
                   />
                 </Group>
+
+                <NumberInput
+                  label="Tipo de Cambio (Venta Referencial)"
+                  placeholder="Ej. 3.85"
+                  value={
+                    cot.moneda === MONEDAS.PEN.label
+                      ? 1
+                      : cot.tipo_cambio_venta_referencial ?? ""
+                  }
+                  onChange={(val) =>
+                    onUpdateHeader(
+                      idx,
+                      "tipo_cambio_venta_referencial",
+                      val === "" ? undefined : Number(val),
+                    )
+                  }
+                  disabled={cot.moneda === MONEDAS.PEN.label}
+                  min={0}
+                  decimalScale={4}
+                  size="xs"
+                  radius="lg"
+                  classNames={inputStyles}
+                />
 
                 {cot.metodo_pago === MetodoPago.Credito && (
                   <CustomDatePicker

@@ -19,7 +19,7 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
             return cot.detalles.some(
               (d) =>
                 d.id_producto === id_producto &&
-                (d.precio_unitario > 0 ||
+                ((d.precio_unitario ?? 0) > 0 ||
                   (d.comentario && d.comentario.trim() !== "")),
             );
           });
@@ -64,6 +64,7 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
         tipo_entidad_proveedor: TipoEntidad.Juridica,
         empresas_ids: [],
         moneda: "Soles",
+        tipo_cambio_venta_referencial: 1,
         metodo_pago: MetodoPago.Contado,
         fecha_vencimiento_pago: null,
         costo_flete: 0,
@@ -103,6 +104,11 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
     );
   }, []);
 
+  const limpiarComparativo = useCallback(() => {
+    setProductos([]);
+    setCotizaciones([]);
+  }, []);
+
   return {
     productos,
     setProductos,
@@ -112,5 +118,6 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
     agregarCotizacion,
     eliminarCotizacion,
     eliminarFilaProducto,
+    limpiarComparativo,
   };
 };

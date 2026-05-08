@@ -111,6 +111,19 @@ export const CotizacionFinancials = ({ cot }: CotizacionFinancialsProps) => {
           </Text>
         </Group>
       )}
+
+      {/* Tipo de Cambio Referencial */}
+      {cot.moneda !== "Soles" && cot.tipo_cambio_venta_referencial !== null && (
+        <Group gap="xs">
+          <CurrencyDollarIcon className="w-3.5 h-3.5 text-blue-400" />
+          <Text size="xs" c="dimmed">
+            TC Venta Ref:{" "}
+            <span className="text-blue-300 font-bold">
+              {cot.tipo_cambio_venta_referencial}
+            </span>
+          </Text>
+        </Group>
+      )}
     </div>
   );
 };

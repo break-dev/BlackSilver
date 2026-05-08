@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../../shared/functions/formatNumber";
 import { Estado_Cotizacion_Detalle } from "../../../../../../shared/enums/cotizacion/cotizacion";
+import { MONEDAS } from "../../../../../../shared/variables/monedas";
 import type { RES_CotizacionDetalle } from "../../../../../../service/responses/cotizaciones/cotizacion";
 
 interface CotizacionDetalleItemProps {
@@ -154,12 +155,12 @@ export const CotizacionDetalleItem = ({
         {/* Precio unitario + Subtotal */}
         <Group gap="xs" wrap="nowrap" className="shrink-0">
           <Badge variant="light" color="pink" size="sm" radius="md">
-            {moneda === "Soles" ? "S/." : "$"}{" "}
+            {moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
             {formatNumber(Number(det.precio_unitario))} /{" "}
             {det.unidad_medida_ctz_abv}
           </Badge>
           <Badge variant="filled" color="pink" size="sm" radius="md">
-            Sub: {moneda === "Soles" ? "S/." : "$"} {formatNumber(subtotal)}
+            Sub: {moneda === MONEDAS.PEN.label ? "S/." : "$"} {formatNumber(subtotal)}
           </Badge>
         </Group>
       </div>

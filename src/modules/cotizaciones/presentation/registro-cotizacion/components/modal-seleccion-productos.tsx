@@ -27,6 +27,7 @@ interface ModalSeleccionProductosProps {
   productosBloqueados?: number[];
   catalogoProductos: RES_Producto[];
   loading?: boolean;
+  soloAuditables?: boolean;
 }
 
 export const ModalSeleccionProductos = ({
@@ -37,6 +38,7 @@ export const ModalSeleccionProductos = ({
   productosBloqueados = [],
   catalogoProductos,
   loading = false,
+  soloAuditables = false,
 }: ModalSeleccionProductosProps) => {
   const [busqueda, setBusqueda] = useState("");
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
@@ -54,10 +56,13 @@ export const ModalSeleccionProductos = ({
         p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         p.id_producto.toString().toLowerCase().includes(busqueda.toLowerCase());
       const matchCategoria = !categoriaId || p.categoria === categoriaId;
+      
+      const isAuditable = Boolean(p.es_auditable);
+      const matchAuditable = soloAuditables ? isAuditable : !isAuditable;
 
-      return matchTexto && matchCategoria;
+      return matchTexto && matchCategoria && matchAuditable;
     });
-  }, [catalogoProductos, busqueda, categoriaId]);
+  }, [catalogoProductos, busqueda, categoriaId, soloAuditables]);
 
   const handleToggle = (id: number) => {
     const isChecked = seleccionadosActuales.includes(id);
@@ -194,6 +199,7 @@ export const ModalSeleccionProductos = ({
             }}
           />
         </Group>
+
 
         <DataTableEstandar
           idAccessor="id_producto"

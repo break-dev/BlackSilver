@@ -27,8 +27,8 @@ export const Schema_CotizacionDetalle = z.object({
   contenido_por_presentacion: z.number().min(0.01, "Mínimo 1"),
   cantidad_base: z.number(), // Calculado: cantidad * contenido
   // Precios
-  precio_unitario: z.number().min(0, "Precio no válido"),
-  precio_unitario_base: z.number(), // Calculado: precio_unitario / contenido
+  precio_unitario: z.number().min(0, "Precio no válido").optional().nullable(),
+  precio_unitario_base: z.number().optional().nullable(),
   // Extra
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
@@ -42,6 +42,7 @@ export const Schema_CotizacionRequest = z.object({
     .nativeEnum(TipoEntidad)
     .default(TipoEntidad.Juridica),
   moneda: z.string().min(1, "Seleccione una moneda"),
+  tipo_cambio_venta_referencial: z.number().optional().nullable(),
   metodo_pago: z.nativeEnum(MetodoPago),
   fecha_vencimiento_pago: z.string().optional().nullable(),
   // Costos adicionales (opcionales)

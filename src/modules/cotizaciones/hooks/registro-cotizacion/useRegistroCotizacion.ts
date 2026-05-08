@@ -28,6 +28,7 @@ export const useRegistroCotizacion = (
     agregarCotizacion,
     eliminarCotizacion,
     eliminarFilaProducto,
+    limpiarComparativo,
   } = useCotizacionGrid(maestros);
 
   const {
@@ -70,6 +71,7 @@ export const useRegistroCotizacion = (
     agregarCotizacion,
     eliminarCotizacion,
     eliminarFilaProducto,
+    limpiarComparativo,
     updateCotizacionHeader,
     updateCotizacionDetail,
     toggleCotizacionNoCotiza,
