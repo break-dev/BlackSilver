@@ -83,10 +83,15 @@ export const ListadoComparativos = ({
     setModalComparativoOpened(true);
   };
 
-  const handlePrintCotizacion = (cot: RES_Cotizacion) => {
-    const nombresEmpresas = cot.empresas.map((e) => e.razon_social);
+  const handlePrintCotizacion = async (cot: RES_Cotizacion) => {
     const target = `Cotizacion_${cot.id_cotizacion}_${Date.now()}`;
     prepare(target);
+
+    // path_logo ya viene como base64 data URL desde el backend
+    const empresasInfo = cot.empresas.map((e) => ({
+      razon_social: e.razon_social,
+      path_logo: e.path_logo ?? null,
+    }));
 
     print(
       <CotizacionPDF
@@ -94,7 +99,7 @@ export const ListadoComparativos = ({
           {
             cotizacion: cot,
             detalles: cot.detalles,
-            empresas: nombresEmpresas,
+            empresas: empresasInfo,
           },
         ]}
       />,
@@ -134,6 +139,7 @@ export const ListadoComparativos = ({
         await CotizacionesService.get_orden_compra(id_orden_compra);
       if (response.success && response.data) {
         const ordenData = response.data;
+        // empresa_logo ya viene como base64 data URL desde el backend
         print(
           <OrdenCompraPDF
             orden={ordenData}

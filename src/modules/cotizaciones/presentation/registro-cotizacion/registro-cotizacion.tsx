@@ -33,7 +33,7 @@ export const RegistroCotizacion = forwardRef<
   ) => {
     const { print } = usePrint();
 
-    const handleInternalSuccess = (
+    const handleInternalSuccess = async (
       data: RES_Comparativo[],
       _payload: DTO_RegistrarComparativo,
       _maestros: MaestrosState,
@@ -43,10 +43,14 @@ export const RegistroCotizacion = forwardRef<
       // Generar PDF de cotizaciones directamente desde los datos del response.
       if (data && data.length > 0) {
         const comp = data[0];
+        // path_logo ya viene como base64 data URL desde el backend
         const cotizacionesPDFData = comp.cotizaciones.map((cot) => ({
           cotizacion: cot,
           detalles: cot.detalles as RES_CotizacionDetalle[],
-          empresas: cot.empresas.map((e) => e.razon_social),
+          empresas: cot.empresas.map((e) => ({
+            razon_social: e.razon_social,
+            path_logo: e.path_logo ?? null,
+          })),
         }));
 
         if (cotizacionesPDFData.length > 0) {

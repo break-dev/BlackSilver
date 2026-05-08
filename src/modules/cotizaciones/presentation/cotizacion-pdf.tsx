@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text, StyleSheet, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { MONEDAS } from "../../../shared/variables/monedas";
@@ -8,10 +8,15 @@ import type {
 } from "../../../service/responses/cotizaciones/cotizacion";
 import { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
 
+interface EmpresaInfo {
+  razon_social: string;
+  path_logo: string | null;
+}
+
 interface CotizacionData {
   cotizacion: RES_Cotizacion;
   detalles: RES_CotizacionDetalle[];
-  empresas?: string[]; // Nombres de las empresas compradoras
+  empresas?: EmpresaInfo[];
 }
 
 interface CotizacionPDFProps {
@@ -149,44 +154,73 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             size="A4"
             style={styles.page}
           >
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={[styles.companyInfo, { flex: 1 }]}>
-                <Text
-                  style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}
-                >
-                  {(empresas && empresas.length > 0
-                    ? empresas.join(" - ")
-                    : "BLACK SILVER S.A.C."
-                  ).toUpperCase()}
-                </Text>
-                <View style={{ marginTop: 10, flexDirection: "row", gap: 10 }}>
-                  {/* Espacio reservado o info extra si se requiere luego */}
-                </View>
+          {/* ── Banda de logos superior ── */}
+          {empresas && empresas.some((e) => e.path_logo) && (() => {
+            const logosConImg = empresas.filter((e) => e.path_logo);
+            const justify =
+              logosConImg.length === 1
+                ? "flex-start"
+                : logosConImg.length === 2
+                ? "space-between"
+                : "space-evenly";
+            return (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: justify,
+                  alignItems: "center",
+                  marginBottom: 14,
+                  paddingBottom: 10,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#e4e4e7",
+                }}
+              >
+                {logosConImg.map((emp, i) => (
+                  <Image
+                    key={i}
+                    src={emp.path_logo as string}
+                    style={{ width: 120, height: 80, objectFit: "contain" }}
+                  />
+                ))}
               </View>
-              <View style={{ alignItems: "flex-end", flex: 1 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-end",
-                    gap: 15,
-                  }}
-                >
-                  <Text style={{ fontSize: 9, marginBottom: 2 }}>
-                    Fecha:{" "}
-                    {dayjs(cotizacion.fecha_hora_cotizacion).format(
-                      "DD/MM/YYYY",
-                    )}
+            );
+          })()}
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={[styles.companyInfo, { flex: 1 }]}>
+              <Text
+                style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}
+              >
+                {(empresas && empresas.length > 0
+                  ? empresas.map((e) => e.razon_social).join(" - ")
+                  : "BLACK SILVER S.A.C."
+                ).toUpperCase()}
+              </Text>
+            </View>
+            <View style={{ alignItems: "flex-end", flex: 1 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  gap: 15,
+                }}
+              >
+                <Text style={{ fontSize: 9, marginBottom: 2 }}>
+                  Fecha:{" "}
+                  {dayjs(cotizacion.fecha_hora_cotizacion).format(
+                    "DD/MM/YYYY",
+                  )}
+                </Text>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={styles.poTitle}>COTIZACIÓN</Text>
+                  <Text style={{ fontSize: 14, fontWeight: "bold" }}>
+                    N° {cotizacion.correlativo}
                   </Text>
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text style={styles.poTitle}>COTIZACIÓN</Text>
-                    <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-                      N° {cotizacion.correlativo}
-                    </Text>
-                  </View>
                 </View>
               </View>
             </View>
+          </View>
 
             {/* Info Proveedor y Pago */}
             <View style={{ flexDirection: "row", marginBottom: 20 }}>
