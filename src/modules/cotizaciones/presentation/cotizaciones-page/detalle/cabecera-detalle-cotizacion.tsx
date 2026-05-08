@@ -41,6 +41,7 @@ interface CabeceraDetalleCotizacionProps {
   onApprove?: (id: number) => void;
   loading?: boolean;
   isCollapsed: boolean;
+  tipoCambio?: number | null;
 }
 
 export const CabeceraDetalleCotizacion = ({
@@ -61,6 +62,7 @@ export const CabeceraDetalleCotizacion = ({
   onApprove,
   loading,
   isCollapsed,
+  tipoCambio,
 }: CabeceraDetalleCotizacionProps) => {
   const [showEmpresas, setShowEmpresas] = useState(false);
   const smb = moneda === "Soles" ? "S/." : "$";
@@ -193,6 +195,14 @@ export const CabeceraDetalleCotizacion = ({
             {moneda}
           </Text>
         </Group>
+        {moneda !== "Soles" && tipoCambio && (
+          <>
+            <Divider orientation="vertical" color="zinc.8" />
+            <Text size="10px" fw={800} className="text-indigo-300 uppercase">
+              T.C. {formatNumber(tipoCambio)}
+            </Text>
+          </>
+        )}
         <Divider orientation="vertical" color="zinc.8" />
         <Group gap={4} wrap="nowrap">
           <CreditCardIcon className="w-3.5 h-3.5 text-zinc-500" />

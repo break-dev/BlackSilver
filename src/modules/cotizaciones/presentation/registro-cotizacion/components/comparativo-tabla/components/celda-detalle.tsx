@@ -66,6 +66,7 @@ interface CeldaDetalleProps {
     id_producto: number,
   ) => void;
   onCancelarCopia?: () => void;
+  isCheapest?: boolean;
 }
 
 const inputStyles = {
@@ -89,6 +90,7 @@ export const CeldaDetalle = ({
   copySource,
   onIniciarCopia,
   onCancelarCopia,
+  isCheapest,
 }: CeldaDetalleProps & { rowIndex: number }) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -300,6 +302,17 @@ export const CeldaDetalle = ({
             classNames={inputStyles}
             placeholder="0.00"
             decimalScale={2}
+            rightSection={isCheapest ? (
+              <Badge 
+                color="orange.6" 
+                variant="filled" 
+                size="xs" 
+                className="mr-1 animate-pulse shadow-md font-black uppercase tracking-tighter"
+              >
+                MEJOR
+              </Badge>
+            ) : null}
+            rightSectionWidth={isCheapest ? 60 : 0}
           />
         </Group>
 

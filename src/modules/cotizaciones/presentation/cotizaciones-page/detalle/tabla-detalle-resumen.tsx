@@ -46,21 +46,31 @@ export const TablaDetalleResumen = ({
   }, [detalles]);
 
   const cheapestPrices = useMemo(() => {
-    const pricesMap = new Map();
+    const pricesMap = new Map<number, number>();
     productosUnicos.forEach((prod) => {
+      // Filtrar detalles para este producto y que tengan precio
       const relatedDetalles = detalles.filter(
-        (d) =>
-          d.id_comparativo_detalle === prod.id && Number(d.precio_unitario) > 0,
+        (d) => d.id_comparativo_detalle === prod.id && Number(d.precio_unitario_base) > 0
       );
+
       if (relatedDetalles.length > 0) {
-        const minPrice = Math.min(
-          ...relatedDetalles.map((d) => Number(d.precio_unitario)),
-        );
-        pricesMap.set(prod.id, minPrice);
+        // Normalizar todos los precios a Soles (Base Price * TC)
+        const normalizedPrices = relatedDetalles.map((d) => {
+          const parentCot = cotizaciones.find((c) => c.id_cotizacion === d.id_cotizacion);
+          const tc = parentCot?.tipo_cambio_venta_referencial || 1;
+          const moneda = parentCot?.moneda || "Soles";
+          // Si es Soles, TC es 1. Si es otra, multiplicamos por su TC.
+          const basePrice = Number(d.precio_unitario_base);
+          return moneda === "Soles" ? basePrice : basePrice * tc;
+        });
+
+        const minNormalized = Math.min(...normalizedPrices);
+        // Guardamos el precio normalizado mínimo para este producto
+        pricesMap.set(prod.id, minNormalized);
       }
     });
     return pricesMap;
-  }, [productosUnicos, detalles]);
+  }, [productosUnicos, detalles, cotizaciones]);
 
   return (
     <div className="flex flex-col h-full bg-zinc-950 rounded-3xl border border-zinc-800/80 shadow-2xl overflow-hidden relative">
@@ -119,6 +129,7 @@ export const TablaDetalleResumen = ({
                     onApprove={onApprove}
                     loading={loadingApprove === cot.id_cotizacion}
                     isCollapsed={isCollapsed}
+                    tipoCambio={cot.tipo_cambio_venta_referencial}
                   />
                 </Table.Th>
               ))}
@@ -155,9 +166,16 @@ export const TablaDetalleResumen = ({
                       d.id_cotizacion === cot.id_cotizacion &&
                       d.id_comparativo_detalle === prod.id,
                   );
+                  const normalizedPrice = det ? (() => {
+                    const tc = cot.tipo_cambio_venta_referencial || 1;
+                    const basePrice = Number(det.precio_unitario_base);
+                    return cot.moneda === "Soles" ? basePrice : basePrice * tc;
+                  })() : null;
+
                   const isCheapest =
                     det &&
-                    Number(det.precio_unitario) === cheapestPrices.get(prod.id);
+                    normalizedPrice !== null &&
+                    Math.abs(normalizedPrice - (cheapestPrices.get(prod.id) || 0)) < 0.0001;
 
                   return (
                     <Table.Td

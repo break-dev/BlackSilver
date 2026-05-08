@@ -322,10 +322,12 @@ export const ModalAsistenteAprobacion = ({
                 onChange={(val) =>
                   updateAprobacion((p) => ({ ...p, selectedEmpresaId: val }))
                 }
+                radius="lg"
+                size="sm"
                 classNames={{
-                  input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
-                  dropdown: "bg-zinc-900 border-zinc-800 dark",
-                  option: "hover:bg-indigo-500/20 data-[checked]:bg-indigo-500",
+                  input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
+                  dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+                  option: "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
                 }}
               />
             </Stack>
@@ -347,8 +349,10 @@ export const ModalAsistenteAprobacion = ({
                   }
                   decimalScale={4}
                   min={0}
+                  radius="lg"
+                  size="sm"
                   classNames={{
-                    input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
                   }}
                 />
               </Stack>
@@ -366,21 +370,17 @@ export const ModalAsistenteAprobacion = ({
               const simbolo = currentStepData?.cotizacion.moneda === "Soles" ? "S/." : "$";
 
               return (
-                <Stack gap="xs">
-                  <Group justify="space-between" align="center">
-                    <Text size="sm" fw={800} className="text-zinc-200">
+                <>
+                  <div className="flex-none flex items-center justify-between mb-2">
+                    <Text size="xs" fw={800} className="text-zinc-400 uppercase tracking-widest">
                       Productos a Adquirir
                     </Text>
                     <Checkbox
-                      size="sm"
+                      size="xs"
                       color="indigo"
                       checked={allSelected}
                       indeterminate={indeterminate}
-                      label={
-                        <Text size="xs" c="dimmed" fw={700}>
-                          Seleccionar Todos
-                        </Text>
-                      }
+                      label={<Text size="xs" c="dimmed" fw={700}>Seleccionar Todos</Text>}
                       onChange={() => {
                         updateAprobacion((prev) => ({
                           ...prev,
@@ -389,8 +389,8 @@ export const ModalAsistenteAprobacion = ({
                       }}
                       classNames={{ label: "cursor-pointer" }}
                     />
-                  </Group>
-                  <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[30vh] overflow-y-auto custom-scrollbar">
+                  </div>
+                  <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800/80 flex flex-col overflow-hidden">
                     {currentStepData?.cotizacion.detalles.map((det, dIdx) => {
                       if (det.no_cotiza) return null;
                       const prodMaestro = maestros.catalogo.find(
@@ -403,85 +403,96 @@ export const ModalAsistenteAprobacion = ({
                       return (
                         <div
                           key={`${det.id_producto}-${dIdx}`}
-                          className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 ${
-                            isChecked ? "bg-indigo-500/5" : "opacity-60"
+                          className={`px-4 py-3 border-b border-zinc-800/40 last:border-b-0 transition-all ${
+                            isChecked ? "bg-indigo-500/5" : "opacity-50"
                           }`}
                         >
-                          <Group wrap="nowrap" justify="space-between" gap="sm">
-                            {/* Left: checkbox + info */}
-                            <Group gap="sm" align="flex-start" className="flex-1 min-w-0">
+                          {/* Fila principal: 3 columnas iguales */}
+                          <div className="grid grid-cols-3 items-center gap-2">
+                            {/* Col 1: checkbox + nombre */}
+                            <div className="flex items-center gap-2 min-w-0">
                               <Checkbox
                                 size="sm"
                                 checked={isChecked}
                                 onChange={() => toggleDetalle(dIdx)}
                                 color="indigo"
                                 radius="sm"
-                                className="mt-0.5"
+                                className="shrink-0"
                               />
-                              <Stack gap={4} className="min-w-0">
-                                <Text size="xs" fw={800} className={isChecked ? "text-indigo-100" : "text-zinc-400"}>
-                                  {prodMaestro?.nombre || `Producto ${det.id_producto}`}
+                              <Text
+                                size="xs"
+                                fw={800}
+                                className={`min-w-0 truncate leading-tight ${
+                                  isChecked ? "text-white" : "text-zinc-400"
+                                }`}
+                              >
+                                {prodMaestro?.nombre || `Producto ${det.id_producto}`}
+                              </Text>
+                            </div>
+                            {/* Col 2: cantidad · input · c/u + variación abajo (centrado) */}
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <Text size="11px" c="dimmed" className="whitespace-nowrap font-mono">
+                                  {formatNumber(det.cantidad)}{" "}
+                                  {(() => {
+                                    const um = maestros.unidades.find(
+                                      (u) => u.id_unidad_medida === det.id_unidad_medida
+                                    );
+                                    return um?.abreviatura || "u.";
+                                  })()}{" · a"}
                                 </Text>
-                                <Group gap={4} align="center" wrap="nowrap">
-                                  <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                                    {formatNumber(det.cantidad)}{" "}
-                                    {(() => {
-                                      const um = maestros.unidades.find(
-                                        (u) => u.id_unidad_medida === det.id_unidad_medida
-                                      );
-                                      return um?.abreviatura || "u.";
-                                    })()}
-                                    {" · a"}
-                                  </Text>
-                                  <NumberInput
-                                    size="xs"
-                                    disabled={!isChecked}
-                                    value={ap?.preciosOC[dIdx] ?? ""}
-                                    onChange={(val: number | string) =>
-                                      updateAprobacion((prev) => ({
-                                        ...prev,
-                                        preciosOC: {
-                                          ...prev.preciosOC,
-                                          [dIdx]: val === "" ? "" : Number(val),
-                                        },
-                                      }))
-                                    }
-                                    decimalScale={4}
-                                    min={0}
-                                    prefix={`${simbolo} `}
-                                    className="w-28"
-                                    classNames={{
-                                      input: `bg-zinc-800 border-zinc-700 text-white text-xs font-bold focus:border-indigo-500 h-6 py-0 ${
-                                        !isChecked ? "opacity-40" : ""
-                                      }`,
-                                    }}
-                                  />
-                                  <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>c/u</Text>
-                                  {isChecked && variacion !== null && (
-                                    <Badge size="xs" variant="light" color={variacion > 0 ? "red" : "teal"}>
-                                      {variacion > 0 ? "+" : ""}{simbolo} {formatNumber(Math.abs(variacion))} vs cotización
-                                    </Badge>
-                                  )}
-                                </Group>
-                              </Stack>
-                            </Group>
-
-                            {/* Subtotal dinámico */}
-                            <Badge
-                              variant="light"
-                              color={isChecked ? "indigo" : "gray"}
-                              size="sm"
-                              className="shrink-0"
-                            >
-                              Sub: {simbolo}{" "}
-                              {formatNumber(ap ? getSubtotalAprobacion(ap, dIdx, Number(det.cantidad), precioRef) : 0)}
-                            </Badge>
-                          </Group>
+                                <NumberInput
+                                  size="xs"
+                                  disabled={!isChecked}
+                                  value={ap?.preciosOC[dIdx] ?? ""}
+                                  onChange={(val: number | string) =>
+                                    updateAprobacion((prev) => ({
+                                      ...prev,
+                                      preciosOC: {
+                                        ...prev.preciosOC,
+                                        [dIdx]: val === "" ? "" : Number(val),
+                                      },
+                                    }))
+                                  }
+                                  decimalScale={4}
+                                  min={0}
+                                  prefix={`${simbolo} `}
+                                  className="w-28"
+                                  radius="lg"
+                                  classNames={{
+                                    input: `bg-zinc-900/50 border-zinc-800 text-white text-xs font-bold transition-all placeholder:text-zinc-600 ${
+                                      isChecked
+                                        ? "focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300"
+                                        : "opacity-40 pointer-events-none"
+                                    }`,
+                                  }}
+                                />
+                                <Text size="11px" c="dimmed" className="whitespace-nowrap">c/u</Text>
+                              </div>
+                              {isChecked && variacion !== null && variacion !== 0 && (
+                                <Badge size="xs" variant="light" color={variacion > 0 ? "red" : "teal"}>
+                                  {variacion > 0 ? "+" : ""}{simbolo}{" "}
+                                  {formatNumber(Math.abs(variacion))} vs cotización
+                                </Badge>
+                              )}
+                            </div>
+                            {/* Col 3: subtotal (derecha) */}
+                            <div className="flex justify-end">
+                              <Badge
+                                variant="light"
+                                color={isChecked ? "indigo" : "gray"}
+                                size="sm"
+                                className="font-mono"
+                              >
+                                Sub: {simbolo} {formatNumber(ap ? getSubtotalAprobacion(ap, dIdx, Number(det.cantidad), precioRef) : 0)}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
-                </Stack>
+                </>
               );
             })()}
 

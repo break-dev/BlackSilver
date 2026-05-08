@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Table, Text, Skeleton, Tooltip, ActionIcon } from "@mantine/core";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
@@ -92,6 +93,29 @@ export const ComparativoTabla = ({
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
   const totalCols = numCotizaciones + numSkeletons;
   const totalWidth = 120 + totalCols * 400;
+
+  // Cálculo de mejores precios en tiempo real
+  const cheapestPrices = useMemo(() => {
+    const pricesMap = new Map<number, number>();
+    productos.forEach((prod, pIdx) => {
+      if (!prod) return;
+      
+      const normalizedPrices = cotizaciones.map((cot) => {
+        const det = cot.detalles[pIdx];
+        if (!det || det.no_cotiza || !det.precio_unitario || det.precio_unitario <= 0) return null;
+        
+        const tc = cot.tipo_cambio_venta_referencial || 1;
+        const moneda = cot.moneda || "Soles";
+        const basePrice = Number(det.precio_unitario_base);
+        return moneda === "Soles" ? basePrice : basePrice * tc;
+      }).filter((p): p is number => p !== null);
+
+      if (normalizedPrices.length > 1) { // Solo marcar si hay competencia
+        pricesMap.set(prod.id_producto, Math.min(...normalizedPrices));
+      }
+    });
+    return pricesMap;
+  }, [productos, cotizaciones]);
 
   return (
     <div
@@ -320,6 +344,14 @@ export const ComparativoTabla = ({
                         copySource={copySource}
                         onIniciarCopia={onIniciarCopia}
                         onCancelarCopia={onCancelarCopia}
+                        isCheapest={(() => {
+                          if (det.no_cotiza || !det.precio_unitario) return false;
+                          const tc = cot.tipo_cambio_venta_referencial || 1;
+                          const basePrice = Number(det.precio_unitario_base);
+                          const normalized = cot.moneda === "Soles" ? basePrice : basePrice * tc;
+                          const min = cheapestPrices.get(prod.id_producto);
+                          return min !== undefined && Math.abs(normalized - min) < 0.0001;
+                        })()}
                       />
 
                       {/* Overlay de 'No Cotiza' */}
