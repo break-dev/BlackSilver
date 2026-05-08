@@ -15,95 +15,132 @@ interface OrdenCompraPDFProps {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
-    fontSize: 10,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 30,
+    fontSize: 9,
     color: "#18181b",
+    fontFamily: "Helvetica",
+  },
+  logoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0fdf4",
+    paddingBottom: 10,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: "#14532d",
-    paddingBottom: 10,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#16a34a", // verde-600 (acento de OC)
+    paddingBottom: 8,
+  },
+  companyName: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#18181b",
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 700,
     color: "#16a34a",
+    textAlign: "right",
+  },
+  documentNumber: {
+    fontSize: 12,
+    fontWeight: 700,
+    textAlign: "right",
+    marginTop: 2,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 700,
-    backgroundColor: "#f0fdf4",
-    padding: 3,
-    marginBottom: 5,
+    color: "#3f6212", // lime-900 para contraste
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    borderLeftWidth: 3,
+    borderLeftColor: "#16a34a",
+    paddingLeft: 6,
+    marginBottom: 6,
+    marginTop: 10,
   },
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#e4e4e7",
-    paddingVertical: 5,
+    borderBottomColor: "#f0fdf4",
+    paddingVertical: 6,
     alignItems: "center",
   },
   tableHeader: {
-    backgroundColor: "#14532d",
+    backgroundColor: "#064e3b", // emerald-900
     color: "#ffffff",
     fontWeight: 700,
+    borderRadius: 2,
   },
   col0: { width: "5%", textAlign: "center" },
   col1: { width: "10%", textAlign: "center" },
   col2: { width: "10%", textAlign: "center" },
-  col3: { width: "45%", textAlign: "left", paddingLeft: 5 },
-  col4: { width: "15%", textAlign: "right", paddingRight: 5 },
-  col5: { width: "15%", textAlign: "right", paddingRight: 5 },
+  col3: { width: "45%", textAlign: "left", paddingLeft: 8 },
+  col4: { width: "15%", textAlign: "right", paddingRight: 8 },
+  col5: { width: "15%", textAlign: "right", paddingRight: 8 },
   totalsContainer: {
-    marginTop: 20,
+    marginTop: 15,
     alignSelf: "flex-end",
-    width: "40%",
+    width: "35%",
+    backgroundColor: "#f0fdf4", // suave verde
+    padding: 10,
+    borderRadius: 4,
   },
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 3,
+    paddingVertical: 2,
+  },
+  totalLabel: {
+    fontWeight: 700,
+    color: "#14532d",
   },
   grandTotal: {
-    marginTop: 5,
-    borderTopWidth: 2,
+    marginTop: 6,
+    borderTopWidth: 1,
     borderTopColor: "#16a34a",
-    paddingTop: 5,
-    fontSize: 12,
-    color: "#16a34a",
+    paddingTop: 6,
+    fontSize: 11,
+    color: "#14532d",
+    fontWeight: 700,
   },
   signatureSection: {
-    marginTop: 30,
+    marginTop: 40,
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: 50,
+    justifyContent: "space-between",
   },
   signatureBox: {
-    width: "40%",
+    width: "30%",
     alignItems: "center",
   },
   signatureLine: {
     borderTopWidth: 1,
-    borderTopColor: "#18181b",
+    borderTopColor: "#14532d",
     width: "100%",
-    marginBottom: 5,
+    marginBottom: 4,
   },
-  signatureName: { fontSize: 10, fontWeight: 700, textAlign: "center" },
-  signatureRole: { fontSize: 10, color: "#71717a", textAlign: "center" },
+  signatureName: { fontSize: 8, fontWeight: 700, textAlign: "center" },
+  signatureRole: { fontSize: 7, color: "#166534", textAlign: "center", textTransform: "uppercase" },
   footer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 20,
     left: 30,
     right: 30,
     textAlign: "center",
-    color: "#71717a",
-    fontSize: 8,
+    color: "#166534",
+    fontSize: 7,
     borderTopWidth: 1,
-    borderTopColor: "#e4e4e7",
-    paddingTop: 10,
+    borderTopColor: "#f0fdf4",
+    paddingTop: 8,
   },
 });
 
@@ -117,73 +154,62 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
       <Page size="A4" style={styles.page}>
         {/* ── Banda de logo superior (izquierda) ── */}
         {orden.empresa_logo && (
-          <View
-            style={{
-              marginBottom: 14,
-              paddingBottom: 10,
-              borderBottomWidth: 1,
-              borderBottomColor: "#e4e4e7",
-            }}
-          >
+          <View style={styles.logoContainer}>
             <Image
               src={orden.empresa_logo}
-              style={{ width: 120, height: 80, objectFit: "contain" }}
+              style={{ width: 90, height: 45, objectFit: "contain" }}
             />
+            <Text style={{ fontSize: 7, color: "#166534" }}>
+              Documento Oficial de Orden de Compra
+            </Text>
           </View>
         )}
 
         {/* Header */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 9, color: "#52525b", marginBottom: 2 }}>
+          <View style={{ flex: 1.5 }}>
+            <Text style={{ fontSize: 7, color: "#166534", marginBottom: 2 }}>
               EMITIR FACTURA A NOMBRE DE:
             </Text>
-            <View>
-              <Text style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}>
-                {orden.empresa.toUpperCase()}
+            <Text style={styles.companyName}>
+              {orden.empresa.toUpperCase()}
+            </Text>
+            {orden.empresa_ruc && (
+              <Text style={{ fontSize: 7, color: "#52525b", marginTop: 2 }}>
+                RUC: {orden.empresa_ruc}
               </Text>
-              {orden.empresa_ruc && (
-                <Text style={{ fontSize: 9, color: "#52525b", marginTop: 2 }}>
-                  RUC: {orden.empresa_ruc}
-                </Text>
-              )}
-            </View>
+            )}
           </View>
-          <View style={{ alignItems: "flex-end", flex: 1 }}>
-            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-              <Text style={{ fontSize: 9, marginBottom: 2, marginRight: 10 }}>
-                Fecha: {dayjs(orden.fecha_hora_orden).format("DD/MM/YYYY")}
-              </Text>
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.title}>ORDEN DE COMPRA</Text>
-                <Text style={{ fontSize: 14, fontWeight: 700 }}>
-                  N° {orden.correlativo}
-                </Text>
-              </View>
-            </View>
+          <View style={{ flex: 1, alignItems: "flex-end" }}>
+            <Text style={styles.title}>ORDEN DE COMPRA</Text>
+            <Text style={styles.documentNumber}>N° {orden.correlativo}</Text>
+            <Text style={{ fontSize: 8, color: "#52525b", marginTop: 4 }}>
+              Fecha: {dayjs(orden.fecha_hora_orden).format("DD/MM/YYYY")}
+            </Text>
           </View>
         </View>
 
         {/* Proveedor / Emisión */}
-        <View style={{ flexDirection: "row", marginBottom: 20 }}>
-          <View style={{ flex: 1, marginRight: 10 }}>
+        <View style={{ flexDirection: "row", marginBottom: 15, gap: 20 }}>
+          <View style={{ flex: 1, backgroundColor: "#f0fdf4", padding: 8, borderRadius: 4 }}>
             <Text style={styles.sectionTitle}>PROVEEDOR</Text>
-            <Text style={{ fontWeight: 700 }}>{orden.proveedor}</Text>
+            <Text style={{ fontWeight: 700, fontSize: 10 }}>{orden.proveedor}</Text>
             {orden.documento_proveedor && (
-              <Text style={{ fontSize: 9, color: "#52525b" }}>
+              <Text style={{ fontSize: 8, color: "#166534", marginTop: 2 }}>
                 RUC / Doc: {orden.documento_proveedor}
               </Text>
             )}
           </View>
-          <View style={{ flex: 1, marginLeft: 10 }}>
+          <View style={{ flex: 1, backgroundColor: "#f0fdf4", padding: 8, borderRadius: 4 }}>
             <Text style={styles.sectionTitle}>REFERENCIA</Text>
-            <Text>Cotización origen: {orden.correlativo_cotizacion}</Text>
-            <Text>Moneda: {orden.moneda}</Text>
-            {orden.observacion && (
-              <Text style={{ fontSize: 9, color: "#71717a", marginTop: 3 }}>
-                Obs: {orden.observacion}
-              </Text>
-            )}
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 2 }}>
+              <Text style={{ fontSize: 8 }}>Cotización:</Text>
+              <Text style={{ fontSize: 8, fontWeight: 700 }}>{orden.correlativo_cotizacion}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 8 }}>Moneda:</Text>
+              <Text style={{ fontSize: 8, fontWeight: 700 }}>{orden.moneda}</Text>
+            </View>
           </View>
         </View>
 
@@ -272,8 +298,8 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Totales */}
         <View style={styles.totalsContainer}>
           <View style={styles.totalRow}>
-            <Text style={{ fontWeight: 700 }}>Subtotal:</Text>
-            <Text>
+            <Text style={styles.totalLabel}>Subtotal:</Text>
+            <Text style={{ fontWeight: 700 }}>
               {symbol}{" "}
               {formatNumber(
                 orden.total_antes_igv -
@@ -284,64 +310,70 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           </View>
           {Number(orden.costo_flete) > 0 && (
             <View style={styles.totalRow}>
-              <Text style={{ fontWeight: 700 }}>Costo de Flete:</Text>
-              <Text>
+              <Text style={styles.totalLabel}>Flete:</Text>
+              <Text style={{ fontWeight: 700 }}>
                 {symbol} {formatNumber(orden.costo_flete)}
               </Text>
             </View>
           )}
           {Number(orden.otros_gastos) > 0 && (
             <View style={styles.totalRow}>
-              <Text style={{ fontWeight: 700 }}>Otros Gastos:</Text>
-              <Text>
+              <Text style={styles.totalLabel}>Otros:</Text>
+              <Text style={{ fontWeight: 700 }}>
                 {symbol} {formatNumber(orden.otros_gastos)}
               </Text>
             </View>
           )}
           <View style={styles.totalRow}>
-            <Text style={{ fontWeight: 700 }}>
+            <Text style={styles.totalLabel}>
               IGV ({orden.porcentaje_igv}%):
             </Text>
-            <Text>
+            <Text style={{ fontWeight: 700 }}>
               {symbol} {formatNumber(orden.monto_igv)}
             </Text>
           </View>
           <View style={[styles.totalRow, styles.grandTotal]}>
-            <Text style={{ fontWeight: 700 }}>TOTAL:</Text>
-            <Text style={{ fontWeight: 700 }}>
+            <Text>TOTAL GENERAL:</Text>
+            <Text>
               {symbol} {formatNumber(orden.total_despues_igv)}
             </Text>
           </View>
         </View>
 
+        {/* Observaciones Finales */}
+        {orden.observacion && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
+            <Text style={{ fontSize: 8, fontStyle: "italic", color: "#166534", paddingLeft: 6 }}>
+              {orden.observacion}
+            </Text>
+          </View>
+        )}
+
         {/* Firmas */}
-        <View style={{ marginTop: 25 }}>
+        <View style={{ marginTop: 20 }}>
           <Text style={styles.sectionTitle}>AUTORIZADO POR:</Text>
           <View style={styles.signatureSection}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>
-                Rosa Maria Henriquez Acosta
-              </Text>
-              <Text style={styles.signatureRole}>Gerencia</Text>
+              <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+              <Text style={styles.signatureRole}>Gerencia General</Text>
             </View>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
               <Text style={styles.signatureName}>Carlos Avalos</Text>
-              <Text style={styles.signatureRole}>Area Logistica</Text>
+              <Text style={styles.signatureRole}>Jefe de Logística</Text>
             </View>
           </View>
         </View>
 
-        <View style={{ marginTop: 30 }}>
+        <View style={{ marginTop: 15 }}>
           <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
-          <View
-            style={{ ...styles.signatureSection, justifyContent: "center" }}
-          >
+          <View style={[styles.signatureSection, { justifyContent: "center" }]}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
               <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
-              <Text style={styles.signatureRole}>Area Contable</Text>
+              <Text style={styles.signatureRole}>Contabilidad</Text>
             </View>
           </View>
         </View>

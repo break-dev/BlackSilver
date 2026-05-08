@@ -25,112 +25,144 @@ interface CotizacionPDFProps {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
-    fontSize: 10,
-    color: "#18181b", // zinc-900
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 30,
+    fontSize: 9,
+    color: "#27272a", // zinc-800
+    fontFamily: "Helvetica",
+  },
+  logoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f4f4f5",
+    paddingBottom: 10,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: "#3f3f46", // zinc-700
-    paddingBottom: 10,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#3b82f6", // blue-500 (acento de cotización)
+    paddingBottom: 8,
   },
-  companyInfo: {
-    flexDirection: "column",
+  companyName: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#18181b",
   },
-  poTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#6366f1", // indigo-500
+  documentType: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#3b82f6",
+    textAlign: "right",
+  },
+  documentNumber: {
+    fontSize: 12,
+    fontWeight: 700,
+    textAlign: "right",
+    marginTop: 2,
   },
   section: {
     marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 700,
-    backgroundColor: "#f4f4f5", // zinc-100
-    padding: 3,
-    marginBottom: 5,
+    color: "#71717a",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    borderLeftWidth: 3,
+    borderLeftColor: "#3b82f6",
+    paddingLeft: 6,
+    marginBottom: 6,
+    marginTop: 10,
   },
   row: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: "#e4e4e7", // zinc-200
-    paddingVertical: 5,
+    borderBottomColor: "#f4f4f5",
+    paddingVertical: 6,
     alignItems: "center",
   },
   tableHeader: {
-    backgroundColor: "#27272a", // zinc-800
+    backgroundColor: "#1e293b", // slate-800
     color: "#ffffff",
-    fontWeight: "bold",
+    fontWeight: 700,
+    borderRadius: 2,
   },
   col0: { width: "5%", textAlign: "center" },
   col1: { width: "10%", textAlign: "center" },
   col2: { width: "10%", textAlign: "center" },
-  col3: { width: "45%", textAlign: "left", paddingLeft: 5 },
-  col4: { width: "15%", textAlign: "right", paddingRight: 5 },
-  col5: { width: "15%", textAlign: "right", paddingRight: 5 },
+  col3: { width: "45%", textAlign: "left", paddingLeft: 8 },
+  col4: { width: "15%", textAlign: "right", paddingRight: 8 },
+  col5: { width: "15%", textAlign: "right", paddingRight: 8 },
   totalsContainer: {
-    marginTop: 20,
+    marginTop: 15,
     alignSelf: "flex-end",
-    width: "40%",
+    width: "35%",
+    backgroundColor: "#f8fafc",
+    padding: 10,
+    borderRadius: 4,
   },
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 3,
+    paddingVertical: 2,
   },
   totalLabel: {
-    fontWeight: "bold",
+    fontWeight: 700,
+    color: "#64748b",
   },
   grandTotal: {
-    marginTop: 5,
-    borderTopWidth: 2,
-    borderTopColor: "#6366f1",
-    paddingTop: 5,
-    fontSize: 12,
-    color: "#6366f1",
+    marginTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#3b82f6",
+    paddingTop: 6,
+    fontSize: 11,
+    color: "#1e3a8a",
+    fontWeight: 700,
   },
   signatureSection: {
-    marginTop: 30,
+    marginTop: 40,
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: 50,
+    justifyContent: "space-between",
   },
   signatureBox: {
-    width: "40%",
+    width: "30%",
     alignItems: "center",
   },
   signatureLine: {
     borderTopWidth: 1,
-    borderTopColor: "#18181b",
+    borderTopColor: "#94a3b8",
     width: "100%",
-    marginBottom: 5,
+    marginBottom: 4,
   },
   signatureName: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 700,
     textAlign: "center",
   },
   signatureRole: {
-    fontSize: 10,
-    color: "#71717a",
+    fontSize: 7,
+    color: "#64748b",
     textAlign: "center",
+    textTransform: "uppercase",
   },
   footer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 20,
     left: 30,
     right: 30,
     textAlign: "center",
-    color: "#71717a", // zinc-500
-    fontSize: 8,
+    color: "#94a3b8",
+    fontSize: 7,
     borderTopWidth: 1,
-    borderTopColor: "#e4e4e7",
-    paddingTop: 10,
+    borderTopColor: "#f1f5f9",
+    paddingTop: 8,
   },
 });
 
@@ -157,88 +189,69 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
           {/* ── Banda de logos superior ── */}
           {empresas && empresas.some((e) => e.path_logo) && (() => {
             const logosConImg = empresas.filter((e) => e.path_logo);
-            const justify =
-              logosConImg.length === 1
-                ? "flex-start"
-                : logosConImg.length === 2
-                ? "space-between"
-                : "space-evenly";
             return (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: justify,
-                  alignItems: "center",
-                  marginBottom: 14,
-                  paddingBottom: 10,
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#e4e4e7",
-                }}
-              >
-                {logosConImg.map((emp, i) => (
-                  <Image
-                    key={i}
-                    src={emp.path_logo as string}
-                    style={{ width: 120, height: 80, objectFit: "contain" }}
-                  />
-                ))}
+              <View style={styles.logoContainer}>
+                <View style={{ flexDirection: "row", gap: 20 }}>
+                  {logosConImg.map((emp, i) => (
+                    <Image
+                      key={i}
+                      src={emp.path_logo as string}
+                      style={{ width: 90, height: 45, objectFit: "contain" }}
+                    />
+                  ))}
+                </View>
+                <Text style={{ fontSize: 7, color: "#94a3b8" }}>
+                  Documento de Cotización Interna
+                </Text>
               </View>
             );
           })()}
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={[styles.companyInfo, { flex: 1 }]}>
-              <Text
-                style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}
-              >
+            <View style={{ flex: 1.5 }}>
+              <Text style={styles.companyName}>
                 {(empresas && empresas.length > 0
                   ? empresas.map((e) => e.razon_social).join(" - ")
                   : "BLACK SILVER S.A.C."
                 ).toUpperCase()}
               </Text>
+              <Text style={{ fontSize: 7, color: "#64748b", marginTop: 2 }}>
+                Generado para Proceso de Selección
+              </Text>
             </View>
-            <View style={{ alignItems: "flex-end", flex: 1 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  gap: 15,
-                }}
-              >
-                <Text style={{ fontSize: 9, marginBottom: 2 }}>
-                  Fecha:{" "}
-                  {dayjs(cotizacion.fecha_hora_cotizacion).format(
-                    "DD/MM/YYYY",
-                  )}
-                </Text>
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text style={styles.poTitle}>COTIZACIÓN</Text>
-                  <Text style={{ fontSize: 14, fontWeight: "bold" }}>
-                    N° {cotizacion.correlativo}
-                  </Text>
-                </View>
-              </View>
+            <View style={{ flex: 1, alignItems: "flex-end" }}>
+              <Text style={styles.documentType}>COTIZACIÓN</Text>
+              <Text style={styles.documentNumber}>N° {cotizacion.correlativo}</Text>
+              <Text style={{ fontSize: 8, color: "#64748b", marginTop: 4 }}>
+                Fecha de Emisión: {dayjs(cotizacion.fecha_hora_cotizacion).format("DD/MM/YYYY")}
+              </Text>
             </View>
           </View>
 
             {/* Info Proveedor y Pago */}
-            <View style={{ flexDirection: "row", marginBottom: 20 }}>
-              <View style={{ flex: 1, marginRight: 10 }}>
+            <View style={{ flexDirection: "row", marginBottom: 15, gap: 20 }}>
+              <View style={{ flex: 1, backgroundColor: "#f8fafc", padding: 8, borderRadius: 4 }}>
                 <Text style={styles.sectionTitle}>PROVEEDOR</Text>
-                <Text style={{ fontWeight: 700 }}>{cotizacion.proveedor}</Text>
+                <Text style={{ fontWeight: 700, fontSize: 10 }}>{cotizacion.proveedor}</Text>
+                <Text style={{ fontSize: 8, color: "#64748b", marginTop: 2 }}>
+                  Doc: {cotizacion.documento_proveedor}
+                </Text>
               </View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
+              <View style={{ flex: 1, backgroundColor: "#f8fafc", padding: 8, borderRadius: 4 }}>
                 <Text style={styles.sectionTitle}>CONDICIONES DE PAGO</Text>
-                <Text>Método: {cotizacion.metodo_pago}</Text>
-                <Text>Moneda: {cotizacion.moneda}</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 2 }}>
+                  <Text style={{ fontSize: 8 }}>Método:</Text>
+                  <Text style={{ fontSize: 8, fontWeight: 700 }}>{cotizacion.metodo_pago}</Text>
+                </View>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 8 }}>Moneda:</Text>
+                  <Text style={{ fontSize: 8, fontWeight: 700 }}>{cotizacion.moneda}</Text>
+                </View>
                 {cotizacion.metodo_pago === "Crédito" &&
                   cotizacion.fecha_vencimiento_pago && (
-                    <Text style={{ fontWeight: 700, color: "#ef4444" }}>
-                      Fecha de Vencimiento:{" "}
-                      {dayjs(cotizacion.fecha_vencimiento_pago).format(
-                        "DD/MM/YYYY",
-                      )}
+                    <Text style={{ fontWeight: 700, color: "#ef4444", fontSize: 8, marginTop: 4, textAlign: "right" }}>
+                      Vence: {dayjs(cotizacion.fecha_vencimiento_pago).format("DD/MM/YYYY")}
                     </Text>
                   )}
               </View>
@@ -348,7 +361,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             <View style={styles.totalsContainer}>
               <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Subtotal:</Text>
-                <Text>
+                <Text style={{ fontWeight: 700 }}>
                   {symbol}{" "}
                   {formatNumber(
                     cotizacion.total_antes_igv -
@@ -359,16 +372,16 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               </View>
               {Number(cotizacion.costo_flete) > 0 && (
                 <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Costo de Flete:</Text>
-                  <Text>
+                  <Text style={styles.totalLabel}>Flete:</Text>
+                  <Text style={{ fontWeight: 700 }}>
                     {symbol} {formatNumber(cotizacion.costo_flete)}
                   </Text>
                 </View>
               )}
               {Number(cotizacion.otros_gastos) > 0 && (
                 <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Otros Gastos:</Text>
-                  <Text>
+                  <Text style={styles.totalLabel}>Otros:</Text>
+                  <Text style={{ fontWeight: 700 }}>
                     {symbol} {formatNumber(cotizacion.otros_gastos)}
                   </Text>
                 </View>
@@ -377,13 +390,13 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                 <Text style={styles.totalLabel}>
                   IGV ({cotizacion.porcentaje_igv}%):
                 </Text>
-                <Text>
+                <Text style={{ fontWeight: 700 }}>
                   {symbol} {formatNumber(cotizacion.monto_igv)}
                 </Text>
               </View>
               <View style={[styles.totalRow, styles.grandTotal]}>
-                <Text style={{ fontWeight: 700 }}>TOTAL:</Text>
-                <Text style={{ fontWeight: 700 }}>
+                <Text>TOTAL GENERAL:</Text>
+                <Text>
                   {symbol} {formatNumber(cotizacion.total_despues_igv)}
                 </Text>
               </View>
@@ -391,42 +404,38 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
             {/* Observaciones Finales */}
             {cotizacion.observacion && (
-              <View style={{ marginTop: 15 }}>
+              <View style={{ marginTop: 10 }}>
                 <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
-                <Text style={{ fontSize: 9, fontStyle: "italic" }}>
+                <Text style={{ fontSize: 8, fontStyle: "italic", color: "#475569", paddingLeft: 6 }}>
                   {cotizacion.observacion}
                 </Text>
               </View>
             )}
 
             {/* Firmas */}
-            <View style={{ marginTop: 25 }}>
+            <View style={{ marginTop: 20 }}>
               <Text style={styles.sectionTitle}>AUTORIZADO POR:</Text>
               <View style={styles.signatureSection}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>
-                    Rosa Maria Henriquez Acosta
-                  </Text>
-                  <Text style={styles.signatureRole}>Gerencia</Text>
+                  <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+                  <Text style={styles.signatureRole}>Gerencia General</Text>
                 </View>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureName}>Carlos Avalos</Text>
-                  <Text style={styles.signatureRole}>Area Logistica</Text>
+                  <Text style={styles.signatureRole}>Jefe de Logística</Text>
                 </View>
               </View>
             </View>
 
-            <View style={{ marginTop: 30 }}>
+            <View style={{ marginTop: 15 }}>
               <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
-              <View
-                style={{ ...styles.signatureSection, justifyContent: "center" }}
-              >
+              <View style={[styles.signatureSection, { justifyContent: "center" }]}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
-                  <Text style={styles.signatureRole}>Area Contable</Text>
+                  <Text style={styles.signatureRole}>Contabilidad</Text>
                 </View>
               </View>
             </View>
@@ -434,12 +443,10 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             {/* Footer */}
             <View style={styles.footer}>
               <Text>
-                Este documento es un reporte de Cotización de Black Silver
-                S.A.C.
+                Este documento es un reporte de Cotización oficial de Black Silver S.A.C.
               </Text>
               <Text>
-                Generado automáticamente el{" "}
-                {dayjs().format("DD/MM/YYYY HH:mm:ss")}
+                Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}
               </Text>
             </View>
           </Page>
