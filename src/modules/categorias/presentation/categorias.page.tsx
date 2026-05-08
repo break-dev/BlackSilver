@@ -154,6 +154,16 @@ export const CategoriasPage = () => {
                         Cocina
                       </Badge>
                     )}
+                    {!!cat.es_auditable && (
+                      <Badge
+                        variant="light"
+                        color="red"
+                        size="xs"
+                        radius="sm"
+                      >
+                        Auditable
+                      </Badge>
+                    )}
                   </Group>
 
                   <h3
@@ -280,6 +290,8 @@ export const CategoriasPage = () => {
           setParaCocina={registro.setParaCocina}
           paraMina={registro.paraMina}
           setParaMina={registro.setParaMina}
+          esAuditable={registro.esAuditable}
+          setEsAuditable={registro.setEsAuditable}
           idsConsumidoras={registro.idsConsumidoras}
           setIdsConsumidoras={registro.setIdsConsumidoras}
           onOpenDestinos={() => {

@@ -11,6 +11,10 @@ import type {
 } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import {
+  getCoincidencias,
+  type SearchResult,
+} from "../../../shared/functions/get-coincidencias";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
@@ -19,11 +23,13 @@ const INITIAL_FORM: DTO_CrearProducto = {
   es_auditable: false,
   es_perecible: false,
   stock_minimo_base: 0,
+  costo_promedio_base: 0,
   tiempo_espera_vencimiento: null,
   periodo_espera_vencimiento: null,
 };
 
 export const useRegistroProducto = (
+  productosExistentes: RES_Producto[],
   onSuccess: (nuevo: RES_Producto) => void,
 ) => {
   const { notify } = useNotify();
@@ -34,6 +40,11 @@ export const useRegistroProducto = (
   const [loading, setLoading] = useState(false);
   const [loadingCategorias, setLoadingCategorias] = useState(false);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
+
+  // Estado para coincidencias de nombres
+  const [coincidencias, setCoincidencias] = useState<
+    SearchResult<RES_Producto>[]
+  >([]);
 
   const cargarCategorias = useCallback(async () => {
     setLoadingCategorias(true);
@@ -77,8 +88,30 @@ export const useRegistroProducto = (
         newForm.tiempo_espera_vencimiento = 1;
       }
 
+      // Si cambia la categoría, verificar si es auditable
+      if (field === "id_categoria") {
+        const cat = categorias.find((c) => c.id_categoria === value);
+        if (cat) {
+          newForm.es_auditable = !!cat.es_auditable;
+        }
+      }
+
       return newForm;
     });
+
+    // Buscar coincidencias si el campo es el nombre
+    if (field === "nombre") {
+      const query = String(value);
+      if (query.length >= 3) {
+        const results = getCoincidencias(productosExistentes, query, {
+          keys: ["nombre"],
+          fuseThreshold: 0.3, // Más estricto para evitar ruido excesivo
+        });
+        setCoincidencias(results);
+      } else {
+        setCoincidencias([]);
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -95,6 +128,7 @@ export const useRegistroProducto = (
         notify({ type: "success", content: resp.message });
         onSuccess(resp.data);
         setForm(INITIAL_FORM);
+        setCoincidencias([]);
       } else {
         notify({ type: "error", content: resp.message });
       }
@@ -111,6 +145,7 @@ export const useRegistroProducto = (
     setField,
     categorias,
     unidades,
+    coincidencias,
     loading,
     loadingCategorias,
     loadingUnidades,

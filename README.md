@@ -65,6 +65,7 @@ Estados persistentes mediante Zustand:
 
 - **`cn.ts`**: Utilidad para combinar clases de Tailwind de forma limpia (usando `clsx` y `tailwind-merge`).
 - **`formatNumber.ts`**: Funciones para formatear moneda y números según el estándar local.
+- **`getCoincidencias.ts`**: Utilidad avanzada de búsqueda que combina `Fuse.js` (distancia de caracteres para errores ortográficos) y `FlexSearch` (tokenización para palabras en desorden) para identificar duplicados o similitudes en listas de objetos o strings.
 - **`interfaces/`**: Contiene contratos de datos globales como `IResponse` y `IArchivo`.
 - **`enums/`**: Definiciones de constantes para estados de requerimientos, órdenes de compra, tipos de movimiento, etc.
 

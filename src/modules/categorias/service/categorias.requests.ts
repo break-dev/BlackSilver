@@ -13,6 +13,7 @@ export const Schema_RegistroCategoria = z.object({
   es_consumible: z.boolean().default(false),
   para_cocina: z.boolean().default(false),
   para_mina: z.boolean().default(false),
+  es_auditable: z.boolean(),
   ids_categorias_consumidoras: z.array(z.number()).default([]),
 });
 

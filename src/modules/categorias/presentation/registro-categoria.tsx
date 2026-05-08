@@ -31,6 +31,8 @@ interface RegistroCategoriaProps {
   setParaCocina: (val: boolean) => void;
   paraMina: boolean;
   setParaMina: (val: boolean) => void;
+  esAuditable: boolean;
+  setEsAuditable: (val: boolean) => void;
   idsConsumidoras: number[];
   setIdsConsumidoras: (val: number[]) => void;
   onOpenDestinos: () => void;
@@ -56,6 +58,8 @@ export const RegistroCategoria = ({
   setParaCocina,
   paraMina,
   setParaMina,
+  esAuditable,
+  setEsAuditable,
   idsConsumidoras,
   onOpenDestinos,
   error,
@@ -84,46 +88,45 @@ export const RegistroCategoria = ({
         onChange={(e) => setNombre(e.currentTarget.value)}
       />
 
-      <Select
-        label="Tipo"
-        placeholder="Seleccione un tipo..."
-        required
-        withAsterisk
-        disabled={loading}
-        radius="lg"
-        classNames={inputClasses}
-        data={Object.values(TipoProducto)}
-        value={tipoProducto}
-        onChange={setTipoProducto}
-        comboboxProps={{
-          withinPortal: true,
-          zIndex: 99999,
-          transitionProps: { transition: "pop", duration: 200 },
-        }}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select
+          label="Tipo"
+          placeholder="Seleccione un tipo..."
+          required
+          withAsterisk
+          disabled={loading}
+          radius="lg"
+          classNames={inputClasses}
+          data={Object.values(TipoProducto)}
+          value={tipoProducto}
+          onChange={setTipoProducto}
+          comboboxProps={{
+            withinPortal: true,
+            zIndex: 99999,
+            transitionProps: { transition: "pop", duration: 200 },
+          }}
+        />
 
-      <Select
-        label="Clasificación (opc.)"
-        placeholder="Seleccione una clasificación ..."
-        disabled={loading}
-        radius="lg"
-        classNames={inputClasses}
-        data={Object.values(TipoBien)}
-        value={clasificacionBien}
-        onChange={setClasificacionBien}
-        comboboxProps={{
-          withinPortal: true,
-          zIndex: 99999,
-          transitionProps: { transition: "pop", duration: 200 },
-        }}
-      />
+        <Select
+          label="Clasificación (opc.)"
+          placeholder="Seleccione una clasificación ..."
+          disabled={loading}
+          radius="lg"
+          classNames={inputClasses}
+          data={Object.values(TipoBien)}
+          value={clasificacionBien}
+          onChange={setClasificacionBien}
+          comboboxProps={{
+            withinPortal: true,
+            zIndex: 99999,
+            transitionProps: { transition: "pop", duration: 200 },
+          }}
+        />
+      </div>
 
-      <Stack gap="xs">
+      <div className="flex items-center justify-between gap-4 bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800">
         <div className="text-zinc-300 text-sm font-medium">Destino de Uso</div>
-        <Group
-          gap="xl"
-          className="bg-zinc-900/40 p-3 rounded-xl border border-zinc-800"
-        >
+        <Group gap="xl">
           <Checkbox
             label="Mina"
             checked={paraMina}
@@ -149,16 +152,17 @@ export const RegistroCategoria = ({
             }}
           />
         </Group>
-      </Stack>
+      </div>
 
-      <div className="space-y-4">
-        <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg flex items-center justify-between transition-all duration-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Trazabilidad de consumo */}
+        <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between transition-all duration-200">
           <div className="flex flex-col gap-1 pr-4">
             <Text size="sm" fw={600} className="text-indigo-200">
-              Trazabilidad de consumo
+              Consumo
             </Text>
             <Text size="xs" className="text-indigo-100/70 leading-snug">
-              Indique si esta categoría abastece a otras.
+              ¿Abastece a otras?
             </Text>
           </div>
           <Switch
@@ -166,68 +170,87 @@ export const RegistroCategoria = ({
             onChange={(e) => setEsConsumible(e.currentTarget.checked)}
             disabled={loading}
             color="indigo"
-            size="md"
+            size="xs"
             className="cursor-pointer"
           />
         </div>
 
-        <div className="">
-          <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800 transition-all duration-200">
-            <div className="flex-1 min-w-0">
-              <span
-                className={`text-[10px] font-bold uppercase tracking-wider block leading-none mb-1.5 ${!esConsumible ? "text-zinc-600" : "text-zinc-400"}`}
-              >
-                Destinos seleccionados ({idsConsumidoras.length})
-              </span>
-              {esConsumible && idsConsumidoras.length > 0 ? (
-                <ScrollArea
-                  w="100%"
-                  type="never"
-                  scrollbarSize={0}
-                  offsetScrollbars={false}
-                >
-                  <div className="flex items-center gap-1.5 pb-0.5">
-                    {idsConsumidoras.map((id) => {
-                      const cat = todasCategorias.find(
-                        (c) => Number(c.id_categoria) === Number(id),
-                      );
-                      return (
-                        <Badge
-                          key={id}
-                          variant="filled"
-                          color="indigo.9"
-                          size="xs"
-                          radius="sm"
-                          className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
-                        >
-                          {cat?.nombre || "Cargando..."}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <span className="text-xs font-semibold text-zinc-600 italic block">
-                  {esConsumible
-                    ? "Sin destinos seleccionados"
-                    : "Trazabilidad desactivada"}
-                </span>
-              )}
-            </div>
-            <Button
-              variant="filled"
-              color="indigo"
-              size="xs"
-              leftSection={<PlusIcon className="w-3 h-3" />}
-              radius="md"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 h-7 shrink-0 disabled:opacity-30 disabled:bg-zinc-800"
-              onClick={onOpenDestinos}
-              disabled={!esConsumible || loading}
-            >
-              Añadir
-            </Button>
+        {/* Categoría Auditable */}
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between transition-all duration-200">
+          <div className="flex flex-col gap-1 pr-4">
+            <Text size="sm" fw={600} className="text-red-200">
+              Auditable
+            </Text>
+            <Text size="xs" className="text-red-100/70 leading-snug">
+              Ocultar en auditoría.
+            </Text>
           </div>
+          <Switch
+            checked={esAuditable}
+            onChange={(e) => setEsAuditable(e.currentTarget.checked)}
+            disabled={loading}
+            color="red"
+            size="xs"
+            className="cursor-pointer"
+          />
         </div>
+      </div>
+
+      {/* Listado de Destinos (solo si es consumible) */}
+      <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800 transition-all duration-200">
+        <div className="flex-1 min-w-0">
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider block leading-none mb-1.5 ${!esConsumible ? "text-zinc-600" : "text-zinc-400"}`}
+          >
+            Destinos seleccionados ({idsConsumidoras.length})
+          </span>
+          {esConsumible && idsConsumidoras.length > 0 ? (
+            <ScrollArea
+              w="100%"
+              type="never"
+              scrollbarSize={0}
+              offsetScrollbars={false}
+            >
+              <div className="flex items-center gap-1.5 pb-0.5">
+                {idsConsumidoras.map((id) => {
+                  const cat = todasCategorias.find(
+                    (c) => Number(c.id_categoria) === Number(id),
+                  );
+                  return (
+                    <Badge
+                      key={id}
+                      variant="filled"
+                      color="indigo.9"
+                      size="xs"
+                      radius="sm"
+                      className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
+                    >
+                      {cat?.nombre || "Cargando..."}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          ) : (
+            <span className="text-xs font-semibold text-zinc-600 italic block">
+              {esConsumible
+                ? "Sin destinos seleccionados"
+                : "Trazabilidad desactivada"}
+            </span>
+          )}
+        </div>
+        <Button
+          variant="filled"
+          color="indigo"
+          size="xs"
+          leftSection={<PlusIcon className="w-3 h-3" />}
+          radius="md"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 h-7 shrink-0 disabled:opacity-30 disabled:bg-zinc-800"
+          onClick={onOpenDestinos}
+          disabled={!esConsumible || loading}
+        >
+          Añadir
+        </Button>
       </div>
 
       <Textarea

@@ -4,30 +4,24 @@ import {
   TextInput,
   Text,
   Badge,
-  ActionIcon,
   Stack,
   ThemeIcon,
-  Menu,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   CubeIcon,
-  PencilSquareIcon,
-  EllipsisVerticalIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
-
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-
 import { useProductos } from "../hooks/useProductos";
 import { RegistroProducto } from "./registro-producto";
 import type { RES_Producto } from "../service/productos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { enPlural } from "../../../shared/functions/en-plural";
 
 export const ProductosPage = () => {
   useTitlePage("Catálogo de Productos");
@@ -105,10 +99,20 @@ export const ProductosPage = () => {
           <Text size="sm" fw={500} className="text-zinc-300">
             {formatNumber(r.stock_minimo_base)}
           </Text>
-          <Badge size="xs" className="text-zinc-500">
-            {r.unidad_medida_base} ({r.unidad_medida_abreviatura})
+          <Badge size="sm" className="text-zinc-500">
+            {enPlural(r.unidad_medida_base, r.stock_minimo_base)}
           </Badge>
         </div>
+      ),
+    },
+    {
+      accessor: "costo_promedio_base",
+      title: "Costo Promedio",
+      textAlign: "center",
+      render: (r) => (
+        <Text size="sm" fw={600} className="text-zinc-200">
+          S/. {formatNumber(r.costo_promedio_base)}
+        </Text>
       ),
     },
     {
@@ -149,37 +153,37 @@ export const ProductosPage = () => {
         </Badge>
       ),
     },
-    {
-      accessor: "actions",
-      title: "",
-      width: 80,
-      textAlign: "right",
-      render: () => (
-        <Menu shadow="md" width={150} position="left">
-          <Menu.Target>
-            <ActionIcon variant="subtle" color="gray">
-              <EllipsisVerticalIcon className="w-5 h-5" />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-            <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-            <Menu.Item
-              leftSection={<PencilSquareIcon className="w-4 h-4" />}
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-            >
-              Editar
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<TrashIcon className="w-4 h-4" />}
-              color="red"
-              className="hover:bg-red-900/20"
-            >
-              Eliminar
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      ),
-    },
+    // {
+    //   accessor: "actions",
+    //   title: "",
+    //   width: 80,
+    //   textAlign: "right",
+    //   render: () => (
+    //     <Menu shadow="md" width={150} position="left">
+    //       <Menu.Target>
+    //         <ActionIcon variant="subtle" color="gray">
+    //           <EllipsisVerticalIcon className="w-5 h-5" />
+    //         </ActionIcon>
+    //       </Menu.Target>
+    //       <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
+    //         <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
+    //         <Menu.Item
+    //           leftSection={<PencilSquareIcon className="w-4 h-4" />}
+    //           className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+    //         >
+    //           Editar
+    //         </Menu.Item>
+    //         <Menu.Item
+    //           leftSection={<TrashIcon className="w-4 h-4" />}
+    //           color="red"
+    //           className="hover:bg-red-900/20"
+    //         >
+    //           Eliminar
+    //         </Menu.Item>
+    //       </Menu.Dropdown>
+    //     </Menu>
+    //   ),
+    // },
   ];
 
   return (
@@ -210,6 +214,7 @@ export const ProductosPage = () => {
             onClick={openRegistro}
             radius="lg"
             size="sm"
+            loading={loading}
             className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-[38px]"
           >
             Nuevo Producto
@@ -228,9 +233,10 @@ export const ProductosPage = () => {
         opened={openedRegistro}
         close={closeRegistro}
         title="Registrar Producto"
-        size="32rem"
+        size="36rem"
       >
         <RegistroProducto
+          productosExistentes={productos}
           onSuccess={(nuevo) => {
             pushNuevoProducto(nuevo);
             closeRegistro();
