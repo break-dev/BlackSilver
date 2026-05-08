@@ -1,0 +1,110 @@
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { EmpleadosService } from "../service/empleados.service";
+import type { RES_Empleado, RES_EmpresaAsoc } from "../service/empleados.responses";
+
+export const useEmpleados = () => {
+  const [empresas, setEmpresas] = useState<RES_EmpresaAsoc[]>([]);
+  const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
+
+  const cargarEmpresas = useCallback(async () => {
+    setLoadingEmpresas(true);
+    try {
+      const resp = await EmpleadosService.get_empresas();
+      if (resp.success) setEmpresas(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingEmpresas(false);
+    }
+  }, []);
+
+  const listar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await EmpleadosService.get_empleados();
+      if (resp.success) setEmpleados(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarEmpresas();
+  }, [cargarEmpresas]);
+
+  useEffect(() => {
+    listar();
+  }, [listar]);
+
+  const filtrados = useMemo(() => {
+    let results = empleados;
+
+    // Filtro por Empresa
+    if (idEmpresa) {
+      results = results.filter((e) => e.id_empresa === idEmpresa);
+    }
+
+    // Filtro por Búsqueda Local
+    const query = busqueda.toLowerCase().trim();
+    if (query) {
+      results = results.filter(
+        (e) =>
+          e.nombre.toLowerCase().includes(query) ||
+          e.apellido.toLowerCase().includes(query) ||
+          e.dni?.includes(query) ||
+          e.cargo.toLowerCase().includes(query),
+      );
+    }
+
+    return results;
+  }, [empleados, idEmpresa, busqueda]);
+
+  const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
+    setEmpleados((prev) => [nuevo, ...prev]);
+  };
+
+  const actualizarEmpleadoEnLista = (editado: RES_Empleado) => {
+    setEmpleados((prev) =>
+      prev.map((e) => (e.id_empleado === editado.id_empleado ? editado : e)),
+    );
+  };
+
+  const actualizarFoto = async (idEmpleado: number, file: File) => {
+    setIdActualizandoFoto(idEmpleado);
+    try {
+      const resp = await EmpleadosService.actualizar_foto(idEmpleado, file);
+      if (resp.success) {
+        actualizarEmpleadoEnLista(resp.data);
+        return true;
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIdActualizandoFoto(null);
+    }
+    return false;
+  };
+
+  return {
+    empresas,
+    idEmpresa,
+    setIdEmpresa,
+    empleados: filtrados,
+    loadingEmpresas,
+    loading,
+    busqueda,
+    setBusqueda,
+    recargar: () => listar(),
+    pushNuevoEmpleado,
+    actualizarFoto,
+    actualizarEmpleadoEnLista,
+    idActualizandoFoto,
+  };
+};

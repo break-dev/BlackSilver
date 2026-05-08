@@ -12,46 +12,42 @@ import {
   Stack,
   Loader,
 } from "@mantine/core";
-import { useNotify } from "../../../hooks/useNotify";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   PencilSquareIcon,
-  MapPinIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
 
-import { useTitlePage } from "../../../hooks/useTitlePage";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 import { useEmpleados } from "../hooks/useEmpleados";
-import { useAsignacionLabores } from "../hooks/useAsignacionLabores";
 import { RegistroEmpleado } from "./registro-empleado";
-import { AsignacionLabores } from "./asignacion-labores";
 import type { RES_Empleado } from "../service/empleados.responses";
+import { useNotify } from "../../../hooks/useNotify";
 
-export const EmpleadosPage = () => {
-  useTitlePage("Personal / Empleados");
+export const TabEmpleados = () => {
   const { notifySuccess, notifyError } = useNotify();
 
   const {
-    minas,
-    idMina,
-    setIdMina,
+    empresas,
+    idEmpresa,
+    setIdEmpresa,
     empleados,
-    loadingMinas,
+    loadingEmpresas,
     loading,
     busqueda,
     setBusqueda,
     pushNuevoEmpleado,
     actualizarFoto,
-    actualizarEmpleadoEnLista,
     idActualizandoFoto,
   } = useEmpleados();
 
-  const asignacion = useAsignacionLabores(actualizarEmpleadoEnLista);
+  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
+    useDisclosure(false);
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -62,9 +58,6 @@ export const EmpleadosPage = () => {
       notifyError("No se pudo actualizar la foto de perfil");
     }
   };
-
-  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
-    useDisclosure(false);
 
   const columns: DataTableColumn<RES_Empleado>[] = [
     {
@@ -77,7 +70,7 @@ export const EmpleadosPage = () => {
     {
       accessor: "empleado",
       title: "Empleado",
-      width: 230,
+      width: 250,
       render: (r) => {
         const isUpdatingFoto = r.id_empleado === idActualizandoFoto;
         return (
@@ -130,78 +123,17 @@ export const EmpleadosPage = () => {
       },
     },
     {
-      accessor: "operativo",
-      title: "Mina y Labores",
-      width: 380,
-      textAlign: "center",
-      render: (r) => {
-        const hasMina = r.id_mina && r.id_mina > 0;
-        const sinLabores =
-          r.labores_asignadas === "Sin asignar" ||
-          r.labores_asignadas === "No aplica" ||
-          !r.labores_asignadas;
-
-        return (
-          <div className="flex flex-row justify-center">
-            <Group gap="lg" wrap="nowrap" justify="center" align="center">
-              {!hasMina ? (
-                <Text size="xs" c="dimmed" fs="italic" className="min-w-[130px]">
-                  Sin asignar
-                </Text>
-              ) : (
-                <>
-                  {/* Bloque de Mina */}
-                  <Badge
-                    variant="light"
-                    color="pink.6"
-                    radius="md"
-                    size="md"
-                    className="font-bold h-7 border border-pink-500/20"
-                    leftSection={<MapPinIcon className="w-3.5 h-3.5 text-pink-400" />}
-                  >
-                    {r.mina}
-                  </Badge>
-
-                  {/* Bloque de Labores */}
-                  <Stack gap={4} align="center">
-                    {sinLabores ? (
-                      <Text size="xs" c="dimmed" fs="italic">
-                        Sin asignar
-                      </Text>
-                    ) : (
-                      r.labores_asignadas.split(" | ").map((lab, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="light"
-                          color="cyan.6"
-                          radius="sm"
-                          size="xs"
-                          className="font-bold h-6 border border-cyan-500/10"
-                        >
-                          {lab}
-                        </Badge>
-                      ))
-                    )}
-                  </Stack>
-                </>
-              )}
-
-              {/* Botón de Acción Estilo Lotes */}
-              <Tooltip label="Asignación de Mina y Labores">
-                <ActionIcon
-                  variant="subtle"
-                  color="zinc"
-                  size="lg"
-                  onClick={() => asignacion.abrir(r)}
-                  className="hover:bg-zinc-800 transition-colors rounded-xl"
-                >
-                  <PencilSquareIcon className="w-5 h-5 text-zinc-400" />
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-          </div>
-        );
-      },
+      accessor: "empresa",
+      title: "Empresa",
+      width: 200,
+      render: (r) => (
+        <Group gap="xs">
+          <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
+          <Text size="sm" className="text-zinc-300">
+            {r.empresa}
+          </Text>
+        </Group>
+      ),
     },
     {
       accessor: "ubicacion",
@@ -242,20 +174,20 @@ export const EmpleadosPage = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row gap-4 items-end justify-between">
         <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
           <Select
-            label="Filtrar por Mina"
-            placeholder={loadingMinas ? "Cargando..." : "(Todas las minas)"}
-            data={minas.map((m) => ({
-              value: m.id_mina.toString(),
-              label: m.nombre,
+            label="Filtrar por Empresa"
+            placeholder={loadingEmpresas ? "Cargando..." : "(Todas)"}
+            data={empresas.map((e) => ({
+              value: e.id_empresa.toString(),
+              label: e.nombre,
             }))}
-            value={idMina?.toString() || null}
-            onChange={(val) => setIdMina(val ? Number(val) : null)}
-            leftSection={<MapPinIcon className="w-4 h-4 text-zinc-400" />}
+            value={idEmpresa?.toString() || null}
+            onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
+            leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />}
             radius="lg"
             size="sm"
             className="w-full sm:w-64"
@@ -264,7 +196,7 @@ export const EmpleadosPage = () => {
               input:
                 "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
             }}
-            disabled={loadingMinas}
+            disabled={loadingEmpresas}
             searchable
             clearable
           />
@@ -306,11 +238,10 @@ export const EmpleadosPage = () => {
         loading={loading}
       />
 
-      {/* Modal: Registrar Empleado */}
       <ModalEstandar
         opened={openedRegistro}
         close={closeRegistro}
-        title="Registrar Empleado"
+        title="Registrar Empleado de Empresa"
         size="md"
       >
         <RegistroEmpleado
@@ -321,32 +252,6 @@ export const EmpleadosPage = () => {
           onCancel={closeRegistro}
         />
       </ModalEstandar>
-
-      {/* Modal: Asignar Labores */}
-      <ModalEstandar
-        opened={asignacion.opened}
-        close={asignacion.cerrar}
-        title="Asignación de Mina y Labores"
-        size="sm"
-      >
-        {asignacion.empleado && (
-          <AsignacionLabores
-            empleado={asignacion.empleado}
-            minas={minas}
-            idMina={asignacion.idMina}
-            onMinaChange={asignacion.onMinaChange}
-            laboresDisponibles={asignacion.laboresDisponibles}
-            seleccionados={asignacion.seleccionados}
-            loading={asignacion.loading}
-            loadingLabores={asignacion.loadingLabores}
-            onToggle={asignacion.toggleSeleccion}
-            onAsignar={asignacion.handleAsignar}
-            onCancelar={asignacion.cerrar}
-          />
-        )}
-      </ModalEstandar>
     </div>
   );
 };
-
-export default EmpleadosPage;

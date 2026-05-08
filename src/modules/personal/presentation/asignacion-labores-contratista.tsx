@@ -15,13 +15,13 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import type {
-  RES_Empleado,
+  RES_Contratista,
   RES_Labor,
   RES_Mina,
 } from "../service/empleados.responses";
 
-interface AsignacionLaboresProps {
-  empleado: RES_Empleado;
+interface AsignacionLaboresContratistaProps {
+  contratista: RES_Contratista;
   minas: RES_Mina[];
   idMina: number | null;
   onMinaChange: (val: number | null) => void;
@@ -34,8 +34,8 @@ interface AsignacionLaboresProps {
   onCancelar: () => void;
 }
 
-export const AsignacionLabores = ({
-  empleado,
+export const AsignacionLaboresContratista = ({
+  contratista,
   minas,
   idMina,
   onMinaChange,
@@ -46,7 +46,7 @@ export const AsignacionLabores = ({
   onToggle,
   onAsignar,
   onCancelar,
-}: AsignacionLaboresProps) => {
+}: AsignacionLaboresContratistaProps) => {
   const fieldClasses = {
     input:
       "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
@@ -55,7 +55,7 @@ export const AsignacionLabores = ({
 
   return (
     <Stack gap="lg" className="px-1">
-      {/* Info del empleado */}
+      {/* Info del contratista */}
       <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
           <UserIcon className="w-5 h-5 text-indigo-400" />
@@ -65,10 +65,10 @@ export const AsignacionLabores = ({
             size="xs"
             className="text-zinc-500 font-medium"
           >
-            Empleado
+            Contratista / Minero
           </Text>
           <Text size="sm" fw={700} className="text-white">
-            {empleado.apellido}, {empleado.nombre}
+            {contratista.apellido}, {contratista.nombre}
           </Text>
         </div>
       </div>
@@ -76,7 +76,7 @@ export const AsignacionLabores = ({
       {/* Selección de Mina */}
       <Select
         label="Mina"
-        placeholder="Seleccione mina (opcional)"
+        placeholder="Seleccione mina"
         data={minas.map((m) => ({
           value: m.id_mina.toString(),
           label: m.nombre,
@@ -87,7 +87,8 @@ export const AsignacionLabores = ({
         classNames={fieldClasses}
         radius="lg"
         searchable
-        clearable
+        required
+        withAsterisk
         disabled={loading}
       />
 
@@ -209,4 +210,3 @@ export const AsignacionLabores = ({
     </Stack>
   );
 };
-

@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { EmpleadosService } from "../service/empleados.service";
-import type { RES_Empleado, RES_Mina } from "../service/empleados.responses";
+import { ContratistasService, EmpleadosService } from "../service/empleados.service";
+import type { RES_Contratista, RES_Mina } from "../service/empleados.responses";
 
-export const useEmpleados = () => {
+export const useContratistas = () => {
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
-  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
   const [loadingMinas, setLoadingMinas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -26,8 +26,8 @@ export const useEmpleados = () => {
   const listar = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await EmpleadosService.get_empleados();
-      if (resp.success) setEmpleados(resp.data);
+      const resp = await ContratistasService.get_contratistas();
+      if (resp.success) setContratistas(resp.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -37,14 +37,11 @@ export const useEmpleados = () => {
 
   useEffect(() => {
     cargarMinas();
-  }, [cargarMinas]);
-
-  useEffect(() => {
     listar();
-  }, [listar]);
+  }, [cargarMinas, listar]);
 
   const filtrados = useMemo(() => {
-    let results = empleados;
+    let results = contratistas;
 
     // Filtro por Mina Local
     if (idMina) {
@@ -58,30 +55,29 @@ export const useEmpleados = () => {
         (e) =>
           e.nombre.toLowerCase().includes(query) ||
           e.apellido.toLowerCase().includes(query) ||
-          e.dni?.includes(query) ||
-          e.cargo.toLowerCase().includes(query),
+          e.dni?.includes(query)
       );
     }
 
     return results;
-  }, [empleados, idMina, busqueda]);
+  }, [contratistas, idMina, busqueda]);
 
-  const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
-    setEmpleados((prev) => [nuevo, ...prev]);
+  const pushNuevoContratista = (nuevo: RES_Contratista) => {
+    setContratistas((prev) => [nuevo, ...prev]);
   };
 
-  const actualizarEmpleadoEnLista = (editado: RES_Empleado) => {
-    setEmpleados((prev) =>
-      prev.map((e) => (e.id_empleado === editado.id_empleado ? editado : e)),
+  const actualizarContratistaEnLista = (editado: RES_Contratista) => {
+    setContratistas((prev) =>
+      prev.map((e) => (e.id_contratista === editado.id_contratista ? editado : e)),
     );
   };
 
-  const actualizarFoto = async (idEmpleado: number, file: File) => {
-    setIdActualizandoFoto(idEmpleado);
+  const actualizarFoto = async (idContratista: number, file: File) => {
+    setIdActualizandoFoto(idContratista);
     try {
-      const resp = await EmpleadosService.actualizar_foto(idEmpleado, file);
+      const resp = await ContratistasService.actualizar_foto(idContratista, file);
       if (resp.success) {
-        actualizarEmpleadoEnLista(resp.data);
+        actualizarContratistaEnLista(resp.data);
         return true;
       }
     } catch (err) {
@@ -94,17 +90,19 @@ export const useEmpleados = () => {
 
   return {
     minas,
+    setMinas,
     idMina,
     setIdMina,
-    empleados: filtrados,
+    contratistas: filtrados,
     loadingMinas,
+    setLoadingMinas,
     loading,
     busqueda,
     setBusqueda,
     recargar: () => listar(),
-    pushNuevoEmpleado,
+    pushNuevoContratista,
     actualizarFoto,
-    actualizarEmpleadoEnLista,
+    actualizarContratistaEnLista,
     idActualizandoFoto,
   };
 };
