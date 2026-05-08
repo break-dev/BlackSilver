@@ -72,6 +72,7 @@ export interface RES_Cotizacion {
   metodo_pago: MetodoPago;
   fecha_vencimiento_pago: string | null;
   moneda: string;
+  tipo_cambio_venta_referencial: number | null;
   //
   costo_flete: number;
   otros_gastos: number;

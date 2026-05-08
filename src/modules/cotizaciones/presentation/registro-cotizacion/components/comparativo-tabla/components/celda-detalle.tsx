@@ -266,11 +266,7 @@ export const CeldaDetalle = ({
         {/* Fila 2: Factor y Precio */}
         <Group grow align="flex-end" gap="xs">
           <NumberInput
-            label={
-              <Text size="xs" fw={500} className="text-zinc-300">
-                {baseAbrev} x {abrev}
-              </Text>
-            }
+            label={`${baseAbrev} x ${abrev}`}
             value={det.contenido_por_presentacion}
             onChange={(val) =>
               onUpdateDetail(
@@ -285,16 +281,18 @@ export const CeldaDetalle = ({
             size="xs"
             radius="lg"
             classNames={inputStyles}
+            withAsterisk
           />
           <NumberInput
-            label={
-              <Text size="xs" fw={500} className="text-zinc-300">
-                Precio x {abrev}
-              </Text>
-            }
-            value={det.precio_unitario}
+            label={`Precio x ${abrev}`}
+            value={det.precio_unitario ?? ""}
             onChange={(val) =>
-              onUpdateDetail(cotIdx, rowIndex, "precio_unitario", Number(val))
+              onUpdateDetail(
+                cotIdx,
+                rowIndex,
+                "precio_unitario",
+                val === "" ? undefined : Number(val),
+              )
             }
             min={0}
             size="xs"
@@ -347,7 +345,7 @@ export const CeldaDetalle = ({
               </Text>
               <Text size="xs" fw={800} className="text-white truncate">
                 {cot.moneda === "Soles" ? "S/. " : "$ "}
-                {formatNumber(det.precio_unitario_base)}
+                {formatNumber(det.precio_unitario_base || 0)}
               </Text>
             </Stack>
 
@@ -366,7 +364,7 @@ export const CeldaDetalle = ({
               </Text>
               <Text size="xs" fw={800} className="text-white truncate">
                 {cot.moneda === "Soles" ? "S/. " : "$ "}
-                {formatNumber(det.cantidad * det.precio_unitario)}
+                {formatNumber(det.cantidad * (det.precio_unitario || 0))}
               </Text>
             </Stack>
           </Group>

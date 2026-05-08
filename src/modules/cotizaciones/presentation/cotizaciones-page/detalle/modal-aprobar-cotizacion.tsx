@@ -7,6 +7,7 @@ import {
   Checkbox,
   Select,
   Badge,
+  NumberInput,
 } from "@mantine/core";
 import { CheckBadgeIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
@@ -52,6 +53,7 @@ export const ModalAprobarCotizacion = ({
     null,
   );
   const [selectedDetalles, setSelectedDetalles] = useState<number[]>([]);
+  const [tipoCambio, setTipoCambio] = useState<number | "">("");
 
   useEffect(() => {
     if (opened && cotizacion) {
@@ -65,6 +67,7 @@ export const ModalAprobarCotizacion = ({
       } else {
         setSelectedEmpresaId(null);
       }
+      setTipoCambio("");
     }
   }, [opened, cotizacion, detalles, empresas]);
 
@@ -93,6 +96,10 @@ export const ModalAprobarCotizacion = ({
       );
       return;
     }
+    if (cotizacion.moneda !== "Soles" && (!tipoCambio || tipoCambio <= 0)) {
+      notifyError("Debe ingresar un tipo de cambio válido.");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -101,6 +108,10 @@ export const ModalAprobarCotizacion = ({
         {
           id_empresa_compradora: Number(selectedEmpresaId),
           detalles_aprobados: selectedDetalles,
+          tipo_cambio_venta_referencial:
+            cotizacion.moneda !== "Soles"
+              ? Number(tipoCambio)
+              : 1,
         },
       );
 
@@ -181,6 +192,26 @@ export const ModalAprobarCotizacion = ({
             }}
           />
         </Stack>
+
+        {/* Tipo de Cambio si no es Soles */}
+        {cotizacion.moneda !== "Soles" && (
+          <Stack gap={4}>
+            <Text size="sm" fw={800} className="text-zinc-200">
+              Tipo de Cambio Venta Referencial (S/.)
+            </Text>
+            <NumberInput
+              placeholder="Ej. 3.85"
+              value={tipoCambio}
+              onChange={(val) => setTipoCambio(val === "" ? "" : Number(val))}
+              decimalScale={4}
+              min={0}
+              classNames={{
+                input:
+                  "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+              }}
+            />
+          </Stack>
+        )}
 
         {/* Selección de Productos */}
         {(() => {

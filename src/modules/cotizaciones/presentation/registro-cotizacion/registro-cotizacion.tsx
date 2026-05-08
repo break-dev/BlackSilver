@@ -20,14 +20,15 @@ interface RegistroCotizacionProps {
   onCancel: () => void;
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
+  esAuditableGlobal: boolean;
 }
 
 export const RegistroCotizacion = forwardRef<
-  { agregarCotizacion: () => void },
+  { agregarCotizacion: () => void; limpiarComparativo: () => void; hasProductos: () => boolean },
   RegistroCotizacionProps
 >(
   (
-    { onSuccess, onCancel, modalProductosOpened, setModalProductosOpened },
+    { onSuccess, onCancel, modalProductosOpened, setModalProductosOpened, esAuditableGlobal },
     ref,
   ) => {
     const { print } = usePrint();
@@ -68,6 +69,7 @@ export const RegistroCotizacion = forwardRef<
       agregarCotizacion,
       eliminarCotizacion,
       eliminarFilaProducto,
+      limpiarComparativo,
       updateCotizacionHeader,
       updateCotizacionDetail,
       toggleCotizacionNoCotiza,
@@ -87,6 +89,8 @@ export const RegistroCotizacion = forwardRef<
     // Exponemos la función al componente padre (CotizacionesPage)
     useImperativeHandle(ref, () => ({
       agregarCotizacion,
+      limpiarComparativo,
+      hasProductos: () => productos.length > 0,
     }));
 
     const productosEnriquecidos = productos.map((p) => {
@@ -167,6 +171,7 @@ export const RegistroCotizacion = forwardRef<
           productosBloqueados={productosEnUsoIds}
           catalogoProductos={maestros.catalogo}
           loading={loadingMaestros}
+          soloAuditables={esAuditableGlobal}
         />
 
         <ModalAsistenteAprobacion

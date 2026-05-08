@@ -5,7 +5,9 @@ import {
   ArrowPathIcon,
   CubeIcon,
   PlusIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+import { ShieldCheckIcon } from "@heroicons/react/24/solid";
 import { useState, useRef } from "react";
 import { useBlackcito } from "../../../hooks/useBlackcito";
 
@@ -35,8 +37,25 @@ export const CotizacionesPage = () => {
   const [openedCreate, { open: openCreate, close: closeCreate }] =
     useDisclosure(false);
   const [openedProductos, setOpenedProductos] = useState(false);
+  const [esAuditableGlobal, setEsAuditableGlobal] = useState(false);
+  const [openedConfirm, setOpenedConfirm] = useState(false);
+
   const { happy, close } = useBlackcito();
-  const registroRef = useRef<{ agregarCotizacion: () => void } | null>(null);
+  const registroRef = useRef<{ agregarCotizacion: () => void; limpiarComparativo: () => void; hasProductos: () => boolean } | null>(null);
+
+  const handleToggleAuditable = () => {
+    if (registroRef.current?.hasProductos()) {
+      setOpenedConfirm(true);
+    } else {
+      setEsAuditableGlobal(!esAuditableGlobal);
+    }
+  };
+
+  const confirmarToggle = () => {
+    registroRef.current?.limpiarComparativo();
+    setEsAuditableGlobal(!esAuditableGlobal);
+    setOpenedConfirm(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in p-1">
@@ -92,6 +111,22 @@ export const CotizacionesPage = () => {
         size="100%"
         rightSection={
           <Group gap="sm">
+            {openedCreate && (
+              <>
+                <Button
+                  variant={esAuditableGlobal ? "filled" : "light"}
+                  color="red"
+                  radius="xl"
+                  leftSection={<ShieldCheckIcon className="w-4 h-4" />}
+                  onClick={handleToggleAuditable}
+                  size="xs"
+                >
+                  {esAuditableGlobal ? "Modo Auditable Activo" : "Hacer Auditable"}
+                </Button>
+                <Divider orientation="vertical" color="zinc.8" h={20} />
+              </>
+            )}
+            
             <Button
               variant="filled"
               color="pink"
@@ -138,7 +173,30 @@ export const CotizacionesPage = () => {
           onCancel={closeCreate}
           modalProductosOpened={openedProductos}
           setModalProductosOpened={setOpenedProductos}
+          esAuditableGlobal={esAuditableGlobal}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedConfirm}
+        close={() => setOpenedConfirm(false)}
+        title="Advertencia"
+        size="md"
+      >
+        <Stack gap="md" align="center" className="p-4 text-center">
+          <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
+          <Text size="sm" fw={800} className="text-zinc-100">
+            Al cambiar el tipo de cotización, se limpiará la grilla actual de productos. ¿Deseas continuar?
+          </Text>
+          <Group justify="center" gap="sm" mt="md">
+            <Button variant="subtle" color="zinc" onClick={() => setOpenedConfirm(false)} radius="xl">
+              Cancelar
+            </Button>
+            <Button variant="filled" color="red" onClick={confirmarToggle} radius="xl" className="shadow-lg shadow-red-900/20">
+              Continuar y Limpiar
+            </Button>
+          </Group>
+        </Stack>
       </ModalEstandar>
     </div>
   );
