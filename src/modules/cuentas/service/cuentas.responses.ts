@@ -7,9 +7,9 @@ export interface RES_Cuenta {
   nombre_rol: string;
   nombre_empleado: string;
   apellido_empleado: string;
-  id_mina_pertenece: number;
+  id_empresa_pertenece: number;
   path_foto: string | null;
-  mina_pertenece: string;
+  empresa_pertenece: string;
 }
 
 export interface RES_EmpleadoDisponible {
@@ -17,7 +17,7 @@ export interface RES_EmpleadoDisponible {
   nombre: string;
   apellido: string;
   dni: string | null;
-  id_mina_pertenece: number;
+  id_empresa_pertenece: number;
 }
 
 export interface RES_RolDisponible {

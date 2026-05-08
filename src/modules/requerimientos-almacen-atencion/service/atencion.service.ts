@@ -27,7 +27,7 @@ export const AtencionService = {
     const formData = new FormData();
     formData.append(
       "id_empleado_solicitante",
-      String(dto.id_empleado_solicitante),
+      String(dto.id_contratista_solicitante),
     );
     formData.append("id_mina", String(dto.id_mina));
     formData.append("id_almacen_destino", String(dto.id_almacen_destino));
@@ -247,7 +247,7 @@ export const AtencionService = {
 
   obtenerDataByMina: async (idMina: number) => {
     const res = await api.get<
-      IRespuesta<{ responsables: RES_Empleado[]; labores: RES_Labor[] }>
+      IRespuesta<{ responsables: { id_contratista: number; nombre_completo: string }[]; labores: RES_Labor[] }>
     >(`${path}/data-by-mina`, {
       params: { id_mina: idMina },
     });

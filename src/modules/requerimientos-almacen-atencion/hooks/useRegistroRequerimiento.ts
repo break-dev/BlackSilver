@@ -17,7 +17,6 @@ import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
-import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface Props {
   onSuccess: (
@@ -43,7 +42,7 @@ export const useRegistroRequerimiento = ({
   // Catálogos
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [responsables, setResponsables] = useState<RES_Empleado[]>([]);
+  const [responsables, setResponsables] = useState<{ id_contratista: number; nombre_completo: string }[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -54,7 +53,7 @@ export const useRegistroRequerimiento = ({
     idAlmacenFijo || 0,
   );
   const [idMina, setIdMina] = useState<number>(0);
-  const [idEmpleadoSolicitante, setIdEmpleadoSolicitante] = useState<number>(0);
+  const [idContratistaSolicitante, setIdContratistaSolicitante] = useState<number>(0);
   const [idLabores, setIdLabores] = useState<number[]>([]);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
@@ -141,9 +140,9 @@ export const useRegistroRequerimiento = ({
 
             if (
               res.data.responsables.length > 0 &&
-              idEmpleadoSolicitante === 0
+              idContratistaSolicitante === 0
             ) {
-              setIdEmpleadoSolicitante(res.data.responsables[0].id_empleado);
+              setIdContratistaSolicitante(res.data.responsables[0].id_contratista);
             }
           }
         } finally {
@@ -154,7 +153,7 @@ export const useRegistroRequerimiento = ({
     } else {
       setResponsables([]);
       setLabores([]);
-      setIdEmpleadoSolicitante(0);
+      setIdContratistaSolicitante(0);
       setIdLabores([]);
     }
     // Remove idEmpleadoSolicitante from dependencies to prevent double-fetching
@@ -315,7 +314,7 @@ export const useRegistroRequerimiento = ({
     setError(null);
 
     const dto: DTO_CrearRequerimiento = {
-      id_empleado_solicitante: idEmpleadoSolicitante,
+      id_contratista_solicitante: idContratistaSolicitante,
       id_mina: idMina,
       id_almacen_destino: idAlmacenDestino,
       id_labores: idLabores.length > 0 ? idLabores : null,
@@ -367,7 +366,7 @@ export const useRegistroRequerimiento = ({
       setSubmitting(false);
     }
   }, [
-    idEmpleadoSolicitante,
+    idContratistaSolicitante,
     idMina,
     idAlmacenDestino,
     idLabores,
@@ -395,8 +394,8 @@ export const useRegistroRequerimiento = ({
       setIdAlmacenDestino,
       idMina,
       setIdMina,
-      idEmpleadoSolicitante,
-      setIdEmpleadoSolicitante,
+      idContratistaSolicitante,
+      setIdContratistaSolicitante,
       responsables,
       idLabores,
       setIdLabores,

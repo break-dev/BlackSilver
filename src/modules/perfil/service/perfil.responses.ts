@@ -12,5 +12,5 @@ export interface RES_Perfil {
   nombre_rol: string;
   nombre_cargo: string | null;
   nombre_area: string | null;
-  mina_nombre: string | null;
+  empresa_nombre: string | null;
 }
