@@ -9,7 +9,7 @@ export interface RES_Producto {
   //
   id_unidad_medida_base: number;
   unidad_medida_base: string;
-  unidad_medida_abreviatura: string;
+  unidad_medida_base_abreviatura: string;
   //
   es_auditable: boolean;
   es_perecible: boolean;

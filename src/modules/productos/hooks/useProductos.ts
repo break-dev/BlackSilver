@@ -30,7 +30,7 @@ export const useProductos = () => {
       (p) =>
         p.nombre.toLowerCase().includes(query) ||
         p.categoria.toLowerCase().includes(query) ||
-        p.unidad_medida_abreviatura.toLowerCase().includes(query),
+        p.unidad_medida_base_abreviatura.toLowerCase().includes(query),
     );
   }, [productos, busqueda]);
 
