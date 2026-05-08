@@ -48,8 +48,8 @@ export const useCotizacionPersistence = (
       notify({ type: "info", content: "Cada proveedor debe cotizar al menos un producto." });
       return;
     }
-    if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.precio_unitario <= 0))) {
-      notify({ type: "info", content: "Todos los productos habilitados deben tener un precio mayor a 0." });
+    if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && (d.precio_unitario ?? 0) < 0))) {
+      notify({ type: "info", content: "Los precios no pueden ser negativos." });
       return;
     }
     if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.id_almacen_recepcionista === 0))) {
@@ -85,7 +85,8 @@ export const useCotizacionPersistence = (
             .filter((d) => !d.no_cotiza)
             .map((d) => ({
               ...d,
-              precio_unitario_base: Number(d.precio_unitario_base.toFixed(2)),
+              precio_unitario: d.precio_unitario ?? 0,
+              precio_unitario_base: Number((d.precio_unitario_base ?? 0).toFixed(2)),
               cantidad_base: Number(d.cantidad_base.toFixed(2)),
             })),
         };
@@ -133,7 +134,7 @@ export const useCotizacionPersistence = (
               (d) =>
                 d.id_producto === p.id_producto &&
                 !d.no_cotiza &&
-                (d.precio_unitario > 0 || (d.comentario && d.comentario.trim() !== "")),
+                ((d.precio_unitario ?? 0) > 0 || (d.comentario && d.comentario.trim() !== "")),
             );
           }),
         )

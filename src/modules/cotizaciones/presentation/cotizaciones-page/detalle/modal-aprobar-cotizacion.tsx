@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Stack,
   Text,
@@ -14,6 +14,7 @@ import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar"
 import { CotizacionesService } from "../../../service/cotizaciones.service";
 import { useNotify } from "../../../../../hooks/useNotify";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import { useAprobacionCotizacion } from "../../../hooks/aprobacion/useAprobacionCotizacion";
 
 import type {
   RES_Cotizacion,
@@ -47,71 +48,50 @@ export const ModalAprobarCotizacion = ({
   onSuccess,
 }: ModalAprobarCotizacionProps) => {
   const { notifySuccess, notifyError } = useNotify();
-
   const [loading, setLoading] = useState(false);
-  const [selectedEmpresaId, setSelectedEmpresaId] = useState<string | null>(
-    null,
-  );
-  const [selectedDetalles, setSelectedDetalles] = useState<number[]>([]);
-  const [tipoCambio, setTipoCambio] = useState<number | "">("");
 
-  useEffect(() => {
-    if (opened && cotizacion) {
-      // Iniciar con todos los detalles checkeados
-      const ids = detalles.map((d) => d.id_cotizacion_detalle);
-      setSelectedDetalles(ids);
+  // ─── Hook centralizado de aprobación ────────────────────────────────────────
+  const aprobacion = useAprobacionCotizacion({
+    moneda: cotizacion?.moneda ?? "Soles",
+    opened,
+    detalles: detalles.map((d) => ({
+      key: d.id_cotizacion_detalle,
+      precio_referencia: Number(d.precio_unitario ?? 0),
+      habilitado: true,
+    })),
+    initialEmpresaId: empresas[0]?.id_empresa.toString() ?? null,
+    initialTipoCambio: cotizacion?.tipo_cambio_venta_referencial || "",
+  });
 
-      // Iniciar con la primera empresa seleccionada si existe
-      if (empresas.length > 0) {
-        setSelectedEmpresaId(empresas[0].id_empresa.toString());
-      } else {
-        setSelectedEmpresaId(null);
-      }
-      setTipoCambio("");
-    }
-  }, [opened, cotizacion, detalles, empresas]);
-
-  const toggleDetalle = (id: number) => {
-    setSelectedDetalles((prev) =>
-      prev.includes(id) ? prev.filter((detId) => detId !== id) : [...prev, id],
-    );
-  };
-
-  const toggleAll = () => {
-    if (selectedDetalles.length === detalles.length) {
-      setSelectedDetalles([]); // Deseleccionar todos
-    } else {
-      setSelectedDetalles(detalles.map((d) => d.id_cotizacion_detalle)); // Seleccionar todos
-    }
-  };
+  const {
+    state,
+    allSelected,
+    indeterminate,
+    toggleKey,
+    toggleAll,
+    setPrecioOC,
+    validate,
+    getSubtotal,
+    getVariacion,
+    tipoCambioAplicado,
+  } = aprobacion;
 
   const handleConfirm = async () => {
-    if (!cotizacion || !selectedEmpresaId) {
-      notifyError("Debe seleccionar una empresa compradora.");
-      return;
-    }
-    if (selectedDetalles.length === 0) {
-      notifyError(
-        "Debe seleccionar al menos un producto para la Orden de Compra.",
-      );
-      return;
-    }
-    if (cotizacion.moneda !== "Soles" && (!tipoCambio || tipoCambio <= 0)) {
-      notifyError("Debe ingresar un tipo de cambio válido.");
-      return;
-    }
+    if (!cotizacion) return;
+    const error = validate();
+    if (error) { notifyError(error); return; }
 
     try {
       setLoading(true);
       const res = await CotizacionesService.aprobar_cotizacion(
         cotizacion.id_cotizacion,
         {
-          id_empresa_compradora: Number(selectedEmpresaId),
-          detalles_aprobados: selectedDetalles,
-          tipo_cambio_venta_referencial:
-            cotizacion.moneda !== "Soles"
-              ? Number(tipoCambio)
-              : 1,
+          id_empresa_compradora: Number(state.selectedEmpresaId),
+          detalles_aprobados: state.selectedKeys.map((id) => ({
+            id,
+            precio_confirmado: Number(state.preciosOC[id] ?? 0),
+          })),
+          tipo_cambio_aplicado: tipoCambioAplicado,
         },
       );
 
@@ -119,17 +99,14 @@ export const ModalAprobarCotizacion = ({
         notifySuccess(
           `Orden de Compra ${res.data.correlativo} generada correctamente.`,
         );
-
-        const ocId = res.data.id_orden_compra;
-
         const cotDetallesAprobados = detalles.filter((d) =>
-          selectedDetalles.includes(d.id_cotizacion_detalle),
+          state.selectedKeys.includes(d.id_cotizacion_detalle),
         );
         onSuccess(
           cotizacion.id_cotizacion,
           cotizacion,
           cotDetallesAprobados,
-          ocId,
+          res.data.id_orden_compra,
         );
         onClose();
       } else {
@@ -144,6 +121,8 @@ export const ModalAprobarCotizacion = ({
   };
 
   if (!cotizacion) return null;
+
+  const simbolo = cotizacion.moneda === "Soles" ? "S/." : "$";
 
   return (
     <ModalEstandar
@@ -171,7 +150,7 @@ export const ModalAprobarCotizacion = ({
           </Stack>
         </div>
 
-        {/* Seleccion de Empresa */}
+        {/* Empresa Compradora */}
         <Stack gap={4}>
           <Text size="sm" fw={800} className="text-zinc-200">
             Empresa Compradora
@@ -182,142 +161,154 @@ export const ModalAprobarCotizacion = ({
               value: e.id_empresa.toString(),
               label: e.razon_social,
             }))}
-            value={selectedEmpresaId}
-            onChange={setSelectedEmpresaId}
+            value={state.selectedEmpresaId}
+            onChange={(val) =>
+              aprobacion.setState((prev) => ({ ...prev, selectedEmpresaId: val }))
+            }
             classNames={{
-              input:
-                "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+              input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
               dropdown: "bg-zinc-900 border-zinc-800 dark",
               option: "hover:bg-indigo-500/20 data-[checked]:bg-indigo-500",
             }}
           />
         </Stack>
 
-        {/* Tipo de Cambio si no es Soles */}
+        {/* Tipo de Cambio */}
         {cotizacion.moneda !== "Soles" && (
           <Stack gap={4}>
             <Text size="sm" fw={800} className="text-zinc-200">
-              Tipo de Cambio Venta Referencial (S/.)
+              Tipo de Cambio Venta (S/.)
             </Text>
             <NumberInput
               placeholder="Ej. 3.85"
-              value={tipoCambio}
-              onChange={(val) => setTipoCambio(val === "" ? "" : Number(val))}
+              value={state.tipoCambio}
+              onChange={(val) =>
+                aprobacion.setState((prev) => ({
+                  ...prev,
+                  tipoCambio: val === "" ? "" : Number(val),
+                }))
+              }
               decimalScale={4}
               min={0}
               classNames={{
-                input:
-                  "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+                input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
               }}
             />
           </Stack>
         )}
 
         {/* Selección de Productos */}
-        {(() => {
-          const allSelected =
-            detalles.length > 0 && selectedDetalles.length === detalles.length;
-          const indeterminate =
-            selectedDetalles.length > 0 &&
-            selectedDetalles.length < detalles.length;
-
-          return (
-            <Stack gap="xs">
-              <Group justify="space-between" align="center">
-                <Text size="sm" fw={800} className="text-zinc-200">
-                  Productos Cotizados
+        <Stack gap="xs">
+          <Group justify="space-between" align="center">
+            <Text size="sm" fw={800} className="text-zinc-200">
+              Productos Cotizados
+            </Text>
+            <Checkbox
+              size="sm"
+              color="indigo"
+              checked={allSelected}
+              indeterminate={indeterminate}
+              label={
+                <Text size="xs" c="dimmed" fw={700}>
+                  Seleccionar Todos
                 </Text>
-                <Checkbox
-                  size="sm"
-                  color="indigo"
-                  checked={allSelected}
-                  indeterminate={indeterminate}
-                  label={
-                    <Text size="xs" c="dimmed" fw={700}>
-                      Seleccionar Todos
-                    </Text>
-                  }
-                  onChange={toggleAll}
-                  classNames={{ label: "cursor-pointer" }}
-                />
-              </Group>
+              }
+              onChange={toggleAll}
+              classNames={{ label: "cursor-pointer" }}
+            />
+          </Group>
 
-              <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[40vh] overflow-y-auto custom-scrollbar">
-                {detalles.map((det) => {
-                  const isChecked = selectedDetalles.includes(
-                    det.id_cotizacion_detalle,
-                  );
-                  const subtotal =
-                    Number(det.cantidad) * Number(det.precio_unitario);
+          <div className="bg-zinc-900/50 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden max-h-[40vh] overflow-y-auto custom-scrollbar">
+            {detalles.map((det) => {
+              const key = det.id_cotizacion_detalle;
+              const isChecked = state.selectedKeys.includes(key);
+              const precioRef = Number(det.precio_unitario ?? 0);
+              const variacion = getVariacion(key, precioRef);
 
-                  return (
-                    <div
-                      key={det.id_cotizacion_detalle}
-                      className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
-                        isChecked
-                          ? "bg-indigo-500/5"
-                          : "hover:bg-white/5 opacity-80 hover:opacity-100"
-                      }`}
-                      onClick={() => toggleDetalle(det.id_cotizacion_detalle)}
-                    >
-                      <Group wrap="nowrap" justify="space-between">
-                        <Group gap="sm">
-                          <Checkbox
-                            size="sm"
-                            checked={isChecked}
-                            onChange={() =>
-                              toggleDetalle(det.id_cotizacion_detalle)
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            color="indigo"
-                            radius="sm"
-                          />
-                          <Stack gap={0}>
-                            <Text
-                              size="xs"
-                              fw={800}
-                              className={
-                                isChecked ? "text-indigo-100" : "text-zinc-300"
-                              }
-                            >
-                              {det.producto}
-                            </Text>
-                            <Text size="11px" c="dimmed">
-                              {formatNumber(det.cantidad)}{" "}
-                              {det.unidad_medida_ctz_abv}
-                              {" · a "}
-                              <span className="text-zinc-300">
-                                {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
-                                {formatNumber(Number(det.precio_unitario))}
-                              </span>{" "}
-                              c/u
-                            </Text>
-                          </Stack>
-                        </Group>
-                        <Badge
-                          variant="light"
-                          color={isChecked ? "indigo" : "gray"}
-                          size="sm"
+              return (
+                <div
+                  key={key}
+                  className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 ${
+                    isChecked ? "bg-indigo-500/5" : "opacity-60"
+                  }`}
+                >
+                  <Group wrap="nowrap" justify="space-between" gap="sm">
+                    {/* Checkbox + info */}
+                    <Group gap="sm" align="flex-start" className="flex-1 min-w-0">
+                      <Checkbox
+                        size="sm"
+                        checked={isChecked}
+                        onChange={() => toggleKey(key)}
+                        color="indigo"
+                        radius="sm"
+                        className="mt-0.5"
+                      />
+                      <Stack gap={4} className="min-w-0">
+                        <Text
+                          size="xs"
+                          fw={800}
+                          className={isChecked ? "text-indigo-100" : "text-zinc-400"}
                         >
-                          Sub: {cotizacion.moneda === "Soles" ? "S/." : "$"}{" "}
-                          {formatNumber(subtotal)}
-                        </Badge>
-                      </Group>
-                    </div>
-                  );
-                })}
-              </div>
-            </Stack>
-          );
-        })()}
+                          {det.producto}
+                        </Text>
+                        {/* precio unitario inline editable */}
+                        <Group gap={4} align="center" wrap="nowrap">
+                          <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                            {formatNumber(det.cantidad)} {det.unidad_medida_ctz_abv} &middot; a
+                          </Text>
+                          <NumberInput
+                            size="xs"
+                            disabled={!isChecked}
+                            value={state.preciosOC[key] ?? ""}
+                            onChange={(val) =>
+                              setPrecioOC(key, val === "" ? "" : Number(val))
+                            }
+                            decimalScale={4}
+                            min={0}
+                            prefix={`${simbolo} `}
+                            className="w-28"
+                            classNames={{
+                              input: `bg-zinc-800 border-zinc-700 text-white text-xs font-bold focus:border-indigo-500 h-6 py-0 ${
+                                !isChecked ? "opacity-40" : ""
+                              }`,
+                            }}
+                          />
+                          <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                            c/u
+                          </Text>
+                          {isChecked && variacion !== null && (
+                            <Badge
+                              size="xs"
+                              variant="light"
+                              color={variacion > 0 ? "red" : "teal"}
+                            >
+                              {variacion > 0 ? "+" : ""}{simbolo}{" "}
+                              {formatNumber(Math.abs(variacion))} vs cotización
+                            </Badge>
+                          )}
+                        </Group>
+                      </Stack>
+                    </Group>
+
+                    {/* Subtotal dinámico */}
+                    <Badge
+                      variant="light"
+                      color={isChecked ? "indigo" : "gray"}
+                      size="sm"
+                      className="shrink-0"
+                    >
+                      Sub: {simbolo}{" "}
+                      {formatNumber(getSubtotal(key, Number(det.cantidad), precioRef))}
+                    </Badge>
+                  </Group>
+                </div>
+              );
+            })}
+          </div>
+        </Stack>
 
         <Group justify="flex-end" mt="md" gap="sm">
-          <Button
-            variant="subtle"
-            color="zinc"
-            onClick={onClose}
-            disabled={loading}
-          >
+          <Button variant="subtle" color="zinc" onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
           <Button

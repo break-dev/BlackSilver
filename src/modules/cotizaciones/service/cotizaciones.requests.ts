@@ -29,6 +29,8 @@ export const Schema_CotizacionDetalle = z.object({
   // Precios
   precio_unitario: z.number().min(0, "Precio no válido").optional().nullable(),
   precio_unitario_base: z.number().optional().nullable(),
+  // Precio confirmado para la OC (solo se envía al aprobar desde el wizard)
+  precio_confirmado_oc: z.number().min(0).optional().nullable(),
   // Extra
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
@@ -59,6 +61,7 @@ export const Schema_CotizacionRequest = z.object({
   estado: z.nativeEnum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
   // Campo para aprobación inline (solo cuando estado es Aprobada)
   id_empresa_compradora: z.number().optional().nullable(),
+  tipo_cambio_aplicado_oc: z.number().optional().nullable(),
   detalles: z
     .array(Schema_CotizacionDetalle)
     .min(1, "Agregue al menos un producto a la cotización"),

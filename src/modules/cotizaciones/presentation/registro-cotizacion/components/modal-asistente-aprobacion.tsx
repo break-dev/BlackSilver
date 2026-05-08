@@ -8,6 +8,7 @@ import {
   Select,
   Badge,
   Stepper,
+  NumberInput,
 } from "@mantine/core";
 import { CheckBadgeIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
@@ -32,13 +33,20 @@ import type {
   RES_Cotizacion,
   RES_Comparativo,
 } from "../../../../../service/responses/cotizaciones/cotizacion";
+import {
+  type AprobacionState,
+  initAprobacionState,
+  validateAprobacion,
+  getSubtotalAprobacion,
+  getVariacionAprobacion,
+  getTipoCambioAplicado,
+} from "../../../hooks/aprobacion/useAprobacionCotizacion";
 
 // Tipos para el estado local del Wizard
 interface WizardAprobacionState {
   originalIndex: number;
   cotizacion: DTO_CotizacionRequest;
-  selectedEmpresaId: string | null;
-  selectedDetalles: number[]; // IDs de productos
+  aprobacion: AprobacionState; // estado centralizado del hook
 }
 
 interface ModalAsistenteAprobacionProps {
@@ -81,14 +89,17 @@ export const ModalAsistenteAprobacion = ({
           steps.push({
             originalIndex: index,
             cotizacion: cot,
-            selectedEmpresaId:
-              cot.empresas_ids.length > 0
-                ? cot.empresas_ids[0].toString()
-                : null,
-            // Preseleccionar todos los habilitados
-            selectedDetalles: cot.detalles
-              .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
-              .filter((val) => val !== null) as number[],
+            aprobacion: initAprobacionState(
+              cot.detalles
+                .map((d, dIdx) => ({
+                  key: dIdx,
+                  precio_referencia: Number(d.precio_unitario ?? 0),
+                  habilitado: !d.no_cotiza,
+                }))
+              ,
+              cot.empresas_ids.length > 0 ? cot.empresas_ids[0].toString() : null,
+              cot.tipo_cambio_venta_referencial || "",
+            ),
           });
         }
       });
@@ -100,38 +111,29 @@ export const ModalAsistenteAprobacion = ({
   if (!opened || !payloadOriginal) return null;
 
   const handleNext = () => {
-    // Validar el step actual
     const current = wizardSteps[activeStep];
-    if (!current.selectedEmpresaId) {
-      notifyError("Debe seleccionar una empresa facturadora.");
-      return;
-    }
-    if (current.selectedDetalles.length === 0) {
-      notifyError("Debe seleccionar al menos un producto.");
-      return;
-    }
+    const error = validateAprobacion(current.aprobacion, current.cotizacion.moneda);
+    if (error) { notifyError(error); return; }
     setActiveStep((curr) => curr + 1);
   };
 
   const handlePrev = () => setActiveStep((curr) => curr - 1);
 
-  // Manejar edición local
-  const updateCurrentStep = (
-    updater: (prev: WizardAprobacionState) => WizardAprobacionState,
-  ) => {
+  // Actualiza el estado aprobacion del step activo
+  const updateAprobacion = (updater: (prev: AprobacionState) => AprobacionState) => {
     setWizardSteps((prev) => {
       const copy = [...prev];
-      copy[activeStep] = updater(copy[activeStep]);
+      copy[activeStep] = { ...copy[activeStep], aprobacion: updater(copy[activeStep].aprobacion) };
       return copy;
     });
   };
 
   const toggleDetalle = (rowIndex: number) => {
-    updateCurrentStep((prev) => ({
+    updateAprobacion((prev) => ({
       ...prev,
-      selectedDetalles: prev.selectedDetalles.includes(rowIndex)
-        ? prev.selectedDetalles.filter((id) => id !== rowIndex)
-        : [...prev.selectedDetalles, rowIndex],
+      selectedKeys: prev.selectedKeys.includes(rowIndex)
+        ? prev.selectedKeys.filter((k) => k !== rowIndex)
+        : [...prev.selectedKeys, rowIndex],
     }));
   };
 
@@ -145,27 +147,14 @@ export const ModalAsistenteAprobacion = ({
     : [];
 
   const handleFinalSubmit = async () => {
-    // Validar el ultimo step
     const current = wizardSteps[activeStep];
-    if (!current.selectedEmpresaId) {
-      notifyError("Debe seleccionar una empresa facturadora.");
-      return;
-    }
-    if (current.selectedDetalles.length === 0) {
-      notifyError("Debe seleccionar al menos un producto.");
-      return;
-    }
+    const error = validateAprobacion(current.aprobacion, current.cotizacion.moneda);
+    if (error) { notifyError(error); return; }
 
-    // Construir mapa de wizard: originalIndex → config de aprobación
-    const wizardMap = new Map<
-      number,
-      { empresaId: number; productosAprobados: number[] }
-    >();
+    // Construir mapa: originalIndex → config
+    const wizardMap = new Map<number, { aprobacion: AprobacionState; cotizacion: DTO_CotizacionRequest }>();
     for (const step of wizardSteps) {
-      wizardMap.set(step.originalIndex, {
-        empresaId: Number(step.selectedEmpresaId),
-        productosAprobados: step.selectedDetalles,
-      });
+      wizardMap.set(step.originalIndex, { aprobacion: step.aprobacion, cotizacion: step.cotizacion });
     }
 
     // Construir el payload UNIFICADO con estados finales reales
@@ -175,16 +164,21 @@ export const ModalAsistenteAprobacion = ({
         const wizardConfig = wizardMap.get(idx);
 
         if (wizardConfig) {
-          // Esta cotización fue aprobada en el wizard
+          const { aprobacion: ap, cotizacion: cot } = wizardConfig;
+          const tcOC = getTipoCambioAplicado(ap, cot.moneda);
           return {
             ...c,
             estado: Estado_Cotizacion.Aprobada,
-            id_empresa_compradora: wizardConfig.empresaId,
+            id_empresa_compradora: Number(ap.selectedEmpresaId),
+            tipo_cambio_aplicado_oc: tcOC,
             detalles: c.detalles.map((d, dIdx) => ({
               ...d,
-              estado: wizardConfig.productosAprobados.includes(dIdx)
+              estado: ap.selectedKeys.includes(dIdx)
                 ? Estado_Cotizacion_Detalle.Aprobado
                 : Estado_Cotizacion_Detalle.Rechazado,
+              precio_confirmado_oc: ap.selectedKeys.includes(dIdx)
+                ? Number(ap.preciosOC[dIdx] ?? d.precio_unitario ?? 0)
+                : undefined,
             })),
           };
         }
@@ -320,31 +314,52 @@ export const ModalAsistenteAprobacion = ({
                   value: e.id_empresa.toString(),
                   label: e.razon_social,
                 }))}
-                value={currentStepData?.selectedEmpresaId || null}
+                value={currentStepData?.aprobacion.selectedEmpresaId || null}
                 onChange={(val) =>
-                  updateCurrentStep((p) => ({ ...p, selectedEmpresaId: val }))
+                  updateAprobacion((p) => ({ ...p, selectedEmpresaId: val }))
                 }
                 classNames={{
-                  input:
-                    "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+                  input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
                   dropdown: "bg-zinc-900 border-zinc-800 dark",
                   option: "hover:bg-indigo-500/20 data-[checked]:bg-indigo-500",
                 }}
               />
             </Stack>
 
+            {/* Tipo de Cambio si no es Soles */}
+            {currentStepData?.cotizacion.moneda !== "Soles" && (
+              <Stack gap={4}>
+                <Text size="sm" fw={800} className="text-zinc-200">
+                  Tipo de Cambio Venta (S/.)
+                </Text>
+                <NumberInput
+                  placeholder="Ej. 3.85"
+                  value={currentStepData?.aprobacion.tipoCambio ?? ""}
+                  onChange={(val: number | string) =>
+                    updateAprobacion((p) => ({
+                      ...p,
+                      tipoCambio: val === "" ? "" : Number(val),
+                    }))
+                  }
+                  decimalScale={4}
+                  min={0}
+                  classNames={{
+                    input: "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+                  }}
+                />
+              </Stack>
+            )}
+
             {/* Selección de Productos */}
             {(() => {
-              const detallesCotizables =
-                (currentStepData?.cotizacion.detalles
-                  .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
-                  .filter((val) => val !== null) as number[]) || [];
-              const numSelected = currentStepData?.selectedDetalles.length || 0;
-              const allSelected =
-                detallesCotizables.length > 0 &&
-                numSelected === detallesCotizables.length;
-              const indeterminate =
-                numSelected > 0 && numSelected < detallesCotizables.length;
+              const ap = currentStepData?.aprobacion;
+              const detallesCotizables = (currentStepData?.cotizacion.detalles
+                .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
+                .filter((val) => val !== null) as number[]) || [];
+              const numSelected = ap?.selectedKeys.length || 0;
+              const allSelected = detallesCotizables.length > 0 && numSelected === detallesCotizables.length;
+              const indeterminate = numSelected > 0 && numSelected < detallesCotizables.length;
+              const simbolo = currentStepData?.cotizacion.moneda === "Soles" ? "S/." : "$";
 
               return (
                 <Stack gap="xs">
@@ -363,11 +378,9 @@ export const ModalAsistenteAprobacion = ({
                         </Text>
                       }
                       onChange={() => {
-                        updateCurrentStep((prev) => ({
+                        updateAprobacion((prev) => ({
                           ...prev,
-                          selectedDetalles: allSelected
-                            ? []
-                            : detallesCotizables,
+                          selectedKeys: allSelected ? [] : detallesCotizables,
                         }));
                       }}
                       classNames={{ label: "cursor-pointer" }}
@@ -379,57 +392,85 @@ export const ModalAsistenteAprobacion = ({
                       const prodMaestro = maestros.catalogo.find(
                         (p) => p.id_producto === det.id_producto,
                       );
-                      const isChecked =
-                        currentStepData.selectedDetalles.includes(dIdx);
-                      const subtotal =
-                        Number(det.cantidad) * Number(det.precio_unitario);
+                      const isChecked = ap?.selectedKeys.includes(dIdx) ?? false;
+                      const precioRef = Number(det.precio_unitario ?? 0);
+                      const variacion = ap ? getVariacionAprobacion(ap, dIdx, precioRef) : null;
 
                       return (
                         <div
                           key={`${det.id_producto}-${dIdx}`}
-                          className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 cursor-pointer ${
-                            isChecked
-                              ? "bg-indigo-500/5"
-                              : "hover:bg-white/5 opacity-80 hover:opacity-100"
+                          className={`p-3 border-b border-zinc-800/50 transition-colors last:border-b-0 ${
+                            isChecked ? "bg-indigo-500/5" : "opacity-60"
                           }`}
-                          onClick={() => toggleDetalle(dIdx)}
                         >
-                          <Group wrap="nowrap" justify="space-between">
-                            <Group gap="sm">
+                          <Group wrap="nowrap" justify="space-between" gap="sm">
+                            {/* Left: checkbox + info */}
+                            <Group gap="sm" align="flex-start" className="flex-1 min-w-0">
                               <Checkbox
                                 size="sm"
                                 checked={isChecked}
                                 onChange={() => toggleDetalle(dIdx)}
-                                onClick={(e) => e.stopPropagation()}
                                 color="indigo"
                                 radius="sm"
+                                className="mt-0.5"
                               />
-                              <Stack gap={0}>
-                                <Text
-                                  size="xs"
-                                  fw={800}
-                                  className={
-                                    isChecked
-                                      ? "text-indigo-100"
-                                      : "text-zinc-300"
-                                  }
-                                >
-                                  {prodMaestro?.nombre ||
-                                    `Producto ${det.id_producto}`}
+                              <Stack gap={4} className="min-w-0">
+                                <Text size="xs" fw={800} className={isChecked ? "text-indigo-100" : "text-zinc-400"}>
+                                  {prodMaestro?.nombre || `Producto ${det.id_producto}`}
                                 </Text>
-                                <Text size="11px" c="dimmed">
-                                  {formatNumber(det.cantidad)} unidades a S/.{" "}
-                                  {formatNumber(Number(det.precio_unitario))}{" "}
-                                  c/u
-                                </Text>
+                                <Group gap={4} align="center" wrap="nowrap">
+                                  <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+                                    {formatNumber(det.cantidad)}{" "}
+                                    {(() => {
+                                      const um = maestros.unidades.find(
+                                        (u) => u.id_unidad_medida === det.id_unidad_medida
+                                      );
+                                      return um?.abreviatura || "u.";
+                                    })()}
+                                    {" · a"}
+                                  </Text>
+                                  <NumberInput
+                                    size="xs"
+                                    disabled={!isChecked}
+                                    value={ap?.preciosOC[dIdx] ?? ""}
+                                    onChange={(val: number | string) =>
+                                      updateAprobacion((prev) => ({
+                                        ...prev,
+                                        preciosOC: {
+                                          ...prev.preciosOC,
+                                          [dIdx]: val === "" ? "" : Number(val),
+                                        },
+                                      }))
+                                    }
+                                    decimalScale={4}
+                                    min={0}
+                                    prefix={`${simbolo} `}
+                                    className="w-28"
+                                    classNames={{
+                                      input: `bg-zinc-800 border-zinc-700 text-white text-xs font-bold focus:border-indigo-500 h-6 py-0 ${
+                                        !isChecked ? "opacity-40" : ""
+                                      }`,
+                                    }}
+                                  />
+                                  <Text size="11px" c="dimmed" style={{ whiteSpace: "nowrap" }}>c/u</Text>
+                                  {isChecked && variacion !== null && (
+                                    <Badge size="xs" variant="light" color={variacion > 0 ? "red" : "teal"}>
+                                      {variacion > 0 ? "+" : ""}{simbolo} {formatNumber(Math.abs(variacion))} vs cotización
+                                    </Badge>
+                                  )}
+                                </Group>
                               </Stack>
                             </Group>
+
+                            {/* Subtotal dinámico */}
                             <Badge
                               variant="light"
                               color={isChecked ? "indigo" : "gray"}
                               size="sm"
+                              className="shrink-0"
                             >
-                              Sub: S/. {formatNumber(subtotal)}
+                              Sub: {simbolo}{" "}
+                              {formatNumber(ap ? getSubtotalAprobacion(ap, dIdx, Number(det.cantidad), precioRef) : 0)}
                             </Badge>
                           </Group>
                         </div>
