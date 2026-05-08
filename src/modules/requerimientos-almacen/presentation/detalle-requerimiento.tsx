@@ -21,20 +21,20 @@ import {
 import dayjs from "dayjs";
 
 import { Estado_RequerimientoDetalleLog } from "../../../shared/enums/requerimiento-almacen/requerimiento";
-import type {
-  RES_RequerimientoAlmacen,
-  RES_RequerimientoDetalle,
-  RES_LaborRelacionada,
-} from "../services/requerimientos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import type { RES_Labor } from "../../../service/responses/labor";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface DetalleRequerimientoProps {
   headerData: RES_RequerimientoAlmacen;
-  detalles: RES_RequerimientoDetalle[];
-  laboresVinculadas: RES_LaborRelacionada[];
+  detalles: RES_DetalleRequerimiento[];
+  laboresVinculadas: RES_Labor[];
   loading: boolean;
   progresoGeneral: number;
-  onOpenTrazabilidad: (detalle: RES_RequerimientoDetalle) => void;
+  onOpenTrazabilidad: (detalle: RES_DetalleRequerimiento) => void;
 }
 
 export const DetalleRequerimiento = ({

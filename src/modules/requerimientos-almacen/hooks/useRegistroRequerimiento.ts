@@ -7,15 +7,15 @@ import type {
   DTO_CrearRequerimiento,
   DTO_CrearRequerimientoDetalle,
 } from "../services/requerimientos.requests";
-import type {
-  RES_Mina_Local,
-  RES_Almacen_Local,
-  RES_Labor_Local,
-  RES_Producto_Local,
-  RES_Unidad_Local,
-  RES_RequerimientoAlmacen,
-} from "../services/requerimientos.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
+import type { RES_Labor } from "../../../service/responses/labor";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type {
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type { RES_Producto_Local } from "../services/requerimientos.responses";
 
 interface Props {
   onSuccess: (item: RES_RequerimientoAlmacen) => void;
@@ -28,11 +28,11 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   // Catálogos
-  const [minas, setMinas] = useState<RES_Mina_Local[]>([]);
-  const [almacenes, setAlmacenes] = useState<RES_Almacen_Local[]>([]);
-  const [labores, setLabores] = useState<RES_Labor_Local[]>([]);
+  const [minas, setMinas] = useState<RES_Mina[]>([]);
+  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
+  const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto_Local[]>([]);
-  const [unidades, setUnidades] = useState<RES_Unidad_Local[]>([]);
+  const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   // Estado Formulario Cabecera
   const [idMina, setIdMina] = useState<number>(0);

@@ -1,12 +1,10 @@
 import { Button, Group, Loader, Stack, Text } from "@mantine/core";
 import { useRegistrarEntregaBatch } from "../../../hooks/useRegistrarEntrega";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_DetalleRequerimiento,
-} from "../../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import { EntregaHeader } from "./header/entrega-header";
 import { GroupByProducto } from "./detalle/group-by-producto";
 import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import type { RES_DetalleRequerimiento } from "../../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistrarEntregaProps {
   idRequerimiento: number;
@@ -136,7 +134,7 @@ export const RegistrarEntrega = ({
           radius="lg"
           leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
           disabled={
-            (!!idEmpleadoRecibe && totalEntregaGeneralBase > 0) || isProcessing
+            !idEmpleadoRecibe || totalEntregaGeneralBase <= 0 || isProcessing
           }
           loading={isProcessing}
           onClick={handleConfirmar}

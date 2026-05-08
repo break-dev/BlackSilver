@@ -19,11 +19,9 @@ import {
 import { useRegistrarSolicitudLogistica } from "../../hooks/useRegistrarSolicitudLogistica";
 import { Premura } from "../../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_RequerimientoAlmacen,
-} from "../../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../../service/atencion.responses";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
+import type { RES_RequerimientoAlmacen } from "../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistrarSolicitudLogisticaProps {
   requerimiento: RES_RequerimientoAlmacen;

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import type {
-  RES_Entrega,
-  RES_DetalleEntrega,
-} from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
+import type {
+  RES_DetalleEntregaRequerimiento,
+  RES_EntregaRequerimiento,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen-entrega";
 
-export interface ExtendedRES_Entrega extends RES_Entrega {
-  detalles: (RES_DetalleEntrega & { producto: string })[];
+export interface ExtendedRES_Entrega extends RES_EntregaRequerimiento {
+  detalles: (RES_DetalleEntregaRequerimiento & { producto: string })[];
 }
 
 export const useHistorialEntregasRequerimiento = (idRequerimiento: number) => {

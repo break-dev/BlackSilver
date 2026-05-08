@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { RequerimientosService } from "../services/requerimientos.service";
-import type {
-  RES_RequerimientoAlmacen,
-  RES_RequerimientoDetalle,
-} from "../services/requerimientos.responses";
 import { Estado_RequerimientoDetalle } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 export const useRequerimientosPage = () => {
   const [loading, setLoading] = useState(false);
@@ -24,14 +24,12 @@ export const useRequerimientosPage = () => {
   // Detalle y Trazabilidad (UI)
   const [selectedReq, setSelectedReq] =
     useState<RES_RequerimientoAlmacen | null>(null);
-  const [detalles, setDetalles] = useState<RES_RequerimientoDetalle[]>([]);
+  const [detalles, setDetalles] = useState<RES_DetalleRequerimiento[]>([]);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
 
   const [selectedDetalle, setSelectedDetalle] =
-    useState<RES_RequerimientoDetalle | null>(null);
-  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>(
-    [],
-  );
+    useState<RES_DetalleRequerimiento | null>(null);
+  const [trazabilidad, setTrazabilidad] = useState<RES_Trazabilidad[]>([]);
   const [loadingTrazabilidad, setLoadingTrazabilidad] = useState(false);
 
   const listar = useCallback(async () => {
@@ -73,7 +71,7 @@ export const useRequerimientosPage = () => {
     }
   };
 
-  const verTrazabilidad = async (detalle: RES_RequerimientoDetalle) => {
+  const verTrazabilidad = async (detalle: RES_DetalleRequerimiento) => {
     setSelectedDetalle(detalle);
     setLoadingTrazabilidad(true);
     try {

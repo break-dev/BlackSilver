@@ -31,8 +31,8 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroRequerimiento } from "./registro-requerimiento";
 import { DetalleRequerimiento } from "./detalle-requerimiento";
 import { TrazabilidadRequerimiento } from "./trazabilidad-requerimiento";
-import type { RES_RequerimientoAlmacen } from "../services/requerimientos.responses";
 import { MESES } from "../../../shared/variables/meses";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;

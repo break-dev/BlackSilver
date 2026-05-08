@@ -35,10 +35,11 @@ import { useGestionAtencion } from "../../hooks/useGestionAtencion";
 import { HeaderCard } from "../../../prestamos-almacen-atencion/presentation/components/detail-elements";
 import { BadgeField } from "./header/badge-field";
 import type {
-  RES_RequerimientoAlmacen,
   DetalleRequerimientoExtendido,
+  RES_Labor,
 } from "../../service/atencion.responses";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
+import type { RES_RequerimientoAlmacen } from "../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface InfoRequerimientoProps {
   requerimiento: RES_RequerimientoAlmacen;
@@ -195,7 +196,7 @@ export const InfoRequerimiento = ({
             </Text>
             <Group gap={4}>
               {requerimiento.labores && requerimiento.labores.length > 0 ? (
-                requerimiento.labores.map((l) => (
+                requerimiento.labores.map((l: RES_Labor) => (
                   <Badge
                     key={l.id_labor}
                     variant="outline"

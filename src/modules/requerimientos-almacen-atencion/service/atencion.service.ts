@@ -1,17 +1,6 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type {
-  RES_RequerimientoAlmacen,
-  RES_DetalleRequerimiento,
-  RES_Entrega,
-  RES_Labor,
-  RES_Producto,
-  RES_Mina,
-  RES_DataRegistro,
-  RES_DataByAlmacen,
-  RES_DataByMinaAtencion,
-} from "./atencion.responses";
-
+import type { RES_Producto, RES_DataRegistro } from "./atencion.responses";
 import type {
   DTO_AtencionCambiarEstado,
   DTO_RegistrarEntrega,
@@ -23,6 +12,13 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { RES_EntregaRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen-entrega";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
 
 const path = "/requerimientos-atencion";
 
@@ -120,13 +116,16 @@ export const AtencionService = {
   },
 
   obtenerLotesDisponibles: async (
-    idProducto: number | number[],
+    idsProductos: number | number[],
     idAlmacen: number,
   ) => {
+    const ids = Array.isArray(idsProductos)
+      ? idsProductos.join(",")
+      : idsProductos;
     const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
       `${path}/lotes`,
       {
-        params: { id_producto: idProducto, id_almacen: idAlmacen },
+        params: { ids_productos: ids, id_almacen: idAlmacen },
       },
     );
     return res.data;
@@ -166,9 +165,12 @@ export const AtencionService = {
   },
 
   obtenerHistorialEntregas: async (idRequerimiento: number) => {
-    const res = await api.get<IRespuesta<RES_Entrega[]>>(`${path}/entregas`, {
-      params: { id_requerimiento: idRequerimiento },
-    });
+    const res = await api.get<IRespuesta<RES_EntregaRequerimiento[]>>(
+      `${path}/entregas`,
+      {
+        params: { id_requerimiento: idRequerimiento },
+      },
+    );
     return res.data;
   },
 
@@ -244,17 +246,16 @@ export const AtencionService = {
   },
 
   obtenerDataByMina: async (idMina: number) => {
-    const res = await api.get<IRespuesta<RES_DataByMinaAtencion>>(
-      `${path}/data-by-mina`,
-      {
-        params: { id_mina: idMina },
-      },
-    );
+    const res = await api.get<
+      IRespuesta<{ responsables: RES_Empleado[]; labores: RES_Labor[] }>
+    >(`${path}/data-by-mina`, {
+      params: { id_mina: idMina },
+    });
     return res.data;
   },
 
   obtenerMinasPorAlmacen: async (idAlmacen: number) => {
-    const res = await api.get<IRespuesta<RES_DataByAlmacen>>(
+    const res = await api.get<IRespuesta<RES_Mina[]>>(
       `${path}/minas-by-almacen`,
       {
         params: { id_almacen: idAlmacen },

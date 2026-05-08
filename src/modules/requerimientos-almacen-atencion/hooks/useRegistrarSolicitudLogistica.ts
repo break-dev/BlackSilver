@@ -4,10 +4,8 @@ import { AtencionService } from "../service/atencion.service";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import { Estado_RequerimientoDetalle } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type { DTO_CrearSolicitudLogistica } from "../service/atencion.requests";
-import type {
-  DetalleRequerimientoExtendido,
-  RES_RequerimientoAlmacen,
-} from "../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../service/atencion.responses";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface UseRegistrarSolicitudLogisticaProps {
   requerimiento: RES_RequerimientoAlmacen;

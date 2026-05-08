@@ -25,7 +25,6 @@ import {
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { useEntregas } from "../hooks/useEntregas.ts";
-import type { RES_RequerimientoAlmacen } from "../service/atencion.responses.ts";
 import type { IArchivo } from "../../../shared/interfaces/archivo.ts";
 import { Estado_Requerimiento } from "../../../shared/enums/requerimiento-almacen/requerimiento.ts";
 import { Premura } from "../../../shared/enums/_generic/premura.ts";
@@ -40,6 +39,7 @@ import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card.ts
 import { useImprimirRequerimiento } from "../hooks/useImprimirRequerimiento.tsx";
 import { usePrint } from "../../../hooks/usePrint.ts";
 import { RequerimientoPDF } from "./requerimiento-pdf.tsx";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen.ts";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   useTitlePage("Atención de Requerimientos");
@@ -273,8 +273,8 @@ export const RequerimientosAlmacenAtencionPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      <div className="flex flex-col lg:flex-row justify-between gap-3 items-end">
-        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
+      <div className="flex flex-col lg:flex-row justify-between gap-3">
+        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto items-end">
           {/* Almacén Selector */}
           <div className="w-full sm:w-72">
             <Select
@@ -351,6 +351,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
             />
           </div>
 
+          {/* Búsqueda */}
           <div className="flex-1 min-w-[200px] w-full">
             <TextInput
               label="Búsqueda"
@@ -373,6 +374,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
             />
           </div>
 
+          {/* Botón Nuevo */}
           <Button
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openReg}

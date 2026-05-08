@@ -3,7 +3,7 @@ import { usePrint } from "../../../hooks/usePrint";
 import { useNotify } from "../../../hooks/useNotify";
 import { AtencionService } from "../service/atencion.service";
 import { RequerimientoPDF } from "../presentation/requerimiento-pdf";
-import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 export const useImprimirRequerimiento = () => {
   const { prepare, print } = usePrint();

@@ -30,10 +30,10 @@ import { Premura } from "../../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { enPlural } from "../../../../shared/functions/en-plural";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
-import type { RES_RequerimientoAlmacen } from "../../service/atencion.responses";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import type { RES_Producto } from "../../service/atencion.responses";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
+import type { RES_RequerimientoAlmacen } from "../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistroRequerimientoProps {
   onSuccess: (
@@ -176,7 +176,7 @@ export const RegistroRequerimiento = ({
             withAsterisk
             data={responsables.map((r) => ({
               value: String(r.id_empleado),
-              label: r.empleado,
+              label: r.nombre_completo,
             }))}
             value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
             onChange={(val) => setIdEmpleadoSolicitante(Number(val))}

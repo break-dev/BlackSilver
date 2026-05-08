@@ -1,9 +1,9 @@
 import { Stack, Text, Paper, Group, Loader, Badge } from "@mantine/core";
 import { MapPinIcon } from "@heroicons/react/24/outline";
-import type { RES_LaborRelacionada } from "../services/requerimientos.responses";
+import type { RES_Labor } from "../../../service/responses/labor";
 
 interface LaboresRequerimientoProps {
-  labores: RES_LaborRelacionada[];
+  labores: RES_Labor[];
   loading: boolean;
 }
 

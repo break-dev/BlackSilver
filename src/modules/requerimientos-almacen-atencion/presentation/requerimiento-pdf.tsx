@@ -2,8 +2,8 @@ import { Document, Page, View, Text } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { createTw } from "react-pdf-tailwind";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 const tw = createTw({});
 

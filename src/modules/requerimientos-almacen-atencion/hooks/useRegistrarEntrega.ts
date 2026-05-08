@@ -1,14 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
-import type {
-  RES_DetalleRequerimiento,
-  DetalleRequerimientoExtendido,
-} from "../service/atencion.responses";
+import type { DetalleRequerimientoExtendido } from "../service/atencion.responses";
 import { AtencionService } from "../service/atencion.service";
 import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_DetalleRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;
@@ -75,9 +73,12 @@ export const useRegistrarEntregaBatch = ({
   useEffect(() => {
     let cancelled = false;
     const loadInitialData = async () => {
-      if (idsProductos.length === 0) return;
       setLoading(true);
       setError("");
+      if (idsProductos.length === 0) {
+        setLoading(false);
+        return;
+      }
       try {
         const [resEmps, resLotes] = await Promise.all([
           AtencionService.obtenerEmpleados(),

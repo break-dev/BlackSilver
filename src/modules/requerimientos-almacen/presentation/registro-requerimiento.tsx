@@ -27,8 +27,7 @@ import { Premura } from "../../../shared/enums/_generic/premura";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-
-import type { RES_RequerimientoAlmacen } from "../services/requerimientos.responses";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistroRequerimientoProps {
   onSuccess: (item: RES_RequerimientoAlmacen) => void;

@@ -11,13 +11,13 @@ import type {
   RES_Labor,
   RES_Mina,
   RES_Producto,
-  RES_RequerimientoAlmacen,
-  RES_EmpleadoSimple,
 } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface Props {
   onSuccess: (
@@ -43,7 +43,7 @@ export const useRegistroRequerimiento = ({
   // Catálogos
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [responsables, setResponsables] = useState<RES_EmpleadoSimple[]>([]);
+  const [responsables, setResponsables] = useState<RES_Empleado[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -84,7 +84,11 @@ export const useRegistroRequerimiento = ({
           setUnidades(res.data.unidades);
 
           // Solo auto-seleccionar si no hay un almacén destino ya fijado
-          if (res.data.almacenes && res.data.almacenes.length > 0 && idAlmacenDestino === 0) {
+          if (
+            res.data.almacenes &&
+            res.data.almacenes.length > 0 &&
+            idAlmacenDestino === 0
+          ) {
             setIdAlmacenDestino(res.data.almacenes[0].id_almacen);
           }
         }
@@ -105,10 +109,10 @@ export const useRegistroRequerimiento = ({
           const res =
             await AtencionService.obtenerMinasPorAlmacen(idAlmacenDestino);
           if (res.success) {
-            setMinas(res.data.minas);
+            setMinas(res.data);
             // Auto seleccionar primera mina si no hay una seleccionada
-            if (res.data.minas.length > 0 && idMina === 0) {
-              setIdMina(res.data.minas[0].id_mina);
+            if (res.data.length > 0 && idMina === 0) {
+              setIdMina(res.data[0].id_mina);
             }
           }
         } finally {

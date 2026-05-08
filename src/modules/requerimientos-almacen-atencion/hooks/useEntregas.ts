@@ -2,9 +2,8 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type { AxiosError } from "axios";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import type { RES_RequerimientoAlmacen } from "../service/atencion.responses";
-
 import { AtencionService } from "../service/atencion.service";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 export interface IUseHook {
   setError: (msg: string) => void;

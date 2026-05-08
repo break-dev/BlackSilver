@@ -1,19 +1,16 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type {
-  RES_RequerimientoAlmacen,
-  RES_RequerimientoDetalle,
-  RES_LaborRelacionada,
-  RES_Mina_Local,
-  RES_Almacen_Local,
-  RES_Labor_Local,
-  RES_Producto_Local,
-  RES_Unidad_Local,
-  RES_DataRegistro,
-  RES_DataByMina,
-} from "./requerimientos.responses";
+import type { RES_Producto_Local } from "./requerimientos.responses";
 import type { DTO_CrearRequerimiento } from "./requerimientos.requests";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import type { RES_Labor } from "../../../service/responses/labor";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 const path = "/requerimientos-almacen";
 
@@ -31,7 +28,7 @@ export const RequerimientosService = {
   },
 
   obtenerDetalles: async (idRequerimiento: number) => {
-    const res = await api.get<IRespuesta<RES_RequerimientoDetalle[]>>(
+    const res = await api.get<IRespuesta<RES_DetalleRequerimiento[]>>(
       `${path}/detalle`,
       {
         params: { id_requerimiento: idRequerimiento },
@@ -51,7 +48,7 @@ export const RequerimientosService = {
   },
 
   obtenerLaboresVinculadas: async (idRequerimiento: number) => {
-    const res = await api.get<IRespuesta<RES_LaborRelacionada[]>>(
+    const res = await api.get<IRespuesta<RES_Labor[]>>(
       `${path}/labores-requerimiento`,
       {
         params: { id_requerimiento: idRequerimiento },
@@ -62,27 +59,21 @@ export const RequerimientosService = {
 
   // Catálogos para el registro
   listarMinas: async () => {
-    const res = await api.get<IRespuesta<RES_Mina_Local[]>>(`${path}/minas`);
+    const res = await api.get<IRespuesta<RES_Mina[]>>(`${path}/minas`);
     return res.data;
   },
 
   listarAlmacenesPorMina: async (idMina: number) => {
-    const res = await api.get<IRespuesta<RES_Almacen_Local[]>>(
-      `${path}/almacenes`,
-      {
-        params: { id_mina: idMina },
-      },
-    );
+    const res = await api.get<IRespuesta<RES_Almacen[]>>(`${path}/almacenes`, {
+      params: { id_mina: idMina },
+    });
     return res.data;
   },
 
   listarLaboresPorMina: async (idMina: number) => {
-    const res = await api.get<IRespuesta<RES_Labor_Local[]>>(
-      `${path}/labores`,
-      {
-        params: { id_mina: idMina },
-      },
-    );
+    const res = await api.get<IRespuesta<RES_Labor[]>>(`${path}/labores`, {
+      params: { id_mina: idMina },
+    });
     return res.data;
   },
 
@@ -94,26 +85,29 @@ export const RequerimientosService = {
   },
 
   listarUnidades: async () => {
-    const res = await api.get<IRespuesta<RES_Unidad_Local[]>>(
+    const res = await api.get<IRespuesta<RES_UnidadMedida[]>>(
       `${path}/unidades`,
     );
     return res.data;
   },
 
   obtenerDataRegistro: async () => {
-    const res = await api.get<IRespuesta<RES_DataRegistro>>(
-      `${path}/data-to-registro`,
-    );
+    const res = await api.get<
+      IRespuesta<{
+        minas: RES_Mina[];
+        productos: RES_Producto_Local[];
+        unidades: RES_UnidadMedida[];
+      }>
+    >(`${path}/data-to-registro`);
     return res.data;
   },
 
   obtenerDataByMina: async (idMina: number) => {
-    const res = await api.get<IRespuesta<RES_DataByMina>>(
-      `${path}/data-by-mina`,
-      {
-        params: { id_mina: idMina },
-      },
-    );
+    const res = await api.get<
+      IRespuesta<{ almacenes: RES_Almacen[]; labores: RES_Labor[] }>
+    >(`${path}/data-by-mina`, {
+      params: { id_mina: idMina },
+    });
     return res.data;
   },
 };
