@@ -59,6 +59,7 @@ export const Schema_CotizacionRequest = z.object({
   estado: z.nativeEnum(Estado_Cotizacion).default(Estado_Cotizacion.Generada),
   // Campo para aprobación inline (solo cuando estado es Aprobada)
   id_empresa_compradora: z.number().optional().nullable(),
+  tipo_cambio_aplicado_oc: z.number().optional().nullable(),
   detalles: z
     .array(Schema_CotizacionDetalle)
     .min(1, "Agregue al menos un producto a la cotización"),

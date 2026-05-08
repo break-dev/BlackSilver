@@ -8,6 +8,7 @@ import {
   Select,
   Badge,
   Stepper,
+  NumberInput,
 } from "@mantine/core";
 import { CheckBadgeIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
@@ -38,6 +39,7 @@ interface WizardAprobacionState {
   originalIndex: number;
   cotizacion: DTO_CotizacionRequest;
   selectedEmpresaId: string | null;
+  tipoCambio: number | "";
   selectedDetalles: number[]; // IDs de productos
 }
 
@@ -85,6 +87,7 @@ export const ModalAsistenteAprobacion = ({
               cot.empresas_ids.length > 0
                 ? cot.empresas_ids[0].toString()
                 : null,
+            tipoCambio: cot.tipo_cambio_venta_referencial || "",
             // Preseleccionar todos los habilitados
             selectedDetalles: cot.detalles
               .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
@@ -104,6 +107,10 @@ export const ModalAsistenteAprobacion = ({
     const current = wizardSteps[activeStep];
     if (!current.selectedEmpresaId) {
       notifyError("Debe seleccionar una empresa facturadora.");
+      return;
+    }
+    if (current.cotizacion.moneda !== "Soles" && (!current.tipoCambio || current.tipoCambio <= 0)) {
+      notifyError("Debe ingresar un tipo de cambio válido.");
       return;
     }
     if (current.selectedDetalles.length === 0) {
@@ -151,6 +158,10 @@ export const ModalAsistenteAprobacion = ({
       notifyError("Debe seleccionar una empresa facturadora.");
       return;
     }
+    if (current.cotizacion.moneda !== "Soles" && (!current.tipoCambio || current.tipoCambio <= 0)) {
+      notifyError("Debe ingresar un tipo de cambio válido.");
+      return;
+    }
     if (current.selectedDetalles.length === 0) {
       notifyError("Debe seleccionar al menos un producto.");
       return;
@@ -159,11 +170,12 @@ export const ModalAsistenteAprobacion = ({
     // Construir mapa de wizard: originalIndex → config de aprobación
     const wizardMap = new Map<
       number,
-      { empresaId: number; productosAprobados: number[] }
+      { empresaId: number; tipoCambio: number; productosAprobados: number[] }
     >();
     for (const step of wizardSteps) {
       wizardMap.set(step.originalIndex, {
         empresaId: Number(step.selectedEmpresaId),
+        tipoCambio: step.cotizacion.moneda !== "Soles" ? Number(step.tipoCambio) : 1,
         productosAprobados: step.selectedDetalles,
       });
     }
@@ -180,6 +192,7 @@ export const ModalAsistenteAprobacion = ({
             ...c,
             estado: Estado_Cotizacion.Aprobada,
             id_empresa_compradora: wizardConfig.empresaId,
+            tipo_cambio_aplicado_oc: wizardConfig.tipoCambio,
             detalles: c.detalles.map((d, dIdx) => ({
               ...d,
               estado: wizardConfig.productosAprobados.includes(dIdx)
@@ -332,6 +345,31 @@ export const ModalAsistenteAprobacion = ({
                 }}
               />
             </Stack>
+
+            {/* Tipo de Cambio si no es Soles */}
+            {currentStepData?.cotizacion.moneda !== "Soles" && (
+              <Stack gap={4}>
+                <Text size="sm" fw={800} className="text-zinc-200">
+                  Tipo de Cambio Venta Referencial (S/.)
+                </Text>
+                <NumberInput
+                  placeholder="Ej. 3.85"
+                  value={currentStepData?.tipoCambio ?? ""}
+                  onChange={(val: number | string) =>
+                    updateCurrentStep((p) => ({
+                      ...p,
+                      tipoCambio: val === "" ? "" : Number(val),
+                    }))
+                  }
+                  decimalScale={4}
+                  min={0}
+                  classNames={{
+                    input:
+                      "bg-zinc-900 border-zinc-800 text-white focus:border-indigo-500",
+                  }}
+                />
+              </Stack>
+            )}
 
             {/* Selección de Productos */}
             {(() => {

@@ -104,7 +104,7 @@ export const CotizacionesService = {
     payload: {
       id_empresa_compradora: number;
       detalles_aprobados: number[];
-      tipo_cambio_venta_referencial?: number;
+      tipo_cambio_aplicado?: number;
     },
   ): Promise<IRespuesta<{ id_orden_compra: number; correlativo: string }>> => {
     // Retorna un objeto con id_orden_compra y correlativo de la OC generada

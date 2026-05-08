@@ -67,7 +67,7 @@ export const ModalAprobarCotizacion = ({
       } else {
         setSelectedEmpresaId(null);
       }
-      setTipoCambio("");
+      setTipoCambio(cotizacion.tipo_cambio_venta_referencial || "");
     }
   }, [opened, cotizacion, detalles, empresas]);
 
@@ -108,7 +108,7 @@ export const ModalAprobarCotizacion = ({
         {
           id_empresa_compradora: Number(selectedEmpresaId),
           detalles_aprobados: selectedDetalles,
-          tipo_cambio_venta_referencial:
+          tipo_cambio_aplicado:
             cotizacion.moneda !== "Soles"
               ? Number(tipoCambio)
               : 1,
