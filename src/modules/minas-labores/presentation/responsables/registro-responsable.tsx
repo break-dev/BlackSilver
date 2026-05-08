@@ -3,7 +3,7 @@ import { UserIcon } from "@heroicons/react/24/outline";
 import { useRegistroResponsable } from "../../hooks/responsables/useRegistroResponsable";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import type {
-  RES_EmpleadoDisponible,
+  RES_ContratistaDisponible,
   RES_HistorialResponsable,
 } from "../../service/minas.responses";
 import { forwardRef, useImperativeHandle } from "react";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export interface RegistroResponsableRef {
-  agregarDisponible: (empleado: RES_EmpleadoDisponible) => void;
+  agregarDisponible: (contratista: RES_ContratistaDisponible) => void;
 }
 
 const inputClasses = {
@@ -30,10 +30,10 @@ const inputClasses = {
 export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
   ({ idMina, nombreMina, onSuccess }, ref) => {
     const {
-      empleadosDisponibles,
+      contratistasDisponibles,
       loadingDisponibles,
-      idEmpleado,
-      setIdEmpleado,
+      idContratista,
+      setIdContratista,
       fechaInicio,
       setFechaInicio,
       formError,
@@ -77,14 +77,14 @@ export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
             placeholder="Seleccione un responsable"
             withAsterisk
             leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
-            data={empleadosDisponibles.map((e) => ({
-              value: String(e.id_empleado),
-              label: e.empleado,
+            data={contratistasDisponibles.map((c) => ({
+              value: String(c.id_contratista),
+              label: c.contratista,
             }))}
-            value={idEmpleado ? String(idEmpleado) : null}
-            onChange={(v) => setIdEmpleado(v ? parseInt(v) : null)}
+            value={idContratista ? String(idContratista) : null}
+            onChange={(v) => setIdContratista(v ? parseInt(v) : null)}
             searchable
-            nothingFoundMessage="Sin empleados disponibles"
+            nothingFoundMessage="Sin contratistas disponibles"
             classNames={inputClasses}
             radius="lg"
             disabled={isSubmitting || loadingDisponibles}
@@ -97,7 +97,7 @@ export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
             label="Fecha de inicio"
             placeholder="Seleccione fecha"
             value={fechaInicio}
-            onChange={(val: any) => setFechaInicio(val)}
+            onChange={(val) => setFechaInicio(val as unknown as Date | null)}
             disabled={isSubmitting}
             required
             withAsterisk
@@ -115,7 +115,7 @@ export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
               variant="filled"
               className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6"
               loading={isSubmitting}
-              disabled={!idEmpleado || !fechaInicio}
+              disabled={!idContratista || !fechaInicio}
               onClick={handleSubmit}
               radius="lg"
             >

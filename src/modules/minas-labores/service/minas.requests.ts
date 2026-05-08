@@ -17,13 +17,13 @@ export interface DTO_AsignarEmpresaMina {
   id_empresa: number;
 }
 
-// Asignar responsable — el usuario elige empleado y fecha
+// Asignar responsable — el usuario elige contratista y fecha
 export const Schema_AsignarResponsable = z.object({
   id_mina: z.number().int().positive(),
-  id_empleado: z
+  id_contratista: z
     .number()
     .int()
-    .positive({ message: "El empleado es requerido" }),
+    .positive({ message: "El contratista es requerido" }),
   fecha_inicio: z.string().min(1, "La fecha de inicio es requerida"),
 });
 export type DTO_AsignarResponsable = z.infer<typeof Schema_AsignarResponsable>;
