@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
-import { ContratistasService } from "../service/empleados.service";
+import { ContratistasService, EmpleadosService } from "../service/empleados.service";
 import type {
   RES_Contratista,
   RES_Labor,
+  RES_Mina,
 } from "../service/empleados.responses";
 
 export const useAsignacionLaboresContratista = (
@@ -12,11 +13,25 @@ export const useAsignacionLaboresContratista = (
   const { notify } = useNotify();
 
   const [contratista, setContratista] = useState<RES_Contratista | null>(null);
+  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
   const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
   const [seleccionados, setSeleccionados] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingLabores, setLoadingLabores] = useState(false);
+
+  const cargarMinas = useCallback(async () => {
+    setLoadingMinas(true);
+    try {
+      const resp = await EmpleadosService.get_minas();
+      if (resp.success) setMinas(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMinas(false);
+    }
+  }, []);
 
   const cargarCatalogoLabores = useCallback(
     async (minaId: number) => {
@@ -40,6 +55,7 @@ export const useAsignacionLaboresContratista = (
     async (emp: RES_Contratista) => {
       setContratista(emp);
       setIdMina(emp.id_mina || null);
+      cargarMinas();
 
       if (emp.ids_labor_asignadas) {
         const ids = emp.ids_labor_asignadas.split(",").map(Number);
@@ -52,7 +68,7 @@ export const useAsignacionLaboresContratista = (
         cargarCatalogoLabores(emp.id_mina);
       }
     },
-    [cargarCatalogoLabores],
+    [cargarCatalogoLabores, cargarMinas],
   );
 
   const handleMinaChange = (val: number | null) => {
@@ -82,6 +98,11 @@ export const useAsignacionLaboresContratista = (
   const handleAsignar = async () => {
     if (!contratista) return;
 
+    if (!idMina) {
+      notify({ type: "info", content: "Debe seleccionar una mina" });
+      return;
+    }
+
     setLoading(true);
     try {
       const resp = await ContratistasService.asignar_labores(contratista.id_contratista, {
@@ -105,11 +126,13 @@ export const useAsignacionLaboresContratista = (
 
   return {
     contratista,
+    minas,
     idMina,
     onMinaChange: handleMinaChange,
     laboresDisponibles,
     seleccionados,
     loading,
+    loadingMinas,
     loadingLabores,
     opened: contratista !== null,
     abrir,

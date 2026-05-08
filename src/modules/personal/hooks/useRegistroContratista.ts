@@ -87,7 +87,7 @@ export const useRegistroContratista = (
   const handleSubmit = async () => {
     const validation = Schema_CrearContratista.safeParse(form);
     if (!validation.success) {
-      notify({ type: "error", content: validation.error.issues[0].message });
+      notify({ type: "info", content: validation.error.issues[0].message });
       return;
     }
 

@@ -1,27 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { EmpleadosService } from "../service/empleados.service";
-import type { RES_Empleado, RES_EmpresaAsoc } from "../service/empleados.responses";
+import type { RES_Empleado } from "../service/empleados.responses";
 
 export const useEmpleados = () => {
-  const [empresas, setEmpresas] = useState<RES_EmpresaAsoc[]>([]);
   const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
-  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
-
-  const cargarEmpresas = useCallback(async () => {
-    setLoadingEmpresas(true);
-    try {
-      const resp = await EmpleadosService.get_empresas();
-      if (resp.success) setEmpresas(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, []);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -35,9 +21,6 @@ export const useEmpleados = () => {
     }
   }, []);
 
-  useEffect(() => {
-    cargarEmpresas();
-  }, [cargarEmpresas]);
 
   useEffect(() => {
     listar();
@@ -92,12 +75,41 @@ export const useEmpleados = () => {
     return false;
   };
 
+  const groupedByCompany = useMemo(() => {
+    const groups: Record<number, { id: number; nombre: string; empleados: RES_Empleado[] }> = {};
+
+    filtrados.forEach((emp) => {
+      const id = emp.id_empresa || 0;
+      const nombre = emp.empresa || "Sin empresa asignada";
+
+      if (!groups[id]) {
+        groups[id] = { id, nombre, empleados: [] };
+      }
+      groups[id].empleados.push(emp);
+    });
+
+    return Object.values(groups);
+  }, [filtrados]);
+
+  const empresasUnicas = useMemo(() => {
+    const map = new Map<number, string>();
+    empleados.forEach((emp) => {
+      if (emp.id_empresa && emp.empresa) {
+        map.set(emp.id_empresa, emp.empresa);
+      }
+    });
+    return Array.from(map.entries()).map(([id, nombre]) => ({
+      id_empresa: id,
+      nombre,
+    }));
+  }, [empleados]);
+
   return {
-    empresas,
+    empresas: empresasUnicas,
     idEmpresa,
     setIdEmpresa,
     empleados: filtrados,
-    loadingEmpresas,
+    groupedByCompany,
     loading,
     busqueda,
     setBusqueda,

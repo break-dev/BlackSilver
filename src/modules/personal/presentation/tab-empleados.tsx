@@ -1,53 +1,37 @@
 import {
-  Button,
   Group,
-  TextInput,
   Text,
   Badge,
-  ActionIcon,
-  Select,
-  Tooltip,
   Avatar,
   FileButton,
   Stack,
   Loader,
 } from "@mantine/core";
 import {
-  MagnifyingGlassIcon,
-  PlusIcon,
   PencilSquareIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
-import { useDisclosure } from "@mantine/hooks";
-
-import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
-import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 import { useEmpleados } from "../hooks/useEmpleados";
-import { RegistroEmpleado } from "./registro-empleado";
 import type { RES_Empleado } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
-export const TabEmpleados = () => {
+import { CompanyGroupCard } from "./empleados-components/company-group-card";
+
+interface TabEmpleadosProps {
+  controller: ReturnType<typeof useEmpleados>;
+}
+
+export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
   const {
-    empresas,
-    idEmpresa,
-    setIdEmpresa,
-    empleados,
-    loadingEmpresas,
     loading,
-    busqueda,
-    setBusqueda,
-    pushNuevoEmpleado,
+    groupedByCompany,
     actualizarFoto,
     idActualizandoFoto,
-  } = useEmpleados();
-
-  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
-    useDisclosure(false);
+  } = controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -123,19 +107,6 @@ export const TabEmpleados = () => {
       },
     },
     {
-      accessor: "empresa",
-      title: "Empresa",
-      width: 200,
-      render: (r) => (
-        <Group gap="xs">
-          <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
-          <Text size="sm" className="text-zinc-300">
-            {r.empresa}
-          </Text>
-        </Group>
-      ),
-    },
-    {
       accessor: "ubicacion",
       title: "Área / Cargo",
       width: 200,
@@ -174,84 +145,46 @@ export const TabEmpleados = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row gap-4 items-end justify-between">
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto flex-1">
-          <Select
-            label="Filtrar por Empresa"
-            placeholder={loadingEmpresas ? "Cargando..." : "(Todas)"}
-            data={empresas.map((e) => ({
-              value: e.id_empresa.toString(),
-              label: e.nombre,
-            }))}
-            value={idEmpresa?.toString() || null}
-            onChange={(val) => setIdEmpresa(val ? Number(val) : null)}
-            leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />}
-            radius="lg"
+    <Stack gap="xl">
+      {loading ? (
+        <Stack align="center" gap="md" py={100}>
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+            <BuildingOfficeIcon className="w-6 h-6 text-indigo-400 absolute inset-0 m-auto animate-pulse" />
+          </div>
+          <Text
+            size="xs"
+            fw={900}
+            className="uppercase tracking-[0.3em] text-zinc-500"
+          >
+            Consultando Personal...
+          </Text>
+        </Stack>
+      ) : groupedByCompany.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-[32px] bg-zinc-900/10 backdrop-blur-sm">
+          <BuildingOfficeIcon className="w-12 h-12 text-zinc-700 mb-4" />
+          <Text
             size="sm"
-            className="w-full sm:w-64"
-            classNames={{
-              label: "text-zinc-400 mb-1 font-medium",
-              input:
-                "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
-            }}
-            disabled={loadingEmpresas}
-            searchable
-            clearable
-          />
-
-          <TextInput
-            label="Buscar empleado"
-            placeholder="Buscar por nombre, DNI o cargo..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.currentTarget.value)}
-            radius="lg"
-            size="sm"
-            className="w-full flex-1"
-            classNames={{
-              label: "text-zinc-400 mb-1 font-medium",
-              input:
-                "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all",
-            }}
-          />
+            fw={700}
+            className="text-zinc-400 uppercase tracking-widest"
+          >
+            Sin resultados
+          </Text>
+          <Text size="xs" c="dimmed" className="mt-1">
+            No se encontraron empleados para los filtros aplicados.
+          </Text>
         </div>
-
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openRegistro}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 w-full lg:w-auto px-6 h-[38px] mb-[1px]"
-        >
-          Nuevo Empleado
-        </Button>
-      </div>
-
-      <DataTableEstandar
-        idAccessor="id_empleado"
-        columns={columns}
-        records={empleados}
-        loading={loading}
-      />
-
-      <ModalEstandar
-        opened={openedRegistro}
-        close={closeRegistro}
-        title="Registrar Empleado de Empresa"
-        size="md"
-      >
-        <RegistroEmpleado
-          onSuccess={(nuevo) => {
-            pushNuevoEmpleado(nuevo);
-            closeRegistro();
-          }}
-          onCancel={closeRegistro}
-        />
-      </ModalEstandar>
-    </div>
+      ) : (
+        groupedByCompany.map((group) => (
+          <CompanyGroupCard
+            key={group.id}
+            nombre={group.nombre}
+            empleados={group.empleados}
+            columns={columns}
+            loading={loading}
+          />
+        ))
+      )}
+    </Stack>
   );
 };

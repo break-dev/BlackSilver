@@ -28,6 +28,7 @@ interface AsignacionLaboresContratistaProps {
   laboresDisponibles: RES_Labor[];
   seleccionados: number[];
   loading: boolean;
+  loadingMinas: boolean;
   loadingLabores: boolean;
   onToggle: (idLabor: number) => void;
   onAsignar: () => void;
@@ -42,6 +43,7 @@ export const AsignacionLaboresContratista = ({
   laboresDisponibles,
   seleccionados,
   loading,
+  loadingMinas,
   loadingLabores,
   onToggle,
   onAsignar,
@@ -89,7 +91,7 @@ export const AsignacionLaboresContratista = ({
         searchable
         required
         withAsterisk
-        disabled={loading}
+        disabled={loading || loadingMinas}
       />
 
       {/* Lista de labores */}

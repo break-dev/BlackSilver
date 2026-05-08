@@ -100,7 +100,7 @@ export const useRegistroEmpleado = (
   const handleSubmit = async () => {
     const validation = Schema_CrearEmpleado.safeParse(form);
     if (!validation.success) {
-      notify({ type: "error", content: validation.error.issues[0].message });
+      notify({ type: "info", content: validation.error.issues[0].message });
       return;
     }
 

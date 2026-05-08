@@ -1,27 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { ContratistasService, EmpleadosService } from "../service/empleados.service";
-import type { RES_Contratista, RES_Mina } from "../service/empleados.responses";
+import { ContratistasService } from "../service/empleados.service";
+import type { RES_Contratista } from "../service/empleados.responses";
 
 export const useContratistas = () => {
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
   const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
-  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
-
-  const cargarMinas = useCallback(async () => {
-    setLoadingMinas(true);
-    try {
-      const resp = await EmpleadosService.get_minas();
-      if (resp.success) setMinas(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingMinas(false);
-    }
-  }, []);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -36,9 +22,8 @@ export const useContratistas = () => {
   }, []);
 
   useEffect(() => {
-    cargarMinas();
     listar();
-  }, [cargarMinas, listar]);
+  }, [listar]);
 
   const filtrados = useMemo(() => {
     let results = contratistas;
@@ -88,14 +73,24 @@ export const useContratistas = () => {
     return false;
   };
 
+  const minasUnicas = useMemo(() => {
+    const map = new Map<number, string>();
+    contratistas.forEach((c) => {
+      if (c.id_mina && c.mina) {
+        map.set(c.id_mina, c.mina);
+      }
+    });
+    return Array.from(map.entries()).map(([id, nombre]) => ({
+      id_mina: id,
+      nombre,
+    }));
+  }, [contratistas]);
+
   return {
-    minas,
-    setMinas,
+    minas: minasUnicas,
     idMina,
     setIdMina,
     contratistas: filtrados,
-    loadingMinas,
-    setLoadingMinas,
     loading,
     busqueda,
     setBusqueda,
