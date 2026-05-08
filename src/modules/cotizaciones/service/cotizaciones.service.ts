@@ -103,7 +103,7 @@ export const CotizacionesService = {
     id_cotizacion: number,
     payload: {
       id_empresa_compradora: number;
-      detalles_aprobados: number[];
+      detalles_aprobados: { id: number; precio_confirmado: number }[];
       tipo_cambio_aplicado?: number;
     },
   ): Promise<IRespuesta<{ id_orden_compra: number; correlativo: string }>> => {

@@ -29,6 +29,8 @@ export const Schema_CotizacionDetalle = z.object({
   // Precios
   precio_unitario: z.number().min(0, "Precio no válido").optional().nullable(),
   precio_unitario_base: z.number().optional().nullable(),
+  // Precio confirmado para la OC (solo se envía al aprobar desde el wizard)
+  precio_confirmado_oc: z.number().min(0).optional().nullable(),
   // Extra
   comentario: z.string().optional().nullable(),
   no_cotiza: z.boolean().optional().default(false),
