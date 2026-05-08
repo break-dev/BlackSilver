@@ -1,11 +1,8 @@
 import { api } from "../../../service/_api";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_CrearProducto } from "./productos.requests";
-import type {
-  RES_Producto,
-  RES_CategoriaBien,
-  RES_UnidadMedida,
-} from "./productos.responses";
+import type { RES_Producto, RES_CategoriaBien } from "./productos.responses";
 
 export class ProductosService {
   private static PATH = "/productos";
@@ -20,14 +17,14 @@ export class ProductosService {
   public static get_categorias = async (): Promise<
     IRespuesta<RES_CategoriaBien[]>
   > => {
-    const { data } = await api.get(`${this.PATH}/categorias`);
+    const { data } = await api.get(`${this.PATH}/aux/categorias`);
     return data;
   };
 
   public static get_unidades_medida = async (): Promise<
     IRespuesta<RES_UnidadMedida[]>
   > => {
-    const { data } = await api.get(`${this.PATH}/unidades-medida`);
+    const { data } = await api.get(`${this.PATH}/aux/unidades-medida`);
     return data;
   };
 

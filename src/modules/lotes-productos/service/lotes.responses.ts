@@ -37,12 +37,6 @@ export interface RES_ProductoDisponible {
   dias_espera_vencimiento: number | null;
 }
 
-export interface RES_UnidadMedida {
-  id_unidad_medida: number;
-  nombre: string;
-  abreviatura: string;
-}
-
 export interface RES_Almacen {
   id_almacen: number;
   nombre: string;

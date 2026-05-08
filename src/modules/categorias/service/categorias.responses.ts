@@ -6,6 +6,7 @@ export interface RES_Categoria {
   clasificacion_bien: string | null;
   estado: string;
   es_consumible: boolean;
+  es_auditable: boolean;
   para_cocina: boolean;
   para_mina: boolean;
   nombres_consumidoras: string | null;

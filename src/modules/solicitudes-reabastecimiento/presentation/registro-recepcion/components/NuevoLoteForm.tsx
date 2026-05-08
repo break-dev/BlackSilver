@@ -3,8 +3,7 @@ import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
 import type { DTO_RecibirEntregaItem } from "../../../service/reabastecimiento.requests";
-import type { RES_UnidadMedida } from "../../../../lotes-productos/service/lotes.responses";
-
+import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
 interface NuevoLoteFormProps {
   groupIndex: number;
   lotIndex: number;

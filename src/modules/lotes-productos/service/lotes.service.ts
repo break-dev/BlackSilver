@@ -5,10 +5,10 @@ import type { DTO_AjustarStock, DTO_CrearLote } from "./lotes.requests";
 import type {
   RES_Lote,
   RES_ProductoDisponible,
-  RES_UnidadMedida,
   RES_Almacen,
 } from "./lotes.responses";
 import dayjs from "dayjs";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 export class LotesService {
   private static PATH = "/lotes-productos";

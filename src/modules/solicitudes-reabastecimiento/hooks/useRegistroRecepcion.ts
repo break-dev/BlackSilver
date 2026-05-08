@@ -7,13 +7,13 @@ import type {
   DTO_RecibirEntregaItem,
   DTO_RegistrarRecepcion,
 } from "../service/reabastecimiento.requests";
-import type { RES_UnidadMedida } from "../../lotes-productos/service/lotes.responses";
 import type {
   RES_LoteDisponible,
   RES_TicketLote,
 } from "../../../service/responses/lote-producto";
 import { usePrint } from "../../../hooks/usePrint";
 import type { HistorialEntregaDetalleItem } from "./useHistorialEntregas";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad

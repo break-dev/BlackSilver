@@ -5,9 +5,9 @@ import { Schema_CrearLote } from "../service/lotes.requests";
 import type {
   RES_Lote,
   RES_ProductoDisponible,
-  RES_UnidadMedida,
   RES_Almacen,
 } from "../service/lotes.responses";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 interface UseRegistroLoteProps {
   initialAlmacenId?: number | null;

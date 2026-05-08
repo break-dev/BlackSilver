@@ -8,9 +8,9 @@ import {
 import type {
   RES_Producto,
   RES_CategoriaBien,
-  RES_UnidadMedida,
 } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
+import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,

@@ -18,9 +18,9 @@ import type {
   GroupedReception,
   DTO_RecibirLotExtendido,
 } from "../../../hooks/useRegistroRecepcion";
-import type { RES_UnidadMedida } from "../../../../lotes-productos/service/lotes.responses";
 import { useProductoRecepcionCard } from "../../../hooks/useProductoRecepcionCard";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
 
 interface ProductoRecepcionCardProps {
   group: GroupedReception;
