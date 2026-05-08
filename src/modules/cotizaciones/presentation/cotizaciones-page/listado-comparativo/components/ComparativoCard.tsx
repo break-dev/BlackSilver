@@ -36,6 +36,7 @@ interface ComparativoCardProps {
   onPrintCotizacion: (cot: RES_Cotizacion) => void;
   onPrintOC: (id: number) => void;
   onApprove: (id: number) => void;
+  onEdit: (cot: RES_Cotizacion) => void;
   printingOCId: number | null;
   stateConfigs: Record<
     string,
@@ -53,6 +54,7 @@ export const ComparativoCard = ({
   onPrintCotizacion,
   onPrintOC,
   onApprove,
+  onEdit,
   printingOCId,
   stateConfigs,
 }: ComparativoCardProps) => {
@@ -153,6 +155,7 @@ export const ComparativoCard = ({
               onPrintCotizacion={onPrintCotizacion}
               onPrintOC={onPrintOC}
               onApprove={onApprove}
+              onEdit={onEdit}
               printingOCId={printingOCId}
               stateConfig={
                 stateConfigs[cot.estado] || {

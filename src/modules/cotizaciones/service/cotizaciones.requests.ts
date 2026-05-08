@@ -91,3 +91,14 @@ export type DTO_ProductoComparativo = z.infer<
 export type DTO_RegistrarComparativo = z.infer<
   typeof Schema_RegistrarComparativo
 >;
+
+// Objeto para actualización individual
+export const Schema_ActualizarCotizacion = Schema_CotizacionRequest.extend({
+  detalles: z.array(
+    Schema_CotizacionDetalle.extend({
+      id_cotizacion_detalle: z.number().optional().nullable(),
+    }),
+  ),
+});
+
+export type DTO_ActualizarCotizacion = z.infer<typeof Schema_ActualizarCotizacion>;

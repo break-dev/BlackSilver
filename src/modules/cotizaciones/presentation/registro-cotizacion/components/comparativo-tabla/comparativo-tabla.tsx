@@ -67,6 +67,8 @@ interface ComparativoTablaProps {
   ) => void;
   onCancelarCopia?: () => void;
   onPegarCopia?: (targetCotIndex: number, targetRowIndex: number) => void;
+  isReadOnlyRows?: boolean;
+  isSingleMode?: boolean;
 }
 
 export const ComparativoTabla = ({
@@ -88,9 +90,11 @@ export const ComparativoTabla = ({
   onIniciarCopia,
   onCancelarCopia,
   onPegarCopia,
+  isReadOnlyRows = false,
+  isSingleMode = false,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
-  const numSkeletons = Math.max(0, 4 - numCotizaciones);
+  const numSkeletons = isSingleMode ? 0 : Math.max(0, 4 - numCotizaciones);
   const totalCols = numCotizaciones + numSkeletons;
   const totalWidth = 120 + totalCols * 400;
 
@@ -174,6 +178,7 @@ export const ComparativoTabla = ({
                   onRemoveCotizacion={onRemoveCotizacion}
                   almacenes={almacenes}
                   onUpdateGlobalLogistica={onUpdateGlobalLogistica}
+                  isSingleMode={isSingleMode}
                 />
               </Table.Th>
             ))}
@@ -255,7 +260,7 @@ export const ComparativoTabla = ({
                         {prod.nombre}
                       </Text>
                       <div className="flex gap-2">
-                        {onDuplicarFila && (
+                        {!isReadOnlyRows && onDuplicarFila && (
                           <Tooltip
                             label="Agregar otro destino"
                             position="bottom"
@@ -272,7 +277,7 @@ export const ComparativoTabla = ({
                             </ActionIcon>
                           </Tooltip>
                         )}
-                        {onEliminarFila && (
+                        {!isReadOnlyRows && onEliminarFila && (
                           <Tooltip label="Eliminar fila" position="bottom">
                             <ActionIcon
                               variant="light"
@@ -344,6 +349,7 @@ export const ComparativoTabla = ({
                         copySource={copySource}
                         onIniciarCopia={onIniciarCopia}
                         onCancelarCopia={onCancelarCopia}
+                        isReadOnlyNoCotiza={isReadOnlyRows}
                         isCheapest={(() => {
                           if (det.no_cotiza || !det.precio_unitario) return false;
                           const tc = cot.tipo_cambio_venta_referencial || 1;

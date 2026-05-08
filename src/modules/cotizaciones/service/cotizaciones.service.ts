@@ -1,7 +1,10 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_Empresa } from "./cotizaciones.responses";
-import type { DTO_RegistrarComparativo } from "./cotizaciones.requests";
+import type {
+  DTO_RegistrarComparativo,
+  DTO_ActualizarCotizacion,
+} from "./cotizaciones.requests";
 import type { RES_Proveedor } from "../../../service/responses/proveedor";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Producto } from "../../../service/responses/producto";
@@ -39,6 +42,21 @@ export const CotizacionesService = {
   ): Promise<IRespuesta<RES_Comparativo[]>> => {
     const { data } = await api.post<IRespuesta<RES_Comparativo[]>>(
       "/cotizaciones/registrar",
+      dto,
+    );
+    return data;
+  },
+
+  /**
+   * Actualizar una cotización individual.
+   * El response tiene el mismo formato que el listado (RES_Comparativo[]).
+   */
+  actualizar_cotizacion: async (
+    id_cotizacion: number,
+    dto: DTO_ActualizarCotizacion,
+  ): Promise<IRespuesta<RES_Comparativo[]>> => {
+    const { data } = await api.put<IRespuesta<RES_Comparativo[]>>(
+      `/cotizaciones/${id_cotizacion}`,
       dto,
     );
     return data;

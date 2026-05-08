@@ -9,6 +9,7 @@ import { ModalAprobarCotizacion } from "../detalle/modal-aprobar-cotizacion";
 import { CotizacionesService } from "../../../service/cotizaciones.service";
 import { OrdenCompraPDF } from "../../../../../presentation/utils/orden-compra-pdf";
 import { useNotify } from "../../../../../hooks/useNotify";
+import { ModalEditarCotizacion } from "../../registro-cotizacion/modal-editar-cotizacion";
 import type {
   RES_Comparativo,
   RES_Cotizacion,
@@ -30,6 +31,7 @@ interface ListadoComparativosProps {
     idsDetallesAprobados?: number[],
     id_orden_compra?: number,
   ) => void;
+  onReplaceLocal?: (actualizados: RES_Comparativo[]) => void;
 }
 
 // ─── Colores y labels por estado ──────────────────────────────────────────────
@@ -53,6 +55,7 @@ export const ListadoComparativos = ({
   comparativos,
   busqueda,
   onUpdateLocal,
+  onReplaceLocal,
 }: ListadoComparativosProps) => {
   const { print, prepare } = usePrint();
   const { notify } = useNotify();
@@ -71,6 +74,10 @@ export const ListadoComparativos = ({
   const [selectedCotIdParaAprobar, setSelectedCotIdParaAprobar] = useState<
     number | null
   >(null);
+
+  const [modalEditarOpened, setModalEditarOpened] = useState(false);
+  const [selectedCotParaEditar, setSelectedCotParaEditar] =
+    useState<RES_Cotizacion | null>(null);
 
   const toggleComp = (id: number) =>
     setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -127,6 +134,23 @@ export const ListadoComparativos = ({
       detallesAprobados.map((d) => d.id_cotizacion_detalle),
       id_orden_compra,
     );
+  };
+
+  const handleEdit = (cot: RES_Cotizacion) => {
+    setSelectedCotParaEditar(cot);
+    setModalEditarOpened(true);
+  };
+
+  const handleSuccessEdicion = (data: RES_Comparativo[]) => {
+    notify({
+      type: "success",
+      content: "Cotización actualizada correctamente.",
+    });
+    setModalEditarOpened(false);
+
+    if (onReplaceLocal) {
+      onReplaceLocal(data);
+    }
   };
 
   const handlePrintOC = async (id_orden_compra: number) => {
@@ -198,6 +222,7 @@ export const ListadoComparativos = ({
           onPrintCotizacion={handlePrintCotizacion}
           onPrintOC={handlePrintOC}
           onApprove={handleApprove}
+          onEdit={handleEdit}
           printingOCId={printingOCId}
           stateConfigs={COLOR_BY_STATE}
         />
@@ -274,29 +299,45 @@ export const ListadoComparativos = ({
         cotizacion={
           selectedCotIdParaAprobar
             ? comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
-              null
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
+            null
             : null
         }
         detalles={
           selectedCotIdParaAprobar
             ? (comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-                ?.detalles ?? [])
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+              ?.detalles ?? [])
             : []
         }
         empresas={
           selectedCotIdParaAprobar
             ? (comparativos
-                .flatMap((comp) => comp.cotizaciones)
-                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-                ?.empresas ?? [])
+              .flatMap((comp) => comp.cotizaciones)
+              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+              ?.empresas ?? [])
             : []
         }
         onSuccess={handleSuccessAprobacion}
       />
+
+      <ModalEstandar
+        opened={modalEditarOpened}
+        onClose={() => setModalEditarOpened(false)}
+        close={() => setModalEditarOpened(false)}
+        title="Editar Cotización"
+        size="560px"
+      >
+        {selectedCotParaEditar && (
+          <ModalEditarCotizacion
+            cotizacion={selectedCotParaEditar}
+            onSuccess={handleSuccessEdicion}
+            onCancel={() => setModalEditarOpened(false)}
+          />
+        )}
+      </ModalEstandar>
     </Stack>
   );
 };

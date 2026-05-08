@@ -88,15 +88,30 @@ export const useCotizaciones = () => {
     setComparativos((prev) => {
       const idsActuales = new Set(prev.map((c) => c.id_comparativo));
       const filtrados = nuevos.filter((c) => !idsActuales.has(c.id_comparativo));
-      return [...filtrados, ...prev].sort((a, b) => b.id_comparativo - a.id_comparativo);
+      return [...filtrados, ...prev].sort(
+        (a, b) => b.id_comparativo - a.id_comparativo,
+      );
     });
   }, []);
+
+  const replaceComparativosLocal = useCallback(
+    (actualizados: RES_Comparativo[]) => {
+      setComparativos((prev) => {
+        const mapaActualizados = new Map(
+          actualizados.map((c) => [c.id_comparativo, c]),
+        );
+        return prev.map((c) => mapaActualizados.get(c.id_comparativo) ?? c);
+      });
+    },
+    [],
+  );
 
   return {
     comparativos,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,
+    replaceComparativosLocal,
     busqueda,
     setBusqueda,
     mes,

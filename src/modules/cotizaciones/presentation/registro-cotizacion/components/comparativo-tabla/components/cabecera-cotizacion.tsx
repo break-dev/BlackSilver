@@ -62,6 +62,7 @@ interface CabeceraCotizacionProps {
       tiempo_entrega_periodo: Periodo;
     },
   ) => void;
+  isSingleMode?: boolean;
 }
 
 const inputStyles = {
@@ -83,6 +84,7 @@ export const CabeceraCotizacion = ({
   isSkeleton = false,
   almacenes = [],
   onUpdateGlobalLogistica,
+  isSingleMode = false,
 }: CabeceraCotizacionProps) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -152,15 +154,17 @@ export const CabeceraCotizacion = ({
         >
           Cotización #{idx + 1}
         </Text>
-        <ActionIcon
-          variant="subtle"
-          color="red"
-          size="sm"
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => onRemoveCotizacion(idx)}
-        >
-          <XMarkIcon className="w-4 h-4" />
-        </ActionIcon>
+        {!isSingleMode && (
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            size="sm"
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => onRemoveCotizacion(idx)}
+          >
+            <XMarkIcon className="w-4 h-4" />
+          </ActionIcon>
+        )}
       </Group>
 
       {/* Configuración Principal */}
@@ -195,40 +199,41 @@ export const CabeceraCotizacion = ({
               transitionProps: { transition: "pop", duration: 200 },
             }}
           />
-
-          <div
-            className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
-            onClick={() =>
-              onUpdateHeader(
-                idx,
-                "estado",
-                cot.estado === Estado_Cotizacion.Aprobada
-                  ? Estado_Cotizacion.Generada
-                  : Estado_Cotizacion.Aprobada,
-              )
-            }
-          >
-            <Group gap="xs" wrap="nowrap" align="center">
-              <Text
-                size="10px"
-                fw={900}
-                className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
-              >
-                Aprobar
-              </Text>
-              <Checkbox
-                size="xs"
-                color="green"
-                checked={cot.estado === Estado_Cotizacion.Aprobada}
-                onChange={() => {
-                  // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
-                }}
-                styles={{
-                  input: { cursor: "pointer", pointerEvents: "none" },
-                }}
-              />
-            </Group>
-          </div>
+          {!isSingleMode && (
+            <div
+              className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
+              onClick={() =>
+                onUpdateHeader(
+                  idx,
+                  "estado",
+                  cot.estado === Estado_Cotizacion.Aprobada
+                    ? Estado_Cotizacion.Generada
+                    : Estado_Cotizacion.Aprobada,
+                )
+              }
+            >
+              <Group gap="xs" wrap="nowrap" align="center">
+                <Text
+                  size="10px"
+                  fw={900}
+                  className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
+                >
+                  Aprobar
+                </Text>
+                <Checkbox
+                  size="xs"
+                  color="green"
+                  checked={cot.estado === Estado_Cotizacion.Aprobada}
+                  onChange={() => {
+                    // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
+                  }}
+                  styles={{
+                    input: { cursor: "pointer", pointerEvents: "none" },
+                  }}
+                />
+              </Group>
+            </div>
+          )}
         </Group>
 
         <MultiSelect

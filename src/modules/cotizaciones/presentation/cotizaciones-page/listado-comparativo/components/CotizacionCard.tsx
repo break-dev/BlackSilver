@@ -19,6 +19,7 @@ import {
   ClipboardDocumentCheckIcon,
   BuildingStorefrontIcon,
   CubeIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon } from "@heroicons/react/24/solid";
 import { formatNumber } from "../../../../../../shared/functions/formatNumber";
@@ -36,6 +37,7 @@ interface CotizacionCardProps {
   onPrintCotizacion: (cot: RES_Cotizacion) => void;
   onPrintOC: (id: number) => void;
   onApprove: (id: number) => void;
+  onEdit: (cot: RES_Cotizacion) => void;
   printingOCId: number | null;
   stateConfig: { color: string; label: string; variant: string };
 }
@@ -47,6 +49,7 @@ export const CotizacionCard = ({
   onPrintCotizacion,
   onPrintOC,
   onApprove,
+  onEdit,
   printingOCId,
   stateConfig,
 }: CotizacionCardProps) => {
@@ -163,6 +166,24 @@ export const CotizacionCard = ({
                     }}
                   >
                     <ClipboardDocumentCheckIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Tooltip>
+              )}
+
+              {/* Botón Editar */}
+              {cot.estado !== Estado_Cotizacion.Aprobada && (
+                <Tooltip label="Editar Cotización" withArrow>
+                  <ActionIcon
+                    variant="light"
+                    color="pink"
+                    radius="xl"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(cot);
+                    }}
+                  >
+                    <PencilSquareIcon className="w-4 h-4" />
                   </ActionIcon>
                 </Tooltip>
               )}

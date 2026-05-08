@@ -67,6 +67,7 @@ interface CeldaDetalleProps {
   ) => void;
   onCancelarCopia?: () => void;
   isCheapest?: boolean;
+  isReadOnlyNoCotiza?: boolean;
 }
 
 const inputStyles = {
@@ -91,6 +92,7 @@ export const CeldaDetalle = ({
   onIniciarCopia,
   onCancelarCopia,
   isCheapest,
+  isReadOnlyNoCotiza = false,
 }: CeldaDetalleProps & { rowIndex: number }) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -208,30 +210,32 @@ export const CeldaDetalle = ({
       </div>
 
       {/* Switch de Inhabilitación (Ubicación Original) */}
-      <div className="absolute top-1.5 right-2 z-20">
-        <Tooltip
-          label={
-            det.no_cotiza ? "Cotizar este producto" : "No cotizar este producto"
-          }
-          position="left"
-        >
-          <Group gap={6} align="center">
-            <Switch
-              size="xs"
-              color="red"
-              checked={!det.no_cotiza}
-              onChange={() => onToggleNoCotiza(cotIdx, rowIndex)}
-              className="cursor-pointer"
-            />
-          </Group>
-        </Tooltip>
-      </div>
+      {!isReadOnlyNoCotiza && (
+        <div className="absolute top-1.5 right-2 z-20">
+          <Tooltip
+            label={
+              det.no_cotiza ? "Cotizar este producto" : "No cotizar este producto"
+            }
+            position="left"
+          >
+            <Group gap={6} align="center">
+              <Switch
+                size="xs"
+                color="red"
+                checked={!det.no_cotiza}
+                onChange={() => onToggleNoCotiza(cotIdx, rowIndex)}
+                className="cursor-pointer"
+              />
+            </Group>
+          </Tooltip>
+        </div>
+      )}
 
       {/* Campos editables */}
       <Stack
         gap="sm"
         className={`w-full pt-6 transition-all duration-300 ${
-          det.no_cotiza
+          det.no_cotiza && !isReadOnlyNoCotiza
             ? "opacity-20 pointer-events-none grayscale blur-[0.5px]"
             : ""
         }`}

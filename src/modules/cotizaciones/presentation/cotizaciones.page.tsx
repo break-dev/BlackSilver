@@ -32,6 +32,7 @@ export const CotizacionesPage = () => {
     year,
     cambiarPeriodo,
     addComparativosLocal,
+    replaceComparativosLocal,
   } = useCotizaciones();
 
   const [openedCreate, { open: openCreate, close: closeCreate }] =
@@ -101,6 +102,7 @@ export const CotizacionesPage = () => {
           comparativos={comparativos}
           busqueda={busqueda}
           onUpdateLocal={updateCotizacionLocal}
+          onReplaceLocal={replaceComparativosLocal}
         />
       )}
 
