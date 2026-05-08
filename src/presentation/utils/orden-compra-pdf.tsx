@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text, StyleSheet, Image } from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../shared/functions/formatNumber";
 import { MONEDAS } from "../../shared/variables/monedas";
@@ -115,20 +115,39 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
   return (
     <Document title={`Orden de Compra - ${orden.correlativo}`}>
       <Page size="A4" style={styles.page}>
+        {/* ── Banda de logo superior (izquierda) ── */}
+        {orden.empresa_logo && (
+          <View
+            style={{
+              marginBottom: 14,
+              paddingBottom: 10,
+              borderBottomWidth: 1,
+              borderBottomColor: "#e4e4e7",
+            }}
+          >
+            <Image
+              src={orden.empresa_logo}
+              style={{ width: 120, height: 80, objectFit: "contain" }}
+            />
+          </View>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 9, color: "#52525b", marginBottom: 2 }}>
               EMITIR FACTURA A NOMBRE DE:
             </Text>
-            <Text style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}>
-              {orden.empresa.toUpperCase()}
-            </Text>
-            {orden.empresa_ruc && (
-              <Text style={{ fontSize: 9, color: "#52525b", marginTop: 2 }}>
-                RUC: {orden.empresa_ruc}
+            <View>
+              <Text style={{ fontSize: 13, fontWeight: 700, color: "#18181b" }}>
+                {orden.empresa.toUpperCase()}
               </Text>
-            )}
+              {orden.empresa_ruc && (
+                <Text style={{ fontSize: 9, color: "#52525b", marginTop: 2 }}>
+                  RUC: {orden.empresa_ruc}
+                </Text>
+              )}
+            </View>
           </View>
           <View style={{ alignItems: "flex-end", flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
