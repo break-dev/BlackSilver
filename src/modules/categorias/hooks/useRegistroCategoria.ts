@@ -29,6 +29,7 @@ export const useRegistroCategoria = ({
   const [esConsumible, setEsConsumible] = useState(false);
   const [paraCocina, setParaCocina] = useState(false);
   const [paraMina, setParaMina] = useState(true);
+  const [esAuditable, setEsAuditable] = useState(false);
   const [idsConsumidoras, setIdsConsumidoras] = useState<number[]>([]);
 
   const [error, setError] = useState("");
@@ -42,6 +43,7 @@ export const useRegistroCategoria = ({
     setEsConsumible(false);
     setParaCocina(false);
     setParaMina(true);
+    setEsAuditable(false);
     setIdsConsumidoras([]);
     setError("");
   }, []);
@@ -56,6 +58,7 @@ export const useRegistroCategoria = ({
       es_consumible: esConsumible,
       para_cocina: paraCocina,
       para_mina: paraMina,
+      es_auditable: esAuditable,
       ids_categorias_consumidoras: idsConsumidoras,
     };
 
@@ -100,6 +103,8 @@ export const useRegistroCategoria = ({
     setParaCocina,
     paraMina,
     setParaMina,
+    esAuditable,
+    setEsAuditable,
     idsConsumidoras,
     setIdsConsumidoras,
     error,
