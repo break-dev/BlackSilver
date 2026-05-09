@@ -11,6 +11,7 @@ import {
   Alert,
   Select,
   TextInput,
+  Loader,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import {
@@ -29,6 +30,7 @@ import type { RES_OrdenCompraDetalle } from "../../../../service/responses/orden
 interface Props {
   idOrdenCompra: number;
   detalles: RES_OrdenCompraDetalle[];
+  soloAutorizados?: boolean;
   onSuccess: (
     lotesNuevos?: RES_TicketLote[],
     finalItems?: DTO_RecepcionOCItem[],
@@ -38,6 +40,7 @@ interface Props {
 export const RegistroRecepcionOC = (props: Props) => {
   const {
     almacenes,
+    loadingAlmacenes,
     selectedAlmacenId,
     setSelectedAlmacenId,
     groupedItems,
@@ -90,7 +93,7 @@ export const RegistroRecepcionOC = (props: Props) => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select
                 label="Almacén Recepcionista"
-                placeholder="Seleccione"
+                placeholder={loadingAlmacenes ? "Cargando almacenes..." : "Seleccione"}
                 data={almacenes.map((a) => ({
                   value: a.id_almacen.toString(),
                   label: a.nombre,
@@ -99,6 +102,7 @@ export const RegistroRecepcionOC = (props: Props) => {
                 onChange={(val: string | null) =>
                   setSelectedAlmacenId(Number(val))
                 }
+                disabled={loadingAlmacenes}
                 required
                 radius="md"
                 size="xs"
@@ -106,6 +110,7 @@ export const RegistroRecepcionOC = (props: Props) => {
                 leftSection={
                   <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
                 }
+                rightSection={loadingAlmacenes ? <Loader size={12} color="indigo" /> : null}
               />
 
               <DateTimePicker
@@ -287,11 +292,12 @@ export const RegistroRecepcionOC = (props: Props) => {
             size="sm"
             radius="md"
             loading={loadingAction}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loadingAlmacenes}
             className="shadow-lg shadow-indigo-500/20 uppercase font-black tracking-tight"
           >
             Registrar Recepción
           </Button>
+
         </Group>
       </Stack>
     </form>

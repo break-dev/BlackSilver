@@ -19,6 +19,7 @@ export type {
 interface UseRegistroRecepcionOCProps {
   idOrdenCompra: number;
   detalles: RES_OrdenCompraDetalle[];
+  soloAutorizados?: boolean;
   onSuccess: (
     lotesNuevos?: RES_TicketLote[],
     finalItems?: DTO_RecepcionOCItem[],
@@ -28,6 +29,7 @@ interface UseRegistroRecepcionOCProps {
 export const useRegistroRecepcionOC = ({
   idOrdenCompra,
   detalles,
+  soloAutorizados = true,
   onSuccess,
 }: UseRegistroRecepcionOCProps) => {
   const { notifySuccess, notifyError } = useNotify();
@@ -39,7 +41,7 @@ export const useRegistroRecepcionOC = ({
     loadingAlmacenes,
     selectedAlmacenId,
     setSelectedAlmacenId,
-  } = useAlmacenesRecepcion();
+  } = useAlmacenesRecepcion(soloAutorizados);
 
   const header = useHeaderRecepcion();
   const items = useItemsRecepcion({ selectedAlmacenId, detalles });

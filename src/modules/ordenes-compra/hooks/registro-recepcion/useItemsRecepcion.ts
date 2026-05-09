@@ -93,7 +93,9 @@ export const useItemsRecepcion = ({
     setGroupedItems(getInitialGroupedItems(detalles));
     setErrors({});
     setLoadingLotes(true);
+    setLotesDisponibles([]);
   }
+
 
   useEffect(() => {
     if (selectedAlmacenId && detalles.length > 0) {

@@ -39,7 +39,7 @@ export const ModalEstandar = ({
             </span>
           </div>
           {rightSection && (
-            <div className="flex items-center flex-none">{rightSection}</div>
+            <div className="flex items-center flex-none mr-4">{rightSection}</div>
           )}
         </div>
       }

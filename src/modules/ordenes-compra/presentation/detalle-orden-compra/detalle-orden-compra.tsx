@@ -1,4 +1,4 @@
-import { Loader, Stack } from "@mantine/core";
+import { Loader, Stack, Switch } from "@mantine/core";
 import dayjs from "dayjs";
 import { useState } from "react";
 import QRCode from "qrcode";
@@ -46,6 +46,7 @@ export const DetalleOrdenCompra = ({
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [soloAutorizados, setSoloAutorizados] = useState(true);
   const { print } = usePrint();
 
   const openTrace = (idDetalle: number, nombre: string) => {
@@ -153,10 +154,26 @@ export const DetalleOrdenCompra = ({
         opened={openedRecepcion}
         close={() => setOpenedRecepcion(false)}
         title="Nueva Recepción de Mercancía"
-        size="85%"
+        size="50%"
+        rightSection={
+          <Switch
+            label="Solo autorizados"
+            checked={soloAutorizados}
+            onChange={(event) =>
+              setSoloAutorizados(event.currentTarget.checked)
+            }
+            size="xs"
+            color="indigo"
+            classNames={{
+              label: "text-zinc-400 font-bold uppercase text-[11px]",
+              track: "bg-zinc-800 border-zinc-700",
+            }}
+          />
+        }
       >
         <RegistroRecepcionOC
           idOrdenCompra={orden.id_orden_compra}
+          soloAutorizados={soloAutorizados}
           detalles={detalles.filter((d) =>
             selectedIds.includes(d.id_orden_compra_detalle),
           )}
