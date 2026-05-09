@@ -8,9 +8,10 @@ import {
 import type {
   RES_Area,
   RES_Cargo,
-  RES_Empleado,
-  RES_EmpresaAsoc,
+  RES_EmpleadoResumen,
 } from "../service/empleados.responses";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
   id_empresa: 0,
@@ -26,11 +27,11 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
 };
 
 export const useRegistroEmpleado = (
-  onSuccess: (nuevo: RES_Empleado) => void,
+  onSuccess: (nuevo: RES_EmpleadoResumen) => void,
 ) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearEmpleado>(INITIAL_FORM);
-  const [empresas, setEmpresas] = useState<RES_EmpresaAsoc[]>([]);
+  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [cargos, setCargos] = useState<RES_Cargo[]>([]);
 
@@ -43,7 +44,7 @@ export const useRegistroEmpleado = (
   const cargarEmpresas = useCallback(async () => {
     setLoadingEmpresas(true);
     try {
-      const resp = await EmpleadosService.get_empresas();
+      const resp = await AuxService.get_empresas();
       if (resp.success) setEmpresas(resp.data);
     } catch (err) {
       console.error(err);

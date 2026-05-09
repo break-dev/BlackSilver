@@ -16,11 +16,11 @@ import {
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
-import type { RES_Empleado } from "../service/empleados.responses";
+import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroEmpleadoProps {
-  onSuccess: (nuevo: RES_Empleado) => void;
+  onSuccess: (nuevo: RES_EmpleadoResumen) => void;
   onCancel: () => void;
 }
 
@@ -66,7 +66,12 @@ export const RegistroEmpleado = ({
               className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
               style={{ width: 110, height: 110 }}
             >
-              <Avatar src={photoPreview} size={110} radius={100} className="bg-transparent">
+              <Avatar
+                src={photoPreview}
+                size={110}
+                radius={100}
+                className="bg-transparent"
+              >
                 <UserIcon className="w-10 h-10 text-indigo-400/40" />
               </Avatar>
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
@@ -135,10 +140,12 @@ export const RegistroEmpleado = ({
       {/* Empresa */}
       <Select
         label="Empresa"
-        placeholder={loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"}
+        placeholder={
+          loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
+        }
         data={empresas.map((e) => ({
           value: e.id_empresa.toString(),
-          label: e.nombre,
+          label: e.razon_social,
         }))}
         value={form.id_empresa === 0 ? null : form.id_empresa.toString()}
         onChange={(val) => setField("id_empresa", Number(val))}

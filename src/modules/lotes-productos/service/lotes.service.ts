@@ -2,26 +2,11 @@ import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_AjustarStock, DTO_CrearLote } from "./lotes.requests";
-import type {
-  RES_Lote,
-  RES_ProductoDisponible,
-  RES_Almacen,
-} from "./lotes.responses";
+import type { RES_Lote } from "./lotes.responses";
 import dayjs from "dayjs";
-import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 
 export class LotesService {
   private static PATH = "/lotes-productos";
-
-  /**
-   * Obtener almacenes (para el filtro y creación).
-   */
-  static async listarAlmacenes() {
-    const response = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${this.PATH}/aux/almacenes`,
-    );
-    return response.data;
-  }
 
   /**
    * Obtener resumen de lotes por almacén.
@@ -51,26 +36,6 @@ export class LotesService {
     const response = await api.post<IRespuesta<RES_Lote>>(
       `${this.PATH}`,
       payload,
-    );
-    return response.data;
-  }
-
-  /**
-   * Listar productos aptos para inventario.
-   */
-  static async listarProductos() {
-    const response = await api.get<IRespuesta<RES_ProductoDisponible[]>>(
-      `${this.PATH}/aux/productos`,
-    );
-    return response.data;
-  }
-
-  /**
-   * Listar unidades de medida base.
-   */
-  static async listarUnidades() {
-    const response = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      `${this.PATH}/aux/unidades`,
     );
     return response.data;
   }

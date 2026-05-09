@@ -1,12 +1,12 @@
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
-import type { RES_Empleado } from "../../service/empleados.responses";
+import type { RES_EmpleadoResumen } from "../../service/empleados.responses";
 import { CompanyGroupHeader } from "./company-group-header";
 
 interface CompanyGroupCardProps {
   nombre: string;
-  empleados: RES_Empleado[];
-  columns: DataTableColumn<RES_Empleado>[];
+  empleados: RES_EmpleadoResumen[];
+  columns: DataTableColumn<RES_EmpleadoResumen>[];
   loading: boolean;
 }
 

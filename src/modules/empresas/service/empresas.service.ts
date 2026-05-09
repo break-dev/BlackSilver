@@ -1,14 +1,9 @@
 import { api } from "../../../service/_api";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Empresa } from "./empresas.responses";
 
 export class EmpresasService {
   private static PATH = "/empresas";
-
-  public static get_empresas = async (): Promise<IRespuesta<RES_Empresa[]>> => {
-    const { data } = await api.get(`${this.PATH}`);
-    return data;
-  };
 
   public static crear_empresa = async (
     data: FormData,

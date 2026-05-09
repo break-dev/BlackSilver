@@ -3,17 +3,15 @@ import dayjs from "dayjs";
 import { useNotify } from "../../../hooks/useNotify";
 import { AlmacenesService } from "../service/almacenes.service";
 import { Schema_NuevoResponsable } from "../service/almacenes.requests";
-import type {
-  RES_EmpleadoDisponible,
-  RES_ResponsableAlmacen,
-} from "../service/almacenes.responses";
+import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 export const useNuevoResponsable = (id_almacen: number) => {
   const { notify } = useNotify();
   const [loading, setLoading] = useState(false);
 
   // Empleados disponibles
-  const [empleados, setEmpleados] = useState<RES_EmpleadoDisponible[]>([]);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
   const [loadingEmpleados, setLoadingEmpleados] = useState(false);
 
   // Form
@@ -26,7 +24,7 @@ export const useNuevoResponsable = (id_almacen: number) => {
   const cargarEmpleados = useCallback(async () => {
     setLoadingEmpleados(true);
     try {
-      const result = await AlmacenesService.get_empleados(id_almacen);
+      const result = await AlmacenesService.get_empleados_disponibles(id_almacen);
       if (result.success) {
         setEmpleados(result.data);
       } else {
@@ -109,7 +107,7 @@ export const useNuevoResponsable = (id_almacen: number) => {
     }
   };
 
-  const agregarDisponible = (emp: RES_EmpleadoDisponible) => {
+  const agregarDisponible = (emp: RES_Empleado) => {
     setEmpleados((prev) => {
       const existe = prev.some((e) => e.id_empleado === emp.id_empleado);
       if (existe) return prev;

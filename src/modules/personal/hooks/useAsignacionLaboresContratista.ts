@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
-import { ContratistasService, EmpleadosService } from "../service/empleados.service";
+import {
+  ContratistasService,
+  EmpleadosService,
+} from "../service/empleados.service";
 import type {
   RES_Contratista,
   RES_Labor,
@@ -43,7 +46,10 @@ export const useAsignacionLaboresContratista = (
         }
       } catch (err) {
         console.error(err);
-        notify({ type: "error", content: "Error al cargar catálogo de labores" });
+        notify({
+          type: "error",
+          content: "Error al cargar catálogo de labores",
+        });
       } finally {
         setLoadingLabores(false);
       }
@@ -105,10 +111,13 @@ export const useAsignacionLaboresContratista = (
 
     setLoading(true);
     try {
-      const resp = await ContratistasService.asignar_labores(contratista.id_contratista, {
-        id_mina: idMina,
-        ids_labor: seleccionados,
-      });
+      const resp = await ContratistasService.asignar_labores(
+        contratista.id_contratista,
+        {
+          id_mina: idMina,
+          ids_labor: seleccionados,
+        },
+      );
       if (resp.success) {
         notify({ type: "success", content: resp.message });
         onUpdateLocal(resp.data);

@@ -21,11 +21,3 @@ export interface RES_Contrato {
   fecha_fin: string | null;
   estado: string;
 }
-
-export interface RES_Empresa {
-  id_empresa: number;
-  ruc: string;
-  nombre_comercial: string;
-  razon_social: string;
-  path_logo: string | null;
-}

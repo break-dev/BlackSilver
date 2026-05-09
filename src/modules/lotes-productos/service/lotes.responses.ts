@@ -24,20 +24,3 @@ export interface RES_Lote {
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimientoProducto;
 }
-
-export interface RES_ProductoDisponible {
-  id_producto: number;
-  id_unidad_medida_base: number;
-  nombre: string;
-  es_perecible: 0 | 1;
-  es_auditable: 0 | 1;
-  stock_minimo_base: number;
-  tiempo_espera_vencimiento: number | null;
-  periodo_espera_vencimiento: string | null;
-  dias_espera_vencimiento: number | null;
-}
-
-export interface RES_Almacen {
-  id_almacen: number;
-  nombre: string;
-}

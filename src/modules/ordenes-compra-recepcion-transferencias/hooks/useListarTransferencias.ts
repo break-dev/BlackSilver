@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { useNotify } from "../../../hooks/useNotify";
-import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
 import type {
   RES_OCTransferencia,
   RES_OCTransferenciaDetalle,
 } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
+import { AuxService } from "../../../service/aux.service";
 
 export const useListarTransferencias = () => {
   const { notifyError } = useNotify();
@@ -35,7 +36,7 @@ export const useListarTransferencias = () => {
   // 1. Cargar almacenes al montar — autoelige el primero
   useEffect(() => {
     setLoadingAlmacenes(true);
-    OCTransService.getAlmacenes()
+    AuxService.get_almacenes()
       .then((res) => {
         if (res.success && res.data && res.data.length > 0) {
           setAlmacenes(res.data);

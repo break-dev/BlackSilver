@@ -1,7 +1,5 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_Almacen } from "../../almacenes/service/almacenes.responses";
 import type { RES_OCTransRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-transferencia-recepcion";
 import type {
   RES_OCTransferencia,
@@ -12,25 +10,6 @@ import type { DTO_RegistrarRecepcionTransferencia } from "./oc-recepcion-transfe
 const path = "/oc-trans-recepciones";
 
 export const OCTransService = {
-  // -------------------------------------------------------
-  // Auxiliares
-  // -------------------------------------------------------
-
-  getAlmacenes: async (): Promise<IRespuesta<RES_Almacen[]>> => {
-    const { data } = await api.get(`${path}/almacenes`);
-    return data;
-  },
-
-  getLotes: async (
-    idAlmacen: number,
-    idsProductos: number[],
-  ): Promise<IRespuesta<RES_LoteDisponible[]>> => {
-    const { data } = await api.get(`${path}/lotes`, {
-      params: { id_almacen: idAlmacen, ids_productos: idsProductos },
-    });
-    return data;
-  },
-
   // -------------------------------------------------------
   // Transferencias
   // -------------------------------------------------------

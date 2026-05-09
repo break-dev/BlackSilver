@@ -1,11 +1,14 @@
-import type { DTO_CotizacionRequest, DTO_CotizacionDetalle } from "../../service/cotizaciones.requests";
+import type {
+  DTO_CotizacionRequest,
+  DTO_CotizacionDetalle,
+} from "../../service/cotizaciones.requests";
 import { Periodo } from "../../../../shared/enums/_generic/periodo";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
 import type { RES_Proveedor } from "../../../../service/responses/proveedor";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
 import type { RES_Producto } from "../../../../service/responses/producto";
-import type { RES_Empresa } from "../../service/cotizaciones.responses";
+import type { RES_Empresa } from "../../../../service/responses/empresa";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
 
 export interface MaestrosState {

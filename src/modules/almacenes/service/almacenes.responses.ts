@@ -1,7 +1,7 @@
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 // Un almacen
-export interface RES_Almacen {
+export interface RES_AlmacenResumen {
   id_almacen: number;
   nombre: string;
   descripcion?: string;
@@ -28,16 +28,6 @@ export interface RES_MinaAbastecida {
   id_almacen_mina: number;
   nombre: string;
   concesion: string;
-}
-
-//
-
-// Posible empleado para ser responsable de un almacen
-export interface RES_EmpleadoDisponible {
-  id_empleado: number;
-  nombre_completo: string;
-  dni?: string;
-  path_foto?: string;
 }
 
 // Posible mina para ser abastecida por un almacen

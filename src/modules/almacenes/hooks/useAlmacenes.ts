@@ -2,8 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import type { IMessage } from "../../../stores/ui.store";
-
-import type { RES_Almacen } from "../service/almacenes.responses";
+import type { RES_AlmacenResumen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";
 import { Schema_CrearAlmacen } from "../service/almacenes.requests";
 
@@ -11,7 +10,7 @@ export const useAlmacenes = () => {
   const { notify } = useNotify();
 
   // Estados de la lista
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
+  const [almacenes, setAlmacenes] = useState<RES_AlmacenResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -24,7 +23,7 @@ export const useAlmacenes = () => {
   ] = useDisclosure(false);
   const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
     useDisclosure(false);
-  const [selectedAlmacen, setSelectedAlmacen] = useState<RES_Almacen | null>(
+  const [selectedAlmacen, setSelectedAlmacen] = useState<RES_AlmacenResumen | null>(
     null,
   );
 

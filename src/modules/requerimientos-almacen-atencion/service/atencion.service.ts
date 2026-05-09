@@ -1,16 +1,12 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Producto, RES_DataRegistro } from "./atencion.responses";
 import type {
   DTO_AtencionCambiarEstado,
   DTO_RegistrarEntrega,
   DTO_CrearSolicitudLogistica,
   DTO_CrearRequerimiento,
 } from "./atencion.requests";
-import type { RES_Empleado } from "../../../service/responses/empleado";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
   RES_DetalleRequerimiento,
@@ -85,18 +81,6 @@ export const AtencionService = {
     return res.data;
   },
 
-  obtenerAlmacenesAutorizados: async () => {
-    const res = await api.get<
-      IRespuesta<{ id_almacen: number; nombre: string }[]>
-    >(`${path}/almacenes-autorizados`);
-    return res.data;
-  },
-
-  obtenerEmpleados: async () => {
-    const res = await api.get<IRespuesta<RES_Empleado[]>>(`${path}/empleados`);
-    return res.data;
-  },
-
   cambiarEstadoDetalle: async (dto: DTO_AtencionCambiarEstado) => {
     const res = await api.put<IRespuesta<null>>(
       `${path}/save-decision-detalle`,
@@ -110,22 +94,6 @@ export const AtencionService = {
       `${path}/detalles-by-requerimiento`,
       {
         params: { id_requerimiento: idRequerimiento },
-      },
-    );
-    return res.data;
-  },
-
-  obtenerLotesDisponibles: async (
-    idsProductos: number | number[],
-    idAlmacen: number,
-  ) => {
-    const ids = Array.isArray(idsProductos)
-      ? idsProductos.join(",")
-      : idsProductos;
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/lotes`,
-      {
-        params: { ids_productos: ids, id_almacen: idAlmacen },
       },
     );
     return res.data;
@@ -226,28 +194,12 @@ export const AtencionService = {
     return res.data;
   },
 
-  listarProductos: async () => {
-    const res = await api.get<IRespuesta<RES_Producto[]>>(`${path}/productos`);
-    return res.data;
-  },
-
-  listarUnidades: async () => {
-    const res = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      `${path}/unidades`,
-    );
-    return res.data;
-  },
-
-  obtenerDataRegistro: async () => {
-    const res = await api.get<IRespuesta<RES_DataRegistro>>(
-      `${path}/data-to-registro`,
-    );
-    return res.data;
-  },
-
   obtenerDataByMina: async (idMina: number) => {
     const res = await api.get<
-      IRespuesta<{ responsables: { id_contratista: number; nombre_completo: string }[]; labores: RES_Labor[] }>
+      IRespuesta<{
+        responsables: { id_contratista: number; nombre_completo: string }[];
+        labores: RES_Labor[];
+      }>
     >(`${path}/data-by-mina`, {
       params: { id_mina: idMina },
     });

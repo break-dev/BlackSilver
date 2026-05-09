@@ -4,11 +4,7 @@ import type {
   DTO_CrearConcesion,
   DTO_CrearContrato,
 } from "./concesiones.requests";
-import type {
-  RES_Concesion,
-  RES_Contrato,
-  RES_Empresa,
-} from "./concesiones.responses";
+import type { RES_Concesion, RES_Contrato } from "./concesiones.responses";
 
 const PATH = "/concesiones";
 
@@ -22,11 +18,6 @@ export const ConcesionesService = {
     dto: DTO_CrearConcesion,
   ): Promise<IRespuesta<RES_Concesion>> => {
     const { data } = await api.post(PATH, dto);
-    return data;
-  },
-
-  get_empresas: async (): Promise<IRespuesta<RES_Empresa[]>> => {
-    const { data } = await api.get(`${PATH}/contratos/empresas`);
     return data;
   },
 

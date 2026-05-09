@@ -1,12 +1,10 @@
 import { forwardRef, useImperativeHandle } from "react";
 import { Button, Select, Text, Stack, Group, Box } from "@mantine/core";
 import { UserIcon } from "@heroicons/react/24/outline";
-import type {
-  RES_EmpleadoDisponible,
-  RES_ResponsableAlmacen,
-} from "../service/almacenes.responses";
+import type { RES_ResponsableAlmacen } from "../service/almacenes.responses";
 import { useNuevoResponsable } from "../hooks/useNuevoResponsable";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface NuevoResponsableProps {
   idAlmacen: number;
@@ -15,7 +13,7 @@ interface NuevoResponsableProps {
 }
 
 export interface NuevoResponsableRef {
-  agregarDisponible: (emp: RES_EmpleadoDisponible) => void;
+  agregarDisponible: (emp: RES_Empleado) => void;
 }
 
 export const NuevoResponsable = forwardRef<

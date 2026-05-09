@@ -10,7 +10,8 @@ import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
-import type { RES_Producto } from "../service/reabastecimiento.responses";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Producto } from "../../../service/responses/producto";
 
 interface Props {
   onSuccess: (item: RES_Solicitud) => void;
@@ -49,14 +50,20 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     if (almacenes.length > 0) return;
     setLoadingCatalogs(true);
     try {
-      const res = await ReabastecimientoService.obtenerCatalogos();
-      if (res.success) {
-        setAlmacenes(res.data.almacenes);
-        setProductos(res.data.productos);
-        setUnidades(res.data.unidades_medida);
+      const res_almacenes = await AuxService.get_almacenes();
+      const res_productos = await AuxService.get_productos();
+      const res_unidades = await AuxService.get_unidades_medida();
+      if (
+        res_almacenes.success &&
+        res_productos.success &&
+        res_unidades.success
+      ) {
+        setAlmacenes(res_almacenes.data);
+        setProductos(res_productos.data);
+        setUnidades(res_unidades.data);
 
-        if (res.data.almacenes.length > 0) {
-          setIdAlmacenSolicitante(res.data.almacenes[0].id_almacen);
+        if (res_almacenes.data.length > 0) {
+          setIdAlmacenSolicitante(res_almacenes.data[0].id_almacen);
         }
       }
     } catch (err) {

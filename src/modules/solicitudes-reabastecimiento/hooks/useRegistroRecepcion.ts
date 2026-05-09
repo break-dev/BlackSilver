@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { useAuthStore } from "../../../stores/auth.store";
 import { ReabastecimientoService } from "../service/reabastecimiento.service";
-import { LotesService } from "../../lotes-productos/service/lotes.service";
 import type {
   DTO_RecibirEntregaItem,
   DTO_RegistrarRecepcion,
@@ -14,6 +13,7 @@ import type {
 import { usePrint } from "../../../hooks/usePrint";
 import type { HistorialEntregaDetalleItem } from "./useHistorialEntregas";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import { AuxService } from "../../../service/aux.service";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
@@ -117,7 +117,7 @@ export const useRegistroRecepcion = ({
     const loadUnidades = async () => {
       setLoadingUnidades(true);
       try {
-        const res = await LotesService.listarUnidades();
+        const res = await AuxService.get_unidades_medida();
         if (res.success && res.data) setUnidades(res.data);
       } catch (err) {
         console.error(err);
@@ -132,7 +132,7 @@ export const useRegistroRecepcion = ({
     const ids = Array.from(new Set(detalles.map((d) => d.id_producto)));
     if (ids.length > 0) {
       setLoadingLotes(true);
-      ReabastecimientoService.getLotesDestino(idAlmacenSolicitante, ids)
+      AuxService.get_lotes_disponibles(idAlmacenSolicitante, ids)
         .then((res) => {
           if (res.success && res.data) {
             setLotesDisponibles(res.data);

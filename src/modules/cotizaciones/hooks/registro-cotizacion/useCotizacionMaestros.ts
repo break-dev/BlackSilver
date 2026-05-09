@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { CotizacionesService } from "../../service/cotizaciones.service";
 import type { MaestrosState } from "./utils";
+import { AuxService } from "../../../../service/aux.service";
 
 export const useCotizacionMaestros = () => {
   const [loadingMaestros, setLoadingMaestros] = useState(true);
@@ -17,11 +17,11 @@ export const useCotizacionMaestros = () => {
       try {
         setLoadingMaestros(true);
         const [resProv, resUni, resProd, resEmp, resAlm] = await Promise.all([
-          CotizacionesService.get_proveedores_maestro(),
-          CotizacionesService.get_unidades_medida_maestro(),
-          CotizacionesService.get_productos_maestro(),
-          CotizacionesService.get_empresas_maestro(),
-          CotizacionesService.get_almacenes_maestro(),
+          AuxService.get_proveedores(),
+          AuxService.get_unidades_medida(),
+          AuxService.get_productos(),
+          AuxService.get_empresas(),
+          AuxService.get_almacenes(),
         ]);
 
         setMaestros({

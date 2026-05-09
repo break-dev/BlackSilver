@@ -11,12 +11,12 @@ import { useMinasAbastecidas } from "../hooks/useMinasAbastecidas";
 import { AbastecerMina } from "./abastecer-mina";
 import type { IMessage } from "../../../stores/ui.store";
 import type {
-  RES_Almacen,
+  RES_AlmacenResumen,
   RES_MinaAbastecida,
 } from "../service/almacenes.responses";
 
 interface MinasAbastecidasProps {
-  almacen: RES_Almacen;
+  almacen: RES_AlmacenResumen;
   onMessage?: (msg: IMessage) => void;
   onMinasChange?: (delta: number) => void;
 }

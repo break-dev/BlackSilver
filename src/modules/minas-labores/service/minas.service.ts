@@ -3,7 +3,6 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   RES_ConcesionItem,
   RES_ContratistaDisponible,
-  RES_EmpresaDisponible,
   RES_EmpresaEjecutora,
   RES_HistorialResponsable,
   RES_Labor,
@@ -16,6 +15,7 @@ import type {
   DTO_CrearLabor,
   DTO_CrearMina,
 } from "./minas.requests";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 const BASE_MINAS = "/minas";
 
@@ -52,7 +52,7 @@ export const MinasService = {
   },
 
   getEmpresasDisponibles: async (id_concesion: number, id_mina: number) => {
-    const res = await api.get<IRespuesta<RES_EmpresaDisponible[]>>(
+    const res = await api.get<IRespuesta<RES_Empresa[]>>(
       `${BASE_MINAS}/empresas-ejecutoras/empresas-disponibles`,
       {
         params: { id_concesion, id_mina },

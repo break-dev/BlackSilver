@@ -28,7 +28,7 @@ import {
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Producto } from "../../../../../service/responses/producto";
 import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
-import type { RES_Empresa } from "../../../service/cotizaciones.responses";
+import type { RES_Empresa } from "../../../../../service/responses/empresa";
 import type {
   RES_Cotizacion,
   RES_Comparativo,
@@ -90,14 +90,14 @@ export const ModalAsistenteAprobacion = ({
             originalIndex: index,
             cotizacion: cot,
             aprobacion: initAprobacionState(
-              cot.detalles
-                .map((d, dIdx) => ({
-                  key: dIdx,
-                  precio_referencia: Number(d.precio_unitario ?? 0),
-                  habilitado: !d.no_cotiza,
-                }))
-              ,
-              cot.empresas_ids.length > 0 ? cot.empresas_ids[0].toString() : null,
+              cot.detalles.map((d, dIdx) => ({
+                key: dIdx,
+                precio_referencia: Number(d.precio_unitario ?? 0),
+                habilitado: !d.no_cotiza,
+              })),
+              cot.empresas_ids.length > 0
+                ? cot.empresas_ids[0].toString()
+                : null,
               cot.tipo_cambio_venta_referencial || "",
             ),
           });
@@ -112,18 +112,29 @@ export const ModalAsistenteAprobacion = ({
 
   const handleNext = () => {
     const current = wizardSteps[activeStep];
-    const error = validateAprobacion(current.aprobacion, current.cotizacion.moneda);
-    if (error) { notifyError(error); return; }
+    const error = validateAprobacion(
+      current.aprobacion,
+      current.cotizacion.moneda,
+    );
+    if (error) {
+      notifyError(error);
+      return;
+    }
     setActiveStep((curr) => curr + 1);
   };
 
   const handlePrev = () => setActiveStep((curr) => curr - 1);
 
   // Actualiza el estado aprobacion del step activo
-  const updateAprobacion = (updater: (prev: AprobacionState) => AprobacionState) => {
+  const updateAprobacion = (
+    updater: (prev: AprobacionState) => AprobacionState,
+  ) => {
     setWizardSteps((prev) => {
       const copy = [...prev];
-      copy[activeStep] = { ...copy[activeStep], aprobacion: updater(copy[activeStep].aprobacion) };
+      copy[activeStep] = {
+        ...copy[activeStep],
+        aprobacion: updater(copy[activeStep].aprobacion),
+      };
       return copy;
     });
   };
@@ -148,13 +159,25 @@ export const ModalAsistenteAprobacion = ({
 
   const handleFinalSubmit = async () => {
     const current = wizardSteps[activeStep];
-    const error = validateAprobacion(current.aprobacion, current.cotizacion.moneda);
-    if (error) { notifyError(error); return; }
+    const error = validateAprobacion(
+      current.aprobacion,
+      current.cotizacion.moneda,
+    );
+    if (error) {
+      notifyError(error);
+      return;
+    }
 
     // Construir mapa: originalIndex → config
-    const wizardMap = new Map<number, { aprobacion: AprobacionState; cotizacion: DTO_CotizacionRequest }>();
+    const wizardMap = new Map<
+      number,
+      { aprobacion: AprobacionState; cotizacion: DTO_CotizacionRequest }
+    >();
     for (const step of wizardSteps) {
-      wizardMap.set(step.originalIndex, { aprobacion: step.aprobacion, cotizacion: step.cotizacion });
+      wizardMap.set(step.originalIndex, {
+        aprobacion: step.aprobacion,
+        cotizacion: step.cotizacion,
+      });
     }
 
     // Construir el payload UNIFICADO con estados finales reales
@@ -325,9 +348,12 @@ export const ModalAsistenteAprobacion = ({
                 radius="lg"
                 size="sm"
                 classNames={{
-                  input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
-                  dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
-                  option: "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
+                  dropdown:
+                    "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+                  option:
+                    "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
                 }}
               />
             </Stack>
@@ -352,7 +378,8 @@ export const ModalAsistenteAprobacion = ({
                   radius="lg"
                   size="sm"
                   classNames={{
-                    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
+                    input:
+                      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 transition-all",
                   }}
                 />
               </Stack>
@@ -361,18 +388,27 @@ export const ModalAsistenteAprobacion = ({
             {/* Selección de Productos */}
             {(() => {
               const ap = currentStepData?.aprobacion;
-              const detallesCotizables = (currentStepData?.cotizacion.detalles
-                .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
-                .filter((val) => val !== null) as number[]) || [];
+              const detallesCotizables =
+                (currentStepData?.cotizacion.detalles
+                  .map((d, dIdx) => (!d.no_cotiza ? dIdx : null))
+                  .filter((val) => val !== null) as number[]) || [];
               const numSelected = ap?.selectedKeys.length || 0;
-              const allSelected = detallesCotizables.length > 0 && numSelected === detallesCotizables.length;
-              const indeterminate = numSelected > 0 && numSelected < detallesCotizables.length;
-              const simbolo = currentStepData?.cotizacion.moneda === "Soles" ? "S/." : "$";
+              const allSelected =
+                detallesCotizables.length > 0 &&
+                numSelected === detallesCotizables.length;
+              const indeterminate =
+                numSelected > 0 && numSelected < detallesCotizables.length;
+              const simbolo =
+                currentStepData?.cotizacion.moneda === "Soles" ? "S/." : "$";
 
               return (
                 <>
                   <div className="flex-none flex items-center justify-between mb-2">
-                    <Text size="xs" fw={800} className="text-zinc-400 uppercase tracking-widest">
+                    <Text
+                      size="xs"
+                      fw={800}
+                      className="text-zinc-400 uppercase tracking-widest"
+                    >
                       Productos a Adquirir
                     </Text>
                     <Checkbox
@@ -380,7 +416,11 @@ export const ModalAsistenteAprobacion = ({
                       color="indigo"
                       checked={allSelected}
                       indeterminate={indeterminate}
-                      label={<Text size="xs" c="dimmed" fw={700}>Seleccionar Todos</Text>}
+                      label={
+                        <Text size="xs" c="dimmed" fw={700}>
+                          Seleccionar Todos
+                        </Text>
+                      }
                       onChange={() => {
                         updateAprobacion((prev) => ({
                           ...prev,
@@ -396,9 +436,12 @@ export const ModalAsistenteAprobacion = ({
                       const prodMaestro = maestros.catalogo.find(
                         (p) => p.id_producto === det.id_producto,
                       );
-                      const isChecked = ap?.selectedKeys.includes(dIdx) ?? false;
+                      const isChecked =
+                        ap?.selectedKeys.includes(dIdx) ?? false;
                       const precioRef = Number(det.precio_unitario ?? 0);
-                      const variacion = ap ? getVariacionAprobacion(ap, dIdx, precioRef) : null;
+                      const variacion = ap
+                        ? getVariacionAprobacion(ap, dIdx, precioRef)
+                        : null;
 
                       return (
                         <div
@@ -426,20 +469,28 @@ export const ModalAsistenteAprobacion = ({
                                   isChecked ? "text-white" : "text-zinc-400"
                                 }`}
                               >
-                                {prodMaestro?.nombre || `Producto ${det.id_producto}`}
+                                {prodMaestro?.nombre ||
+                                  `Producto ${det.id_producto}`}
                               </Text>
                             </div>
                             {/* Col 2: cantidad · input · c/u + variación abajo (centrado) */}
                             <div className="flex flex-col items-center gap-1">
                               <div className="flex items-center justify-center gap-1.5">
-                                <Text size="11px" c="dimmed" className="whitespace-nowrap font-mono">
+                                <Text
+                                  size="11px"
+                                  c="dimmed"
+                                  className="whitespace-nowrap font-mono"
+                                >
                                   {formatNumber(det.cantidad)}{" "}
                                   {(() => {
                                     const um = maestros.unidades.find(
-                                      (u) => u.id_unidad_medida === det.id_unidad_medida
+                                      (u) =>
+                                        u.id_unidad_medida ===
+                                        det.id_unidad_medida,
                                     );
                                     return um?.abreviatura || "u.";
-                                  })()}{" · a"}
+                                  })()}
+                                  {" · a"}
                                 </Text>
                                 <NumberInput
                                   size="xs"
@@ -467,14 +518,28 @@ export const ModalAsistenteAprobacion = ({
                                     }`,
                                   }}
                                 />
-                                <Text size="11px" c="dimmed" className="whitespace-nowrap">c/u</Text>
+                                <Text
+                                  size="11px"
+                                  c="dimmed"
+                                  className="whitespace-nowrap"
+                                >
+                                  c/u
+                                </Text>
                               </div>
-                              {isChecked && variacion !== null && variacion !== 0 && (
-                                <Badge size="xs" variant="light" color={variacion > 0 ? "red" : "teal"}>
-                                  {variacion > 0 ? "+" : ""}{simbolo}{" "}
-                                  {formatNumber(Math.abs(variacion))} vs cotización
-                                </Badge>
-                              )}
+                              {isChecked &&
+                                variacion !== null &&
+                                variacion !== 0 && (
+                                  <Badge
+                                    size="xs"
+                                    variant="light"
+                                    color={variacion > 0 ? "red" : "teal"}
+                                  >
+                                    {variacion > 0 ? "+" : ""}
+                                    {simbolo}{" "}
+                                    {formatNumber(Math.abs(variacion))} vs
+                                    cotización
+                                  </Badge>
+                                )}
                             </div>
                             {/* Col 3: subtotal (derecha) */}
                             <div className="flex justify-end">
@@ -484,7 +549,17 @@ export const ModalAsistenteAprobacion = ({
                                 size="sm"
                                 className="font-mono"
                               >
-                                Sub: {simbolo} {formatNumber(ap ? getSubtotalAprobacion(ap, dIdx, Number(det.cantidad), precioRef) : 0)}
+                                Sub: {simbolo}{" "}
+                                {formatNumber(
+                                  ap
+                                    ? getSubtotalAprobacion(
+                                        ap,
+                                        dIdx,
+                                        Number(det.cantidad),
+                                        precioRef,
+                                      )
+                                    : 0,
+                                )}
                               </Badge>
                             </div>
                           </div>

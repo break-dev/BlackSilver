@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LotesService } from "../service/lotes.service";
-import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
+import type { RES_Lote } from "../service/lotes.responses";
 import { useUIStore } from "../../../stores/ui.store";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 
 export const useLotesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -31,7 +33,7 @@ export const useLotesPage = () => {
     const loadAlmacenes = async () => {
       setLoadingAlmacenes(true);
       try {
-        const result = await LotesService.listarAlmacenes();
+        const result = await AuxService.get_almacenes();
         if (result.success) {
           setAlmacenes(result.data);
           if (!initialAlmacenId && result.data.length > 0) {
@@ -99,7 +101,8 @@ export const useLotesPage = () => {
 
   const filteredRecords = useMemo(() => {
     return lotes.filter((l) => {
-      const matchCategoria = !filtroCategoria || l.categoria === filtroCategoria;
+      const matchCategoria =
+        !filtroCategoria || l.categoria === filtroCategoria;
       const matchProducto = !filtroProducto || l.producto === filtroProducto;
       const q = busqueda.toLowerCase();
       const matchBusqueda =
@@ -112,19 +115,24 @@ export const useLotesPage = () => {
   }, [lotes, busqueda, filtroCategoria, filtroProducto]);
 
   // LÓGICA DE SELECCIÓN CRÍTICA (Memorizada como en ProductGroupSelection)
-  const visibleIds = useMemo(() => filteredRecords.map(r => r.id_lote), [filteredRecords]);
-  
+  const visibleIds = useMemo(
+    () => filteredRecords.map((r) => r.id_lote),
+    [filteredRecords],
+  );
+
   const selectedVisibleCount = useMemo(() => {
-    return selectedLotes.filter(s => visibleIds.includes(s.id_lote)).length;
+    return selectedLotes.filter((s) => visibleIds.includes(s.id_lote)).length;
   }, [selectedLotes, visibleIds]);
 
-  const isAllSelected = useMemo(() => 
-    visibleIds.length > 0 && selectedVisibleCount === visibleIds.length,
-  [visibleIds, selectedVisibleCount]);
+  const isAllSelected = useMemo(
+    () => visibleIds.length > 0 && selectedVisibleCount === visibleIds.length,
+    [visibleIds, selectedVisibleCount],
+  );
 
-  const isIndeterminate = useMemo(() => 
-    selectedVisibleCount > 0 && !isAllSelected,
-  [selectedVisibleCount, isAllSelected]);
+  const isIndeterminate = useMemo(
+    () => selectedVisibleCount > 0 && !isAllSelected,
+    [selectedVisibleCount, isAllSelected],
+  );
 
   return {
     almacenes,
@@ -166,10 +174,14 @@ export const useLotesPage = () => {
     setSelectedLotes,
     toggleSelectAll: () => {
       if (isAllSelected) {
-        setSelectedLotes(prev => prev.filter(p => !visibleIds.includes(p.id_lote)));
+        setSelectedLotes((prev) =>
+          prev.filter((p) => !visibleIds.includes(p.id_lote)),
+        );
       } else {
-        setSelectedLotes(prev => {
-          const onlyNew = filteredRecords.filter(r => !prev.some(s => s.id_lote === r.id_lote));
+        setSelectedLotes((prev) => {
+          const onlyNew = filteredRecords.filter(
+            (r) => !prev.some((s) => s.id_lote === r.id_lote),
+          );
           return [...prev, ...onlyNew];
         });
       }

@@ -5,16 +5,14 @@ import {
   Schema_CrearProducto,
   type DTO_CrearProducto,
 } from "../service/productos.requests";
-import type {
-  RES_Producto,
-  RES_CategoriaBien,
-} from "../service/productos.responses";
+import type { RES_CategoriaBien, RES_ProductoResumen } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import {
   getCoincidencias,
   type SearchResult,
 } from "../../../shared/functions/get-coincidencias";
+import { AuxService } from "../../../service/aux.service";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
@@ -29,8 +27,8 @@ const INITIAL_FORM: DTO_CrearProducto = {
 };
 
 export const useRegistroProducto = (
-  productosExistentes: RES_Producto[],
-  onSuccess: (nuevo: RES_Producto) => void,
+  productosExistentes: RES_ProductoResumen[],
+  onSuccess: (nuevo: RES_ProductoResumen) => void,
 ) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearProducto>(INITIAL_FORM);
@@ -43,7 +41,7 @@ export const useRegistroProducto = (
 
   // Estado para coincidencias de nombres
   const [coincidencias, setCoincidencias] = useState<
-    SearchResult<RES_Producto>[]
+    SearchResult<RES_ProductoResumen>[]
   >([]);
 
   const cargarCategorias = useCallback(async () => {
@@ -61,7 +59,7 @@ export const useRegistroProducto = (
   const cargarUnidades = useCallback(async () => {
     setLoadingUnidades(true);
     try {
-      const resp = await ProductosService.get_unidades_medida();
+      const resp = await AuxService.get_unidades_medida();
       if (resp.success) setUnidades(resp.data);
     } catch (err) {
       console.error(err);

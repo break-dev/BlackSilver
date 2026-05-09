@@ -6,6 +6,7 @@ import { useAuthStore } from "../../../stores/auth.store";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import { useNotify } from "../../../hooks/useNotify";
+import { AuxService } from "../../../service/aux.service";
 
 interface UseRegistroReposicionProps {
   idPrestamo: number;
@@ -54,7 +55,9 @@ export const useRegistroReposicion = ({
     const fetchAlmacenes = async () => {
       setLoadingAlmacenes(true);
       try {
-        const res = await PrestamosService.getAlmacenesPrincipales();
+        const res = await AuxService.get_almacenes({
+          es_principal: true,
+        });
         if (res.success) {
           setAlmacenesPrincipales(res.data);
           if (res.data.length > 0) {
@@ -99,9 +102,9 @@ export const useRegistroReposicion = ({
       setLoadingLotes(true);
       try {
         const ids = selectedDetalles.map((d) => d.id_producto);
-        const res = await PrestamosService.getLotesDisponibles(
-          ids,
+        const res = await AuxService.get_lotes_disponibles(
           Number(idAlmacenEntrega),
+          ids,
         );
         if (res.success) {
           const grouped = res.data.reduce(

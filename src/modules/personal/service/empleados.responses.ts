@@ -1,4 +1,4 @@
-export interface RES_Empleado {
+export interface RES_EmpleadoResumen {
   id_empleado: number;
   id_empresa: number;
   empresa: string;
@@ -32,11 +32,6 @@ export interface RES_Contratista {
   estado: string;
   labores_asignadas: string; // "TA-001 | SN-002" o "No aplica"
   ids_labor_asignadas: string | null;
-}
-
-export interface RES_EmpresaAsoc {
-  id_empresa: number;
-  nombre: string;
 }
 
 export interface RES_Mina {

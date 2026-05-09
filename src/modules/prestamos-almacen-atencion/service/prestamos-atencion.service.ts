@@ -5,12 +5,7 @@ import type {
   DTO_RegistrarEntrega,
   DTO_RegistrarRecepcionReposicion,
 } from "./prestamos-atencion.requests";
-import type {
-  RES_LoteDisponible,
-  RES_TicketLote,
-} from "../../../service/responses/lote-producto";
-import type { RES_Almacen } from "../../../service/responses/almacen";
-import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import type {
   RES_Prestamo,
   RES_PrestamoDetalle,
@@ -23,61 +18,10 @@ import type {
   RES_PrestamoReposicionRecepcionDetalle,
 } from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
 import type { RES_PrestamoEntregaRecepcion } from "../../../service/responses/prestamos/prestamo-entrega-recepcion";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
 const path = "/prestamos-atencion";
 
 export const PrestamosAtencionService = {
-  obtenerAlmacenesAutorizados: async () => {
-    const res = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${path}/almacenes-autorizados`,
-    );
-    return res.data;
-  },
-
-  obtenerPersonalExterno: async () => {
-    const res = await api.get<IRespuesta<RES_PersonalExterno[]>>(
-      `${path}/personal-externo`,
-    );
-    return res.data;
-  },
-
-  crearPersonalExterno: async (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    const res = await api.post<IRespuesta<RES_PersonalExterno>>(
-      `${path}/personal-externo`,
-      dto,
-    );
-    return res.data;
-  },
-
-  obtenerLotesDisponibles: async (idProducto: number, idAlmacen: number) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/lotes`,
-      { params: { id_producto: idProducto, id_almacen: idAlmacen } },
-    );
-    return res.data;
-  },
-
-  obtenerLotesDisponiblesBatch: async (
-    idsProductos: number[],
-    idAlmacen: number,
-  ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/lotes-batch`,
-      {
-        params: {
-          ids_productos: idsProductos.join(","),
-          id_almacen: idAlmacen,
-        },
-      },
-    );
-    return res.data;
-  },
-
   obtenerPrestamos: async (
     idAlmacen: string,
     mes: string,
@@ -175,29 +119,6 @@ export const PrestamosAtencionService = {
     >(`${path}/recepciones-reposicion/detalles`, {
       params: { id_reposicion: idReposicion },
     });
-    return res.data;
-  },
-
-  listarUnidades: async () => {
-    const res = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      `${path}/catalogos/unidades`,
-    );
-    return res.data;
-  },
-
-  getLotesDestino: async (
-    idAlmacenSolicitante: number,
-    idProductos: number[],
-  ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/catalogos/lotes-destino`,
-      {
-        params: {
-          id_almacen: idAlmacenSolicitante,
-          id_productos: idProductos.join(","),
-        },
-      },
-    );
     return res.data;
   },
 

@@ -20,7 +20,7 @@ import { RegistroAlmacen } from "./registro-almacen";
 import { HistorialResponsables } from "./historial-responsables";
 import { MinasAbastecidas } from "./minas-abastecidas";
 import { useAlmacenes } from "../hooks/useAlmacenes";
-import type { RES_Almacen } from "../service/almacenes.responses";
+import type { RES_AlmacenResumen } from "../service/almacenes.responses";
 
 export const AlmacenesPage = () => {
   useTitlePage("Almacenes");
@@ -57,12 +57,12 @@ export const AlmacenesPage = () => {
     resetForm,
   } = useAlmacenes();
 
-  const handleOpenResponsables = (alm: RES_Almacen) => {
+  const handleOpenResponsables = (alm: RES_AlmacenResumen) => {
     setSelectedAlmacen(alm);
     openResponsables();
   };
 
-  const handleOpenAlcance = (alm: RES_Almacen) => {
+  const handleOpenAlcance = (alm: RES_AlmacenResumen) => {
     setSelectedAlmacen(alm);
     openAlcance();
   };
@@ -210,18 +210,20 @@ export const AlmacenesPage = () => {
                         offsetScrollbars={false}
                       >
                         <div className="flex items-center gap-1.5 pb-0.5">
-                          {alm.responsables.split(", ").map((resp, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="filled"
-                              color="indigo.9"
-                              size="xs"
-                              radius="sm"
-                              className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 lowercase first-letter:uppercase shrink-0"
-                            >
-                              {resp}
-                            </Badge>
-                          ))}
+                          {alm.responsables
+                            ?.split(", ")
+                            .map((resp: string, idx: number) => (
+                              <Badge
+                                key={idx}
+                                variant="filled"
+                                color="indigo.9"
+                                size="xs"
+                                radius="sm"
+                                className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 lowercase first-letter:uppercase shrink-0"
+                              >
+                                {resp}
+                              </Badge>
+                            ))}
                         </div>
                       </ScrollArea>
                     ) : (
@@ -348,7 +350,7 @@ export const AlmacenesPage = () => {
                     : alm,
                 ),
               );
-              setSelectedAlmacen((prev: RES_Almacen | null) =>
+              setSelectedAlmacen((prev: RES_AlmacenResumen | null) =>
                 prev
                   ? { ...prev, minas_count: (prev.minas_count || 0) + delta }
                   : null,

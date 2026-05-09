@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
-import { OrdenCompraService } from "../../service/orden-compra.service";
+import { AuxService } from "../../../../service/aux.service";
 
 export const useAlmacenesRecepcion = () => {
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
@@ -10,7 +10,7 @@ export const useAlmacenesRecepcion = () => {
   );
 
   useEffect(() => {
-    OrdenCompraService.getAlmacenes()
+    AuxService.get_almacenes()
       .then((res) => {
         if (res.success && res.data && res.data.length > 0) {
           setAlmacenes(res.data);

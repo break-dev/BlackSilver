@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
-import type { RES_Empresa } from "../service/empresas.responses";
+import type { RES_Empresa } from "../../../service/responses/empresa";
+import { AuxService } from "../../../service/aux.service";
 
 export const useEmpresas = () => {
   const { notify } = useNotify();
@@ -19,7 +20,7 @@ export const useEmpresas = () => {
   const listar = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await EmpresasService.get_empresas();
+      const result = await AuxService.get_empresas();
       if (result.success) {
         setEmpresas(result.data);
       } else {

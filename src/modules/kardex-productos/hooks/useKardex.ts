@@ -1,7 +1,9 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import dayjs from "dayjs";
 import { KardexService } from "../service/kardex.service";
-import type { RES_MovimientoKardex, RES_Almacen } from "../service/kardex.responses";
+import type { RES_MovimientoKardex } from "../service/kardex.responses";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 
 export const useKardex = () => {
   // -- Estados de Filtro Principal (Periodo y Almacén) --
@@ -28,7 +30,7 @@ export const useKardex = () => {
     setLoadingAlmacenes(true);
     setError("");
     try {
-      const res = await KardexService.listarAlmacenes();
+      const res = await AuxService.get_almacenes();
       if (res.success) {
         setAlmacenes(res.data);
         // Auto-seleccionar primer almacén si no hay uno seleccionado
@@ -58,7 +60,7 @@ export const useKardex = () => {
       const res = await KardexService.listarPorAlmacen(
         Number(idAlmacen),
         Number(mes),
-        Number(yearcito)
+        Number(yearcito),
       );
       if (res.success) {
         setMovimientos(res.data);
@@ -74,7 +76,6 @@ export const useKardex = () => {
     }
   }, [idAlmacen, mes, yearcito]);
 
-  
   // Cargar almacenes al montar
   useEffect(() => {
     loadAlmacenes();
@@ -106,7 +107,9 @@ export const useKardex = () => {
       ? movimientos.filter((m) => m.producto === filtroProducto)
       : movimientos;
 
-    const unique = new Set(source.map((m) => String(m.correlativo)).filter(Boolean));
+    const unique = new Set(
+      source.map((m) => String(m.correlativo)).filter(Boolean),
+    );
     return Array.from(unique)
       .sort()
       .map((l) => ({ value: l, label: l }));
@@ -143,19 +146,19 @@ export const useKardex = () => {
     setFiltroProducto,
     filtroLote,
     setFiltroLote,
-    
+
     // Datos Procesados
     movimientos,
     filteredRecords,
     almacenes,
     productosUnicos,
     lotesUnicos,
-    
+
     // Estados de Carga y Error
     loadingMovimientos,
     loadingAlmacenes,
     error,
-    
+
     // Métodos Manuales (si se requieren)
     loadMovimientos,
   };

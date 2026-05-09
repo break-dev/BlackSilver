@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/es";
 import type { IMessage } from "../../../stores/ui.store";
 import type {
-  RES_Almacen,
+  RES_AlmacenResumen,
   RES_ResponsableAlmacen,
 } from "../service/almacenes.responses";
 import { useHistorialResponsables } from "../hooks/useHistorialResponsables";
@@ -24,7 +24,7 @@ import {
 } from "./nuevo-responsable";
 
 interface HistorialResponsablesProps {
-  almacen: RES_Almacen;
+  almacen: RES_AlmacenResumen;
   onMessage?: (msg: IMessage) => void;
   onUpdateResponsable?: (nombre: string) => void;
 }

@@ -27,13 +27,6 @@ export interface RES_EmpresaEjecutora {
   path_logo: string | null;
 }
 
-// Empresa disponible para asignar como ejecutora
-export interface RES_EmpresaDisponible {
-  id_empresa: number;
-  razon_social: string;
-  path_logo: string | null;
-}
-
 // Historial de responsables de la mina
 export interface RES_HistorialResponsable {
   id_responsable_mina: number;

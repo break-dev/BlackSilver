@@ -43,6 +43,8 @@ export const CuentasPage = () => {
     handleUpdatePhoto,
     updatingPhoto,
     refresh,
+    roles,
+    empleadosSinCuenta,
   } = useCuentas();
 
   return (
@@ -292,6 +294,8 @@ export const CuentasPage = () => {
           cuentaEdit={selectedCuenta}
           onClose={closeCreate}
           refresh={refresh}
+          roles={roles}
+          empleadosSinCuenta={empleadosSinCuenta}
         />
       </ModalEstandar>
     </div>

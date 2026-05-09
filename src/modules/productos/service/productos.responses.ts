@@ -1,6 +1,6 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
-export interface RES_Producto {
+export interface RES_ProductoResumen {
   id_producto: number;
   nombre: string;
   //

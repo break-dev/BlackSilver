@@ -1,13 +1,15 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { EmpleadosService } from "../service/empleados.service";
-import type { RES_Empleado } from "../service/empleados.responses";
+import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 
 export const useEmpleados = () => {
   const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
-  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [empleados, setEmpleados] = useState<RES_EmpleadoResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
+  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(
+    null,
+  );
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -20,7 +22,6 @@ export const useEmpleados = () => {
       setLoading(false);
     }
   }, []);
-
 
   useEffect(() => {
     listar();
@@ -49,11 +50,11 @@ export const useEmpleados = () => {
     return results;
   }, [empleados, idEmpresa, busqueda]);
 
-  const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
+  const pushNuevoEmpleado = (nuevo: RES_EmpleadoResumen) => {
     setEmpleados((prev) => [nuevo, ...prev]);
   };
 
-  const actualizarEmpleadoEnLista = (editado: RES_Empleado) => {
+  const actualizarEmpleadoEnLista = (editado: RES_EmpleadoResumen) => {
     setEmpleados((prev) =>
       prev.map((e) => (e.id_empleado === editado.id_empleado ? editado : e)),
     );
@@ -76,7 +77,10 @@ export const useEmpleados = () => {
   };
 
   const groupedByCompany = useMemo(() => {
-    const groups: Record<number, { id: number; nombre: string; empleados: RES_Empleado[] }> = {};
+    const groups: Record<
+      number,
+      { id: number; nombre: string; empleados: RES_EmpleadoResumen[] }
+    > = {};
 
     filtrados.forEach((emp) => {
       const id = emp.id_empresa || 0;

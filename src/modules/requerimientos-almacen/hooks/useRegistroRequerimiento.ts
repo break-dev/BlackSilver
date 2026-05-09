@@ -10,12 +10,10 @@ import type {
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Mina } from "../../../service/responses/mina";
-import type {
-  RES_RequerimientoAlmacen,
-} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
-import type { RES_Producto_Local } from "../services/requerimientos.responses";
+import type { RES_Producto } from "../../../service/responses/producto";
 
 interface Props {
   onSuccess: (item: RES_RequerimientoAlmacen) => void;
@@ -31,7 +29,7 @@ export const useRegistroRequerimiento = ({ onSuccess }: Props) => {
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
-  const [productos, setProductos] = useState<RES_Producto_Local[]>([]);
+  const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   // Estado Formulario Cabecera

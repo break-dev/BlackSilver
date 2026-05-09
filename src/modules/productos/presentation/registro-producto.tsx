@@ -22,7 +22,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "motion/react";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
-import type { RES_Producto } from "../service/productos.responses";
+import type { RES_ProductoResumen } from "../service/productos.responses";
 import type { RES_Categoria } from "../../categorias/service/categorias.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { useDisclosure } from "@mantine/hooks";
@@ -35,8 +35,8 @@ import { useMemo } from "react";
 import { enPlural } from "../../../shared/functions/en-plural";
 
 interface RegistroProductoProps {
-  productosExistentes: RES_Producto[];
-  onSuccess: (nuevo: RES_Producto) => void;
+  productosExistentes: RES_ProductoResumen[];
+  onSuccess: (nuevo: RES_ProductoResumen) => void;
   onCancel?: () => void;
 }
 

@@ -1,17 +1,10 @@
 import { useState } from "react";
-import {
-  Avatar,
-  FileButton,
-  Stack,
-  Text,
-  Badge,
-  Loader,
-} from "@mantine/core";
+import { Avatar, FileButton, Stack, Text, Badge, Loader } from "@mantine/core";
 import {
   BuildingOffice2Icon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline";
-import type { RES_Empresa } from "../service/empresas.responses";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 interface EmpresaCardProps {
   empresa: RES_Empresa;
@@ -68,16 +61,22 @@ export const EmpresaCard = ({ empresa, onUpdateLogo }: EmpresaCardProps) => {
                 >
                   <BuildingOffice2Icon className="w-8 h-8 text-zinc-600" />
                 </Avatar>
-                
+
                 {/* Overlay Interactivo / Cargador */}
                 {isUploading ? (
-                  <div className="absolute inset-0 bg-zinc-950/80 rounded-full flex items-center justify-center backdrop-blur-[4px] border border-indigo-500/30">
+                  <div className="absolute inset-0 bg-zinc-950/80 rounded-full flex items-center justify-center backdrop-blur-xs border border-indigo-500/30">
                     <Loader size="sm" color="indigo" variant="bars" />
                   </div>
                 ) : (
                   <div className="absolute inset-0 bg-indigo-950/60 rounded-full opacity-0 group-hover/logo:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-[2px]">
                     <PencilSquareIcon className="w-5 h-5 text-white mb-1" />
-                    <Text size="8px" fw={800} className="text-white uppercase tracking-tighter">Cambiar</Text>
+                    <Text
+                      size="8px"
+                      fw={800}
+                      className="text-white uppercase tracking-tighter"
+                    >
+                      Cambiar
+                    </Text>
                   </div>
                 )}
               </div>
@@ -93,7 +92,11 @@ export const EmpresaCard = ({ empresa, onUpdateLogo }: EmpresaCardProps) => {
           >
             {empresa.nombre_comercial}
           </Text>
-          <Text size="xs" fw={500} className="text-zinc-500 line-clamp-2 italic leading-snug">
+          <Text
+            size="xs"
+            fw={500}
+            className="text-zinc-500 line-clamp-2 italic leading-snug"
+          >
             {empresa.razon_social}
           </Text>
         </Stack>

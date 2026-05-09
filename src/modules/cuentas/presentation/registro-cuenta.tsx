@@ -13,28 +13,29 @@ import {
   KeyIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroCuenta } from "../hooks/useRegistroCuenta";
-import type { RES_Cuenta } from "../service/cuentas.responses";
+import type {
+  RES_Cuenta,
+  RES_RolDisponible,
+} from "../service/cuentas.responses";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface RegistroCuentaProps {
   cuentaEdit: RES_Cuenta | null;
   onClose: () => void;
   refresh: () => void;
+  roles: RES_RolDisponible[];
+  empleadosSinCuenta: RES_Empleado[];
 }
 
 export const RegistroCuenta = ({
   cuentaEdit,
   onClose,
   refresh,
+  roles,
+  empleadosSinCuenta,
 }: RegistroCuentaProps) => {
-  const {
-    form,
-    setForm,
-    loading,
-    handleGuardar,
-    roles,
-    empleadosSinCuenta,
-    isEdit,
-  } = useRegistroCuenta(cuentaEdit, onClose, refresh);
+  const { form, updateForm, loading, handleGuardar, isEdit } =
+    useRegistroCuenta(cuentaEdit, onClose, refresh);
 
   const fieldClasses = {
     input:
@@ -56,13 +57,13 @@ export const RegistroCuenta = ({
                     label: `${cuentaEdit.nombre_empleado} ${cuentaEdit.apellido_empleado}`,
                   },
                 ]
-              : empleadosSinCuenta.map((e) => ({
-                  value: e.id.toString(),
-                  label: `${e.apellido}, ${e.nombre}`,
+              : empleadosSinCuenta.map((e: RES_Empleado) => ({
+                  value: e.id_empleado.toString(),
+                  label: e.nombre_completo,
                 }))
           }
           value={form.id_empleado ? form.id_empleado.toString() : null}
-          onChange={(val) => setForm({ id_empleado: Number(val) })}
+          onChange={(val) => updateForm({ id_empleado: Number(val) })}
           disabled={isEdit || loading}
           radius="lg"
           required
@@ -75,9 +76,12 @@ export const RegistroCuenta = ({
         <Select
           label="Rol de Usuario"
           placeholder="Seleccione un rol"
-          data={roles.map((r) => ({ value: r.id.toString(), label: r.nombre }))}
+          data={roles.map((r: RES_RolDisponible) => ({
+            value: r.id.toString(),
+            label: r.nombre,
+          }))}
           value={form.id_rol ? form.id_rol.toString() : null}
-          onChange={(val) => setForm({ id_rol: Number(val) })}
+          onChange={(val) => updateForm({ id_rol: Number(val) })}
           radius="lg"
           required
           withAsterisk
@@ -92,7 +96,7 @@ export const RegistroCuenta = ({
           label="Nombre de Usuario"
           placeholder="Ej: jdoe"
           value={form.username}
-          onChange={(e) => setForm({ username: e.currentTarget.value })}
+          onChange={(e) => updateForm({ username: e.currentTarget.value })}
           radius="lg"
           required
           withAsterisk
@@ -105,7 +109,7 @@ export const RegistroCuenta = ({
           label={isEdit ? "Nueva Contraseña" : "Contraseña"}
           placeholder={isEdit ? "Nueva contraseña..." : "Mínimo 6 caracteres"}
           value={form.password}
-          onChange={(e) => setForm({ password: e.currentTarget.value })}
+          onChange={(e) => updateForm({ password: e.currentTarget.value })}
           radius="lg"
           required={!isEdit}
           withAsterisk={!isEdit}

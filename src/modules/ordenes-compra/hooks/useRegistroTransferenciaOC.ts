@@ -5,6 +5,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
+import { AuxService } from "../../../service/aux.service";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,
@@ -44,16 +45,15 @@ export const useRegistroTransferenciaOC = ({
     try {
       const idsProductos = itemsATransferir.map((i) => i.id_producto);
 
-      const lotesRes =
-        await OrdenCompraService.getLotesDisponiblesTransferencia(
-          idAlmacenRecepcionista,
-          idsProductos,
-        );
+      const lotesRes = await AuxService.get_lotes_disponibles(
+        idAlmacenRecepcionista,
+        idsProductos,
+      );
       if (lotesRes.success && lotesRes.data) {
         setLotes(lotesRes.data);
       }
 
-      const personalRes = await OrdenCompraService.getPersonalExterno();
+      const personalRes = await AuxService.get_personal_externo();
       if (personalRes.success && personalRes.data) {
         setPersonal(personalRes.data);
       }
@@ -78,10 +78,12 @@ export const useRegistroTransferenciaOC = ({
     });
   };
 
-  const handleCrearPersonal = async (
-    nuevoPersonal: Record<string, unknown>,
-  ) => {
-    const res = await OrdenCompraService.crearPersonalExterno(nuevoPersonal);
+  const handleCrearPersonal = async (nuevoPersonal: {
+    nombre: string;
+    apellido?: string;
+    dni?: string;
+  }) => {
+    const res = await AuxService.crear_personal_externo(nuevoPersonal);
     if (res.success && res.data) {
       setPersonal((prev) => [...prev, res.data!]);
       setIdPersonalRecibe(res.data!.id_personal.toString());

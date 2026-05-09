@@ -4,6 +4,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_OCTransferenciaDetalle } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import type { DTO_ItemRecepcionTransferencia } from "../service/oc-recepcion-transferencias.requests";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
+import { AuxService } from "../../../service/aux.service";
 
 // -------------------------------------------------------
 // Tipos locales del formulario de recepción
@@ -98,7 +99,7 @@ export const useRegistrarRecepcion = ({
     if (!idAlmacenRecepcionista || detalles.length === 0) return;
     const ids = Array.from(new Set(detalles.map((d) => d.id_producto)));
     setLoadingLotes(true);
-    OCTransService.getLotes(idAlmacenRecepcionista, ids)
+    AuxService.get_lotes_disponibles(idAlmacenRecepcionista, ids)
       .then((res) => {
         if (res.success && res.data) {
           setLotesDisponibles(res.data);

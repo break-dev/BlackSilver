@@ -1,14 +1,14 @@
 import { api } from "../../../service/_api";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   DTO_CrearAlmacen,
   DTO_NuevoResponsable,
 } from "./almacenes.requests";
 import type {
-  RES_Almacen,
+  RES_AlmacenResumen,
   RES_MinaDisponible,
   RES_MinaAbastecida,
-  RES_EmpleadoDisponible,
   RES_ResponsableAlmacen,
 } from "./almacenes.responses";
 
@@ -16,14 +16,14 @@ const PATH = "/almacenes";
 
 export const AlmacenesService = {
   // ALMACENES
-  get_almacenes: async (): Promise<IRespuesta<RES_Almacen[]>> => {
+  get_almacenes: async (): Promise<IRespuesta<RES_AlmacenResumen[]>> => {
     const { data } = await api.get(PATH);
     return data;
   },
 
   crear_almacen: async (
     dto: DTO_CrearAlmacen,
-  ): Promise<IRespuesta<RES_Almacen>> => {
+  ): Promise<IRespuesta<RES_AlmacenResumen>> => {
     const { data } = await api.post(PATH, dto);
     return data;
   },
@@ -36,19 +36,19 @@ export const AlmacenesService = {
     return data;
   },
 
+  get_empleados_disponibles: async (
+    id_almacen: number,
+  ): Promise<IRespuesta<RES_Empleado[]>> => {
+    const { data } = await api.post(
+      `${PATH}/responsables/empleados-disponibles/${id_almacen}`,
+    );
+    return data;
+  },
+
   nuevo_responsable: async (
     dto: DTO_NuevoResponsable,
   ): Promise<IRespuesta<RES_ResponsableAlmacen>> => {
     const { data } = await api.post(`${PATH}/responsables`, dto);
-    return data;
-  },
-
-  get_empleados: async (
-    id_almacen: number,
-  ): Promise<IRespuesta<RES_EmpleadoDisponible[]>> => {
-    const { data } = await api.post(
-      `${PATH}/responsables/empleados/${id_almacen}`,
-    );
     return data;
   },
 

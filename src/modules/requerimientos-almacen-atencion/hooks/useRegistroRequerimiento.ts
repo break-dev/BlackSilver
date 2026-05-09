@@ -7,16 +7,14 @@ import type {
   DTO_CrearRequerimiento,
   DTO_CrearRequerimientoDetalle,
 } from "../service/atencion.requests";
-import type {
-  RES_Labor,
-  RES_Mina,
-  RES_Producto,
-} from "../service/atencion.responses";
+import type { RES_Labor, RES_Mina } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Producto } from "../../../service/responses/producto";
 
 interface Props {
   onSuccess: (
@@ -42,7 +40,9 @@ export const useRegistroRequerimiento = ({
   // Catálogos
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [responsables, setResponsables] = useState<{ id_contratista: number; nombre_completo: string }[]>([]);
+  const [responsables, setResponsables] = useState<
+    { id_contratista: number; nombre_completo: string }[]
+  >([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -53,7 +53,8 @@ export const useRegistroRequerimiento = ({
     idAlmacenFijo || 0,
   );
   const [idMina, setIdMina] = useState<number>(0);
-  const [idContratistaSolicitante, setIdContratistaSolicitante] = useState<number>(0);
+  const [idContratistaSolicitante, setIdContratistaSolicitante] =
+    useState<number>(0);
   const [idLabores, setIdLabores] = useState<number[]>([]);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
@@ -76,19 +77,24 @@ export const useRegistroRequerimiento = ({
     const loadInitial = async () => {
       setLoadingCatalogs(true);
       try {
-        const res = await AtencionService.obtenerDataRegistro();
-        if (res.success) {
-          setAlmacenes(res.data.almacenes || []);
-          setProductos(res.data.productos);
-          setUnidades(res.data.unidades);
+        const res_almacenes = await AuxService.get_almacenes();
+        const res_productos = await AuxService.get_productos();
+        const res_unidades = await AuxService.get_unidades_medida();
+        if (res_almacenes.success && res_almacenes.data) {
+          setAlmacenes(res_almacenes.data);
+          if (res_almacenes.data.length > 0) {
+            setIdAlmacenDestino(res_almacenes.data[0].id_almacen);
+          }
+        }
+        if (res_productos.success && res_productos.data) {
+          setProductos(res_productos.data);
+        }
+        if (res_unidades.success && res_unidades.data) {
+          setUnidades(res_unidades.data);
 
           // Solo auto-seleccionar si no hay un almacén destino ya fijado
-          if (
-            res.data.almacenes &&
-            res.data.almacenes.length > 0 &&
-            idAlmacenDestino === 0
-          ) {
-            setIdAlmacenDestino(res.data.almacenes[0].id_almacen);
+          if (res_almacenes.data.length > 0 && idAlmacenDestino === 0) {
+            setIdAlmacenDestino(res_almacenes.data[0].id_almacen);
           }
         }
       } finally {
@@ -142,7 +148,9 @@ export const useRegistroRequerimiento = ({
               res.data.responsables.length > 0 &&
               idContratistaSolicitante === 0
             ) {
-              setIdContratistaSolicitante(res.data.responsables[0].id_contratista);
+              setIdContratistaSolicitante(
+                res.data.responsables[0].id_contratista,
+              );
             }
           }
         } finally {

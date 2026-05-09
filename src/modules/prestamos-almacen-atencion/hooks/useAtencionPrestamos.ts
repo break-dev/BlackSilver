@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import { useNotify } from "../../../hooks/useNotify";
+import { AuxService } from "../../../service/aux.service";
+import { useAuthStore } from "../../../stores/auth.store";
 
 export const useAtencionPrestamos = () => {
   const { notifyError } = useNotify();
@@ -29,7 +31,9 @@ export const useAtencionPrestamos = () => {
   const obtenerAlmacenesAutorizados = useCallback(async () => {
     setLoadingAlmacenes(true);
     try {
-      const res = await PrestamosAtencionService.obtenerAlmacenesAutorizados();
+      const res = await AuxService.get_almacenes({
+        id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+      });
       if (res.success) {
         setAlmacenes(res.data);
         // Si hay almacenes, seleccionamos el primero por defecto

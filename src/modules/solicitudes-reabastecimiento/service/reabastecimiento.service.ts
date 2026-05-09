@@ -4,19 +4,13 @@ import type {
   DTO_CrearSolicitud,
   DTO_RegistrarRecepcion,
 } from "./reabastecimiento.requests";
-import type {
-  RES_LoteDisponible,
-  RES_TicketLote,
-} from "../../../service/responses/lote-producto";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
 } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import type {
-  RES_DataRegistroSolicitud,
-  RES_HistorialEntregas,
-} from "./reabastecimiento.responses";
+import type { RES_HistorialEntregas } from "./reabastecimiento.responses";
 import type { RES_PrestamoEntrega } from "../../../service/responses/prestamos/prestamo-entrega";
 import type { RES_SolicitudRecepcion } from "../../../service/responses/solicitudes-reabastecimiento/solicitud-entrega-recepcion";
 
@@ -59,13 +53,6 @@ export const ReabastecimientoService = {
     return res.data;
   },
 
-  obtenerCatalogos: async () => {
-    const res = await api.get<IRespuesta<RES_DataRegistroSolicitud>>(
-      `${path}/catalogos`,
-    );
-    return res.data;
-  },
-
   obtenerHistorialEntregas: async (idSolicitud: number) => {
     const res = await api.get<IRespuesta<RES_HistorialEntregas>>(
       `${path}/entregas`,
@@ -81,25 +68,6 @@ export const ReabastecimientoService = {
       "/prestamos-atencion/entregas-solicitud",
       {
         params: { id_solicitud: idSolicitud },
-      },
-    );
-    return res.data;
-  },
-
-  /**
-   * Obtiene los lotes disponibles en el almacen destino para una entrega
-   */
-  getLotesDestino: async (
-    idAlmacenSolicitante: number,
-    idProductos: number[],
-  ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/catalogos/lotes-destino`,
-      {
-        params: {
-          id_almacen_solicitante: idAlmacenSolicitante,
-          id_productos: idProductos,
-        },
       },
     );
     return res.data;

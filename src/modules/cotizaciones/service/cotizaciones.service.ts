@@ -1,14 +1,9 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Empresa } from "./cotizaciones.responses";
 import type {
   DTO_RegistrarComparativo,
   DTO_ActualizarCotizacion,
 } from "./cotizaciones.requests";
-import type { RES_Proveedor } from "../../../service/responses/proveedor";
-import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
-import type { RES_Producto } from "../../../service/responses/producto";
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
 import type {
   RES_OrdenCompra,
@@ -58,58 +53,6 @@ export const CotizacionesService = {
     const { data } = await api.put<IRespuesta<RES_Comparativo[]>>(
       `/cotizaciones/${id_cotizacion}`,
       dto,
-    );
-    return data;
-  },
-
-  /**
-   * Obtener proveedores habilitados para cotización
-   */
-  get_proveedores_maestro: async (): Promise<IRespuesta<RES_Proveedor[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Proveedor[]>>(
-      "/cotizaciones/aux/proveedores",
-    );
-    return data;
-  },
-
-  /**
-   * Obtener unidades de medida habilitadas
-   */
-  get_unidades_medida_maestro: async (): Promise<
-    IRespuesta<RES_UnidadMedida[]>
-  > => {
-    const { data } = await api.get<IRespuesta<RES_UnidadMedida[]>>(
-      "/cotizaciones/aux/unidades-medida",
-    );
-    return data;
-  },
-
-  /**
-   * Obtener catálogo de productos maestros
-   */
-  get_productos_maestro: async (): Promise<IRespuesta<RES_Producto[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Producto[]>>(
-      "/cotizaciones/aux/productos",
-    );
-    return data;
-  },
-
-  /**
-   * Obtener empresas
-   */
-  get_empresas_maestro: async (): Promise<IRespuesta<RES_Empresa[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Empresa[]>>(
-      "/cotizaciones/aux/empresas",
-    );
-    return data;
-  },
-
-  /**
-   * Obtener almacenes activos para seleccionar el recepcionista
-   */
-  get_almacenes_maestro: async (): Promise<IRespuesta<RES_Almacen[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Almacen[]>>(
-      "/cotizaciones/aux/almacenes",
     );
     return data;
   },

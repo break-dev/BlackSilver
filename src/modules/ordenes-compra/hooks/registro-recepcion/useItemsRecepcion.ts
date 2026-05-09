@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
 import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
-import { OrdenCompraService } from "../../service/orden-compra.service";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
+import { AuxService } from "../../../../service/aux.service";
 
 export interface DTO_RecepcionLotExtendido extends DTO_RecepcionOCItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
@@ -98,7 +98,7 @@ export const useItemsRecepcion = ({
   useEffect(() => {
     if (selectedAlmacenId && detalles.length > 0) {
       const ids = Array.from(new Set(detalles.map((d) => d.id_producto)));
-      OrdenCompraService.getLotesParaRecepcion(selectedAlmacenId, ids)
+      AuxService.get_lotes_disponibles(selectedAlmacenId, ids)
         .then((res) => {
           if (res.success && res.data) {
             setLotesDisponibles(res.data);

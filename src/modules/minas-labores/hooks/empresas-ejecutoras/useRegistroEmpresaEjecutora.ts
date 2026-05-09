@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { MinasService } from "../../service/minas.service";
-import type { RES_EmpresaDisponible } from "../../service/minas.responses";
+import type { RES_Empresa } from "../../../../service/responses/empresa";
 
 interface Props {
   idMina: number;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const useRegistroEmpresaEjecutora = ({ idMina, idConcesion }: Props) => {
-  const [disponibles, setDisponibles] = useState<RES_EmpresaDisponible[]>([]);
+  const [disponibles, setDisponibles] = useState<RES_Empresa[]>([]);
   const [loadingDisponibles, setLoadingDisponibles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idEmpresa, setIdEmpresa] = useState<number | null>(null);

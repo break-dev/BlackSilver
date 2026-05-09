@@ -1,6 +1,5 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Producto_Local } from "./requerimientos.responses";
 import type { DTO_CrearRequerimiento } from "./requerimientos.requests";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 import type { RES_Labor } from "../../../service/responses/labor";
@@ -11,6 +10,7 @@ import type {
   RES_DetalleRequerimiento,
   RES_RequerimientoAlmacen,
 } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { RES_Producto } from "../../../service/responses/producto";
 
 const path = "/requerimientos-almacen";
 
@@ -78,9 +78,7 @@ export const RequerimientosService = {
   },
 
   listarProductos: async () => {
-    const res = await api.get<IRespuesta<RES_Producto_Local[]>>(
-      `${path}/productos`,
-    );
+    const res = await api.get<IRespuesta<RES_Producto[]>>(`${path}/productos`);
     return res.data;
   },
 
@@ -95,7 +93,7 @@ export const RequerimientosService = {
     const res = await api.get<
       IRespuesta<{
         minas: RES_Mina[];
-        productos: RES_Producto_Local[];
+        productos: RES_Producto[];
         unidades: RES_UnidadMedida[];
       }>
     >(`${path}/data-to-registro`);

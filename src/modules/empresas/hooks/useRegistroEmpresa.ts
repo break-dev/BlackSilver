@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
-import type { RES_Empresa } from "../service/empresas.responses";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 interface UseRegistroEmpresaProps {
   onSuccess?: (nueva: RES_Empresa) => void;
@@ -35,7 +35,7 @@ export const useRegistroEmpresa = ({
 
   const handleGuardar = async () => {
     setError("");
-    
+
     if (!ruc || ruc.length !== 11) {
       setError("El RUC debe tener 11 dígitos");
       return;
@@ -56,7 +56,7 @@ export const useRegistroEmpresa = ({
     formData.append("razon_social", razonSocial);
     formData.append("nombre_comercial", nombreComercial);
     formData.append("abreviatura", abreviatura);
-    
+
     if (logoFile) {
       formData.append("path_logo", logoFile);
     }

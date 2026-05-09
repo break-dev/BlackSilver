@@ -1,6 +1,6 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_MovimientoKardex, RES_Almacen } from "./kardex.responses";
+import type { RES_MovimientoKardex } from "./kardex.responses";
 
 export class KardexService {
   private static readonly PATH = "/kardex-productos";
@@ -22,16 +22,6 @@ export class KardexService {
           yearcito,
         },
       },
-    );
-    return response.data;
-  }
-
-  /**
-   * Obtener almacenes autorizados para el Kardex
-   */
-  static async listarAlmacenes() {
-    const response = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${this.PATH}/almacenes`,
     );
     return response.data;
   }

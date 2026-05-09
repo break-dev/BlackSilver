@@ -3,6 +3,7 @@ import { PrestamosService } from "../service/prestamos.service";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
+import { AuxService } from "../../../service/aux.service";
 
 export const usePrestamosAlmacen = () => {
   const { notifyError } = useNotify();
@@ -26,11 +27,11 @@ export const usePrestamosAlmacen = () => {
     const fetchAlmacenes = async () => {
       setLoadingAlmacenes(true);
       try {
-        const data = await PrestamosService.getAlmacenesSecundarios();
-        setAlmacenes(data);
+        const res = await AuxService.get_almacenes({ es_principal: false });
+        setAlmacenes(res.data);
         // Selección automática del primer almacén si hay data y no se ha inicializado
-        if (data.length > 0 && !initialized.current) {
-          setIdAlmacen(String(data[0].id_almacen));
+        if (res.data.length > 0 && !initialized.current) {
+          setIdAlmacen(String(res.data[0].id_almacen));
           initialized.current = true;
         }
       } catch {

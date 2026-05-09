@@ -1,9 +1,6 @@
 import { api } from "../../../service/_api";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
-import type {
-  RES_LoteDisponible,
-  RES_TicketLote,
-} from "../../../service/responses/lote-producto";
+import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
@@ -11,9 +8,6 @@ import type {
 import type { RES_OrdenCompraRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { REQ_RegistrarRecepcionOC } from "./recepcion.requests";
-import type { RES_Almacen } from "../../../service/responses/almacen";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
-
 const path = "/ordenes-compra";
 
 export const OrdenCompraService = {
@@ -84,40 +78,6 @@ export const OrdenCompraService = {
     return data;
   },
 
-  /**
-   * Catálogos aislados para recepción de OC
-   */
-  getAlmacenes: async (): Promise<IRespuesta<RES_Almacen[]>> => {
-    const { data } = await api.get(`${path}/aux/almacenes`);
-    return data;
-  },
-
-  getLotesParaRecepcion: async (
-    idAlmacen: number,
-    idProductos: number[],
-  ): Promise<IRespuesta<RES_LoteDisponible[]>> => {
-    const { data } = await api.get(`${path}/aux/lotes-destino`, {
-      params: {
-        id_almacen_recepcionista: idAlmacen,
-        id_productos: idProductos,
-      },
-    });
-    return data;
-  },
-
-  getLotesDisponiblesTransferencia: async (
-    idAlmacen: number,
-    idProductos: number[],
-  ): Promise<IRespuesta<RES_LoteDisponible[]>> => {
-    const { data } = await api.get(`${path}/aux/lotes-destino`, {
-      params: {
-        id_almacen_recepcionista: idAlmacen,
-        id_productos: idProductos,
-      },
-    });
-    return data;
-  },
-
   registrarTransferencia: async (
     data: Record<string, unknown>,
     evidencias: File[],
@@ -147,20 +107,5 @@ export const OrdenCompraService = {
       },
     );
     return res.data;
-  },
-
-  getPersonalExterno: async (): Promise<IRespuesta<RES_PersonalExterno[]>> => {
-    const { data } = await api.get(`${path}/aux/personal-externo`);
-    return data;
-  },
-
-  crearPersonalExterno: async (
-    nuevoPersonal: Record<string, unknown>,
-  ): Promise<IRespuesta<RES_PersonalExterno>> => {
-    const { data } = await api.post(
-      `${path}/aux/personal-externo`,
-      nuevoPersonal,
-    );
-    return data;
   },
 };

@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { ProductosService } from "../service/productos.service";
-import type { RES_Producto } from "../service/productos.responses";
+import type { RES_ProductoResumen } from "../service/productos.responses";
 
 export const useProductos = () => {
-  const [productos, setProductos] = useState<RES_Producto[]>([]);
+  const [productos, setProductos] = useState<RES_ProductoResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -34,7 +34,7 @@ export const useProductos = () => {
     );
   }, [productos, busqueda]);
 
-  const pushNuevoProducto = (nuevo: RES_Producto) => {
+  const pushNuevoProducto = (nuevo: RES_ProductoResumen) => {
     setProductos((prev) => [nuevo, ...prev]);
   };
 

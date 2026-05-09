@@ -5,6 +5,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
+import { AuxService } from "../../../service/aux.service";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
@@ -57,11 +58,8 @@ export const useRegistroEntrega = ({
     setError("");
     try {
       const [resPers, resLotes] = await Promise.all([
-        PrestamosAtencionService.obtenerPersonalExterno(),
-        PrestamosAtencionService.obtenerLotesDisponiblesBatch(
-          idsProductos,
-          idAlmacenPrestamista,
-        ),
+        AuxService.get_personal_externo(),
+        AuxService.get_lotes_disponibles(idAlmacenPrestamista, idsProductos),
       ]);
 
       if (resPers.success) {
@@ -118,7 +116,7 @@ export const useRegistroEntrega = ({
     dni?: string;
   }) => {
     try {
-      const res = await PrestamosAtencionService.crearPersonalExterno(dto);
+      const res = await AuxService.crear_personal_externo(dto);
       if (res.success) {
         notifySuccess("Personal registrado correctamente");
         const nuevo = res.data as unknown as RES_PersonalExterno;

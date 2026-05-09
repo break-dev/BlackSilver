@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useCuentasStore, CuentasService } from "../service/cuentas.service";
+import { CuentasService } from "../service/cuentas.service";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Cuenta } from "../service/cuentas.responses";
 
@@ -8,8 +8,12 @@ export const useRegistroCuenta = (
   onClose: () => void,
   refresh: () => void,
 ) => {
-  const { form, setForm, resetForm, roles, empleadosSinCuenta } =
-    useCuentasStore();
+  const [form, setForm] = useState({
+    id_empleado: 0,
+    id_rol: 0,
+    username: "",
+    password: "",
+  });
   const [loading, setLoading] = useState(false);
   const { notify } = useNotify();
 
@@ -22,9 +26,18 @@ export const useRegistroCuenta = (
         password: "", // Vacío por defecto al editar
       });
     } else {
-      resetForm();
+      setForm({
+        id_empleado: 0,
+        id_rol: 0,
+        username: "",
+        password: "",
+      });
     }
-  }, [cuentaEdit, resetForm, setForm]);
+  }, [cuentaEdit]);
+
+  const updateForm = (updates: Partial<typeof form>) => {
+    setForm((prev) => ({ ...prev, ...updates }));
+  };
 
   const handleGuardar = async () => {
     // Validaciones básicas
@@ -84,11 +97,9 @@ export const useRegistroCuenta = (
 
   return {
     form,
-    setForm,
+    updateForm,
     loading,
     handleGuardar,
-    roles,
-    empleadosSinCuenta,
     isEdit: !!cuentaEdit,
   };
 };

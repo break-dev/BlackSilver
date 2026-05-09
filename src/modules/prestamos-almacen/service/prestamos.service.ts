@@ -1,8 +1,6 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { REQ_RegistrarReposicion } from "./prestamos.requests";
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type {
   RES_Prestamo,
@@ -15,16 +13,6 @@ import type { RES_PrestamoReposicion } from "../../../service/responses/prestamo
 const path = "/prestamos-almacen";
 
 export const PrestamosService = {
-  /**
-   * Obtiene la lista de almacenes secundarios
-   */
-  getAlmacenesSecundarios: async () => {
-    const response = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${path}/almacenes-secundarios`,
-    );
-    return response.data.data;
-  },
-
   /**
    * Obtiene el resumen de préstamos por almacén y periodo
    */
@@ -79,23 +67,6 @@ export const PrestamosService = {
       },
     );
     return response.data.data;
-  },
-
-  getAlmacenesPrincipales: async () => {
-    const { data } = await api.get<
-      IRespuesta<{ id_almacen: number; nombre: string }[]>
-    >("/prestamos-almacen/almacenes", { params: { es_principal: true } });
-    return data;
-  },
-
-  getLotesDisponibles: async (idsProductos: number[], idAlmacen: number) => {
-    const { data } = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      "/prestamos-almacen/lotes",
-      {
-        params: { ids_productos: idsProductos, id_almacen: idAlmacen },
-      },
-    );
-    return data;
   },
 
   getHistorialReposiciones: async (idPrestamo: number) => {

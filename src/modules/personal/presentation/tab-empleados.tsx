@@ -14,7 +14,7 @@ import {
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useEmpleados } from "../hooks/useEmpleados";
-import type { RES_Empleado } from "../service/empleados.responses";
+import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
 import { CompanyGroupCard } from "./empleados-components/company-group-card";
@@ -26,12 +26,8 @@ interface TabEmpleadosProps {
 export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
-  const {
-    loading,
-    groupedByCompany,
-    actualizarFoto,
-    idActualizandoFoto,
-  } = controller;
+  const { loading, groupedByCompany, actualizarFoto, idActualizandoFoto } =
+    controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -43,7 +39,7 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
     }
   };
 
-  const columns: DataTableColumn<RES_Empleado>[] = [
+  const columns: DataTableColumn<RES_EmpleadoResumen>[] = [
     {
       accessor: "index",
       title: "#",

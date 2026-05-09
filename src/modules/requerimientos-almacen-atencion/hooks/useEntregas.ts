@@ -4,6 +4,8 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import { AuxService } from "../../../service/aux.service";
+import { useAuthStore } from "../../../stores/auth.store";
 
 export interface IUseHook {
   setError: (msg: string) => void;
@@ -37,7 +39,9 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const obtenerAlmacenesAutorizados = useCallback(async () => {
     setLoadingAlmacenes(true);
     try {
-      const resp = await AtencionService.obtenerAlmacenesAutorizados();
+      const resp = await AuxService.get_almacenes({
+        id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+      });
       if (resp.success) {
         setAlmacenes(resp.data);
         // Solo auto-elegimos si no hay uno ya seleccionado

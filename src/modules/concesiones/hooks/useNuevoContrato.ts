@@ -2,7 +2,9 @@ import { useState, useCallback, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ConcesionesService } from "../service/concesiones.service";
 import { Schema_CrearContrato } from "../service/concesiones.requests";
-import type { RES_Empresa, RES_Contrato } from "../service/concesiones.responses";
+import type { RES_Contrato } from "../service/concesiones.responses";
+import { AuxService } from "../../../service/aux.service";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 export const useNuevoContrato = (
   id_concesion: number,
@@ -16,7 +18,7 @@ export const useNuevoContrato = (
   const listarEmpresas = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await ConcesionesService.get_empresas();
+      const resp = await AuxService.get_empresas();
       if (resp.success) setEmpresas(resp.data);
     } catch (err) {
       console.error(err);

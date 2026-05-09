@@ -19,7 +19,7 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useProductos } from "../hooks/useProductos";
 import { RegistroProducto } from "./registro-producto";
-import type { RES_Producto } from "../service/productos.responses";
+import type { RES_ProductoResumen } from "../service/productos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { enPlural } from "../../../shared/functions/en-plural";
 
@@ -32,7 +32,7 @@ export const ProductosPage = () => {
   const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
     useDisclosure(false);
 
-  const columns: DataTableColumn<RES_Producto>[] = [
+  const columns: DataTableColumn<RES_ProductoResumen>[] = [
     {
       accessor: "index",
       title: "#",

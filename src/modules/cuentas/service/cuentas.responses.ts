@@ -12,14 +12,6 @@ export interface RES_Cuenta {
   empresa_pertenece: string;
 }
 
-export interface RES_EmpleadoDisponible {
-  id: number;
-  nombre: string;
-  apellido: string;
-  dni: string | null;
-  id_empresa_pertenece: number;
-}
-
 export interface RES_RolDisponible {
   id: number;
   nombre: string;

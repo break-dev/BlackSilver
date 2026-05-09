@@ -13,6 +13,7 @@ import type {
 import { usePrint } from "../../../hooks/usePrint";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
+import { AuxService } from "../../../service/aux.service";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {
   id_lote_existente: number | null;
@@ -123,7 +124,7 @@ export const useRegistroRecepcion = ({
     const loadUnidades = async () => {
       setLoadingUnidades(true);
       try {
-        const res = await PrestamosAtencionService.listarUnidades();
+        const res = await AuxService.get_unidades_medida();
         if (res.success && res.data) setUnidades(res.data);
       } catch (err) {
         console.error(err);
@@ -145,7 +146,7 @@ export const useRegistroRecepcion = ({
 
       setLoadingLotesDisp(true);
       try {
-        const res = await PrestamosAtencionService.getLotesDestino(
+        const res = await AuxService.get_lotes_disponibles(
           idAlmacenSolicitante,
           uniqueProductIds,
         );

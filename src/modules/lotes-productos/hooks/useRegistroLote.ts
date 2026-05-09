@@ -2,12 +2,11 @@ import { useState, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { LotesService } from "../service/lotes.service";
 import { Schema_CrearLote } from "../service/lotes.requests";
-import type {
-  RES_Lote,
-  RES_ProductoDisponible,
-  RES_Almacen,
-} from "../service/lotes.responses";
+import type { RES_Lote } from "../service/lotes.responses";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import type { RES_Almacen } from "../../../service/responses/almacen";
+import type { RES_Producto } from "../../../service/responses/producto";
+import { AuxService } from "../../../service/aux.service";
 
 interface UseRegistroLoteProps {
   initialAlmacenId?: number | null;
@@ -27,7 +26,7 @@ export const useRegistroLote = ({
   const [error, setError] = useState<string | null>(null);
 
   // Catalogs
-  const [productos, setProductos] = useState<RES_ProductoDisponible[]>([]);
+  const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   // Form State
@@ -48,7 +47,7 @@ export const useRegistroLote = ({
     const loadProductos = async () => {
       setLoadingProductos(true);
       try {
-        const res = await LotesService.listarProductos();
+        const res = await AuxService.get_productos();
         if (res.success) setProductos(res.data);
       } catch (err) {
         setError(String(err));
@@ -60,7 +59,7 @@ export const useRegistroLote = ({
     const loadUnidades = async () => {
       setLoadingUnidades(true);
       try {
-        const res = await LotesService.listarUnidades();
+        const res = await AuxService.get_unidades_medida();
         if (res.success) setUnidades(res.data);
       } catch (err) {
         setError(String(err));

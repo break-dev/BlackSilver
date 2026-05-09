@@ -15,7 +15,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { useRegistroLote } from "../hooks/useRegistroLote";
-import type { RES_Lote, RES_Almacen } from "../service/lotes.responses";
+import type { RES_Lote } from "../service/lotes.responses";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroLoteProps {

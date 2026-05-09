@@ -9,8 +9,7 @@ import type {
   RES_Area,
   RES_Cargo,
   RES_Contratista,
-  RES_Empleado,
-  RES_EmpresaAsoc,
+  RES_EmpleadoResumen,
   RES_Labor,
   RES_LaborContratista,
   RES_Mina,
@@ -21,15 +20,10 @@ export class EmpleadosService {
 
   public static get_empleados = async (
     idEmpresa?: number,
-  ): Promise<IRespuesta<RES_Empleado[]>> => {
+  ): Promise<IRespuesta<RES_EmpleadoResumen[]>> => {
     const { data } = await api.get(this.PATH, {
       params: { id_empresa: idEmpresa },
     });
-    return data;
-  };
-
-  public static get_empresas = async (): Promise<IRespuesta<RES_EmpresaAsoc[]>> => {
-    const { data } = await api.get(`${this.PATH}/empresas`);
     return data;
   };
 
@@ -52,7 +46,7 @@ export class EmpleadosService {
 
   public static crear_empleado = async (
     dto: DTO_CrearEmpleado,
-  ): Promise<IRespuesta<RES_Empleado>> => {
+  ): Promise<IRespuesta<RES_EmpleadoResumen>> => {
     const formData = new FormData();
     Object.entries(dto).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -68,7 +62,7 @@ export class EmpleadosService {
   public static actualizar_foto = async (
     idEmpleado: number,
     file: File,
-  ): Promise<IRespuesta<RES_Empleado>> => {
+  ): Promise<IRespuesta<RES_EmpleadoResumen>> => {
     const formData = new FormData();
     formData.append("path_foto", file);
     const { data } = await api.post(
@@ -124,19 +118,15 @@ export class ContratistasService {
     );
     return data;
   };
-
-  // --- Labores (Heredado de MinasLabores pero consumido aquí para contratistas) ---
-  // Nota: Estas rutas ya las movimos en el backend a Empleados/Contratistas si fuera necesario, 
-  // pero usaremos las de MinasLabores si el backend aún las tiene allí.
-  // El usuario dijo que el backend ya tiene contratistas.
-  
   public static get_labores_disponibles = async (
     idMina: number,
     idContratista?: number,
   ): Promise<IRespuesta<RES_Labor[]>> => {
     const { data } = await api.get(`${this.PATH}/labores-mina/${idMina}`, {
       params:
-        idContratista !== undefined ? { id_contratista: idContratista } : undefined,
+        idContratista !== undefined
+          ? { id_contratista: idContratista }
+          : undefined,
     });
     return data;
   };
@@ -152,7 +142,10 @@ export class ContratistasService {
     idContratista: number,
     dto: DTO_AsignarLaboresContratista,
   ): Promise<IRespuesta<RES_Contratista>> => {
-    const { data } = await api.post(`${this.PATH}/${idContratista}/labores`, dto);
+    const { data } = await api.post(
+      `${this.PATH}/${idContratista}/labores`,
+      dto,
+    );
     return data;
   };
 }
