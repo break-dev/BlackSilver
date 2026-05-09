@@ -24,11 +24,13 @@ import { useRef } from "react";
 interface Props {
   mina: RES_ResumenMina;
   onResponsableAsignado?: (nombreResponsable: string) => void;
+  onResponsableInactivado?: (nombreResponsable: string) => void;
 }
 
 export const HistorialResponsables = ({
   mina,
   onResponsableAsignado,
+  onResponsableInactivado,
 }: Props) => {
   const registroRef = useRef<RegistroResponsableRef>(null);
 
@@ -41,6 +43,7 @@ export const HistorialResponsables = ({
   } = useResponsablesMina({
     idMina: mina.id_mina,
     onResponsableAsignado,
+    onResponsableInactivado,
   });
 
   const onInactivar = async (item: RES_HistorialResponsable) => {

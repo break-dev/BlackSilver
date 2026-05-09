@@ -154,6 +154,27 @@ export const useMinas = () => {
     );
   };
 
+  const handleResponsableInactivado = (
+    id_mina: number,
+    nombreResponsable: string,
+  ) => {
+    setMinas((prev) =>
+      prev.map((m) =>
+        m.id_mina === id_mina
+          ? {
+            ...m,
+            responsables: m.responsables
+              ? m.responsables
+                .split(", ")
+                .filter((r) => r !== nombreResponsable)
+                .join(", ") || null
+              : null,
+          }
+          : m,
+      ),
+    );
+  };
+
   return {
     // Concesiones (solo para formulario de crear)
     concesiones,
@@ -183,6 +204,7 @@ export const useMinas = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
+    handleResponsableInactivado,
     handleLaborRegistrada,
     handleLaborFinalizada,
     handleEmpresaAsignada,

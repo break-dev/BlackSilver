@@ -9,12 +9,11 @@ import type {
   RES_Area,
   RES_Cargo,
   RES_Empleado,
-  RES_Mina,
-  RES_Labor,
+  RES_EmpresaAsoc,
 } from "../service/empleados.responses";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
-  id_mina: 0,
+  id_empresa: 0,
   id_cargo: 0,
   nombre: "",
   apellido: "",
@@ -24,39 +23,32 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
   pasaporte: "",
   fecha_nacimiento: "",
   path_foto: "",
-  ids_labor: [],
 };
 
 export const useRegistroEmpleado = (
   onSuccess: (nuevo: RES_Empleado) => void,
-  idMinaDefault: number | null = null,
 ) => {
   const { notify } = useNotify();
-  const [form, setForm] = useState<DTO_CrearEmpleado>({
-    ...INITIAL_FORM,
-    id_mina: idMinaDefault ?? 0,
-  });
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
+  const [form, setForm] = useState<DTO_CrearEmpleado>(INITIAL_FORM);
+  const [empresas, setEmpresas] = useState<RES_EmpresaAsoc[]>([]);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [cargos, setCargos] = useState<RES_Cargo[]>([]);
-  const [labores, setLabores] = useState<RES_Labor[]>([]);
 
   const [idArea, setIdArea] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [loadingMinas, setLoadingMinas] = useState(false);
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [loadingCargos, setLoadingCargos] = useState(false);
-  const [loadingLabores, setLoadingLabores] = useState(false);
 
-  const cargarMinas = useCallback(async () => {
-    setLoadingMinas(true);
+  const cargarEmpresas = useCallback(async () => {
+    setLoadingEmpresas(true);
     try {
-      const resp = await EmpleadosService.get_minas();
-      if (resp.success) setMinas(resp.data);
+      const resp = await EmpleadosService.get_empresas();
+      if (resp.success) setEmpresas(resp.data);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoadingMinas(false);
+      setLoadingEmpresas(false);
     }
   }, []);
 
@@ -72,33 +64,10 @@ export const useRegistroEmpleado = (
     }
   }, []);
 
-  const cargarLaboresMina = useCallback(async (minaId: number) => {
-    setLoadingLabores(true);
-    try {
-      const resp = await EmpleadosService.get_labores_disponibles(minaId);
-      if (resp.success) setLabores(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingLabores(false);
-    }
-  }, []);
-
   useEffect(() => {
-    cargarMinas();
+    cargarEmpresas();
     cargarAreas();
-  }, [cargarMinas, cargarAreas]);
-
-  // Al cambiar la mina en el form, cargar sus labores
-  useEffect(() => {
-    if (form.id_mina && form.id_mina > 0) {
-      cargarLaboresMina(form.id_mina);
-    } else {
-      setLabores([]);
-    }
-    // Si se limpia la mina, limpiar los seleccionados de labores
-    setForm((prev) => ({ ...prev, ids_labor: [] }));
-  }, [form.id_mina, cargarLaboresMina]);
+  }, [cargarEmpresas, cargarAreas]);
 
   const cargarCargos = useCallback(async (areaId: number) => {
     setLoadingCargos(true);
@@ -118,7 +87,6 @@ export const useRegistroEmpleado = (
     } else {
       setCargos([]);
     }
-    // Al cambiar de área, reseteamos el cargo seleccionado para evitar errores
     setForm((prev) => ({ ...prev, id_cargo: 0 }));
   }, [idArea, cargarCargos]);
 
@@ -132,7 +100,7 @@ export const useRegistroEmpleado = (
   const handleSubmit = async () => {
     const validation = Schema_CrearEmpleado.safeParse(form);
     if (!validation.success) {
-      notify({ type: "error", content: validation.error.issues[0].message });
+      notify({ type: "info", content: validation.error.issues[0].message });
       return;
     }
 
@@ -142,7 +110,7 @@ export const useRegistroEmpleado = (
       if (resp.success) {
         notify({ type: "success", content: resp.message });
         onSuccess(resp.data);
-        setForm({ ...INITIAL_FORM, id_mina: idMinaDefault ?? 0 });
+        setForm(INITIAL_FORM);
         setIdArea(null);
       } else {
         notify({ type: "error", content: resp.message });
@@ -160,15 +128,13 @@ export const useRegistroEmpleado = (
     setField,
     idArea,
     setIdArea,
-    minas,
+    empresas,
     areas,
     cargos,
-    labores,
     loading,
-    loadingMinas,
+    loadingEmpresas,
     loadingAreas,
     loadingCargos,
-    loadingLabores,
     handleSubmit,
   };
 };

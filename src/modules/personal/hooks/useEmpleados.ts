@@ -1,27 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { EmpleadosService } from "../service/empleados.service";
-import type { RES_Empleado, RES_Mina } from "../service/empleados.responses";
+import type { RES_Empleado } from "../service/empleados.responses";
 
 export const useEmpleados = () => {
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [idMina, setIdMina] = useState<number | null>(null);
+  const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
-  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
-
-  const cargarMinas = useCallback(async () => {
-    setLoadingMinas(true);
-    try {
-      const resp = await EmpleadosService.get_minas();
-      if (resp.success) setMinas(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingMinas(false);
-    }
-  }, []);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -35,9 +21,6 @@ export const useEmpleados = () => {
     }
   }, []);
 
-  useEffect(() => {
-    cargarMinas();
-  }, [cargarMinas]);
 
   useEffect(() => {
     listar();
@@ -46,9 +29,9 @@ export const useEmpleados = () => {
   const filtrados = useMemo(() => {
     let results = empleados;
 
-    // Filtro por Mina Local
-    if (idMina) {
-      results = results.filter((e) => e.id_mina === idMina);
+    // Filtro por Empresa
+    if (idEmpresa) {
+      results = results.filter((e) => e.id_empresa === idEmpresa);
     }
 
     // Filtro por Búsqueda Local
@@ -64,7 +47,7 @@ export const useEmpleados = () => {
     }
 
     return results;
-  }, [empleados, idMina, busqueda]);
+  }, [empleados, idEmpresa, busqueda]);
 
   const pushNuevoEmpleado = (nuevo: RES_Empleado) => {
     setEmpleados((prev) => [nuevo, ...prev]);
@@ -92,12 +75,41 @@ export const useEmpleados = () => {
     return false;
   };
 
+  const groupedByCompany = useMemo(() => {
+    const groups: Record<number, { id: number; nombre: string; empleados: RES_Empleado[] }> = {};
+
+    filtrados.forEach((emp) => {
+      const id = emp.id_empresa || 0;
+      const nombre = emp.empresa || "Sin empresa asignada";
+
+      if (!groups[id]) {
+        groups[id] = { id, nombre, empleados: [] };
+      }
+      groups[id].empleados.push(emp);
+    });
+
+    return Object.values(groups);
+  }, [filtrados]);
+
+  const empresasUnicas = useMemo(() => {
+    const map = new Map<number, string>();
+    empleados.forEach((emp) => {
+      if (emp.id_empresa && emp.empresa) {
+        map.set(emp.id_empresa, emp.empresa);
+      }
+    });
+    return Array.from(map.entries()).map(([id, nombre]) => ({
+      id_empresa: id,
+      nombre,
+    }));
+  }, [empleados]);
+
   return {
-    minas,
-    idMina,
-    setIdMina,
+    empresas: empresasUnicas,
+    idEmpresa,
+    setIdEmpresa,
     empleados: filtrados,
-    loadingMinas,
+    groupedByCompany,
     loading,
     busqueda,
     setBusqueda,

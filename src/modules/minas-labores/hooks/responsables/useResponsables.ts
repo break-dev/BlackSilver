@@ -8,11 +8,13 @@ import dayjs from "dayjs";
 interface Props {
   idMina: number;
   onResponsableAsignado?: (nombreResponsable: string) => void;
+  onResponsableInactivado?: (nombreResponsable: string) => void;
 }
 
 export const useResponsablesMina = ({
   idMina,
   onResponsableAsignado,
+  onResponsableInactivado,
 }: Props) => {
   const { notify } = useNotify();
 
@@ -66,6 +68,9 @@ export const useResponsablesMina = ({
     id_responsable_mina: number,
     fecha_fin: string,
   ): Promise<boolean> => {
+    const item = historial.find((h) => h.id_responsable_mina === id_responsable_mina);
+    if (!item) return false;
+
     setLoadingInactivando(id_responsable_mina);
     try {
       const res = await MinasService.inactivarResponsable(
@@ -74,12 +79,15 @@ export const useResponsablesMina = ({
       );
       if (res.success) {
         setHistorial((prev) =>
-          prev.map((item) =>
-            item.id_responsable_mina === id_responsable_mina
-              ? { ...item, estado: EstadoBase.Inactivo, fecha_fin }
-              : item,
+          prev.map((it) =>
+            it.id_responsable_mina === id_responsable_mina
+              ? { ...it, estado: EstadoBase.Inactivo, fecha_fin }
+              : it,
           ),
         );
+        
+        onResponsableInactivado?.(item.contratista);
+
         notify({
           type: "success",
           content: "Responsable inactivado correctamente",

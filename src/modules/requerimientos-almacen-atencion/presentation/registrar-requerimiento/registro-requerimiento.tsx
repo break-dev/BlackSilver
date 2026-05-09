@@ -78,8 +78,8 @@ export const RegistroRequerimiento = ({
       detalles,
       idMina,
       setIdMina,
-      idEmpleadoSolicitante,
-      setIdEmpleadoSolicitante,
+      idContratistaSolicitante,
+      setIdContratistaSolicitante,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       idLabores,
@@ -175,11 +175,11 @@ export const RegistroRequerimiento = ({
             placeholder="Seleccione responsable"
             withAsterisk
             data={responsables.map((r) => ({
-              value: String(r.id_empleado),
+              value: String(r.id_contratista),
               label: r.nombre_completo,
             }))}
-            value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
-            onChange={(val) => setIdEmpleadoSolicitante(Number(val))}
+            value={idContratistaSolicitante ? String(idContratistaSolicitante) : null}
+            onChange={(val) => setIdContratistaSolicitante(Number(val))}
             classNames={inputClasses}
             radius="lg"
             searchable

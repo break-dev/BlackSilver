@@ -1,28 +1,43 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
-import { EmpleadosService } from "../service/empleados.service";
+import { ContratistasService, EmpleadosService } from "../service/empleados.service";
 import type {
-  RES_Empleado,
+  RES_Contratista,
   RES_Labor,
+  RES_Mina,
 } from "../service/empleados.responses";
 
-export const useAsignacionLabores = (
-  onUpdateLocal: (editado: RES_Empleado) => void,
+export const useAsignacionLaboresContratista = (
+  onUpdateLocal: (editado: RES_Contratista) => void,
 ) => {
   const { notify } = useNotify();
 
-  const [empleado, setEmpleado] = useState<RES_Empleado | null>(null);
+  const [contratista, setContratista] = useState<RES_Contratista | null>(null);
+  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
   const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
   const [seleccionados, setSeleccionados] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingLabores, setLoadingLabores] = useState(false);
+
+  const cargarMinas = useCallback(async () => {
+    setLoadingMinas(true);
+    try {
+      const resp = await EmpleadosService.get_minas();
+      if (resp.success) setMinas(resp.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMinas(false);
+    }
+  }, []);
 
   const cargarCatalogoLabores = useCallback(
     async (minaId: number) => {
       setLoadingLabores(true);
       try {
-        const resp = await EmpleadosService.get_labores_disponibles(minaId);
+        const resp = await ContratistasService.get_labores_disponibles(minaId);
         if (resp.success) {
           setLaboresDisponibles(resp.data);
         }
@@ -37,11 +52,11 @@ export const useAsignacionLabores = (
   );
 
   const abrir = useCallback(
-    async (emp: RES_Empleado) => {
-      setEmpleado(emp);
+    async (emp: RES_Contratista) => {
+      setContratista(emp);
       setIdMina(emp.id_mina || null);
+      cargarMinas();
 
-      // Pre-cargar seleccionados desde lo que ya viene en el listado
       if (emp.ids_labor_asignadas) {
         const ids = emp.ids_labor_asignadas.split(",").map(Number);
         setSeleccionados(ids);
@@ -53,12 +68,12 @@ export const useAsignacionLabores = (
         cargarCatalogoLabores(emp.id_mina);
       }
     },
-    [cargarCatalogoLabores],
+    [cargarCatalogoLabores, cargarMinas],
   );
 
   const handleMinaChange = (val: number | null) => {
     setIdMina(val);
-    setSeleccionados([]); // Al cambiar de mina, se limpian las labores
+    setSeleccionados([]);
     setLaboresDisponibles([]);
     if (val) {
       cargarCatalogoLabores(val);
@@ -66,7 +81,7 @@ export const useAsignacionLabores = (
   };
 
   const cerrar = () => {
-    setEmpleado(null);
+    setContratista(null);
     setIdMina(null);
     setLaboresDisponibles([]);
     setSeleccionados([]);
@@ -81,11 +96,16 @@ export const useAsignacionLabores = (
   };
 
   const handleAsignar = async () => {
-    if (!empleado) return;
+    if (!contratista) return;
+
+    if (!idMina) {
+      notify({ type: "info", content: "Debe seleccionar una mina" });
+      return;
+    }
 
     setLoading(true);
     try {
-      const resp = await EmpleadosService.asignar_labores(empleado.id_empleado, {
+      const resp = await ContratistasService.asignar_labores(contratista.id_contratista, {
         id_mina: idMina,
         ids_labor: seleccionados,
       });
@@ -105,14 +125,16 @@ export const useAsignacionLabores = (
   };
 
   return {
-    empleado,
+    contratista,
+    minas,
     idMina,
     onMinaChange: handleMinaChange,
     laboresDisponibles,
     seleccionados,
     loading,
+    loadingMinas,
     loadingLabores,
-    opened: empleado !== null,
+    opened: contratista !== null,
     abrir,
     cerrar,
     toggleSeleccion,

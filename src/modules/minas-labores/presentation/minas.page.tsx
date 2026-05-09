@@ -50,6 +50,7 @@ export const MinasPage = () => {
     handleOpenResponsables,
     handleOpenLabores,
     handleResponsableAsignado,
+    handleResponsableInactivado,
     handleLaborRegistrada,
     handleLaborFinalizada,
     handleEmpresaAsignada,
@@ -348,6 +349,9 @@ export const MinasPage = () => {
             mina={selectedMina}
             onResponsableAsignado={(nombre) =>
               handleResponsableAsignado(selectedMina.id_mina, nombre)
+            }
+            onResponsableInactivado={(nombre) =>
+              handleResponsableInactivado(selectedMina.id_mina, nombre)
             }
           />
         )}

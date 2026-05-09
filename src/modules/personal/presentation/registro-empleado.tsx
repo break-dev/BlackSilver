@@ -3,7 +3,6 @@ import {
   Group,
   TextInput,
   Select,
-  MultiSelect,
   Button,
   Avatar,
   FileButton,
@@ -12,23 +11,20 @@ import {
 import {
   UserIcon,
   IdentificationIcon,
-  MapPinIcon,
   BriefcaseIcon,
   PencilIcon,
-  WrenchScrewdriverIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
 import type { RES_Empleado } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroEmpleadoProps {
-  idMinaDefault?: number | null;
   onSuccess: (nuevo: RES_Empleado) => void;
   onCancel: () => void;
 }
 
 export const RegistroEmpleado = ({
-  idMinaDefault,
   onSuccess,
   onCancel,
 }: RegistroEmpleadoProps) => {
@@ -37,17 +33,15 @@ export const RegistroEmpleado = ({
     setField,
     idArea,
     setIdArea,
-    minas,
+    empresas,
     areas,
     cargos,
-    labores,
     loading,
-    loadingMinas,
+    loadingEmpresas,
     loadingAreas,
     loadingCargos,
-    loadingLabores,
     handleSubmit,
-  } = useRegistroEmpleado(onSuccess, idMinaDefault);
+  } = useRegistroEmpleado(onSuccess);
 
   const fieldClasses = {
     input:
@@ -138,6 +132,25 @@ export const RegistroEmpleado = ({
         />
       </Group>
 
+      {/* Empresa */}
+      <Select
+        label="Empresa"
+        placeholder={loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"}
+        data={empresas.map((e) => ({
+          value: e.id_empresa.toString(),
+          label: e.nombre,
+        }))}
+        value={form.id_empresa === 0 ? null : form.id_empresa.toString()}
+        onChange={(val) => setField("id_empresa", Number(val))}
+        leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={fieldClasses}
+        radius="lg"
+        required
+        withAsterisk
+        searchable
+        disabled={loadingEmpresas || loading}
+      />
+
       {/* Área y Cargo en cascada */}
       <Group grow align="flex-start" gap="md">
         <Select
@@ -181,51 +194,6 @@ export const RegistroEmpleado = ({
           searchable
         />
       </Group>
-
-      {/* Mina y Labores (Opcionales y al final) */}
-      <Select
-        label="Mina"
-        placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
-        data={minas.map((m) => ({
-          value: m.id_mina.toString(),
-          label: m.nombre,
-        }))}
-        value={form.id_mina === 0 || !form.id_mina ? null : form.id_mina.toString()}
-        onChange={(val) => setField("id_mina", val ? Number(val) : 0)}
-        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={fieldClasses}
-        radius="lg"
-        searchable
-        clearable
-        disabled={loadingMinas || loading}
-      />
-
-      <MultiSelect
-        label="Asignar Labores (Opcional)"
-        placeholder={
-          !form.id_mina || form.id_mina === 0
-            ? "Primero seleccione mina"
-            : loadingLabores
-              ? "Cargando labores..."
-              : "Seleccione una o más labores"
-        }
-        data={labores.map((l) => ({
-          value: l.id_labor.toString(),
-          label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
-        }))}
-        value={form.ids_labor?.map((id) => id.toString()) || []}
-        onChange={(vals) => setField("ids_labor", vals.map(Number))}
-        leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={{
-          ...fieldClasses,
-          pill: "bg-purple-600 text-white",
-        }}
-        radius="lg"
-        searchable
-        clearable
-        hidePickedOptions
-        disabled={!form.id_mina || form.id_mina === 0 || loadingLabores || loading}
-      />
 
       {/* Acciones */}
       <Group justify="flex-end" gap="md" mt="xl">

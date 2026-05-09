@@ -26,7 +26,7 @@ import { ConcesionesPage } from "../../modules/concesiones/presentation/concesio
 import { MinasPage } from "../../modules/minas-labores/presentation/minas.page.tsx";
 import { EmpresasPage } from "../../modules/empresas/presentation/empresas.page.tsx";
 import { CategoriasPage } from "../../modules/categorias/presentation/categorias.page.tsx";
-import { EmpleadosPage } from "../../modules/empleados/presentation/empleados.page.tsx";
+import { PersonalPage } from "../../modules/personal/presentation/personal.page.tsx";
 import { AlmacenesPage } from "../../modules/almacenes/presentation/almacenes.page.tsx";
 import { ProductosPage } from "../../modules/productos/presentation/productos.page.tsx";
 import OrganigramaPage from "../../modules/organigrama/presentation/organigrama.page.tsx";
@@ -89,7 +89,7 @@ export const App = () => {
           {/* Personal */}
           <Route path="personal" element={<PersonalLayout />}>
             <Route path="areas_cargos" element={<OrganigramaPage />} />
-            <Route path="trabajadores" element={<EmpleadosPage />} />
+            <Route path="trabajadores" element={<PersonalPage />} />
           </Route>
 
           {/* Usuarios */}

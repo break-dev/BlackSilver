@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Premura } from "../../../shared/enums/_generic/premura";
 
 export interface DTO_CrearRequerimiento {
-  id_empleado_solicitante: number;
+  id_contratista_solicitante: number;
   id_mina: number;
   id_labores?: number[] | null;
   id_almacen_destino: number;
@@ -37,7 +37,7 @@ export const Schema_CrearRequerimientoDetalle = z.object({
 });
 
 export const Schema_CrearRequerimiento = z.object({
-  id_empleado_solicitante: z.number().min(1, "Seleccione un solicitante"),
+  id_contratista_solicitante: z.number().min(1, "Seleccione un solicitante"),
   id_mina: z.number().min(1, "Seleccione una mina"),
   id_labores: z.array(z.number()).nullable().optional(),
   id_almacen_destino: z.number().min(1, "Seleccione un almacén de destino"),
