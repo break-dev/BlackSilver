@@ -49,10 +49,10 @@ export const HistorialResponsables = ({
       dayjs().format("YYYY-MM-DD"),
     );
 
-    if (success && item.id_empleado) {
+    if (success && item.id_contratista) {
       registroRef.current?.agregarDisponible({
-        id_empleado: item.id_empleado,
-        empleado: item.empleado,
+        id_contratista: item.id_contratista,
+        contratista: item.contratista,
       });
     }
   };
@@ -138,7 +138,7 @@ export const HistorialResponsables = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-0.5">
                       <Text className="text-sm font-bold text-white truncate">
-                        {item.empleado}
+                        {item.contratista}
                       </Text>
                       {isActive ? (
                         <Badge color="indigo" size="sm" variant="light">

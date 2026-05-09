@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { MinasService } from "../../service/minas.service";
 import { Schema_AsignarResponsable } from "../../service/minas.requests";
 import type {
-  RES_EmpleadoDisponible,
+  RES_ContratistaDisponible,
   RES_HistorialResponsable,
 } from "../../service/minas.responses";
 
@@ -18,12 +18,12 @@ export const useRegistroResponsable = ({
   onSuccess,
   onCancel,
 }: Props) => {
-  const [empleadosDisponibles, setEmpleadosDisponibles] = useState<
-    RES_EmpleadoDisponible[]
+  const [contratistasDisponibles, setContratistasDisponibles] = useState<
+    RES_ContratistaDisponible[]
   >([]);
   const [loadingDisponibles, setLoadingDisponibles] = useState(false);
 
-  const [idEmpleado, setIdEmpleado] = useState<number | null>(null);
+  const [idContratista, setIdContratista] = useState<number | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,8 +31,8 @@ export const useRegistroResponsable = ({
   const cargarDisponibles = useCallback(async () => {
     setLoadingDisponibles(true);
     try {
-      const res = await MinasService.getEmpleadosDisponibles(idMina);
-      if (res.success) setEmpleadosDisponibles(res.data);
+      const res = await MinasService.getContratistasDisponibles(idMina);
+      if (res.success) setContratistasDisponibles(res.data);
     } finally {
       setLoadingDisponibles(false);
     }
@@ -43,7 +43,7 @@ export const useRegistroResponsable = ({
   }, [cargarDisponibles]);
 
   const resetForm = useCallback(() => {
-    setIdEmpleado(null);
+    setIdContratista(null);
     setFechaInicio(new Date());
     setFormError("");
   }, []);
@@ -53,10 +53,11 @@ export const useRegistroResponsable = ({
     onCancel();
   };
 
-  const agregarDisponible = (empleado: RES_EmpleadoDisponible) => {
-    setEmpleadosDisponibles((prev) => {
-      if (prev.find((e) => e.id_empleado === empleado.id_empleado)) return prev;
-      return [empleado, ...prev];
+  const agregarDisponible = (contratista: RES_ContratistaDisponible) => {
+    setContratistasDisponibles((prev) => {
+      if (prev.find((e) => e.id_contratista === contratista.id_contratista))
+        return prev;
+      return [contratista, ...prev];
     });
   };
 
@@ -64,7 +65,7 @@ export const useRegistroResponsable = ({
     setFormError("");
     const validation = Schema_AsignarResponsable.safeParse({
       id_mina: idMina,
-      id_empleado: idEmpleado,
+      id_contratista: idContratista,
       fecha_inicio: fechaInicio ? dayjs(fechaInicio).format("YYYY-MM-DD") : "",
     });
 
@@ -75,16 +76,14 @@ export const useRegistroResponsable = ({
 
     setIsSubmitting(true);
     try {
-      const res = await MinasService.asignarResponsable(
-        validation.data,
-      );
+      const res = await MinasService.asignarResponsable(validation.data);
       if (res.success) {
         onSuccess(res.data);
         resetForm();
         // Actualizamos la lista local de disponibles eliminando al que ya fue asignado
-        // así evitamos una petición extra a la red (getEmpleadosDisponibles)
-        setEmpleadosDisponibles((prev) =>
-          prev.filter((e) => e.id_empleado !== idEmpleado),
+        // así evitamos una petición extra a la red (getContratistasDisponibles)
+        setContratistasDisponibles((prev) =>
+          prev.filter((e) => e.id_contratista !== idContratista),
         );
       } else {
         setFormError(res.message);
@@ -97,10 +96,10 @@ export const useRegistroResponsable = ({
   };
 
   return {
-    empleadosDisponibles,
+    contratistasDisponibles,
     loadingDisponibles,
-    idEmpleado,
-    setIdEmpleado,
+    idContratista,
+    setIdContratista,
     fechaInicio,
     setFechaInicio,
     formError,

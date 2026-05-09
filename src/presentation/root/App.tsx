@@ -31,7 +31,7 @@ import { AlmacenesPage } from "../../modules/almacenes/presentation/almacenes.pa
 import { ProductosPage } from "../../modules/productos/presentation/productos.page.tsx";
 import OrganigramaPage from "../../modules/organigrama/presentation/organigrama.page.tsx";
 import { LotesPage } from "../../modules/lotes-productos/presentation/lotes-page/lotes.page.tsx";
-import { RequerimientosAlmacenPage } from "../../modules/requerimientos-almacen/presentation/requerimientos-almacen.page.tsx";
+// import { RequerimientosAlmacenPage } from "../../modules/requerimientos-almacen/presentation/requerimientos-almacen.page.tsx";
 import { RequerimientosAlmacenAtencionPage } from "../../modules/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page.tsx";
 import { KardexProductosPage } from "../../modules/kardex-productos/presentation/kardex.page.tsx";
 import { RolesPage } from "../../modules/roles/presentation/roles.page.tsx";
@@ -118,10 +118,10 @@ export const App = () => {
             path="requerimiento_almacen"
             element={<RequerimientoAlmacenLayout />}
           >
-            <Route
+            {/* <Route
               path="requerimientos"
               element={<RequerimientosAlmacenPage />}
-            />
+            /> */}
             <Route
               path="atencion_requerimientos"
               element={<RequerimientosAlmacenAtencionPage />}

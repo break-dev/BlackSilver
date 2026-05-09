@@ -37,8 +37,8 @@ export interface RES_EmpresaDisponible {
 // Historial de responsables de la mina
 export interface RES_HistorialResponsable {
   id_responsable_mina: number;
-  id_empleado: number;
-  empleado: string;
+  id_contratista: number;
+  contratista: string;
   dni: string;
   path_foto: string | null;
   fecha_inicio: string;
@@ -46,10 +46,10 @@ export interface RES_HistorialResponsable {
   estado: string;
 }
 
-// Empleado disponible para ser asignado como responsable
-export interface RES_EmpleadoDisponible {
-  id_empleado: number;
-  empleado: string;
+// Contratista disponible para ser asignado como responsable
+export interface RES_ContratistaDisponible {
+  id_contratista: number;
+  contratista: string;
 }
 
 // Labores — información completa de la labor
