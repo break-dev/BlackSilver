@@ -74,7 +74,7 @@ export const useRegistroReposicion = ({
     const fetchPersonal = async () => {
       setLoadingPersonal(true);
       try {
-        const res = await PrestamosService.obtenerPersonalExterno();
+        const res = await AuxService.get_personal_externo();
         if (res.success) {
           setPersonal(
             res.data.map((p: RES_PersonalExterno) => ({
@@ -155,7 +155,7 @@ export const useRegistroReposicion = ({
     dni?: string;
   }) => {
     try {
-      const res = await PrestamosService.crearPersonalExterno(dto);
+      const res = await AuxService.crear_personal_externo(dto);
       if (res.success) {
         notifySuccess("Personal registrado correctamente");
         const nuevo = res.data as unknown as RES_PersonalExterno;
