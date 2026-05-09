@@ -3,6 +3,7 @@ import { SolicitudesAtencionService } from "../service/solicitudes-atencion.serv
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import dayjs from "dayjs";
+import { AuxService } from "../../../service/aux.service";
 
 export const useAtencionSolicitudes = () => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export const useAtencionSolicitudes = () => {
   const loadAlmacenes = useCallback(async () => {
     setLoadingAlmacenes(true);
     try {
-      const resp = await SolicitudesAtencionService.obtenerAlmacenes(false);
+      const resp = await AuxService.get_almacenes({ es_principal: false });
       if (resp.success) {
         setAlmacenes(resp.data);
         // Solo auto-seleccionar si no hay nada seleccionado aún

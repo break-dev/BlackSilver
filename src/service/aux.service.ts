@@ -20,9 +20,19 @@ export const AuxService = {
     id_empleado_responsable?: number;
     es_principal?: boolean;
   }): Promise<IRespuesta<RES_Almacen[]>> => {
+    // Transformamos el booleano a 1 o 0 antes de enviarlo
+    const params = filters
+      ? {
+          ...filters,
+          ...(filters.es_principal !== undefined && {
+            es_principal: filters.es_principal ? 1 : 0,
+          }),
+        }
+      : undefined;
+
     const { data } = await api.get<IRespuesta<RES_Almacen[]>>(
       `${path}/almacenes`,
-      { params: filters },
+      { params },
     );
     return data;
   },
@@ -49,7 +59,7 @@ export const AuxService = {
       {
         params: {
           id_almacen: idAlmacen,
-          ids_productos: idsProductos.join(","),
+          ids_productos: idsProductos,
         },
       },
     );
@@ -73,9 +83,19 @@ export const AuxService = {
     id_unidad_medida?: number;
     solo_base?: boolean;
   }): Promise<IRespuesta<RES_UnidadMedida[]>> => {
+    // Transformamos el booleano a 1 o 0 antes de enviarlo
+    const params = filters
+      ? {
+          ...filters,
+          ...(filters.solo_base !== undefined && {
+            solo_base: filters.solo_base ? 1 : 0,
+          }),
+        }
+      : undefined;
+
     const { data } = await api.get<IRespuesta<RES_UnidadMedida[]>>(
       `${path}/unidades-medida`,
-      { params: filters },
+      { params },
     );
     return data;
   },

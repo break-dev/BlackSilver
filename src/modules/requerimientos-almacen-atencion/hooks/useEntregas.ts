@@ -41,6 +41,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     try {
       const resp = await AuxService.get_almacenes({
         id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+        es_principal: true,
       });
       if (resp.success) {
         setAlmacenes(resp.data);
@@ -62,7 +63,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
 
   useEffect(() => {
     obtenerAlmacenesAutorizados();
-  }, [obtenerAlmacenesAutorizados]);
+  }, []);
 
   // -- Lógica de Carga de Datos --
   const loadData = useCallback(async () => {

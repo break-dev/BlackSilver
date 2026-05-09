@@ -9,7 +9,6 @@ import type {
 } from "../service/atencion.requests";
 import type { RES_Labor, RES_Mina } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
@@ -38,7 +37,6 @@ export const useRegistroRequerimiento = ({
   const [error, setError] = useState<string | null>(null);
 
   // Catálogos
-  const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [responsables, setResponsables] = useState<
     { id_contratista: number; nombre_completo: string }[]
@@ -72,30 +70,20 @@ export const useRegistroRequerimiento = ({
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
 
-  // 1. Cargar Catálogos Iniciales (Almacenes, Productos, Unidades)
+  // 1. Cargar Catálogos Iniciales (Productos, Unidades)
   useEffect(() => {
     const loadInitial = async () => {
       setLoadingCatalogs(true);
       try {
-        const res_almacenes = await AuxService.get_almacenes();
-        const res_productos = await AuxService.get_productos();
+        const res_productos = await AuxService.get_productos({
+          con_categorias_consumidoras: true,
+        });
         const res_unidades = await AuxService.get_unidades_medida();
-        if (res_almacenes.success && res_almacenes.data) {
-          setAlmacenes(res_almacenes.data);
-          if (res_almacenes.data.length > 0) {
-            setIdAlmacenDestino(res_almacenes.data[0].id_almacen);
-          }
-        }
         if (res_productos.success && res_productos.data) {
           setProductos(res_productos.data);
         }
         if (res_unidades.success && res_unidades.data) {
           setUnidades(res_unidades.data);
-
-          // Solo auto-seleccionar si no hay un almacén destino ya fijado
-          if (res_almacenes.data.length > 0 && idAlmacenDestino === 0) {
-            setIdAlmacenDestino(res_almacenes.data[0].id_almacen);
-          }
         }
       } finally {
         setLoadingCatalogs(false);
@@ -391,7 +379,6 @@ export const useRegistroRequerimiento = ({
   return {
     state: {
       minas,
-      almacenes,
       labores,
       productos,
       unidades,

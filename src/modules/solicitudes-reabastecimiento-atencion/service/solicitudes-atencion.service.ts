@@ -9,8 +9,7 @@ import type {
   DTO_RegistrarEntregaReabastecimiento,
   DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
-import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
+
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
   RES_Solicitud,
@@ -104,48 +103,6 @@ export const SolicitudesAtencionService = {
     return res.data;
   },
 
-  obtenerAlmacenes: async (esPrincipal: boolean = false) => {
-    const res = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${path}/auxiliares/almacenes`,
-      {
-        params: { es_principal: esPrincipal ? 1 : 0 },
-      },
-    );
-    return res.data;
-  },
-
-  obtenerPersonalExterno: async () => {
-    const res = await api.get<IRespuesta<RES_PersonalExterno[]>>(
-      `${path}/auxiliares/personal-externo`,
-    );
-    return res.data;
-  },
-
-  crearPersonalExterno: async (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    const res = await api.post<IRespuesta<RES_PersonalExterno>>(
-      `${path}/auxiliares/personal-externo`,
-      dto,
-    );
-    return res.data;
-  },
-
-  obtenerLotesDisponibles: async (
-    idsProductos: number[],
-    idAlmacen: number,
-  ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/auxiliares/lotes`,
-      {
-        params: { ids_productos: idsProductos, id_almacen: idAlmacen },
-      },
-    );
-    return res.data;
-  },
-
   /* --- PRÉSTAMOS --- */
   obtenerPrestamosPorSolicitud: async (idSolicitud: number) => {
     const res = await api.get<IRespuesta<RES_Prestamo[]>>(
@@ -176,7 +133,7 @@ export const SolicitudesAtencionService = {
     params.append("id_almacen_excluido", id_almacen_excluido.toString());
 
     const resp = await api.get<IRespuesta<RES_Almacen[]>>(
-      `${path}/prestamos/almacenes-con-stock?${params.toString()}`,
+      `${path}/aux/almacenes-con-stock?${params.toString()}`,
     );
     return resp.data;
   },
@@ -192,22 +149,9 @@ export const SolicitudesAtencionService = {
     params.append("id_almacen", idAlmacen.toString());
 
     const res = await api.get<IRespuesta<RES_StockTotalAlmacen[]>>(
-      `${path}/prestamos/stock-total-almacen`,
+      `${path}/aux/stock-total-almacen`,
       {
         params: { id_almacen: idAlmacen, ids_productos: idsProductos },
-      },
-    );
-    return res.data;
-  },
-
-  obtenerLotesDisponiblesPrestamo: async (
-    idProducto: number,
-    idAlmacen: number,
-  ) => {
-    const res = await api.get<IRespuesta<RES_LoteDisponible[]>>(
-      `${path}/prestamos/lotes-disponibles`,
-      {
-        params: { id_producto: idProducto, id_almacen: idAlmacen },
       },
     );
     return res.data;

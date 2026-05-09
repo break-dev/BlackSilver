@@ -4,6 +4,7 @@ import { KardexService } from "../service/kardex.service";
 import type { RES_MovimientoKardex } from "../service/kardex.responses";
 import { AuxService } from "../../../service/aux.service";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import { useAuthStore } from "../../../stores/auth.store";
 
 export const useKardex = () => {
   // -- Estados de Filtro Principal (Periodo y Almacén) --
@@ -30,7 +31,9 @@ export const useKardex = () => {
     setLoadingAlmacenes(true);
     setError("");
     try {
-      const res = await AuxService.get_almacenes();
+      const res = await AuxService.get_almacenes({
+        id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+      });
       if (res.success) {
         setAlmacenes(res.data);
         // Auto-seleccionar primer almacén si no hay uno seleccionado

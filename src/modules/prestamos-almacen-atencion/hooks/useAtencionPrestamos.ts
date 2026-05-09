@@ -33,6 +33,7 @@ export const useAtencionPrestamos = () => {
     try {
       const res = await AuxService.get_almacenes({
         id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+        es_principal: false
       });
       if (res.success) {
         setAlmacenes(res.data);

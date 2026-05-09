@@ -9,6 +9,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import { AuxService } from "../../../service/aux.service";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
@@ -74,7 +75,7 @@ export const useRegistroEntrega = ({
     const loadAlmacenes = async () => {
       setLoadingAlmacenes(true);
       try {
-        const resAlm = await SolicitudesAtencionService.obtenerAlmacenes(true);
+        const resAlm = await AuxService.get_almacenes({ es_principal: true });
         if (resAlm.success) {
           setAlmacenesPrincipales(resAlm.data);
           if (resAlm.data.length > 0 && !idAlmacenEntrega) {
@@ -91,8 +92,7 @@ export const useRegistroEntrega = ({
     const loadPersonal = async () => {
       setLoadingPersonal(true);
       try {
-        const resEmp =
-          await SolicitudesAtencionService.obtenerPersonalExterno();
+        const resEmp = await AuxService.get_personal_externo();
         if (resEmp.success) {
           setPersonal(resEmp.data);
         }
@@ -114,7 +114,7 @@ export const useRegistroEntrega = ({
     dni?: string;
   }) => {
     try {
-      const res = await SolicitudesAtencionService.crearPersonalExterno(dto);
+      const res = await AuxService.crear_personal_externo(dto);
       if (res.success) {
         notifySuccess("Personal registrado correctamente");
         // Update the list with the new entry
@@ -136,9 +136,9 @@ export const useRegistroEntrega = ({
       const loadLotes = async () => {
         setLoadingLotes(true);
         try {
-          const res = await SolicitudesAtencionService.obtenerLotesDisponibles(
-            idsProductos,
+          const res = await AuxService.get_lotes_disponibles(
             Number(idAlmacenEntrega),
+            idsProductos,
           );
           if (res.success) {
             setLotes(res.data);

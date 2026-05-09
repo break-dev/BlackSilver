@@ -6,6 +6,7 @@ import { useUIStore } from "../../../stores/ui.store";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { AuxService } from "../../../service/aux.service";
 import type { RES_Almacen } from "../../../service/responses/almacen";
+import { useAuthStore } from "../../../stores/auth.store";
 
 export const useLotesPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -33,7 +34,9 @@ export const useLotesPage = () => {
     const loadAlmacenes = async () => {
       setLoadingAlmacenes(true);
       try {
-        const result = await AuxService.get_almacenes();
+        const result = await AuxService.get_almacenes({
+          id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+        });
         if (result.success) {
           setAlmacenes(result.data);
           if (!initialAlmacenId && result.data.length > 0) {
