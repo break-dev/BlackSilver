@@ -28,6 +28,7 @@ import { useListarTransferencias } from "../hooks/useListarTransferencias";
 import { DetalleTransferencia } from "./detalle-transferencia/detalle-transferencia";
 import type { RES_OCTransferencia } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import type { DataTableColumn } from "mantine-datatable";
+import { Estado_OCTransferencia } from "../../../shared/enums/orden-compra/orden-compra-transferencia";
 
 export const RecepcionTransferenciasOCPage = () => {
   useTitlePage("Recepción de Transferencias");
@@ -67,12 +68,14 @@ export const RecepcionTransferenciasOCPage = () => {
     );
   }, [transferencias, busqueda]);
 
-  const getBadgeColor = (estado: string) => {
+  const getBadgeColor = (estado: Estado_OCTransferencia) => {
     switch (estado) {
-      case "Recepción Completa":
+      case Estado_OCTransferencia.RecepcionCompleta:
         return "teal";
-      case "Recepcionado Parcialmente":
+      case Estado_OCTransferencia.RecepcionadoParcialmente:
         return "orange";
+      case Estado_OCTransferencia.EnDespacho:
+        return "indigo";
       default:
         return "indigo";
     }
@@ -249,8 +252,14 @@ export const RecepcionTransferenciasOCPage = () => {
               disabled={loadingAlmacenes}
               radius="lg"
               size="sm"
-              leftSection={<BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />}
-              rightSection={loadingAlmacenes ? <Loader size="xs" color="indigo" /> : undefined}
+              leftSection={
+                <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+              }
+              rightSection={
+                loadingAlmacenes ? (
+                  <Loader size="xs" color="indigo" />
+                ) : undefined
+              }
               classNames={inputClasses}
             />
           </div>
@@ -265,7 +274,9 @@ export const RecepcionTransferenciasOCPage = () => {
               radius="lg"
               size="sm"
               allowDeselect={false}
-              leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-500" />}
+              leftSection={
+                <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+              }
               classNames={inputClasses}
             />
           </div>
@@ -283,7 +294,9 @@ export const RecepcionTransferenciasOCPage = () => {
               radius="lg"
               size="sm"
               allowDeselect={false}
-              leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-500" />}
+              leftSection={
+                <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+              }
               classNames={inputClasses}
             />
           </div>
