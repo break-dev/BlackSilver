@@ -27,22 +27,17 @@ export const RegistroArea = ({
   return (
     <Stack gap="md" className="animate-fade-in">
       {/* Header — Estilo unificado */}
-      <Group gap="sm" align="center" mb="xs">
+      <Group gap="sm" align="center">
         <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
           <RectangleGroupIcon className="w-4 h-4 text-indigo-400" />
         </Box>
-        <Stack gap={0}>
-          <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
-            Nueva Área Administrativa
-          </Text>
-          <Text size="xs" className="text-zinc-500">
-            Define un nuevo departamento en la empresa
-          </Text>
-        </Stack>
+        <Text size="sm" className="text-zinc-500">
+          Define un nuevo departamento en la empresa
+        </Text>
       </Group>
 
       <TextInput
-        label="Nombre del Área"
+        label="Nombre"
         placeholder="Ej. Operaciones, Recursos Humanos..."
         required
         withAsterisk

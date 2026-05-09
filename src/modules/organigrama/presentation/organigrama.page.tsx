@@ -145,7 +145,7 @@ export const OrganigramaPage = () => {
                 <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60 group-hover:border-indigo-500/30 transition-all duration-200">
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] text-pink-500 font-bold uppercase tracking-wider block leading-none mb-1.5">
-                      Personal y Roles
+                      Cargos
                     </span>
                     {area.nombres_cargos ? (
                       <ScrollArea
