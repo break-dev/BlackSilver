@@ -125,7 +125,7 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 
 ### Herramientas de Reporte y Búsqueda
 
-- **Documentos**: @react-pdf/renderer (Generación de PDF), jsPDF, react-to-print, html-to-image.
+- **Documentos y Exportación**: `@react-pdf/renderer` (Generación de PDF en cliente), `exceljs` (Generación asíncrona de reportes Excel estilizados), `react-to-print`, `html-to-image`.
 - **Motores de Búsqueda**: FlexSearch (Tokenización) y Fuse.js (Fuzzy search).
 - **Utilidades**: Dayjs (Fechas), QRCode, Pluralize.
 
@@ -140,6 +140,7 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 - **`useAuthUser`**: Gestión de sesión y permisos.
 - **`useNotify`**: Alertas y feedback visual.
 - **`usePrint`**: Integración con cola de impresión.
+- **`useExcel`**: Cola asíncrona global para la generación estructurada de archivos Excel sin bloquear la interfaz del usuario.
 - **`useJsonScanner`**: Procesamiento de datos de hardware externo.
 - **`useBlackcito`**: Asistente virtual de estados del sistema.
 
@@ -157,6 +158,18 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 
 - **`_api.ts`**: Interceptor de red.
 - **`aux.service.ts`**: **Hub de Datos Maestros.** Centraliza catálogos de Almacenes, Unidades, Personal y Productos para optimizar el tráfico de red.
+
+#### 5. Utilidades y Funciones Compartidas (`/src/shared/functions`)
+
+Colección de funciones puras, algoritmos y formateadores usados de forma transversal en el ERP:
+
+- **`cn.ts`**: Combinador dinámico de clases de Tailwind CSS sin conflictos (`twMerge`). Elimina propiedades `undefined/false` de forma limpia. Sustituye el uso básico de `clsx`.
+- **`en-plural.ts`**: Motor avanzado de pluralización y singularización en idioma español. Maneja excepciones gramaticales nativas (ej. "lápiz" -> "lápices", pérdida/ganancia de tildes como "joven" -> "jóvenes") e ignora palabras incontables o invariables.
+- **`formatNumber.ts`**: Formatea valores numéricos utilizando separadores de miles y limpia los ceros decimales innecesarios (ej. previene que un entero limpio se vea como `10.00`), utilizando `Intl.NumberFormat`.
+- **`get-coincidencias.ts`**: Motor de búsqueda robusto y unificado que combina distancia de caracteres para tolerar errores ortográficos y "typos" (**Fuse.js**), junto con tokenización para buscar palabras desordenadas (**FlexSearch**).
+- **`get-duracion-periodo.ts`**: Calculadora matemática para estandarizar lapsos de tiempo. Convierte valores entre diferentes periodos (Diario, Semanal, Mensual, Anual). Vital para alinear las estimaciones de entrega de los proveedores a una sola escala (ej. transformar 2 Semanas a 14 Días).
+- **`get-nombre-periodo.ts`**: Mapeador visual que traduce los valores técnicos del enum `Periodo` a texto legible para las interfaces de usuario (ej. traduce `Periodo.Mensual` a `"Mes(es)"`).
+- **`mm-to-pt.ts`**: Función estricta de conversión milímetro a puntos de PDF (`1 mm = 2.835 pt`). Se usa transversalmente para maquetar los reportes en `@react-pdf/renderer` manteniendo fidelidad con las medidas reales de papel.
 
 ---
 

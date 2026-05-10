@@ -6,6 +6,7 @@ import { GlobalNotification } from "./components/global-notification";
 import { GlobalBlackcito } from "./components/global-blackcito";
 import { useAuthLayout } from "./hooks/useAuthLayout";
 import { GlobalPrinterPortal } from "../../utils/printer/GlobalPrinterPortal";
+import { GlobalExcelPortal } from "../../utils/excel/GlobalExcelPortal";
 
 export const AuthLayout = () => {
   const { open, setOpen } = useAuthLayout();
@@ -63,6 +64,7 @@ export const AuthLayout = () => {
         </main>
       </div>
       <GlobalPrinterPortal />
+      <GlobalExcelPortal />
     </div>
   );
 };
