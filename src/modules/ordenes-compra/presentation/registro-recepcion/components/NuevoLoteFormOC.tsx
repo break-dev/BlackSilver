@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import dayjs from "dayjs";
 import { Text, NumberInput, Textarea, Group, TextInput } from "@mantine/core";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { ScaleIcon, BeakerIcon } from "@heroicons/react/24/outline";
@@ -45,7 +46,7 @@ export const NuevoLoteFormOC = ({
         groupIndex,
         lotIndex,
         "fecha_ingreso",
-        new Date().toISOString()
+        dayjs().format("YYYY-MM-DD HH:mm:ss")
       );
     }
   }, [lot.fecha_ingreso, groupIndex, lotIndex, setLotValue]);
@@ -151,7 +152,7 @@ export const NuevoLoteFormOC = ({
               groupIndex,
               lotIndex,
               "fecha_ingreso",
-              validDate ? validDate.toISOString() : null,
+              validDate ? dayjs(validDate).format("YYYY-MM-DD HH:mm:ss") : null,
             );
           }}
           error={
@@ -185,7 +186,7 @@ export const NuevoLoteFormOC = ({
                 groupIndex,
                 lotIndex,
                 "fecha_vencimiento",
-                validDate ? validDate.toISOString() : null,
+                validDate ? dayjs(validDate).format("YYYY-MM-DD") : null,
               );
             }}
             error={

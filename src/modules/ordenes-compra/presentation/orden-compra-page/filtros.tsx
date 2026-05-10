@@ -80,10 +80,10 @@ export const Filtros = ({
       <div className="w-full sm:w-48">
         <Select
           label="Estado"
-          placeholder="Todos los estados"
+          placeholder="Todos"
           leftSection={<TagIcon className="w-4 h-4 text-zinc-400" />}
           data={[
-            { value: "", label: "Todos los estados" },
+            { value: "", label: "Todos" },
             ...Object.values(Estado_OrdenCompra).map((est) => ({
               value: est,
               label: est,

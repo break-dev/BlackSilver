@@ -169,7 +169,8 @@ export const useEditarCotizacion = (
             {
               id_proveedor: cotizacionInicial.id_proveedor,
               razon_social: cotizacionInicial.proveedor,
-              documento_numero: cotizacionInicial.documento_proveedor,
+              documento: cotizacionInicial.documento_proveedor,
+              direccion: null,
             },
           ],
     empresas:
@@ -177,7 +178,10 @@ export const useEditarCotizacion = (
         ? maestros.empresas
         : cotizacionInicial.empresas.map((e) => ({
             id_empresa: e.id_empresa,
+            ruc: "",
             razon_social: e.razon_social,
+            nombre_comercial: "",
+            path_logo: null,
           })),
     unidades:
       maestros.unidades.length > 0

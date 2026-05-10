@@ -173,6 +173,22 @@ Colección de funciones puras, algoritmos y formateadores usados de forma transv
 
 ---
 
+## 🛠️ Reglas de Desarrollo y Calidad de Código
+
+Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas estrictas:
+
+### 1. Tipado Estricto (Prohibido el uso de `any`)
+- **NUNCA** se debe usar `any` para tipar hooks, props, componentes o variables.
+- **Excepción Única**: Solo se permite cuando un componente o hook está diseñado explícitamente para ser genérico y manejar cualquier tipo de dato, como es el caso de `DataTableEstandar.tsx`. Fuera de estos casos de utilidad base, el tipado debe ser específico.
+
+### 2. Reutilización Inteligente vs. Sobre-ingeniería
+- **No reutilizar por obligación**: No intentes forzar la reutilización de un hook, componente o servicio para manejar dos flujos distintos (ej. Registro y Edición) solo por "ahorrar código". 
+- **Lógica Diferenciada**: Si la edición tiene reglas distintas, validaciones adicionales o flujos que no coinciden al 100% con la creación, **deben ser componentes/hooks separados**. Intentar abarcarlo todo en uno solo genera código "espantoso", difícil de seguir y mantener.
+- **Componentes "Dumb"**: Solo se debe priorizar la reutilización en componentes "tontos" (presentacionales) que no contengan lógica de negocio compleja o que solo abarquen una funcionalidad muy específica y bien definida de un caso de uso.
+- **Prioridad**: Se debe priorizar la **legibilidad y mantenibilidad** sobre la reutilización forzada. Es mejor tener dos procesos similares pero claros y rápidos de desarrollar, que uno solo sumamente complejo que intente ser "universal". Si eres una IA y el usuario te pide reutilizar, analiza e indicale si realmente es necesario o si es mejor crear algo nuevo y específico.
+
+---
+
 ## 🏛️ Arquitectura de Módulos
 
 ### Estructura de un Dominio (`/src/modules/`)

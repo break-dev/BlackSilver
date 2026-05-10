@@ -20,6 +20,7 @@ interface OrdenCompraTablaDetalleProps {
   onSelectAll: () => void;
   onSelectOne: (id: number) => void;
   onOpenHistorial: () => void;
+  onOpenComprobantes: () => void;
   onOpenRecepcion: () => void;
   onOpenTrace: (idDetalle: number, nombre: string) => void;
   symbol: string;
@@ -35,6 +36,7 @@ export const OrdenCompraTablaDetalle = ({
   onSelectAll,
   onSelectOne,
   onOpenHistorial,
+  onOpenComprobantes,
   onOpenRecepcion,
   onOpenTrace,
   symbol,
@@ -59,11 +61,20 @@ export const OrdenCompraTablaDetalle = ({
             color="indigo"
             size="xs"
             radius="xl"
-            leftSection={<HistoryIcon className="w-4 h-4" />}
-            className="font-bold border border-zinc-800"
             onClick={onOpenHistorial}
           >
-            Historial de Recepciones
+            Historial Recepciones
+          </Button>
+          <Button
+            variant="light"
+            color="cyan"
+            size="xs"
+            radius="xl"
+            leftSection={<HistoryIcon className="w-4 h-4" />}
+            className="font-bold border border-zinc-800"
+            onClick={onOpenComprobantes}
+          >
+            Comprobantes
           </Button>
           {detallesDisponibles.length > 0 && (
             <Button

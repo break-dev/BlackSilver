@@ -22,6 +22,8 @@ export interface RES_OrdenCompraRecepcion {
   con_incidencia: boolean;
   evidencias: IArchivo[] | null;
   //
+  tiene_comprobante: boolean;
+  //
   created_at: string;
   estado: Estado_OrdenCompraRecepcion;
   //

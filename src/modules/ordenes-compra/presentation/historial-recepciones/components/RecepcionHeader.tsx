@@ -1,4 +1,4 @@
-import { Group, UnstyledButton, Text, Badge } from "@mantine/core";
+import { Group, UnstyledButton, Text, Badge, Checkbox } from "@mantine/core";
 import {
   CalendarDaysIcon,
   BuildingStorefrontIcon,
@@ -14,9 +14,17 @@ interface Props {
   recepcion: RES_OrdenCompraRecepcion;
   expanded: boolean;
   onToggle: (id: number) => void;
+  isSelected?: boolean;
+  onSelect?: (id: number) => void;
 }
 
-export const RecepcionHeader = ({ recepcion, expanded, onToggle }: Props) => {
+export const RecepcionHeader = ({
+  recepcion,
+  expanded,
+  onToggle,
+  isSelected,
+  onSelect,
+}: Props) => {
   return (
     <UnstyledButton
       className="w-full p-5 sm:p-6"
@@ -27,6 +35,17 @@ export const RecepcionHeader = ({ recepcion, expanded, onToggle }: Props) => {
           <div className="p-3 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors shrink-0">
             <CalendarDaysIcon className="w-4 h-4 text-indigo-400" />
           </div>
+          {!recepcion.tiene_comprobante && onSelect && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={isSelected}
+                onChange={() => onSelect(recepcion.id_recepcion)}
+                color="indigo"
+                radius="sm"
+                size="xs"
+              />
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <Group gap="xs">
               <Text size="sm" fw={900} className="text-white tracking-wide">

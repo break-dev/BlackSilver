@@ -1,4 +1,4 @@
-import { Loader, Stack, Switch } from "@mantine/core";
+import { Button, Loader, Stack, Switch } from "@mantine/core";
 import dayjs from "dayjs";
 import { useState } from "react";
 import QRCode from "qrcode";
@@ -13,6 +13,9 @@ import { TrazabilidadDetalleOC } from "../trazabilidad-detalle-oc.tsx";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto.ts";
 import { usePrint } from "../../../../hooks/usePrint.ts";
 import { TicketLotePDF } from "../../../../presentation/utils/ticket-lote-pdf.tsx";
+import { ListadoComprobantesOC } from "../listado-comprobantes/listado-comprobantes-oc.tsx";
+import { RegistroComprobante } from "../registro-comprobante/registro-comprobante.tsx";
+import { DocumentPlusIcon } from "@heroicons/react/24/outline";
 
 // Sub-componentes factorizados
 import { OrdenCompraHeader } from "./components/orden-compra-header";
@@ -42,7 +45,13 @@ export const DetalleOrdenCompra = ({
 }: DetalleOrdenCompraProps) => {
   const [openedRecepcion, setOpenedRecepcion] = useState(false);
   const [openedHistorial, setOpenedHistorial] = useState(false);
+  const [openedComprobantes, setOpenedComprobantes] = useState(false);
+  const [openedRegistroComprobante, setOpenedRegistroComprobante] =
+    useState(false);
   const [openedTrace, setOpenedTrace] = useState(false);
+  const [selectedRecepcionesIds, setSelectedRecepcionesIds] = useState<
+    number[]
+  >([]);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedItemName, setSelectedItemName] = useState("");
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -135,6 +144,7 @@ export const DetalleOrdenCompra = ({
           onSelectAll={handleSelectAll}
           onSelectOne={handleSelectOne}
           onOpenHistorial={() => setOpenedHistorial(true)}
+          onOpenComprobantes={() => setOpenedComprobantes(true)}
           onOpenRecepcion={() => setOpenedRecepcion(true)}
           onOpenTrace={openTrace}
           symbol={symbol}
@@ -146,15 +156,31 @@ export const DetalleOrdenCompra = ({
         close={() => setOpenedHistorial(false)}
         title="Historial de Recepciones"
         size="80%"
+        rightSection={
+          <Button
+            size="xs"
+            color="indigo"
+            radius="xl"
+            leftSection={<DocumentPlusIcon className="w-4 h-4" />}
+            disabled={selectedRecepcionesIds.length === 0}
+            onClick={() => setOpenedRegistroComprobante(true)}
+            className="font-bold"
+          >
+            Registrar Comprobante ({selectedRecepcionesIds.length})
+          </Button>
+        }
       >
-        <HistorialRecepcionesOC idOrdenCompra={orden.id_orden_compra} />
+        <HistorialRecepcionesOC
+          idOrdenCompra={orden.id_orden_compra}
+          onSelectionChange={setSelectedRecepcionesIds}
+        />
       </ModalEstandar>
 
       <ModalEstandar
         opened={openedRecepcion}
         close={() => setOpenedRecepcion(false)}
         title="Nueva Recepción de Mercancía"
-        size="50%"
+        size="65%"
         rightSection={
           <Switch
             label="Solo autorizados"
@@ -172,7 +198,7 @@ export const DetalleOrdenCompra = ({
         }
       >
         <RegistroRecepcionOC
-          idOrdenCompra={orden.id_orden_compra}
+          orden={orden}
           soloAutorizados={soloAutorizados}
           detalles={detalles.filter((d) =>
             selectedIds.includes(d.id_orden_compra_detalle),
@@ -215,6 +241,15 @@ export const DetalleOrdenCompra = ({
       </ModalEstandar>
 
       <ModalEstandar
+        opened={openedComprobantes}
+        close={() => setOpenedComprobantes(false)}
+        title="Comprobantes de Pago"
+        size="70%"
+      >
+        <ListadoComprobantesOC idOrdenCompra={orden.id_orden_compra} />
+      </ModalEstandar>
+
+      <ModalEstandar
         opened={openedTrace}
         close={closeTrace}
         title="Trazabilidad del Producto"
@@ -226,6 +261,23 @@ export const DetalleOrdenCompra = ({
             productoNombre={selectedItemName}
           />
         )}
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedRegistroComprobante}
+        close={() => setOpenedRegistroComprobante(false)}
+        title="Registrar Nuevo Comprobante"
+        size="60%"
+      >
+        <RegistroComprobante
+          orden={orden}
+          ids_recepciones={selectedRecepcionesIds}
+          onSuccess={() => {
+            setOpenedRegistroComprobante(false);
+            setOpenedHistorial(false); // Refrescar historial si es necesario o solo cerrar
+            if (onSuccess) onSuccess();
+          }}
+        />
       </ModalEstandar>
     </Stack>
   );

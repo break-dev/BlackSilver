@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import dayjs from "dayjs";
 import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
 import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
@@ -76,7 +77,7 @@ export const useItemsRecepcion = ({
                 Number(d.cantidad_recepcionada_base || 0),
               es_nuevo_lote: false,
               id_lote_existente: null,
-              fecha_ingreso: new Date().toISOString(),
+              fecha_ingreso: dayjs().format("YYYY-MM-DD HH:mm:ss"),
               fecha_vencimiento: null,
               descripcion: null,
               es_perecible: !!d.es_perecible,
@@ -95,7 +96,6 @@ export const useItemsRecepcion = ({
     setLoadingLotes(true);
     setLotesDisponibles([]);
   }
-
 
   useEffect(() => {
     if (selectedAlmacenId && detalles.length > 0) {
@@ -117,6 +117,9 @@ export const useItemsRecepcion = ({
                     lots: group.lots.map((lot) => ({
                       ...lot,
                       es_nuevo_lote: true,
+                      fecha_ingreso:
+                        lot.fecha_ingreso ||
+                        dayjs().format("YYYY-MM-DD HH:mm:ss"),
                     })),
                   };
                 }
@@ -132,6 +135,9 @@ export const useItemsRecepcion = ({
                         ...lot,
                         id_lote_existente: firstLot.id_lote,
                         ajustes: { [firstLot.id_lote]: lot.cantidad_base },
+                        fecha_ingreso:
+                          lot.fecha_ingreso ||
+                          dayjs().format("YYYY-MM-DD HH:mm:ss"),
                       };
                     }
                     return lot;

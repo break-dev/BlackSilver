@@ -8,6 +8,26 @@ export interface DTO_RecepcionOCItem {
   fecha_ingreso: string | null;
 }
 
+export interface DTO_OCComprobante {
+  tipo_comprobante: string;
+  serie: string;
+  numero: string;
+  fecha_emision: string;
+  observacion: string | null;
+  evidencias: File[];
+  moneda: string;
+  tipo_cambio_venta_aplicado: number;
+  es_auditable: boolean;
+  total_antes_igv: number;
+  total_antes_igv_soles: number;
+  incluye_igv: boolean;
+  porcentaje_igv: number;
+  monto_igv: number;
+  monto_igv_soles: number;
+  total_despues_igv: number;
+  total_despues_igv_soles: number;
+}
+
 export interface REQ_RegistrarRecepcionOC {
   id_orden_compra: number;
   id_almacen_recepcionista: number;
@@ -17,4 +37,25 @@ export interface REQ_RegistrarRecepcionOC {
   serie_guia: string | null;
   numero_guia: string | null;
   items: DTO_RecepcionOCItem[];
+  comprobante?: DTO_OCComprobante;
+}
+export interface REQ_RegistrarOCComprobante {
+  id_orden_compra: number;
+  tipo_comprobante: string;
+  serie: string;
+  numero: string;
+  fecha_emision: string;
+  observacion: string | null;
+  moneda: string;
+  tipo_cambio_venta_aplicado: number;
+  es_auditable: boolean;
+  total_antes_igv: number;
+  total_antes_igv_soles: number;
+  incluye_igv: boolean;
+  porcentaje_igv: number;
+  monto_igv: number;
+  monto_igv_soles: number;
+  total_despues_igv: number;
+  total_despues_igv_soles: number;
+  ids_recepciones: string; // JSON string array
 }

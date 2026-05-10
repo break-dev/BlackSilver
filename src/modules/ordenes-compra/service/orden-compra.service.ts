@@ -6,8 +6,12 @@ import type {
   RES_OrdenCompraDetalle,
 } from "../../../service/responses/ordenes-compra/orden-compra";
 import type { RES_OrdenCompraRecepcion } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
+import type { RES_OCComprobante } from "../../../service/responses/ordenes-compra/orden-compra-comprobante";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { REQ_RegistrarRecepcionOC } from "./recepcion.requests";
+import type {
+  REQ_RegistrarRecepcionOC,
+  REQ_RegistrarOCComprobante,
+} from "./recepcion.requests";
 const path = "/ordenes-compra";
 
 export const OrdenCompraService = {
@@ -66,6 +70,18 @@ export const OrdenCompraService = {
     formData.append("numero_guia", dto.numero_guia ?? "");
     formData.append("items", JSON.stringify(dto.items));
 
+    if (dto.comprobante) {
+      const { evidencias: comprobanteEvidencias, ...comprobanteData } =
+        dto.comprobante;
+      formData.append("comprobante", JSON.stringify(comprobanteData));
+
+      if (comprobanteEvidencias && comprobanteEvidencias.length > 0) {
+        comprobanteEvidencias.forEach((file) => {
+          formData.append("comprobante_evidencias[]", file);
+        });
+      }
+    }
+
     evidencias.forEach((file) => {
       formData.append("evidencias[]", file);
     });
@@ -107,5 +123,33 @@ export const OrdenCompraService = {
       },
     );
     return res.data;
+  },
+
+  getComprobantes: async (
+    idOrdenCompra: number,
+  ): Promise<IRespuesta<RES_OCComprobante[]>> => {
+    const { data } = await api.get(`${path}/comprobantes/${idOrdenCompra}`);
+    return data;
+  },
+
+  registrarComprobante: async (
+    payload: REQ_RegistrarOCComprobante,
+    evidencias: File[],
+  ): Promise<IRespuesta<number>> => {
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      formData.append(key, value !== null ? String(value) : "");
+    });
+
+    evidencias.forEach((file) => {
+      formData.append("evidencias[]", file);
+    });
+
+    const { data } = await api.post(`${path}/comprobantes`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data;
   },
 };

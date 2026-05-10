@@ -1,7 +1,10 @@
 import { Group, Button } from "@mantine/core";
 import { useEditarCotizacion } from "../../hooks/registro-cotizacion/useEditarCotizacion";
 import { ComparativoTabla } from "./components/comparativo-tabla/comparativo-tabla";
-import type { RES_Cotizacion, RES_Comparativo } from "../../../../service/responses/cotizaciones/cotizacion";
+import type {
+  RES_Cotizacion,
+  RES_Comparativo,
+} from "../../../../service/responses/cotizaciones/cotizacion";
 
 interface ModalEditarCotizacionProps {
   cotizacion: RES_Cotizacion;
@@ -32,15 +35,20 @@ export const ModalEditarCotizacion = ({
   } = useEditarCotizacion(cotizacion, onSuccess);
 
   const productosEnriquecidos = productos.map((p, idx) => {
-    const maestro = maestros.catalogo.find((m) => m.id_producto === p.id_producto);
+    const maestro = maestros.catalogo.find(
+      (m) => m.id_producto === p.id_producto,
+    );
     const originalDet = cotizacion.detalles[idx];
 
     return {
       ...p,
-      nombre: maestro?.nombre || originalDet?.producto || "Producto desconocido",
+      nombre:
+        maestro?.nombre || originalDet?.producto || "Producto desconocido",
       codigo: "",
       id_unidad_medida_base:
-        maestro?.id_unidad_medida_base || originalDet?.id_unidad_medida_base || 0,
+        maestro?.id_unidad_medida_base ||
+        originalDet?.id_unidad_medida_base ||
+        0,
       unidad_medida_base:
         maestro?.unidad_medida_base ||
         originalDet?.unidad_medida_base ||

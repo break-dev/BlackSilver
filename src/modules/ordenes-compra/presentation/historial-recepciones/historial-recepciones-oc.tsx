@@ -29,14 +29,20 @@ import { CalendarDaysIcon } from "lucide-react";
 
 interface Props {
   idOrdenCompra: number;
+  onSelectionChange?: (selectedIds: number[]) => void;
 }
 
-export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
+export const HistorialRecepcionesOC = ({
+  idOrdenCompra,
+  onSelectionChange,
+}: Props) => {
   const [recepciones, setRecepciones] = useState<RES_OrdenCompraRecepcion[]>(
     [],
   );
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
+  const [selectedRecepcionesForVoucher, setSelectedRecepcionesForVoucher] =
+    useState<number[]>([]);
 
   const [
     openedTransferencia,
@@ -129,6 +135,19 @@ export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
     return index === 0;
   };
 
+  const toggleSelection = (id: number) => {
+    setSelectedRecepcionesForVoucher((prev) => {
+      const newSelection = prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id];
+
+      if (onSelectionChange) {
+        onSelectionChange(newSelection);
+      }
+      return newSelection;
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -170,6 +189,10 @@ export const HistorialRecepcionesOC = ({ idOrdenCompra }: Props) => {
               recepcion={r}
               expanded={expanded}
               onToggle={toggleExpand}
+              isSelected={selectedRecepcionesForVoucher.includes(
+                r.id_recepcion,
+              )}
+              onSelect={toggleSelection}
             />
 
             <Collapse in={expanded}>

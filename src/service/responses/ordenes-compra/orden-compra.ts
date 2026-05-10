@@ -1,4 +1,5 @@
 import type { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
+import type { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
 import type {
@@ -27,7 +28,9 @@ export interface RES_OrdenCompra {
   //
   metodo_pago: MetodoPago;
   fecha_vencimiento_pago: string | null;
-  moneda: string;
+  moneda: Moneda;
+  tipo_cambio_aplicado: number;
+  es_auditable: boolean;
   //
   costo_flete: number;
   otros_gastos: number;

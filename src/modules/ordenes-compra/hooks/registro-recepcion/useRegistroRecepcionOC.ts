@@ -1,14 +1,19 @@
 import { useState, useMemo } from "react";
+import dayjs from "dayjs";
 import { useNotify } from "../../../../hooks/useNotify";
 import { usePrint } from "../../../../hooks/usePrint";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
-import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
+import type {
+  RES_OrdenCompra,
+  RES_OrdenCompraDetalle,
+} from "../../../../service/responses/ordenes-compra/orden-compra";
 import { OrdenCompraService } from "../../service/orden-compra.service";
 
 import { useAlmacenesRecepcion } from "./useAlmacenesRecepcion";
 import { useHeaderRecepcion } from "./useHeaderRecepcion";
 import { useItemsRecepcion } from "./useItemsRecepcion";
+import { useComprobanteRecepcion } from "./useComprobanteRecepcion";
 
 // Re-exportar interfaces para mantener compatibilidad con componentes que las consumen
 export type {
@@ -17,7 +22,7 @@ export type {
 } from "./useItemsRecepcion";
 
 interface UseRegistroRecepcionOCProps {
-  idOrdenCompra: number;
+  orden: RES_OrdenCompra;
   detalles: RES_OrdenCompraDetalle[];
   soloAutorizados?: boolean;
   onSuccess: (
@@ -27,7 +32,7 @@ interface UseRegistroRecepcionOCProps {
 }
 
 export const useRegistroRecepcionOC = ({
-  idOrdenCompra,
+  orden,
   detalles,
   soloAutorizados = true,
   onSuccess,
@@ -45,12 +50,13 @@ export const useRegistroRecepcionOC = ({
 
   const header = useHeaderRecepcion();
   const items = useItemsRecepcion({ selectedAlmacenId, detalles });
+  const comprobante = useComprobanteRecepcion(orden);
 
   const [loadingAction, setLoadingAction] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idOrdenCompra || !selectedAlmacenId) return;
+    if (!orden?.id_orden_compra || !selectedAlmacenId) return;
 
     const newErrors: Record<string, string> = {};
     let hasErrors = false;
@@ -130,8 +136,12 @@ export const useRegistroRecepcionOC = ({
                 es_nuevo_lote: false,
                 id_lote_existente: Number(idLote),
                 descripcion: lot.descripcion,
-                fecha_vencimiento: lot.fecha_vencimiento,
-                fecha_ingreso: lot.fecha_ingreso,
+                fecha_vencimiento: lot.fecha_vencimiento
+                  ? dayjs(lot.fecha_vencimiento).format("YYYY-MM-DD")
+                  : null,
+                fecha_ingreso: dayjs(lot.fecha_ingreso).format(
+                  "YYYY-MM-DD HH:mm:ss",
+                ),
               });
             });
           } else {
@@ -141,8 +151,12 @@ export const useRegistroRecepcionOC = ({
               es_nuevo_lote: lot.es_nuevo_lote,
               id_lote_existente: lot.id_lote_existente,
               descripcion: lot.descripcion,
-              fecha_vencimiento: lot.fecha_vencimiento,
-              fecha_ingreso: lot.fecha_ingreso,
+              fecha_vencimiento: lot.fecha_vencimiento
+                ? dayjs(lot.fecha_vencimiento).format("YYYY-MM-DD")
+                : null,
+              fecha_ingreso: dayjs(lot.fecha_ingreso).format(
+                "YYYY-MM-DD HH:mm:ss",
+              ),
             });
           }
         });
@@ -150,16 +164,39 @@ export const useRegistroRecepcionOC = ({
 
       const res = await OrdenCompraService.registrarRecepcion(
         {
-          id_orden_compra: idOrdenCompra,
+          id_orden_compra: orden.id_orden_compra,
           id_almacen_recepcionista: selectedAlmacenId!,
           con_incidencia: header.conIncidencia,
           observacion: header.observacion,
-          fecha_hora_recepcion:
-            header.fechaHoraRecepcion?.toISOString() ||
-            new Date().toISOString(),
+          fecha_hora_recepcion: dayjs(
+            header.fechaHoraRecepcion || new Date(),
+          ).format("YYYY-MM-DD HH:mm:ss"),
           serie_guia: header.serieGuia,
           numero_guia: header.numeroGuia,
           items: finalItems,
+          comprobante: comprobante.incluirComprobante
+            ? {
+                tipo_comprobante: comprobante.tipoComprobante,
+                serie: comprobante.serie,
+                numero: comprobante.numero,
+                fecha_emision: dayjs(
+                  comprobante.fechaEmision || new Date(),
+                ).format("YYYY-MM-DD"),
+                observacion: comprobante.observacion,
+                evidencias: comprobante.evidencias,
+                moneda: comprobante.moneda,
+                tipo_cambio_venta_aplicado: comprobante.tipoCambio,
+                es_auditable: comprobante.esAuditable,
+                total_antes_igv: comprobante.totalAntesIgv,
+                total_antes_igv_soles: comprobante.total_antes_igv_soles,
+                incluye_igv: comprobante.incluyeIgv,
+                porcentaje_igv: comprobante.porcentajeIgv,
+                monto_igv: comprobante.montoIgv,
+                monto_igv_soles: comprobante.monto_igv_soles,
+                total_despues_igv: comprobante.totalDespuesIgv,
+                total_despues_igv_soles: comprobante.total_despues_igv_soles,
+              }
+            : undefined,
         },
         header.evidencias,
       );
@@ -200,6 +237,9 @@ export const useRegistroRecepcionOC = ({
 
     // Header/Cabecera
     ...header,
+
+    // Comprobante
+    comprobante,
 
     // Acciones y Estado de Carga
     loadingAction,

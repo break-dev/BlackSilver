@@ -25,10 +25,16 @@ import { ProductoRecepcionCardOC } from "./components/ProductoRecepcionCardOC";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
-import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
+import type {
+  RES_OrdenCompra,
+  RES_OrdenCompraDetalle,
+} from "../../../../service/responses/ordenes-compra/orden-compra";
+import { TipoComprobante } from "../../../../shared/enums/_generic/tipo-comprobante";
+import { Switch, NumberInput } from "@mantine/core";
+import { MONEDAS } from "../../../../shared/variables/monedas";
 
 interface Props {
-  idOrdenCompra: number;
+  orden: RES_OrdenCompra;
   detalles: RES_OrdenCompraDetalle[];
   soloAutorizados?: boolean;
   onSuccess: (
@@ -68,6 +74,7 @@ export const RegistroRecepcionOC = (props: Props) => {
     setNumeroGuia,
     lotesDisponibles,
     loadingLotes,
+    comprobante,
   } = useRegistroRecepcionOC(props);
 
   const inputClasses = {
@@ -93,7 +100,9 @@ export const RegistroRecepcionOC = (props: Props) => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Select
                 label="Almacén Recepcionista"
-                placeholder={loadingAlmacenes ? "Cargando almacenes..." : "Seleccione"}
+                placeholder={
+                  loadingAlmacenes ? "Cargando almacenes..." : "Seleccione"
+                }
                 data={almacenes.map((a) => ({
                   value: a.id_almacen.toString(),
                   label: a.nombre,
@@ -110,7 +119,9 @@ export const RegistroRecepcionOC = (props: Props) => {
                 leftSection={
                   <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
                 }
-                rightSection={loadingAlmacenes ? <Loader size={12} color="indigo" /> : null}
+                rightSection={
+                  loadingAlmacenes ? <Loader size={12} color="indigo" /> : null
+                }
               />
 
               <DateTimePicker
@@ -240,6 +251,229 @@ export const RegistroRecepcionOC = (props: Props) => {
           </Stack>
         </Paper>
 
+        {/* Sección de Comprobante */}
+        <Paper
+          p={12}
+          radius="lg"
+          className="bg-zinc-900/30 border border-zinc-800/80 shadow-md overflow-hidden relative mt-2"
+        >
+          <Stack gap={10}>
+            <Group justify="space-between" align="center">
+              <Group gap="xs">
+                <DocumentTextIcon className="w-5 h-5 text-indigo-400" />
+                <Text
+                  fw={900}
+                  size="xs"
+                  className="uppercase tracking-widest text-white"
+                >
+                  Comprobante de Pago (Opcional)
+                </Text>
+              </Group>
+              <Switch
+                size="xs"
+                color="indigo"
+                checked={comprobante.incluirComprobante}
+                onChange={(e) =>
+                  comprobante.setIncluirComprobante(e.currentTarget.checked)
+                }
+                label={
+                  <Text size="xs" fw={700} className="text-zinc-400 uppercase">
+                    Vincular ahora
+                  </Text>
+                }
+                classNames={{ track: "bg-zinc-800 border-zinc-700" }}
+              />
+            </Group>
+
+            {comprobante.incluirComprobante && (
+              <Stack gap={10} className="animate-fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <Select
+                    label="Tipo"
+                    data={Object.values(TipoComprobante)}
+                    value={comprobante.tipoComprobante}
+                    onChange={(val) =>
+                      comprobante.setTipoComprobante(val || "")
+                    }
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                  <TextInput
+                    label="Serie"
+                    placeholder="F001"
+                    value={comprobante.serie}
+                    onChange={(e) =>
+                      comprobante.setSerie(e.currentTarget.value)
+                    }
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                  <TextInput
+                    label="Número"
+                    placeholder="000001"
+                    value={comprobante.numero}
+                    onChange={(e) =>
+                      comprobante.setNumero(e.currentTarget.value)
+                    }
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                  <DateTimePicker
+                    label="Fecha Emisión"
+                    value={comprobante.fechaEmision}
+                    onChange={(val) => {
+                      if (typeof val === "string") {
+                        comprobante.setFechaEmision(val ? new Date(val) : null);
+                      } else {
+                        comprobante.setFechaEmision(val);
+                      }
+                    }}
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <Select
+                    label="Moneda"
+                    data={Object.values(MONEDAS).map((m) => ({
+                      value: m.label,
+                      label: m.label,
+                    }))}
+                    value={comprobante.moneda}
+                    onChange={(val) => comprobante.setMoneda(val || "Soles")}
+                    radius="md"
+                    size="xs"
+                    disabled
+                    classNames={inputClasses}
+                  />
+                  <NumberInput
+                    label="T.C. Venta"
+                    value={comprobante.tipoCambio}
+                    onChange={(val) =>
+                      comprobante.setTipoCambio(Number(val) || 1)
+                    }
+                    fixedDecimalScale
+                    radius="md"
+                    size="xs"
+                    disabled
+                    classNames={inputClasses}
+                  />
+                  <div className="flex items-end pb-2">
+                    <Checkbox
+                      label={
+                        <Text
+                          size="xs"
+                          fw={700}
+                          className="text-white uppercase"
+                        >
+                          Auditable
+                        </Text>
+                      }
+                      disabled
+                      checked={comprobante.esAuditable}
+                      onChange={(e) =>
+                        comprobante.setEsAuditable(e.currentTarget.checked)
+                      }
+                      size="xs"
+                    />
+                  </div>
+                </div>
+
+                <Divider
+                  variant="dashed"
+                  label="Montos del Comprobante"
+                  labelPosition="center"
+                  classNames={{
+                    label: "text-[9px] uppercase font-bold text-zinc-500",
+                  }}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                  <NumberInput
+                    label="Total Antes IGV"
+                    value={comprobante.totalAntesIgv}
+                    onChange={(val) =>
+                      comprobante.setTotalAntesIgv(Number(val) || 0)
+                    }
+                    prefix={comprobante.moneda === "Soles" ? "S/ " : "$ "}
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                    disabled
+                  />
+                  <div className="flex items-end pb-2">
+                    <Checkbox
+                      label={
+                        <Text
+                          size="xs"
+                          fw={700}
+                          className="text-white uppercase"
+                        >
+                          Incluye IGV
+                        </Text>
+                      }
+                      disabled
+                      checked={comprobante.incluyeIgv}
+                      onChange={(e) =>
+                        comprobante.setIncluyeIgv(e.currentTarget.checked)
+                      }
+                      size="xs"
+                    />
+                  </div>
+                  <NumberInput
+                    label="% IGV"
+                    value={comprobante.porcentajeIgv}
+                    onChange={(val) =>
+                      comprobante.setPorcentajeIgv(Number(val) || 18)
+                    }
+                    disabled
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                  <NumberInput
+                    label="Monto IGV"
+                    value={comprobante.montoIgv}
+                    onChange={(val) =>
+                      comprobante.setMontoIgv(Number(val) || 0)
+                    }
+                    prefix={comprobante.moneda === "Soles" ? "S/ " : "$ "}
+                    radius="md"
+                    size="xs"
+                    disabled
+                    classNames={inputClasses}
+                  />
+                  <NumberInput
+                    label="Total Después IGV"
+                    value={comprobante.totalDespuesIgv}
+                    onChange={(val) =>
+                      comprobante.setTotalDespuesIgv(Number(val) || 0)
+                    }
+                    prefix={comprobante.moneda === "Soles" ? "S/ " : "$ "}
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                  />
+                </div>
+
+                <div className="mt-2">
+                  <MultiFilePicker
+                    files={comprobante.evidencias}
+                    onFilesChange={comprobante.setEvidencias}
+                    maxFiles={3}
+                    label="Evidencias del Comprobante"
+                  />
+                </div>
+              </Stack>
+            )}
+          </Stack>
+        </Paper>
+
         <Divider
           label={
             <Text
@@ -297,7 +531,6 @@ export const RegistroRecepcionOC = (props: Props) => {
           >
             Registrar Recepción
           </Button>
-
         </Group>
       </Stack>
     </form>
