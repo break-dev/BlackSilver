@@ -4,6 +4,7 @@ import { DataTableEstandar } from "../../../../presentation/utils/datatable-esta
 import type { RES_OrdenCompra } from "../../../../service/responses/ordenes-compra/orden-compra";
 import { type DataTableColumn } from "mantine-datatable";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
+import { Estado_OrdenCompra } from "../../../../shared/enums/orden-compra/orden-compra";
 
 interface GroupByEmpresaProps {
   groupedOrders: { empresa: string; ruc: string; orders: RES_OrdenCompra[] }[];
@@ -145,6 +146,14 @@ export const GroupByEmpresa = ({
               loading={loading}
               minHeight={0}
               initialPageSize={5}
+              rowClassName={(item: RES_OrdenCompra) => {
+                const isPending =
+                  item.estado === Estado_OrdenCompra.Generada ||
+                  item.estado === Estado_OrdenCompra.EnRecepcion;
+                return isPending
+                  ? "border-l-4 border-l-orange-500/80 bg-orange-500/[0.03] transition-all"
+                  : "";
+              }}
             />
           </div>
         </div>

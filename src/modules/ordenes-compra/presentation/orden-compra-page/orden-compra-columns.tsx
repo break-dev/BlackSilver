@@ -1,5 +1,5 @@
 import { Badge, Group, Stack, Text, ActionIcon, Tooltip } from "@mantine/core";
-import { FileText, Eye } from "lucide-react";
+import { FileText, Eye, AlertCircle } from "lucide-react";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -34,18 +34,34 @@ export const getOrdenCompraColumns = ({
   {
     accessor: "correlativo",
     title: "Cód. Orden",
-    width: 140,
-    render: (item) => (
-      <Badge
-        variant="light"
-        color="blue"
-        radius="sm"
-        size="sm"
-        className="font-bold px-2 tracking-widest text-sm"
-      >
-        {item.correlativo}
-      </Badge>
-    ),
+    width: 160,
+    render: (item) => {
+      const isPending =
+        item.estado === Estado_OrdenCompra.Generada ||
+        item.estado === Estado_OrdenCompra.EnRecepcion;
+
+      return (
+        <Group gap={8} wrap="nowrap">
+          {isPending && (
+            <Tooltip label="Pendiente de Recepción" withArrow color="orange">
+              <div className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+              </div>
+            </Tooltip>
+          )}
+          <Badge
+            variant={isPending ? "filled" : "light"}
+            color={isPending ? "orange" : "blue"}
+            radius="sm"
+            size="sm"
+            className={`font-bold px-2 tracking-widest text-sm ${isPending ? "shadow-lg shadow-orange-500/20" : ""}`}
+          >
+            {item.correlativo}
+          </Badge>
+        </Group>
+      );
+    },
   },
   {
     accessor: "proveedor",
@@ -117,23 +133,32 @@ export const getOrdenCompraColumns = ({
   {
     accessor: "estado",
     title: "Estado",
-    width: 130,
+    width: 150,
     textAlign: "center",
     render: (item) => {
+      const isPending =
+        item.estado === Estado_OrdenCompra.Generada ||
+        item.estado === Estado_OrdenCompra.EnRecepcion;
       const stateInfo = COLOR_BY_STATE[item.estado] ?? {
         color: "zinc",
         label: item.estado,
       };
+
       return (
-        <Badge
-          variant="light"
-          color={stateInfo.color}
-          size="sm"
-          radius="sm"
-          className="font-bold tracking-widest"
-        >
-          {stateInfo.label.toUpperCase()}
-        </Badge>
+        <Group justify="center" gap={6}>
+          <Badge
+            variant="light"
+            color={stateInfo.color}
+            size="sm"
+            radius="sm"
+            className="font-bold tracking-widest"
+          >
+            {stateInfo.label.toUpperCase()}
+          </Badge>
+          {isPending && (
+            <AlertCircle size={14} className="text-orange-500 animate-pulse" />
+          )}
+        </Group>
       );
     },
   },

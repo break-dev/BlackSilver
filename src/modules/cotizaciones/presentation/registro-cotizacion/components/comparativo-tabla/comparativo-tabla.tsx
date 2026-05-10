@@ -12,6 +12,8 @@ import { CeldaDetalle } from "./components/celda-detalle";
 import type { RES_Almacen } from "../../../../../../service/responses/almacen";
 import { TipoDespachoCompra } from "../../../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../../../shared/enums/_generic/periodo";
+import type { RES_Proveedor } from "../../../../../../service/responses/proveedor";
+import type { RES_Empresa } from "../../../../../../service/responses/empresa";
 
 interface ComparativoTablaProps {
   productos: (
@@ -27,8 +29,8 @@ interface ComparativoTablaProps {
   cotizaciones: DTO_CotizacionRequest[];
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   almacenes: RES_Almacen[];
-  proveedores: { id_proveedor: number; razon_social: string }[];
-  empresas: { id_empresa: number; razon_social: string }[];
+  proveedores: RES_Proveedor[];
+  empresas: RES_Empresa[];
   loadingProveedores?: boolean;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
@@ -103,18 +105,27 @@ export const ComparativoTabla = ({
     const pricesMap = new Map<number, number>();
     productos.forEach((prod, pIdx) => {
       if (!prod) return;
-      
-      const normalizedPrices = cotizaciones.map((cot) => {
-        const det = cot.detalles[pIdx];
-        if (!det || det.no_cotiza || !det.precio_unitario || det.precio_unitario <= 0) return null;
-        
-        const tc = cot.tipo_cambio_venta_referencial || 1;
-        const moneda = cot.moneda || "Soles";
-        const basePrice = Number(det.precio_unitario_base);
-        return moneda === "Soles" ? basePrice : basePrice * tc;
-      }).filter((p): p is number => p !== null);
 
-      if (normalizedPrices.length > 1) { // Solo marcar si hay competencia
+      const normalizedPrices = cotizaciones
+        .map((cot) => {
+          const det = cot.detalles[pIdx];
+          if (
+            !det ||
+            det.no_cotiza ||
+            !det.precio_unitario ||
+            det.precio_unitario <= 0
+          )
+            return null;
+
+          const tc = cot.tipo_cambio_venta_referencial || 1;
+          const moneda = cot.moneda || "Soles";
+          const basePrice = Number(det.precio_unitario_base);
+          return moneda === "Soles" ? basePrice : basePrice * tc;
+        })
+        .filter((p): p is number => p !== null);
+
+      if (normalizedPrices.length > 1) {
+        // Solo marcar si hay competencia
         pricesMap.set(prod.id_producto, Math.min(...normalizedPrices));
       }
     });
@@ -351,12 +362,17 @@ export const ComparativoTabla = ({
                         onCancelarCopia={onCancelarCopia}
                         isReadOnlyNoCotiza={isReadOnlyRows}
                         isCheapest={(() => {
-                          if (det.no_cotiza || !det.precio_unitario) return false;
+                          if (det.no_cotiza || !det.precio_unitario)
+                            return false;
                           const tc = cot.tipo_cambio_venta_referencial || 1;
                           const basePrice = Number(det.precio_unitario_base);
-                          const normalized = cot.moneda === "Soles" ? basePrice : basePrice * tc;
+                          const normalized =
+                            cot.moneda === "Soles" ? basePrice : basePrice * tc;
                           const min = cheapestPrices.get(prod.id_producto);
-                          return min !== undefined && Math.abs(normalized - min) < 0.0001;
+                          return (
+                            min !== undefined &&
+                            Math.abs(normalized - min) < 0.0001
+                          );
                         })()}
                       />
 

@@ -24,11 +24,21 @@ interface RegistroCotizacionProps {
 }
 
 export const RegistroCotizacion = forwardRef<
-  { agregarCotizacion: () => void; limpiarComparativo: () => void; hasProductos: () => boolean },
+  {
+    agregarCotizacion: () => void;
+    limpiarComparativo: () => void;
+    hasProductos: () => boolean;
+  },
   RegistroCotizacionProps
 >(
   (
-    { onSuccess, onCancel, modalProductosOpened, setModalProductosOpened, esAuditableGlobal },
+    {
+      onSuccess,
+      onCancel,
+      modalProductosOpened,
+      setModalProductosOpened,
+      esAuditableGlobal,
+    },
     ref,
   ) => {
     const { print } = usePrint();

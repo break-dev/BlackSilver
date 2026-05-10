@@ -1,14 +1,27 @@
 import { useState, useCallback } from "react";
-import type { DTO_CotizacionRequest, DTO_CotizacionDetalle, DTO_ProductoComparativo } from "../../service/cotizaciones.requests";
-import { Estado_Cotizacion, Estado_Cotizacion_Detalle } from "../../../../shared/enums/cotizacion/cotizacion";
+import type {
+  DTO_CotizacionRequest,
+  DTO_CotizacionDetalle,
+  DTO_ProductoComparativo,
+} from "../../service/cotizaciones.requests";
+import {
+  Estado_Cotizacion,
+  Estado_Cotizacion_Detalle,
+} from "../../../../shared/enums/cotizacion/cotizacion";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../shared/enums/_generic/periodo";
-import { recalcularTotales, DIAS_POR_PERIODO, type MaestrosState } from "./utils";
+import {
+  recalcularTotales,
+  DIAS_POR_PERIODO,
+  type MaestrosState,
+} from "./utils";
 import { useNotify } from "../../../../hooks/useNotify";
 
 export const useCotizacionHandlers = (
   setProductos: React.Dispatch<React.SetStateAction<DTO_ProductoComparativo[]>>,
-  setCotizaciones: React.Dispatch<React.SetStateAction<DTO_CotizacionRequest[]>>,
+  setCotizaciones: React.Dispatch<
+    React.SetStateAction<DTO_CotizacionRequest[]>
+  >,
   maestros: MaestrosState,
 ) => {
   const { notify } = useNotify();
@@ -31,9 +44,14 @@ export const useCotizacionHandlers = (
         const target = { ...p[index], [field]: value };
 
         const afectaTotales = (
-          ["incluye_igv", "porcentaje_igv", "costo_flete", "otros_gastos"] as string[]
+          [
+            "incluye_igv",
+            "porcentaje_igv",
+            "costo_flete",
+            "otros_gastos",
+          ] as string[]
         ).includes(field as string);
-        
+
         if (afectaTotales) {
           Object.assign(target, recalcularTotales(target));
         }
@@ -47,11 +65,26 @@ export const useCotizacionHandlers = (
               : (value as Estado_Cotizacion);
         }
 
+        if ((field as string) === "id_proveedor") {
+          const provId = Number(value);
+          const prov = maestros.proveedores.find(
+            (p) => p.id_proveedor === provId,
+          );
+          const nuevaDireccion = prov?.direccion || "";
+
+          target.detalles = target.detalles.map((d) => {
+            if (d.tipo_despacho === TipoDespachoCompra.Recojo) {
+              return { ...d, lugar_recojo: nuevaDireccion || null };
+            }
+            return d;
+          });
+        }
+
         p[index] = target;
         return p;
       });
     },
-    [setCotizaciones],
+    [setCotizaciones, maestros.proveedores],
   );
 
   const updateCotizacionDetail = useCallback(
@@ -69,7 +102,9 @@ export const useCotizacionHandlers = (
         const prodId = upd.id_producto;
 
         if (field === "id_unidad_medida") {
-          const maestro = maestros.catalogo.find((m) => m.id_producto === prodId);
+          const maestro = maestros.catalogo.find(
+            (m) => m.id_producto === prodId,
+          );
           if (maestro && Number(value) === maestro.id_unidad_medida_base) {
             upd.contenido_por_presentacion = 1;
           }
@@ -77,25 +112,41 @@ export const useCotizacionHandlers = (
 
         if (field === "tiempo_entrega_periodo" || field === "tiempo_entrega") {
           upd.tiempo_entrega_dias =
-            upd.tiempo_entrega * (DIAS_POR_PERIODO[upd.tiempo_entrega_periodo] ?? 1);
+            upd.tiempo_entrega *
+            (DIAS_POR_PERIODO[upd.tiempo_entrega_periodo] ?? 1);
         }
 
-        if (field === "tipo_despacho" && value !== TipoDespachoCompra.Recojo) {
-          upd.lugar_recojo = null;
+        if (field === "tipo_despacho") {
+          if (value !== TipoDespachoCompra.Recojo) {
+            upd.lugar_recojo = null;
+          } else {
+            const prov = maestros.proveedores.find(
+              (p) => p.id_proveedor === cot.id_proveedor,
+            );
+            upd.lugar_recojo = prov?.direccion || null;
+          }
         }
 
         upd.cantidad_base = upd.cantidad * upd.contenido_por_presentacion;
         upd.precio_unitario_base =
           upd.contenido_por_presentacion > 0
-            ? Number(((upd.precio_unitario || 0) / upd.contenido_por_presentacion).toFixed(2))
+            ? Number(
+                (
+                  (upd.precio_unitario || 0) / upd.contenido_por_presentacion
+                ).toFixed(2),
+              )
             : 0;
-        
+
         detalles[rowIndex] = upd;
         cot.detalles = detalles;
 
         if ((field as string) === "estado") {
-          const anyAprobado = detalles.some((d) => d.estado === Estado_Cotizacion_Detalle.Aprobado);
-          cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
+          const anyAprobado = detalles.some(
+            (d) => d.estado === Estado_Cotizacion_Detalle.Aprobado,
+          );
+          cot.estado = anyAprobado
+            ? Estado_Cotizacion.Aprobada
+            : Estado_Cotizacion.Generada;
           if (!anyAprobado) {
             cot.detalles = detalles.map((d) => ({
               ...d,
@@ -109,7 +160,7 @@ export const useCotizacionHandlers = (
         return p;
       });
     },
-    [setCotizaciones, maestros.catalogo],
+    [setCotizaciones, maestros.catalogo, maestros.proveedores],
   );
 
   const toggleCotizacionNoCotiza = useCallback(
@@ -120,7 +171,7 @@ export const useCotizacionHandlers = (
         const detalles = [...cot.detalles];
         const d = detalles[rowIndex];
         const noC = !d.no_cotiza;
-        
+
         detalles[rowIndex] = {
           ...d,
           no_cotiza: noC,
@@ -128,9 +179,13 @@ export const useCotizacionHandlers = (
         };
 
         cot.detalles = detalles;
-        const anyAprobado = detalles.some((d) => d.estado === Estado_Cotizacion_Detalle.Aprobado);
-        cot.estado = anyAprobado ? Estado_Cotizacion.Aprobada : Estado_Cotizacion.Generada;
-        
+        const anyAprobado = detalles.some(
+          (d) => d.estado === Estado_Cotizacion_Detalle.Aprobado,
+        );
+        cot.estado = anyAprobado
+          ? Estado_Cotizacion.Aprobada
+          : Estado_Cotizacion.Generada;
+
         if (!anyAprobado) {
           cot.detalles = detalles.map((d) => ({
             ...d,
@@ -152,6 +207,7 @@ export const useCotizacionHandlers = (
       data: {
         id_almacen_recepcionista: number;
         tipo_despacho: TipoDespachoCompra;
+        lugar_recojo?: string;
         tiempo_entrega: number;
         tiempo_entrega_periodo: Periodo;
       },
@@ -159,7 +215,9 @@ export const useCotizacionHandlers = (
       setCotizaciones((prev) => {
         const p = [...prev];
         const cot = { ...p[cotIndex] };
-        const dias = data.tiempo_entrega * (DIAS_POR_PERIODO[data.tiempo_entrega_periodo] ?? 1);
+        const dias =
+          data.tiempo_entrega *
+          (DIAS_POR_PERIODO[data.tiempo_entrega_periodo] ?? 1);
 
         cot.detalles = cot.detalles.map((d) => ({
           ...d,
@@ -168,7 +226,12 @@ export const useCotizacionHandlers = (
           tiempo_entrega: data.tiempo_entrega,
           tiempo_entrega_periodo: data.tiempo_entrega_periodo,
           tiempo_entrega_dias: dias,
-          lugar_recojo: data.tipo_despacho === TipoDespachoCompra.Recojo ? d.lugar_recojo : null,
+          lugar_recojo:
+            data.tipo_despacho === TipoDespachoCompra.Recojo
+              ? data.lugar_recojo !== undefined
+                ? data.lugar_recojo
+                : d.lugar_recojo
+              : null,
         }));
 
         p[cotIndex] = cot;
@@ -189,7 +252,10 @@ export const useCotizacionHandlers = (
         prevCots.map((cot) => {
           const c = { ...cot };
           const detalles = [...c.detalles];
-          const clone = { ...detalles[rowIndex], estado: Estado_Cotizacion_Detalle.Pendiente };
+          const clone = {
+            ...detalles[rowIndex],
+            estado: Estado_Cotizacion_Detalle.Pendiente,
+          };
           detalles.splice(rowIndex + 1, 0, clone);
           c.detalles = detalles;
           return c;
@@ -200,7 +266,12 @@ export const useCotizacionHandlers = (
   );
 
   const iniciarCopia = useCallback(
-    (cotIndex: number, rowIndex: number, id_producto: number, cotizaciones: DTO_CotizacionRequest[]) => {
+    (
+      cotIndex: number,
+      rowIndex: number,
+      id_producto: number,
+      cotizaciones: DTO_CotizacionRequest[],
+    ) => {
       const source = cotizaciones[cotIndex]?.detalles[rowIndex];
       if (!source) return;
 

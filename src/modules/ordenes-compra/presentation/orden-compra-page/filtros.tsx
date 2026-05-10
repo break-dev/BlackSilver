@@ -2,9 +2,11 @@ import { Select, TextInput } from "@mantine/core";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { MESES } from "../../../../shared/variables/meses";
+import { Estado_OrdenCompra } from "../../../../shared/enums/orden-compra/orden-compra";
 
 interface FiltrosProps {
   mes: string;
@@ -13,6 +15,8 @@ interface FiltrosProps {
   setYearcito: (val: string) => void;
   search: string;
   setSearch: (val: string) => void;
+  estadoFilter: string | null;
+  setEstadoFilter: (val: string | null) => void;
 }
 
 export const Filtros = ({
@@ -22,7 +26,17 @@ export const Filtros = ({
   setYearcito,
   search,
   setSearch,
+  estadoFilter,
+  setEstadoFilter,
 }: FiltrosProps) => {
+  const commonClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+    label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+    dropdown: "bg-zinc-900 border-zinc-800",
+    option: "text-zinc-300 hover:bg-zinc-800",
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-end w-full animate-fade-in">
       {/* Periodo */}
@@ -37,13 +51,7 @@ export const Filtros = ({
           radius="lg"
           size="sm"
           allowDeselect={false}
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-            dropdown: "bg-zinc-900 border-zinc-800",
-            option: "text-zinc-300 hover:bg-zinc-800",
-          }}
+          classNames={commonClasses}
         />
       </div>
 
@@ -60,13 +68,28 @@ export const Filtros = ({
           radius="lg"
           size="sm"
           allowDeselect={false}
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
-            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-            dropdown: "bg-zinc-900 border-zinc-800",
-            option: "text-zinc-300 hover:bg-zinc-800",
-          }}
+          classNames={commonClasses}
+        />
+      </div>
+
+      <div className="w-full sm:w-48">
+        <Select
+          label="Estado"
+          placeholder="Todos los estados"
+          leftSection={<TagIcon className="w-4 h-4 text-zinc-400" />}
+          data={[
+            { value: "", label: "Todos los estados" },
+            ...Object.values(Estado_OrdenCompra).map((est) => ({
+              value: est,
+              label: est,
+            })),
+          ]}
+          value={estadoFilter || ""}
+          onChange={(val) => setEstadoFilter(val || null)}
+          radius="lg"
+          size="sm"
+          clearable
+          classNames={commonClasses}
         />
       </div>
 

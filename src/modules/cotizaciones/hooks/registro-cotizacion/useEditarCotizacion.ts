@@ -3,8 +3,15 @@ import { useCotizacionMaestros } from "./useCotizacionMaestros";
 import { useCotizacionHandlers } from "./useCotizacionHandlers";
 import { CotizacionesService } from "../../service/cotizaciones.service";
 import { useNotify } from "../../../../hooks/useNotify";
-import type { RES_Cotizacion, RES_Comparativo } from "../../../../service/responses/cotizaciones/cotizacion";
-import type { DTO_ActualizarCotizacion, DTO_ProductoComparativo, DTO_CotizacionRequest } from "../../service/cotizaciones.requests";
+import type {
+  RES_Cotizacion,
+  RES_Comparativo,
+} from "../../../../service/responses/cotizaciones/cotizacion";
+import type {
+  DTO_ActualizarCotizacion,
+  DTO_ProductoComparativo,
+  DTO_CotizacionRequest,
+} from "../../service/cotizaciones.requests";
 import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
@@ -16,59 +23,64 @@ import { Periodo } from "../../../../shared/enums/_generic/periodo";
 
 export const useEditarCotizacion = (
   cotizacionInicial: RES_Cotizacion,
-  onSuccess: (data: RES_Comparativo[]) => void
+  onSuccess: (data: RES_Comparativo[]) => void,
 ) => {
   const { notify } = useNotify();
   const { maestros, loadingMaestros } = useCotizacionMaestros();
   const [loading, setLoading] = useState(false);
 
   // Mapear RES_Cotizacion a DTO_CotizacionRequest para el grid
-  const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>(() => [
-    {
-      id_proveedor: cotizacionInicial.id_proveedor,
-      tipo_entidad_proveedor: cotizacionInicial.tipo_entidad_proveedor as TipoEntidad,
-      empresas_ids: cotizacionInicial.empresas.map((e) => e.id_empresa),
-      moneda: cotizacionInicial.moneda,
-      tipo_cambio_venta_referencial: Number(cotizacionInicial.tipo_cambio_venta_referencial),
-      metodo_pago: cotizacionInicial.metodo_pago as MetodoPago,
-      fecha_vencimiento_pago: cotizacionInicial.fecha_vencimiento_pago,
-      costo_flete: Number(cotizacionInicial.costo_flete),
-      otros_gastos: Number(cotizacionInicial.otros_gastos),
-      total_antes_igv: Number(cotizacionInicial.total_antes_igv),
-      incluye_igv: Boolean(cotizacionInicial.incluye_igv),
-      porcentaje_igv: Number(cotizacionInicial.porcentaje_igv),
-      monto_igv: Number(cotizacionInicial.monto_igv),
-      total_despues_igv: Number(cotizacionInicial.total_despues_igv),
-      observacion: cotizacionInicial.observacion,
-      estado: cotizacionInicial.estado as Estado_Cotizacion,
-      detalles: cotizacionInicial.detalles.map((d) => ({
-        id_cotizacion_detalle: d.id_cotizacion_detalle,
-        id_producto: d.id_producto,
-        id_unidad_medida: d.id_unidad_medida_ctz,
-        id_almacen_recepcionista: d.id_almacen_recepcionista,
-        tipo_despacho: d.tipo_despacho as TipoDespachoCompra,
-        lugar_recojo: d.lugar_recojo,
-        tiempo_entrega: d.tiempo_entrega,
-        tiempo_entrega_periodo: d.tiempo_entrega_periodo as Periodo,
-        tiempo_entrega_dias: d.tiempo_entrega_dias,
-        cantidad: Number(d.cantidad),
-        contenido_por_presentacion: Number(d.contenido_por_presentacion),
-        cantidad_base: Number(d.cantidad_base),
-        precio_unitario: Number(d.precio_unitario),
-        precio_unitario_base: Number(d.precio_unitario_base),
-        comentario: d.comentario,
-        no_cotiza: false,
-        estado: d.estado as Estado_Cotizacion_Detalle,
-      })),
-    },
-  ]);
+  const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>(
+    () => [
+      {
+        id_proveedor: cotizacionInicial.id_proveedor,
+        tipo_entidad_proveedor:
+          cotizacionInicial.tipo_entidad_proveedor as TipoEntidad,
+        empresas_ids: cotizacionInicial.empresas.map((e) => e.id_empresa),
+        moneda: cotizacionInicial.moneda,
+        tipo_cambio_venta_referencial: Number(
+          cotizacionInicial.tipo_cambio_venta_referencial,
+        ),
+        metodo_pago: cotizacionInicial.metodo_pago as MetodoPago,
+        fecha_vencimiento_pago: cotizacionInicial.fecha_vencimiento_pago,
+        costo_flete: Number(cotizacionInicial.costo_flete),
+        otros_gastos: Number(cotizacionInicial.otros_gastos),
+        total_antes_igv: Number(cotizacionInicial.total_antes_igv),
+        incluye_igv: Boolean(cotizacionInicial.incluye_igv),
+        porcentaje_igv: Number(cotizacionInicial.porcentaje_igv),
+        monto_igv: Number(cotizacionInicial.monto_igv),
+        total_despues_igv: Number(cotizacionInicial.total_despues_igv),
+        observacion: cotizacionInicial.observacion,
+        estado: cotizacionInicial.estado as Estado_Cotizacion,
+        detalles: cotizacionInicial.detalles.map((d) => ({
+          id_cotizacion_detalle: d.id_cotizacion_detalle,
+          id_producto: d.id_producto,
+          id_unidad_medida: d.id_unidad_medida_ctz,
+          id_almacen_recepcionista: d.id_almacen_recepcionista,
+          tipo_despacho: d.tipo_despacho as TipoDespachoCompra,
+          lugar_recojo: d.lugar_recojo,
+          tiempo_entrega: d.tiempo_entrega,
+          tiempo_entrega_periodo: d.tiempo_entrega_periodo as Periodo,
+          tiempo_entrega_dias: d.tiempo_entrega_dias,
+          cantidad: Number(d.cantidad),
+          contenido_por_presentacion: Number(d.contenido_por_presentacion),
+          cantidad_base: Number(d.cantidad_base),
+          precio_unitario: Number(d.precio_unitario),
+          precio_unitario_base: Number(d.precio_unitario_base),
+          comentario: d.comentario,
+          no_cotiza: false,
+          estado: d.estado as Estado_Cotizacion_Detalle,
+        })),
+      },
+    ],
+  );
 
   // Los productos vienen de la cotización pero son fijos
-  const [productos, setProductos] = useState<DTO_ProductoComparativo[]>(() => 
-    cotizacionInicial.detalles.map(d => ({
-        id_producto: d.id_producto,
-        id_solicitud_detalle: null 
-    }))
+  const [productos, setProductos] = useState<DTO_ProductoComparativo[]>(() =>
+    cotizacionInicial.detalles.map((d) => ({
+      id_producto: d.id_producto,
+      id_solicitud_detalle: null,
+    })),
   );
 
   const {
@@ -91,15 +103,18 @@ export const useEditarCotizacion = (
 
   const handleSave = async () => {
     const cot = cotizaciones[0];
-    
+
     // Validaciones básicas (mismas que en registro)
     if (cot.id_proveedor === 0) {
-        notify({ type: "info", content: "Debe seleccionar un proveedor." });
-        return;
+      notify({ type: "info", content: "Debe seleccionar un proveedor." });
+      return;
     }
     if (cot.empresas_ids.length === 0) {
-        notify({ type: "info", content: "Debe seleccionar al menos una empresa compradora." });
-        return;
+      notify({
+        type: "info",
+        content: "Debe seleccionar al menos una empresa compradora.",
+      });
+      return;
     }
 
     const payload: DTO_ActualizarCotizacion = {
@@ -110,24 +125,37 @@ export const useEditarCotizacion = (
           : null,
       detalles: cot.detalles.map((d) => ({
         ...d,
-        id_cotizacion_detalle: (d as DTO_ActualizarCotizacion["detalles"][number])
-          .id_cotizacion_detalle, // Aseguramos que pasamos el ID para el update
+        id_cotizacion_detalle: (
+          d as DTO_ActualizarCotizacion["detalles"][number]
+        ).id_cotizacion_detalle, // Aseguramos que pasamos el ID para el update
       })),
     };
 
     setLoading(true);
     try {
-        const resp = await CotizacionesService.actualizar_cotizacion(cotizacionInicial.id_cotizacion, payload);
-        if (resp.success) {
-            notify({ type: "success", content: "Cotización actualizada correctamente." });
-            onSuccess(resp.data);
-        } else {
-            notify({ type: "error", content: resp.message || "Error al actualizar" });
-        }
+      const resp = await CotizacionesService.actualizar_cotizacion(
+        cotizacionInicial.id_cotizacion,
+        payload,
+      );
+      if (resp.success) {
+        notify({
+          type: "success",
+          content: "Cotización actualizada correctamente.",
+        });
+        onSuccess(resp.data);
+      } else {
+        notify({
+          type: "error",
+          content: resp.message || "Error al actualizar",
+        });
+      }
     } catch {
-        notify({ type: "error", content: "Error de red al actualizar la cotización." });
+      notify({
+        type: "error",
+        content: "Error de red al actualizar la cotización.",
+      });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 

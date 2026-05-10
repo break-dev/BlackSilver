@@ -6,7 +6,6 @@ import {
   NumberInput,
   Select,
   MultiSelect,
-  Switch,
   ActionIcon,
   TextInput,
   Checkbox,
@@ -15,6 +14,7 @@ import {
   Tooltip,
   Button,
   Badge,
+  SegmentedControl,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -36,13 +36,17 @@ import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/t
 import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
 import { useNotify } from "../../../../../../../hooks/useNotify";
 import { MONEDAS } from "../../../../../../../shared/variables/monedas";
+import { getDuracionPeriodo } from "../../../../../../../shared/functions/get-duracion-periodo";
+import { enPlural } from "../../../../../../../shared/functions/en-plural";
+import type { RES_Proveedor } from "../../../../../../../service/responses/proveedor";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
   idx: number;
 
-  proveedores: { id_proveedor: number; razon_social: string }[];
+  proveedores: RES_Proveedor[];
   empresas: { id_empresa: number; razon_social: string }[];
+
   loadingProveedores?: boolean;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
@@ -58,6 +62,7 @@ interface CabeceraCotizacionProps {
     data: {
       id_almacen_recepcionista: number;
       tipo_despacho: TipoDespachoCompra;
+      lugar_recojo?: string;
       tiempo_entrega: number;
       tiempo_entrega_periodo: Periodo;
     },
@@ -75,7 +80,6 @@ const inputStyles = {
 export const CabeceraCotizacion = ({
   cot,
   idx,
-
   proveedores,
   empresas,
   loadingProveedores,
@@ -96,9 +100,11 @@ export const CabeceraCotizacion = ({
   const { notify } = useNotify();
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
+  const [globalLugarRecojo, setGlobalLugarRecojo] = useState<string>("");
   const [globalDespacho, setGlobalDespacho] = useState<TipoDespachoCompra>(
     TipoDespachoCompra.Envio,
   );
+
   const [globalTiempo, setGlobalTiempo] = useState<number>(1);
   const [globalPeriodo, setGlobalPeriodo] = useState<Periodo>(Periodo.Semanal);
 
@@ -107,6 +113,10 @@ export const CabeceraCotizacion = ({
     onUpdateGlobalLogistica(idx, {
       id_almacen_recepcionista: Number(globalAlmacen),
       tipo_despacho: globalDespacho,
+      lugar_recojo:
+        globalDespacho === TipoDespachoCompra.Recojo
+          ? globalLugarRecojo
+          : undefined,
       tiempo_entrega: globalTiempo,
       tiempo_entrega_periodo: globalPeriodo,
     });
@@ -187,7 +197,16 @@ export const CabeceraCotizacion = ({
               <IdentificationIcon className="w-4 h-4 text-zinc-500" />
             }
             value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
-            onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
+            onChange={(val) => {
+              const newProvId = Number(val);
+              onUpdateHeader(idx, "id_proveedor", newProvId);
+              if (globalDespacho === TipoDespachoCompra.Recojo) {
+                const proveedor = proveedores.find(
+                  (p) => p.id_proveedor === newProvId,
+                );
+                setGlobalLugarRecojo(proveedor?.direccion || "");
+              }
+            }}
             searchable
             size="xs"
             radius="lg"
@@ -397,14 +416,34 @@ export const CabeceraCotizacion = ({
                     { value: TipoDespachoCompra.Recojo, label: "Recojo" },
                   ]}
                   value={globalDespacho}
-                  onChange={(val) =>
-                    setGlobalDespacho(val as TipoDespachoCompra)
-                  }
+                  onChange={(val) => {
+                    const newDespacho = val as TipoDespachoCompra;
+                    setGlobalDespacho(newDespacho);
+                    if (newDespacho === TipoDespachoCompra.Recojo && cot?.id_proveedor) {
+                      const proveedor = proveedores.find((p) => p.id_proveedor === cot.id_proveedor);
+                      setGlobalLugarRecojo(proveedor?.direccion || "");
+                    }
+                  }}
                   size="xs"
                   radius="lg"
                   classNames={inputStyles}
                   comboboxProps={{ withinPortal: false }}
                 />
+
+                {globalDespacho === TipoDespachoCompra.Recojo && (
+                  <TextInput
+                    label="Lugar de Recojo"
+                    withAsterisk
+                    placeholder="Indique dirección o local..."
+                    value={globalLugarRecojo}
+                    onChange={(e) =>
+                      setGlobalLugarRecojo(e.currentTarget.value)
+                    }
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                  />
+                )}
 
                 <div>
                   <Group gap={4} wrap="nowrap" mb={6}>
@@ -444,32 +483,11 @@ export const CabeceraCotizacion = ({
                       radius="sm"
                       className="font-bold border border-cyan-500/20"
                     >
-                      ≈{" "}
-                      {globalTiempo *
-                        (globalPeriodo === Periodo.Diario
-                          ? 1
-                          : globalPeriodo === Periodo.Semanal
-                            ? 7
-                            : globalPeriodo === Periodo.Mensual
-                              ? 30
-                              : globalPeriodo === Periodo.Anual
-                                ? 365
-                                : 0)}{" "}
-                      día
-                      {globalTiempo *
-                        (globalPeriodo === Periodo.Diario
-                          ? 1
-                          : globalPeriodo === Periodo.Semanal
-                            ? 7
-                            : globalPeriodo === Periodo.Mensual
-                              ? 30
-                              : globalPeriodo === Periodo.Anual
-                                ? 365
-                                : 0) !==
-                      1
-                        ? "s"
-                        : ""}{" "}
-                      estimados
+                      ≈ {getDuracionPeriodo(globalTiempo, globalPeriodo)}{" "}
+                      {enPlural(
+                        "día",
+                        getDuracionPeriodo(globalTiempo, globalPeriodo),
+                      )}
                     </Badge>
                   </div>
                 </div>
@@ -485,7 +503,7 @@ export const CabeceraCotizacion = ({
                   size="xs"
                   className="font-bold shadow-lg shadow-cyan-900/20"
                 >
-                  Aplicar cambios a toda la cotización
+                  Aplicar Cambios
                 </Button>
               </Stack>
             </Popover.Dropdown>
@@ -554,29 +572,6 @@ export const CabeceraCotizacion = ({
                   />
                 </Group>
 
-                <NumberInput
-                  label="Tipo de Cambio (Venta Referencial)"
-                  placeholder="Ej. 3.85"
-                  value={
-                    cot.moneda === MONEDAS.PEN.label
-                      ? 1
-                      : cot.tipo_cambio_venta_referencial ?? ""
-                  }
-                  onChange={(val) =>
-                    onUpdateHeader(
-                      idx,
-                      "tipo_cambio_venta_referencial",
-                      val === "" ? undefined : Number(val),
-                    )
-                  }
-                  disabled={cot.moneda === MONEDAS.PEN.label}
-                  min={0}
-                  decimalScale={4}
-                  size="xs"
-                  radius="lg"
-                  classNames={inputStyles}
-                />
-
                 {cot.metodo_pago === MetodoPago.Credito && (
                   <CustomDatePicker
                     label="Fecha de Vencimiento"
@@ -595,26 +590,70 @@ export const CabeceraCotizacion = ({
                   />
                 )}
 
-                <div className="border-t border-zinc-800/50 mt-1 mb-1" />
+                <Group grow align="flex-end" gap="md">
+                  <NumberInput
+                    label="TC Venta (Ref.)"
+                    placeholder="Ej. 3.85"
+                    value={
+                      cot.moneda === MONEDAS.PEN.label
+                        ? 1
+                        : (cot.tipo_cambio_venta_referencial ?? "")
+                    }
+                    onChange={(val) =>
+                      onUpdateHeader(
+                        idx,
+                        "tipo_cambio_venta_referencial",
+                        val === "" ? undefined : Number(val),
+                      )
+                    }
+                    disabled={cot.moneda === MONEDAS.PEN.label}
+                    min={0}
+                    decimalScale={4}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                  />
+                  <Stack gap={3}>
+                    <Text size="xs" fw={500} className="font-medium">
+                      Incluye IGV
+                    </Text>
+                    <SegmentedControl
+                      size="xs"
+                      radius="xl"
+                      data={[
+                        { label: "SÍ", value: "true" },
+                        { label: "NO", value: "false" },
+                      ]}
+                      value={String(cot.incluye_igv)}
+                      onChange={(val) =>
+                        onUpdateHeader(idx, "incluye_igv", val === "true")
+                      }
+                      color="teal"
+                      classNames={{
+                        root: "bg-zinc-900 border border-zinc-800",
+                      }}
+                    />
+                  </Stack>
 
-                <TextInput
-                  label="Observación (Opcional)"
-                  placeholder="Escriba alguna observación..."
-                  leftSection={
-                    <ClipboardDocumentCheckIcon className="w-4 h-4 text-zinc-500" />
-                  }
-                  value={cot.observacion || ""}
-                  onChange={(e) =>
-                    onUpdateHeader(idx, "observacion", e.currentTarget.value)
-                  }
-                  classNames={inputStyles}
-                  size="xs"
-                  radius="lg"
-                />
+                  <Stack gap={2}>
+                    <NumberInput
+                      label="% IGV"
+                      value={cot.porcentaje_igv}
+                      onChange={(val) =>
+                        onUpdateHeader(idx, "porcentaje_igv", Number(val))
+                      }
+                      disabled
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      suffix="%"
+                    />
+                  </Stack>
+                </Group>
 
                 <Group grow gap="md">
                   <NumberInput
-                    label="Flete (Opcional)"
+                    label="Flete (opc.)"
                     placeholder="0.00"
                     leftSection={
                       <TruckIcon className="w-4 h-4 text-zinc-500" />
@@ -647,54 +686,20 @@ export const CabeceraCotizacion = ({
                   />
                 </Group>
 
-                <Group
-                  grow
-                  align="flex-start"
-                  gap="md"
-                  className="mt-2 pt-4 border-t border-zinc-800/50"
-                >
-                  <Stack gap={2}>
-                    <Text
-                      size="xs"
-                      fw={500}
-                      className="text-zinc-300 mb-1.5 font-medium"
-                    >
-                      Incluye IGV
-                    </Text>
-                    <Switch
-                      checked={cot.incluye_igv}
-                      onChange={(e) =>
-                        onUpdateHeader(
-                          idx,
-                          "incluye_igv",
-                          e.currentTarget.checked,
-                        )
-                      }
-                      size="xs"
-                      color="indigo"
-                    />
-                  </Stack>
-                  <Stack gap={2}>
-                    <Text
-                      size="xs"
-                      fw={500}
-                      className="text-zinc-300 mb-1.5 font-medium"
-                    >
-                      Porcentaje IGV
-                    </Text>
-                    <NumberInput
-                      value={cot.porcentaje_igv}
-                      onChange={(val) =>
-                        onUpdateHeader(idx, "porcentaje_igv", Number(val))
-                      }
-                      disabled
-                      size="xs"
-                      radius="lg"
-                      classNames={inputStyles}
-                      suffix="%"
-                    />
-                  </Stack>
-                </Group>
+                <TextInput
+                  label="Observación (opc.)"
+                  placeholder="Escriba alguna observación..."
+                  leftSection={
+                    <ClipboardDocumentCheckIcon className="w-4 h-4 text-zinc-500" />
+                  }
+                  value={cot.observacion || ""}
+                  onChange={(e) =>
+                    onUpdateHeader(idx, "observacion", e.currentTarget.value)
+                  }
+                  classNames={inputStyles}
+                  size="xs"
+                  radius="lg"
+                />
               </Stack>
             </Popover.Dropdown>
           </Popover>

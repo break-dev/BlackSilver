@@ -42,7 +42,11 @@ export const CotizacionesPage = () => {
   const [openedConfirm, setOpenedConfirm] = useState(false);
 
   const { happy, close } = useBlackcito();
-  const registroRef = useRef<{ agregarCotizacion: () => void; limpiarComparativo: () => void; hasProductos: () => boolean } | null>(null);
+  const registroRef = useRef<{
+    agregarCotizacion: () => void;
+    limpiarComparativo: () => void;
+    hasProductos: () => boolean;
+  } | null>(null);
 
   const handleToggleAuditable = () => {
     if (registroRef.current?.hasProductos()) {
@@ -128,10 +132,10 @@ export const CotizacionesPage = () => {
                 <Divider orientation="vertical" color="zinc.8" h={20} />
               </>
             )}
-            
+
             <Button
               variant="filled"
-              color="pink"
+              color="indigo"
               className="shadow-lg shadow-pink-800/20 transition-all duration-300"
               leftSection={<CubeIcon className="w-5 h-5" />}
               onClick={() => setOpenedProductos(true)}
@@ -153,7 +157,7 @@ export const CotizacionesPage = () => {
 
                 <Button
                   variant="light"
-                  color="emerald"
+                  color="teal"
                   radius="xl"
                   leftSection={<PlusIcon className="w-4 h-4" />}
                   onClick={() => registroRef.current?.agregarCotizacion()}
@@ -188,13 +192,25 @@ export const CotizacionesPage = () => {
         <Stack gap="md" align="center" className="p-4 text-center">
           <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />
           <Text size="sm" fw={800} className="text-zinc-100">
-            Al cambiar el tipo de cotización, se limpiará la grilla actual de productos. ¿Deseas continuar?
+            Al cambiar el tipo de cotización, se limpiará la grilla actual de
+            productos. ¿Deseas continuar?
           </Text>
           <Group justify="center" gap="sm" mt="md">
-            <Button variant="subtle" color="zinc" onClick={() => setOpenedConfirm(false)} radius="xl">
+            <Button
+              variant="subtle"
+              color="zinc"
+              onClick={() => setOpenedConfirm(false)}
+              radius="xl"
+            >
               Cancelar
             </Button>
-            <Button variant="filled" color="red" onClick={confirmarToggle} radius="xl" className="shadow-lg shadow-red-900/20">
+            <Button
+              variant="filled"
+              color="red"
+              onClick={confirmarToggle}
+              radius="xl"
+              className="shadow-lg shadow-red-900/20"
+            >
               Continuar y Limpiar
             </Button>
           </Group>

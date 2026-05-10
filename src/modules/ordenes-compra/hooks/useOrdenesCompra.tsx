@@ -5,6 +5,7 @@ import { useNotify } from "../../../hooks/useNotify.ts";
 import { usePrint } from "../../../hooks/usePrint.ts";
 import { OrdenCompraPDF } from "../../../presentation/utils/orden-compra-pdf.tsx";
 import { getOrdenCompraColumns } from "../presentation/orden-compra-page/orden-compra-columns.tsx";
+import dayjs from "dayjs";
 
 import type {
   RES_OrdenCompra,
@@ -30,6 +31,7 @@ export const useOrdenesCompraPage = () => {
     String(new Date().getFullYear()),
   );
   const [search, setSearch] = useState("");
+  const [estadoFilter, setEstadoFilter] = useState<string | null>(null);
 
   // Estado de Detalle y Impresión
   const [printingId, setPrintingId] = useState<number | null>(null);
@@ -113,15 +115,24 @@ export const useOrdenesCompraPage = () => {
   );
 
   const filteredRecords = useMemo(() => {
+    let result = ordenes;
     const q = search.toLowerCase().trim();
-    if (!q) return ordenes;
-    return ordenes.filter(
-      (item) =>
-        (item.correlativo || "").toLowerCase().includes(q) ||
-        (item.empresa || "").toLowerCase().includes(q) ||
-        (item.correlativo_cotizacion || "").toLowerCase().includes(q),
-    );
-  }, [ordenes, search]);
+
+    if (q) {
+      result = result.filter(
+        (item) =>
+          (item.correlativo || "").toLowerCase().includes(q) ||
+          (item.empresa || "").toLowerCase().includes(q) ||
+          (item.correlativo_cotizacion || "").toLowerCase().includes(q),
+      );
+    }
+
+    if (estadoFilter) {
+      result = result.filter((item) => item.estado === estadoFilter);
+    }
+
+    return result;
+  }, [ordenes, search, estadoFilter]);
 
   const columns = useMemo(
     () =>
@@ -138,6 +149,7 @@ export const useOrdenesCompraPage = () => {
       string,
       { empresa: string; ruc: string; orders: RES_OrdenCompra[] }
     > = {};
+
     filteredRecords.forEach((order) => {
       if (!groups[order.empresa_ruc]) {
         groups[order.empresa_ruc] = {
@@ -148,7 +160,19 @@ export const useOrdenesCompraPage = () => {
       }
       groups[order.empresa_ruc].orders.push(order);
     });
-    return Object.values(groups);
+
+    // 1. Ordenar empresas ascendentemente por nombre
+    const sortedGroups = Object.values(groups).sort((a, b) =>
+      a.empresa.localeCompare(b.empresa),
+    );
+
+    // 2. Ordenar órdenes dentro de cada empresa por fecha descendente
+    return sortedGroups.map((group) => ({
+      ...group,
+      orders: [...group.orders].sort((a, b) =>
+        dayjs(b.fecha_hora_orden).diff(dayjs(a.fecha_hora_orden)),
+      ),
+    }));
   }, [filteredRecords]);
 
   const tableColumns = useMemo(
@@ -234,6 +258,8 @@ export const useOrdenesCompraPage = () => {
       setYearcito,
       search,
       setSearch,
+      estadoFilter,
+      setEstadoFilter,
     },
     containerRef,
     printingId,
