@@ -1,9 +1,10 @@
-import { Select, TextInput } from "@mantine/core";
+import { Button, Select, TextInput } from "@mantine/core";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
+import { IconFileSpreadsheet } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { MESES } from "../../../../shared/variables/meses";
 import { Estado_OrdenCompra } from "../../../../shared/enums/orden-compra/orden-compra";
@@ -17,6 +18,8 @@ interface FiltrosProps {
   setSearch: (val: string) => void;
   estadoFilter: string | null;
   setEstadoFilter: (val: string | null) => void;
+  handleExportExcel: () => void;
+  isGeneratingExcel: boolean;
 }
 
 export const Filtros = ({
@@ -28,6 +31,8 @@ export const Filtros = ({
   setSearch,
   estadoFilter,
   setEstadoFilter,
+  handleExportExcel,
+  isGeneratingExcel,
 }: FiltrosProps) => {
   const commonClasses = {
     input:
@@ -111,6 +116,23 @@ export const Filtros = ({
             label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
           }}
         />
+      </div>
+
+      {/* Exportar a Excel */}
+      <div className="w-full sm:w-auto mt-2 sm:mt-0">
+        <Button
+          onClick={handleExportExcel}
+          loading={isGeneratingExcel}
+          disabled={isGeneratingExcel}
+          variant="light"
+          color="teal"
+          radius="lg"
+          size="sm"
+          className="w-full transition-all"
+          leftSection={!isGeneratingExcel && <IconFileSpreadsheet size={18} />}
+        >
+          Exportar
+        </Button>
       </div>
     </div>
   );

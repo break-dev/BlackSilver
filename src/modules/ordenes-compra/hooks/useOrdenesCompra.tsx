@@ -3,6 +3,8 @@ import { useDisclosure } from "@mantine/hooks";
 import { OrdenCompraService } from "../service/orden-compra.service.ts";
 import { useNotify } from "../../../hooks/useNotify.ts";
 import { usePrint } from "../../../hooks/usePrint.ts";
+import { useExcel } from "../../../hooks/useExcel.ts";
+import { buildOrdenesCompraExcel } from "../presentation/ordenes-compra-excel.tsx";
 import { OrdenCompraPDF } from "../../../presentation/utils/orden-compra-pdf.tsx";
 import { getOrdenCompraColumns } from "../presentation/orden-compra-page/orden-compra-columns.tsx";
 import dayjs from "dayjs";
@@ -20,6 +22,7 @@ import {
 export const useOrdenesCompraPage = () => {
   const { notify } = useNotify();
   const { print } = usePrint();
+  const { generateExcel, isGeneratingExcel } = useExcel();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [ordenes, setOrdenes] = useState<RES_OrdenCompra[]>([]);
@@ -246,6 +249,30 @@ export const useOrdenesCompraPage = () => {
     [detalles, selectedOrden],
   );
 
+  const handleExportExcel = useCallback(async () => {
+    if (filteredRecords.length === 0) {
+      notify({
+        type: "info",
+        content: "No hay registros filtrados para exportar.",
+      });
+      return;
+    }
+
+    const ids = filteredRecords.map((o) => o.id_orden_compra);
+
+    generateExcel({
+      filename: `Ordenes_Compra_${dayjs().format("DD_MM_YYYY_HHmm")}`,
+      builder: async (workbook) => {
+        const res = await OrdenCompraService.get_detalles(ids);
+        if (res.success) {
+          await buildOrdenesCompraExcel(workbook, filteredRecords, res.data);
+        } else {
+          throw new Error(res.message);
+        }
+      },
+    });
+  }, [filteredRecords, generateExcel, notify]);
+
   return {
     ordenes,
     filteredRecords,
@@ -260,6 +287,8 @@ export const useOrdenesCompraPage = () => {
       setSearch,
       estadoFilter,
       setEstadoFilter,
+      handleExportExcel,
+      isGeneratingExcel,
     },
     containerRef,
     printingId,

@@ -22,11 +22,11 @@ export const OrdenCompraService = {
     return res.data;
   },
 
-  get_detalles: async (idOrdenCompra: number) => {
+  get_detalles: async (ids_ordenes_compra: number | number[]) => {
     const res = await api.get<IRespuesta<RES_OrdenCompraDetalle[]>>(
       `${path}/detalles`,
       {
-        params: { id_orden_compra: idOrdenCompra },
+        params: { ids_ordenes_compra: ids_ordenes_compra },
       },
     );
     return res.data;
