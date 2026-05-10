@@ -30,9 +30,12 @@ export const OrdenCompraFilaDetalle = ({
     <tr
       className={`hover:bg-zinc-900/40 transition-colors group ${isSelected ? "bg-indigo-500/5" : ""}`}
     >
+      {/* Indice */}
       <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
         {idx + 1}
       </td>
+
+      {/* Selecctor para la rececpion */}
       <td className="px-6 py-4 text-center">
         <Checkbox
           checked={isSelected}
@@ -43,6 +46,8 @@ export const OrdenCompraFilaDetalle = ({
           className={isAvailable ? "cursor-pointer" : "opacity-40"}
         />
       </td>
+
+      {/* Producto */}
       <td className="px-6 py-4">
         <Stack gap={4}>
           <Group gap="sm">
@@ -79,19 +84,8 @@ export const OrdenCompraFilaDetalle = ({
           </Group>
         </Stack>
       </td>
-      <td className="px-6 py-4 text-center">
-        <Stack gap={1} align="center">
-          <Text size="xs" fw={800} className="text-zinc-100">
-            {formatNumber(det.cantidad_requerida)} {det.unidad_medida_oc_abv}
-          </Text>
-          {det.id_unidad_medida_base !== det.id_unidad_medida_oc && (
-            <Badge size="xs" color="cyan" fw={700} variant="outline">
-              {formatNumber(det.contenido_por_presentacion)}{" "}
-              {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
-            </Badge>
-          )}
-        </Stack>
-      </td>
+
+      {/* Almacén/Entrega */}
       <td className="px-6 py-4 text-center">
         <Stack gap={0} align="center">
           <Badge
@@ -131,16 +125,137 @@ export const OrdenCompraFilaDetalle = ({
           )}
         </Stack>
       </td>
+
+      {/* Cantidad solicitada */}
       <td className="px-6 py-4 text-center">
-        <Text size="sm" fw={800} className="text-zinc-100 font-mono">
-          {symbol} {formatNumber(det.precio_unitario)}
-        </Text>
+        <Stack gap={1} align="center">
+          <Text size="xs" fw={800} className="text-zinc-100">
+            {formatNumber(det.cantidad_requerida)} {det.unidad_medida_oc_abv}
+          </Text>
+
+          {det.id_unidad_medida_base !== det.id_unidad_medida_oc && (
+            <Badge size="xs" color="cyan" fw={700} variant="outline">
+              {formatNumber(det.contenido_por_presentacion)}{" "}
+              {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
+            </Badge>
+          )}
+        </Stack>
       </td>
+
+      {/* Costo */}
       <td className="px-6 py-4 text-center">
-        <Text size="sm" fw={900} className="text-zinc-100 font-mono">
-          {symbol} {formatNumber(det.precio_unitario * det.cantidad_requerida)}
-        </Text>
+        <div className="flex flex-row justify-center items-center gap-3">
+          {/* Precio Unitario Base */}
+          <div className="flex flex-col items-center leading-tight">
+            <Text
+              size="10px"
+              fw={700}
+              className="uppercase tracking-tighter"
+              c={"cyan"}
+            >
+              Por {det.unidad_medida_base_abv}
+            </Text>
+            <Text size="xs" fw={700} className="text-zinc-100 font-mono">
+              {symbol} {formatNumber(det.precio_unitario_base)}
+            </Text>
+          </div>
+
+          {/* Precio Presentación (solo si es diferente a la base) */}
+          {det.id_unidad_medida_base !== det.id_unidad_medida_oc && (
+            <>
+              <div className="w-px h-6 bg-zinc-800/60" />
+              <div className="flex flex-col items-center leading-tight">
+                <Text
+                  size="10px"
+                  fw={700}
+                  c={"yellow"}
+                  className="uppercase tracking-tighter"
+                >
+                  Por {det.unidad_medida_oc_abv}
+                </Text>
+                <Text size="xs" fw={700} className="text-zinc-100 font-mono">
+                  {symbol} {formatNumber(det.precio_unitario)}
+                </Text>
+              </div>
+            </>
+          )}
+
+          <div className="w-px h-6 bg-indigo-500/30" />
+
+          {/* Subtotal */}
+          <div className="flex flex-col items-center leading-tight">
+            <Text
+              size="10px"
+              fw={800}
+              c={"blue.4"}
+              className="uppercase tracking-tighter"
+            >
+              Subtotal
+            </Text>
+            <Text size="xs" fw={800} className="text-teal-400 font-mono">
+              {symbol}{" "}
+              {formatNumber(det.precio_unitario * det.cantidad_requerida)}
+            </Text>
+          </div>
+        </div>
       </td>
+
+      {/* Progreso de Recepción */}
+      <td className="px-6 py-4 text-center">
+        <div className="flex flex-row justify-center items-center gap-2">
+          <div className="flex flex-col items-center leading-none">
+            <Text
+              size="10px"
+              fw={700}
+              c="teal.5"
+              className="uppercase tracking-tighter"
+            >
+              Rec.
+            </Text>
+            <Text
+              size="xs"
+              fw={800}
+              c={det.cantidad_recepcionada_base > 0 ? "teal.4" : "zinc-6"}
+            >
+              {formatNumber(
+                det.cantidad_recepcionada_base / det.contenido_por_presentacion,
+              )}
+            </Text>
+          </div>
+
+          <div className="w-px h-5 bg-zinc-800" />
+
+          <div className="flex flex-col items-center leading-none">
+            <Text
+              size="10px"
+              fw={700}
+              c="orange.5"
+              className="uppercase tracking-tighter"
+            >
+              Pen.
+            </Text>
+            <Text
+              size="xs"
+              fw={800}
+              c={
+                det.cantidad_requerida_base - det.cantidad_recepcionada_base >
+                0.001
+                  ? "orange.4"
+                  : "zinc-6"
+              }
+            >
+              {formatNumber(
+                Math.max(
+                  0,
+                  det.cantidad_requerida_base - det.cantidad_recepcionada_base,
+                ) / det.contenido_por_presentacion,
+              )}
+            </Text>
+          </div>
+        </div>
+      </td>
+
+      {/* Estado */}
       <td className="px-6 py-4 text-center">
         <Badge
           variant="light"
@@ -158,6 +273,8 @@ export const OrdenCompraFilaDetalle = ({
           {det.estado}
         </Badge>
       </td>
+
+      {/* Acciones */}
       <td className="px-6 py-4 text-center">
         <ActionIcon
           variant="subtle"

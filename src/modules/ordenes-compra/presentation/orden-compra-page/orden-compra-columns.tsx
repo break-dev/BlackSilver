@@ -96,10 +96,10 @@ export const getOrdenCompraColumns = ({
   {
     accessor: "total_despues_igv",
     title: "Importe Total",
-    textAlign: "right",
+    textAlign: "center",
     width: 140,
     render: (item) => (
-      <Stack gap={0} align="flex-end">
+      <Stack gap={0} justify="center">
         <Text
           size="sm"
           fw={900}
@@ -118,6 +118,7 @@ export const getOrdenCompraColumns = ({
     accessor: "estado",
     title: "Estado",
     width: 130,
+    textAlign: "center",
     render: (item) => {
       const stateInfo = COLOR_BY_STATE[item.estado] ?? {
         color: "zinc",

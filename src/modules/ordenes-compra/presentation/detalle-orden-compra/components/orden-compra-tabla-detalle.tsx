@@ -110,10 +110,10 @@ export const OrdenCompraTablaDetalle = ({
                 />
               </th>
               <th className="px-6 py-4 text-left">Producto</th>
-              <th className="px-6 py-4 text-center">Cant. Solicitada</th>
               <th className="px-6 py-4 text-center">Almacén/Entrega</th>
-              <th className="px-6 py-4 text-center">Costo Unit.</th>
-              <th className="px-6 py-4 text-center">Subtotal</th>
+              <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+              <th className="px-6 py-4 text-center">Costo</th>
+              <th className="px-6 py-4 text-center">Progreso Rec.</th>
               <th className="px-6 py-4 text-center">Estado</th>
               <th className="px-6 py-4 text-center w-16">Acciones</th>
             </tr>
