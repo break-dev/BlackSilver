@@ -6,6 +6,7 @@ import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/aux.service";
 import { useAuthStore } from "../../../stores/auth.store";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export interface IUseHook {
   setError: (msg: string) => void;
@@ -13,7 +14,7 @@ export interface IUseHook {
 
 export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   const navigate = useNavigate();
-
+  const { en_modo_auditable } = useAuditoriaStore();
   // -- Estados de Catálogos --
   const [almacenes, setAlmacenes] = useState<
     { id_almacen: number; nombre: string }[]
@@ -97,14 +98,15 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
   // -- Filtrado --
   const filteredRecords = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
-    if (!q) return data;
-    return data.filter(
+    const result = data.filter((p) => !(en_modo_auditable && p.es_auditable));
+    if (!q) return result;
+    return result.filter(
       (item) =>
         item.correlativo.toLowerCase().includes(q) ||
         item.solicitante.toLowerCase().includes(q) ||
         item.mina.toLowerCase().includes(q),
     );
-  }, [data, busqueda]);
+  }, [data, busqueda, en_modo_auditable]);
 
   // -- Local State Updates --
   const updateRequirementLocal = useCallback(

@@ -7,8 +7,10 @@ import type { RES_TicketLote } from "../../../service/responses/lote-producto";
 import { AuxService } from "../../../service/aux.service";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import { useAuthStore } from "../../../stores/auth.store";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useLotesPage = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const setTitle = useUIStore((state) => state.setTitle);
 
   const [searchParams] = useSearchParams();
@@ -104,6 +106,9 @@ export const useLotesPage = () => {
 
   const filteredRecords = useMemo(() => {
     return lotes.filter((l) => {
+      // Filtro modo auditoría
+      if (en_modo_auditable && l.es_auditable) return false;
+
       const matchCategoria =
         !filtroCategoria || l.categoria === filtroCategoria;
       const matchProducto = !filtroProducto || l.producto === filtroProducto;
@@ -115,7 +120,7 @@ export const useLotesPage = () => {
         (l.categoria || "").toLowerCase().includes(q);
       return matchCategoria && matchProducto && matchBusqueda;
     });
-  }, [lotes, busqueda, filtroCategoria, filtroProducto]);
+  }, [lotes, busqueda, filtroCategoria, filtroProducto, en_modo_auditable]);
 
   // LÓGICA DE SELECCIÓN CRÍTICA (Memorizada como en ProductGroupSelection)
   const visibleIds = useMemo(

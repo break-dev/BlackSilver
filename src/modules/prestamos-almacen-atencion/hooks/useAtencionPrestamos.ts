@@ -5,8 +5,10 @@ import { PrestamosAtencionService } from "../service/prestamos-atencion.service"
 import { useNotify } from "../../../hooks/useNotify";
 import { AuxService } from "../../../service/aux.service";
 import { useAuthStore } from "../../../stores/auth.store";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useAtencionPrestamos = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const { notifyError } = useNotify();
 
   // -- Almacenes del empleado --
@@ -33,7 +35,7 @@ export const useAtencionPrestamos = () => {
     try {
       const res = await AuxService.get_almacenes({
         id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
-        es_principal: false
+        es_principal: false,
       });
       if (res.success) {
         setAlmacenes(res.data);
@@ -85,14 +87,17 @@ export const useAtencionPrestamos = () => {
   // --------------------------------------------------
   const filteredRecords = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
-    if (!q) return prestamos;
-    return prestamos.filter(
+    const result = prestamos.filter(
+      (p) => !(en_modo_auditable && p.es_auditable),
+    );
+    if (!q) return result;
+    return result.filter(
       (p) =>
         p.correlativo.toLowerCase().includes(q) ||
         p.almacen_solicitante.toLowerCase().includes(q) ||
         p.registrado_por.toLowerCase().includes(q),
     );
-  }, [prestamos, busqueda]);
+  }, [prestamos, busqueda, en_modo_auditable]);
 
   return {
     // estado

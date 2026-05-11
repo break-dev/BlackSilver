@@ -1,12 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { CotizacionesService } from "../service/cotizaciones.service";
 import {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
 } from "../../../shared/enums/cotizacion/cotizacion";
 import type { RES_Comparativo } from "../../../service/responses/cotizaciones/cotizacion";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useCotizaciones = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const [comparativos, setComparativos] = useState<RES_Comparativo[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -87,7 +89,9 @@ export const useCotizaciones = () => {
   const addComparativosLocal = useCallback((nuevos: RES_Comparativo[]) => {
     setComparativos((prev) => {
       const idsActuales = new Set(prev.map((c) => c.id_comparativo));
-      const filtrados = nuevos.filter((c) => !idsActuales.has(c.id_comparativo));
+      const filtrados = nuevos.filter(
+        (c) => !idsActuales.has(c.id_comparativo),
+      );
       return [...filtrados, ...prev].sort(
         (a, b) => b.id_comparativo - a.id_comparativo,
       );
@@ -106,8 +110,19 @@ export const useCotizaciones = () => {
     [],
   );
 
+  const comparativosFiltrados = useMemo(() => {
+    return comparativos
+      .map((comp) => ({
+        ...comp,
+        cotizaciones: comp.cotizaciones.filter(
+          (cot) => !(en_modo_auditable && cot.es_auditable),
+        ),
+      }))
+      .filter((comp) => comp.cotizaciones.length > 0);
+  }, [comparativos, en_modo_auditable]);
+
   return {
-    comparativos,
+    comparativos: comparativosFiltrados,
     loading,
     fetchCotizaciones,
     updateCotizacionLocal,

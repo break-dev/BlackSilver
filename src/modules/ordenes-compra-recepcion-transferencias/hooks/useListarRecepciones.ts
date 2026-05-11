@@ -8,16 +8,21 @@ export const useListarRecepciones = () => {
   const [recepciones, setRecepciones] = useState<RES_OCTransRecepcion[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const cargarRecepciones = useCallback((idTransferencia: number) => {
-    setLoading(true);
-    setRecepciones([]);
-    OCTransService.getHistorialRecepciones(idTransferencia)
-      .then((res) => {
-        if (res.success && res.data) setRecepciones(res.data);
-      })
-      .catch(() => notifyError("Error al cargar el historial de recepciones."))
-      .finally(() => setLoading(false));
-  }, []);
+  const cargarRecepciones = useCallback(
+    (idTransferencia: number) => {
+      setLoading(true);
+      setRecepciones([]);
+      OCTransService.getHistorialRecepciones(idTransferencia)
+        .then((res) => {
+          if (res.success && res.data) setRecepciones(res.data);
+        })
+        .catch(() =>
+          notifyError("Error al cargar el historial de recepciones."),
+        )
+        .finally(() => setLoading(false));
+    },
+    [notifyError],
+  );
 
   return { recepciones, loading, cargarRecepciones };
 };

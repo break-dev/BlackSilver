@@ -5,7 +5,10 @@ import type {
   RES_SolicitudDetalle,
 } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+
 export const useSolicitudesPage = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const [loading, setLoading] = useState(false);
   const [solicitudes, setSolicitudes] = useState<RES_Solicitud[]>([]);
 
@@ -96,14 +99,21 @@ export const useSolicitudesPage = () => {
 
   const filteredRecords = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return solicitudes;
-    return solicitudes.filter(
+    const result = solicitudes.filter(
+      (item) => !(en_modo_auditable && item.es_auditable),
+    );
+    if (!q) return result;
+    return result.filter(
       (item) =>
         (item.correlativo || "").toLowerCase().includes(q) ||
         (item.correlativo_requerimiento || "").toLowerCase().includes(q) ||
         (item.solicitado_por || "").toLowerCase().includes(q),
     );
-  }, [solicitudes, search]);
+  }, [solicitudes, search, en_modo_auditable]);
+
+  const detallesFiltrados = useMemo(() => {
+    return detalles.filter((d) => !(en_modo_auditable && d.es_auditable));
+  }, [detalles, en_modo_auditable]);
 
   return {
     solicitudes,
@@ -128,7 +138,7 @@ export const useSolicitudesPage = () => {
     ui: {
       selectedReq,
       setSelectedReq,
-      detalles,
+      detalles: detallesFiltrados,
       loadingDetalle,
       selectedDetalle,
       setSelectedDetalle,

@@ -4,6 +4,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 import { AuxService } from "../../../service/aux.service";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const usePrestamosAlmacen = () => {
   const { notifyError } = useNotify();
@@ -19,7 +20,7 @@ export const usePrestamosAlmacen = () => {
     new Date().getFullYear() + "",
   );
   const initialized = useRef(false);
-
+  const { en_modo_auditable } = useAuditoriaStore();
   /**
    * Cargar almacenes secundarios al iniciar
    */
@@ -75,9 +76,16 @@ export const usePrestamosAlmacen = () => {
     return idAlmacen && mes && yearcito;
   }, [idAlmacen, mes, yearcito]);
 
+  // --------------------------------------------------
+  // Filtrado local por búsqueda
+  // --------------------------------------------------
+  const filteredRecords = useMemo(() => {
+    return prestamos.filter((p) => !(en_modo_auditable && p.es_auditable));
+  }, [prestamos, en_modo_auditable]);
+
   return {
     almacenes,
-    prestamos,
+    prestamos: filteredRecords,
     loading,
     loadingAlmacenes,
     idAlmacen,

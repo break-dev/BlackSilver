@@ -4,8 +4,10 @@ import type { RES_Solicitud } from "../../../service/responses/solicitudes-reaba
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import dayjs from "dayjs";
 import { AuxService } from "../../../service/aux.service";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useAtencionSolicitudes = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const [loading, setLoading] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
@@ -66,15 +68,18 @@ export const useAtencionSolicitudes = () => {
   }, [loadSolicitudes]);
 
   const filteredRecords = useMemo(() => {
-    if (!busqueda) return solicitudes;
+    const result = solicitudes.filter(
+      (s) => !(en_modo_auditable && s.es_auditable),
+    );
+    if (!busqueda) return result;
     const lowerBusqueda = busqueda.toLowerCase();
-    return solicitudes.filter(
+    return result.filter(
       (s) =>
         s.correlativo.toLowerCase().includes(lowerBusqueda) ||
         s.solicitado_por.toLowerCase().includes(lowerBusqueda) ||
         (s.observacion && s.observacion.toLowerCase().includes(lowerBusqueda)),
     );
-  }, [solicitudes, busqueda]);
+  }, [solicitudes, busqueda, en_modo_auditable]);
 
   const updateSolicitudLocal = useCallback(
     (id: number, data: Partial<RES_Solicitud>) => {

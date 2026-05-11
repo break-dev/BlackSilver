@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../../service/responses/almacen";
@@ -8,8 +8,11 @@ import type {
   RES_OCTransferenciaDetalle,
 } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import { AuxService } from "../../../service/aux.service";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+import { useMemo } from "react";
 
 export const useListarTransferencias = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const { notifyError } = useNotify();
 
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
@@ -35,7 +38,6 @@ export const useListarTransferencias = () => {
 
   // 1. Cargar almacenes al montar — autoelige el primero
   useEffect(() => {
-    setLoadingAlmacenes(true);
     AuxService.get_almacenes()
       .then((res) => {
         if (res.success && res.data && res.data.length > 0) {
@@ -45,23 +47,37 @@ export const useListarTransferencias = () => {
       })
       .catch(() => notifyError("Error al cargar almacenes."))
       .finally(() => setLoadingAlmacenes(false));
-  }, []);
+  }, [notifyError]);
 
   // 2. Cargar transferencias cuando cambian los filtros
-  useEffect(() => {
+  const cargarTransferencias = useCallback(async () => {
     if (!selectedAlmacenId) return;
+
+    // Diferimos el setLoading para evitar el error de "cascading renders" en el useEffect
+    await Promise.resolve();
     setLoading(true);
-    OCTransService.getTransferencias(selectedAlmacenId, mes, anio)
-      .then((res) => {
-        if (res.success && res.data) {
-          setTransferencias(res.data);
-        } else {
-          setTransferencias([]);
-        }
-      })
-      .catch(() => notifyError("Error al cargar transferencias."))
-      .finally(() => setLoading(false));
-  }, [selectedAlmacenId, mes, anio]);
+
+    try {
+      const res = await OCTransService.getTransferencias(
+        selectedAlmacenId,
+        mes,
+        anio,
+      );
+      if (res.success && res.data) {
+        setTransferencias(res.data);
+      } else {
+        setTransferencias([]);
+      }
+    } catch {
+      notifyError("Error al cargar transferencias.");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedAlmacenId, mes, anio, notifyError]);
+
+  useEffect(() => {
+    cargarTransferencias();
+  }, [cargarTransferencias]);
 
   // 3. Cargar detalles al seleccionar una transferencia
   const seleccionarTransferencia = (t: RES_OCTransferencia) => {
@@ -83,15 +99,13 @@ export const useListarTransferencias = () => {
     setDetallesTransferencia([]);
   };
 
-  const refrescarLista = () => {
-    if (!selectedAlmacenId) return;
-    setLoading(true);
-    OCTransService.getTransferencias(selectedAlmacenId, mes, anio)
-      .then((res) => {
-        if (res.success && res.data) setTransferencias(res.data);
-      })
-      .finally(() => setLoading(false));
-  };
+  const refrescarLista = useCallback(() => {
+    cargarTransferencias();
+  }, [cargarTransferencias]);
+
+  const transferenciasFiltradas = useMemo(() => {
+    return transferencias.filter((t) => !(en_modo_auditable && t.es_auditable));
+  }, [transferencias, en_modo_auditable]);
 
   return {
     almacenes,
@@ -101,11 +115,11 @@ export const useListarTransferencias = () => {
     setMes,
     anio,
     setAnio,
-    transferencias,
+    transferencias: transferenciasFiltradas,
     loading,
     loadingAlmacenes,
     selectedTransferencia,
-    detallesTransferencia,
+    detallesTransferencia: detallesTransferencia,
     loadingDetalles,
     seleccionarTransferencia,
     cerrarDetalle,

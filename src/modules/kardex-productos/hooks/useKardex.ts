@@ -5,8 +5,10 @@ import type { RES_MovimientoKardex } from "../service/kardex.responses";
 import { AuxService } from "../../../service/aux.service";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import { useAuthStore } from "../../../stores/auth.store";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useKardex = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   // -- Estados de Filtro Principal (Periodo y Almacén) --
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
   const [mes, setMes] = useState<string>(dayjs().format("M"));
@@ -120,6 +122,9 @@ export const useKardex = () => {
 
   const filteredRecords = useMemo(() => {
     return movimientos.filter((m) => {
+      // Filtro modo auditoría
+      if (en_modo_auditable && m.es_auditable) return false;
+
       const matchProducto = !filtroProducto || m.producto === filtroProducto;
       const matchLote = !filtroLote || String(m.correlativo) === filtroLote;
 
@@ -133,7 +138,7 @@ export const useKardex = () => {
 
       return matchProducto && matchLote && matchBusqueda;
     });
-  }, [movimientos, busqueda, filtroProducto, filtroLote]);
+  }, [movimientos, busqueda, filtroProducto, filtroLote, en_modo_auditable]);
 
   return {
     // Estados y Setters para la UI

@@ -3,6 +3,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { CategoriasService } from "../service/categorias.service";
 import type { RES_Categoria } from "../service/categorias.responses";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useCategorias = () => {
   const { notify } = useNotify();
@@ -37,19 +38,25 @@ export const useCategorias = () => {
     listar();
   }, [listar]);
 
+  const { en_modo_auditable } = useAuditoriaStore();
+
   const categoriasFiltradas = useMemo(() => {
     const q = busqueda.toLowerCase();
-    return categorias.filter(
-      (cat) =>
-        !q ||
-        cat.nombre.toLowerCase().includes(q) ||
-        (cat.descripcion || "").toLowerCase().includes(q),
-    );
-  }, [categorias, busqueda]);
+    return categorias
+      .filter((cat) => !(en_modo_auditable && cat.es_auditable)) // Filtro modo auditoría
+      .filter(
+        (cat) =>
+          !q ||
+          cat.nombre.toLowerCase().includes(q) ||
+          (cat.descripcion || "").toLowerCase().includes(q),
+      );
+  }, [categorias, busqueda, en_modo_auditable]);
 
   const onCategoriaGuardada = (nueva: RES_Categoria) => {
     setCategorias((prev) => {
-      const index = prev.findIndex((c) => c.id_categoria === nueva.id_categoria);
+      const index = prev.findIndex(
+        (c) => c.id_categoria === nueva.id_categoria,
+      );
       if (index !== -1) {
         const actualizadas = [...prev];
         actualizadas[index] = nueva;

@@ -428,7 +428,7 @@ export const useGestionAtencion = ({
 
   return {
     loading,
-    detalles,
+    detalles: detalles,
     error,
     eventos,
     loadingTrazabilidad,

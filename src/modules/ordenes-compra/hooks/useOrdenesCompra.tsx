@@ -8,6 +8,7 @@ import { buildOrdenesCompraExcel } from "../presentation/ordenes-compra-excel.ts
 import { OrdenCompraPDF } from "../../../presentation/utils/orden-compra-pdf.tsx";
 import { getOrdenCompraColumns } from "../presentation/orden-compra-page/orden-compra-columns.tsx";
 import dayjs from "dayjs";
+import { useAuditoriaStore } from "../../../stores/auditoria.store.ts";
 
 import type {
   RES_OrdenCompra,
@@ -20,6 +21,7 @@ import {
 } from "../../../shared/enums/orden-compra/orden-compra";
 
 export const useOrdenesCompraPage = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const { notify } = useNotify();
   const { print } = usePrint();
   const { generateExcel, isGeneratingExcel } = useExcel();
@@ -118,7 +120,9 @@ export const useOrdenesCompraPage = () => {
   );
 
   const filteredRecords = useMemo(() => {
-    let result = ordenes;
+    let result = ordenes.filter(
+      (item) => !(en_modo_auditable && item.es_auditable),
+    );
     const q = search.toLowerCase().trim();
 
     if (q) {
@@ -135,7 +139,11 @@ export const useOrdenesCompraPage = () => {
     }
 
     return result;
-  }, [ordenes, search, estadoFilter]);
+  }, [ordenes, search, estadoFilter, en_modo_auditable]);
+
+  const detallesFiltrados = useMemo(() => {
+    return detalles.filter((d) => !(en_modo_auditable && d.es_auditable));
+  }, [detalles, en_modo_auditable]);
 
   const columns = useMemo(
     () =>
@@ -293,7 +301,7 @@ export const useOrdenesCompraPage = () => {
     containerRef,
     printingId,
     selectedOrden,
-    detalles,
+    detalles: detallesFiltrados,
     loadingDetalle,
     openedDetalle,
     closeDet,

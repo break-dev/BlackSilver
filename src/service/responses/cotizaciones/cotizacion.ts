@@ -74,6 +74,7 @@ export interface RES_Cotizacion {
   fecha_vencimiento_pago: string | null;
   moneda: string;
   tipo_cambio_venta_referencial: number | null;
+  es_auditable: boolean;
   //
   costo_flete: number;
   otros_gastos: number;

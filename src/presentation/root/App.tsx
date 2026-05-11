@@ -45,8 +45,30 @@ import { ProveedoresPage } from "../../modules/proveedores/presentation/proveedo
 import CotizacionesPage from "../../modules/cotizaciones/presentation/cotizaciones.page.tsx";
 import { OrdenesCompraPage } from "../../modules/ordenes-compra/presentation/ordenes-compra-page.tsx";
 import { RecepcionTransferenciasOCPage } from "../../modules/ordenes-compra-recepcion-transferencias/presentation/oc-recepcion-transferencias.page.tsx";
+import { useEffect } from "react";
+import { onSocketEvent } from "../../service/_socket.ts";
+import { useAuditoriaStore } from "../../stores/auditoria.store.ts";
+import ModoAuditoriaPage from "../../modules/modo-auditoria/presentation/ModoAuditoriaPage.tsx";
 
 export const App = () => {
+  const { setModoAuditoria } = useAuditoriaStore();
+
+  useEffect(() => {
+    // Escuchar el evento global de modo auditoría
+    const channel = onSocketEvent(
+      "global-audit-mode",
+      "audit.mode.toggled",
+      (data: { en_modo_auditable: boolean }) => {
+        console.log("[App] Evento de Auditoría recibido:", data);
+        setModoAuditoria(data.en_modo_auditable);
+      },
+    );
+
+    return () => {
+      channel.stopListening(".audit.mode.toggled");
+    };
+  }, [setModoAuditoria]);
+
   return (
     <Routes>
       {/* Rutas publicas */}
@@ -58,8 +80,10 @@ export const App = () => {
         }
       >
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
       </Route>
+
+      {/* Ruta oculta de auditoría (Sin layout) */}
+      <Route path="/modo-auditoria" element={<ModoAuditoriaPage />} />
 
       {/* Rutas protegidas */}
       <Route
