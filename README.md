@@ -189,6 +189,83 @@ Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas 
 
 ---
 
+## 🎨 Guía Técnica de Estilos y Mantine v8 (ESTRICTO)
+
+Para evitar que la interfaz se vea inconsistente o "gigante", y asegurar que las IA utilicen la sintaxis correcta de Mantine v8, se deben seguir estas reglas sin excepción:
+
+### 1. Diccionario de Style Props (Mantine v8)
+Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (ya no existe) ni nombres de propiedades CSS completos como props del componente.
+
+| Prop Correcta | Propósito | Ejemplo | Error Común (NO USAR) |
+| :--- | :--- | :--- | :--- |
+| `c` | Color de texto | `c="indigo.4"` o `c="white"` | `color="blue"` |
+| `bg` | Background | `bg="zinc.9"` o `bg="#000"` | `backgroundColor` |
+| `fz` | Font Size | `fz="sm"` (ideal ERP) o `fz="xs"` | `fontSize="14px"` |
+| `fw` | Font Weight | `fw={700}` o `fw="bold"` | `fontWeight` |
+| `p`, `m` | Padding / Margin | `p="md"`, `mt="xl"`, `mx="auto"` | `padding`, `marginTop` |
+| `h`, `w` | Height / Width | `h={38}` (altura estándar input) | `height`, `width` |
+| `gap` | Espaciado (Group/Stack) | `gap="md"` o `gap={16}` | `spacing` |
+| `justify` | Alineación horizontal | `justify="space-between"` | `position` |
+| `align` | Alineación vertical | `align="center"` | `alignItems` |
+
+### 2. Reglas de Oro para Componentes de Formulario
+- **Look Dark & Premium**: Los inputs deben integrarse con el tema oscuro. Usa siempre un objeto de clases (ej. `fieldClasses`) para el prop `classNames`:
+  ```tsx
+  const fieldClasses = {
+    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+  ```
+- **Tamaño ERP**: Usa **siempre** `size="xs"` y `radius="lg"` para `TextInput`, `Select`, `NumberInput` y `Button`. Esto evita que la UI se vea tosca.
+- **Selects / MultiSelect**: 
+  - Añade siempre `searchable`.
+  - Si el componente está dentro de un `Modal`, añade `popoverProps={{ withinPortal: true }}` para evitar que el menú se corte.
+- **NumberInput**:
+  - Usa `hideControls` cuando el input esté dentro de una tabla o espacio reducido.
+  - Para montos, no uses `decimalScale={2}` pero si `fixedDecimalScale`.
+
+### 3. Estética "Black & Silver" (Recomendaciones Visuales)
+- **Flexibilidad Cromática**: La IA tiene **libertad total** para elegir colores según el contexto (colores vibrantes, gradientes, dark mode). No estás limitado a los colores de ejemplo.
+- **Calidad Visual**: Los componentes deben sentirse premium. Usa sombras de Tailwind (ej. `shadow-lg shadow-indigo-900/20`), efectos de cristal (`backdrop-blur`) y bordes sutiles.
+- **Badges**: Prefiere `variant="light"` o `variant="filled"`. Evita colores planos aburridos.
+
+### 4. Arquitectura de Estado y Notificaciones
+- **Notificaciones**: **PROHIBIDO** usar `@mantine/notifications` directamente. Debes usar el hook personalizado `useNotify()` del proyecto:
+  ```tsx
+  const { notifySuccess, notifyError } = useNotify();
+  notifySuccess("Operación exitosa");
+  ```
+- **Manejo de Formularios**: El proyecto prefiere `useState` con una función `setField` y validación manual con `Zod` (`Schema.safeParse(form)`) en lugar de `useForm` de Mantine, a menos que el módulo ya use `useForm`.
+
+### 5. Catálogo de Referencia para la IA
+
+Utiliza este catálogo para seleccionar los componentes y hooks más adecuados para cada tarea.
+
+#### Componentes Disponibles
+- **Layout**: `AppShell`, `AspectRatio`, `Center`, `Container`, `Flex`, `Grid`, `Group`, `SimpleGrid`, `Space`, `Stack`.
+- **Inputs**: `AngleSlider`, `Checkbox`, `Chip`, `ColorInput`, `ColorPicker`, `Fieldset`, `FileInput`, `Input`, `JsonInput`, `NativeSelect`, `NumberInput`, `PasswordInput`, `PinInput`, `Radio`, `RangeSlider`, `Rating`, `SegmentedControl`, `Slider`, `Switch`, `Textarea`, `TextInput`.
+- **Combobox**: `Autocomplete`, `MultiSelect`, `Pill`, `PillsInput`, `Select`, `TagsInput`.
+- **Buttons**: `ActionIcon`, `Button`, `CloseButton`, `CopyButton`, `FileButton`, `UnstyledButton`.
+- **Navigation**: `Anchor`, `Breadcrumbs`, `Burger`, `NavLink`, `Pagination`, `Stepper`, `TableOfContents`, `Tabs`, `Tree`.
+- **Feedback**: `Alert`, `Loader`, `Notification`, `Progress`, `RingProgress`, `SemiCircleProgress`, `Skeleton`.
+- **Overlays**: `Affix`, `Dialog`, `Drawer`, `FloatingIndicator`, `HoverCard`, `LoadingOverlay`, `Menu`, `Modal`, `Overlay`, `Popover`, `Tooltip`.
+- **Data display**: `Accordion`, `Avatar`, `BackgroundImage`, `Badge`, `Card`, `ColorSwatch`, `Image`, `Indicator`, `Kbd`, `NumberFormatter`, `Spoiler`, `ThemeIcon`, `Timeline`.
+- **Typography**: `Blockquote`, `Code`, `Highlight`, `List`, `Mark`, `Table`, `Text`, `Title`.
+- **Miscellaneous**: `Box`, `Collapse`, `Divider`, `FocusTrap`, `Paper`, `Portal`, `ScrollArea`, `Transition`, `VisuallyHidden`.
+
+#### Extensiones de Mantine (Instaladas)
+- **Dates**: `MiniCalendar`, `Calendar`, `DateTimePicker`, `DatePicker`, `DatePickerInput`, `DateInput`, `MonthPicker`, `MonthPickerInput`, `YearPicker`, `YearPickerInput`, `TimeInput`, `TimePicker`, `TimeGrid`, `TimeValue`.
+- **Charts**: `AreaChart`, `BarChart`, `LineChart`, `CompositeChart`, `DonutChart`, `PieChart`, `FunnelChart`, `RadarChart`, `ScatterChart`, `BubbleChart`, `RadialBarChart`, `Sparkline`, `Heatmap`.
+- **Otras**: `CodeHighlight`, `Notifications`, `Spotlight`, `Carousel`, `Dropzone`, `NavigationProgress`, `Modals manager`, `Rich text editor`.
+
+#### Hooks Disponibles (@mantine/hooks)
+- **UI and Dom**: `use-click-outside`, `use-color-scheme`, `use-element-size`, `use-event-listener`, `use-file-dialog`, `use-focus-return`, `use-focus-trap`, `use-focus-within`, `use-fullscreen`, `use-hotkeys`, `use-hover`, `use-in-viewport`, `use-intersection`, `use-long-press`, `use-media-query`, `use-mouse`, `use-move`, `use-mutation-observer`, `use-orientation`, `use-radial-move`, `use-reduced-motion`, `use-resize-observer`, `use-scroll-into-view`, `use-scroll-spy`, `use-viewport-size`, `use-window-event`, `use-window-scroll`.
+- **State management**: `use-counter`, `use-debounced-callback`, `use-debounced-state`, `use-debounced-value`, `use-disclosure`, `use-id`, `use-input-state`, `use-list-state`, `use-local-storage`, `use-map`, `use-pagination`, `use-previous`, `use-queue`, `use-selection`, `use-set`, `use-set-state`, `use-state-history`, `use-throttled-callback`, `use-throttled-state`, `use-throttled-value`, `use-toggle`, `use-uncontrolled`, `use-validated-state`.
+- **Utilities**: `use-clipboard`, `use-document-title`, `use-document-visibility`, `use-eye-dropper`, `use-favicon`, `use-fetch`, `use-hash`, `use-headroom`, `use-idle`, `use-interval`, `use-merged-ref`, `use-network`, `use-os`, `use-page-leave`, `use-text-selection`, `use-timeout`.
+- **Lifecycle**: `use-did-update`, `use-force-update`, `use-is-first-render`, `use-isomorphic-effect`, `use-logger`, `use-mounted`, `use-shallow-effect`.
+
+---
+
 ## 🏛️ Arquitectura de Módulos
 
 ### Estructura de un Dominio (`/src/modules/`)
