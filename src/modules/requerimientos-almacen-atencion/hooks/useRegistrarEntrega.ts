@@ -14,7 +14,7 @@ interface UseRegistrarEntregaBatchProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  idEmpleadoSolicitante: number;
+  idContratistaSolicitante: number;
   onSuccess: (entregados: Record<number, number>) => void;
 }
 
@@ -23,7 +23,7 @@ export const useRegistrarEntregaBatch = ({
   idAlmacen,
   selectedItemsIds,
   detallesRequerimiento,
-  idEmpleadoSolicitante,
+  idContratistaSolicitante,
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
@@ -137,15 +137,15 @@ export const useRegistrarEntregaBatch = ({
 
   // Auto-seleccionar receptor basado en el solicitante
   useEffect(() => {
-    if (idEmpleadoSolicitante && empleados.length > 0 && !idEmpleadoRecibe) {
+    if (idContratistaSolicitante && empleados.length > 0 && !idEmpleadoRecibe) {
       const exists = empleados.some(
-        (e) => e.value === idEmpleadoSolicitante.toString(),
+        (e) => e.value === idContratistaSolicitante.toString(),
       );
       if (exists) {
-        setIdEmpleadoRecibe(idEmpleadoSolicitante.toString());
+        setIdEmpleadoRecibe(idContratistaSolicitante.toString());
       }
     }
-  }, [idEmpleadoSolicitante, empleados, idEmpleadoRecibe]);
+  }, [idContratistaSolicitante, empleados, idEmpleadoRecibe]);
 
   const handleCantChange = useCallback(
     (idDetalleReq: number, idLote: number, val: number) => {

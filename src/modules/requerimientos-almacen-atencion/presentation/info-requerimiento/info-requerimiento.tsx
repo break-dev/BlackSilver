@@ -797,7 +797,7 @@ export const InfoRequerimiento = ({
           idAlmacen={idAlmacen}
           selectedItemsIds={selectedItemsIds}
           detallesRequerimiento={detalles}
-          idEmpleadoSolicitante={requerimiento.id_empleado_solicitante}
+          idContratistaSolicitante={requerimiento.id_contratista_solicitante}
           onSuccess={(entregados) => {
             closeEntregaBatch();
             deselectAllItems();

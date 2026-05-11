@@ -22,7 +22,7 @@ export const AtencionService = {
   registrarRequerimiento: async (dto: DTO_CrearRequerimiento) => {
     const formData = new FormData();
     formData.append(
-      "id_empleado_solicitante",
+      "id_contratista_solicitante",
       String(dto.id_contratista_solicitante),
     );
     formData.append("id_mina", String(dto.id_mina));
