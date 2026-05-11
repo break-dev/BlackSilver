@@ -47,6 +47,7 @@ export interface RES_DetalleRequerimiento {
   unidad_medida_req_abv: string;
   empleado_atencion: string | null;
   producto: string;
+  es_auditable: boolean;
   stock_minimo_base: number;
   stock_disponible_base: number;
   contenido_por_presentacion: number;

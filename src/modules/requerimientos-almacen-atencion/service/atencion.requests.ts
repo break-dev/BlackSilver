@@ -11,6 +11,7 @@ export interface DTO_CrearRequerimiento {
   premura: Premura;
   fecha_entrega_requerida?: string | null;
   observacion?: string | null;
+  es_auditable: boolean;
   detalles: DTO_CrearRequerimientoDetalle[];
   evidencias?: File[] | null;
 }
@@ -42,6 +43,7 @@ export const Schema_CrearRequerimiento = z.object({
   id_labores: z.array(z.number()).nullable().optional(),
   id_almacen_destino: z.number().min(1, "Seleccione un almacén de destino"),
   premura: z.nativeEnum(Premura),
+  es_auditable: z.boolean(),
   fecha_entrega_requerida: z.string().nullable().optional(),
   detalles: z
     .array(Schema_CrearRequerimientoDetalle)
@@ -76,6 +78,7 @@ export interface DTO_CrearSolicitudLogistica {
   id_requerimiento: number;
   observacion?: string;
   premura: string;
+  es_auditable: boolean;
   fecha_entrega_requerida: string;
   detalles: {
     id_requerimiento_almacen_detalle: number;

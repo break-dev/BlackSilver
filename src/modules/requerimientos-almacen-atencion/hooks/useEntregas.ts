@@ -41,7 +41,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
     try {
       const resp = await AuxService.get_almacenes({
         id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
-        es_principal: true,
+        es_principal: false,
       });
       if (resp.success) {
         setAlmacenes(resp.data);

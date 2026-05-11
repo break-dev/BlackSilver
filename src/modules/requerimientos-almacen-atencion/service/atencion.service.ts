@@ -28,6 +28,7 @@ export const AtencionService = {
     formData.append("id_mina", String(dto.id_mina));
     formData.append("id_almacen_destino", String(dto.id_almacen_destino));
     formData.append("premura", dto.premura);
+    formData.append("es_auditable", dto.es_auditable ? "1" : "0");
     if (dto.fecha_entrega_requerida) {
       formData.append("fecha_entrega_requerida", dto.fecha_entrega_requerida);
     }

@@ -147,10 +147,16 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     setSubmitting(true);
     setError(null);
 
+    const esAuditable = detalles.some((d) => {
+      const prod = productos.find((p) => p.id_producto === d.id_producto);
+      return prod?.es_auditable;
+    });
+
     const dto: DTO_CrearSolicitud = {
       id_almacen_solicitante: idAlmacenSolicitante,
       premura,
       observacion: observacion || undefined,
+      es_auditable: esAuditable,
       fecha_entrega_requerida: fechaEntregaRequerida
         ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
         : null,
@@ -179,6 +185,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     detalles,
     onSuccess,
     notifySuccess,
+    productos,
   ]);
 
   return {

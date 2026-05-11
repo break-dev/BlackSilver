@@ -33,6 +33,7 @@ export interface RES_SolicitudDetalle {
   //
   id_producto: number;
   producto: string;
+  es_auditable: boolean;
   producto_destino: string | null;
   stock_minimo_base: number;
   //

@@ -164,10 +164,16 @@ export const useRegistrarPrestamo = ({
     }
 
     setSubmitting(true);
+    const selectedDetails = detalles.filter((d) =>
+      selectedItemIds.includes(d.id_solicitud_detalle),
+    );
+    const esAuditable = selectedDetails.some((d) => d.es_auditable);
+
     try {
       const resp = await SolicitudesAtencionService.crearPrestamo({
         id_solicitud_reabastecimiento: solicitud.id_solicitud,
         id_almacen_prestamista: parseInt(idAlmacenPrestamista),
+        es_auditable: esAuditable,
         fecha_limite_devolucion: fechaLimiteDevolucion
           ? dayjs(fechaLimiteDevolucion).format("YYYY-MM-DD")
           : null,

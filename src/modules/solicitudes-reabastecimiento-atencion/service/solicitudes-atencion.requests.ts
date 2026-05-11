@@ -28,6 +28,7 @@ export interface DTO_EntregasDetalleReabastecimiento {
 export interface DTO_CrearPrestamo {
   id_solicitud_reabastecimiento: number;
   id_almacen_prestamista: number;
+  es_auditable: boolean;
   fecha_limite_devolucion: string | null;
   detalles: DTO_DetallePrestamo[];
 }

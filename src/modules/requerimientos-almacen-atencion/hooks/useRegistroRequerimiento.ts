@@ -90,7 +90,6 @@ export const useRegistroRequerimiento = ({
       }
     };
     loadInitial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 2. Cargar minas cuando cambia almacén
@@ -309,12 +308,18 @@ export const useRegistroRequerimiento = ({
     setSubmitting(true);
     setError(null);
 
+    const esAuditable = detalles.some((d) => {
+      const prod = productos.find((p) => p.id_producto === d.id_producto);
+      return prod?.es_auditable;
+    });
+
     const dto: DTO_CrearRequerimiento = {
       id_contratista_solicitante: idContratistaSolicitante,
       id_mina: idMina,
       id_almacen_destino: idAlmacenDestino,
       id_labores: idLabores.length > 0 ? idLabores : null,
       premura,
+      es_auditable: esAuditable,
       fecha_entrega_requerida: fechaEntregaRequerida
         ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
         : dayjs().add(2, "days").format("YYYY-MM-DD"),
@@ -374,6 +379,7 @@ export const useRegistroRequerimiento = ({
     onSuccess,
     notifySuccess,
     prepare,
+    productos,
   ]);
 
   return {

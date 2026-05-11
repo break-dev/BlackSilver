@@ -204,7 +204,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
         <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
           <div className="w-full sm:w-72">
             <Select
-              label="Almacén de despacho"
+              label="Almacén Solicitante"
               placeholder="Seleccionar almacén..."
               leftSection={
                 loadingAlmacenes ? (

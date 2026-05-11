@@ -97,10 +97,13 @@ export const useRegistrarSolicitudLogistica = ({
   const handleConsultar = async () => {
     setSubmitting(true);
     try {
+      const esAuditable = itemsSeleccionados.some((item) => item.es_auditable);
+
       const dto: DTO_CrearSolicitudLogistica = {
         id_requerimiento: requerimiento.id_requerimiento,
         observacion,
         premura,
+        es_auditable: esAuditable,
         fecha_entrega_requerida: fechaEntrega
           ? dayjs(fechaEntrega).format("YYYY-MM-DD")
           : "",
