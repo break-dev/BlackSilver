@@ -25,6 +25,7 @@ export interface RES_RequerimientoAlmacen {
   correlativo: string;
   evidencias: IArchivo[] | null;
   observacion: string | null;
+  es_auditable: boolean;
   premura: Premura;
   fecha_entrega_requerida: string | null;
   estado: Estado_Requerimiento;
@@ -33,7 +34,6 @@ export interface RES_RequerimientoAlmacen {
   labores?: RES_Labor[];
   detalles?: RES_DetalleRequerimiento[];
 }
-
 
 /**
  * Representa un item de detalle de un requerimiento

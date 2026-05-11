@@ -1,7 +1,13 @@
+import type { EstadoVencimientoProducto } from "../../shared/enums/_generic/estado-vencimiento-producto";
+
 export interface RES_LoteDisponible {
   id_lote: number;
-  id_producto: number;
   correlativo: string;
+  //
+  id_almacen: number;
+  //
+  id_producto: number;
+  es_auditable: boolean;
   //
   stock_actual: number;
   contenido_por_presentacion: number;
@@ -18,7 +24,7 @@ export interface RES_LoteDisponible {
   fecha_hora_ingreso: string;
   fecha_vencimiento: string | null;
   dias_para_vencer: number | null;
-  estado_vencimiento: string;
+  estado_vencimiento: EstadoVencimientoProducto;
 }
 
 export interface RES_TicketLote {

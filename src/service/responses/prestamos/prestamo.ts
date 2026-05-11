@@ -20,6 +20,7 @@ export interface RES_Prestamo {
   fecha_hora_prestamo: string;
   fecha_limite_devolucion: string;
   observacion: string | null;
+  es_auditable: boolean;
   registrado_por: string;
   //
   created_at: string;

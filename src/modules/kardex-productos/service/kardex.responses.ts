@@ -9,6 +9,8 @@ export interface RES_MovimientoKardex {
   id_producto: number;
   categoria: string;
   producto: string;
+  es_auditable: boolean;
+  //
   correlativo: string;
   contenido_por_presentacion: number;
   unidad_lote: string;

@@ -21,6 +21,8 @@ export interface RES_Solicitud {
   premura: Premura;
   fecha_entrega_requerida: string | null;
   //
+  es_auditable: boolean;
+  //
   created_at: string;
   estado: Estado_Solicitud;
 }
