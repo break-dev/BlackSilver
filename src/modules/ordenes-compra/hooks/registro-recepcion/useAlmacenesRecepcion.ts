@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
-import { AuxService } from "../../../../service/aux.service";
+import { AuxService } from "../../../../service/auxiliar.service";
 
 import { useAuthStore } from "../../../../stores/auth.store";
 
@@ -18,7 +18,6 @@ export const useAlmacenesRecepcion = (soloAutorizados: boolean = true) => {
     setLoadingAlmacenes(true);
     setSelectedAlmacenId(null);
   }
-
 
   useEffect(() => {
     const id_empleado = useAuthStore.getState().usuario?.id_empleado;

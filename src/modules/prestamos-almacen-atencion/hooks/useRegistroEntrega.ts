@@ -5,7 +5,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;

@@ -6,7 +6,7 @@ import { useAuthStore } from "../../../stores/auth.store";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import { useNotify } from "../../../hooks/useNotify";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseRegistroReposicionProps {
   idPrestamo: number;

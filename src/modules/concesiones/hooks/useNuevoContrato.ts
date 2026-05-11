@@ -3,7 +3,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import { ConcesionesService } from "../service/concesiones.service";
 import { Schema_CrearContrato } from "../service/concesiones.requests";
 import type { RES_Contrato } from "../service/concesiones.responses";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
 
 export const useNuevoContrato = (

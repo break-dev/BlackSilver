@@ -10,7 +10,7 @@ import type {
   RES_Cargo,
   RES_EmpleadoResumen,
 } from "../service/empleados.responses";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {

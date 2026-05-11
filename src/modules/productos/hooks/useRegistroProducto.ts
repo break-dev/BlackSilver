@@ -5,14 +5,17 @@ import {
   Schema_CrearProducto,
   type DTO_CrearProducto,
 } from "../service/productos.requests";
-import type { RES_CategoriaBien, RES_ProductoResumen } from "../service/productos.responses";
+import type {
+  RES_CategoriaBien,
+  RES_ProductoResumen,
+} from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import {
   getCoincidencias,
   type SearchResult,
 } from "../../../shared/functions/get-coincidencias";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,

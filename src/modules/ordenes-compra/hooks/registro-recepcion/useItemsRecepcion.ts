@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import type { RES_OrdenCompraDetalle } from "../../../../service/responses/ordenes-compra/orden-compra";
 import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
-import { AuxService } from "../../../../service/aux.service";
+import { AuxService } from "../../../../service/auxiliar.service";
 
 export interface DTO_RecepcionLotExtendido extends DTO_RecepcionOCItem {
   ajustes?: Record<number, number>; // idLote -> cantidad

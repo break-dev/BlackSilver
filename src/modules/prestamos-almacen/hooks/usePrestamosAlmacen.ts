@@ -3,7 +3,7 @@ import { PrestamosService } from "../service/prestamos.service";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const usePrestamosAlmacen = () => {

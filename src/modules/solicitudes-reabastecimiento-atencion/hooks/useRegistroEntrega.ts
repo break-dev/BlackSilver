@@ -9,7 +9,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;

@@ -6,7 +6,7 @@ import type { RES_Lote } from "../service/lotes.responses";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Producto } from "../../../service/responses/producto";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseRegistroLoteProps {
   initialAlmacenId?: number | null;

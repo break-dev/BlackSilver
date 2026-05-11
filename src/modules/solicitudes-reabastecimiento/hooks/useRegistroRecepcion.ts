@@ -13,7 +13,7 @@ import type {
 import { usePrint } from "../../../hooks/usePrint";
 import type { HistorialEntregaDetalleItem } from "./useHistorialEntregas";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad

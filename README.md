@@ -1,6 +1,6 @@
 # Contexto de Negocio y Procesos Operativos (Black Silver)
 
-**Black Silver** es un sistema ERP (Enterprise Resource Planning) diseñado específicamente para resolver los desafíos logísticos y de abastecimiento en la industria minera. 
+**Black Silver** es un sistema ERP (Enterprise Resource Planning) diseñado específicamente para resolver los desafíos logísticos y de abastecimiento en la industria minera.
 
 El sistema digitaliza y conecta lo que ocurre en el corporativo (compras, finanzas) con lo que ocurre en el campo (almacenes remotos, distribución de insumos). A continuación, se detalla **qué hace el sistema por los usuarios** y la lógica de negocio que resuelve.
 
@@ -21,8 +21,9 @@ El sistema necesita mapear quién opera, dónde está el inventario y dónde se 
 
 **El Problema Operativo**: Un proveedor vende explosivos en "Cajas de 50", el almacén despacha en "Paquetes de 10" y el operador pide en "Unidades". En un sistema tradicional, el inventario se rompe, se duplican productos o el stock cuadra mal.
 
-**La Solución Black Silver**: 
+**La Solución Black Silver**:
 El sistema implementa una regla universal y matemática. Todo movimiento logístico (pedidos, recepciones, transferencias) se convierte automáticamente a su **Unidad de Medida Base** multiplicando la `Cantidad Solicitada` por el `Contenido por Presentación`.
+
 - **Impacto de Negocio**: Esto garantiza que el almacenero siempre sepa exactamente cuántas unidades individuales tiene en stock, permitiendo entregar fracciones de caja (despachos parciales) sin generar huecos en el inventario ni dolores de cabeza contables.
 
 ---
@@ -47,10 +48,10 @@ El proceso de compra está diseñado para automatizar el trabajo tedioso y evita
 
 ## 5. El Flujo de la Necesidad: Requerimientos y Despachos
 
-Resuelve el día a día: *"El operador necesita herramientas o insumos para trabajar hoy"*.
+Resuelve el día a día: _"El operador necesita herramientas o insumos para trabajar hoy"_.
 
-- **Auditoría Granular (Ítem por Ítem)**: Cuando se piden 10 tipos de productos distintos en un solo documento (Requerimiento), el almacenero no aprueba o rechaza "el documento entero". El sistema exige auditar **producto por producto**. El almacenero puede despachar 5, rechazar 2 por falta de stock y dejar 3 pendientes. 
-- **Trazabilidad de Decisiones**: Por cada ítem, el sistema guarda su propia línea de tiempo: *quién lo pidió, quién lo aprobó, cuándo se despachó y qué comentario o justificación dejó en caso de rechazo*.
+- **Auditoría Granular (Ítem por Ítem)**: Cuando se piden 10 tipos de productos distintos en un solo documento (Requerimiento), el almacenero no aprueba o rechaza "el documento entero". El sistema exige auditar **producto por producto**. El almacenero puede despachar 5, rechazar 2 por falta de stock y dejar 3 pendientes.
+- **Trazabilidad de Decisiones**: Por cada ítem, el sistema guarda su propia línea de tiempo: _quién lo pidió, quién lo aprobó, cuándo se despachó y qué comentario o justificación dejó en caso de rechazo_.
 
 ---
 
@@ -59,7 +60,6 @@ Resuelve el día a día: *"El operador necesita herramientas o insumos para trab
 En el mundo logístico real, los camiones de los proveedores no siempre llegan al almacén correcto. A veces descargan todo en un almacén central en la ciudad en lugar de subir a la operación remota.
 
 - **Almacenes Puente**: En lugar de obligar al usuario a anular la Orden de Compra porque el proveedor la dejó en el lugar equivocado, el sistema permite recepcionar la mercadería en el Almacén Central y usar el módulo de **Transferencias de OC** para enviar la carga en un vehículo interno hacia su destino final. Esto mantiene el rastro de que la mercadería ya es propiedad de la empresa, pero está en "tránsito interno", salvaguardando la integridad del pago al proveedor y del inventario.
-
 
 ## 📦 Módulos del Sistema
 
@@ -157,7 +157,7 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 #### 4. Servicios (`/src/service`)
 
 - **`_api.ts`**: Interceptor de red.
-- **`aux.service.ts`**: **Hub de Datos Maestros.** Centraliza catálogos de Almacenes, Unidades, Personal y Productos para optimizar el tráfico de red.
+- **`auxiliar.service.ts`**: **Hub de Datos Maestros.** Centraliza catálogos de Almacenes, Unidades, Personal y Productos para optimizar el tráfico de red.
 
 #### 5. Utilidades y Funciones Compartidas (`/src/shared/functions`)
 
@@ -178,11 +178,13 @@ Colección de funciones puras, algoritmos y formateadores usados de forma transv
 Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas estrictas:
 
 ### 1. Tipado Estricto (Prohibido el uso de `any`)
+
 - **NUNCA** se debe usar `any` para tipar hooks, props, componentes o variables.
 - **Excepción Única**: Solo se permite cuando un componente o hook está diseñado explícitamente para ser genérico y manejar cualquier tipo de dato, como es el caso de `DataTableEstandar.tsx`. Fuera de estos casos de utilidad base, el tipado debe ser específico.
 
 ### 2. Reutilización Inteligente vs. Sobre-ingeniería
-- **No reutilizar por obligación**: No intentes forzar la reutilización de un hook, componente o servicio para manejar dos flujos distintos (ej. Registro y Edición) solo por "ahorrar código". 
+
+- **No reutilizar por obligación**: No intentes forzar la reutilización de un hook, componente o servicio para manejar dos flujos distintos (ej. Registro y Edición) solo por "ahorrar código".
 - **Lógica Diferenciada**: Si la edición tiene reglas distintas, validaciones adicionales o flujos que no coinciden al 100% con la creación, **deben ser componentes/hooks separados**. Intentar abarcarlo todo en uno solo genera código "espantoso", difícil de seguir y mantener.
 - **Componentes "Dumb"**: Solo se debe priorizar la reutilización en componentes "tontos" (presentacionales) que no contengan lógica de negocio compleja o que solo abarquen una funcionalidad muy específica y bien definida de un caso de uso.
 - **Prioridad**: Se debe priorizar la **legibilidad y mantenibilidad** sobre la reutilización forzada. Es mejor tener dos procesos similares pero claros y rápidos de desarrollar, que uno solo sumamente complejo que intente ser "universal". Si eres una IA y el usuario te pide reutilizar, analiza e indicale si realmente es necesario o si es mejor crear algo nuevo y específico.
@@ -194,30 +196,33 @@ Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas 
 Para evitar que la interfaz se vea inconsistente o "gigante", y asegurar que las IA utilicen la sintaxis correcta de Mantine v8, se deben seguir estas reglas sin excepción:
 
 ### 1. Diccionario de Style Props (Mantine v8)
+
 Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (ya no existe) ni nombres de propiedades CSS completos como props del componente.
 
-| Prop Correcta | Propósito | Ejemplo | Error Común (NO USAR) |
-| :--- | :--- | :--- | :--- |
-| `c` | Color de texto | `c="indigo.4"` o `c="white"` | `color="blue"` |
-| `bg` | Background | `bg="zinc.9"` o `bg="#000"` | `backgroundColor` |
-| `fz` | Font Size | `fz="sm"` (ideal ERP) o `fz="xs"` | `fontSize="14px"` |
-| `fw` | Font Weight | `fw={700}` o `fw="bold"` | `fontWeight` |
-| `p`, `m` | Padding / Margin | `p="md"`, `mt="xl"`, `mx="auto"` | `padding`, `marginTop` |
-| `h`, `w` | Height / Width | `h={38}` (altura estándar input) | `height`, `width` |
-| `gap` | Espaciado (Group/Stack) | `gap="md"` o `gap={16}` | `spacing` |
-| `justify` | Alineación horizontal | `justify="space-between"` | `position` |
-| `align` | Alineación vertical | `align="center"` | `alignItems` |
+| Prop Correcta | Propósito               | Ejemplo                           | Error Común (NO USAR)  |
+| :------------ | :---------------------- | :-------------------------------- | :--------------------- |
+| `c`           | Color de texto          | `c="indigo.4"` o `c="white"`      | `color="blue"`         |
+| `bg`          | Background              | `bg="zinc.9"` o `bg="#000"`       | `backgroundColor`      |
+| `fz`          | Font Size               | `fz="sm"` (ideal ERP) o `fz="xs"` | `fontSize="14px"`      |
+| `fw`          | Font Weight             | `fw={700}` o `fw="bold"`          | `fontWeight`           |
+| `p`, `m`      | Padding / Margin        | `p="md"`, `mt="xl"`, `mx="auto"`  | `padding`, `marginTop` |
+| `h`, `w`      | Height / Width          | `h={38}` (altura estándar input)  | `height`, `width`      |
+| `gap`         | Espaciado (Group/Stack) | `gap="md"` o `gap={16}`           | `spacing`              |
+| `justify`     | Alineación horizontal   | `justify="space-between"`         | `position`             |
+| `align`       | Alineación vertical     | `align="center"`                  | `alignItems`           |
 
 ### 2. Reglas de Oro para Componentes de Formulario
+
 - **Look Dark & Premium**: Los inputs deben integrarse con el tema oscuro. Usa siempre un objeto de clases (ej. `fieldClasses`) para el prop `classNames`:
   ```tsx
   const fieldClasses = {
-    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
     label: "text-zinc-300 mb-1 font-medium",
   };
   ```
 - **Tamaño ERP**: Usa **siempre** `size="xs"` y `radius="lg"` para `TextInput`, `Select`, `NumberInput` y `Button`. Esto evita que la UI se vea tosca.
-- **Selects / MultiSelect**: 
+- **Selects / MultiSelect**:
   - Añade siempre `searchable`.
   - Si el componente está dentro de un `Modal`, añade `popoverProps={{ withinPortal: true }}` para evitar que el menú se corte.
 - **NumberInput**:
@@ -225,11 +230,13 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   - Para montos, no uses `decimalScale={2}` pero si `fixedDecimalScale`.
 
 ### 3. Estética "Black & Silver" (Recomendaciones Visuales)
+
 - **Flexibilidad Cromática**: La IA tiene **libertad total** para elegir colores según el contexto (colores vibrantes, gradientes, dark mode). No estás limitado a los colores de ejemplo.
 - **Calidad Visual**: Los componentes deben sentirse premium. Usa sombras de Tailwind (ej. `shadow-lg shadow-indigo-900/20`), efectos de cristal (`backdrop-blur`) y bordes sutiles.
 - **Badges**: Prefiere `variant="light"` o `variant="filled"`. Evita colores planos aburridos.
 
 ### 4. Arquitectura de Estado y Notificaciones
+
 - **Notificaciones**: **PROHIBIDO** usar `@mantine/notifications` directamente. Debes usar el hook personalizado `useNotify()` del proyecto:
   ```tsx
   const { notifySuccess, notifyError } = useNotify();
@@ -242,6 +249,7 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
 Utiliza este catálogo para seleccionar los componentes y hooks más adecuados para cada tarea.
 
 #### Componentes Disponibles
+
 - **Layout**: `AppShell`, `AspectRatio`, `Center`, `Container`, `Flex`, `Grid`, `Group`, `SimpleGrid`, `Space`, `Stack`.
 - **Inputs**: `AngleSlider`, `Checkbox`, `Chip`, `ColorInput`, `ColorPicker`, `Fieldset`, `FileInput`, `Input`, `JsonInput`, `NativeSelect`, `NumberInput`, `PasswordInput`, `PinInput`, `Radio`, `RangeSlider`, `Rating`, `SegmentedControl`, `Slider`, `Switch`, `Textarea`, `TextInput`.
 - **Combobox**: `Autocomplete`, `MultiSelect`, `Pill`, `PillsInput`, `Select`, `TagsInput`.
@@ -254,11 +262,13 @@ Utiliza este catálogo para seleccionar los componentes y hooks más adecuados p
 - **Miscellaneous**: `Box`, `Collapse`, `Divider`, `FocusTrap`, `Paper`, `Portal`, `ScrollArea`, `Transition`, `VisuallyHidden`.
 
 #### Extensiones de Mantine (Instaladas)
+
 - **Dates**: `MiniCalendar`, `Calendar`, `DateTimePicker`, `DatePicker`, `DatePickerInput`, `DateInput`, `MonthPicker`, `MonthPickerInput`, `YearPicker`, `YearPickerInput`, `TimeInput`, `TimePicker`, `TimeGrid`, `TimeValue`.
 - **Charts**: `AreaChart`, `BarChart`, `LineChart`, `CompositeChart`, `DonutChart`, `PieChart`, `FunnelChart`, `RadarChart`, `ScatterChart`, `BubbleChart`, `RadialBarChart`, `Sparkline`, `Heatmap`.
 - **Otras**: `CodeHighlight`, `Notifications`, `Spotlight`, `Carousel`, `Dropzone`, `NavigationProgress`, `Modals manager`, `Rich text editor`.
 
 #### Hooks Disponibles (@mantine/hooks)
+
 - **UI and Dom**: `use-click-outside`, `use-color-scheme`, `use-element-size`, `use-event-listener`, `use-file-dialog`, `use-focus-return`, `use-focus-trap`, `use-focus-within`, `use-fullscreen`, `use-hotkeys`, `use-hover`, `use-in-viewport`, `use-intersection`, `use-long-press`, `use-media-query`, `use-mouse`, `use-move`, `use-mutation-observer`, `use-orientation`, `use-radial-move`, `use-reduced-motion`, `use-resize-observer`, `use-scroll-into-view`, `use-scroll-spy`, `use-viewport-size`, `use-window-event`, `use-window-scroll`.
 - **State management**: `use-counter`, `use-debounced-callback`, `use-debounced-state`, `use-debounced-value`, `use-disclosure`, `use-id`, `use-input-state`, `use-list-state`, `use-local-storage`, `use-map`, `use-pagination`, `use-previous`, `use-queue`, `use-selection`, `use-set`, `use-set-state`, `use-state-history`, `use-throttled-callback`, `use-throttled-state`, `use-throttled-value`, `use-toggle`, `use-uncontrolled`, `use-validated-state`.
 - **Utilities**: `use-clipboard`, `use-document-title`, `use-document-visibility`, `use-eye-dropper`, `use-favicon`, `use-fetch`, `use-hash`, `use-headroom`, `use-idle`, `use-interval`, `use-merged-ref`, `use-network`, `use-os`, `use-page-leave`, `use-text-selection`, `use-timeout`.

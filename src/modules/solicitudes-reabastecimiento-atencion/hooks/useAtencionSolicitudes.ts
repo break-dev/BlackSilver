@@ -3,7 +3,7 @@ import { SolicitudesAtencionService } from "../service/solicitudes-atencion.serv
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import dayjs from "dayjs";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useAtencionSolicitudes = () => {

@@ -7,7 +7,7 @@ import type {
   RES_OCTransferencia,
   RES_OCTransferenciaDetalle,
 } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import { useMemo } from "react";
 

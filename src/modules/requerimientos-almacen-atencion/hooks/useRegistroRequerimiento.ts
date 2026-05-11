@@ -12,7 +12,7 @@ import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 
 interface Props {

@@ -7,7 +7,7 @@ import { useAuthUser } from "../../../hooks/useAuthUser";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_DetalleRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;

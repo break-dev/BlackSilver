@@ -5,7 +5,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,

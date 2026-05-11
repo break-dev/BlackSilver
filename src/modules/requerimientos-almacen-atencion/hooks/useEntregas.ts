@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import { useAuthStore } from "../../../stores/auth.store";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 

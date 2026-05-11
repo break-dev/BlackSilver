@@ -4,7 +4,7 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_OCTransferenciaDetalle } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import type { DTO_ItemRecepcionTransferencia } from "../service/oc-recepcion-transferencias.requests";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 // -------------------------------------------------------
 // Tipos locales del formulario de recepción

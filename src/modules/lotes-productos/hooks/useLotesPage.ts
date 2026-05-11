@@ -4,7 +4,7 @@ import { LotesService } from "../service/lotes.service";
 import type { RES_Lote } from "../service/lotes.responses";
 import { useUIStore } from "../../../stores/ui.store";
 import type { RES_TicketLote } from "../../../service/responses/lote-producto";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import { useAuthStore } from "../../../stores/auth.store";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";

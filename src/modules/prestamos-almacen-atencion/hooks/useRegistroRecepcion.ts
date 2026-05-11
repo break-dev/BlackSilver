@@ -13,7 +13,7 @@ import type {
 import { usePrint } from "../../../hooks/usePrint";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaReposicionItem {
   id_lote_existente: number | null;

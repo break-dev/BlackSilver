@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { MaestrosState } from "./utils";
-import { AuxService } from "../../../../service/aux.service";
+import { AuxService } from "../../../../service/auxiliar.service";
 
 export const useCotizacionMaestros = () => {
   const [loadingMaestros, setLoadingMaestros] = useState(true);

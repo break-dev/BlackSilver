@@ -3,7 +3,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export const useEmpresas = () => {
   const { notify } = useNotify();

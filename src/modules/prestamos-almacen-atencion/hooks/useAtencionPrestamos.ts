@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import { useNotify } from "../../../hooks/useNotify";
-import { AuxService } from "../../../service/aux.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import { useAuthStore } from "../../../stores/auth.store";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
