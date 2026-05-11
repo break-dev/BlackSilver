@@ -124,7 +124,7 @@ export const MultiFilePicker = ({
   files,
   onFilesChange,
   label,
-  description = "Imágenes o documentos: PDF, JPG, PNG, ETC.",
+  description = "Imágenes o documentos: PDF, JPG, PNG, etc.",
   maxFiles,
   accept = "*",
   multiple = true,
@@ -173,9 +173,22 @@ export const MultiFilePicker = ({
             </Text>
           )}
           {description && (
-            <Text size="xs" c="zinc.5" fw={600}>
-              {description}
-            </Text>
+            <Tooltip
+              label={description}
+              position="top-start"
+              withArrow
+              multiline
+              w={300}
+            >
+              <Text
+                size="xs"
+                c="zinc.5"
+                fw={600}
+                className="truncate max-w-[250px]"
+              >
+                {description}
+              </Text>
+            </Tooltip>
           )}
         </div>
 

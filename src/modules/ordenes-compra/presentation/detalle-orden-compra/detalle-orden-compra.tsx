@@ -166,7 +166,7 @@ export const DetalleOrdenCompra = ({
             onClick={() => setOpenedRegistroComprobante(true)}
             className="font-bold"
           >
-            Registrar Comprobante ({selectedRecepcionesIds.length})
+            Nuevo Comprobante ({selectedRecepcionesIds.length})
           </Button>
         }
       >
@@ -274,7 +274,8 @@ export const DetalleOrdenCompra = ({
           ids_recepciones={selectedRecepcionesIds}
           onSuccess={() => {
             setOpenedRegistroComprobante(false);
-            setOpenedHistorial(false); // Refrescar historial si es necesario o solo cerrar
+            setOpenedHistorial(false);
+            setSelectedRecepcionesIds([]);
             if (onSuccess) onSuccess();
           }}
         />

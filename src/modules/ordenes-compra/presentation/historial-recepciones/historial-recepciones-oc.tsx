@@ -135,15 +135,17 @@ export const HistorialRecepcionesOC = ({
     return index === 0;
   };
 
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedRecepcionesForVoucher);
+    }
+  }, [selectedRecepcionesForVoucher, onSelectionChange]);
+
   const toggleSelection = (id: number) => {
     setSelectedRecepcionesForVoucher((prev) => {
       const newSelection = prev.includes(id)
         ? prev.filter((item) => item !== id)
         : [...prev, id];
-
-      if (onSelectionChange) {
-        onSelectionChange(newSelection);
-      }
       return newSelection;
     });
   };

@@ -62,6 +62,17 @@ export const RecepcionHeader = ({
               >
                 {recepcion.estado}
               </Badge>
+              <Badge
+                variant="filled"
+                color={recepcion.tiene_comprobante ? "teal" : "red"}
+                radius="sm"
+                className="font-bold"
+                size="xs"
+              >
+                {recepcion.tiene_comprobante
+                  ? "Con Comprobante"
+                  : "Sin Comprobante"}
+              </Badge>
             </Group>
             <Group gap="xs" className="text-zinc-400" wrap="nowrap">
               <Group gap="xs" wrap="nowrap">

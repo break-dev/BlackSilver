@@ -1,5 +1,3 @@
-import { useState } from "react";
-import dayjs from "dayjs";
 import {
   Stack,
   Group,
@@ -11,7 +9,7 @@ import {
   Button,
   Text,
   Paper,
-  Divider,
+  Badge,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import {
@@ -19,16 +17,14 @@ import {
   BanknotesIcon,
   CalendarIcon,
   ChatBubbleLeftEllipsisIcon,
-  CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { notifications } from "@mantine/notifications";
 import type { RES_OrdenCompra } from "../../../../service/responses/ordenes-compra/orden-compra";
-import { OrdenCompraService } from "../../service/orden-compra.service";
-import type { REQ_RegistrarOCComprobante } from "../../service/recepcion.requests";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import { TipoComprobante } from "../../../../shared/enums/_generic/tipo-comprobante";
 import { MONEDAS } from "../../../../shared/variables/monedas";
 import type { Moneda } from "../../../../shared/enums/_generic/moneda";
+import { useRegistroComprobante } from "../../hooks/useRegistroComprobante";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 
 interface Props {
   orden: RES_OrdenCompra;
@@ -41,482 +37,332 @@ export const RegistroComprobante = ({
   ids_recepciones,
   onSuccess,
 }: Props) => {
-  const [loading, setLoading] = useState(false);
-  const [evidencias, setEvidencias] = useState<File[]>([]);
+  const {
+    form,
+    setForm,
+    loading,
+    evidencias,
+    setEvidencias,
+    handleUpdateTotalDespues,
+    handleRegistrar,
+  } = useRegistroComprobante({ orden, ids_recepciones, onSuccess });
 
-  const [form, setForm] = useState({
-    tipo_comprobante: TipoComprobante.Factura as string,
-    serie: "",
-    numero: "",
-    fecha_emision: new Date(),
-    observacion: "",
-    moneda: orden.moneda,
-    tipo_cambio_venta_aplicado: orden.tipo_cambio_aplicado,
-    es_auditable: orden.es_auditable,
-    total_antes_igv: 0,
-    incluye_igv: orden.incluye_igv,
-    porcentaje_igv: orden.porcentaje_igv,
-    monto_igv: 0,
-    total_despues_igv: 0,
-  });
-
-  const handleUpdateTotalAntes = (val: number) => {
-    const igvDecimal = form.porcentaje_igv / 100;
-    const antes = val;
-    const despues = antes * (1 + igvDecimal);
-    const igv = despues - antes;
-
-    setForm({
-      ...form,
-      total_antes_igv: Number(antes.toFixed(2)),
-      monto_igv: Number(igv.toFixed(2)),
-      total_despues_igv: Number(despues.toFixed(2)),
-    });
-  };
-
-  const handleUpdateTotalDespues = (val: number) => {
-    const igvDecimal = form.porcentaje_igv / 100;
-    const despues = val;
-    const antes = despues / (1 + igvDecimal);
-    const igv = despues - antes;
-
-    setForm({
-      ...form,
-      total_antes_igv: Number(antes.toFixed(2)),
-      monto_igv: Number(igv.toFixed(2)),
-      total_despues_igv: Number(despues.toFixed(2)),
-    });
-  };
-
-  const handleRegistrar = async () => {
-    if (!form.serie || !form.numero) {
-      notifications.show({
-        title: "Error",
-        message: "Debe ingresar la serie y el número del comprobante",
-        color: "red",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const tc =
-        form.moneda === MONEDAS.PEN.label ? 1 : form.tipo_cambio_venta_aplicado;
-
-      const payload: REQ_RegistrarOCComprobante = {
-        id_orden_compra: orden.id_orden_compra,
-        tipo_comprobante: form.tipo_comprobante,
-        serie: form.serie,
-        numero: form.numero,
-        fecha_emision: dayjs(form.fecha_emision).format("YYYY-MM-DD"),
-        observacion: form.observacion,
-        moneda: form.moneda,
-        tipo_cambio_venta_aplicado: tc,
-        es_auditable: form.es_auditable,
-        total_antes_igv: form.total_antes_igv,
-        total_antes_igv_soles: form.total_antes_igv * tc,
-        incluye_igv: form.incluye_igv,
-        porcentaje_igv: form.porcentaje_igv,
-        monto_igv: form.monto_igv,
-        monto_igv_soles: form.monto_igv * tc,
-        total_despues_igv: form.total_despues_igv,
-        total_despues_igv_soles: form.total_despues_igv * tc,
-        ids_recepciones: JSON.stringify(ids_recepciones),
-      };
-
-      const res = await OrdenCompraService.registrarComprobante(
-        payload,
-        evidencias,
-      );
-
-      if (res.success) {
-        notifications.show({
-          title: "Éxito",
-          message: "Comprobante registrado correctamente",
-          color: "green",
-        });
-        onSuccess();
-      } else {
-        notifications.show({
-          title: "Error",
-          message: res.message || "No se pudo registrar el comprobante",
-          color: "red",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      notifications.show({
-        title: "Error",
-        message: "Ocurrió un error inesperado",
-        color: "red",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const inputClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 text-white placeholder:text-zinc-600 transition-all duration-200",
+    dropdown:
+      "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+    option:
+      "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors mx-1 rounded-md mb-1",
+    label:
+      "text-zinc-500 mb-1 font-black text-[10px] uppercase tracking-widest",
   };
 
   return (
-    <Stack gap="xl" className="font-sans">
+    <Stack gap="sm" className="font-sans">
       <Paper
-        radius="xl"
-        className="bg-zinc-900/30 border border-zinc-800/80 p-6 shadow-xl"
+        p={0}
+        radius="20px"
+        className="bg-zinc-900/40 border border-zinc-800/80 shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Datos Generales */}
-          <Stack gap="lg">
-            <Group gap="xs">
-              <DocumentTextIcon className="w-5 h-5 text-indigo-400" />
-              <Text
-                fw={900}
-                size="sm"
-                className="text-white uppercase tracking-widest"
-              >
-                Información del Comprobante
-              </Text>
-            </Group>
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-indigo-500/50 to-transparent" />
 
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label="Tipo Comprobante"
-                data={Object.values(TipoComprobante)}
-                value={form.tipo_comprobante}
-                onChange={(val) =>
-                  setForm({ ...form, tipo_comprobante: val || "" })
-                }
-                radius="md"
-                classNames={{
-                  input: "bg-zinc-950 border-zinc-800",
-                  label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                }}
-              />
-              <DateTimePicker
-                label="Fecha de Emisión"
-                value={form.fecha_emision}
-                onChange={(val) => {
-                  const dateValue = val
-                    ? new Date(val as string | Date)
-                    : new Date();
-                  setForm({ ...form, fecha_emision: dateValue });
-                }}
-                radius="md"
-                leftSection={<CalendarIcon className="w-4 h-4 text-zinc-500" />}
-                classNames={{
-                  input: "bg-zinc-950 border-zinc-800",
-                  label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                }}
-              />
-            </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Sección Izquierda: Identificación */}
+            <Stack gap="xl">
+              <Group gap="md">
+                <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+                  <DocumentTextIcon className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <Text
+                    fw={900}
+                    size="xs"
+                    className="text-white uppercase tracking-[0.2em]"
+                  >
+                    Identificación
+                  </Text>
+                  <Text
+                    size="10px"
+                    fw={700}
+                    c="zinc.5"
+                    className="uppercase tracking-widest mt-0.5"
+                  >
+                    Datos del documento
+                  </Text>
+                </div>
+              </Group>
 
-            <div className="grid grid-cols-2 gap-4">
-              <TextInput
-                label="Serie"
-                placeholder="F001"
-                value={form.serie}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    serie: e.currentTarget.value.toUpperCase(),
-                  })
-                }
-                radius="md"
-                classNames={{
-                  input: "bg-zinc-950 border-zinc-800",
-                  label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                }}
-              />
-              <TextInput
-                label="Número"
-                placeholder="000123"
-                value={form.numero}
-                onChange={(e) =>
-                  setForm({ ...form, numero: e.currentTarget.value })
-                }
-                radius="md"
-                classNames={{
-                  input: "bg-zinc-950 border-zinc-800",
-                  label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                }}
-              />
-            </div>
-
-            <Group gap="xl">
-              <Select
-                label="Moneda"
-                data={Object.values(MONEDAS).map((m) => ({
-                  value: m.label,
-                  label: m.label,
-                }))}
-                value={form.moneda}
-                onChange={(val) =>
-                  setForm({
-                    ...form,
-                    moneda: val as Moneda,
-                  })
-                }
-                radius="md"
-                className="w-32"
-                disabled
-                classNames={{
-                  input: "bg-zinc-950 border-zinc-800",
-                  label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                }}
-              />
-              {form.moneda !== MONEDAS.PEN.label && (
-                <NumberInput
-                  label="Tipo de Cambio"
-                  value={form.tipo_cambio_venta_aplicado}
+              <div className="grid grid-cols-2 gap-5">
+                <Select
+                  label="Tipo de Comprobante"
+                  data={Object.values(TipoComprobante)}
+                  value={form.tipo_comprobante}
                   onChange={(val) =>
+                    setForm({ ...form, tipo_comprobante: val || "" })
+                  }
+                  size="xs"
+                  radius="md"
+                  classNames={inputClasses}
+                />
+                <DateTimePicker
+                  label="Fecha de Emisión"
+                  value={form.fecha_emision}
+                  onChange={(val) => {
+                    const dateValue = val
+                      ? new Date(val as string | Date)
+                      : new Date();
+                    setForm({ ...form, fecha_emision: dateValue });
+                  }}
+                  radius="md"
+                  size="xs"
+                  leftSection={
+                    <CalendarIcon className="w-4 h-4 text-indigo-500/70" />
+                  }
+                  classNames={inputClasses}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-5">
+                <TextInput
+                  label="Serie del Documento"
+                  placeholder="Ej: F001"
+                  value={form.serie}
+                  size="xs"
+                  onChange={(e) =>
                     setForm({
                       ...form,
-                      tipo_cambio_venta_aplicado: Number(val),
+                      serie: e.currentTarget.value.toUpperCase(),
                     })
                   }
                   radius="md"
-                  decimalScale={3}
-                  fixedDecimalScale
-                  disabled
-                  className="flex-1"
-                  classNames={{
-                    input: "bg-zinc-950 border-zinc-800",
-                    label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                  }}
+                  classNames={inputClasses}
                 />
-              )}
-            </Group>
-
-            <Checkbox
-              label="Es Comprobante Auditable"
-              checked={form.es_auditable}
-              disabled
-              onChange={(e) =>
-                setForm({ ...form, es_auditable: e.currentTarget.checked })
-              }
-              color="indigo"
-              size="xs"
-              classNames={{
-                label: "text-zinc-400 font-bold uppercase text-[10px]",
-              }}
-            />
-          </Stack>
-
-          {/* Datos Financieros */}
-          <Stack gap="lg">
-            <Group gap="xs">
-              <BanknotesIcon className="w-5 h-5 text-indigo-400" />
-              <Text
-                fw={900}
-                size="sm"
-                className="text-white uppercase tracking-widest"
-              >
-                Montos y Totales
-              </Text>
-            </Group>
-
-            <Paper className="bg-zinc-950/40 border border-zinc-800/40 p-5 rounded-2xl">
-              <Stack gap="md">
-                <Checkbox
-                  label="Ingresar monto incluyendo IGV"
-                  checked={form.incluye_igv}
-                  disabled
-                  onChange={(e) =>
-                    setForm({ ...form, incluye_igv: e.currentTarget.checked })
-                  }
-                  color="indigo"
+                <TextInput
+                  label="Número Correlativo"
+                  placeholder="Ej: 000123"
+                  value={form.numero}
                   size="xs"
-                  classNames={{
-                    label: "text-zinc-400 font-bold uppercase text-[10px]",
-                  }}
+                  onChange={(e) =>
+                    setForm({ ...form, numero: e.currentTarget.value })
+                  }
+                  radius="md"
+                  classNames={inputClasses}
                 />
-                <NumberInput
-                  label="% IGV"
-                  value={form.porcentaje_igv}
-                  disabled
+              </div>
+
+              <div className="grid grid-cols-2 gap-5">
+                <Select
+                  label="Moneda"
+                  data={Object.values(MONEDAS).map((m) => ({
+                    value: m.label,
+                    label: m.label,
+                  }))}
+                  value={form.moneda}
                   onChange={(val) =>
-                    setForm({ ...form, porcentaje_igv: Number(val) || 18 })
+                    setForm({
+                      ...form,
+                      moneda: val as Moneda,
+                    })
                   }
                   radius="md"
                   size="xs"
-                  classNames={{
-                    input: "bg-zinc-950 border-zinc-800",
-                    label: "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                  }}
+                  disabled
+                  classNames={inputClasses}
                 />
-
-                {form.incluye_igv ? (
+                {form.moneda !== MONEDAS.PEN.label && (
                   <NumberInput
-                    label="Total Comprobante (Inc. IGV)"
-                    value={form.total_despues_igv}
-                    onChange={(val) =>
-                      handleUpdateTotalDespues(Number(val) || 0)
-                    }
+                    label="T.C. Aplicado"
+                    value={form.tipo_cambio_venta_aplicado}
                     radius="md"
-                    size="md"
-                    decimalScale={2}
                     fixedDecimalScale
-                    leftSection={
-                      <Text size="sm" fw={900} c="zinc.5">
-                        {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}
-                      </Text>
-                    }
-                    classNames={{
-                      input:
-                        "bg-zinc-900 border-indigo-500/30 text-white font-black",
-                      label:
-                        "text-indigo-400 font-black mb-1 uppercase text-[11px]",
-                    }}
-                  />
-                ) : (
-                  <NumberInput
-                    label="Subtotal (Sin IGV)"
-                    value={form.total_antes_igv}
-                    onChange={(val) => handleUpdateTotalAntes(Number(val) || 0)}
-                    radius="md"
-                    size="md"
-                    decimalScale={2}
-                    fixedDecimalScale
-                    leftSection={
-                      <Text size="sm" fw={900} c="zinc.5">
-                        {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}
-                      </Text>
-                    }
-                    classNames={{
-                      input: "bg-zinc-900 border-zinc-800",
-                      label:
-                        "text-zinc-500 font-bold mb-1 uppercase text-[10px]",
-                    }}
+                    disabled
+                    size="xs"
+                    classNames={inputClasses}
                   />
                 )}
+              </div>
 
-                <Divider color="zinc.8" />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <Text
-                      size="10px"
-                      fw={800}
-                      c="zinc.5"
-                      className="uppercase tracking-widest"
-                    >
-                      Base Imponible
-                    </Text>
-                    <Text fw={800} size="sm" c="zinc.3">
-                      {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
-                      {form.total_antes_igv.toLocaleString("es-PE", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </Text>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Text
-                      size="10px"
-                      fw={800}
-                      c="zinc.5"
-                      className="uppercase tracking-widest"
-                    >
-                      IGV ({form.porcentaje_igv}%)
-                    </Text>
-                    <Text fw={800} size="sm" c="indigo.4">
-                      +{form.moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
-                      {form.monto_igv.toLocaleString("es-PE", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </Text>
-                  </div>
-                </div>
-
-                {!form.incluye_igv && (
-                  <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 text-right">
-                    <Text
-                      size="10px"
-                      fw={800}
-                      c="indigo.4"
-                      className="uppercase tracking-[0.2em] mb-1"
-                    >
-                      Total Calculado
-                    </Text>
-                    <Text fw={900} size="xl" className="text-white">
-                      {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
-                      {form.total_despues_igv.toLocaleString("es-PE", {
-                        minimumFractionDigits: 2,
-                      })}
-                    </Text>
-                  </div>
-                )}
+              {/* Observaciones */}
+              <Stack gap="md">
+                <Group gap="xs">
+                  <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-zinc-500" />
+                  <Text
+                    fw={900}
+                    size="xs"
+                    className="text-zinc-400 uppercase tracking-widest"
+                  >
+                    Observaciones
+                  </Text>
+                </Group>
+                <Textarea
+                  placeholder="Indique cualquier detalle relevante sobre este documento..."
+                  value={form.observacion}
+                  onChange={(e) =>
+                    setForm({ ...form, observacion: e.currentTarget.value })
+                  }
+                  radius="lg"
+                  minRows={4}
+                  classNames={inputClasses}
+                />
               </Stack>
-            </Paper>
-          </Stack>
-        </div>
+            </Stack>
 
-        <Divider my="xl" color="zinc.8" />
+            {/* Sección Derecha: Importes Financieros */}
+            <Stack gap="xl">
+              <Group gap="md">
+                <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                  <BanknotesIcon className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <Text
+                    fw={900}
+                    size="xs"
+                    className="text-white uppercase tracking-[0.2em]"
+                  >
+                    Importes
+                  </Text>
+                  <Text
+                    size="10px"
+                    fw={700}
+                    c="zinc.5"
+                    className="uppercase tracking-widest mt-0.5"
+                  >
+                    Desglose financiero
+                  </Text>
+                </div>
+              </Group>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Stack gap="md">
-            <Group gap="xs">
-              <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-zinc-500" />
-              <Text
-                fw={900}
-                size="sm"
-                className="text-zinc-400 uppercase tracking-widest"
-              >
-                Observaciones
-              </Text>
-            </Group>
-            <Textarea
-              placeholder="Notas adicionales sobre este comprobante..."
-              value={form.observacion}
-              onChange={(e) =>
-                setForm({ ...form, observacion: e.currentTarget.value })
-              }
-              radius="md"
-              minRows={4}
-              classNames={{
-                input: "bg-zinc-950 border-zinc-800 text-zinc-300",
-                label: "hidden",
-              }}
-            />
-          </Stack>
+              <div className="bg-zinc-950/60 border border-zinc-800/80 p-5 rounded-[30px] flex flex-col gap-4 shadow-inner relative overflow-hidden group/importes">
+                <Group
+                  wrap="nowrap"
+                  justify="space-between"
+                  align="center"
+                  className="bg-zinc-900/30 p-3 rounded-xl border border-zinc-800/50"
+                >
+                  <Checkbox
+                    label={"Es Auditable"}
+                    checked={form.es_auditable}
+                    disabled
+                    color="indigo"
+                    size="xs"
+                  />
+                  <Checkbox
+                    checked={form.incluye_igv}
+                    disabled
+                    size="xs"
+                    color="indigo"
+                    label="Incluye IGV"
+                  />
+                  <Badge
+                    variant="dot"
+                    color="indigo"
+                    size="sm"
+                    radius="sm"
+                    className="font-black shrink-0"
+                  >
+                    IGV {form.porcentaje_igv}%
+                  </Badge>
+                </Group>
 
-          <Stack gap="md">
-            <Group gap="xs">
-              <CloudArrowUpIcon className="w-5 h-5 text-zinc-500" />
-              <Text
-                fw={900}
-                size="sm"
-                className="text-zinc-400 uppercase tracking-widest"
-              >
-                Evidencias (PDF/Imagen)
-              </Text>
-            </Group>
-            <MultiFilePicker
-              label="Adjuntar Comprobantes"
-              description="Máximo 5 archivos"
-              multiple
-              files={evidencias}
-              onFilesChange={setEvidencias}
-            />
-          </Stack>
+                <div className="flex flex-row items-center gap-6 border-t border-zinc-800/80 pt-6 mt-2">
+                  <div className="flex-1 self-start">
+                    <NumberInput
+                      label={`Total a Pagar (${form.incluye_igv ? "IGV Incluido" : "Más IGV"})`}
+                      value={form.total_despues_igv}
+                      onChange={(val) =>
+                        handleUpdateTotalDespues(Number(val) || 0)
+                      }
+                      radius="xl"
+                      size="xs"
+                      fixedDecimalScale
+                      leftSection={
+                        <Text
+                          size="md"
+                          fw={950}
+                          c="indigo.4"
+                          className="font-mono"
+                        >
+                          {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}
+                        </Text>
+                      }
+                      classNames={{
+                        input:
+                          "bg-zinc-900/90 border-indigo-500/40 text-white h-16 shadow-2xl focus:border-indigo-500 focus:ring-indigo-500/20",
+                        label:
+                          "text-indigo-400 font-black mb-2 uppercase text-[11px]! tracking-[0.15em] ml-2",
+                      }}
+                    />
+                  </div>
+
+                  <Stack gap="md" className="shrink-0 min-w-[140px]">
+                    <Stack gap={2}>
+                      <Text
+                        size="9px"
+                        fw={800}
+                        c="zinc.5"
+                        className="uppercase tracking-widest"
+                      >
+                        Subtotal Neto
+                      </Text>
+                      <Text fw={900} size="sm" c={"blue"} className="font-mono">
+                        {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
+                        {formatNumber(form.total_antes_igv)}
+                      </Text>
+                    </Stack>
+                    <Stack gap={2}>
+                      <Text
+                        size="9px"
+                        fw={800}
+                        c="zinc.5"
+                        className="uppercase tracking-widest"
+                      >
+                        Impuesto ({form.porcentaje_igv}%)
+                      </Text>
+                      <Text fw={900} size="sm" c={"teal"} className="font-mono">
+                        + {form.moneda === MONEDAS.PEN.label ? "S/." : "$"}{" "}
+                        {formatNumber(form.monto_igv)}
+                      </Text>
+                    </Stack>
+                  </Stack>
+                </div>
+              </div>
+
+              {/* Evidencias */}
+              <div className="bg-zinc-950/40 p-4 rounded-3xl border border-dashed border-zinc-800 transition-all hover:bg-zinc-950/60 hover:border-indigo-500/30">
+                <MultiFilePicker
+                  label="Evidencias"
+                  multiple
+                  files={evidencias}
+                  onFilesChange={setEvidencias}
+                />
+              </div>
+            </Stack>
+          </div>
         </div>
       </Paper>
 
-      <Group justify="flex-end" mt="xl">
+      <Group justify="flex-end" gap="lg">
         <Button
           variant="subtle"
           color="zinc"
+          size="xs"
           onClick={() => onSuccess()}
-          className="font-bold text-zinc-500 hover:text-white"
+          className="font-black text-zinc-500 hover:text-white uppercase tracking-widest transition-all"
         >
-          Cancelar
+          Descartar Cambios
         </Button>
         <Button
+          size="xs"
           variant="gradient"
           gradient={{ from: "indigo.6", to: "cyan.6" }}
-          size="md"
           radius="xl"
           loading={loading}
           onClick={handleRegistrar}
-          className="font-black shadow-lg shadow-indigo-500/20 px-10"
+          className="font-black shadow-[0_10px_30px_rgba(99,102,241,0.2)] px-12 uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
         >
-          REGISTRAR COMPROBANTE
+          Confirmar Registro
         </Button>
       </Group>
     </Stack>
