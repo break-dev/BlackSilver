@@ -10,6 +10,7 @@ export const Schema_CrearProducto = z
       .string()
       .min(1, "El nombre es requerido")
       .max(128, "Máximo 128 caracteres"),
+    prefijo: z.string().max(4, "Máximo 4 caracteres").optional().nullable(),
     es_auditable: z.boolean(),
     es_perecible: z.boolean(),
     stock_minimo_base: z.number().min(0, "Mínimo 0"),

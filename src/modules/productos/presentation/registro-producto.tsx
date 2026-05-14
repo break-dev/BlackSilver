@@ -249,6 +249,39 @@ export const RegistroProducto = ({
         </Popover>
       </div>
 
+      {/* Tarea 3: Prefijo para Activos Fijos */}
+      <AnimatePresence>
+        {useMemo(() => {
+          const cat = categorias.find((c) => c.id_categoria === form.id_categoria);
+          return cat?.clasificacion_bien === "Activo Fijo";
+        }, [form.id_categoria, categorias]) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: "auto", marginTop: 4 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextInput
+                label={<LabelForm text="Prefijo (Activo Fijo)" required />}
+                placeholder="Ej: SCOO"
+                maxLength={4}
+                value={form.prefijo || ""}
+                onChange={(e) =>
+                  setField("prefijo", e.currentTarget.value.toUpperCase())
+                }
+                classNames={{
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+                }}
+                radius="lg"
+                description="Máximo 4 caracteres para identificación."
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Fila 2: Unidad y Stock */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select

@@ -21,6 +21,7 @@ const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
   id_unidad_medida_base: 0,
   nombre: "",
+  prefijo: null,
   es_auditable: false,
   es_perecible: false,
   stock_minimo_base: 0,
@@ -116,6 +117,18 @@ export const useRegistroProducto = (
   };
 
   const handleSubmit = async () => {
+    // Validar prefijo si es Activo Fijo
+    const categoriaSeleccionada = categorias.find(
+      (c) => c.id_categoria === form.id_categoria,
+    );
+    if (
+      categoriaSeleccionada?.clasificacion_bien === "Activo Fijo" &&
+      (!form.prefijo || form.prefijo.trim() === "")
+    ) {
+      notify({ type: "error", content: "El prefijo es obligatorio para activos fijos" });
+      return;
+    }
+
     const validation = Schema_CrearProducto.safeParse(form);
     if (!validation.success) {
       notify({ type: "error", content: validation.error.issues[0].message });

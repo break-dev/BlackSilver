@@ -1,8 +1,15 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
+export interface RES_LogCostoPromedio {
+  costo_promedio_anterior: number;
+  costo_promedio_resultante: number;
+  created_at: string;
+}
+
 export interface RES_ProductoResumen {
   id_producto: number;
   nombre: string;
+  prefijo: string | null;
   //
   id_categoria: number;
   categoria: string;
@@ -16,6 +23,7 @@ export interface RES_ProductoResumen {
   //
   stock_minimo_base: number;
   costo_promedio_base: number;
+  costo_promedio_base_log: RES_LogCostoPromedio[] | null;
   //
   tiempo_espera_vencimiento: number | null;
   periodo_espera_vencimiento: string | null;
@@ -28,4 +36,5 @@ export interface RES_CategoriaBien {
   id_categoria: number;
   nombre: string;
   es_auditable: boolean;
+  clasificacion_bien: string;
 }
