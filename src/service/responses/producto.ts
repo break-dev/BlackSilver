@@ -16,5 +16,7 @@ export interface RES_Producto {
   es_perecible: boolean;
   es_auditable: boolean;
   //
+  costo_promedio_base: number;
+  //
   dias_espera_vencimiento: number | null;
 }

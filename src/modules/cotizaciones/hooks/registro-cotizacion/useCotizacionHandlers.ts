@@ -105,8 +105,48 @@ export const useCotizacionHandlers = (
           const maestro = maestros.catalogo.find(
             (m) => m.id_producto === prodId,
           );
-          if (maestro && Number(value) === maestro.id_unidad_medida_base) {
-            upd.contenido_por_presentacion = 1;
+          if (maestro) {
+            if (Number(value) === maestro.id_unidad_medida_base) {
+              upd.contenido_por_presentacion = 1;
+            }
+
+            // Sugerir precio si está vacío, es 0 o si el precio base actual coincide con el costo promedio (es sugerido)
+            const esSugerido =
+              !upd.precio_unitario ||
+              upd.precio_unitario === 0 ||
+              Math.abs(
+                (upd.precio_unitario_base || 0) - maestro.costo_promedio_base,
+              ) < 0.01;
+
+            if (esSugerido) {
+              upd.precio_unitario = Number(
+                (
+                  maestro.costo_promedio_base * upd.contenido_por_presentacion
+                ).toFixed(2),
+              );
+            }
+          }
+        }
+
+        if (field === "contenido_por_presentacion") {
+          const maestro = maestros.catalogo.find(
+            (m) => m.id_producto === prodId,
+          );
+
+          if (maestro) {
+            // Recalcular precio sugerido si es un valor sugerido (coincide con el base) o si es 0
+            const esSugerido =
+              !upd.precio_unitario ||
+              upd.precio_unitario === 0 ||
+              Math.abs(
+                (upd.precio_unitario_base || 0) - maestro.costo_promedio_base,
+              ) < 0.01;
+
+            if (esSugerido) {
+              upd.precio_unitario = Number(
+                (maestro.costo_promedio_base * Number(value)).toFixed(2),
+              );
+            }
           }
         }
 
@@ -133,7 +173,7 @@ export const useCotizacionHandlers = (
             ? Number(
                 (
                   (upd.precio_unitario || 0) / upd.contenido_por_presentacion
-                ).toFixed(2),
+                ).toFixed(4), // Usamos 4 decimales para mayor precisión en la base
               )
             : 0;
 

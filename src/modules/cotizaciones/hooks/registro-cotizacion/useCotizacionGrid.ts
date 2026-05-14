@@ -3,7 +3,7 @@ import type { DTO_ProductoComparativo, DTO_CotizacionRequest } from "../../servi
 import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
 import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
-import { detalleVacio, type MaestrosState } from "./utils";
+import { detalleVacio, recalcularTotales, type MaestrosState } from "./utils";
 
 export const useCotizacionGrid = (maestros: MaestrosState) => {
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
@@ -27,12 +27,16 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
 
           const nuevosProds = prev.filter((p) => p.id_producto !== id_producto);
           setCotizaciones((prevCots) =>
-            prevCots.map((cot) => ({
-              ...cot,
-              detalles: cot.detalles.filter(
-                (d) => d.id_producto !== id_producto,
-              ),
-            })),
+            prevCots.map((cot) => {
+              const nuevaCot = {
+                ...cot,
+                detalles: cot.detalles.filter(
+                  (d) => d.id_producto !== id_producto,
+                ),
+              };
+              Object.assign(nuevaCot, recalcularTotales(nuevaCot));
+              return nuevaCot;
+            }),
           );
           return nuevosProds;
         } else {
@@ -41,14 +45,23 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
           );
           const idUnidadBase = maestro?.id_unidad_medida_base || 1;
 
+          const costoBase = maestro?.costo_promedio_base || 0;
+
           setCotizaciones((prevCots) =>
-            prevCots.map((cot) => ({
-              ...cot,
-              detalles: [
-                ...cot.detalles,
-                detalleVacio(id_producto, idUnidadBase),
-              ],
-            })),
+            prevCots.map((cot) => {
+              const nuevoDetalle = detalleVacio(id_producto, idUnidadBase);
+              nuevoDetalle.precio_unitario = costoBase;
+              nuevoDetalle.precio_unitario_base = costoBase;
+
+              const nuevaCot = {
+                ...cot,
+                detalles: [...cot.detalles, nuevoDetalle],
+              };
+
+              Object.assign(nuevaCot, recalcularTotales(nuevaCot));
+
+              return nuevaCot;
+            }),
           );
           return [...prev, { id_producto, id_solicitud_detalle: null }];
         }
@@ -80,12 +93,19 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
           const maestro = maestros.catalogo.find(
             (m) => m.id_producto === p.id_producto,
           );
-          return detalleVacio(
+          const costoBase = maestro?.costo_promedio_base || 0;
+          const det = detalleVacio(
             p.id_producto,
             maestro?.id_unidad_medida_base || 1,
           );
+          det.precio_unitario = costoBase;
+          det.precio_unitario_base = costoBase;
+          return det;
         }),
       };
+
+      Object.assign(nuevaCot, recalcularTotales(nuevaCot));
+
       return [...prev, nuevaCot];
     });
   }, [productos, maestros.catalogo]);
