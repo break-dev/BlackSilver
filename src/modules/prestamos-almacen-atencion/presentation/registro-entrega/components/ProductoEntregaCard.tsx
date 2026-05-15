@@ -45,7 +45,7 @@ export const ProductoEntregaCard = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500/20 to-indigo-600/5 border border-indigo-500/20 shadow-inner">
-              <CubeIcon className="w-4 h-4 text-indigo-400" />
+              <CubeIcon className="size-4 text-indigo-400" />
             </div>
             <div>
               <Text

@@ -60,13 +60,10 @@ export const AsignacionLaboresContratista = ({
       {/* Info del contratista */}
       <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
-          <UserIcon className="w-5 h-5 text-indigo-400" />
+          <UserIcon className="size-5 text-indigo-400" />
         </div>
         <div>
-          <Text
-            size="xs"
-            className="text-zinc-500 font-medium"
-          >
+          <Text size="xs" className="text-zinc-500 font-medium">
             Contratista / Minero
           </Text>
           <Text size="sm" fw={700} className="text-white">
@@ -85,7 +82,7 @@ export const AsignacionLaboresContratista = ({
         }))}
         value={idMina?.toString() || null}
         onChange={(val) => onMinaChange(val ? Number(val) : null)}
-        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+        leftSection={<MapPinIcon className="size-4 text-zinc-500" />}
         classNames={fieldClasses}
         radius="lg"
         searchable
@@ -96,10 +93,7 @@ export const AsignacionLaboresContratista = ({
 
       {/* Lista de labores */}
       <Stack gap="sm">
-        <Text
-          size="sm"
-          className="text-zinc-300 font-medium"
-        >
+        <Text size="sm" className="text-zinc-300 font-medium">
           Labores disponibles
         </Text>
 
@@ -108,11 +102,12 @@ export const AsignacionLaboresContratista = ({
             value="No aplica"
             readOnly
             leftSection={
-              <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-600" />
+              <WrenchScrewdriverIcon className="size-4 text-zinc-600" />
             }
             classNames={{
               ...fieldClasses,
-              input: "bg-zinc-900/20 border-dashed border-zinc-800 text-zinc-600 italic",
+              input:
+                "bg-zinc-900/20 border-dashed border-zinc-800 text-zinc-600 italic",
             }}
             radius="lg"
             description="Sin una mina seleccionada no se pueden asignar labores"
@@ -123,7 +118,7 @@ export const AsignacionLaboresContratista = ({
           </div>
         ) : laboresDisponibles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 bg-zinc-900/30 rounded-2xl border border-dashed border-zinc-800">
-            <WrenchScrewdriverIcon className="w-8 h-8 text-zinc-700 mb-2" />
+            <WrenchScrewdriverIcon className="size-8 text-zinc-700 mb-2" />
             <Text size="sm" className="text-zinc-500 text-center">
               No hay labores activas en esta mina
             </Text>
@@ -135,12 +130,21 @@ export const AsignacionLaboresContratista = ({
               return (
                 <div
                   key={labor.id_labor}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onToggle(labor.id_labor)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onToggle(labor.id_labor);
+                    }
+                  }}
                   className={`
-                    flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all duration-200
-                    ${isChecked
-                      ? "border-indigo-500/50 bg-indigo-500/10 shadow-sm shadow-indigo-500/5"
-                      : "border-zinc-800/60 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-800/50"
+                    flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all duration-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40
+                    ${
+                      isChecked
+                        ? "border-indigo-500/50 bg-indigo-500/10 shadow-sm shadow-indigo-500/5"
+                        : "border-zinc-800/60 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-800/50"
                     }
                   `}
                 >
@@ -205,8 +209,7 @@ export const AsignacionLaboresContratista = ({
           size="sm"
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-8 transition-all hover:scale-[1.02]"
         >
-          Guardar{" "}
-          {seleccionados.length > 0 ? `(${seleccionados.length})` : ""}
+          Guardar {seleccionados.length > 0 ? `(${seleccionados.length})` : ""}
         </Button>
       </Group>
     </Stack>

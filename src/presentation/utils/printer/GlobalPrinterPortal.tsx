@@ -8,6 +8,8 @@ const PrintJobRunner = ({ job }: { job: PrintJob }) => {
 
   useEffect(() => {
     let cancelled = false;
+    let win: Window | null = null;
+    let revokeFn: (() => void) | null = null;
 
     const run = async () => {
       try {
@@ -15,15 +17,17 @@ const PrintJobRunner = ({ job }: { job: PrintJob }) => {
         if (cancelled) return;
 
         const url = URL.createObjectURL(blob);
-        const win = window.open(url, job.config.target || "_blank");
+        win = window.open(url, job.config.target || "_blank");
+        revokeFn = () => URL.revokeObjectURL(url);
 
         // Liberar el object URL.
-        // Si no hay target (es _blank), intentamos el listener, sino un timeout.
-        const revoke = () => URL.revokeObjectURL(url);
         if (win && !job.config.target) {
-          win.addEventListener("load", revoke, { once: true });
+          win.addEventListener("load", revokeFn, { once: true });
         } else {
-          setTimeout(revoke, 10_000);
+          setTimeout(() => {
+            if (revokeFn) revokeFn();
+          }, 10_000);
+
           if (!win && !job.config.target) {
             console.warn(
               "Permite ventanas emergentes en este sitio para abrir el PDF.",
@@ -41,8 +45,12 @@ const PrintJobRunner = ({ job }: { job: PrintJob }) => {
     };
 
     run();
+
     return () => {
       cancelled = true;
+      if (win && revokeFn) {
+        win.removeEventListener("load", revokeFn);
+      }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

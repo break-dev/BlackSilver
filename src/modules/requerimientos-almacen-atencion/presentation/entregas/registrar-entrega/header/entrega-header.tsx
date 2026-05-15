@@ -17,7 +17,7 @@ interface EntregaHeaderProps {
   observacion: string;
   setObservacion: (val: string) => void;
   evidencias: File[];
-  setEvidencias: (val: File[]) => void;
+  setEvidencias: React.Dispatch<React.SetStateAction<File[]>>;
 }
 
 export const EntregaHeader = ({
@@ -30,7 +30,7 @@ export const EntregaHeader = ({
   setEvidencias,
 }: EntregaHeaderProps) => {
   const handleRemoveFile = (index: number) => {
-    setEvidencias(evidencias.filter((_, i) => i !== index));
+    setEvidencias((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -80,7 +80,7 @@ export const EntregaHeader = ({
               Evidencias de Entrega
             </Text>
             <FileButton
-              onChange={(files) => setEvidencias([...evidencias, ...files])}
+              onChange={(files) => setEvidencias((prev) => [...prev, ...files])}
               multiple
             >
               {(props) => (

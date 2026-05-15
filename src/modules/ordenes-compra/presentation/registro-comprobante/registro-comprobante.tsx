@@ -73,7 +73,7 @@ export const RegistroComprobante = ({
             <Stack gap="xl">
               <Group gap="md">
                 <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
-                  <DocumentTextIcon className="w-5 h-5 text-indigo-400" />
+                  <DocumentTextIcon className="size-5 text-indigo-400" />
                 </div>
                 <div>
                   <Text
@@ -100,7 +100,10 @@ export const RegistroComprobante = ({
                   data={Object.values(TipoComprobante)}
                   value={form.tipo_comprobante}
                   onChange={(val) =>
-                    setForm({ ...form, tipo_comprobante: val || "" })
+                    setForm((prev) => ({
+                      ...prev,
+                      tipo_comprobante: val || "",
+                    }))
                   }
                   size="xs"
                   radius="md"
@@ -113,12 +116,12 @@ export const RegistroComprobante = ({
                     const dateValue = val
                       ? new Date(val as string | Date)
                       : new Date();
-                    setForm({ ...form, fecha_emision: dateValue });
+                    setForm((prev) => ({ ...prev, fecha_emision: dateValue }));
                   }}
                   radius="md"
                   size="xs"
                   leftSection={
-                    <CalendarIcon className="w-4 h-4 text-indigo-500/70" />
+                    <CalendarIcon className="size-4 text-indigo-500/70" />
                   }
                   classNames={inputClasses}
                 />
@@ -131,10 +134,10 @@ export const RegistroComprobante = ({
                   value={form.serie}
                   size="xs"
                   onChange={(e) =>
-                    setForm({
-                      ...form,
+                    setForm((prev) => ({
+                      ...prev,
                       serie: e.currentTarget.value.toUpperCase(),
-                    })
+                    }))
                   }
                   radius="md"
                   classNames={inputClasses}
@@ -145,7 +148,10 @@ export const RegistroComprobante = ({
                   value={form.numero}
                   size="xs"
                   onChange={(e) =>
-                    setForm({ ...form, numero: e.currentTarget.value })
+                    setForm((prev) => ({
+                      ...prev,
+                      numero: e.currentTarget.value,
+                    }))
                   }
                   radius="md"
                   classNames={inputClasses}
@@ -161,10 +167,10 @@ export const RegistroComprobante = ({
                   }))}
                   value={form.moneda}
                   onChange={(val) =>
-                    setForm({
-                      ...form,
+                    setForm((prev) => ({
+                      ...prev,
                       moneda: val as Moneda,
-                    })
+                    }))
                   }
                   radius="md"
                   size="xs"
@@ -187,7 +193,7 @@ export const RegistroComprobante = ({
               {/* Observaciones */}
               <Stack gap="md">
                 <Group gap="xs">
-                  <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-zinc-500" />
+                  <ChatBubbleLeftEllipsisIcon className="size-5 text-zinc-500" />
                   <Text
                     fw={900}
                     size="xs"
@@ -200,7 +206,10 @@ export const RegistroComprobante = ({
                   placeholder="Indique cualquier detalle relevante sobre este documento..."
                   value={form.observacion}
                   onChange={(e) =>
-                    setForm({ ...form, observacion: e.currentTarget.value })
+                    setForm((prev) => ({
+                      ...prev,
+                      observacion: e.currentTarget.value,
+                    }))
                   }
                   radius="lg"
                   minRows={4}
@@ -213,7 +222,7 @@ export const RegistroComprobante = ({
             <Stack gap="xl">
               <Group gap="md">
                 <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                  <BanknotesIcon className="w-5 h-5 text-emerald-400" />
+                  <BanknotesIcon className="size-5 text-emerald-400" />
                 </div>
                 <div>
                   <Text

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import dayjs from "dayjs";
 import { TipoComprobante } from "../../../shared/enums/_generic/tipo-comprobante";
 import { MONEDAS } from "../../../shared/variables/monedas";
@@ -26,7 +26,7 @@ export const useRegistroComprobante = ({
     tipo_comprobante: TipoComprobante.Factura as string,
     serie: "",
     numero: "",
-    fecha_emision: new Date(),
+    fecha_emision: null as unknown as Date,
     observacion: "",
     moneda: orden.moneda,
     tipo_cambio_venta_aplicado: orden.tipo_cambio_aplicado,
@@ -37,6 +37,11 @@ export const useRegistroComprobante = ({
     monto_igv: 0,
     total_despues_igv: 0,
   });
+
+  // Hydration fix
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, fecha_emision: new Date() }));
+  }, []);
 
   const handleUpdateTotalDespues = useCallback(
     (val: number) => {

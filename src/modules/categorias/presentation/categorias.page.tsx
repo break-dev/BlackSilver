@@ -45,7 +45,7 @@ export const CategoriasPage = () => {
           label="Buscar Categoría"
           placeholder="Buscar categorías por nombre..."
           leftSection={
-            <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+            <MagnifyingGlassIcon className="size-4 text-zinc-400" />
           }
           value={busqueda}
           onChange={(e) => setBusqueda(e.currentTarget.value)}
@@ -59,12 +59,12 @@ export const CategoriasPage = () => {
           }}
         />
         <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
+          leftSection={<PlusIcon className="size-5" />}
           onClick={openCreate}
           radius="lg"
           size="sm"
           loading={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-[38px]"
+          className="bg-zinc-100 hover:bg-white text-zinc-950 shadow-lg shadow-white/5 shrink-0 px-6 font-bold h-[38px] transition-all"
         >
           Nueva Categoría
         </Button>
@@ -74,7 +74,7 @@ export const CategoriasPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
-              key={i}
+              key={`skeleton-categoria-${i}`}
               className="h-44 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 p-4"
             >
               <Stack gap="xs">
@@ -98,7 +98,7 @@ export const CategoriasPage = () => {
         </div>
       ) : categoriasFiltradas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
-          <Squares2X2Icon className="w-10 h-10 text-zinc-700 mb-3" />
+          <Squares2X2Icon className="size-10 text-zinc-700 mb-3" />
           <p className="text-zinc-500 text-sm font-medium">
             No se encontraron categorías registradas
           </p>

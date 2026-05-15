@@ -1,4 +1,11 @@
-import { Document, Page, View, Text, StyleSheet, Image } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../shared/functions/formatNumber";
 import { MONEDAS } from "../../shared/variables/monedas";
@@ -129,7 +136,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   signatureName: { fontSize: 8, fontWeight: 700, textAlign: "center" },
-  signatureRole: { fontSize: 7, color: "#166534", textAlign: "center", textTransform: "uppercase" },
+  signatureRole: {
+    fontSize: 8,
+    color: "#166534",
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -137,7 +149,7 @@ const styles = StyleSheet.create({
     right: 30,
     textAlign: "center",
     color: "#166534",
-    fontSize: 7,
+    fontSize: 8,
     borderTopWidth: 1,
     borderTopColor: "#f0fdf4",
     paddingTop: 8,
@@ -159,7 +171,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               src={orden.empresa_logo}
               style={{ width: 90, height: 45, objectFit: "contain" }}
             />
-            <Text style={{ fontSize: 7, color: "#166534" }}>
+            <Text style={{ fontSize: 8, color: "#166534" }}>
               Documento Oficial de Orden de Compra
             </Text>
           </View>
@@ -168,14 +180,14 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1.5 }}>
-            <Text style={{ fontSize: 7, color: "#166534", marginBottom: 2 }}>
+            <Text style={{ fontSize: 8, color: "#166534", marginBottom: 2 }}>
               EMITIR FACTURA A NOMBRE DE:
             </Text>
             <Text style={styles.companyName}>
               {orden.empresa.toUpperCase()}
             </Text>
             {orden.empresa_ruc && (
-              <Text style={{ fontSize: 7, color: "#52525b", marginTop: 2 }}>
+              <Text style={{ fontSize: 8, color: "#52525b", marginTop: 2 }}>
                 RUC: {orden.empresa_ruc}
               </Text>
             )}
@@ -191,24 +203,52 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
 
         {/* Proveedor / Emisión */}
         <View style={{ flexDirection: "row", marginBottom: 15, gap: 20 }}>
-          <View style={{ flex: 1, backgroundColor: "#f0fdf4", padding: 8, borderRadius: 4 }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#f0fdf4",
+              padding: 8,
+              borderRadius: 4,
+            }}
+          >
             <Text style={styles.sectionTitle}>PROVEEDOR</Text>
-            <Text style={{ fontWeight: 700, fontSize: 10 }}>{orden.proveedor}</Text>
+            <Text style={{ fontWeight: 700, fontSize: 10 }}>
+              {orden.proveedor}
+            </Text>
             {orden.documento_proveedor && (
               <Text style={{ fontSize: 8, color: "#166534", marginTop: 2 }}>
                 RUC / Doc: {orden.documento_proveedor}
               </Text>
             )}
           </View>
-          <View style={{ flex: 1, backgroundColor: "#f0fdf4", padding: 8, borderRadius: 4 }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#f0fdf4",
+              padding: 8,
+              borderRadius: 4,
+            }}
+          >
             <Text style={styles.sectionTitle}>REFERENCIA</Text>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 2 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 2,
+              }}
+            >
               <Text style={{ fontSize: 8 }}>Cotización:</Text>
-              <Text style={{ fontSize: 8, fontWeight: 700 }}>{orden.correlativo_cotizacion}</Text>
+              <Text style={{ fontSize: 8, fontWeight: 700 }}>
+                {orden.correlativo_cotizacion}
+              </Text>
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
               <Text style={{ fontSize: 8 }}>Moneda:</Text>
-              <Text style={{ fontSize: 8, fontWeight: 700 }}>{orden.moneda}</Text>
+              <Text style={{ fontSize: 8, fontWeight: 700 }}>
+                {orden.moneda}
+              </Text>
             </View>
           </View>
         </View>
@@ -221,7 +261,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               (acc, det) => {
                 const lugar =
                   det.tipo_despacho === TipoDespachoCompra.Recojo &&
-                    det.lugar_recojo
+                  det.lugar_recojo
                     ? ` [Lugar: ${det.lugar_recojo}]`
                     : "";
                 const txtDias =
@@ -238,7 +278,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
 
             return Object.entries(agrupados).map(([grupoName, items]) => (
               <View key={grupoName} style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>{grupoName.toUpperCase()}</Text>
+                <Text style={styles.sectionTitle}>
+                  {grupoName.toUpperCase()}
+                </Text>
                 <View style={[styles.row, styles.tableHeader]}>
                   <Text style={styles.col0}>#</Text>
                   <Text style={styles.col1}>Cant.</Text>
@@ -250,7 +292,8 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                 {items.map((det, idx) => {
                   const hasEquivalence =
                     det.id_unidad_medida_base !== det.id_unidad_medida_oc;
-                  const subtotalItem = det.cantidad_requerida * det.precio_unitario;
+                  const subtotalItem =
+                    det.cantidad_requerida * det.precio_unitario;
 
                   return (
                     <View key={det.id_orden_compra_detalle} style={styles.row}>
@@ -258,15 +301,22 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                       <Text style={styles.col1}>
                         {formatNumber(det.cantidad_requerida)}
                       </Text>
-                      <Text style={styles.col2}>{det.unidad_medida_oc_abv}</Text>
+                      <Text style={styles.col2}>
+                        {det.unidad_medida_oc_abv}
+                      </Text>
                       <View style={styles.col3}>
                         <Text style={{ fontWeight: 700 }}>{det.producto}</Text>
                         {hasEquivalence && (
                           <Text
-                            style={{ fontSize: 8, color: "#71717a", marginTop: 2 }}
+                            style={{
+                              fontSize: 8,
+                              color: "#71717a",
+                              marginTop: 2,
+                            }}
                           >
                             Eq: {formatNumber(det.contenido_por_presentacion)}{" "}
-                            {det.unidad_medida_base_abv} x {det.unidad_medida_oc_abv}
+                            {det.unidad_medida_base_abv} x{" "}
+                            {det.unidad_medida_oc_abv}
                           </Text>
                         )}
                         {det.comentario && (
@@ -303,8 +353,8 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               {symbol}{" "}
               {formatNumber(
                 orden.total_antes_igv -
-                Number(orden.costo_flete) -
-                Number(orden.otros_gastos),
+                  Number(orden.costo_flete) -
+                  Number(orden.otros_gastos),
               )}
             </Text>
           </View>
@@ -344,7 +394,14 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {orden.observacion && (
           <View style={{ marginTop: 10 }}>
             <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
-            <Text style={{ fontSize: 8, fontStyle: "italic", color: "#166534", paddingLeft: 6 }}>
+            <Text
+              style={{
+                fontSize: 8,
+                fontStyle: "italic",
+                color: "#166534",
+                paddingLeft: 6,
+              }}
+            >
               {orden.observacion}
             </Text>
           </View>
@@ -356,7 +413,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View style={styles.signatureSection}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+              <Text style={styles.signatureName}>
+                Rosa Maria Henriquez Acosta
+              </Text>
               <Text style={styles.signatureRole}>Gerencia General</Text>
             </View>
             <View style={styles.signatureBox}>

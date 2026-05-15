@@ -43,7 +43,8 @@ export const TrazabilidadPrestamo = ({
   return (
     <Stack gap="xl" className="animate-fade-in p-2 font-sans">
       {productoNombre && (
-        <div className="px-4 py-3 border-l-4 border-indigo-500 bg-zinc-900/50 rounded-r-xl shadow-sm">
+        <div className="px-4 py-3 border border-zinc-800 bg-linear-to-r from-zinc-900/80 to-zinc-900/30 rounded-xl shadow-lg relative overflow-hidden">
+          <div className="absolute inset-y-0 left-0 w-1 bg-indigo-500/50" />
           <Text
             size="xs"
             c="dimmed"
@@ -60,7 +61,7 @@ export const TrazabilidadPrestamo = ({
 
       {eventos.length === 0 ? (
         <div className="text-center py-16 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
-          <CubeIcon className="w-12 h-12 text-zinc-700 mx-auto mb-3 opacity-20" />
+          <CubeIcon className="size-12 text-zinc-700 mx-auto mb-3 opacity-20" />
           <Text c="dimmed" fs="italic" size="sm" fw={800}>
             No hay eventos registrados para este producto.
           </Text>
@@ -72,11 +73,11 @@ export const TrazabilidadPrestamo = ({
           lineWidth={2}
           className="px-4"
         >
-          {[...eventos].reverse().map((evento, idx) => {
+          {[...eventos].reverse().map((evento) => {
             const style = getStatusStyles(evento.estado);
             return (
               <Timeline.Item
-                key={idx}
+                key={evento.id_log}
                 color={style.color}
                 bullet={
                   <ThemeIcon
@@ -120,7 +121,7 @@ export const TrazabilidadPrestamo = ({
                     {evento.descripcion || getSystemMessage(evento.estado)}
                   </Text>
                   <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <div className="size-6 rounded-full bg-zinc-800 flex items-center justify-center">
                       <Text size="10px" fw={800} c="zinc.5">
                         {evento.empleado?.charAt(0) || "?"}
                       </Text>
@@ -132,7 +133,7 @@ export const TrazabilidadPrestamo = ({
                       size="xs"
                       fw={700}
                       c="zinc.3"
-                      className="italic underline underline-offset-4 decoration-indigo-500/20"
+                      className="italic underline underline-offset-4 decoration-zinc-500/20"
                     >
                       {evento.empleado || "Sistema"}
                     </Text>
@@ -199,20 +200,20 @@ const getStatusStyles = (status: string) => {
 const getStatusIcon = (status: string) => {
   const s = status.toLowerCase();
   if (s.includes("pendiente") || s.includes("esperando"))
-    return <ClipboardDocumentListIcon className="w-4 h-4 text-white" />;
+    return <ClipboardDocumentListIcon className="size-4 text-white" />;
   if (s.includes("aprobado") || s.includes("autorizado"))
-    return <CheckBadgeIcon className="w-4 h-4 text-white" />;
+    return <CheckBadgeIcon className="size-4 text-white" />;
   if (s.includes("despacho") || s.includes("iniciado"))
-    return <TruckIcon className="w-4 h-4 text-white" />;
+    return <TruckIcon className="size-4 text-white" />;
   if (s.includes("entrega") || s.includes("atendido"))
-    return <ArchiveBoxArrowDownIcon className="w-4 h-4 text-white" />;
+    return <ArchiveBoxArrowDownIcon className="size-4 text-white" />;
   if (s.includes("completad") || s.includes("finalizado"))
-    return <CheckCircleIcon className="w-4 h-4 text-white" />;
+    return <CheckCircleIcon className="size-4 text-white" />;
   if (s.includes("devolucion"))
-    return <TruckIcon className="w-4 h-4 text-white" />;
+    return <TruckIcon className="size-4 text-white" />;
   if (s.includes("rechazado"))
-    return <XCircleIcon className="w-4 h-4 text-white" />;
+    return <XCircleIcon className="size-4 text-white" />;
   if (s.includes("cerrado") || s.includes("anulado"))
-    return <CubeIcon className="w-4 h-4 text-white" />;
-  return <div className="w-2 h-2 rounded-full bg-white" />;
+    return <CubeIcon className="size-4 text-white" />;
+  return <div className="size-2 rounded-full bg-white" />;
 };

@@ -55,7 +55,7 @@ export const MinasAbastecidas = ({
         <Stack gap="sm">
           {[1, 2, 3].map((i) => (
             <Group
-              key={i}
+              key={`skeleton-mina-${i}`}
               wrap="nowrap"
               className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg"
             >
@@ -72,7 +72,7 @@ export const MinasAbastecidas = ({
       {/* Estado vacío */}
       {!loading && minas.length === 0 && (
         <div className="text-center py-8 border border-dashed border-zinc-800 rounded-xl">
-          <CubeIcon className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
+          <CubeIcon className="size-8 text-zinc-600 mx-auto mb-2" />
           <p className="text-zinc-500 text-sm">
             Este almacén no atiende ninguna mina.
           </p>
@@ -82,14 +82,14 @@ export const MinasAbastecidas = ({
       {/* Lista de minas */}
       {!loading && (
         <div className="grid gap-3">
-          {minas.map((item: RES_MinaAbastecida, idx: number) => (
+          {minas.map((item: RES_MinaAbastecida) => (
             <div
-              key={item.id_almacen_mina || idx}
+              key={item.id_almacen_mina}
               className="flex items-center justify-between p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-lg"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-900/20 text-indigo-500 flex items-center justify-center border border-indigo-900/30">
-                  <CubeIcon className="w-5 h-5" />
+                <div className="size-10 rounded-full bg-zinc-800/50 text-zinc-400 flex items-center justify-center border border-zinc-700/50">
+                  <CubeIcon className="size-5" />
                 </div>
                 <div>
                   <Text fw={600} className="text-zinc-200">
@@ -112,7 +112,7 @@ export const MinasAbastecidas = ({
                     handleDesvincular(item.id_almacen_mina, onMinasChange)
                   }
                 >
-                  <TrashIcon className="w-4 h-4" />
+                  <TrashIcon className="size-4" />
                 </ActionIcon>
               </Tooltip>
             </div>

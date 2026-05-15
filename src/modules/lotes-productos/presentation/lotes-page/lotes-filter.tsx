@@ -86,7 +86,7 @@ export const LotesFilter = ({
             disabled={loadingAlmacenes}
             radius="lg"
             size="sm"
-            leftSection={<InboxStackIcon className="w-4 h-4 text-indigo-400" />}
+            leftSection={<InboxStackIcon className="size-4 text-zinc-400" />}
             classNames={inputClasses}
             comboboxProps={{
               withinPortal: true,

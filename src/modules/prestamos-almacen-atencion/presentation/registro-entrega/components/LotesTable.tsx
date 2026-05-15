@@ -47,7 +47,7 @@ export const LotesTable = ({
             c="dimmed"
             className="uppercase tracking-widest animate-pulse font-black"
           >
-            Consultando existencias...
+            Consultando existencias…
           </Text>
         </Stack>
       </Center>
@@ -58,7 +58,7 @@ export const LotesTable = ({
     return (
       <Center py={40}>
         <Stack gap="sm" align="center" className="opacity-20">
-          <ArchiveBoxIcon className="w-10 h-10 text-red-500" />
+          <ArchiveBoxIcon className="size-10 text-red-500" />
           <Text
             size="xs"
             fw={900}

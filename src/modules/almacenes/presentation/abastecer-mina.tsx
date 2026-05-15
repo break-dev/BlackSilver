@@ -38,8 +38,8 @@ export const AbastecerMina = ({
     >
       {/* Header igual a NuevoContrato */}
       <Group gap="sm" align="center">
-        <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-          <CubeIcon className="w-4 h-4 text-indigo-400" />
+        <Box className="size-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+          <CubeIcon className="size-4 text-indigo-400" />
         </Box>
         <Stack gap={0}>
           <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">

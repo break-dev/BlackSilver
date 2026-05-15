@@ -8,7 +8,7 @@ interface EmptyStateProps {
 export const EmptyState = ({ busqueda }: EmptyStateProps) => {
   return (
     <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
-      <DocumentMagnifyingGlassIcon className="w-12 h-12 text-zinc-700 mb-4" />
+      <DocumentMagnifyingGlassIcon className="size-12 text-zinc-700 mb-4" />
       <Text
         size="sm"
         fw={700}

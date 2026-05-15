@@ -9,6 +9,7 @@ import {
   Checkbox,
   NumberInput,
 } from "@mantine/core";
+import { useState, useEffect } from "react";
 import {
   BoltIcon,
   FireIcon,
@@ -85,6 +86,12 @@ export const RegistrarSolicitudLogistica = ({
     },
   } = useRegistrarSolicitudLogistica({ requerimiento, detalles, onSuccess });
 
+  const [today, setToday] = useState<Date | undefined>(undefined);
+
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
+
   return (
     <Stack gap={32} p="md">
       <section>
@@ -99,7 +106,7 @@ export const RegistrarSolicitudLogistica = ({
             value={fechaEntrega}
             onChange={(val) => setFechaEntrega(val as Date | null)}
             radius="lg"
-            minDate={new Date()}
+            minDate={today}
             clearable
           />
 

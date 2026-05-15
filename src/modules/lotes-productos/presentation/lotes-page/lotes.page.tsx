@@ -121,8 +121,8 @@ export const LotesPage = () => {
       {loading ? (
         <Stack align="center" gap="md" py={100}>
           <div className="relative">
-            <div className="w-16 h-16 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
-            <InboxStackIcon className="w-6 h-6 text-indigo-400 absolute inset-0 m-auto animate-pulse" />
+            <div className="size-16 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+            <InboxStackIcon className="size-6 text-indigo-400 absolute inset-0 m-auto animate-pulse" />
           </div>
           <Text
             size="xs"
@@ -134,7 +134,7 @@ export const LotesPage = () => {
         </Stack>
       ) : groupedProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
-          <InboxStackIcon className="w-12 h-12 text-zinc-700 mb-4" />
+          <InboxStackIcon className="size-12 text-zinc-700 mb-4" />
           <Text
             size="sm"
             fw={700}

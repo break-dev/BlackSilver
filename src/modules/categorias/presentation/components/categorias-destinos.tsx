@@ -1,3 +1,4 @@
+import React from "react";
 import {
     ActionIcon,
     Button,
@@ -19,7 +20,7 @@ interface CategoriaMinima {
 interface CategoriasDestinosProps {
     categoriaNombre: string;
     idsDestinosTemp: number[];
-    setIdsDestinosTemp: (ids: number[]) => void;
+    setIdsDestinosTemp: React.Dispatch<React.SetStateAction<number[]>>;
     categoriasParaConsumo: { value: string; label: string }[];
     todasCategorias: CategoriaMinima[];
     onSave: () => void;
@@ -42,8 +43,8 @@ export const CategoriasDestinos = ({
         <Stack gap="md">
             <div className="p-4 border border-zinc-800 bg-zinc-900/40 rounded-xl">
                 <Group gap="sm" align="center" mb="md">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                        <RectangleGroupIcon className="w-4 h-4 text-indigo-400" />
+                    <div className="size-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                        <RectangleGroupIcon className="size-4 text-indigo-400" />
                     </div>
                     <Stack gap={0}>
                         <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
@@ -67,7 +68,7 @@ export const CategoriasDestinos = ({
                     }}
                     onChange={(val) => {
                         if (val) {
-                            setIdsDestinosTemp([...idsDestinosTemp, Number(val)]);
+                            setIdsDestinosTemp((prev: number[]) => [...prev, Number(val)]);
                         }
                     }}
                 />
@@ -81,7 +82,7 @@ export const CategoriasDestinos = ({
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                     {idsDestinosTemp.length === 0 ? (
                         <div className="py-10 text-center bg-zinc-900/20 rounded-xl border border-dashed border-zinc-800">
-                            <RectangleGroupIcon className="w-8 h-8 text-zinc-800 mx-auto mb-2 opacity-50" />
+                            <RectangleGroupIcon className="size-8 text-zinc-800 mx-auto mb-2 opacity-50" />
                             <Text size="xs" className="text-zinc-600 italic">No hay destinos vinculados aún</Text>
                         </div>
                     ) : (
@@ -90,7 +91,7 @@ export const CategoriasDestinos = ({
                             return (
                                 <Group key={id} justify="space-between" className="p-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-zinc-700 transition-all duration-200">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                        <div className="size-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                                         <Text size="sm" fw={600} className="text-zinc-300">{cat?.nombre || 'Categoría'}</Text>
                                     </div>
                                     <ActionIcon
@@ -98,9 +99,9 @@ export const CategoriasDestinos = ({
                                         color="red"
                                         size="sm"
                                         className="hover:bg-red-900/20"
-                                        onClick={() => setIdsDestinosTemp(idsDestinosTemp.filter(cid => cid !== id))}
+                                        onClick={() => setIdsDestinosTemp((prev: number[]) => prev.filter(cid => cid !== id))}
                                     >
-                                        <XMarkIcon className="w-4 h-4" />
+                                        <XMarkIcon className="size-4" />
                                     </ActionIcon>
                                 </Group>
                             )
@@ -115,8 +116,8 @@ export const CategoriasDestinos = ({
                 loading={loading}
                 radius="lg"
                 className={!isCreationMode
-                    ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
-                    : "bg-zinc-200 text-zinc-900 hover:bg-white"
+                    ? "bg-zinc-100 hover:bg-white text-zinc-950 shadow-lg shadow-white/5 font-bold"
+                    : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"
                 }
             >
                 {!isCreationMode ? "Guardar Cambios" : "Aceptar"}
