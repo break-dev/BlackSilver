@@ -297,3 +297,13 @@ module-name/
 1. Configurar el archivo `.env`
 2. `npm install`
 3. `npm run dev`
+
+---
+
+## 🤖 Comandos Obligatorios para IA
+> [!IMPORTANT]
+> Después de realizar cualquier cambio en el código del Frontend, es **OBLIGATORIO** ejecutar el siguiente comando para verificar la integridad de los tipos y el empaquetado:
+> ```bash
+> npm run build
+> ```
+> No confíes únicamente en `tsc --noEmit`. El proceso de build completo es la única garantía de que el código es correcto y está listo para producción.

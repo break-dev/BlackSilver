@@ -1,5 +1,5 @@
 export enum TipoBien {
   Suministro = "Suministro",
-  Materiales = "Materiales",
+  Material = "Material",
   ActivoFijo = "Activo Fijo",
 }

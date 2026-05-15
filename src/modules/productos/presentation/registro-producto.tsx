@@ -23,12 +23,12 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_ProductoResumen } from "../service/productos.responses";
-import type { RES_Categoria } from "../../categorias/service/categorias.responses";
+import type { RES_CategoriaResumen } from "../../categorias/service/categorias.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "../../categorias/presentation/registro-categoria";
-import { CategoriasDestinos } from "../../categorias/presentation/categorias-destinos";
+import { CategoriasDestinos } from "../../categorias/presentation/components/categorias-destinos";
 import { useRegistroCategoria } from "../../categorias/hooks/useRegistroCategoria";
 import { LabelForm } from "./components/label-form";
 import { useMemo } from "react";
@@ -79,6 +79,7 @@ export const RegistroProducto = ({
     useDisclosure(false);
 
   const registroCat = useRegistroCategoria({
+    categoriasExistentes: categorias as unknown as RES_CategoriaResumen[],
     onSuccess: (nueva) => {
       cargarCategorias();
       setField("id_categoria", nueva.id_categoria);
@@ -252,7 +253,9 @@ export const RegistroProducto = ({
       {/* Tarea 3: Prefijo para Activos Fijos */}
       <AnimatePresence>
         {useMemo(() => {
-          const cat = categorias.find((c) => c.id_categoria === form.id_categoria);
+          const cat = categorias.find(
+            (c) => c.id_categoria === form.id_categoria,
+          );
           return cat?.clasificacion_bien === "Activo Fijo";
         }, [form.id_categoria, categorias]) && (
           <motion.div
@@ -494,7 +497,7 @@ export const RegistroProducto = ({
         zIndex={1001} // Para que se vea por encima del modal de producto
       >
         <RegistroCategoria
-          todasCategorias={categorias as unknown as RES_Categoria[]}
+          todasCategorias={categorias as unknown as RES_CategoriaResumen[]}
           nombre={registroCat.nombre}
           setNombre={registroCat.setNombre}
           descripcion={registroCat.descripcion}
@@ -511,8 +514,15 @@ export const RegistroProducto = ({
           setParaMina={registroCat.setParaMina}
           esAuditable={registroCat.esAuditable}
           setEsAuditable={registroCat.setEsAuditable}
+          paraTransporte={registroCat.paraTransporte}
+          setParaTransporte={registroCat.setParaTransporte}
+          controlPorOdometro={registroCat.controlPorOdometro}
+          setControlPorOdometro={registroCat.setControlPorOdometro}
+          controlPorHorometro={registroCat.controlPorHorometro}
+          setControlPorHorometro={registroCat.setControlPorHorometro}
           idsConsumidoras={registroCat.idsConsumidoras}
           setIdsConsumidoras={registroCat.setIdsConsumidoras}
+          coincidencias={registroCat.coincidencias}
           onOpenDestinos={openDestinos}
           error={registroCat.error}
           loading={registroCat.loading}

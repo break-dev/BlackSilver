@@ -5,7 +5,8 @@ import { useNotify } from "../../../hooks/useNotify";
 import { useCategorias } from "./useCategorias";
 import { useRegistroCategoria } from "./useRegistroCategoria";
 import { CategoriasService } from "../service/categorias.service";
-import type { RES_Categoria } from "../service/categorias.responses";
+import type { RES_CategoriaResumen } from "../service/categorias.responses";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export const useCategoriasPage = () => {
   useTitlePage("Categorías");
@@ -27,29 +28,40 @@ export const useCategoriasPage = () => {
   const [openedDestinos, { open: openDestinos, close: closeDestinos }] =
     useDisclosure(false);
   const [categoriaSeleccionada, setCategoriaSeleccionada] =
-    useState<RES_Categoria | null>(null);
+    useState<RES_CategoriaResumen | null>(null);
   const [idsDestinosTemp, setIdsDestinosTemp] = useState<number[]>([]);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-  const categoriasParaConsumo = useMemo(
-    () =>
-      categorias.map((c) => ({
-        value: String(c.id_categoria),
-        label: c.nombre,
-      })),
-    [categorias],
-  );
-
   const registro = useRegistroCategoria({
+    categoriasExistentes: categorias,
     onSuccess: onCategoriaGuardada,
     onClose: closeCreate,
   });
 
-  const handleOpenGestionDestinos = (cat: RES_Categoria) => {
+  const categoriasParaConsumo = useMemo(() => {
+    // Si estamos editando y la categoría seleccionada es Suministro
+    // O si estamos creando y la clasificación en el registro es Suministro
+    const esSuministro = categoriaSeleccionada
+      ? categoriaSeleccionada.clasificacion_bien === TipoBien.Suministro
+      : registro.clasificacionBien === TipoBien.Suministro;
+
+    return categorias
+      .filter((c) => {
+        // Si es suministro, solo puede abastecer a Activos Fijos
+        if (esSuministro) return c.clasificacion_bien === TipoBien.ActivoFijo;
+        return true;
+      })
+      .map((c) => ({
+        value: String(c.id_categoria),
+        label: c.nombre,
+      }));
+  }, [categorias, categoriaSeleccionada, registro.clasificacionBien]);
+
+  const handleOpenGestionDestinos = (cat: RES_CategoriaResumen) => {
     setCategoriaSeleccionada(cat);
     // Parseamos los IDs que vienen de la BD ("1,2,3" -> [1,2,3])
-    const ids = cat.ids_categorias_consumidoras
-      ? cat.ids_categorias_consumidoras.split(",").map(Number)
+    const ids = cat.categorias_consumidoras
+      ? cat.categorias_consumidoras.map((c) => c.id_categoria_consumidora)
       : [];
     setIdsDestinosTemp(ids);
     openDestinos();

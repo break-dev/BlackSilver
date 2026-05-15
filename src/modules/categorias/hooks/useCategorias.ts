@@ -2,14 +2,14 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { CategoriasService } from "../service/categorias.service";
-import type { RES_Categoria } from "../service/categorias.responses";
+import type { RES_CategoriaResumen } from "../service/categorias.responses";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useCategorias = () => {
   const { notify } = useNotify();
 
   // Estados de la lista
-  const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
+  const [categorias, setCategorias] = useState<RES_CategoriaResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -52,7 +52,7 @@ export const useCategorias = () => {
       );
   }, [categorias, busqueda, en_modo_auditable]);
 
-  const onCategoriaGuardada = (nueva: RES_Categoria) => {
+  const onCategoriaGuardada = (nueva: RES_CategoriaResumen) => {
     setCategorias((prev) => {
       const index = prev.findIndex(
         (c) => c.id_categoria === nueva.id_categoria,

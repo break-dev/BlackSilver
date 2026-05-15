@@ -2,16 +2,22 @@ import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { CategoriasService } from "../service/categorias.service";
 import { Schema_RegistroCategoria } from "../service/categorias.requests";
-import type { RES_Categoria } from "../service/categorias.responses";
+import type { RES_CategoriaResumen } from "../service/categorias.responses";
 import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import {
+  getCoincidencias,
+  type SearchResult,
+} from "../../../shared/functions/get-coincidencias";
 
 interface UseRegistroCategoriaProps {
-  onSuccess?: (nueva: RES_Categoria) => void;
+  categoriasExistentes: RES_CategoriaResumen[];
+  onSuccess?: (nueva: RES_CategoriaResumen) => void;
   onClose: () => void;
 }
 
 export const useRegistroCategoria = ({
+  categoriasExistentes,
   onSuccess,
   onClose,
 }: UseRegistroCategoriaProps) => {
@@ -24,13 +30,19 @@ export const useRegistroCategoria = ({
     TipoProducto.Bien,
   );
   const [clasificacionBien, setClasificacionBien] = useState<string | null>(
-    TipoBien.Suministro,
+    TipoBien.Material,
   );
   const [esConsumible, setEsConsumible] = useState(false);
   const [paraCocina, setParaCocina] = useState(false);
   const [paraMina, setParaMina] = useState(true);
   const [esAuditable, setEsAuditable] = useState(false);
+  const [paraTransporte, setParaTransporte] = useState(false);
+  const [controlPorOdometro, setControlPorOdometro] = useState(false);
+  const [controlPorHorometro, setControlPorHorometro] = useState(false);
   const [idsConsumidoras, setIdsConsumidoras] = useState<number[]>([]);
+  const [coincidencias, setCoincidencias] = useState<
+    SearchResult<RES_CategoriaResumen>[]
+  >([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,27 +50,63 @@ export const useRegistroCategoria = ({
   const reset = useCallback(() => {
     setNombre("");
     setDescripcion("");
-    setTipoProducto(null);
-    setClasificacionBien(null);
+    setTipoProducto(TipoProducto.Bien);
+    setClasificacionBien(TipoBien.Suministro);
     setEsConsumible(false);
     setParaCocina(false);
     setParaMina(true);
     setEsAuditable(false);
+    setParaTransporte(false);
+    setControlPorOdometro(false);
+    setControlPorHorometro(false);
     setIdsConsumidoras([]);
+    setCoincidencias([]);
     setError("");
   }, []);
+
+  const handleNombreChange = (val: string) => {
+    setNombre(val);
+    if (val.length >= 3) {
+      const results = getCoincidencias(categoriasExistentes, val, {
+        keys: ["nombre"],
+        fuseThreshold: 0.3,
+      });
+      setCoincidencias(results);
+    } else {
+      setCoincidencias([]);
+    }
+  };
+
+  const handleClasificacionChange = (val: string | null) => {
+    setClasificacionBien(val);
+    if (val === TipoBien.Suministro) {
+      setEsConsumible(true);
+    } else {
+      setEsConsumible(false);
+    }
+  };
+
+  const handleParaTransporteChange = (val: boolean) => {
+    setParaTransporte(val);
+    if (val) {
+      setControlPorOdometro(true);
+    }
+  };
 
   const handleGuardar = async () => {
     setError("");
     const data = {
       nombre,
       descripcion,
-      tipo_producto: tipoProducto || "",
+      tipo_producto: TipoProducto.Bien, // Siempre Bien
       clasificacion_bien: clasificacionBien || "",
       es_consumible: esConsumible,
       para_cocina: paraCocina,
       para_mina: paraMina,
       es_auditable: esAuditable,
+      para_transporte: paraTransporte,
+      control_por_odometro: controlPorOdometro,
+      control_por_horometro: controlPorHorometro,
       ids_categorias_consumidoras: idsConsumidoras,
     };
 
@@ -83,20 +131,19 @@ export const useRegistroCategoria = ({
       setError("Error inesperado al crear la categoría");
       console.error(err);
     } finally {
-      setLoading(true);
       setLoading(false);
     }
   };
 
   return {
     nombre,
-    setNombre,
+    setNombre: handleNombreChange,
     descripcion,
     setDescripcion,
     tipoProducto,
     setTipoProducto,
     clasificacionBien,
-    setClasificacionBien,
+    setClasificacionBien: handleClasificacionChange,
     esConsumible,
     setEsConsumible,
     paraCocina,
@@ -105,8 +152,15 @@ export const useRegistroCategoria = ({
     setParaMina,
     esAuditable,
     setEsAuditable,
+    paraTransporte,
+    setParaTransporte: handleParaTransporteChange,
+    controlPorOdometro,
+    setControlPorOdometro,
+    controlPorHorometro,
+    setControlPorHorometro,
     idsConsumidoras,
     setIdsConsumidoras,
+    coincidencias,
     error,
     loading,
     handleGuardar,
