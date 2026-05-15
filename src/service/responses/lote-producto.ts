@@ -5,6 +5,7 @@ export interface RES_LoteDisponible {
   correlativo: string;
   //
   id_almacen: number;
+  almacen_es_virtual: boolean;
   //
   id_producto: number;
   es_auditable: boolean;
