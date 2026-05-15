@@ -8,6 +8,7 @@ import type { RES_PersonalExterno } from "./responses/personal-externo";
 import type { RES_LoteDisponible } from "./responses/lote-producto";
 import type { RES_Empleado } from "./responses/empleado";
 import type { RES_Empresa } from "./responses/empresa";
+import type { TipoBien } from "../shared/enums/_generic/tipo-bien";
 
 const path = "/aux";
 
@@ -131,6 +132,7 @@ export const AuxService = {
    */
   get_productos: async (filters?: {
     con_categorias_consumidoras?: boolean;
+    tipo_bien_excluido?: TipoBien;
   }): Promise<IRespuesta<RES_Producto[]>> => {
     const { data } = await api.get<IRespuesta<RES_Producto[]>>(
       `${path}/productos`,

@@ -110,7 +110,7 @@ export const CategoriasPage = () => {
             TipoBien.Herramienta,
             TipoBien.Suministro,
             TipoBien.Repuesto,
-            TipoBien.Material,
+            // TipoBien.Material,
             TipoBien.EPP,
             TipoProducto.Servicio,
           ].map((clasif) => {
