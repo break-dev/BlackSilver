@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Button,
   Group,
@@ -6,11 +7,14 @@ import {
   Badge,
   Stack,
   ThemeIcon,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   CubeIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -19,9 +23,17 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useProductos } from "../hooks/useProductos";
 import { RegistroProducto } from "./registro-producto";
-import type { RES_ProductoResumen } from "../service/productos.responses";
+import { HistorialCostos } from "./components/historial-costos";
+import type {
+  RES_LogCostoPromedio,
+  RES_ProductoResumen,
+} from "../service/productos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { enPlural } from "../../../shared/functions/en-plural";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+
+dayjs.locale("es");
 
 export const ProductosPage = () => {
   useTitlePage("Catálogo de Productos");
@@ -31,6 +43,25 @@ export const ProductosPage = () => {
 
   const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
     useDisclosure(false);
+
+  const [openedHistory, { open: openHistory, close: closeHistory }] =
+    useDisclosure(false);
+  const [selectedLog, setSelectedLog] = useState<RES_LogCostoPromedio[]>([]);
+  const [selectedProdName, setSelectedProdName] = useState("");
+
+  const handleOpenHistory = (r: RES_ProductoResumen) => {
+    try {
+      const logs = typeof r.costo_promedio_base_log === 'string' 
+        ? JSON.parse(r.costo_promedio_base_log) 
+        : r.costo_promedio_base_log;
+      
+      setSelectedLog(logs || []);
+      setSelectedProdName(r.nombre);
+      openHistory();
+    } catch (e) {
+      console.error("Error al parsear logs", e);
+    }
+  };
 
   const columns: DataTableColumn<RES_ProductoResumen>[] = [
     {
@@ -48,9 +79,18 @@ export const ProductosPage = () => {
           <ThemeIcon variant="light" color="indigo" radius="md" size="lg">
             <CubeIcon className="w-5 h-5" />
           </ThemeIcon>
-          <Text size="sm" fw={500} className="text-zinc-200">
-            {r.nombre}
-          </Text>
+          <Stack gap={2}>
+            <Group gap="xs">
+              <Text size="sm" fw={500} className="text-zinc-200">
+                {r.nombre}
+              </Text>
+              {r.prefijo && (
+                <Badge color="pink" variant="light" size="xs" radius="sm">
+                  {r.prefijo}
+                </Badge>
+              )}
+            </Group>
+          </Stack>
         </Group>
       ),
     },
@@ -153,6 +193,26 @@ export const ProductosPage = () => {
         </Badge>
       ),
     },
+    {
+      accessor: "historial",
+      title: "",
+      textAlign: "center",
+      width: 60,
+      render: (r) => (
+        <Tooltip label="Ver historial de costos" position="top" withArrow>
+          <ActionIcon
+            variant="filled"
+            color="violet"
+            radius="md"
+            size="md"
+            onClick={() => handleOpenHistory(r)}
+            disabled={!r.costo_promedio_base_log || (typeof r.costo_promedio_base_log === 'string' && r.costo_promedio_base_log === '[]')}
+          >
+            <ClockIcon className="w-5 h-5 text-white" />
+          </ActionIcon>
+        </Tooltip>
+      ),
+    },
     // {
     //   accessor: "actions",
     //   title: "",
@@ -228,6 +288,15 @@ export const ProductosPage = () => {
           loading={loading}
         />
       </Stack>
+
+      <ModalEstandar
+        opened={openedHistory}
+        close={closeHistory}
+        title="Historial de Costos"
+        size="lg"
+      >
+        <HistorialCostos logs={selectedLog} productoNombre={selectedProdName} />
+      </ModalEstandar>
 
       <ModalEstandar
         opened={openedRegistro}
