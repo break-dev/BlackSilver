@@ -141,7 +141,7 @@ export const HistorialCostos = ({
                     </Stack>
                   </div>
 
-                  <div className="h-6 w-[1px] bg-zinc-700/50 mx-4" />
+                  <div className="h-6 w-px bg-zinc-700/50 mx-4" />
 
                   <Box className="flex flex-col items-start min-w-[130px]">
                     <Group gap={4} align="center">

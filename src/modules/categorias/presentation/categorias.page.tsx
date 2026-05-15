@@ -107,8 +107,11 @@ export const CategoriasPage = () => {
         <Stack gap="xl">
           {[
             TipoBien.ActivoFijo,
-            TipoBien.Material,
+            TipoBien.Herramienta,
             TipoBien.Suministro,
+            TipoBien.Repuesto,
+            TipoBien.Material,
+            TipoBien.EPP,
             TipoProducto.Servicio,
           ].map((clasif) => {
             const grupo = categoriasFiltradas.filter((c) => {

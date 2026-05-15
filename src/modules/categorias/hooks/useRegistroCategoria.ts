@@ -30,7 +30,7 @@ export const useRegistroCategoria = ({
     TipoProducto.Bien,
   );
   const [clasificacionBien, setClasificacionBien] = useState<string | null>(
-    TipoBien.Material,
+    null,
   );
   const [esConsumible, setEsConsumible] = useState(false);
   const [paraCocina, setParaCocina] = useState(false);

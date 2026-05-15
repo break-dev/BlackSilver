@@ -18,7 +18,6 @@ export interface RES_Producto {
   //
   prefijo: string | null;
   costo_promedio_base: number;
-  costo_promedio_base_log: string | null; // Viene como JSON string desde DB en este query crudo
   //
   dias_espera_vencimiento: number | null;
 }
