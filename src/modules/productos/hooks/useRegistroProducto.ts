@@ -11,6 +11,7 @@ import type {
 } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import {
   getCoincidencias,
   type SearchResult,
@@ -95,6 +96,13 @@ export const useRegistroProducto = (
         const cat = categorias.find((c) => c.id_categoria === value);
         if (cat) {
           newForm.es_auditable = !!cat.es_auditable;
+
+          // Si es Activo Fijo, la unidad de medida base es "Unidad" (ID 7)
+          if (cat.clasificacion_bien === TipoBien.ActivoFijo) {
+            newForm.id_unidad_medida_base = 7;
+            newForm.stock_minimo_base = 0;
+            newForm.es_perecible = false;
+          }
         }
       }
 
@@ -122,7 +130,7 @@ export const useRegistroProducto = (
       (c) => c.id_categoria === form.id_categoria,
     );
     if (
-      categoriaSeleccionada?.clasificacion_bien === "Activo Fijo" &&
+      categoriaSeleccionada?.clasificacion_bien === TipoBien.ActivoFijo &&
       (!form.prefijo || form.prefijo.trim() === "")
     ) {
       notify({ type: "error", content: "El prefijo es obligatorio para activos fijos" });

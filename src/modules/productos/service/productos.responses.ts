@@ -1,4 +1,5 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export interface RES_LogCostoPromedio {
   costo_promedio_anterior: number;
@@ -13,6 +14,7 @@ export interface RES_ProductoResumen {
   //
   id_categoria: number;
   categoria: string;
+  clasificacion_bien: TipoBien;
   //
   id_unidad_medida_base: number;
   unidad_medida_base: string;
@@ -36,5 +38,5 @@ export interface RES_CategoriaBien {
   id_categoria: number;
   nombre: string;
   es_auditable: boolean;
-  clasificacion_bien: string;
+  clasificacion_bien: TipoBien;
 }

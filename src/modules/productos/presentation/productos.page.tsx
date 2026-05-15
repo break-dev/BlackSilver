@@ -30,6 +30,7 @@ import type {
 } from "../service/productos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { enPlural } from "../../../shared/functions/en-plural";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
@@ -51,10 +52,11 @@ export const ProductosPage = () => {
 
   const handleOpenHistory = (r: RES_ProductoResumen) => {
     try {
-      const logs = typeof r.costo_promedio_base_log === 'string' 
-        ? JSON.parse(r.costo_promedio_base_log) 
-        : r.costo_promedio_base_log;
-      
+      const logs =
+        typeof r.costo_promedio_base_log === "string"
+          ? JSON.parse(r.costo_promedio_base_log)
+          : r.costo_promedio_base_log;
+
       setSelectedLog(logs || []);
       setSelectedProdName(r.nombre);
       openHistory();
@@ -134,25 +136,53 @@ export const ProductosPage = () => {
       accessor: "stock_minimo_base",
       title: "Stock Mín.",
       textAlign: "center",
-      render: (r) => (
-        <div className="flex flex-row gap-2 justify-center items-center">
-          <Text size="sm" fw={500} className="text-zinc-300">
-            {formatNumber(r.stock_minimo_base)}
-          </Text>
-          <Badge size="sm" className="text-zinc-500">
-            {enPlural(r.unidad_medida_base, r.stock_minimo_base)}
-          </Badge>
-        </div>
-      ),
+      render: (r) => {
+        if (r.clasificacion_bien === TipoBien.ActivoFijo) {
+          return (
+            <Text size="sm" className="text-zinc-500 italic">
+              No aplica
+            </Text>
+          );
+        }
+        return (
+          <div className="flex flex-row gap-2 justify-center items-center">
+            <Text size="sm" fw={500} className="text-zinc-300">
+              {formatNumber(r.stock_minimo_base)}
+            </Text>
+            <Badge size="sm" className="text-zinc-500">
+              {enPlural(r.unidad_medida_base, r.stock_minimo_base)}
+            </Badge>
+          </div>
+        );
+      },
     },
     {
       accessor: "costo_promedio_base",
       title: "Costo Promedio",
       textAlign: "center",
       render: (r) => (
-        <Text size="sm" fw={600} className="text-zinc-200">
-          S/. {formatNumber(r.costo_promedio_base)}
-        </Text>
+        <Group gap="xs" justify="center">
+          <Text size="sm" fw={600} className="text-zinc-200">
+            S/. {formatNumber(r.costo_promedio_base)}
+          </Text>
+          <Tooltip label="Ver historial de costos" position="top" withArrow>
+            <ActionIcon
+              variant="transparent"
+              color="violet"
+              radius="xl"
+              size="sm"
+              onClick={() => handleOpenHistory(r)}
+              disabled={
+                !r.costo_promedio_base_log ||
+                (typeof r.costo_promedio_base_log === "string" &&
+                  r.costo_promedio_base_log === "[]")
+              }
+              className="hover:bg-violet-500/10 transition-colors"
+            >
+              <ClockIcon className="w-4 h-4 text-violet-400 hover:text-violet-300" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       ),
     },
     {
@@ -191,26 +221,6 @@ export const ProductosPage = () => {
         >
           {r.estado}
         </Badge>
-      ),
-    },
-    {
-      accessor: "historial",
-      title: "",
-      textAlign: "center",
-      width: 60,
-      render: (r) => (
-        <Tooltip label="Ver historial de costos" position="top" withArrow>
-          <ActionIcon
-            variant="filled"
-            color="violet"
-            radius="md"
-            size="md"
-            onClick={() => handleOpenHistory(r)}
-            disabled={!r.costo_promedio_base_log || (typeof r.costo_promedio_base_log === 'string' && r.costo_promedio_base_log === '[]')}
-          >
-            <ClockIcon className="w-5 h-5 text-white" />
-          </ActionIcon>
-        </Tooltip>
       ),
     },
     // {
