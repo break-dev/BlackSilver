@@ -15,9 +15,9 @@ import {
   LockClosedIcon,
   Squares2X2Icon,
 } from "@heroicons/react/24/outline";
-import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
-import { DataTableEstandar } from "../../../../../presentation/utils/datatable-estandar";
-import type { RES_Producto } from "../../../../../service/responses/producto";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
+import type { RES_Producto } from "../../../../service/responses/producto";
 
 interface ModalSeleccionProductosProps {
   opened: boolean;

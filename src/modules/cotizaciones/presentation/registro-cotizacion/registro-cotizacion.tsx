@@ -4,8 +4,8 @@ import {
   useRegistroCotizacion,
   type MaestrosState,
 } from "../../hooks/registro-cotizacion/useRegistroCotizacion";
-import { ComparativoTabla } from "./components/comparativo-tabla/comparativo-tabla";
-import { ModalSeleccionProductos } from "./components/modal-seleccion-productos";
+import { ComparativoTabla } from "./components/comparativo-tabla";
+import { ModalSeleccionProductos } from "../components/modal-seleccion-productos";
 import { ModalAsistenteAprobacion } from "./components/modal-asistente-aprobacion";
 import { usePrint } from "../../../../hooks/usePrint";
 import { CotizacionPDF } from "../cotizacion-pdf";
@@ -107,7 +107,7 @@ export const RegistroCotizacion = forwardRef<
       hasProductos: () => productos.length > 0,
     }));
 
-    const productosEnriquecidos = productos.map((p) => {
+    const productosParaMostrar = productos.map((p) => {
       const maestro = maestros.catalogo.find(
         (m) => m.id_producto === p.id_producto,
       );
@@ -126,7 +126,7 @@ export const RegistroCotizacion = forwardRef<
         {/* Área de la Tabla (La tabla maneja su propio scroll interno) */}
         <div className="flex-1 min-h-0 pr-1">
           <ComparativoTabla
-            productos={productosEnriquecidos}
+            productos={productosParaMostrar}
             cotizaciones={cotizaciones}
             unidadesMedida={maestros.unidades.map((u) => ({
               value: String(u.id_unidad_medida),

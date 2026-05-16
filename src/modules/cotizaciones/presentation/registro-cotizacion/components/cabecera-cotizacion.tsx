@@ -26,19 +26,19 @@ import {
   BuildingStorefrontIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
-import { CustomDatePicker } from "../../../../../../../presentation/utils/date-picker-input";
-import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
-import type { DTO_CotizacionRequest } from "../../../../../service/cotizaciones.requests";
-import { MetodoPago } from "../../../../../../../shared/enums/_generic/metodo-pago";
-import { Estado_Cotizacion } from "../../../../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Almacen } from "../../../../../../../service/responses/almacen";
-import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
-import { useNotify } from "../../../../../../../hooks/useNotify";
-import { MONEDAS } from "../../../../../../../shared/variables/monedas";
-import { getDuracionPeriodo } from "../../../../../../../shared/functions/get-duracion-periodo";
-import { enPlural } from "../../../../../../../shared/functions/en-plural";
-import type { RES_Proveedor } from "../../../../../../../service/responses/proveedor";
+import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import type { DTO_CotizacionRequest } from "../../../service/cotizaciones.requests";
+import { MetodoPago } from "../../../../../shared/enums/_generic/metodo-pago";
+import { Estado_Cotizacion } from "../../../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import { useNotify } from "../../../../../hooks/useNotify";
+import { MONEDAS } from "../../../../../shared/variables/monedas";
+import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion-periodo";
+import { enPlural } from "../../../../../shared/functions/en-plural";
+import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -67,7 +67,6 @@ interface CabeceraCotizacionProps {
       tiempo_entrega_periodo: Periodo;
     },
   ) => void;
-  isSingleMode?: boolean;
 }
 
 const inputStyles = {
@@ -88,7 +87,6 @@ export const CabeceraCotizacion = ({
   isSkeleton = false,
   almacenes = [],
   onUpdateGlobalLogistica,
-  isSingleMode = false,
 }: CabeceraCotizacionProps) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -164,17 +162,15 @@ export const CabeceraCotizacion = ({
         >
           Cotización #{idx + 1}
         </Text>
-        {!isSingleMode && (
-          <ActionIcon
-            variant="subtle"
-            color="red"
-            size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => onRemoveCotizacion(idx)}
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </ActionIcon>
-        )}
+        <ActionIcon
+          variant="subtle"
+          color="red"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => onRemoveCotizacion(idx)}
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </ActionIcon>
       </Group>
 
       {/* Configuración Principal */}
@@ -218,41 +214,39 @@ export const CabeceraCotizacion = ({
               transitionProps: { transition: "pop", duration: 200 },
             }}
           />
-          {!isSingleMode && (
-            <div
-              className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
-              onClick={() =>
-                onUpdateHeader(
-                  idx,
-                  "estado",
-                  cot.estado === Estado_Cotizacion.Aprobada
-                    ? Estado_Cotizacion.Generada
-                    : Estado_Cotizacion.Aprobada,
-                )
-              }
-            >
-              <Group gap="xs" wrap="nowrap" align="center">
-                <Text
-                  size="10px"
-                  fw={900}
-                  className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
-                >
-                  Aprobar
-                </Text>
-                <Checkbox
-                  size="xs"
-                  color="green"
-                  checked={cot.estado === Estado_Cotizacion.Aprobada}
-                  onChange={() => {
-                    // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
-                  }}
-                  styles={{
-                    input: { cursor: "pointer", pointerEvents: "none" },
-                  }}
-                />
-              </Group>
-            </div>
-          )}
+          <div
+            className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
+            onClick={() =>
+              onUpdateHeader(
+                idx,
+                "estado",
+                cot.estado === Estado_Cotizacion.Aprobada
+                  ? Estado_Cotizacion.Generada
+                  : Estado_Cotizacion.Aprobada,
+              )
+            }
+          >
+            <Group gap="xs" wrap="nowrap" align="center">
+              <Text
+                size="10px"
+                fw={900}
+                className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
+              >
+                Aprobar
+              </Text>
+              <Checkbox
+                size="xs"
+                color="green"
+                checked={cot.estado === Estado_Cotizacion.Aprobada}
+                onChange={() => {
+                  // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
+                }}
+                styles={{
+                  input: { cursor: "pointer", pointerEvents: "none" },
+                }}
+              />
+            </Group>
+          </div>
         </Group>
 
         <MultiSelect

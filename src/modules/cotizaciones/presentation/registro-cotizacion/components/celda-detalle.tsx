@@ -23,15 +23,15 @@ import {
   DocumentDuplicateIcon,
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
-import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type {
   DTO_CotizacionRequest,
   DTO_CotizacionDetalle,
   DTO_ProductoComparativo,
-} from "../../../../../service/cotizaciones.requests";
-import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
-import type { RES_Almacen } from "../../../../../../../service/responses/almacen";
+} from "../../../service/cotizaciones.requests";
+import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import type { RES_Almacen } from "../../../../../service/responses/almacen";
 
 interface CeldaDetalleProps {
   det?: DTO_CotizacionDetalle;

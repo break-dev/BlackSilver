@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { useCotizacionMaestros } from "./useCotizacionMaestros";
-import { useCotizacionHandlers } from "./useCotizacionHandlers";
+import { useCotizacionMaestros } from "../shared/useCotizacionMaestros";
+import { useCotizacionHandlers } from "../shared/useCotizacionHandlers";
 import { CotizacionesService } from "../../service/cotizaciones.service";
 import { useNotify } from "../../../../hooks/useNotify";
 import type {
@@ -159,8 +159,8 @@ export const useEditarCotizacion = (
     }
   };
 
-  // Enriquecer maestros para carga optimista (mostrar nombres aunque la API no haya terminado)
-  const maestrosEnriquecidos = {
+  // Maestros precargados para carga optimista (mostrar nombres aunque la API no haya terminado)
+  const maestrosPreCargados = {
     ...maestros,
     proveedores:
       maestros.proveedores.length > 0
@@ -203,7 +203,7 @@ export const useEditarCotizacion = (
   return {
     productos,
     cotizaciones,
-    maestros: maestrosEnriquecidos,
+    maestros: maestrosPreCargados,
     loading,
     loadingMaestros,
     updateCotizacionHeader,
