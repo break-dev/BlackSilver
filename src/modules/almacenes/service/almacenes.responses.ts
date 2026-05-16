@@ -6,7 +6,6 @@ export interface RES_AlmacenResumen {
   nombre: string;
   descripcion?: string;
   es_principal: boolean;
-  es_virtual: boolean;
   estado: EstadoBase;
   responsables?: string; // nombres completos separados por coma
   minas_count?: number;
