@@ -92,10 +92,10 @@ export const OrdenCompraFilaDetalle = ({
             size="sm"
             fw={700}
             variant="light"
-            color="lime.4"
+            color={det.mina_destino ? "orange.4" : "lime.4"}
             className="italic line-clamp-1"
           >
-            {det.almacen_recepcionista}
+            {det.mina_destino || det.almacen_recepcionista}
           </Badge>
           <Group gap={4} mt={4} justify="center">
             <Badge

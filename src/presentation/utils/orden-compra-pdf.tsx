@@ -268,7 +268,10 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                   det.tiempo_entrega_dias === 1
                     ? "1 día"
                     : `${det.tiempo_entrega_dias} días`;
-                const key = `DESTINO: ${det.almacen_recepcionista} | DESPACHO: ${det.tipo_despacho} (Entrega: ${txtDias})${lugar}`;
+                const destinoLabel = det.mina_destino
+                  ? `Mina: ${det.mina_destino}`
+                  : `Almacén: ${det.almacen_recepcionista}`;
+                const key = `DESTINO: ${destinoLabel} | DESPACHO: ${det.tipo_despacho} (Entrega: ${txtDias})${lugar}`;
                 if (!acc[key]) acc[key] = [];
                 acc[key].push(det);
                 return acc;

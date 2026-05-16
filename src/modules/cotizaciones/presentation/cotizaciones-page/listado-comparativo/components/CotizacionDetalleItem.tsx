@@ -3,6 +3,7 @@ import {
   BuildingStorefrontIcon,
   TruckIcon,
   ClockIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../../shared/functions/formatNumber";
 import { Estado_Cotizacion_Detalle } from "../../../../../../shared/enums/cotizacion/cotizacion";
@@ -118,10 +119,20 @@ export const CotizacionDetalleItem = ({
               <Group gap={4} wrap="nowrap">
                 <BuildingStorefrontIcon className="w-3 h-3 text-zinc-500 shrink-0" />
                 <Text size="xs" c="dimmed">
+                  <span className="font-bold text-zinc-400 mr-1">Almacén:</span>
                   {det.almacen_recepcionista}
                   {Boolean(det.para_un_almacen_principal) && (
                     <span className="text-indigo-400/70 ml-1">(principal)</span>
                   )}
+                </Text>
+              </Group>
+            )}
+            {det.mina_destino && (
+              <Group gap={4} wrap="nowrap">
+                <MapPinIcon className="w-3 h-3 text-zinc-500 shrink-0" />
+                <Text size="xs" c="dimmed">
+                  <span className="font-bold text-zinc-400 mr-1">Mina:</span>
+                  {det.mina_destino}
                 </Text>
               </Group>
             )}

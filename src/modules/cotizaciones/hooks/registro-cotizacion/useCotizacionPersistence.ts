@@ -7,7 +7,7 @@ import { usePrint } from "../../../../hooks/usePrint";
 import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
-import type { MaestrosState } from "./utils";
+import type { MaestrosState } from "../shared/utils";
 
 export const useCotizacionPersistence = (
   productos: DTO_ProductoComparativo[],
@@ -52,8 +52,13 @@ export const useCotizacionPersistence = (
       notify({ type: "info", content: "Los precios no pueden ser negativos." });
       return;
     }
-    if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.id_almacen_recepcionista === 0))) {
-      notify({ type: "info", content: "Debe seleccionar el almacén recepcionista para todos los productos." });
+    if (cotizaciones.some((c) => c.detalles.some((d) => {
+      if (d.no_cotiza) return false;
+      const tieneAlmacen = d.id_almacen_recepcionista && d.id_almacen_recepcionista !== 0;
+      const tieneMina = d.id_mina_destino && d.id_mina_destino !== 0;
+      return !tieneAlmacen && !tieneMina;
+    }))) {
+      notify({ type: "info", content: "Debe seleccionar un destino (almacén o mina) para todos los productos cotizados." });
       return;
     }
     if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.tipo_despacho === TipoDespachoCompra.Recojo && !d.lugar_recojo?.trim()))) {
@@ -76,18 +81,18 @@ export const useCotizacionPersistence = (
         return {
           ...c,
           fecha_vencimiento_pago: fechaStr,
-          costo_flete: Number(c.costo_flete.toFixed(2)),
-          otros_gastos: Number(c.otros_gastos.toFixed(2)),
-          total_antes_igv: Number(c.total_antes_igv.toFixed(2)),
-          monto_igv: Number(c.monto_igv.toFixed(2)),
-          total_despues_igv: Number(c.total_despues_igv.toFixed(2)),
+          costo_flete: Number(Number(c.costo_flete || 0).toFixed(2)),
+          otros_gastos: Number(Number(c.otros_gastos || 0).toFixed(2)),
+          total_antes_igv: Number(Number(c.total_antes_igv || 0).toFixed(2)),
+          monto_igv: Number(Number(c.monto_igv || 0).toFixed(2)),
+          total_despues_igv: Number(Number(c.total_despues_igv || 0).toFixed(2)),
           detalles: c.detalles
             .filter((d) => !d.no_cotiza)
             .map((d) => ({
               ...d,
-              precio_unitario: d.precio_unitario ?? 0,
-              precio_unitario_base: Number((d.precio_unitario_base ?? 0).toFixed(2)),
-              cantidad_base: Number(d.cantidad_base.toFixed(2)),
+              precio_unitario: Number(d.precio_unitario ?? 0),
+              precio_unitario_base: Number(Number(d.precio_unitario_base ?? 0).toFixed(2)),
+              cantidad_base: Number(Number(d.cantidad_base ?? 0).toFixed(2)),
             })),
         };
       }),

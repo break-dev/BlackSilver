@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 import type { DTO_RegistrarComparativo } from "../../service/cotizaciones.requests";
 import type { RES_Comparativo } from "../../../../service/responses/cotizaciones/cotizacion";
-import { useCotizacionMaestros } from "./useCotizacionMaestros";
-import { useCotizacionGrid } from "./useCotizacionGrid";
-import { useCotizacionHandlers } from "./useCotizacionHandlers";
+import { useCotizacionMaestros } from "../shared/useCotizacionMaestros";
+import { useCotizacionGrid } from "../shared/useCotizacionGrid";
+import { useCotizacionHandlers } from "../shared/useCotizacionHandlers";
 import { useCotizacionPersistence } from "./useCotizacionPersistence";
-import type { MaestrosState } from "./utils";
+import type { MaestrosState } from "../shared/utils";
 
 export { type MaestrosState };
 

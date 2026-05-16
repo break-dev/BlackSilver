@@ -10,19 +10,22 @@ export const useCotizacionMaestros = () => {
     catalogo: [],
     empresas: [],
     almacenes: [],
+    minas: [],
   });
 
   useEffect(() => {
     const cargarMaestros = async () => {
       try {
         setLoadingMaestros(true);
-        const [resProv, resUni, resProd, resEmp, resAlm] = await Promise.all([
-          AuxService.get_proveedores(),
-          AuxService.get_unidades_medida(),
-          AuxService.get_productos(),
-          AuxService.get_empresas(),
-          AuxService.get_almacenes(),
-        ]);
+        const [resProv, resUni, resProd, resEmp, resAlm, resMin] =
+          await Promise.all([
+            AuxService.get_proveedores(),
+            AuxService.get_unidades_medida(),
+            AuxService.get_productos(),
+            AuxService.get_empresas(),
+            AuxService.get_almacenes(),
+            AuxService.get_minas(),
+          ]);
 
         setMaestros({
           proveedores: resProv.success ? resProv.data : [],
@@ -30,6 +33,7 @@ export const useCotizacionMaestros = () => {
           catalogo: resProd.success ? resProd.data : [],
           empresas: resEmp.success ? resEmp.data : [],
           almacenes: resAlm.success ? resAlm.data : [],
+          minas: resMin.success ? resMin.data : [],
         });
       } catch (error) {
         console.error("Error al cargar maestros en hook", error);

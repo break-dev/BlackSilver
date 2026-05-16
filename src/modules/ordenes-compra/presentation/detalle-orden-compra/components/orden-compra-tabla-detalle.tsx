@@ -103,47 +103,61 @@ export const OrdenCompraTablaDetalle = ({
           </Badge>
         </Group>
       </Group>
+      {(() => {
+        const hasMina = detalles.some((d) => d.mina_destino);
+        const hasAlmacen = detalles.some((d) => d.almacen_recepcionista);
+        const columnHeader =
+          hasMina && !hasAlmacen
+            ? "Mina/Entrega"
+            : hasMina && hasAlmacen
+              ? "Almacén/Mina/Entrega"
+              : "Almacén/Entrega";
 
-      <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
-        <Table verticalSpacing="md" horizontalSpacing="xl">
-          <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
-            <tr>
-              <th className="px-6 py-4 text-center w-12">#</th>
-              <th className="px-6 py-4 text-center w-12">
-                <Checkbox
-                  checked={allAvailableSelected}
-                  indeterminate={someAvailableSelected}
-                  onChange={onSelectAll}
-                  color="indigo"
-                  size="xs"
-                  disabled={detallesDisponibles.length === 0}
-                  className="cursor-pointer"
-                />
-              </th>
-              <th className="px-6 py-4 text-left">Producto</th>
-              <th className="px-6 py-4 text-center">Almacén/Entrega</th>
-              <th className="px-6 py-4 text-center">Cant. Solicitada</th>
-              <th className="px-6 py-4 text-center">Costo</th>
-              <th className="px-6 py-4 text-center">Progreso Rec.</th>
-              <th className="px-6 py-4 text-center">Estado</th>
-              <th className="px-6 py-4 text-center w-16">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800/50">
-            {detalles.map((det, idx) => (
-              <OrdenCompraFilaDetalle
-                key={det.id_orden_compra_detalle}
-                det={det}
-                idx={idx}
-                isSelected={selectedIds.includes(det.id_orden_compra_detalle)}
-                onSelect={onSelectOne}
-                onOpenTrace={onOpenTrace}
-                symbol={symbol}
-              />
-            ))}
-          </tbody>
-        </Table>
-      </div>
+        return (
+          <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
+            <Table verticalSpacing="md" horizontalSpacing="xl">
+              <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
+                <tr>
+                  <th className="px-6 py-4 text-center w-12">#</th>
+                  <th className="px-6 py-4 text-center w-12">
+                    <Checkbox
+                      checked={allAvailableSelected}
+                      indeterminate={someAvailableSelected}
+                      onChange={onSelectAll}
+                      color="indigo"
+                      size="xs"
+                      disabled={detallesDisponibles.length === 0}
+                      className="cursor-pointer"
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-left">Producto</th>
+                  <th className="px-6 py-4 text-center">{columnHeader}</th>
+                  <th className="px-6 py-4 text-center">Cant. Solicitada</th>
+                  <th className="px-6 py-4 text-center">Costo</th>
+                  <th className="px-6 py-4 text-center">Progreso Rec.</th>
+                  <th className="px-6 py-4 text-center">Estado</th>
+                  <th className="px-6 py-4 text-center w-16">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/50">
+                {detalles.map((det, idx) => (
+                  <OrdenCompraFilaDetalle
+                    key={det.id_orden_compra_detalle}
+                    det={det}
+                    idx={idx}
+                    isSelected={selectedIds.includes(
+                      det.id_orden_compra_detalle,
+                    )}
+                    onSelect={onSelectOne}
+                    onOpenTrace={onOpenTrace}
+                    symbol={symbol}
+                  />
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        );
+      })()}
     </div>
   );
 };

@@ -6,14 +6,16 @@ import type {
   DTO_CotizacionRequest,
   DTO_ProductoComparativo,
   DTO_CotizacionDetalle,
-} from "../../../../service/cotizaciones.requests";
-import { CabeceraCotizacion } from "./components/cabecera-cotizacion";
-import { CeldaDetalle } from "./components/celda-detalle";
-import type { RES_Almacen } from "../../../../../../service/responses/almacen";
-import { TipoDespachoCompra } from "../../../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../../../shared/enums/_generic/periodo";
-import type { RES_Proveedor } from "../../../../../../service/responses/proveedor";
-import type { RES_Empresa } from "../../../../../../service/responses/empresa";
+} from "../../../service/cotizaciones.requests";
+import { CabeceraCotizacion } from "./cabecera-cotizacion";
+import { CeldaDetalle } from "./celda-detalle";
+import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import type { RES_Mina } from "../../../../../service/responses/mina";
+import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
+import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
+import type { RES_Empresa } from "../../../../../service/responses/empresa";
 
 interface ComparativoTablaProps {
   productos: (
@@ -23,12 +25,14 @@ interface ComparativoTablaProps {
         id_unidad_medida_base: number;
         unidad_medida_base: string;
         unidad_medida_abreviatura: string;
+        tipo_bien?: TipoBien;
       })
     | null
   )[];
   cotizaciones: DTO_CotizacionRequest[];
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   almacenes: RES_Almacen[];
+  minas: RES_Mina[];
   proveedores: RES_Proveedor[];
   empresas: RES_Empresa[];
   loadingProveedores?: boolean;
@@ -50,8 +54,10 @@ interface ComparativoTablaProps {
   onUpdateGlobalLogistica?: (
     cotIndex: number,
     data: {
-      id_almacen_recepcionista: number;
+      id_almacen_recepcionista: number | null;
+      id_mina_destino?: number | null;
       tipo_despacho: TipoDespachoCompra;
+      lugar_recojo?: string;
       tiempo_entrega: number;
       tiempo_entrega_periodo: Periodo;
     },
@@ -69,8 +75,6 @@ interface ComparativoTablaProps {
   ) => void;
   onCancelarCopia?: () => void;
   onPegarCopia?: (targetCotIndex: number, targetRowIndex: number) => void;
-  isReadOnlyRows?: boolean;
-  isSingleMode?: boolean;
 }
 
 export const ComparativoTabla = ({
@@ -78,6 +82,7 @@ export const ComparativoTabla = ({
   cotizaciones,
   unidadesMedida,
   almacenes,
+  minas,
   proveedores,
   empresas,
   loadingProveedores,
@@ -92,11 +97,9 @@ export const ComparativoTabla = ({
   onIniciarCopia,
   onCancelarCopia,
   onPegarCopia,
-  isReadOnlyRows = false,
-  isSingleMode = false,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
-  const numSkeletons = isSingleMode ? 0 : Math.max(0, 4 - numCotizaciones);
+  const numSkeletons = Math.max(0, 4 - numCotizaciones);
   const totalCols = numCotizaciones + numSkeletons;
   const totalWidth = 120 + totalCols * 400;
 
@@ -131,6 +134,11 @@ export const ComparativoTabla = ({
     });
     return pricesMap;
   }, [productos, cotizaciones]);
+
+  const hasActivosFijos = useMemo(
+    () => productos.some((p) => p?.tipo_bien === TipoBien.ActivoFijo),
+    [productos],
+  );
 
   return (
     <div
@@ -188,8 +196,9 @@ export const ComparativoTabla = ({
                   onUpdateHeader={onUpdateHeader}
                   onRemoveCotizacion={onRemoveCotizacion}
                   almacenes={almacenes}
+                  minas={minas}
+                  hasActivosFijos={hasActivosFijos}
                   onUpdateGlobalLogistica={onUpdateGlobalLogistica}
-                  isSingleMode={isSingleMode}
                 />
               </Table.Th>
             ))}
@@ -242,6 +251,7 @@ export const ComparativoTabla = ({
                     cotIdx={colIdx}
                     unidadesMedida={unidadesMedida}
                     almacenes={almacenes}
+                    minas={minas}
                     onUpdateDetail={onUpdateDetail}
                     onToggleNoCotiza={onToggleNoCotiza}
                     isSkeleton={true}
@@ -271,7 +281,7 @@ export const ComparativoTabla = ({
                         {prod.nombre}
                       </Text>
                       <div className="flex gap-2">
-                        {!isReadOnlyRows && onDuplicarFila && (
+                        {onDuplicarFila && (
                           <Tooltip
                             label="Agregar otro destino"
                             position="bottom"
@@ -288,7 +298,7 @@ export const ComparativoTabla = ({
                             </ActionIcon>
                           </Tooltip>
                         )}
-                        {!isReadOnlyRows && onEliminarFila && (
+                        {onEliminarFila && (
                           <Tooltip label="Eliminar fila" position="bottom">
                             <ActionIcon
                               variant="light"
@@ -354,13 +364,13 @@ export const ComparativoTabla = ({
                         cotIdx={cotIdx}
                         unidadesMedida={unidadesMedida}
                         almacenes={almacenes}
+                        minas={minas}
                         onUpdateDetail={onUpdateDetail}
                         onToggleNoCotiza={onToggleNoCotiza}
                         rowIndex={pIdx}
                         copySource={copySource}
                         onIniciarCopia={onIniciarCopia}
                         onCancelarCopia={onCancelarCopia}
-                        isReadOnlyNoCotiza={isReadOnlyRows}
                         isCheapest={(() => {
                           if (det.no_cotiza || !det.precio_unitario)
                             return false;
@@ -419,6 +429,7 @@ export const ComparativoTabla = ({
                       cotIdx={numCotizaciones + i}
                       unidadesMedida={unidadesMedida}
                       almacenes={almacenes}
+                      minas={minas}
                       onUpdateDetail={onUpdateDetail}
                       onToggleNoCotiza={onToggleNoCotiza}
                       isSkeleton={true}

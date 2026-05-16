@@ -9,7 +9,7 @@ import { ModalAprobarCotizacion } from "../detalle/modal-aprobar-cotizacion";
 import { CotizacionesService } from "../../../service/cotizaciones.service";
 import { OrdenCompraPDF } from "../../../../../presentation/utils/orden-compra-pdf";
 import { useNotify } from "../../../../../hooks/useNotify";
-import { ModalEditarCotizacion } from "../../registro-cotizacion/modal-editar-cotizacion";
+import { ModalEditarCotizacion } from "../../edicion-cotizacion/modal-editar-cotizacion";
 import type {
   RES_Comparativo,
   RES_Cotizacion,

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { useCotizacionMaestros } from "./useCotizacionMaestros";
-import { useCotizacionHandlers } from "./useCotizacionHandlers";
+import { useCotizacionMaestros } from "../shared/useCotizacionMaestros";
+import { useCotizacionHandlers } from "../shared/useCotizacionHandlers";
 import { CotizacionesService } from "../../service/cotizaciones.service";
 import { useNotify } from "../../../../hooks/useNotify";
 import type {
@@ -57,6 +57,7 @@ export const useEditarCotizacion = (
           id_producto: d.id_producto,
           id_unidad_medida: d.id_unidad_medida_ctz,
           id_almacen_recepcionista: d.id_almacen_recepcionista,
+          id_mina_destino: d.id_mina_destino,
           tipo_despacho: d.tipo_despacho as TipoDespachoCompra,
           lugar_recojo: d.lugar_recojo,
           tiempo_entrega: d.tiempo_entrega,
@@ -159,8 +160,8 @@ export const useEditarCotizacion = (
     }
   };
 
-  // Enriquecer maestros para carga optimista (mostrar nombres aunque la API no haya terminado)
-  const maestrosEnriquecidos = {
+  // Maestros precargados para carga optimista (mostrar nombres aunque la API no haya terminado)
+  const maestrosPreCargados = {
     ...maestros,
     proveedores:
       maestros.proveedores.length > 0
@@ -198,12 +199,45 @@ export const useEditarCotizacion = (
               ]),
             ).values(),
           ),
+    almacenes:
+      maestros.almacenes.length > 0
+        ? maestros.almacenes
+        : Array.from(
+            new Map(
+              cotizacionInicial.detalles
+                .filter((d) => d.id_almacen_recepcionista)
+                .map((d) => [
+                  d.id_almacen_recepcionista,
+                  {
+                    id_almacen: d.id_almacen_recepcionista!,
+                    nombre: d.almacen_recepcionista!,
+                    es_principal: d.para_un_almacen_principal ? 1 : 0,
+                  },
+                ]),
+            ).values(),
+          ),
+    minas:
+      maestros.minas.length > 0
+        ? maestros.minas
+        : Array.from(
+            new Map(
+              cotizacionInicial.detalles
+                .filter((d) => d.id_mina_destino)
+                .map((d) => [
+                  d.id_mina_destino,
+                  {
+                    id_mina: d.id_mina_destino!,
+                    nombre: d.mina_destino!,
+                  },
+                ]),
+            ).values(),
+          ),
   };
 
   return {
     productos,
     cotizaciones,
-    maestros: maestrosEnriquecidos,
+    maestros: maestrosPreCargados,
     loading,
     loadingMaestros,
     updateCotizacionHeader,

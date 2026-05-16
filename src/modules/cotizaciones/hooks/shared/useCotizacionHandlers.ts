@@ -10,6 +10,7 @@ import {
 } from "../../../../shared/enums/cotizacion/cotizacion";
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../shared/enums/_generic/periodo";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 import {
   recalcularTotales,
   DIAS_POR_PERIODO,
@@ -245,7 +246,8 @@ export const useCotizacionHandlers = (
     (
       cotIndex: number,
       data: {
-        id_almacen_recepcionista: number;
+        id_almacen_recepcionista: number | null;
+        id_mina_destino?: number | null;
         tipo_despacho: TipoDespachoCompra;
         lugar_recojo?: string;
         tiempo_entrega: number;
@@ -259,26 +261,39 @@ export const useCotizacionHandlers = (
           data.tiempo_entrega *
           (DIAS_POR_PERIODO[data.tiempo_entrega_periodo] ?? 1);
 
-        cot.detalles = cot.detalles.map((d) => ({
-          ...d,
-          id_almacen_recepcionista: data.id_almacen_recepcionista,
-          tipo_despacho: data.tipo_despacho,
-          tiempo_entrega: data.tiempo_entrega,
-          tiempo_entrega_periodo: data.tiempo_entrega_periodo,
-          tiempo_entrega_dias: dias,
-          lugar_recojo:
-            data.tipo_despacho === TipoDespachoCompra.Recojo
-              ? data.lugar_recojo !== undefined
-                ? data.lugar_recojo
-                : d.lugar_recojo
-              : null,
-        }));
+        cot.detalles = cot.detalles.map((d) => {
+          const maestro = maestros.catalogo.find(
+            (m) => m.id_producto === d.id_producto,
+          );
+          const esActivo = maestro?.tipo_bien === TipoBien.ActivoFijo;
+
+          // Si se manda una mina global, se aplica a activos y se limpia su almacen.
+          // Si no, se aplica el almacen global y se limpia su mina.
+          const finalMina = esActivo ? (data.id_mina_destino ?? null) : null;
+          const finalAlmacen = finalMina ? null : data.id_almacen_recepcionista;
+
+          return {
+            ...d,
+            id_almacen_recepcionista: finalAlmacen,
+            id_mina_destino: finalMina,
+            tipo_despacho: data.tipo_despacho,
+            tiempo_entrega: data.tiempo_entrega,
+            tiempo_entrega_periodo: data.tiempo_entrega_periodo,
+            tiempo_entrega_dias: dias,
+            lugar_recojo:
+              data.tipo_despacho === TipoDespachoCompra.Recojo
+                ? data.lugar_recojo !== undefined
+                  ? data.lugar_recojo
+                  : d.lugar_recojo
+                : null,
+          };
+        });
 
         p[cotIndex] = cot;
         return p;
       });
     },
-    [setCotizaciones],
+    [setCotizaciones, maestros.catalogo],
   );
 
   const duplicarFilaProducto = useCallback(
@@ -327,6 +342,7 @@ export const useCotizacionHandlers = (
           precio_unitario: source.precio_unitario,
           precio_unitario_base: source.precio_unitario_base,
           id_almacen_recepcionista: source.id_almacen_recepcionista,
+          id_mina_destino: source.id_mina_destino,
           tipo_despacho: source.tipo_despacho,
           tiempo_entrega: source.tiempo_entrega,
           tiempo_entrega_periodo: source.tiempo_entrega_periodo,

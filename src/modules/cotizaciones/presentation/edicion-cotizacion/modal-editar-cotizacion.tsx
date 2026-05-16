@@ -1,6 +1,6 @@
 import { Group, Button } from "@mantine/core";
-import { useEditarCotizacion } from "../../hooks/registro-cotizacion/useEditarCotizacion";
-import { ComparativoTabla } from "./components/comparativo-tabla/comparativo-tabla";
+import { useEditarCotizacion } from "../../hooks/edicion-cotizacion/useEditarCotizacion";
+import { EdicionCotizacionTabla } from "./components/edicion-cotizacion-tabla";
 import type {
   RES_Cotizacion,
   RES_Comparativo,
@@ -28,17 +28,15 @@ export const ModalEditarCotizacion = ({
     handleSave,
     maestros,
     updateGlobalLogistica,
-    copySource,
-    iniciarCopia,
-    cancelarCopia,
-    pegarCopia,
   } = useEditarCotizacion(cotizacion, onSuccess);
 
-  const productosEnriquecidos = productos.map((p, idx) => {
+  const productosParaMostrar = productos.map((p) => {
+    const originalDet = cotizacion.detalles.find(
+      (d) => d.id_producto === p.id_producto,
+    );
     const maestro = maestros.catalogo.find(
       (m) => m.id_producto === p.id_producto,
     );
-    const originalDet = cotizacion.detalles[idx];
 
     return {
       ...p,
@@ -57,37 +55,32 @@ export const ModalEditarCotizacion = ({
         maestro?.unidad_medida_base_abv ||
         originalDet?.unidad_medida_base_abv ||
         "UND",
+      tipo_bien: maestro?.tipo_bien || originalDet?.tipo_bien,
     };
   });
 
   return (
     <div className="flex flex-col h-[calc(100vh-180px)] overflow-hidden">
       <div className="flex-1 min-h-0 pr-1">
-        <ComparativoTabla
-          productos={productosEnriquecidos}
-          cotizaciones={cotizaciones}
+        <EdicionCotizacionTabla
+          productos={productosParaMostrar}
+          cotizacion={cotizaciones[0]}
+          correlativo={cotizacion.correlativo}
           unidadesMedida={maestros.unidades.map((u) => ({
             value: String(u.id_unidad_medida),
             label: u.nombre,
             abreviatura: u.abreviatura,
           }))}
           almacenes={maestros.almacenes}
+          minas={maestros.minas}
           proveedores={maestros.proveedores}
           empresas={maestros.empresas}
           loadingProveedores={loadingMaestros}
+          loadingMaestros={loadingMaestros}
           onUpdateHeader={updateCotizacionHeader}
           onUpdateDetail={updateCotizacionDetail}
           onToggleNoCotiza={toggleCotizacionNoCotiza}
-          onRemoveCotizacion={() => {}} // Deshabilitado en edición individual
-          onDuplicarFila={() => {}} // Deshabilitado en edición individual
-          onEliminarFila={() => {}} // Deshabilitado en edición individual
           onUpdateGlobalLogistica={updateGlobalLogistica}
-          copySource={copySource}
-          onIniciarCopia={iniciarCopia}
-          onCancelarCopia={cancelarCopia}
-          onPegarCopia={pegarCopia}
-          isReadOnlyRows={true} // Nueva prop para bloquear manipulación de filas
-          isSingleMode={true} // Nueva prop para ocultar botón de eliminar cotización
         />
       </div>
 

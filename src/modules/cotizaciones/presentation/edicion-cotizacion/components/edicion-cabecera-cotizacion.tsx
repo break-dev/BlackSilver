@@ -1,0 +1,489 @@
+import { useState } from "react";
+import {
+  Group,
+  Stack,
+  Text,
+  NumberInput,
+  Select,
+  MultiSelect,
+  TextInput,
+  Popover,
+  Tooltip,
+  Button,
+  ActionIcon,
+  Badge,
+  SegmentedControl,
+} from "@mantine/core";
+import {
+  IdentificationIcon,
+  TruckIcon,
+  Cog6ToothIcon,
+  BuildingStorefrontIcon,
+  ClockIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
+import { Center, Box } from "@mantine/core";
+import type { RES_Mina } from "../../../../../service/responses/mina";
+import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import type { DTO_CotizacionRequest } from "../../../service/cotizaciones.requests";
+import { MetodoPago } from "../../../../../shared/enums/_generic/metodo-pago";
+import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import { useNotify } from "../../../../../hooks/useNotify";
+import { MONEDAS } from "../../../../../shared/variables/monedas";
+import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion-periodo";
+import { enPlural } from "../../../../../shared/functions/en-plural";
+import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
+
+interface EdicionCabeceraCotizacionProps {
+  cot: DTO_CotizacionRequest;
+  idx: number;
+  correlativo?: string;
+  proveedores: RES_Proveedor[];
+  empresas: { id_empresa: number; razon_social: string }[];
+  loadingProveedores?: boolean;
+  loadingMaestros?: boolean;
+  onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
+    index: number,
+    field: K,
+    value: DTO_CotizacionRequest[K],
+  ) => void;
+  almacenes?: RES_Almacen[];
+  minas?: RES_Mina[];
+  hasActivosFijos?: boolean;
+  onUpdateGlobalLogistica?: (
+    cotIndex: number,
+    data: {
+      id_almacen_recepcionista: number | null;
+      id_mina_destino?: number | null;
+      tipo_despacho: TipoDespachoCompra;
+      lugar_recojo?: string;
+      tiempo_entrega: number;
+      tiempo_entrega_periodo: Periodo;
+    },
+  ) => void;
+}
+
+const inputStyles = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-600 !font-normal transition-all",
+  label: "text-zinc-300 mb-1.5 font-medium text-xs",
+  description: "text-zinc-500 text-[10px] italic mt-1 leading-tight",
+};
+
+export const EdicionCabeceraCotizacion = ({
+  cot,
+  idx,
+  correlativo,
+  proveedores,
+  empresas,
+  loadingProveedores,
+  loadingMaestros,
+  onUpdateHeader,
+  almacenes = [],
+  minas = [],
+  hasActivosFijos = false,
+  onUpdateGlobalLogistica,
+}: EdicionCabeceraCotizacionProps) => {
+
+  const PERIODO_OPTIONS = [
+    { value: Periodo.Diario, label: "Día(s)" },
+    { value: Periodo.Semanal, label: "Semana(s)" },
+    { value: Periodo.Mensual, label: "Mes(es)" },
+    { value: Periodo.Anual, label: "Año(s)" },
+  ];
+
+  const { notify } = useNotify();
+  const [popoverOpened, setPopoverOpened] = useState(false);
+  const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
+  const [globalMina, setGlobalMina] = useState<string | null>(null);
+  const [globalDestinoTipo, setGlobalDestinoTipo] = useState<"almacen" | "mina">("almacen");
+
+  const [globalLugarRecojo, setGlobalLugarRecojo] = useState<string>("");
+  const [globalDespacho, setGlobalDespacho] = useState<TipoDespachoCompra>(
+    TipoDespachoCompra.Envio,
+  );
+
+  const [globalTiempo, setGlobalTiempo] = useState<number>(1);
+  const [globalPeriodo, setGlobalPeriodo] = useState<Periodo>(Periodo.Semanal);
+
+  const handleApplyGlobalLogistica = () => {
+    if (!onUpdateGlobalLogistica) return;
+    if (globalDestinoTipo === "almacen" && !globalAlmacen) return;
+    if (globalDestinoTipo === "mina" && !globalMina) return;
+
+    onUpdateGlobalLogistica(idx, {
+      id_almacen_recepcionista: globalDestinoTipo === "almacen" ? Number(globalAlmacen) : null,
+      id_mina_destino: globalDestinoTipo === "mina" ? Number(globalMina) : null,
+      tipo_despacho: globalDespacho,
+      lugar_recojo:
+        globalDespacho === TipoDespachoCompra.Recojo
+          ? globalLugarRecojo
+          : undefined,
+      tiempo_entrega: globalTiempo,
+      tiempo_entrega_periodo: globalPeriodo,
+    });
+    setPopoverOpened(false);
+    notify({
+      type: "success",
+      content: "Configuración aplicada a todos los productos",
+    });
+  };
+
+  return (
+    <Stack gap={4} className="pt-0 pb-3 px-1 relative">
+      {/* Título */}
+      <Group justify="space-between" align="center">
+        <Text
+          size="sm"
+          fw={800}
+          className="text-white tracking-tight uppercase"
+        >
+          {correlativo || "Editar Cotización"}
+        </Text>
+      </Group>
+
+      {/* Configuración Principal */}
+      <Stack gap="sm">
+        <Select
+          placeholder={
+            loadingProveedores ? "Buscando proveedores..." : "Seleccione proveedor..."
+          }
+          data={proveedores.map((p) => ({
+            value: String(p.id_proveedor),
+            label: p.razon_social,
+          }))}
+          label="Proveedor"
+          withAsterisk
+          disabled={loadingProveedores}
+          leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
+          value={cot.id_proveedor === 0 ? null : String(cot.id_proveedor)}
+          onChange={(val) => onUpdateHeader(idx, "id_proveedor", Number(val))}
+          searchable
+          size="xs"
+          radius="lg"
+          classNames={inputStyles}
+        />
+
+        <MultiSelect
+          placeholder="Seleccione empresas compradoras..."
+          data={empresas.map((e) => ({
+            value: String(e.id_empresa),
+            label: e.razon_social,
+          }))}
+          label="Empresas Asociadas"
+          withAsterisk
+          value={cot.empresas_ids.map(String)}
+          onChange={(vals) => onUpdateHeader(idx, "empresas_ids", vals.map(Number))}
+          size="xs"
+          radius="lg"
+          classNames={inputStyles}
+          hidePickedOptions
+        />
+      </Stack>
+
+      {/* Resumen de Totales */}
+      <Group justify="space-between" align="center" className="mt-2" wrap="nowrap">
+        <Group grow wrap="nowrap" gap="xs" className="flex-1 overflow-hidden">
+          <Stack gap={0} px="xs" py={4} className="bg-pink-700 rounded-lg shadow-sm min-w-0">
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">Subtotal</Text>
+            <Text size="xs" fw={800} className="text-white truncate">
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
+              {formatNumber(cot.total_antes_igv)}
+            </Text>
+          </Stack>
+
+          <Stack gap={0} px="xs" py={4} className="bg-purple-700 rounded-lg shadow-sm min-w-0">
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">IGV</Text>
+            <Text size="xs" fw={800} className="text-white truncate">
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
+              {formatNumber(cot.monto_igv)}
+            </Text>
+          </Stack>
+
+          <Stack gap={0} px="xs" py={4} className="bg-cyan-600 rounded-lg shadow-md min-w-0">
+            <Text size="9px" fw={800} className="text-white uppercase truncate opacity-90">Total</Text>
+            <Text size="xs" fw={800} className="text-white truncate">
+              {cot.moneda === MONEDAS.PEN.label ? "S/. " : "$ "}
+              {formatNumber(cot.total_despues_igv)}
+            </Text>
+          </Stack>
+        </Group>
+
+        <Group gap="xs" className="flex-none">
+          {/* Popover Logística Global */}
+          <Popover width={320} position="bottom" withArrow opened={popoverOpened} onChange={setPopoverOpened}>
+            <Popover.Target>
+              <Tooltip label="Logística Global" withArrow>
+                <ActionIcon variant="light" color="cyan" radius="md" size="md" className="border border-cyan-500/20" onClick={() => setPopoverOpened((o) => !o)}>
+                  <TruckIcon className="w-4 h-4" />
+                </ActionIcon>
+              </Tooltip>
+            </Popover.Target>
+            <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl p-4">
+              <Stack gap="sm">
+                <Text size="sm" fw={800} className="text-white mb-1 tracking-wider">Cambios Globales</Text>
+                
+                {hasActivosFijos && (
+                  <Stack gap={4}>
+                    <Text size="10px" fw={700} className="text-zinc-400 uppercase tracking-widest">
+                      Tipo de Destino
+                    </Text>
+                    <SegmentedControl
+                      size="xs"
+                      radius="md"
+                      fullWidth
+                      value={globalDestinoTipo}
+                      onChange={(val) => setGlobalDestinoTipo(val as "almacen" | "mina")}
+                      data={[
+                        {
+                          label: (
+                            <Center style={{ gap: 6 }}>
+                              <BuildingStorefrontIcon className="w-3.5 h-3.5" />
+                              <Box>Almacén</Box>
+                            </Center>
+                          ),
+                          value: "almacen",
+                        },
+                        {
+                          label: (
+                            <Center style={{ gap: 6 }}>
+                              <MapPinIcon className="w-3.5 h-3.5" />
+                              <Box>Mina</Box>
+                            </Center>
+                          ),
+                          value: "mina",
+                        },
+                      ]}
+                      classNames={{
+                        root: "bg-zinc-900 border border-zinc-800",
+                        control: "border-none",
+                        indicator: "bg-cyan-600",
+                        label: "text-zinc-400 data-[active]:text-white font-bold",
+                      }}
+                    />
+                    {globalDestinoTipo === "mina" && (
+                      <Text size="10px" className="text-amber-500/80 italic text-center px-2">
+                        * La mina se aplicará solo a los Activos Fijos.
+                      </Text>
+                    )}
+                  </Stack>
+                )}
+
+                {globalDestinoTipo === "almacen" ? (
+                  <Select
+                    label="Almacén de Recepción"
+                    placeholder={loadingMaestros ? "Cargando almacenes..." : "Seleccione almacén..."}
+                    withAsterisk
+                    leftSection={<BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />}
+                    data={almacenes.map((a) => ({ value: String(a.id_almacen), label: a.es_principal ? `${a.nombre} ★` : a.nombre }))}
+                    value={globalAlmacen}
+                    onChange={setGlobalAlmacen}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    searchable
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                ) : (
+                  <Select
+                    label="Mina de Destino"
+                    placeholder="Seleccione mina..."
+                    withAsterisk
+                    leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+                    data={minas.map((m) => ({ value: String(m.id_mina), label: m.nombre }))}
+                    value={globalMina}
+                    onChange={setGlobalMina}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    searchable
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                )}
+                <Select
+                  label="Tipo de Despacho"
+                  withAsterisk
+                  leftSection={<TruckIcon className="w-4 h-4 text-zinc-500" />}
+                  data={[{ value: TipoDespachoCompra.Envio, label: "Envío" }, { value: TipoDespachoCompra.Recojo, label: "Recojo" }]}
+                  value={globalDespacho}
+                  onChange={(val) => {
+                    const newDespacho = val as TipoDespachoCompra;
+                    setGlobalDespacho(newDespacho);
+                    if (newDespacho === TipoDespachoCompra.Recojo && cot?.id_proveedor) {
+                      const proveedor = proveedores.find((p) => p.id_proveedor === cot.id_proveedor);
+                      setGlobalLugarRecojo(proveedor?.direccion || "");
+                    }
+                  }}
+                  size="xs"
+                  radius="lg"
+                  classNames={inputStyles}
+                  comboboxProps={{ withinPortal: false }}
+                />
+
+                {globalDespacho === TipoDespachoCompra.Recojo && (
+                  <TextInput
+                    label="Lugar de Recojo"
+                    withAsterisk
+                    placeholder="Indique dirección o local..."
+                    value={globalLugarRecojo}
+                    onChange={(e) => setGlobalLugarRecojo(e.currentTarget.value)}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                  />
+                )}
+
+                <div>
+                  <Group gap={4} wrap="nowrap" mb={6}>
+                    <ClockIcon className="w-3.5 h-3.5 text-zinc-400" />
+                    <Text size="xs" fw={700} className="text-zinc-300 tracking-wider">Entrega</Text>
+                  </Group>
+                  <Group grow gap="xs">
+                    <NumberInput
+                      value={globalTiempo}
+                      onChange={(val) => setGlobalTiempo(Number(val))}
+                      min={1}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                    />
+                    <Select
+                      data={PERIODO_OPTIONS}
+                      value={globalPeriodo}
+                      onChange={(val) => setGlobalPeriodo(val as Periodo)}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      comboboxProps={{ withinPortal: false }}
+                    />
+                  </Group>
+                  <div className="mt-2 flex justify-center">
+                    <Badge variant="light" color="cyan" size="xs" radius="sm" className="font-bold border border-cyan-500/20">
+                      ≈ {getDuracionPeriodo(globalTiempo, globalPeriodo)}{" "}
+                      {enPlural("día", getDuracionPeriodo(globalTiempo, globalPeriodo))}
+                    </Badge>
+                  </div>
+                </div>
+
+                <Button fullWidth mt="sm" variant="gradient" gradient={{ from: "cyan.6", to: "cyan.8" }} onClick={handleApplyGlobalLogistica} disabled={globalDestinoTipo === "almacen" ? !globalAlmacen : !globalMina} radius="xl" size="xs" className="font-bold shadow-lg shadow-cyan-900/20">
+                  Aplicar Cambios
+                </Button>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+
+          {/* Popover Gastos Adicionales */}
+          <Popover width={350} position="bottom" withArrow shadow="md">
+            <Popover.Target>
+              <Tooltip label="Configuración y Gastos" withArrow>
+                <ActionIcon variant="light" color="indigo" radius="md" size="md" className="border border-indigo-500/20">
+                  <Cog6ToothIcon className="w-4 h-4" />
+                </ActionIcon>
+              </Tooltip>
+            </Popover.Target>
+            <Popover.Dropdown className="bg-zinc-950 border-zinc-800 shadow-2xl">
+              <Stack gap="sm">
+                <Text size="sm" fw={800} className="text-white mb-2">Configuración y Gastos Adicionales</Text>
+
+                <Group grow gap="md">
+                  <Select
+                    label="Moneda"
+                    data={Object.values(MONEDAS).map((m) => m.label)}
+                    value={cot.moneda}
+                    onChange={(val) => {
+                      onUpdateHeader(idx, "moneda", val ?? MONEDAS.PEN.label);
+                      if (val === MONEDAS.PEN.label) {
+                        onUpdateHeader(idx, "tipo_cambio_venta_referencial", 1);
+                      } else {
+                        onUpdateHeader(idx, "tipo_cambio_venta_referencial", undefined);
+                      }
+                    }}
+                    classNames={inputStyles} size="xs" radius="lg"
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                  <Select
+                    label="Método de Pago"
+                    data={[{ value: MetodoPago.Contado, label: "Contado" }, { value: MetodoPago.Credito, label: "Crédito" }]}
+                    value={cot.metodo_pago}
+                    onChange={(val) => onUpdateHeader(idx, "metodo_pago", (val as MetodoPago) ?? MetodoPago.Contado)}
+                    classNames={inputStyles} size="xs" radius="lg"
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                </Group>
+
+                {cot.metodo_pago === MetodoPago.Credito && (
+                  <CustomDatePicker
+                    label="Fecha de Vencimiento"
+                    withAsterisk
+                    placeholder="Seleccione fecha..."
+                    value={cot.fecha_vencimiento_pago as unknown as Date | null}
+                    onChange={(val) => onUpdateHeader(idx, "fecha_vencimiento_pago", val as unknown as string)}
+                    size="xs" radius="lg"
+                  />
+                )}
+
+                <Group grow align="flex-end" gap="md">
+                  <NumberInput
+                    label="TC Venta (Ref.)"
+                    placeholder="Ej. 3.85"
+                    value={cot.moneda === MONEDAS.PEN.label ? 1 : (cot.tipo_cambio_venta_referencial ?? "")}
+                    onChange={(val) => onUpdateHeader(idx, "tipo_cambio_venta_referencial", val === "" ? undefined : Number(val))}
+                    disabled={cot.moneda === MONEDAS.PEN.label}
+                    min={0}
+                    decimalScale={4}
+                    size="xs" radius="lg" classNames={inputStyles}
+                  />
+                  <Stack gap={3}>
+                    <Text size="xs" fw={500} className="font-medium">Incluye IGV</Text>
+                    <SegmentedControl
+                      size="xs" radius="xl"
+                      data={[{ label: "SÍ", value: "true" }, { label: "NO", value: "false" }]}
+                      value={String(cot.incluye_igv)}
+                      onChange={(val) => onUpdateHeader(idx, "incluye_igv", val === "true")}
+                      color="teal"
+                      classNames={{ root: "bg-zinc-900 border border-zinc-800" }}
+                    />
+                  </Stack>
+                  <Stack gap={2}>
+                    <NumberInput
+                      label="% IGV"
+                      value={cot.porcentaje_igv}
+                      onChange={(val) => onUpdateHeader(idx, "porcentaje_igv", Number(val))}
+                      disabled size="xs" radius="lg" classNames={inputStyles}
+                    />
+                  </Stack>
+                </Group>
+
+                <Group grow gap="md">
+                  <NumberInput
+                    label="Flete (opc.)"
+                    value={cot.costo_flete ?? 0}
+                    onChange={(val) => onUpdateHeader(idx, "costo_flete", Number(val))}
+                    size="xs" radius="lg" classNames={inputStyles}
+                  />
+                  <NumberInput
+                    label="Otros Gastos"
+                    value={cot.otros_gastos ?? 0}
+                    onChange={(val) => onUpdateHeader(idx, "otros_gastos", Number(val))}
+                    size="xs" radius="lg" classNames={inputStyles}
+                  />
+                </Group>
+
+                <TextInput
+                  label="Observación (opc.)"
+                  placeholder="Nota interna, especificaciones..."
+                  value={cot.observacion || ""}
+                  onChange={(e) => onUpdateHeader(idx, "observacion", e.currentTarget.value)}
+                  classNames={inputStyles} size="xs" radius="lg"
+                />
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+        </Group>
+      </Group>
+    </Stack>
+  );
+};

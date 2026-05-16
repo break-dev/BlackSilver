@@ -2,6 +2,7 @@ import type { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
 import type { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
 import type { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_Cotizacion,
   Estado_Cotizacion_Detalle,
@@ -23,6 +24,8 @@ export interface RES_CotizacionDetalle {
   id_almacen_recepcionista: number;
   almacen_recepcionista: string;
   para_un_almacen_principal: boolean;
+  id_mina_destino: number | null;
+  mina_destino: string | null;
   //
   tipo_despacho: TipoDespachoCompra;
   lugar_recojo: string | null;
@@ -33,6 +36,7 @@ export interface RES_CotizacionDetalle {
   // Producto
   id_producto: number;
   producto: string;
+  tipo_bien: TipoBien;
   es_auditable: boolean;
   es_perecible: boolean;
   // Unidad de medida (cotización)

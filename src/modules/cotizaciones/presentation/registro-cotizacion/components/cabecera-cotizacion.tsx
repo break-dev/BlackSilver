@@ -15,6 +15,8 @@ import {
   Button,
   Badge,
   SegmentedControl,
+  Center,
+  Box,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -25,20 +27,22 @@ import {
   Cog6ToothIcon,
   BuildingStorefrontIcon,
   ClockIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { CustomDatePicker } from "../../../../../../../presentation/utils/date-picker-input";
-import { formatNumber } from "../../../../../../../shared/functions/formatNumber";
-import type { DTO_CotizacionRequest } from "../../../../../service/cotizaciones.requests";
-import { MetodoPago } from "../../../../../../../shared/enums/_generic/metodo-pago";
-import { Estado_Cotizacion } from "../../../../../../../shared/enums/cotizacion/cotizacion";
-import type { RES_Almacen } from "../../../../../../../service/responses/almacen";
-import { TipoDespachoCompra } from "../../../../../../../shared/enums/_generic/tipo-despacho-compra";
-import { Periodo } from "../../../../../../../shared/enums/_generic/periodo";
-import { useNotify } from "../../../../../../../hooks/useNotify";
-import { MONEDAS } from "../../../../../../../shared/variables/monedas";
-import { getDuracionPeriodo } from "../../../../../../../shared/functions/get-duracion-periodo";
-import { enPlural } from "../../../../../../../shared/functions/en-plural";
-import type { RES_Proveedor } from "../../../../../../../service/responses/proveedor";
+import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
+import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import type { DTO_CotizacionRequest } from "../../../service/cotizaciones.requests";
+import { MetodoPago } from "../../../../../shared/enums/_generic/metodo-pago";
+import { Estado_Cotizacion } from "../../../../../shared/enums/cotizacion/cotizacion";
+import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import type { RES_Mina } from "../../../../../service/responses/mina";
+import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
+import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import { useNotify } from "../../../../../hooks/useNotify";
+import { MONEDAS } from "../../../../../shared/variables/monedas";
+import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion-periodo";
+import { enPlural } from "../../../../../shared/functions/en-plural";
+import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -57,17 +61,19 @@ interface CabeceraCotizacionProps {
   onRemoveCotizacion: (index: number) => void;
   isSkeleton?: boolean;
   almacenes?: RES_Almacen[];
+  minas?: RES_Mina[];
+  hasActivosFijos?: boolean;
   onUpdateGlobalLogistica?: (
     cotIndex: number,
     data: {
-      id_almacen_recepcionista: number;
+      id_almacen_recepcionista: number | null;
+      id_mina_destino?: number | null;
       tipo_despacho: TipoDespachoCompra;
       lugar_recojo?: string;
       tiempo_entrega: number;
       tiempo_entrega_periodo: Periodo;
     },
   ) => void;
-  isSingleMode?: boolean;
 }
 
 const inputStyles = {
@@ -87,8 +93,9 @@ export const CabeceraCotizacion = ({
   onRemoveCotizacion,
   isSkeleton = false,
   almacenes = [],
+  minas = [],
+  hasActivosFijos = false,
   onUpdateGlobalLogistica,
-  isSingleMode = false,
 }: CabeceraCotizacionProps) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -100,6 +107,9 @@ export const CabeceraCotizacion = ({
   const { notify } = useNotify();
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
+  const [globalMina, setGlobalMina] = useState<string | null>(null);
+  const [globalDestinoTipo, setGlobalDestinoTipo] = useState<"almacen" | "mina">("almacen");
+
   const [globalLugarRecojo, setGlobalLugarRecojo] = useState<string>("");
   const [globalDespacho, setGlobalDespacho] = useState<TipoDespachoCompra>(
     TipoDespachoCompra.Envio,
@@ -109,9 +119,13 @@ export const CabeceraCotizacion = ({
   const [globalPeriodo, setGlobalPeriodo] = useState<Periodo>(Periodo.Semanal);
 
   const handleApplyGlobalLogistica = () => {
-    if (!globalAlmacen || !onUpdateGlobalLogistica) return;
+    if (!onUpdateGlobalLogistica) return;
+    if (globalDestinoTipo === "almacen" && !globalAlmacen) return;
+    if (globalDestinoTipo === "mina" && !globalMina) return;
+
     onUpdateGlobalLogistica(idx, {
-      id_almacen_recepcionista: Number(globalAlmacen),
+      id_almacen_recepcionista: globalDestinoTipo === "almacen" ? Number(globalAlmacen) : null,
+      id_mina_destino: globalDestinoTipo === "mina" ? Number(globalMina) : null,
       tipo_despacho: globalDespacho,
       lugar_recojo:
         globalDespacho === TipoDespachoCompra.Recojo
@@ -150,12 +164,10 @@ export const CabeceraCotizacion = ({
     );
   }
 
-  // Si no es esqueleto, nos aseguramos de que 'cot' exista para el resto de la lógica
   if (!cot) return null;
 
   return (
     <Stack gap={4} className="pt-0 pb-3 px-1 relative group-header">
-      {/* Título y Cerrar */}
       <Group justify="space-between" align="center">
         <Text
           size="sm"
@@ -164,20 +176,17 @@ export const CabeceraCotizacion = ({
         >
           Cotización #{idx + 1}
         </Text>
-        {!isSingleMode && (
-          <ActionIcon
-            variant="subtle"
-            color="red"
-            size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => onRemoveCotizacion(idx)}
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </ActionIcon>
-        )}
+        <ActionIcon
+          variant="subtle"
+          color="red"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => onRemoveCotizacion(idx)}
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </ActionIcon>
       </Group>
 
-      {/* Configuración Principal */}
       <Stack gap="sm">
         <Group align="flex-end" gap="xs">
           <Select
@@ -218,41 +227,36 @@ export const CabeceraCotizacion = ({
               transitionProps: { transition: "pop", duration: 200 },
             }}
           />
-          {!isSingleMode && (
-            <div
-              className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
-              onClick={() =>
-                onUpdateHeader(
-                  idx,
-                  "estado",
-                  cot.estado === Estado_Cotizacion.Aprobada
-                    ? Estado_Cotizacion.Generada
-                    : Estado_Cotizacion.Aprobada,
-                )
-              }
-            >
-              <Group gap="xs" wrap="nowrap" align="center">
-                <Text
-                  size="10px"
-                  fw={900}
-                  className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
-                >
-                  Aprobar
-                </Text>
-                <Checkbox
-                  size="xs"
-                  color="green"
-                  checked={cot.estado === Estado_Cotizacion.Aprobada}
-                  onChange={() => {
-                    // Ya manejado por el div padre, per evitamos propagarlo por duplicado si se da exacto en el checkbox
-                  }}
-                  styles={{
-                    input: { cursor: "pointer", pointerEvents: "none" },
-                  }}
-                />
-              </Group>
-            </div>
-          )}
+          <div
+            className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
+            onClick={() =>
+              onUpdateHeader(
+                idx,
+                "estado",
+                cot.estado === Estado_Cotizacion.Aprobada
+                  ? Estado_Cotizacion.Generada
+                  : Estado_Cotizacion.Aprobada,
+              )
+            }
+          >
+            <Group gap="xs" wrap="nowrap" align="center">
+              <Text
+                size="10px"
+                fw={900}
+                className="uppercase tracking-widest text-zinc-400 group-hover/check:text-green-400 transition-colors select-none"
+              >
+                Aprobar
+              </Text>
+              <Checkbox
+                size="xs"
+                color="green"
+                checked={cot.estado === Estado_Cotizacion.Aprobada}
+                styles={{
+                  input: { cursor: "pointer", pointerEvents: "none" },
+                }}
+              />
+            </Group>
+          </div>
         </Group>
 
         <MultiSelect
@@ -283,7 +287,6 @@ export const CabeceraCotizacion = ({
         />
       </Stack>
 
-      {/* Resumen de Totales y Tax (Siempre visibles) */}
       <Group
         justify="space-between"
         align="center"
@@ -349,7 +352,6 @@ export const CabeceraCotizacion = ({
           </Stack>
         </Group>
 
-        {/* Botón de Configuración Adicional */}
         <Group gap="xs" className="flex-none">
           <Popover
             width={320}
@@ -382,30 +384,94 @@ export const CabeceraCotizacion = ({
                 >
                   Cambios Globales
                 </Text>
-                <Select
-                  label="Almacén de Recepción"
-                  placeholder={
-                    loadingProveedores
-                      ? "Cargando almacenes..."
-                      : "Seleccione almacén..."
-                  }
-                  disabled={loadingProveedores}
-                  withAsterisk
-                  leftSection={
-                    <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
-                  }
-                  data={almacenes.map((a) => ({
-                    value: String(a.id_almacen),
-                    label: a.es_principal ? `${a.nombre} ★` : a.nombre,
-                  }))}
-                  value={globalAlmacen}
-                  onChange={setGlobalAlmacen}
-                  size="xs"
-                  radius="lg"
-                  classNames={inputStyles}
-                  searchable
-                  comboboxProps={{ withinPortal: false }}
-                />
+
+                {hasActivosFijos && (
+                  <Stack gap={4}>
+                    <Text size="10px" fw={700} className="text-zinc-400 uppercase tracking-widest">
+                      Tipo de Destino
+                    </Text>
+                    <SegmentedControl
+                      size="xs"
+                      radius="md"
+                      fullWidth
+                      value={globalDestinoTipo}
+                      onChange={(val) => setGlobalDestinoTipo(val as "almacen" | "mina")}
+                      data={[
+                        {
+                          label: (
+                            <Center style={{ gap: 6 }}>
+                              <BuildingStorefrontIcon className="w-3.5 h-3.5" />
+                              <Box>Almacén</Box>
+                            </Center>
+                          ),
+                          value: "almacen",
+                        },
+                        {
+                          label: (
+                            <Center style={{ gap: 6 }}>
+                              <MapPinIcon className="w-3.5 h-3.5" />
+                              <Box>Mina</Box>
+                            </Center>
+                          ),
+                          value: "mina",
+                        },
+                      ]}
+                      classNames={{
+                        root: "bg-zinc-900 border border-zinc-800",
+                        control: "border-none",
+                        indicator: "bg-cyan-600",
+                        label: "text-zinc-400 data-[active]:text-white font-bold",
+                      }}
+                    />
+                    {globalDestinoTipo === "mina" && (
+                      <Text size="10px" className="text-amber-500/80 italic text-center px-2">
+                        * La mina se aplicará solo a los Activos Fijos.
+                      </Text>
+                    )}
+                  </Stack>
+                )}
+
+                {globalDestinoTipo === "almacen" ? (
+                  <Select
+                    label="Almacén de Recepción"
+                    placeholder="Seleccione almacén..."
+                    withAsterisk
+                    leftSection={
+                      <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+                    }
+                    data={almacenes.map((a) => ({
+                      value: String(a.id_almacen),
+                      label: a.es_principal ? `${a.nombre} ★` : a.nombre,
+                    }))}
+                    value={globalAlmacen}
+                    onChange={setGlobalAlmacen}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    searchable
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                ) : (
+                  <Select
+                    label="Mina de Destino"
+                    placeholder="Seleccione mina..."
+                    withAsterisk
+                    leftSection={
+                      <MapPinIcon className="w-4 h-4 text-zinc-500" />
+                    }
+                    data={minas.map((m) => ({
+                      value: String(m.id_mina),
+                      label: m.nombre,
+                    }))}
+                    value={globalMina}
+                    onChange={setGlobalMina}
+                    size="xs"
+                    radius="lg"
+                    classNames={inputStyles}
+                    searchable
+                    comboboxProps={{ withinPortal: false }}
+                  />
+                )}
 
                 <Select
                   label="Tipo de Despacho"
@@ -498,7 +564,7 @@ export const CabeceraCotizacion = ({
                   variant="gradient"
                   gradient={{ from: "cyan.6", to: "cyan.8" }}
                   onClick={handleApplyGlobalLogistica}
-                  disabled={!globalAlmacen}
+                  disabled={globalDestinoTipo === "almacen" ? !globalAlmacen : !globalMina}
                   radius="xl"
                   size="xs"
                   className="font-bold shadow-lg shadow-cyan-900/20"

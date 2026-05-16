@@ -5,6 +5,7 @@ import {
   BuildingStorefrontIcon,
   TruckIcon,
   ClockIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { Estado_Cotizacion_Detalle } from "../../../../../shared/enums/cotizacion/cotizacion";
 
@@ -28,6 +29,7 @@ interface CeldaDetalleItemProps {
   tiempoEntregaDias?: number | null;
   esAuditable?: boolean;
   esPerecible?: boolean;
+  minaDestino?: string | null;
   isCheapest?: boolean;
 }
 
@@ -48,6 +50,7 @@ export const CeldaDetalleItem = ({
   tiempoEntregaDias,
   esAuditable,
   esPerecible,
+  minaDestino,
   isCheapest,
 }: CeldaDetalleItemProps) => {
   const smb = moneda === "Soles" ? "S/." : "$";
@@ -97,6 +100,7 @@ export const CeldaDetalleItem = ({
 
   const hasLogistica =
     almacenRecepcionista ||
+    minaDestino ||
     tipoDespacho ||
     (tiempoEntregaDias && tiempoEntregaDias > 0);
 
@@ -202,12 +206,26 @@ export const CeldaDetalleItem = ({
                   fw={700}
                   className="text-zinc-200 leading-tight"
                 >
+                  <span className="font-bold text-zinc-500 mr-1">Almacén:</span>
                   {almacenRecepcionista}
                   {esAlmacenPrincipal && (
                     <span className="text-indigo-400 ml-1 font-bold">
                       (principal)
                     </span>
                   )}
+                </Text>
+              </Group>
+            )}
+            {minaDestino && (
+              <Group gap={6} wrap="nowrap">
+                <MapPinIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <Text
+                  size="11px"
+                  fw={700}
+                  className="text-zinc-200 leading-tight"
+                >
+                  <span className="font-bold text-zinc-500 mr-1">Mina:</span>
+                  {minaDestino}
                 </Text>
               </Group>
             )}

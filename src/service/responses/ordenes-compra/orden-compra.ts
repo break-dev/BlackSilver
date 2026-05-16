@@ -55,6 +55,8 @@ export interface RES_OrdenCompraDetalle {
   id_almacen_recepcionista: number;
   almacen_recepcionista: string;
   para_un_almacen_principal: boolean;
+  id_mina_destino: number | null;
+  mina_destino: string | null;
   //
   tipo_despacho: TipoDespachoCompra;
   lugar_recojo: string | null;
