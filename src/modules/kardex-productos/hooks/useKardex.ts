@@ -113,7 +113,7 @@ export const useKardex = () => {
       : movimientos;
 
     const unique = new Set(
-      source.map((m) => String(m.correlativo)).filter(Boolean),
+      source.map((m) => String(m.correlativo_lote)).filter(Boolean),
     );
     return Array.from(unique)
       .sort()
@@ -126,14 +126,14 @@ export const useKardex = () => {
       if (en_modo_auditable && m.es_auditable) return false;
 
       const matchProducto = !filtroProducto || m.producto === filtroProducto;
-      const matchLote = !filtroLote || String(m.correlativo) === filtroLote;
+      const matchLote = !filtroLote || String(m.correlativo_lote) === filtroLote;
 
       const q = busqueda.toLowerCase().trim();
       const matchBusqueda =
         !q ||
         (m.descripcion || "").toLowerCase().includes(q) ||
         (m.producto || "").toLowerCase().includes(q) ||
-        (String(m.correlativo) || "").toLowerCase().includes(q) ||
+        (String(m.correlativo_lote) || "").toLowerCase().includes(q) ||
         (m.categoria || "").toLowerCase().includes(q);
 
       return matchProducto && matchLote && matchBusqueda;

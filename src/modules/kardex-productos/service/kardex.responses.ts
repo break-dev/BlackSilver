@@ -5,27 +5,45 @@ import type {
 
 export interface RES_MovimientoKardex {
   id_kardex: number;
-  id_lote_producto: number;
+  //
   id_producto: number;
-  categoria: string;
   producto: string;
   es_auditable: boolean;
   //
-  correlativo: string;
-  contenido_por_presentacion: number;
-  unidad_lote: string;
-  unidad_lote_abv: string;
-  unidad_base: string;
-  unidad_base_abv: string;
+  id_categoria: number;
+  categoria: string;
+  //
+  id_lote_producto: number | null;
+  correlativo_lote: string | null;
+  contenido_por_presentacion: number | null;
+  //
+  id_activo_fijo: number | null;
+  correlativo_activo_fijo: string | null;
+  //
+  id_unidad_medida_base: number;
+  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
+  //
+  id_unidad_medida_lote: number | null;
+  unidad_medida_lote: string | null;
+  unidad_medida_lote_abv: string | null;
+  //
   tipo_movimiento: Kardex_TipoMovimiento;
   tipo_origen: Kardex_OrigenMovimiento;
   descripcion: string | null;
+  //
   stock_anterior: number | null; // cuando es por un nuevo lote
   stock_anterior_base: number | null; // cuando es por un nuevo lote
+  //
   cantidad_movimiento: number;
   cantidad_movimiento_base: number;
+  //
   stock_resultante: number;
   stock_resultante_base: number;
+  //
   costo_promedio_base: number;
+  costo_por_presentacion: number;
+  subtotal: number;
+  //
   created_at: string;
 }

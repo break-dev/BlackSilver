@@ -96,7 +96,7 @@ export const KardexProductosPage = () => {
         textAlign: "center",
         render: (record) => (
           <Badge variant="light" color="violet" radius="sm">
-            {record.correlativo}
+            {record.correlativo_lote}
           </Badge>
         ),
       },
@@ -146,7 +146,8 @@ export const KardexProductosPage = () => {
             record.tipo_movimiento === Kardex_TipoMovimiento.Ingreso;
           return (
             <div className="flex flex-row items-end gap-2.5 justify-center">
-              {record.unidad_base !== record.unidad_lote &&
+              {record.id_unidad_medida_base !== record.id_unidad_medida_lote &&
+                record.id_unidad_medida_lote !== null &&
                 record.contenido_por_presentacion != 1 && (
                   <Badge
                     variant="filled"
@@ -157,7 +158,7 @@ export const KardexProductosPage = () => {
                   >
                     {isIngreso ? "+" : "-"}{" "}
                     {formatNumber(record.cantidad_movimiento)}{" "}
-                    {record.unidad_lote_abv}
+                    {record.unidad_medida_lote_abv}
                   </Badge>
                 )}
               <Text
@@ -168,7 +169,7 @@ export const KardexProductosPage = () => {
               >
                 ({isIngreso ? "+" : "-"}{" "}
                 {formatNumber(record.cantidad_movimiento_base)}{" "}
-                {record.unidad_base_abv})
+                {record.unidad_medida_base_abv})
               </Text>
             </div>
           );
@@ -181,7 +182,8 @@ export const KardexProductosPage = () => {
         width: 170,
         render: (record) => (
           <div className="flex flex-row items-end gap-2.5 justify-center">
-            {record.unidad_base !== record.unidad_lote &&
+            {record.id_unidad_medida_base !== record.id_unidad_medida_lote &&
+              record.id_unidad_medida_lote !== null &&
               record.contenido_por_presentacion != 1 && (
                 <Badge
                   variant="light"
@@ -191,7 +193,7 @@ export const KardexProductosPage = () => {
                   className="font-bold border border-cyan-500/30"
                 >
                   {formatNumber(record.stock_resultante)}{" "}
-                  {record.unidad_lote_abv}
+                  {record.unidad_medida_lote_abv}
                 </Badge>
               )}
             <Badge
@@ -202,7 +204,7 @@ export const KardexProductosPage = () => {
               className="font-bold border border-pink-500/30"
             >
               {formatNumber(record.stock_resultante_base)}{" "}
-              {record.unidad_base_abv}
+              {record.unidad_medida_base_abv}
             </Badge>
           </div>
         ),
@@ -221,7 +223,7 @@ export const KardexProductosPage = () => {
                 fw={700}
                 className="text-zinc-500 uppercase tracking-tighter"
               >
-                Por {r.unidad_base}
+                Por {r.unidad_medida_base}
               </Text>
               <Text size="xs" fw={600} className="text-zinc-500 italic">
                 S/. {formatNumber(r.costo_promedio_base)}
@@ -238,13 +240,10 @@ export const KardexProductosPage = () => {
                     fw={700}
                     className="text-zinc-500 uppercase tracking-tighter"
                   >
-                    Por {r.unidad_lote}
+                    Por {r.unidad_medida_lote}
                   </Text>
                   <Text size="xs" fw={600} className="text-zinc-500 italic">
-                    S/.{" "}
-                    {formatNumber(
-                      r.costo_promedio_base * r.contenido_por_presentacion,
-                    )}
+                    S/. {formatNumber(r.costo_por_presentacion)}
                   </Text>
                 </div>
               </>
@@ -263,10 +262,7 @@ export const KardexProductosPage = () => {
                 Subtotal
               </Text>
               <Text size="sm" fw={800} c="teal.6">
-                S/.{" "}
-                {formatNumber(
-                  r.costo_promedio_base * r.cantidad_movimiento_base,
-                )}
+                S/. {formatNumber(r.subtotal)}
               </Text>
             </div>
           </div>
