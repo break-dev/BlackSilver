@@ -10,6 +10,7 @@ import type { RES_Empleado } from "./responses/empleado";
 import type { RES_Empresa } from "./responses/empresa";
 import type { RES_Mina } from "./responses/mina";
 import type { TipoBien } from "../shared/enums/_generic/tipo-bien";
+import type { RES_Marca } from "./responses/marca";
 
 const path = "/aux";
 
@@ -134,6 +135,7 @@ export const AuxService = {
   get_productos: async (filters?: {
     con_categorias_consumidoras?: boolean;
     tipo_bien_excluido?: TipoBien;
+    tipo_bien?: TipoBien;
   }): Promise<IRespuesta<RES_Producto[]>> => {
     const { data } = await api.get<IRespuesta<RES_Producto[]>>(
       `${path}/productos`,
@@ -143,10 +145,42 @@ export const AuxService = {
   },
 
   /**
-   * Obtener catálogo de minas
+   * Obtener lista de minas
    */
-  get_minas: async (): Promise<IRespuesta<RES_Mina[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Mina[]>>("/minas");
+  get_minas: async (filters?: {
+    id_mina?: number;
+    id_concesion?: number;
+    id_contratista_responsable?: number;
+  }): Promise<IRespuesta<RES_Mina[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Mina[]>>(`${path}/minas`, {
+      params: filters,
+    });
+    return data;
+  },
+
+  /**
+   * Obtener lista de marcas
+   */
+  get_marcas: async (filters?: {
+    id_marca?: number;
+    estado?: string;
+  }): Promise<IRespuesta<RES_Marca[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Marca[]>>(`${path}/marcas`, {
+      params: filters,
+    });
+    return data;
+  },
+
+  /**
+   * Crear una nueva marca
+   */
+  crear_marca: async (nuevaMarca: {
+    nombre: string;
+  }): Promise<IRespuesta<RES_Marca>> => {
+    const { data } = await api.post<IRespuesta<RES_Marca>>(
+      `${path}/marcas`,
+      nuevaMarca,
+    );
     return data;
   },
 };

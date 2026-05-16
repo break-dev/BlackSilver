@@ -3,7 +3,7 @@ import { PublicLayout } from "../layouts/public.layout.tsx";
 import { AuthLayout } from "../layouts/auth/auth.layout.tsx";
 import { ProtectedRoute } from "./protectedRoute.tsx";
 import { PublicRoute } from "./publicRoute.tsx";
-import { PlaceholderPage } from "../pages/placeholder.page.tsx";
+// import { PlaceholderPage } from "../pages/placeholder.page.tsx";
 // Layouts
 import {
   ConfiguracionLayout,
@@ -45,6 +45,7 @@ import { ProveedoresPage } from "../../modules/proveedores/presentation/proveedo
 import CotizacionesPage from "../../modules/cotizaciones/presentation/cotizaciones.page.tsx";
 import { OrdenesCompraPage } from "../../modules/ordenes-compra/presentation/ordenes-compra-page.tsx";
 import { RecepcionTransferenciasOCPage } from "../../modules/ordenes-compra-recepcion-transferencias/presentation/oc-recepcion-transferencias.page.tsx";
+import { ActivosFijosPage } from "../../modules/activos-fijos/presentation/activos-fijos.page.tsx";
 import { useEffect } from "react";
 import { onSocketEvent } from "../../service/_socket.ts";
 import { useAuditoriaStore } from "../../stores/auditoria.store.ts";
@@ -128,11 +129,12 @@ export const App = () => {
           {/* Inventario */}
           <Route path="inventario" element={<InventarioLayout />}>
             <Route path="categorias" element={<CategoriasPage />} />
-            <Route
+            {/* <Route
               path="familias"
               element={<PlaceholderPage titulo="Familias" />}
-            />
+            /> */}
             <Route path="productos" element={<ProductosPage />} />
+            <Route path="activos" element={<ActivosFijosPage />} />
             <Route path="lotes" element={<LotesPage />} />
             <Route path="kardex" element={<KardexProductosPage />} />
           </Route>

@@ -228,6 +228,8 @@ export const useEditarCotizacion = (
                   {
                     id_mina: d.id_mina_destino!,
                     nombre: d.mina_destino!,
+                    id_concesion: 0,
+                    concesion: "Desconocida",
                   },
                 ]),
             ).values(),
