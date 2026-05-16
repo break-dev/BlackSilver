@@ -8,6 +8,7 @@ import type { RES_PersonalExterno } from "./responses/personal-externo";
 import type { RES_LoteDisponible } from "./responses/lote-producto";
 import type { RES_Empleado } from "./responses/empleado";
 import type { RES_Empresa } from "./responses/empresa";
+import type { RES_Mina } from "./responses/mina";
 import type { TipoBien } from "../shared/enums/_generic/tipo-bien";
 
 const path = "/aux";
@@ -138,6 +139,14 @@ export const AuxService = {
       `${path}/productos`,
       { params: filters },
     );
+    return data;
+  },
+
+  /**
+   * Obtener catálogo de minas
+   */
+  get_minas: async (): Promise<IRespuesta<RES_Mina[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Mina[]>>("/minas");
     return data;
   },
 };

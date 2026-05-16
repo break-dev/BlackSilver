@@ -52,8 +52,13 @@ export const useCotizacionPersistence = (
       notify({ type: "info", content: "Los precios no pueden ser negativos." });
       return;
     }
-    if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.id_almacen_recepcionista === 0))) {
-      notify({ type: "info", content: "Debe seleccionar el almacén recepcionista para todos los productos." });
+    if (cotizaciones.some((c) => c.detalles.some((d) => {
+      if (d.no_cotiza) return false;
+      const tieneAlmacen = d.id_almacen_recepcionista && d.id_almacen_recepcionista !== 0;
+      const tieneMina = d.id_mina_destino && d.id_mina_destino !== 0;
+      return !tieneAlmacen && !tieneMina;
+    }))) {
+      notify({ type: "info", content: "Debe seleccionar un destino (almacén o mina) para todos los productos cotizados." });
       return;
     }
     if (cotizaciones.some((c) => c.detalles.some((d) => !d.no_cotiza && d.tipo_despacho === TipoDespachoCompra.Recojo && !d.lugar_recojo?.trim()))) {

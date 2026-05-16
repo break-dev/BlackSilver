@@ -10,6 +10,7 @@ import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medi
 import type { RES_Producto } from "../../../../service/responses/producto";
 import type { RES_Empresa } from "../../../../service/responses/empresa";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
+import type { RES_Mina } from "../../../../service/responses/mina";
 
 export interface MaestrosState {
   proveedores: RES_Proveedor[];
@@ -17,6 +18,7 @@ export interface MaestrosState {
   catalogo: RES_Producto[];
   empresas: RES_Empresa[];
   almacenes: RES_Almacen[];
+  minas: RES_Mina[];
 }
 
 /** Días equivalentes por período de tiempo de entrega */
@@ -36,6 +38,7 @@ export const detalleVacio = (
   id_producto,
   id_unidad_medida,
   id_almacen_recepcionista: 0,
+  id_mina_destino: null,
   tipo_despacho: TipoDespachoCompra.Envio,
   lugar_recojo: null,
   tiempo_entrega: 1,

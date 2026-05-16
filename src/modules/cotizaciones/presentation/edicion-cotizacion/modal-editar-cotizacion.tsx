@@ -55,6 +55,7 @@ export const ModalEditarCotizacion = ({
         maestro?.unidad_medida_base_abv ||
         originalDet?.unidad_medida_base_abv ||
         "UND",
+      tipo_bien: maestro?.tipo_bien || originalDet?.tipo_bien,
     };
   });
 
@@ -64,12 +65,14 @@ export const ModalEditarCotizacion = ({
         <EdicionCotizacionTabla
           productos={productosParaMostrar}
           cotizacion={cotizaciones[0]}
+          correlativo={cotizacion.correlativo}
           unidadesMedida={maestros.unidades.map((u) => ({
             value: String(u.id_unidad_medida),
             label: u.nombre,
             abreviatura: u.abreviatura,
           }))}
           almacenes={maestros.almacenes}
+          minas={maestros.minas}
           proveedores={maestros.proveedores}
           empresas={maestros.empresas}
           loadingProveedores={loadingMaestros}

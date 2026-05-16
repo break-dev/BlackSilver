@@ -118,6 +118,7 @@ export const RegistroCotizacion = forwardRef<
         id_unidad_medida_base: maestro?.id_unidad_medida_base || 0,
         unidad_medida_base: maestro?.unidad_medida_base || "unidades",
         unidad_medida_abreviatura: maestro?.unidad_medida_base_abv || "UND",
+        tipo_bien: maestro?.tipo_bien,
       };
     });
 
@@ -134,6 +135,7 @@ export const RegistroCotizacion = forwardRef<
               abreviatura: u.abreviatura,
             }))}
             almacenes={maestros.almacenes}
+            minas={maestros.minas}
             proveedores={maestros.proveedores}
             empresas={maestros.empresas}
             loadingProveedores={loadingMaestros}

@@ -57,6 +57,7 @@ export const useEditarCotizacion = (
           id_producto: d.id_producto,
           id_unidad_medida: d.id_unidad_medida_ctz,
           id_almacen_recepcionista: d.id_almacen_recepcionista,
+          id_mina_destino: d.id_mina_destino,
           tipo_despacho: d.tipo_despacho as TipoDespachoCompra,
           lugar_recojo: d.lugar_recojo,
           tiempo_entrega: d.tiempo_entrega,
@@ -196,6 +197,39 @@ export const useEditarCotizacion = (
                   abreviatura: d.unidad_medida_ctz_abv,
                 },
               ]),
+            ).values(),
+          ),
+    almacenes:
+      maestros.almacenes.length > 0
+        ? maestros.almacenes
+        : Array.from(
+            new Map(
+              cotizacionInicial.detalles
+                .filter((d) => d.id_almacen_recepcionista)
+                .map((d) => [
+                  d.id_almacen_recepcionista,
+                  {
+                    id_almacen: d.id_almacen_recepcionista!,
+                    nombre: d.almacen_recepcionista!,
+                    es_principal: d.para_un_almacen_principal ? 1 : 0,
+                  },
+                ]),
+            ).values(),
+          ),
+    minas:
+      maestros.minas.length > 0
+        ? maestros.minas
+        : Array.from(
+            new Map(
+              cotizacionInicial.detalles
+                .filter((d) => d.id_mina_destino)
+                .map((d) => [
+                  d.id_mina_destino,
+                  {
+                    id_mina: d.id_mina_destino!,
+                    nombre: d.mina_destino!,
+                  },
+                ]),
             ).values(),
           ),
   };

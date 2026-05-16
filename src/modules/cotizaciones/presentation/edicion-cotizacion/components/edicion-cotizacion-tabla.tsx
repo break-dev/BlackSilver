@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Table, Text } from "@mantine/core";
 import type {
   DTO_CotizacionRequest,
@@ -7,8 +8,10 @@ import type {
 import { EdicionCabeceraCotizacion } from "./edicion-cabecera-cotizacion";
 import { CeldaDetalle } from "../../registro-cotizacion/components/celda-detalle";
 import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import type { RES_Mina } from "../../../../../service/responses/mina";
 import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../../shared/enums/_generic/periodo";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Empresa } from "../../../../../service/responses/empresa";
 
@@ -20,12 +23,15 @@ interface EdicionCotizacionTablaProps {
         id_unidad_medida_base: number;
         unidad_medida_base: string;
         unidad_medida_abreviatura: string;
+        tipo_bien?: TipoBien;
       })
     | null
   )[];
   cotizacion: DTO_CotizacionRequest; // Solo una cotización en edición
+  correlativo?: string;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   almacenes: RES_Almacen[];
+  minas: RES_Mina[];
   proveedores: RES_Proveedor[];
   empresas: RES_Empresa[];
   loadingProveedores?: boolean;
@@ -45,8 +51,10 @@ interface EdicionCotizacionTablaProps {
   onUpdateGlobalLogistica?: (
     cotIndex: number,
     data: {
-      id_almacen_recepcionista: number;
+      id_almacen_recepcionista: number | null;
+      id_mina_destino?: number | null;
       tipo_despacho: TipoDespachoCompra;
+      lugar_recojo?: string;
       tiempo_entrega: number;
       tiempo_entrega_periodo: Periodo;
     },
@@ -56,8 +64,10 @@ interface EdicionCotizacionTablaProps {
 export const EdicionCotizacionTabla = ({
   productos,
   cotizacion,
+  correlativo,
   unidadesMedida,
   almacenes,
+  minas,
   proveedores,
   empresas,
   loadingProveedores,
@@ -70,6 +80,11 @@ export const EdicionCotizacionTabla = ({
   
   // En edición el ancho es fijo para una sola columna + la columna de productos
   const totalWidth = 120 + 400;
+
+  const hasActivosFijos = useMemo(
+    () => productos.some((p) => p?.tipo_bien === TipoBien.ActivoFijo),
+    [productos],
+  );
 
   return (
     <div
@@ -118,12 +133,15 @@ export const EdicionCotizacionTabla = ({
                 <EdicionCabeceraCotizacion
                 cot={cotizacion}
                 idx={0}
+                correlativo={correlativo}
                 proveedores={proveedores}
                 empresas={empresas}
                 loadingProveedores={loadingProveedores}
                 loadingMaestros={loadingMaestros}
                 onUpdateHeader={onUpdateHeader}
                 almacenes={almacenes}
+                minas={minas}
+                hasActivosFijos={hasActivosFijos}
                 onUpdateGlobalLogistica={onUpdateGlobalLogistica}
               />
             </Table.Th>
@@ -169,6 +187,7 @@ export const EdicionCotizacionTabla = ({
                     cotIdx={0}
                     unidadesMedida={unidadesMedida}
                     almacenes={almacenes}
+                    minas={minas}
                     onUpdateDetail={onUpdateDetail}
                     onToggleNoCotiza={onToggleNoCotiza}
                     rowIndex={pIdx}

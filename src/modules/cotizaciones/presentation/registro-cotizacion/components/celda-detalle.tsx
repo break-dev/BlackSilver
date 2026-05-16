@@ -12,6 +12,9 @@ import {
   ActionIcon,
   Indicator,
   Badge,
+  SegmentedControl,
+  Center,
+  Box,
 } from "@mantine/core";
 
 import {
@@ -32,6 +35,8 @@ import type {
 import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../../shared/enums/_generic/periodo";
 import type { RES_Almacen } from "../../../../../service/responses/almacen";
+import type { RES_Mina } from "../../../../../service/responses/mina";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface CeldaDetalleProps {
   det?: DTO_CotizacionDetalle;
@@ -41,11 +46,13 @@ interface CeldaDetalleProps {
     id_unidad_medida_base: number;
     unidad_medida_base: string;
     unidad_medida_abreviatura: string;
+    tipo_bien?: TipoBien;
   };
   cot?: DTO_CotizacionRequest;
   cotIdx: number;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   almacenes: RES_Almacen[];
+  minas: RES_Mina[];
   onUpdateDetail: <K extends keyof DTO_CotizacionDetalle>(
     cotIndex: number,
     rowIndex: number,
@@ -84,6 +91,7 @@ export const CeldaDetalle = ({
   cotIdx,
   unidadesMedida,
   almacenes,
+  minas,
   onUpdateDetail,
   onToggleNoCotiza,
   isSkeleton = false,
@@ -418,36 +426,127 @@ export const CeldaDetalle = ({
                   <Text size="sm" fw={800} className="text-white mb-1">
                     Despacho
                   </Text>
-                  <Select
-                    label="Almacén de Recepción"
-                    placeholder="Seleccione almacén..."
-                    withAsterisk
-                    leftSection={
-                      <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
-                    }
-                    data={almacenes.map((a) => ({
-                      value: String(a.id_almacen),
-                      label: a.es_principal ? `${a.nombre} ★` : a.nombre,
-                    }))}
-                    value={
-                      det.id_almacen_recepcionista === 0
-                        ? null
-                        : String(det.id_almacen_recepcionista)
-                    }
-                    onChange={(val) =>
-                      onUpdateDetail(
-                        cotIdx,
-                        rowIndex,
-                        "id_almacen_recepcionista",
-                        Number(val),
-                      )
-                    }
-                    size="xs"
-                    radius="lg"
-                    classNames={inputStyles}
-                    searchable
-                    comboboxProps={{ withinPortal: false }}
-                  />
+
+                  {prod.tipo_bien === TipoBien.ActivoFijo && (
+                    <Stack gap={4}>
+                      <Text size="10px" fw={700} className="text-zinc-400 uppercase tracking-widest">
+                        Tipo de Destino
+                      </Text>
+                      <SegmentedControl
+                        size="xs"
+                        radius="md"
+                        fullWidth
+                        value={det.id_mina_destino !== null ? "mina" : "almacen"}
+                        onChange={(val) => {
+                          if (val === "almacen") {
+                            onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", null);
+                            if (det.id_almacen_recepcionista === null) {
+                              onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", 0);
+                            }
+                          } else {
+                            onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", null);
+                            if (det.id_mina_destino === null) {
+                              onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", 0);
+                            }
+                          }
+                        }}
+                        data={[
+                          {
+                            label: (
+                              <Center style={{ gap: 6 }}>
+                                <BuildingStorefrontIcon className="w-3.5 h-3.5" />
+                                <Box>Almacén</Box>
+                              </Center>
+                            ),
+                            value: "almacen",
+                          },
+                          {
+                            label: (
+                              <Center style={{ gap: 6 }}>
+                                <MapPinIcon className="w-3.5 h-3.5" />
+                                <Box>Mina</Box>
+                              </Center>
+                            ),
+                            value: "mina",
+                          },
+                        ]}
+                        classNames={{
+                          root: "bg-zinc-900 border border-zinc-800",
+                          control: "border-none",
+                          indicator: "bg-cyan-600",
+                          label: "text-zinc-400 data-[active]:text-white font-bold",
+                        }}
+                      />
+                    </Stack>
+                  )}
+
+                  {det.id_mina_destino === null ? (
+                    <Select
+                      label="Almacén de Recepción"
+                      placeholder="Seleccione almacén..."
+                      withAsterisk
+                      leftSection={
+                        <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
+                      }
+                      data={almacenes.map((a) => ({
+                        value: String(a.id_almacen),
+                        label: a.es_principal ? `${a.nombre} ★` : a.nombre,
+                      }))}
+                      value={
+                        det.id_almacen_recepcionista === 0 || !det.id_almacen_recepcionista
+                          ? null
+                          : String(det.id_almacen_recepcionista)
+                      }
+                      onChange={(val) => {
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "id_almacen_recepcionista",
+                          Number(val),
+                        );
+                        // Asegurar que mina sea null
+                        onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", null);
+                      }}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      searchable
+                      comboboxProps={{ withinPortal: false }}
+                    />
+                  ) : (
+                    <Select
+                      label="Mina de Destino"
+                      placeholder="Seleccione mina..."
+                      withAsterisk
+                      leftSection={
+                        <MapPinIcon className="w-4 h-4 text-zinc-500" />
+                      }
+                      data={minas.map((m) => ({
+                        value: String(m.id_mina),
+                        label: m.nombre,
+                      }))}
+                      value={
+                        det.id_mina_destino === 0 || !det.id_mina_destino
+                          ? null
+                          : String(det.id_mina_destino)
+                      }
+                      onChange={(val) => {
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "id_mina_destino",
+                          Number(val),
+                        );
+                        // Asegurar que almacen sea null
+                        onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", null);
+                      }}
+                      size="xs"
+                      radius="lg"
+                      classNames={inputStyles}
+                      searchable
+                      comboboxProps={{ withinPortal: false }}
+                    />
+                  )}
 
                   <Select
                     label="Tipo de Despacho"

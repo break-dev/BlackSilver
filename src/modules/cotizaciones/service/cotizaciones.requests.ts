@@ -15,7 +15,10 @@ export const Schema_CotizacionDetalle = z.object({
   // Almacén y despacho
   id_almacen_recepcionista: z
     .number()
-    .min(1, "Seleccione un almacén de recepción"),
+    .min(1, "Seleccione un almacén de recepción")
+    .optional()
+    .nullable(),
+  id_mina_destino: z.number().optional().nullable(),
   tipo_despacho: z.nativeEnum(TipoDespachoCompra),
   lugar_recojo: z.string().optional().nullable(),
   // Tiempo de entrega
