@@ -7,6 +7,7 @@ import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida"
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Producto } from "../../../service/responses/producto";
 import { AuxService } from "../../../service/auxiliar.service";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface UseRegistroLoteProps {
   initialAlmacenId?: number | null;
@@ -47,7 +48,9 @@ export const useRegistroLote = ({
     const loadProductos = async () => {
       setLoadingProductos(true);
       try {
-        const res = await AuxService.get_productos();
+        const res = await AuxService.get_productos({
+          tipo_bien_excluido: TipoBien.ActivoFijo,
+        });
         if (res.success) setProductos(res.data);
       } catch (err) {
         setError(String(err));

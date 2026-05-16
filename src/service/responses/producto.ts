@@ -7,7 +7,7 @@ export interface RES_Producto {
   id_categoria: number;
   categoria: string;
   es_consumible: boolean;
-  clasificacion_bien: TipoBien;
+  tipo_bien: TipoBien;
   ids_categorias_consumidoras: string | null; // Viene como "1,2,3" desde PHP GROUP_CONCAT
   //
   stock_minimo_base: number;
