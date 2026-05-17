@@ -4,6 +4,7 @@ export interface RES_ControlUsoLog {
   codigo: string | null;
   correlativo: string;
   producto: string;
+  es_auditable?: boolean | number;
   categoria: string;
   control_por_horometro: number;
   control_por_odometro: number;

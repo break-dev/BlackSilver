@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { ActivosService } from "../service/activos.service";
 import type { RES_ActivoFijoResumen } from "../service/activos.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useActivosMain = () => {
   const { notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
 
   const [activos, setActivos] = useState<RES_ActivoFijoResumen[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +35,8 @@ export const useActivosMain = () => {
 
   const activosFiltrados = useMemo(() => {
     return activos.filter((a) => {
+      if (en_modo_auditable && a.es_auditable) return false;
+
       const matchAlmacen = !idAlmacen || String(a.id_almacen) === idAlmacen;
       const matchMina = !idMina || String(a.id_mina) === idMina;
       const matchBusqueda =
@@ -44,7 +48,7 @@ export const useActivosMain = () => {
 
       return matchAlmacen && matchMina && matchBusqueda;
     });
-  }, [activos, idAlmacen, idMina, busqueda]);
+  }, [activos, idAlmacen, idMina, busqueda, en_modo_auditable]);
 
   // Generar opciones de filtro a partir de los datos cargados
   const almacenesFiltro = useMemo(() => {

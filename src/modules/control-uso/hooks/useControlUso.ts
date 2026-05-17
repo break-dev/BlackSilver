@@ -4,8 +4,10 @@ import { ControlUsoService } from "../service/control-uso.service";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_ControlUsoLog } from "../service/control-uso.responses";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 export const useControlUso = () => {
   const { notifySuccess, notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const [logs, setLogs] = useState<RES_ControlUsoLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -14,10 +16,12 @@ export const useControlUso = () => {
   const [activos, setActivos] = useState<RES_ActivoFijoDisponible[]>([]);
   const [idActivoFijo, setIdActivoFijo] = useState<string | null>(null);
   const [loadingActivos, setLoadingActivos] = useState(false);
-  
+
   // Default values: current month and year
   const currentDate = new Date();
-  const [tipoControl, setTipoControl] = useState<"horometro" | "odometro">("horometro");
+  const [tipoControl, setTipoControl] = useState<"horometro" | "odometro">(
+    "horometro",
+  );
   const [mes, setMes] = useState<number>(currentDate.getMonth() + 1); // 1-indexed (Jan = 1, Dec = 12)
   const [anio, setAnio] = useState<number>(currentDate.getFullYear());
 
@@ -82,24 +86,32 @@ export const useControlUso = () => {
 
     // Filter by currently selected active asset first
     const assetFiltered = logs.filter(
-      (log) => log.id_activo_fijo === Number(idActivoFijo)
+      (log) => log.id_activo_fijo === Number(idActivoFijo),
     );
 
-    const query = busqueda.toLowerCase().trim();
-    if (!query) return assetFiltered;
+    // Apply audit mode filter
+    const baseList = assetFiltered.filter((log) => {
+      if (en_modo_auditable && log.es_auditable) return false;
+      return true;
+    });
 
-    return assetFiltered.filter(
+    const query = busqueda.toLowerCase().trim();
+    if (!query) return baseList;
+
+    return baseList.filter(
       (log) =>
         log.correlativo.toLowerCase().includes(query) ||
         (log.codigo && log.codigo.toLowerCase().includes(query)) ||
         log.producto.toLowerCase().includes(query) ||
-        log.categoria.toLowerCase().includes(query)
+        log.categoria.toLowerCase().includes(query),
     );
-  }, [logs, idActivoFijo, busqueda]);
+  }, [logs, idActivoFijo, busqueda, en_modo_auditable]);
 
   const pushNuevoLog = (nuevo: RES_ControlUsoLog & { id?: number }) => {
     // Buscar los metadatos del activo fijo seleccionado para poblar los campos JOINed en tiempo real
-    const activeAsset = activos.find((a) => String(a.id_activo) === String(idActivoFijo));
+    const activeAsset = activos.find(
+      (a) => String(a.id_activo) === String(idActivoFijo),
+    );
 
     const fullyPopulatedLog: RES_ControlUsoLog = {
       id_log: nuevo.id || nuevo.id_log, // map database id (or id_log) to id_log

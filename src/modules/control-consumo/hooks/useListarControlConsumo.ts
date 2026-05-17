@@ -4,9 +4,11 @@ import { ControlConsumoService } from "../service/control-consumo.service";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_ControlConsumo } from "../service/control-consumo.responses";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useListarControlConsumo = () => {
   const { notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const [reporte, setReporte] = useState<RES_ControlConsumo[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -81,10 +83,15 @@ export const useListarControlConsumo = () => {
 
   // Filter logs in real-time on search query
   const filtrados = useMemo(() => {
-    const query = busqueda.toLowerCase().trim();
-    if (!query) return reporte;
+    const baseList = reporte.filter((item) => {
+      if (en_modo_auditable && item.es_auditable) return false;
+      return true;
+    });
 
-    return reporte.filter(
+    const query = busqueda.toLowerCase().trim();
+    if (!query) return baseList;
+
+    return baseList.filter(
       (item) =>
         item.producto.toLowerCase().includes(query) ||
         String(item.correlativo_requerimiento).toLowerCase().includes(query) ||
@@ -92,7 +99,7 @@ export const useListarControlConsumo = () => {
         item.almacen_destino.toLowerCase().includes(query) ||
         item.contratista_solicitante.toLowerCase().includes(query),
     );
-  }, [reporte, busqueda]);
+  }, [reporte, busqueda, en_modo_auditable]);
 
   return {
     reporte: filtrados,
