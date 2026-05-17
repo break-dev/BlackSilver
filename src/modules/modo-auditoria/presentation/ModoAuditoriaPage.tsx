@@ -20,11 +20,13 @@ import { ModoAuditoriaService } from "../service/service";
 import { useNotify } from "../../../hooks/useNotify";
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useTitlePage } from "../../../hooks/useTitlePage";
 
 /**
  * Página oculta para activar/desactivar el Modo Auditoría.
  */
 export default function ModoAuditoriaPage() {
+  useTitlePage("Panel de Auditoría");
   const { en_modo_auditable, setModoAuditoria } = useAuditoriaStore();
   const { notifySuccess, notifyError } = useNotify();
   const [loading, setLoading] = useState(false);
