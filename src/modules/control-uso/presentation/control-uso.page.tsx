@@ -28,21 +28,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import type { RES_ControlUsoLog } from "../service/control-uso.responses";
-
-const MESES = [
-  { value: "1", label: "Enero" },
-  { value: "2", label: "Febrero" },
-  { value: "3", label: "Marzo" },
-  { value: "4", label: "Abril" },
-  { value: "5", label: "Mayo" },
-  { value: "6", label: "Junio" },
-  { value: "7", label: "Julio" },
-  { value: "8", label: "Agosto" },
-  { value: "9", label: "Septiembre" },
-  { value: "10", label: "Octubre" },
-  { value: "11", label: "Noviembre" },
-  { value: "12", label: "Diciembre" },
-];
+import { MESES } from "../../../shared/variables/meses";
+import { formatNumber } from "../../../shared/functions/formatNumber";
 
 export const ControlUsoPage = () => {
   useTitlePage("Control de Uso");
@@ -76,19 +63,6 @@ export const ControlUsoPage = () => {
     return { value: String(y), label: String(y) };
   });
 
-
-
-  // Helper to parse floats safely for display
-  const formatDecimal = (val: string | number) => {
-    const num = typeof val === "string" ? parseFloat(val) : val;
-    return isNaN(num)
-      ? "0.00"
-      : num.toLocaleString("es-PE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-  };
-
   // Table columns definition (inspired by Lotes layout and styling patterns)
   const columns: DataTableColumn<RES_ControlUsoLog>[] = [
     {
@@ -96,7 +70,6 @@ export const ControlUsoPage = () => {
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => index + 1,
     },
     {
       accessor: "periodo",
@@ -105,10 +78,17 @@ export const ControlUsoPage = () => {
       width: 300,
       render: (r) => {
         const inicioDate = dayjs(r.fecha_hora_inicio_control);
-        const finDate = r.fecha_hora_fin_control ? dayjs(r.fecha_hora_fin_control) : null;
+        const finDate = r.fecha_hora_fin_control
+          ? dayjs(r.fecha_hora_fin_control)
+          : null;
 
         return (
-          <Group gap={8} wrap="nowrap" justify="center" className="mx-auto w-fit">
+          <Group
+            gap={8}
+            wrap="nowrap"
+            justify="center"
+            className="mx-auto w-fit"
+          >
             {/* Single Calendar Icon at the left */}
             <div className="p-1.5 bg-zinc-850/60 rounded-xl border border-zinc-800/80 shrink-0 shadow-sm flex items-center justify-center">
               <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
@@ -118,13 +98,22 @@ export const ControlUsoPage = () => {
             <Group gap="xs" wrap="nowrap" className="shrink-0">
               {/* Inicio Block */}
               <div className="flex flex-col items-start gap-0.5 min-w-[75px]">
-                <Text size="8px" fw={900} className="text-zinc-500 uppercase tracking-widest leading-none">
+                <Text
+                  size="8px"
+                  fw={900}
+                  className="text-zinc-500 uppercase tracking-widest leading-none"
+                >
                   Inicio
                 </Text>
                 <Text size="11px" fw={800} className="text-zinc-200">
                   {inicioDate.format("DD MMM YYYY")}
                 </Text>
-                <Text size="10px" c="dimmed" fw={700} className="tracking-tighter">
+                <Text
+                  size="10px"
+                  c="dimmed"
+                  fw={700}
+                  className="tracking-tighter"
+                >
                   {inicioDate.format("HH:mm")}
                 </Text>
               </div>
@@ -136,18 +125,32 @@ export const ControlUsoPage = () => {
               <div className="min-w-[95px] flex flex-col items-start justify-center">
                 {finDate ? (
                   <div className="flex flex-col items-start gap-0.5">
-                    <Text size="8px" fw={900} className="text-zinc-500 uppercase tracking-widest leading-none">
+                    <Text
+                      size="8px"
+                      fw={900}
+                      className="text-zinc-500 uppercase tracking-widest leading-none"
+                    >
                       Fin
                     </Text>
                     <Text size="11px" fw={800} className="text-zinc-200">
                       {finDate.format("DD MMM YYYY")}
                     </Text>
-                    <Text size="10px" c="dimmed" fw={700} className="tracking-tighter">
+                    <Text
+                      size="10px"
+                      c="dimmed"
+                      fw={700}
+                      className="tracking-tighter"
+                    >
                       {finDate.format("HH:mm")}
                     </Text>
                   </div>
                 ) : (
-                  <Badge size="xs" color="blue" variant="light" className="font-black animate-pulse border border-blue-500/10 px-2 py-2.5">
+                  <Badge
+                    size="xs"
+                    color="blue"
+                    variant="light"
+                    className="font-black animate-pulse border border-blue-500/10 px-2 py-2.5"
+                  >
                     En ejecución
                   </Badge>
                 )}
@@ -168,12 +171,16 @@ export const ControlUsoPage = () => {
           </div>
           <div className="flex flex-col items-start gap-0.5">
             <Text size="11px" fw={700} className="text-zinc-200">
-              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">Inicio:</span>
-              {formatDecimal(r.horometro_inicio)}
+              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                Inicio:
+              </span>
+              {formatNumber(r.horometro_inicio)}
             </Text>
             <Text size="11px" fw={700} className="text-zinc-200">
-              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">Fin:</span>
-              {formatDecimal(r.horometro_fin)}
+              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                Fin:
+              </span>
+              {formatNumber(r.horometro_fin)}
             </Text>
           </div>
         </Group>
@@ -185,7 +192,7 @@ export const ControlUsoPage = () => {
       textAlign: "center",
       width: 140,
       render: (r) => {
-        const value = formatDecimal(r.total_horas);
+        const value = formatNumber(r.total_horas);
         const unit = tipoControl === "horometro" ? "hrs" : "Km";
         return (
           <Badge
@@ -215,7 +222,11 @@ export const ControlUsoPage = () => {
           <Group gap="xs" wrap="nowrap" className="shrink-0">
             {/* Unitario Block */}
             <div className="flex flex-col items-start gap-0.5 min-w-[95px]">
-              <Text size="8px" fw={900} className="text-zinc-500 uppercase tracking-widest leading-none">
+              <Text
+                size="8px"
+                fw={900}
+                className="text-zinc-500 uppercase tracking-widest leading-none"
+              >
                 Precio Unit.
               </Text>
               <Badge
@@ -225,7 +236,7 @@ export const ControlUsoPage = () => {
                 size="sm"
                 className="font-bold border border-indigo-500/10 px-1.5 mt-0.5"
               >
-                S/. {formatDecimal(r.precio_unitario)}
+                S/. {formatNumber(r.precio_unitario)}
               </Badge>
             </div>
 
@@ -234,7 +245,11 @@ export const ControlUsoPage = () => {
 
             {/* Total Block */}
             <div className="flex flex-col items-start gap-0.5 min-w-[95px]">
-              <Text size="8px" fw={900} className="text-zinc-500 uppercase tracking-widest leading-none">
+              <Text
+                size="8px"
+                fw={900}
+                className="text-zinc-500 uppercase tracking-widest leading-none"
+              >
                 Costo Total
               </Text>
               <Badge
@@ -244,7 +259,7 @@ export const ControlUsoPage = () => {
                 size="sm"
                 className="font-bold border border-pink-500/10 px-1.5 mt-0.5"
               >
-                S/. {formatDecimal(r.costo_total)}
+                S/. {formatNumber(r.costo_total)}
               </Badge>
             </div>
           </Group>
@@ -258,7 +273,10 @@ export const ControlUsoPage = () => {
       render: (r) =>
         r.observacion ? (
           <Tooltip label={r.observacion} multiline w={245} withArrow>
-            <Text size="xs" className="text-zinc-400 truncate max-w-[250px] cursor-help">
+            <Text
+              size="xs"
+              className="text-zinc-400 truncate max-w-[250px] cursor-help"
+            >
               {r.observacion}
             </Text>
           </Tooltip>
@@ -277,7 +295,9 @@ export const ControlUsoPage = () => {
   };
 
   // Find the selected asset object to build a friendly label in the modal
-  const selectedAssetObj = activos.find((a) => String(a.id_activo) === idActivoFijo);
+  const selectedAssetObj = activos.find(
+    (a) => String(a.id_activo) === idActivoFijo,
+  );
 
   return (
     <Stack gap="lg" className="animate-fade-in text-zinc-100">
@@ -292,7 +312,9 @@ export const ControlUsoPage = () => {
               { value: "odometro", label: "Odómetro" },
             ]}
             value={tipoControl}
-            onChange={(val) => setTipoControl(val as "horometro" | "odometro" || "horometro")}
+            onChange={(val) =>
+              setTipoControl((val as "horometro" | "odometro") || "horometro")
+            }
             radius="lg"
             size="sm"
             classNames={{
@@ -308,9 +330,7 @@ export const ControlUsoPage = () => {
           <Select
             label="Activo Fijo"
             placeholder={
-              loadingActivos
-                ? "Cargando activos..."
-                : "Seleccione un activo..."
+              loadingActivos ? "Cargando activos..." : "Seleccione un activo..."
             }
             data={activos.map((a) => ({
               value: String(a.id_activo),
@@ -374,7 +394,9 @@ export const ControlUsoPage = () => {
             placeholder="Buscar correlativo, fecha..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            leftSection={<MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />}
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
+            }
             radius="lg"
             size="sm"
             classNames={fieldClasses}
@@ -411,10 +433,20 @@ export const ControlUsoPage = () => {
               </div>
               <Stack gap={2}>
                 <div className="flex items-center gap-2.5">
-                  <Text fw={800} className="uppercase tracking-widest text-zinc-500 text-[10px]!">
-                    {tipoControl === "horometro" ? "Control por Horómetro" : "Control por Odómetro"}
+                  <Text
+                    fw={800}
+                    className="uppercase tracking-widest text-zinc-500 text-[10px]!"
+                  >
+                    {tipoControl === "horometro"
+                      ? "Control por Horómetro"
+                      : "Control por Odómetro"}
                   </Text>
-                  <Badge size="xs" color="pink" variant="light" className="font-extrabold border border-pink-500/10">
+                  <Badge
+                    size="xs"
+                    color="pink"
+                    variant="light"
+                    className="font-extrabold border border-pink-500/10"
+                  >
                     {selectedAssetObj.correlativo}
                   </Badge>
                 </div>
@@ -427,7 +459,9 @@ export const ControlUsoPage = () => {
             <div className="flex items-center gap-6">
               {(selectedAssetObj.almacen || selectedAssetObj.mina) && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-zinc-500 uppercase font-extrabold tracking-wider">Ubicación</span>
+                  <span className="text-[10px] text-zinc-500 uppercase font-extrabold tracking-wider">
+                    Ubicación
+                  </span>
                   <div className="flex items-center gap-1.5 text-zinc-300 font-semibold text-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     {selectedAssetObj.almacen || selectedAssetObj.mina}
@@ -436,8 +470,15 @@ export const ControlUsoPage = () => {
               )}
 
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-zinc-500 uppercase font-extrabold tracking-wider">Registros del Mes</span>
-                <Badge size="sm" color="indigo" variant="light" className="font-extrabold">
+                <span className="text-[10px] text-zinc-500 uppercase font-extrabold tracking-wider">
+                  Registros del Mes
+                </span>
+                <Badge
+                  size="sm"
+                  color="indigo"
+                  variant="light"
+                  className="font-extrabold"
+                >
                   {logs.length} {logs.length === 1 ? "registro" : "registros"}
                 </Badge>
               </div>
@@ -453,14 +494,22 @@ export const ControlUsoPage = () => {
                 <div className="size-16 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
                 <InboxStackIcon className="size-6 text-indigo-400 absolute inset-0 m-auto animate-pulse" />
               </div>
-              <Text size="xs" fw={900} className="uppercase tracking-[0.3em] text-zinc-500">
+              <Text
+                size="xs"
+                fw={900}
+                className="uppercase tracking-[0.3em] text-zinc-500"
+              >
                 Consultando registros...
               </Text>
             </Stack>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-20">
               <InboxStackIcon className="size-12 text-zinc-700 mb-4" />
-              <Text size="sm" fw={700} className="text-zinc-400 uppercase tracking-widest">
+              <Text
+                size="sm"
+                fw={700}
+                className="text-zinc-400 uppercase tracking-widest"
+              >
                 Sin resultados
               </Text>
               <Text size="xs" c="dimmed" className="mt-1">

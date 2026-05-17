@@ -254,6 +254,19 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   ```
 - **Manejo de Formularios**: El proyecto prefiere `useState` con una función `setField` y validación manual con `Zod` (`Schema.safeParse(form)`) en lugar de `useForm` de Mantine, a menos que el módulo ya use `useForm`.
 
+### 5. Reglas de DataTableEstandar (Índices automáticos de paginación)
+
+- **Índice Automático (#)**: **NUNCA** implementes un método `render` manual para la columna de numeración correlativa (`#`). Si necesitas mostrar el número de fila absoluto (que tiene en cuenta la página y el tamaño de página actual), define el objeto de la columna con el `accessor: "index"` de forma simple:
+  ```tsx
+  {
+    accessor: "index",
+    title: "#",
+    textAlign: "center",
+    width: 50,
+  }
+  ```
+  `DataTableEstandar` intercepta automáticamente esta clave y calcula el índice correspondiente. No ensucies la definición del módulo con funciones de render redundantes.
+
 ### 5. Catálogo de Referencia para la IA
 
 Utiliza este catálogo para seleccionar los componentes y hooks más adecuados para cada tarea.
