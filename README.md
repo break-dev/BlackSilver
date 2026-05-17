@@ -136,40 +136,50 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 ### `/src` - Directorios Globales
 
 #### 1. Hooks Globales (`/src/hooks`)
+Ganchos personalizados que proveen estado y lógica de comportamiento transversal en todo el ERP.
+*   **`useAuthUser.ts`**: Gestión de estado de sesión, inicio/cierre de sesión, y comprobación reactiva de permisos del usuario.
+*   **`useNotify.ts`**: Envoltorio de notificaciones nativas Mantine v8 unificado. Ofrece `notifySuccess` y `notifyError` asegurando la estética visual consistente.
+*   **`usePrint.ts` / `useDownloadFile.ts`**: Utilidades para descarga asíncrona de reportes y cola de impresión local.
+*   **`useExcel.ts`**: Manejo asíncrono y en segundo plano de generación de archivos de cálculo Excel.
+*   **`useJsonScanner.tsx`**: Hook integrado para el procesamiento e interpretación de datos capturados por hardware externo (lectores de código de barras).
+*   **`useMenuNav.ts`**: Administra la carga y filtrado de enlaces de navegación en base al rol autenticado.
+*   **`useTitlePage.ts`**: Mantiene sincronizado el título de la pestaña del navegador con el módulo activo.
+*   **`useBlackcito.ts`**: Gancho dinámico para el asistente animado del ERP (Blackcito).
 
-- **`useAuthUser`**: Gestión de sesión y permisos.
-- **`useNotify`**: Alertas y feedback visual.
-- **`usePrint`**: Integración con cola de impresión.
-- **`useExcel`**: Cola asíncrona global para la generación estructurada de archivos Excel sin bloquear la interfaz del usuario.
-- **`useJsonScanner`**: Procesamiento de datos de hardware externo.
-- **`useBlackcito`**: Asistente virtual de estados del sistema.
+#### 2. Componentes de UI Reutilizables (`/src/presentation/utils`)
+Componentes visuales puros y layouts genéricos de alta calidad Mantine v8.
+*   **`DataTableEstandar.tsx`**: Grilla maestra unificada para visualización de registros con ordenamiento, paginación reactiva, filtros y modo auditoría integrado.
+*   **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios.
+*   **`JsonScanner.tsx`**: Interfaz de escaneo de códigos de barra para ingreso masivo de ítems.
+*   **`date-picker-input.tsx`**: Selector de fechas unificado (`CustomDatePicker`) alineado al diseño de inputs ERP.
+*   **`form-marca.tsx` / `form-personal-externo.tsx`**: Formularios modulares auto-contenidos para creación rápida de catálogos en procesos concurrentes.
+*   **`archivo/` (`archivo-card.tsx`, `multifile-picker.tsx`)**: Utilidades visuales para visualización, carga drag & drop y borrado de documentos adjuntos.
+*   **`excel/` (`GlobalExcelPortal.tsx`)**: Portal flotante global que gestiona colas de exportación pesadas sin congelar el hilo principal.
+*   **`printer/` (`GlobalPrinterPortal.tsx`)**: Servicio global que administra la cola de impresión de documentos y vales físicos.
+*   **Plantillas PDF (`orden-compra-pdf.tsx`, `ticket-lote-pdf.tsx`, etc.)**: Generadores de comprobantes en el cliente estructurados mediante `@react-pdf/renderer`.
 
-#### 2. Componentes de UI (`/src/presentation/utils`)
+#### 3. Capa de Servicios de Red (`/src/service`)
+Instancia de comunicación REST y servicios auxiliares con el backend.
+*   **`_api.ts`**: Interceptor maestro de Axios. Inyecta tokens Bearer JWT de forma automática y normaliza las respuestas en base a la interfaz de éxito o fallo corporativo.
+*   **`_socket.ts`**: Cliente WebSocket unificado (Laravel Echo + Pusher) para canalizar eventos en tiempo real como el cambio global del Modo Auditoría.
+*   **`auxiliar.service.ts`**: **Hub de Datos Maestros.** Cachea y provee catálogos compartidos de productos, lotes, marcas, personal y almacenes optimizando las llamadas de red.
+*   **`archivo.service.ts` / `menu-nav.service.ts`**: Gestión física de adjuntos y descarga de árbol de menús estructurados.
+*   **Subcarpeta `responses/`**: Contratos e interfaces TypeScript (`.ts`) que mapean al 100% de tipado estricto las respuestas HTTP devueltas por la API de Laravel módulo por módulo (ej. `activo-fijo.ts`, `lote-producto.ts`, `requerimiento-almacen.ts`).
 
-- **`DataTableEstandar`**: Grilla con filtros avanzados y carga perezosa.
-- **`ModalEstandar`**: Base para formularios.
-- **`JsonScanner`**: Captura visual de datos.
-
-#### 3. State Management (`/src/stores`)
-
-- **`auth.store`**, **`ui.store`**, **`menu.store`**.
-
-#### 4. Servicios (`/src/service`)
-
-- **`_api.ts`**: Interceptor de red.
-- **`auxiliar.service.ts`**: **Hub de Datos Maestros.** Centraliza catálogos de Almacenes, Unidades, Personal y Productos para optimizar el tráfico de red.
-
-#### 5. Utilidades y Funciones Compartidas (`/src/shared/functions`)
-
-Colección de funciones puras, algoritmos y formateadores usados de forma transversal en el ERP:
-
-- **`cn.ts`**: Combinador dinámico de clases de Tailwind CSS sin conflictos (`twMerge`). Elimina propiedades `undefined/false` de forma limpia. Sustituye el uso básico de `clsx`.
-- **`en-plural.ts`**: Motor avanzado de pluralización y singularización en idioma español. Maneja excepciones gramaticales nativas (ej. "lápiz" -> "lápices", pérdida/ganancia de tildes como "joven" -> "jóvenes") e ignora palabras incontables o invariables.
-- **`formatNumber.ts`**: Formatea valores numéricos utilizando separadores de miles y limpia los ceros decimales innecesarios (ej. previene que un entero limpio se vea como `10.00`), utilizando `Intl.NumberFormat`.
-- **`get-coincidencias.ts`**: Motor de búsqueda robusto y unificado que combina distancia de caracteres para tolerar errores ortográficos y "typos" (**Fuse.js**), junto con tokenización para buscar palabras desordenadas (**FlexSearch**).
-- **`get-duracion-periodo.ts`**: Calculadora matemática para estandarizar lapsos de tiempo. Convierte valores entre diferentes periodos (Diario, Semanal, Mensual, Anual). Vital para alinear las estimaciones de entrega de los proveedores a una sola escala (ej. transformar 2 Semanas a 14 Días).
-- **`get-nombre-periodo.ts`**: Mapeador visual que traduce los valores técnicos del enum `Periodo` a texto legible para las interfaces de usuario (ej. traduce `Periodo.Mensual` a `"Mes(es)"`).
-- **`mm-to-pt.ts`**: Función estricta de conversión milímetro a puntos de PDF (`1 mm = 2.835 pt`). Se usa transversalmente para maquetar los reportes en `@react-pdf/renderer` manteniendo fidelidad con las medidas reales de papel.
+#### 4. Recursos Compartidos (`/src/shared`)
+Estructura fundacional, tipos globales, constantes y algoritmos lógicos puros del ERP.
+*   **`enums/`**: Mapeo completo de Backed Enums de PHP a enums TypeScript, divididos de forma estricta (ej. `solicitud-reabastecimiento`, `orden-compra`, `requerimiento-almacen`).
+*   **`enums/_generic/`**: Enums base y transversales (`tipo-bien.ts`, `moneda.ts`, `premura.ts`, `periodo.ts`).
+*   **`interfaces/`**: Interfaces genéricas de formato de API (`_response.ts`) e información de archivos.
+*   **`variables/`**: Mapeadores y arrays estáticos de soporte visual (`meses.ts`, `monedas.ts`, `iconos-menu-navegacion.ts`).
+*   **`functions/` (Algoritmos Genéricos)**:
+    *   **`cn.ts`**: Combinador inteligente de clases Tailwind CSS (`tailwind-merge`).
+    *   **`en-plural.ts`**: Algoritmo avanzado de pluralización en español (excepciones de tildes y terminaciones).
+    *   **`formatNumber.ts`**: Formateador decimal de precisión financiera.
+    *   **`get-coincidencias.ts`**: Buscador difuso (Fuzzy Search con Fuse.js) y tokenizado por palabras (FlexSearch).
+    *   **`get-duracion-periodo.ts` / `get-nombre-periodo.ts`**: Estandarización y visualización matemática de lapsos temporales.
+    *   **`mm-to-pt.ts`**: Conversión estricta milímetros a puntos PDF.
+    *   **`get-url-barcode.ts`**: Genera la representación del código de barras en base64 para reportes PDF.
 
 ---
 
