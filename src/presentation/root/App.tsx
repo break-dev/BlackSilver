@@ -50,6 +50,12 @@ import { useEffect } from "react";
 import { onSocketEvent } from "../../service/_socket.ts";
 import { useAuditoriaStore } from "../../stores/auditoria.store.ts";
 import ModoAuditoriaPage from "../../modules/modo-auditoria/presentation/ModoAuditoriaPage.tsx";
+import {
+  ControlActivosLayout,
+  OperacionesLayout,
+} from "../layouts/operaciones.layout.tsx";
+import { ControlConsumoPage } from "../../modules/control-consumo/presentation/control-consumo.page.tsx";
+import { ControlUsoPage } from "../../modules/control-uso/presentation/control-uso.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -187,6 +193,13 @@ export const App = () => {
               path="recepcion-transferencias"
               element={<RecepcionTransferenciasOCPage />}
             />
+          </Route>
+        </Route>
+
+        <Route path="/operaciones" element={<OperacionesLayout />}>
+          <Route path="control-activos" element={<ControlActivosLayout />}>
+            <Route path="consumo" element={<ControlConsumoPage />} />
+            <Route path="uso" element={<ControlUsoPage />} />
           </Route>
         </Route>
 

@@ -39,4 +39,11 @@ export const iconos_menu_navegacion = [
       { submenu_path: "compras", icono: ShoppingCartIcon },
     ],
   },
+  {
+    menu_path: "operaciones",
+    icono: TruckIcon,
+    submenus: [
+      { submenu_path: "control-activos", icono: ClipboardDocumentListIcon },
+    ],
+  },
 ];
