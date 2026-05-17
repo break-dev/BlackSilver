@@ -11,6 +11,8 @@ import type { RES_Empresa } from "./responses/empresa";
 import type { RES_Mina } from "./responses/mina";
 import type { TipoBien } from "../shared/enums/_generic/tipo-bien";
 import type { RES_Marca } from "./responses/marca";
+import type { RES_ActivoFijoDisponible } from "./responses/activo-fijo";
+import type { EstadoActivoFijo } from "../shared/enums/activo-fijo";
 
 const path = "/aux";
 
@@ -180,6 +182,26 @@ export const AuxService = {
     const { data } = await api.post<IRespuesta<RES_Marca>>(
       `${path}/marcas`,
       nuevaMarca,
+    );
+    return data;
+  },
+
+  /**
+   * Obtener lista de activos disponibles
+   */
+  get_activos_disponibles: async (filters?: {
+    id_activo?: number;
+    id_almacen?: number;
+    id_mina?: number;
+    id_producto?: number;
+    para_transporte?: boolean;
+    control_por_odometro?: boolean;
+    control_por_horometro?: boolean;
+    estado?: EstadoActivoFijo;
+  }): Promise<IRespuesta<RES_ActivoFijoDisponible[]>> => {
+    const { data } = await api.get<IRespuesta<RES_ActivoFijoDisponible[]>>(
+      `${path}/activos-disponibles`,
+      { params: filters },
     );
     return data;
   },
