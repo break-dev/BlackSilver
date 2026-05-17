@@ -193,7 +193,7 @@ export const AuxService = {
     id_activo?: number;
     id_almacen?: number;
     id_mina?: number;
-    id_producto?: number;
+    id_producto?: number | number[];
     para_transporte?: boolean;
     control_por_odometro?: boolean;
     control_por_horometro?: boolean;
