@@ -25,7 +25,12 @@ export interface RES_PrestamoReposicionRecepcionDetalle {
   id_recepcion: number;
   id_reposicion_detalle: number;
   //
+  id_producto: number;
   producto: string;
+  //
+  id_activo_fijo_destino: number;
+  correlativo_activo_fijo_destino: string | null;
+  id_producto_destino: number | null;
   producto_destino: string | null;
   //
   id_unidad_medida_base: number;

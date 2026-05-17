@@ -34,8 +34,12 @@ export interface RES_SolicitudDetalle {
   id_producto: number;
   producto: string;
   es_auditable: boolean;
-  producto_destino: string | null;
   stock_minimo_base: number;
+  //
+  id_activo_fijo_destino: number | null;
+  correlativo_activo_fijo_destino: string | null;
+  id_producto_destino: number | null;
+  producto_destino: string | null;
   //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

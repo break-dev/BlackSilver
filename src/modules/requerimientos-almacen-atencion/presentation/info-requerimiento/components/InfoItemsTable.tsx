@@ -367,7 +367,7 @@ export const InfoItemsTable = ({
                           color="pink"
                           className="w-fit font-black px-1.5 text-white"
                         >
-                          PARA: {item.producto_destino}
+                          PARA: {item.producto_destino} {item.correlativo_activo_fijo_destino ? `[${item.correlativo_activo_fijo_destino}]` : ""}
                         </Badge>
                         {item.comentario && (
                           <Text

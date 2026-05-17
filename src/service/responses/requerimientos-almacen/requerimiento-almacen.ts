@@ -1,4 +1,5 @@
 import type { Premura } from "../../../shared/enums/_generic/premura";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_Requerimiento,
   Estado_RequerimientoDetalle,
@@ -40,25 +41,37 @@ export interface RES_RequerimientoAlmacen {
  */
 export interface RES_DetalleRequerimiento {
   id_requerimiento_almacen_detalle: number;
-  id_producto: number;
-  id_unidad_medida_base: number;
-  unidad_medida_base_abv: string;
-  id_unidad_medida_req: number;
-  unidad_medida_req_abv: string;
+  //
   empleado_atencion: string | null;
+  //
+  id_producto: number;
   producto: string;
-  es_auditable: boolean;
   stock_minimo_base: number;
-  stock_disponible_base: number;
-  contenido_por_presentacion: number;
-  cantidad_solicitada: number;
-  cantidad_solicitada_base: number;
-  cantidad_entregada: number;
-  cantidad_entregada_base: number;
-  porcentaje_progreso: number;
+  es_auditable: boolean;
+  tipo_bien: TipoBien;
+  //
+  id_activo_fijo_destino: number | null;
+  correlativo_activo_fijo_destino: string | null;
   id_producto_destino: number | null;
   producto_destino: string | null;
+  //
+  id_unidad_medida_base: number;
+  unidad_medida_base_abv: string;
+  contenido_por_presentacion: number;
+  cantidad_solicitada_base: number;
+  cantidad_entregada_base: number;
+  //
+  id_unidad_medida_req: number;
+  unidad_medida_req_abv: string;
+  cantidad_solicitada: number;
+  cantidad_entregada: number;
+  //
+  porcentaje_progreso: number;
+  //
+  stock_disponible_base: number;
+  //
   comentario: string | null;
   comentario_decision: string | null;
+  //
   estado: Estado_RequerimientoDetalle;
 }

@@ -22,7 +22,7 @@ export interface DTO_CrearRequerimientoDetalle {
   cantidad_solicitada: number;
   contenido_por_presentacion: number;
   comentario?: string | null;
-  id_producto_destino?: number | null;
+  id_activo_fijo_destino?: number | null;
 }
 
 // Zod schemas for validation
@@ -34,7 +34,7 @@ export const Schema_CrearRequerimientoDetalle = z.object({
     .number()
     .min(0.0001, "El contenido debe ser mayor a 0"),
   comentario: z.string().nullable().optional(),
-  id_producto_destino: z.number().nullable().optional(),
+  id_activo_fijo_destino: z.number().nullable().optional(),
 });
 
 export const Schema_CrearRequerimiento = z.object({

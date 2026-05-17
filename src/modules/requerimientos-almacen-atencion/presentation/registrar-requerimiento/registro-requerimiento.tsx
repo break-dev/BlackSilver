@@ -27,6 +27,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRegistroRequerimiento } from "../../hooks/useRegistroRequerimiento";
 import { Premura } from "../../../../shared/enums/_generic/premura";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { enPlural } from "../../../../shared/functions/en-plural";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -98,13 +99,14 @@ export const RegistroRequerimiento = ({
       setCantidad,
       contenido,
       setContenido,
-      idProductoDestino,
-      setIdProductoDestino,
+      idActivoFijoDestino,
+      setIdActivoFijoDestino,
       comentarioItem,
       setComentarioItem,
       idAlmacenDestino,
+      activos,
     },
-    status: { submitting, error, loadingMinas, loadingMinaData },
+    status: { submitting, error, loadingMinas, loadingMinaData, loadingActivos },
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
@@ -341,6 +343,7 @@ export const RegistroRequerimiento = ({
                   }))}
                   value={idUnidadMedida ? String(idUnidadMedida) : null}
                   onChange={(val) => setIdUnidadMedida(Number(val))}
+                  disabled={productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -375,18 +378,19 @@ export const RegistroRequerimiento = ({
               </div>
 
               <div className="md:col-span-6 mb-10">
-                {productoSeleccionado?.es_consumible ? (
+                {productoSeleccionado?.ids_categorias_consumidoras ? (
                   <Select
-                    label="Destino del producto"
+                    label="Destino del producto (Activo Fijo)"
                     placeholder="Seleccione maquinaria o activo..."
                     description="Especifique a qué equipo se asignará este insumo"
                     withAsterisk
-                    data={destinosDisponibles.map((p) => ({
-                      value: String(p.id_producto),
-                      label: p.nombre,
+                    disabled={loadingActivos}
+                    data={destinosDisponibles.map((a) => ({
+                      value: String(a.id_activo),
+                      label: `${a.correlativo} - ${a.producto}`,
                     }))}
-                    value={idProductoDestino ? String(idProductoDestino) : null}
-                    onChange={(val) => setIdProductoDestino(Number(val))}
+                    value={idActivoFijoDestino ? String(idActivoFijoDestino) : null}
+                    onChange={(val) => setIdActivoFijoDestino(Number(val))}
                     searchable
                     classNames={inputClasses}
                     radius="lg"
@@ -543,8 +547,8 @@ export const RegistroRequerimiento = ({
                 const uni = unidades.find(
                   (u) => u.id_unidad_medida === det.id_unidad_medida,
                 );
-                const dest = productos.find(
-                  (p) => p.id_producto === det.id_producto_destino,
+                const destActivo = activos.find(
+                  (a) => a.id_activo === det.id_activo_fijo_destino,
                 );
                 const conError = det.cantidad_solicitada <= 0;
 
@@ -648,16 +652,15 @@ export const RegistroRequerimiento = ({
                       </Stack>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
-                      {dest ? (
+                      {destActivo ? (
                         <div className="flex flex-col gap-1">
                           <Badge
                             size="xs"
                             variant="filled"
                             color="pink"
-                            className="w-fit font-bold tracking-tight px-3"
-                            style={{ color: "white" }}
+                            className="w-fit font-bold tracking-tight px-3 text-white"
                           >
-                            PARA: {dest.nombre}
+                            PARA: {destActivo.producto} [{destActivo.correlativo}]
                           </Badge>
                           {det.comentario && (
                             <Text size="xs" c="dimmed" mt={2}>

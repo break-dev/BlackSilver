@@ -60,10 +60,10 @@ export const AtencionService = {
       if (det.comentario) {
         formData.append(`detalles[${index}][comentario]`, det.comentario);
       }
-      if (det.id_producto_destino) {
+      if (det.id_activo_fijo_destino) {
         formData.append(
-          `detalles[${index}][id_producto_destino]`,
-          String(det.id_producto_destino),
+          `detalles[${index}][id_activo_fijo_destino]`,
+          String(det.id_activo_fijo_destino),
         );
       }
     });

@@ -13,6 +13,9 @@ export interface RES_ActivoFijoDisponible {
   producto: string;
   es_auditable: boolean;
   //
+  id_categoria: number;
+  categoria: string;
+  //
   para_transporte: boolean;
   control_por_odometro: boolean;
   control_por_horometro: boolean;

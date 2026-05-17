@@ -14,6 +14,7 @@ import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 
 interface Props {
   onSuccess: (
@@ -34,6 +35,7 @@ export const useRegistroRequerimiento = ({
   const [loadingCatalogs, setLoadingCatalogs] = useState(false);
   const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingMinaData, setLoadingMinaData] = useState(false);
+  const [loadingActivos, setLoadingActivos] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Catálogos
@@ -44,6 +46,7 @@ export const useRegistroRequerimiento = ({
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
+  const [activos, setActivos] = useState<RES_ActivoFijoDisponible[]>([]);
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
   // Estado Formulario Cabecera
@@ -65,7 +68,7 @@ export const useRegistroRequerimiento = ({
   const [cantidad, setCantidad] = useState<number>(0);
   const [contenido, setContenido] = useState<number>(1);
   const [comentarioItem, setComentarioItem] = useState("");
-  const [idProductoDestino, setIdProductoDestino] = useState<number>(0);
+  const [idActivoFijoDestino, setIdActivoFijoDestino] = useState<number>(0);
 
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
@@ -120,7 +123,7 @@ export const useRegistroRequerimiento = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idAlmacenDestino]);
 
-  // 3. Cargar Responsables y Labores al elegir Mina
+  // 3. Cargar Responsables, Labores y Activos al elegir Mina
   useEffect(() => {
     if (idMina > 0) {
       const loadMinaData = async () => {
@@ -144,12 +147,29 @@ export const useRegistroRequerimiento = ({
           setLoadingMinaData(false);
         }
       };
+
+      const loadActivos = async () => {
+        setLoadingActivos(true);
+        try {
+          const res = await AuxService.get_activos_disponibles({
+            id_mina: idMina,
+          });
+          if (res.success && res.data) {
+            setActivos(res.data);
+          }
+        } finally {
+          setLoadingActivos(false);
+        }
+      };
+
       loadMinaData();
+      loadActivos();
     } else {
       setResponsables([]);
       setLabores([]);
       setIdContratistaSolicitante(0);
       setIdLabores([]);
+      setActivos([]);
     }
     // Remove idEmpleadoSolicitante from dependencies to prevent double-fetching
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,7 +203,7 @@ export const useRegistroRequerimiento = ({
       }
     }
     // Al cambiar de producto, reseteamos el destino y comentario
-    setIdProductoDestino(0);
+    setIdActivoFijoDestino(0);
     setComentarioItem("");
   }, [idProducto, loadingCatalogs, productos]);
 
@@ -199,11 +219,10 @@ export const useRegistroRequerimiento = ({
     });
   }, [productos, detalles]);
 
-  // Destinos disponibles para the producto consumible seleccionado
+  // Destinos disponibles para el producto consumible seleccionado (basado en activos)
   const destinosDisponibles = useMemo(() => {
     if (
       !productoSeleccionado ||
-      !productoSeleccionado.es_consumible ||
       !productoSeleccionado.ids_categorias_consumidoras
     ) {
       return [];
@@ -213,21 +232,21 @@ export const useRegistroRequerimiento = ({
       productoSeleccionado.ids_categorias_consumidoras.split(",");
     const idsPermitidos = idsPermitidosStr.map(Number);
 
-    return productos.filter((p) => {
+    return activos.filter((a) => {
       // 1. Debe pertenecer a una categoría consumidora permitida
-      const esCategoriaPermitida = idsPermitidos.includes(p.id_categoria);
+      const esCategoriaPermitida = idsPermitidos.includes(a.id_categoria);
       if (!esCategoriaPermitida) return false;
 
       // 2. No debe haber sido ya elegido para este mismo producto consumible en este formulario
       const yaElegido = detalles.some(
         (d) =>
           d.id_producto === productoSeleccionado.id_producto &&
-          d.id_producto_destino === p.id_producto,
+          d.id_activo_fijo_destino === a.id_activo,
       );
 
       return !yaElegido;
     });
-  }, [productoSeleccionado, productos, detalles]);
+  }, [productoSeleccionado, activos, detalles]);
 
   // Agregar item a la lista
   const agregarItem = useCallback(() => {
@@ -236,10 +255,13 @@ export const useRegistroRequerimiento = ({
       return;
     }
 
-    // Validación adicional para consumibles
-    if (productoSeleccionado?.es_consumible && !idProductoDestino) {
+    // Validación adicional para productos que abastecen activos fijos
+    if (
+      productoSeleccionado?.ids_categorias_consumidoras &&
+      !idActivoFijoDestino
+    ) {
       notifyError(
-        "Debe seleccionar un equipo de destino para este producto consumible",
+        "Debe seleccionar un activo fijo de destino para este producto",
       );
       return;
     }
@@ -250,7 +272,8 @@ export const useRegistroRequerimiento = ({
       cantidad_solicitada: cantidad,
       contenido_por_presentacion: contenido,
       comentario: comentarioItem,
-      id_producto_destino: idProductoDestino > 0 ? idProductoDestino : null,
+      id_activo_fijo_destino:
+        idActivoFijoDestino > 0 ? idActivoFijoDestino : null,
     };
 
     setDetalles((prev) => [...prev, nuevoItem]);
@@ -261,14 +284,14 @@ export const useRegistroRequerimiento = ({
     setCantidad(0);
     setContenido(1);
     setComentarioItem("");
-    setIdProductoDestino(0);
+    setIdActivoFijoDestino(0);
   }, [
     idProducto,
     idUnidadMedida,
     cantidad,
     contenido,
     comentarioItem,
-    idProductoDestino,
+    idActivoFijoDestino,
     productoSeleccionado,
     notifyError,
   ]);
@@ -417,9 +440,10 @@ export const useRegistroRequerimiento = ({
       setContenido,
       comentarioItem,
       setComentarioItem,
-      idProductoDestino,
-      setIdProductoDestino,
+      idActivoFijoDestino,
+      setIdActivoFijoDestino,
       detalles,
+      activos,
     },
     derived: {
       sonUnidadesIdenticas,
@@ -433,6 +457,7 @@ export const useRegistroRequerimiento = ({
       loadingCatalogs,
       loadingMinas,
       loadingMinaData,
+      loadingActivos,
       error,
     },
     actions: {

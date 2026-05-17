@@ -30,7 +30,7 @@ import { MESES } from "../../../shared/variables/meses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 
 export const KardexProductosPage = () => {
-  useTitlePage("Kardex de Productos");
+  useTitlePage("Kardex de Inventario");
 
   const {
     idAlmacen,
@@ -67,7 +67,7 @@ export const KardexProductosPage = () => {
       {
         accessor: "producto",
         title: "Producto",
-        width: 160,
+        width: 220,
         render: (record) => (
           <Group gap="xs" wrap="nowrap">
             <div className="w-9 h-9 rounded-lg bg-zinc-800/80 flex items-center justify-center text-zinc-400 shrink-0 border border-zinc-700">
@@ -91,12 +91,12 @@ export const KardexProductosPage = () => {
       },
       {
         accessor: "correlativo",
-        title: "Lote",
+        title: "Lote / Activo",
         width: 160,
         textAlign: "center",
         render: (record) => (
           <Badge variant="light" color="violet" radius="sm">
-            {record.correlativo_lote}
+            {record.correlativo_lote || record.correlativo_activo_fijo}
           </Badge>
         ),
       },
@@ -411,7 +411,7 @@ export const KardexProductosPage = () => {
           <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto animate-fade-in">
             <div className="w-full md:w-56">
               <Select
-                label="filtrar producto"
+                label="Filtrar producto"
                 placeholder="Todos..."
                 data={productosUnicos}
                 value={filtroProducto}
@@ -434,7 +434,7 @@ export const KardexProductosPage = () => {
             </div>
             <div className="w-full md:w-44">
               <Select
-                label="filtrar lote"
+                label="Filtrar lote"
                 placeholder="Todos..."
                 data={lotesUnicos}
                 value={filtroLote}

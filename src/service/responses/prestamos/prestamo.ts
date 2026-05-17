@@ -35,7 +35,12 @@ export interface RES_PrestamoDetalle {
   id_producto: number;
   stock_minimo_base: number;
   producto: string;
-  producto_destino: string;
+  //
+  id_producto_destino: number | null;
+  producto_destino: string | null;
+  id_activo_fijo_destino: number | null;
+  correlativo_activo_fijo_destino: string | null;
+  //
   stock_disponible_base: number;
   //
   id_unidad_medida_base: number;
