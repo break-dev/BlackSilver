@@ -5,6 +5,8 @@ import type { DetalleRequerimientoExtendido } from "../../../../service/atencion
 import type { RES_LoteDisponible } from "../../../../../../service/responses/lote-producto";
 import { GroupByDetalleRequerimiento } from "./group-by-detalle-req";
 
+import type { RES_ActivoFijoDisponible } from "../../../../../../service/responses/activo-fijo";
+
 interface GroupByProductoProps {
   idProducto: number;
   group: {
@@ -15,11 +17,18 @@ interface GroupByProductoProps {
     details: DetalleRequerimientoExtendido[];
   };
   lotesPorProducto: Record<number, RES_LoteDisponible[]>;
+  activosFijosPorProducto: Record<number, RES_ActivoFijoDisponible[]>;
   entregaCantidades: Record<number, Record<number, number>>;
+  entregaCantidadesActivos: Record<number, Record<number, number>>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
     idLote: number,
+    cant: number,
+  ) => void;
+  handleCantActivoChange: (
+    idDetalle: number,
+    idActivo: number,
     cant: number,
   ) => void;
 }
@@ -28,11 +37,15 @@ export const GroupByProducto = ({
   idProducto,
   group,
   lotesPorProducto,
+  activosFijosPorProducto,
   entregaCantidades,
+  entregaCantidadesActivos,
   handleCantChange,
   handleCantLoteChange,
+  handleCantActivoChange,
 }: GroupByProductoProps) => {
   const lotes = lotesPorProducto[idProducto] || [];
+  const activosFijos = activosFijosPorProducto[idProducto] || [];
 
   return (
     <Paper
@@ -91,10 +104,13 @@ export const GroupByProducto = ({
             key={detalle_req.id_requerimiento_almacen_detalle}
             detalle_req={detalle_req}
             lotes={lotes}
+            activosFijos={activosFijos}
             index={index}
             entregaCantidades={entregaCantidades}
+            entregaCantidadesActivos={entregaCantidadesActivos}
             handleCantChange={handleCantChange}
             handleCantLoteChange={handleCantLoteChange}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>

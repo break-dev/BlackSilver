@@ -68,7 +68,10 @@ export interface DTO_RegistrarEntrega {
 
 export interface DTO_RegistrarEntregaDetalle {
   id_requerimiento_almacen_detalle: number;
-  id_lote_producto: number;
+  /** Nulo cuando es un activo fijo */
+  id_lote_producto?: number | null;
+  /** Poblado solo para activos fijos */
+  id_activo_fijo?: number | null;
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_requerimiento: number;

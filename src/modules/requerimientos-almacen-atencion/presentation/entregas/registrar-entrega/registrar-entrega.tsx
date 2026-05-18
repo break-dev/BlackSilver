@@ -29,7 +29,9 @@ export const RegistrarEntrega = ({
     loading,
     selectedDetalles,
     lotesPorProducto,
+    activosFijosPorProducto,
     entregaCantidades,
+    entregaCantidadesActivos,
     empleados,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
@@ -42,6 +44,7 @@ export const RegistrarEntrega = ({
     totalEntregaGeneralBase,
     handleCantChange,
     handleCantLoteChange,
+    handleCantActivoChange,
     handleConfirmar,
   } = useRegistrarEntregaBatch({
     idRequerimiento,
@@ -108,9 +111,12 @@ export const RegistrarEntrega = ({
             idProducto={Number(id_prod)}
             group={group}
             lotesPorProducto={lotesPorProducto}
+            activosFijosPorProducto={activosFijosPorProducto}
             entregaCantidades={entregaCantidades}
+            entregaCantidadesActivos={entregaCantidadesActivos}
             handleCantChange={handleCantChange}
             handleCantLoteChange={handleCantLoteChange}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>
@@ -120,6 +126,17 @@ export const RegistrarEntrega = ({
         gap="md"
         className="pt-6 border-t border-zinc-800 mt-2"
       >
+        {error && (
+          <Text
+            c="red"
+            size="xs"
+            ta="center"
+            fw={800}
+            className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide"
+          >
+            {error}
+          </Text>
+        )}
         <Button
           variant="subtle"
           radius="lg"
@@ -143,18 +160,6 @@ export const RegistrarEntrega = ({
           Guardar Entrega
         </Button>
       </Group>
-
-      {error && (
-        <Text
-          c="red"
-          size="xs"
-          ta="center"
-          fw={800}
-          className="italic bg-red-950/10 py-3 rounded-2xl border border-red-900/30 font-mono tracking-wide"
-        >
-          {error}
-        </Text>
-      )}
     </Stack>
   );
 };

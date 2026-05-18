@@ -8,6 +8,9 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_DetalleRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { useNotify } from "../../../hooks/useNotify";
 
 interface UseRegistrarEntregaBatchProps {
   idRequerimiento: number;
@@ -27,10 +30,15 @@ export const useRegistrarEntregaBatch = ({
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
+  const { notifySuccess, notifyError } = useNotify();
   const loggedEmployeeId = authUser.usuario?.id_empleado;
 
   const [loading, setLoading] = useState(true);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
+  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>([]);
+  const [entregaCantidadesActivos, setEntregaCantidadesActivos] = useState<
+    Record<number, Record<number, number>>
+  >({});
   const [empleados, setEmpleados] = useState<
     { value: string; label: string }[]
   >([]);
@@ -66,24 +74,51 @@ export const useRegistrarEntregaBatch = ({
       });
   }, [detallesRequerimiento, selectedItemsIds]);
 
+  /** Items normales (con lote) */
+  const detallesConLote = useMemo(
+    () => selectedDetalles.filter((d) => d.tipo_bien !== TipoBien.ActivoFijo),
+    [selectedDetalles],
+  );
+
+  /** Activos fijos: ya tienen id_activo_fijo_destino asignado desde el requerimiento */
+  const detallesActivoFijo = useMemo(
+    () => selectedDetalles.filter((d) => d.tipo_bien === TipoBien.ActivoFijo),
+    [selectedDetalles],
+  );
+
   const idsProductos = useMemo(() => {
-    const ids = selectedDetalles.map((d) => d.id_producto);
+    const ids = detallesConLote.map((d) => d.id_producto);
     return Array.from(new Set(ids));
-  }, [selectedDetalles]);
+  }, [detallesConLote]);
 
   useEffect(() => {
     let cancelled = false;
     const loadInitialData = async () => {
       setLoading(true);
       setError("");
-      if (idsProductos.length === 0) {
-        setLoading(false);
-        return;
-      }
       try {
-        const [resEmps, resLotes] = await Promise.all([
+        const idsConLote = Array.from(
+          new Set(detallesConLote.map((d) => d.id_producto)),
+        );
+        const idsActivoFijo = Array.from(
+          new Set(detallesActivoFijo.map((d) => d.id_producto)),
+        );
+        if (idsConLote.length === 0 && idsActivoFijo.length === 0) {
+            setLoading(false);
+            return;
+        }
+
+        const [resEmps, resLotes, resActivos] = await Promise.all([
           AuxService.get_empleados(),
-          AuxService.get_lotes_disponibles(idAlmacen, idsProductos),
+          idsConLote.length > 0
+            ? AuxService.get_lotes_disponibles(idAlmacen, idsConLote)
+            : Promise.resolve({ success: true, data: [] }),
+          idsActivoFijo.length > 0
+            ? AuxService.get_activos_disponibles({
+                id_almacen: idAlmacen,
+                id_producto: idsActivoFijo,
+              })
+            : Promise.resolve({ success: true, data: [] }),
         ]);
 
         if (cancelled) return;
@@ -97,9 +132,9 @@ export const useRegistrarEntregaBatch = ({
           }));
           setLotes(castedLotes);
 
-          // Initialize quantities per detail
+          // Initialize quantities per detail (solo items con lote)
           const initial: Record<number, Record<number, number>> = {};
-          selectedDetalles.forEach((d) => {
+          detallesConLote.forEach((d) => {
             initial[d.id_requerimiento_almacen_detalle] = {};
             castedLotes
               .filter((l) => l.id_producto === d.id_producto)
@@ -108,6 +143,22 @@ export const useRegistrarEntregaBatch = ({
               });
           });
           setEntregaCantidades(initial);
+        }
+
+        if (resActivos.success) {
+          setActivosFijos(resActivos.data);
+          
+          // Initialize quantities per detail for activos fijos
+          const initialActivos: Record<number, Record<number, number>> = {};
+          detallesActivoFijo.forEach((d) => {
+            initialActivos[d.id_requerimiento_almacen_detalle] = {};
+            resActivos.data
+              .filter((a: RES_ActivoFijoDisponible) => a.id_producto === d.id_producto)
+              .forEach((a: RES_ActivoFijoDisponible) => {
+                initialActivos[d.id_requerimiento_almacen_detalle][a.id_activo] = 0;
+              });
+          });
+          setEntregaCantidadesActivos(initialActivos);
         }
 
         if (resEmps.success) {
@@ -133,7 +184,14 @@ export const useRegistrarEntregaBatch = ({
     return () => {
       cancelled = true;
     };
-  }, [idsProductos, idAlmacen, loggedEmployeeId, selectedDetalles]);
+  }, [
+    idsProductos,
+    idAlmacen,
+    loggedEmployeeId,
+    selectedDetalles,
+    detallesConLote,
+    detallesActivoFijo,
+  ]);
 
   // Auto-seleccionar receptor basado en el solicitante
   useEffect(() => {
@@ -146,6 +204,51 @@ export const useRegistrarEntregaBatch = ({
       }
     }
   }, [idContratistaSolicitante, empleados, idEmpleadoRecibe]);
+
+  const handleCantActivoChange = useCallback(
+    (idDetalleReq: number, idActivo: number, val: number) => {
+      setEntregaCantidadesActivos((prev) => {
+        // limit val to 0 or 1
+        const finalValue = Math.max(0, Math.min(val, 1));
+        const prevCantidades = prev[idDetalleReq] || {};
+
+        // Sum total selected for this detail
+        const detail = selectedDetalles.find(
+          (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+        );
+        if (!detail) return prev;
+
+        const totalOther = Object.entries(prevCantidades).reduce(
+          (sum, [aId, v]) => {
+            if (Number(aId) === idActivo) return sum;
+            return sum + (v || 0);
+          },
+          0,
+        );
+
+        const pendienteMaxDetalle =
+          detail.cantidad_solicitada_base - detail.cantidad_entregada_base;
+
+        // Max allowed is 1, but bounded by remaining pending
+        const maxAllowed = Math.max(
+          0,
+          Math.min(1, pendienteMaxDetalle - totalOther),
+        );
+        const safeValue = Math.max(0, Math.min(finalValue, maxAllowed));
+
+        if (prevCantidades[idActivo] === safeValue) return prev;
+
+        return {
+          ...prev,
+          [idDetalleReq]: {
+            ...prevCantidades,
+            [idActivo]: safeValue,
+          },
+        };
+      });
+    },
+    [selectedDetalles],
+  );
 
   const handleCantChange = useCallback(
     (idDetalleReq: number, idLote: number, val: number) => {
@@ -234,13 +337,20 @@ export const useRegistrarEntregaBatch = ({
 
   const totalEntregaGeneralBase = useMemo(() => {
     let total = 0;
+    // Suma cantidades de lotes seleccionados
     Object.values(entregaCantidades).forEach((lotesMap) => {
       Object.values(lotesMap).forEach((val) => {
         total += val || 0;
       });
     });
+    // Suma activos fijos seleccionados
+    Object.values(entregaCantidadesActivos).forEach((activosMap) => {
+      Object.values(activosMap).forEach((val) => {
+        total += val || 0;
+      });
+    });
     return total;
-  }, [entregaCantidades]);
+  }, [entregaCantidades, entregaCantidadesActivos]);
 
   const handleConfirmar = async () => {
     if (!idEmpleadoRecibe) {
@@ -251,6 +361,33 @@ export const useRegistrarEntregaBatch = ({
 
     const detallesParaApi: DTO_RegistrarEntregaDetalle[] = [];
 
+    // --- Activos fijos ---
+    Object.entries(entregaCantidadesActivos).forEach(([idDet, activosMap]) => {
+      const idDetalleReq = Number(idDet);
+      const detail = selectedDetalles.find(
+        (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+      );
+      if (!detail) return;
+
+      Object.entries(activosMap).forEach(([idAct, cant]) => {
+        if (cant > 0) {
+          const numIdActivo = Number(idAct);
+          const cBase = cant;
+          const cLote = cant; // Same as base
+          const cReq = cant; // Same as base because it's 1 unit always
+
+          detallesParaApi.push({
+            id_requerimiento_almacen_detalle: idDetalleReq,
+            id_activo_fijo: numIdActivo,
+            cantidad_base: cBase,
+            cantidad_lote: cLote,
+            cantidad_requerimiento: cReq,
+          });
+        }
+      });
+    });
+
+    // --- Productos con lote ---
     Object.entries(entregaCantidades).forEach(([idDet, lotesMap]) => {
       const idDetalleReq = Number(idDet);
       const detail = selectedDetalles.find(
@@ -281,7 +418,7 @@ export const useRegistrarEntregaBatch = ({
     });
 
     if (detallesParaApi.length === 0) {
-      setError("Debe entregar al menos 1 producto");
+      setError("Debe entregar al menos 1 producto o activo");
       return;
     }
 
@@ -297,6 +434,7 @@ export const useRegistrarEntregaBatch = ({
       });
 
       if (res.success) {
+        notifySuccess(res.message || "Entrega registrada exitosamente");
         // Calcular totales entregados por id_requerimiento_almacen_detalle
         const entregados: Record<number, number> = {};
         detallesParaApi.forEach((ent) => {
@@ -306,6 +444,7 @@ export const useRegistrarEntregaBatch = ({
 
         onSuccess(entregados);
       } else {
+        notifyError(res.message || "Error al registrar entrega batch");
         setError(res.message || "Error al registrar entrega batch");
       }
     } catch (err) {
@@ -316,11 +455,23 @@ export const useRegistrarEntregaBatch = ({
     }
   };
 
+  const activosFijosPorProducto = useMemo(() => {
+    const agrupado: Record<number, RES_ActivoFijoDisponible[]> = {};
+    activosFijos.forEach((a) => {
+      if (!agrupado[a.id_producto]) agrupado[a.id_producto] = [];
+      agrupado[a.id_producto].push(a);
+    });
+    return agrupado;
+  }, [activosFijos]);
+
   return {
     loading,
     selectedDetalles,
+    detallesActivoFijo,
     lotesPorProducto,
+    activosFijosPorProducto,
     entregaCantidades,
+    entregaCantidadesActivos,
     empleados,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
@@ -333,6 +484,7 @@ export const useRegistrarEntregaBatch = ({
     totalEntregaGeneralBase,
     handleCantChange,
     handleCantLoteChange,
+    handleCantActivoChange,
     handleConfirmar,
   };
 };

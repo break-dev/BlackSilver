@@ -60,6 +60,7 @@ export const InfoRequerimiento = ({
     seleccionarTodoLoPendiente,
     getStatusColor,
     logistica,
+    loadData,
   } = useGestionAtencion({
     idRequerimiento: requerimiento.id_requerimiento,
     onSuccess,
@@ -137,6 +138,7 @@ export const InfoRequerimiento = ({
           close: logistica.close,
           onSuccess: logistica.onSuccess,
         }}
+        loadData={loadData}
       />
     </Stack>
   );

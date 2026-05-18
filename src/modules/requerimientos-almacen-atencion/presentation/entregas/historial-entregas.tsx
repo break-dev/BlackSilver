@@ -205,8 +205,7 @@ export const HistorialEntregasRequerimiento = ({
                       c="zinc.3"
                       className="italic max-w-2xl leading-relaxed"
                     >
-                      {h.observacion ||
-                        "Sin observaciones adicionales reportadas durante esta entrega operativa."}
+                      {h.observacion || "Sin observaciones adicionales."}
                     </Text>
                   </div>
                 </div>
@@ -275,7 +274,7 @@ export const HistorialEntregasRequerimiento = ({
                             c="zinc.4"
                             className="uppercase tracking-widest leading-none"
                           >
-                            Lote:
+                            Lote/Activo:
                           </Text>
                           <Badge
                             variant="light"
@@ -283,7 +282,7 @@ export const HistorialEntregasRequerimiento = ({
                             size="sm"
                             className="font-bold tracking-wider"
                           >
-                            {d.correlativo}
+                            {d.correlativo || d.correlativo_activo}
                           </Badge>
                         </Group>
                       </div>
@@ -303,7 +302,7 @@ export const HistorialEntregasRequerimiento = ({
                             c="zinc.5"
                             className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
                           >
-                            {d.unidad_lote_abv || "UNI"}
+                            {d.unidad_lote_abv || "UND"}
                           </Text>
 
                           {d.unidad_lote_abv !== d.unidad_base_abv && (

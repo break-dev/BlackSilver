@@ -23,14 +23,23 @@ export interface RES_EntregaRequerimiento {
 export interface RES_DetalleEntregaRequerimiento {
   id_entrega_detalle: number;
   id_requerimiento_almacen_detalle: number;
+  //
+  id_lote_producto: number;
   correlativo: string; // del lote
-  producto: string;
   fecha_vencimiento: string | null;
+  //
+  id_activo_fijo: number;
+  correlativo_activo: string;
+  //
+  producto: string;
+  //
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimientoProducto;
+  //
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_requerimiento: number;
+  //
   unidad_lote: string;
   unidad_lote_abv: string;
   unidad_base: string;

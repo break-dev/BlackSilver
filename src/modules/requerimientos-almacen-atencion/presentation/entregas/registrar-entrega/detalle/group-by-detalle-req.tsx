@@ -2,17 +2,27 @@ import { Badge, Group, Text } from "@mantine/core";
 import { formatNumber } from "../../../../../../shared/functions/formatNumber";
 import type { DetalleRequerimientoExtendido } from "../../../../service/atencion.responses";
 import { LotesTable } from "./lotes/lotes-table";
+import { ActivosTable } from "./activos/activos-table";
 import type { RES_LoteDisponible } from "../../../../../../service/responses/lote-producto";
+import type { RES_ActivoFijoDisponible } from "../../../../../../service/responses/activo-fijo";
+import { TipoBien } from "../../../../../../shared/enums/_generic/tipo-bien";
 
 interface GroupByDetalleRequerimientoProps {
   detalle_req: DetalleRequerimientoExtendido;
   lotes: RES_LoteDisponible[];
+  activosFijos: RES_ActivoFijoDisponible[];
   index: number;
   entregaCantidades: Record<number, Record<number, number>>;
+  entregaCantidadesActivos: Record<number, Record<number, number>>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
     idLote: number,
+    cant: number,
+  ) => void;
+  handleCantActivoChange: (
+    idDetalle: number,
+    idActivo: number,
     cant: number,
   ) => void;
 }
@@ -20,18 +30,27 @@ interface GroupByDetalleRequerimientoProps {
 export const GroupByDetalleRequerimiento = ({
   detalle_req,
   lotes,
+  activosFijos,
   index,
   entregaCantidades,
+  entregaCantidadesActivos,
   handleCantChange,
   handleCantLoteChange,
+  handleCantActivoChange,
 }: GroupByDetalleRequerimientoProps) => {
   const idDetalleReq = detalle_req.id_requerimiento_almacen_detalle;
   const pendienteBase = detalle_req.pendiente_base;
+  const isActivoFijo = detalle_req.tipo_bien === TipoBien.ActivoFijo;
 
-  const tEntregadoDetalleActualBase = lotes.reduce(
-    (acc, l) => acc + (entregaCantidades[idDetalleReq]?.[l.id_lote] || 0),
-    0,
-  );
+  const tEntregadoDetalleActualBase = isActivoFijo
+    ? activosFijos.reduce(
+        (acc, a) => acc + (entregaCantidadesActivos[idDetalleReq]?.[a.id_activo] || 0),
+        0,
+      )
+    : lotes.reduce(
+        (acc, l) => acc + (entregaCantidades[idDetalleReq]?.[l.id_lote] || 0),
+        0,
+      );
 
   const isFirst = index === 0;
 
@@ -149,16 +168,28 @@ export const GroupByDetalleRequerimiento = ({
         </div>
       </div>
 
-      <LotesTable
-        lotes={lotes}
-        idDetalleReq={idDetalleReq}
-        pendienteBase={pendienteBase}
-        tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
-        entregaCantidades={entregaCantidades}
-        detalle_req={detalle_req}
-        handleCantChange={handleCantChange}
-        handleCantLoteChange={handleCantLoteChange}
-      />
+      {isActivoFijo ? (
+        <ActivosTable
+          activosFijos={activosFijos}
+          idDetalleReq={idDetalleReq}
+          pendienteBase={pendienteBase}
+          tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
+          entregaCantidadesActivos={entregaCantidadesActivos}
+          detalle_req={detalle_req}
+          handleCantActivoChange={handleCantActivoChange}
+        />
+      ) : (
+        <LotesTable
+          lotes={lotes}
+          idDetalleReq={idDetalleReq}
+          pendienteBase={pendienteBase}
+          tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
+          entregaCantidades={entregaCantidades}
+          detalle_req={detalle_req}
+          handleCantChange={handleCantChange}
+          handleCantLoteChange={handleCantLoteChange}
+        />
+      )}
     </div>
   );
 };

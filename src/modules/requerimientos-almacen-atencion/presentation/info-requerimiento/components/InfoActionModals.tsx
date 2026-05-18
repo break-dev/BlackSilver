@@ -40,6 +40,7 @@ interface InfoActionModalsProps {
   openedHistorialGlobal: boolean;
   closeHistorialGlobal: () => void;
   logistica: { opened: boolean; close: () => void; onSuccess: () => void };
+  loadData: () => void;
 }
 
 export const InfoActionModals = ({
@@ -69,6 +70,7 @@ export const InfoActionModals = ({
   openedHistorialGlobal,
   closeHistorialGlobal,
   logistica,
+  loadData,
 }: InfoActionModalsProps) => {
   return (
     <>
@@ -195,6 +197,7 @@ export const InfoActionModals = ({
           onCancel={closeEntregaBatch}
           onSuccess={() => {
             closeEntregaBatch();
+            loadData();
           }}
         />
       </ModalEstandar>
