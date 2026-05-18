@@ -3,6 +3,7 @@ import { CubeIcon } from "@heroicons/react/24/outline";
 import { cn } from "../../../../../shared/functions/cn";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { RES_OrdenCompraRecepcionDetalle } from "../../../../../service/responses/ordenes-compra/orden-compra-recepcion";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface Props {
   detalle: RES_OrdenCompraRecepcionDetalle;
@@ -43,9 +44,16 @@ export const RecepcionDetalleCard = ({ detalle, requiresTransfer }: Props) => {
       />
 
       <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
-        <Text size="xs" fw={900} className="text-white leading-tight">
-          {detalle.producto}
-        </Text>
+        <div className="flex flex-row justify-start gap-2">
+          <Text size="xs" fw={900} className="text-white leading-tight">
+            {detalle.producto}
+          </Text>
+          {detalle.tipo_bien == TipoBien.ActivoFijo && (
+            <Text size="xs" fw={500} className="text-white leading-tight">
+              {detalle.correlativo_activo_fijo}
+            </Text>
+          )}
+        </div>
 
         <Group gap="xs" wrap="nowrap" align="center">
           <CubeIcon

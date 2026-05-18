@@ -2,6 +2,7 @@ import { Group, Button, Text, Badge } from "@mantine/core";
 import {
   ArrowRightEndOnRectangleIcon,
   BuildingStorefrontIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { cn } from "../../../../../shared/functions/cn";
 import type {
@@ -12,25 +13,28 @@ import { RecepcionDetalleCard } from "./RecepcionDetalleCard";
 
 interface Props {
   recepcion: RES_OrdenCompraRecepcion;
-  idAlmacenDestino: number;
-  almacenDestino: string;
+  tipoDestino: "almacen" | "mina";
+  idDestino: number;
+  destinoNombre: string;
   detalles: RES_OrdenCompraRecepcionDetalle[];
   onTransfer: (
-    idAlmacenDestino: number,
+    tipoDestino: "almacen" | "mina",
+    idDestino: number,
     detalles: RES_OrdenCompraRecepcionDetalle[],
-    nombreAlmacen: string,
+    nombreDestino: string,
   ) => void;
 }
 
 export const RecepcionGrupoDestino = ({
   recepcion,
-  idAlmacenDestino,
-  almacenDestino,
+  tipoDestino,
+  idDestino,
+  destinoNombre,
   detalles,
   onTransfer,
 }: Props) => {
   const requiresTransfer =
-    idAlmacenDestino !== recepcion.id_almacen_recepcionista;
+    tipoDestino === "mina" || idDestino !== recepcion.id_almacen_recepcionista;
 
   const itemsPendingTransfer = detalles.filter(
     (d) => (d.cantidad_transferida_base || 0) < d.cantidad_recepcionada_base,
@@ -77,7 +81,9 @@ export const RecepcionGrupoDestino = ({
                 : "bg-zinc-800/40 border-zinc-800/60",
             )}
           >
-            {requiresTransfer ? (
+            {tipoDestino === "mina" ? (
+              <MapPinIcon className="w-4 h-4 text-indigo-400" />
+            ) : requiresTransfer ? (
               <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-indigo-400" />
             ) : (
               <BuildingStorefrontIcon className="w-4 h-4 text-emerald-400" />
@@ -108,13 +114,13 @@ export const RecepcionGrupoDestino = ({
             </Text>
             <Group gap={6} align="center">
               <Text size="xs" fw={900} className="text-white">
-                {requiresTransfer ? "Hacia: " : "Almacén: "}
+                {tipoDestino === "mina" ? "Hacia Mina: " : requiresTransfer ? "Hacia Almacén: " : "Almacén: "}
                 <span
                   className={
                     requiresTransfer ? "text-indigo-200" : "text-emerald-200"
                   }
                 >
-                  {almacenDestino}
+                  {destinoNombre}
                 </span>
               </Text>
             </Group>
@@ -128,9 +134,19 @@ export const RecepcionGrupoDestino = ({
             color={isPartiallyTransferredGroup ? "orange" : "indigo"}
             radius="xl"
             className="hover:scale-105 active:scale-95 transition-transform"
-            onClick={() =>
-              onTransfer(idAlmacenDestino, itemsPendingTransfer, almacenDestino)
-            }
+            onClick={() => {
+              if (tipoDestino === "mina") {
+                const firstDet = detalles[0];
+                onTransfer(
+                  "almacen",
+                  firstDet.id_almacen_destino,
+                  itemsPendingTransfer,
+                  firstDet.almacen_destino
+                );
+              } else {
+                onTransfer(tipoDestino, idDestino, itemsPendingTransfer, destinoNombre);
+              }
+            }}
           >
             {isPartiallyTransferredGroup
               ? "Completar Transferencia"

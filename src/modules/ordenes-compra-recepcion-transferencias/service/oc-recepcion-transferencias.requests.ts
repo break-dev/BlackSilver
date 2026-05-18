@@ -1,6 +1,11 @@
 export interface DTO_ItemRecepcionTransferencia {
   id_detalle_transferencia: number;
+  /** false para activos fijos (no aplica) */
+  es_activo_fijo: boolean;
+  /** Poblado solo si es_activo_fijo = true */
+  id_activo_fijo?: number | null;
   cantidad_base: number;
+  /** false para activos fijos */
   es_nuevo_lote: boolean;
   id_lote_existente: number | null;
   descripcion?: string | null;

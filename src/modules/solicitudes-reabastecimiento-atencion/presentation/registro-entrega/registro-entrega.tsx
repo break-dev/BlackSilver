@@ -25,6 +25,7 @@ export const RegistroEntrega = ({
     almacenesPrincipales,
     personal,
     lotesPorProducto,
+    activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
     idPersonalRecibe,
@@ -33,8 +34,10 @@ export const RegistroEntrega = ({
     observacion,
     setObservacion,
     entregaCantidades,
+    entregaCantidadesActivos,
     handleCantChange,
     handleCantLoteChange,
+    handleCantActivoChange,
     handleConfirmar,
     isProcessing,
     errorLocal,
@@ -80,10 +83,13 @@ export const RegistroEntrega = ({
             key={detalle.id_solicitud_detalle}
             detalle={detalle}
             lotes={lotesPorProducto[detalle.id_producto] || []}
+            activosFijos={activosFijos}
             entregaCantidades={entregaCantidades}
+            entregaCantidadesActivos={entregaCantidadesActivos}
             loadingLotes={loadingLotes}
             handleCantChange={handleCantChange}
             handleCantLoteChange={handleCantLoteChange}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>

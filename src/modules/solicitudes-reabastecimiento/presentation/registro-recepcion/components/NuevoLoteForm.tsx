@@ -191,7 +191,7 @@ export const NuevoLoteForm = ({
 
       {/* Fila 2: Vencimiento y Descripción */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-        {esPerecible && (
+        {esPerecible == true && (
           <CustomDatePicker
             label="Vencimiento"
             placeholder="Expiración"

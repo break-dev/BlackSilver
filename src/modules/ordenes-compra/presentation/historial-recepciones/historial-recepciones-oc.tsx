@@ -54,10 +54,18 @@ export const HistorialRecepcionesOC = ({
   const [selectedAlmacenDestino, setSelectedAlmacenDestino] = useState<
     number | null
   >(null);
+  const [selectedMinaDestino, setSelectedMinaDestino] = useState<
+    number | null
+  >(null);
   const [selectedAlmacenRecepcionista, setSelectedAlmacenRecepcionista] =
     useState<number | null>(null);
   const [selectedAlmacenDestinoNombre, setSelectedAlmacenDestinoNombre] =
     useState<string | null>(null);
+  const [selectedMinaDestinoNombre, setSelectedMinaDestinoNombre] =
+    useState<string | null>(null);
+  const [tipoDestinoParaTransferir, setTipoDestinoParaTransferir] = useState<
+    "almacen" | "mina"
+  >("almacen");
   const [
     selectedAlmacenRecepcionistaNombre,
     setSelectedAlmacenRecepcionistaNombre,
@@ -69,15 +77,28 @@ export const HistorialRecepcionesOC = ({
 
   const handleOpenTransferencia = (
     r: RES_OrdenCompraRecepcion,
-    idAlmacenDestino: number,
+    tipoDestino: "almacen" | "mina",
+    idDestino: number,
     detalles: RES_OrdenCompraRecepcionDetalle[],
-    nombreAlmacen: string,
+    nombreDestino: string,
   ) => {
     setSelectedRecepcion(r.id_recepcion);
     setSelectedAlmacenRecepcionista(r.id_almacen_recepcionista);
     setSelectedAlmacenRecepcionistaNombre(r.almacen_recepcionista);
-    setSelectedAlmacenDestino(idAlmacenDestino);
-    setSelectedAlmacenDestinoNombre(nombreAlmacen);
+    setTipoDestinoParaTransferir(tipoDestino);
+
+    if (tipoDestino === "mina") {
+      setSelectedMinaDestino(idDestino);
+      setSelectedMinaDestinoNombre(nombreDestino);
+      setSelectedAlmacenDestino(null);
+      setSelectedAlmacenDestinoNombre(null);
+    } else {
+      setSelectedAlmacenDestino(idDestino);
+      setSelectedAlmacenDestinoNombre(nombreDestino);
+      setSelectedMinaDestino(null);
+      setSelectedMinaDestinoNombre(null);
+    }
+
     setSelectedItemsIds(detalles.map((d) => d.id_recepcion_detalle));
     setSelectedDetalles(detalles);
     openTransferencia();
@@ -258,38 +279,43 @@ export const HistorialRecepcionesOC = ({
                 </Group>
 
                 <div className="flex flex-col gap-4 pb-4">
-                  {Object.entries(
+                  {Object.values(
                     (r.detalles || []).reduce(
                       (acc, det) => {
-                        if (!acc[det.id_almacen_destino]) {
-                          acc[det.id_almacen_destino] = {
-                            almacen_destino: det.almacen_destino,
+                        const isMina = !det.id_almacen_destino && det.id_mina_destino;
+                        const key = isMina ? `mina-${det.id_mina_destino}` : `almacen-${det.id_almacen_destino}`;
+                        if (!acc[key]) {
+                          acc[key] = {
+                            tipo: isMina ? "mina" : "almacen",
+                            id: isMina ? det.id_mina_destino : det.id_almacen_destino,
+                            nombre: isMina ? det.mina_destino : det.almacen_destino,
                             detalles: [],
                           };
                         }
-                        acc[det.id_almacen_destino].detalles.push(det);
+                        acc[key].detalles.push(det);
                         return acc;
                       },
                       {} as Record<
-                        number,
+                        string,
                         {
-                          almacen_destino: string;
-                          detalles: NonNullable<typeof r.detalles>;
+                          tipo: "almacen" | "mina";
+                          id: number;
+                          nombre: string;
+                          detalles: RES_OrdenCompraRecepcionDetalle[];
                         }
                       >,
                     ),
-                  ).map(([idAlmacenDestinoStr, group]) => {
-                    const idAlmacenDestino = Number(idAlmacenDestinoStr);
-
+                  ).map((group) => {
                     return (
                       <RecepcionGrupoDestino
-                        key={idAlmacenDestino}
+                        key={`${group.tipo}-${group.id}`}
                         recepcion={r}
-                        idAlmacenDestino={idAlmacenDestino}
-                        almacenDestino={group.almacen_destino}
+                        tipoDestino={group.tipo}
+                        idDestino={group.id}
+                        destinoNombre={group.nombre}
                         detalles={group.detalles}
-                        onTransfer={(idDestino, dets, nombre) =>
-                          handleOpenTransferencia(r, idDestino, dets, nombre)
+                        onTransfer={(tipo, idDestino, dets, nombre) =>
+                          handleOpenTransferencia(r, tipo, idDestino, dets, nombre)
                         }
                       />
                     );
@@ -304,7 +330,7 @@ export const HistorialRecepcionesOC = ({
       <ModalEstandar
         opened={openedTransferencia}
         close={closeTransferencia}
-        title={`Transferir a ${selectedAlmacenDestinoNombre || ""}`}
+        title={`Transferir a ${tipoDestinoParaTransferir === "mina" ? selectedMinaDestinoNombre || "" : selectedAlmacenDestinoNombre || ""}`}
         size="75%"
         rightSection={
           <Badge variant="dot" color="indigo" size="sm" radius="sm">
@@ -314,7 +340,9 @@ export const HistorialRecepcionesOC = ({
       >
         <RegistrarTransferenciaModal
           idRecepcion={selectedRecepcion!}
-          idAlmacenDestino={selectedAlmacenDestino!}
+          idAlmacenDestino={selectedAlmacenDestino}
+          idMinaDestino={selectedMinaDestino}
+          tipoDestino={tipoDestinoParaTransferir}
           idAlmacenRecepcionista={selectedAlmacenRecepcionista!}
           selectedItemsIds={selectedItemsIds}
           detallesRecepcion={selectedDetalles}

@@ -25,6 +25,8 @@ import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { ResumenRecepciones } from "../../solicitudes-reabastecimiento/presentation/ResumenRecepciones";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { Estado_SolicitudEntrega } from "../../../shared/enums/solicitud-reabastecimiento/solicitud-entrega";
+import { Estado_PrestamoEntrega } from "../../../shared/enums/prestamo-almacen/prestamo-entrega";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface HistorialProps {
   idSolicitud: number;
@@ -102,23 +104,23 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                       <Badge
                         variant="light"
                         color={
-                          (h.estado as any) === "Recibida" ||
-                          (h.estado as any) === "Recibido" ||
-                          h.estado === Estado_SolicitudEntrega.RecepcionCompleta
+                          h.estado ===
+                            Estado_SolicitudEntrega.RecepcionCompleta ||
+                          h.estado === Estado_PrestamoEntrega.RecepcionCompleta
                             ? "teal"
-                            : (h.estado as any) === "Procesada" ||
-                                (h.estado as any) ===
-                                  "Recepcionado Parcialmente" ||
+                            : h.estado ===
+                                  Estado_SolicitudEntrega.RecepcionadoParcialmente ||
                                 h.estado ===
-                                  Estado_SolicitudEntrega.RecepcionadoParcialmente
+                                  Estado_PrestamoEntrega.RecepcionadoParcialmente
                               ? "orange"
                               : "indigo"
                         }
                         size="xs"
                       >
-                        {(h.estado as any) === "Recepcionado Parcialmente" ||
+                        {h.estado ===
+                          Estado_SolicitudEntrega.RecepcionadoParcialmente ||
                         h.estado ===
-                          Estado_SolicitudEntrega.RecepcionadoParcialmente
+                          Estado_PrestamoEntrega.RecepcionadoParcialmente
                           ? "Parcial"
                           : h.estado}
                       </Badge>
@@ -232,25 +234,47 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                           {d.producto}
                         </Text>
 
-                        <Group gap="xs" wrap="nowrap" align="center">
-                          <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
-                          <Text
-                            size="11px"
-                            fw={800}
-                            c="zinc.4"
-                            className="uppercase tracking-widest leading-none"
-                          >
-                            Lote:
-                          </Text>
-                          <Badge
-                            variant="light"
-                            color="indigo"
-                            size="sm"
-                            className="font-bold tracking-wider"
-                          >
-                            {d.lote_correlativo}
-                          </Badge>
-                        </Group>
+                        {d.tipo_bien != TipoBien.ActivoFijo ? (
+                          <Group gap="xs" wrap="nowrap" align="center">
+                            <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                            <Text
+                              size="11px"
+                              fw={800}
+                              c="zinc.4"
+                              className="uppercase tracking-widest leading-none"
+                            >
+                              Lote:
+                            </Text>
+                            <Badge
+                              variant="light"
+                              color="indigo"
+                              size="sm"
+                              className="font-bold tracking-wider"
+                            >
+                              {d.lote_correlativo}
+                            </Badge>
+                          </Group>
+                        ) : (
+                          <Group gap="xs" wrap="nowrap" align="center">
+                            <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                            <Text
+                              size="11px"
+                              fw={800}
+                              c="zinc.4"
+                              className="uppercase tracking-widest leading-none"
+                            >
+                              Activo:
+                            </Text>
+                            <Badge
+                              variant="outline"
+                              color="yellow"
+                              size="sm"
+                              className="font-bold tracking-wider"
+                            >
+                              {d.correlativo_activo_fijo}
+                            </Badge>
+                          </Group>
+                        )}
                       </div>
 
                       <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
@@ -268,7 +292,7 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
                             c="zinc.5"
                             className="uppercase tracking-widest bg-zinc-900 px-2 py-0.5 rounded-md inline-block mr-1"
                           >
-                            {d.unidad_medida_lot_abv || "UNI"}
+                            {d.unidad_medida_lot_abv || "UND"}
                           </Text>
 
                           {d.id_unidad_medida_lot !=

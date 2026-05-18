@@ -6,6 +6,8 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 import { AuxService } from "../../../service/auxiliar.service";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
@@ -29,6 +31,9 @@ export const useRegistroEntrega = ({
     [],
   );
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
+  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
+    [],
+  );
 
   const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
@@ -38,6 +43,12 @@ export const useRegistroEntrega = ({
   const [entregaCantidades, setEntregaCantidades] = useState<
     Record<number, Record<number, number>>
   >({});
+
+  // Guardamos: idDetalle -> idActivo -> cantidad (0 o 1)
+  const [entregaCantidadesActivos, setEntregaCantidadesActivos] = useState<
+    Record<number, Record<number, number>>
+  >({});
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,20 +58,44 @@ export const useRegistroEntrega = ({
     );
   }, [detallesPrestamo, selectedItemsIds]);
 
-  const idsProductos = useMemo(() => {
-    return Array.from(new Set(itemsAEntregar.map((d) => d.id_producto)));
-  }, [itemsAEntregar]);
+  const detallesConLote = useMemo(
+    () => itemsAEntregar.filter((d) => d.tipo_bien !== TipoBien.ActivoFijo),
+    [itemsAEntregar],
+  );
 
-  // Cargar Empleados y Lotes iniciales
+  const detallesActivoFijo = useMemo(
+    () => itemsAEntregar.filter((d) => d.tipo_bien === TipoBien.ActivoFijo),
+    [itemsAEntregar],
+  );
+
+  const idsProductos = useMemo(() => {
+    return Array.from(new Set(detallesConLote.map((d) => d.id_producto)));
+  }, [detallesConLote]);
+
+  const idsActivoFijo = useMemo(() => {
+    return Array.from(new Set(detallesActivoFijo.map((d) => d.id_producto)));
+  }, [detallesActivoFijo]);
+
+  // Cargar Empleados, Lotes y Activos iniciales
   const cargarDatosIniciales = useCallback(async () => {
-    if (idsProductos.length === 0) return;
     setLoading(true);
     setError("");
+
     try {
-      const [resPers, resLotes] = await Promise.all([
+      const promises: Promise<any>[] = [
         AuxService.get_personal_externo(),
-        AuxService.get_lotes_disponibles(idAlmacenPrestamista, idsProductos),
-      ]);
+        idsProductos.length > 0
+          ? AuxService.get_lotes_disponibles(idAlmacenPrestamista, idsProductos)
+          : Promise.resolve({ success: true, data: [] }),
+        idsActivoFijo.length > 0
+          ? AuxService.get_activos_disponibles({
+              id_almacen: idAlmacenPrestamista,
+              id_producto: idsActivoFijo,
+            })
+          : Promise.resolve({ success: true, data: [] }),
+      ];
+
+      const [resPers, resLotes, resActivos] = await Promise.all(promises);
 
       if (resPers.success) {
         const persMapped = resPers.data.map((p: RES_PersonalExterno) => ({
@@ -69,7 +104,7 @@ export const useRegistroEntrega = ({
         }));
         setPersonal(persMapped);
 
-        // AUTO-SELECCIÓN: Si tenemos un personal por defecto (omitido en prestamos normalmente, o dejado null)
+        // AUTO-SELECCIÓN: Si tenemos un personal por defecto
         if (idEmpleadoDefault) {
           const exists = persMapped.some(
             (e: { value: string }) => e.value === String(idEmpleadoDefault),
@@ -91,9 +126,9 @@ export const useRegistroEntrega = ({
         );
         setLotes(castedLotes);
 
-        // Inicializar cantidades
+        // Inicializar cantidades de lotes
         const initial: Record<number, Record<number, number>> = {};
-        itemsAEntregar.forEach((d) => {
+        detallesConLote.forEach((d) => {
           initial[d.id_prestamo_detalle] = {};
           castedLotes
             .filter((l: RES_LoteDisponible) => l.id_producto === d.id_producto)
@@ -103,12 +138,37 @@ export const useRegistroEntrega = ({
         });
         setEntregaCantidades(initial);
       }
+
+      if (resActivos.success) {
+        setActivosFijos(resActivos.data);
+
+        // Inicializar cantidades de activos fijos
+        const initialActivos: Record<number, Record<number, number>> = {};
+        detallesActivoFijo.forEach((d) => {
+          initialActivos[d.id_prestamo_detalle] = {};
+          resActivos.data
+            .filter(
+              (a: RES_ActivoFijoDisponible) => a.id_producto === d.id_producto,
+            )
+            .forEach((a: RES_ActivoFijoDisponible) => {
+              initialActivos[d.id_prestamo_detalle][a.id_activo] = 0;
+            });
+        });
+        setEntregaCantidadesActivos(initialActivos);
+      }
     } catch {
       setError("Error al cargar datos necesarios");
     } finally {
       setLoading(false);
     }
-  }, [idsProductos, idAlmacenPrestamista, itemsAEntregar, idEmpleadoDefault]);
+  }, [
+    idsProductos,
+    idsActivoFijo,
+    idAlmacenPrestamista,
+    detallesConLote,
+    detallesActivoFijo,
+    idEmpleadoDefault,
+  ]);
 
   const handleCrearPersonal = async (dto: {
     nombre: string;
@@ -163,7 +223,7 @@ export const useRegistroEntrega = ({
           0,
         );
 
-        // Suma de este mismo lote para otros items (si los hubiera, aunque en prestamos suelen ser 1 item por producto)
+        // Suma de este mismo lote para otros items
         const otrosItemsSum = Object.entries(prev).reduce(
           (acc, [dId, lotesMap]) => {
             return Number(dId) === idDetalle
@@ -193,13 +253,57 @@ export const useRegistroEntrega = ({
     [lotes, itemsAEntregar],
   );
 
+  const handleCantActivoChange = useCallback(
+    (idDetalle: number, idActivo: number, val: number) => {
+      setEntregaCantidadesActivos((prev) => {
+        const prevCantidades = prev[idDetalle] || {};
+        const detail = itemsAEntregar.find(
+          (d) => d.id_prestamo_detalle === idDetalle,
+        );
+        if (!detail) return prev;
+
+        const pendienteMaxDetalle =
+          detail.cantidad_solicitada_base - detail.cantidad_prestada_base;
+
+        // Suma de otros activos para este mismo item
+        const totalOther = Object.entries(prevCantidades).reduce(
+          (sum, [aId, v]) => {
+            return Number(aId) === idActivo ? sum : sum + (v || 0);
+          },
+          0,
+        );
+
+        const finalValue = Number(val);
+        const maxAllowed = Math.max(
+          0,
+          Math.min(1, pendienteMaxDetalle - totalOther),
+        );
+        const safeValue = Math.max(0, Math.min(finalValue, maxAllowed));
+
+        if (prevCantidades[idActivo] === safeValue) return prev;
+
+        return {
+          ...prev,
+          [idDetalle]: {
+            ...prevCantidades,
+            [idActivo]: safeValue,
+          },
+        };
+      });
+    },
+    [itemsAEntregar],
+  );
+
   const totalEntregaGeneralBase = useMemo(() => {
     let total = 0;
     Object.values(entregaCantidades).forEach((lotesMap) => {
       Object.values(lotesMap).forEach((v) => (total += v || 0));
     });
+    Object.values(entregaCantidadesActivos).forEach((activosMap) => {
+      Object.values(activosMap).forEach((v) => (total += v || 0));
+    });
     return total;
-  }, [entregaCantidades]);
+  }, [entregaCantidades, entregaCantidadesActivos]);
 
   const registrarEntrega = useCallback(
     async (idPrestamo: number) => {
@@ -209,6 +313,26 @@ export const useRegistroEntrega = ({
       }
 
       const detallesParaApi: DTO_DetalleEntrega[] = [];
+
+      // --- Activos Fijos Seleccionados ---
+      Object.entries(entregaCantidadesActivos).forEach(
+        ([idDet, activosMap]) => {
+          const idDetalle = Number(idDet);
+          Object.entries(activosMap).forEach(([idA, cant]) => {
+            if (cant > 0) {
+              detallesParaApi.push({
+                id_prestamo_detalle: idDetalle,
+                id_activo_fijo: Number(idA),
+                cantidad_base: 1,
+                cantidad_lote: 1,
+                cantidad_solicitud: 1,
+              });
+            }
+          });
+        },
+      );
+
+      // --- Lotes normales ---
       Object.entries(entregaCantidades).forEach(([idDet, lotesMap]) => {
         const idDetalle = Number(idDet);
         const detail = itemsAEntregar.find(
@@ -237,7 +361,7 @@ export const useRegistroEntrega = ({
       });
 
       if (detallesParaApi.length === 0) {
-        notifyError("Seleccione al menos un lote para entregar");
+        notifyError("Seleccione al menos un lote o activo para entregar");
         return;
       }
 
@@ -269,6 +393,7 @@ export const useRegistroEntrega = ({
     [
       idPersonalRecibe,
       entregaCantidades,
+      entregaCantidadesActivos,
       itemsAEntregar,
       lotes,
       observacion,
@@ -283,7 +408,9 @@ export const useRegistroEntrega = ({
     loading,
     itemsAEntregar,
     lotes,
+    activosFijos,
     entregaCantidades,
+    entregaCantidadesActivos,
     personal,
     idPersonalRecibe,
     setIdPersonalRecibe,
@@ -294,6 +421,7 @@ export const useRegistroEntrega = ({
     totalEntregaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
+    handleCantActivoChange,
     registrarEntrega,
     handleCrearPersonal,
     // Evidencias

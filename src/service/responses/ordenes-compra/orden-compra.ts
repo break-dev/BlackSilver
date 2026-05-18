@@ -1,4 +1,5 @@
 import type { MetodoPago } from "../../../shared/enums/_generic/metodo-pago";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho-compra";
@@ -69,6 +70,7 @@ export interface RES_OrdenCompraDetalle {
   producto: string;
   es_auditable: boolean;
   es_perecible: boolean;
+  tipo_bien: TipoBien;
   //
   id_unidad_medida_oc: number;
   unidad_medida_oc: string;

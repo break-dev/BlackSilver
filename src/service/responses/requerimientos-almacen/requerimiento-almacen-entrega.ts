@@ -29,7 +29,7 @@ export interface RES_DetalleEntregaRequerimiento {
   fecha_vencimiento: string | null;
   //
   id_activo_fijo: number;
-  correlativo_activo: string;
+  correlativo_activo_fijo: string;
   //
   producto: string;
   //

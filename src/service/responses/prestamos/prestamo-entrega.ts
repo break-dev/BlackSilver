@@ -1,3 +1,4 @@
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_PrestamoEntrega,
   Estado_PrestamoEntregaDetalle,
@@ -36,10 +37,14 @@ export interface RES_PrestamoEntregaDetalle {
   id_producto: number;
   producto: string;
   es_perecible: boolean;
+  tipo_bien: TipoBien;
   //
-  id_lote_producto: number;
-  lote_correlativo: string;
+  id_lote_producto: number | null;
+  lote_correlativo: string | null;
   fecha_vencimiento: string | null;
+  //
+  id_activo_fijo: number | null;
+  correlativo_activo_fijo: string | null;
   // Seguna la unidad base del producto
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

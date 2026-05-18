@@ -6,6 +6,7 @@ import type { RES_PersonalExterno } from "../../../service/responses/personal-ex
 import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
 import { AuxService } from "../../../service/auxiliar.service";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,
@@ -57,6 +58,17 @@ export const useRegistroTransferenciaOC = ({
       if (personalRes.success && personalRes.data) {
         setPersonal(personalRes.data);
       }
+
+      // Auto-initialize asset items to 1 since they only transfer quantity 1
+      const initialCants: Record<number, Record<number, number>> = {};
+      itemsATransferir.forEach((item) => {
+        if (item.tipo_bien === TipoBien.ActivoFijo) {
+          initialCants[item.id_recepcion_detalle] = { 0: 1 };
+        }
+      });
+      if (Object.keys(initialCants).length > 0) {
+        setTransferenciaCantidades(initialCants);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -100,7 +112,9 @@ export const useRegistroTransferenciaOC = ({
 
   const registrarTransferencia = async (
     idRecepcion: number,
-    idAlmacenDestino: number,
+    idAlmacenDestino: number | null,
+    idMinaDestino?: number | null,
+    tipoDestino?: "almacen" | "mina",
   ) => {
     if (!idPersonalRecibe) return;
 
@@ -132,7 +146,8 @@ export const useRegistroTransferenciaOC = ({
 
     const payload: Record<string, unknown> = {
       id_orden_compra_recepcion: idRecepcion,
-      id_almacen_destino: idAlmacenDestino,
+      id_almacen_destino: tipoDestino === "mina" ? null : idAlmacenDestino,
+      id_mina_destino: tipoDestino === "mina" ? idMinaDestino : null,
       id_personal_recibe: Number(idPersonalRecibe),
       fecha_hora_transferencia: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       observacion,

@@ -9,7 +9,9 @@ import type { RES_LoteDisponible } from "../../../service/responses/lote-product
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { AuxService } from "../../../service/auxiliar.service";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
@@ -41,12 +43,16 @@ export const useRegistroEntrega = ({
   >([]);
   const [personal, setPersonal] = useState<RES_PersonalExterno[]>([]);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
+  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>([]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
   const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
+    Record<number, Record<number, number>>
+  >({});
+  const [entregaCantidadesActivos, setEntregaCantidadesActivos] = useState<
     Record<number, Record<number, number>>
   >({});
 
@@ -67,9 +73,23 @@ export const useRegistroEntrega = ({
     }));
   }, [baseDetalles]);
 
+  const detallesConLote = useMemo(
+    () => selectedDetalles.filter((d) => d.tipo_bien !== TipoBien.ActivoFijo),
+    [selectedDetalles],
+  );
+
+  const detallesActivoFijo = useMemo(
+    () => selectedDetalles.filter((d) => d.tipo_bien === TipoBien.ActivoFijo),
+    [selectedDetalles],
+  );
+
   const idsProductos = useMemo(() => {
-    return Array.from(new Set(selectedDetalles.map((d) => d.id_producto)));
-  }, [selectedDetalles]);
+    return Array.from(new Set(detallesConLote.map((d) => d.id_producto)));
+  }, [detallesConLote]);
+
+  const idsActivoFijo = useMemo(() => {
+    return Array.from(new Set(detallesActivoFijo.map((d) => d.id_producto)));
+  }, [detallesActivoFijo]);
 
   useEffect(() => {
     const loadAlmacenes = async () => {
@@ -132,20 +152,28 @@ export const useRegistroEntrega = ({
   };
 
   useEffect(() => {
-    if (idAlmacenEntrega && idsProductos.length > 0) {
-      const loadLotes = async () => {
+    if (idAlmacenEntrega && (idsProductos.length > 0 || idsActivoFijo.length > 0)) {
+      const loadLotesYActivos = async () => {
         setLoadingLotes(true);
         try {
-          const res = await AuxService.get_lotes_disponibles(
-            Number(idAlmacenEntrega),
-            idsProductos,
-          );
-          if (res.success) {
-            setLotes(res.data);
+          const [resLotes, resActivos] = await Promise.all([
+            idsProductos.length > 0
+              ? AuxService.get_lotes_disponibles(Number(idAlmacenEntrega), idsProductos)
+              : Promise.resolve({ success: true, data: [] }),
+            idsActivoFijo.length > 0
+              ? AuxService.get_activos_disponibles({
+                  id_almacen: Number(idAlmacenEntrega),
+                  id_producto: idsActivoFijo,
+                })
+              : Promise.resolve({ success: true, data: [] }),
+          ]);
+
+          if (resLotes.success) {
+            setLotes(resLotes.data);
             const initial: Record<number, Record<number, number>> = {};
-            selectedDetalles.forEach((det) => {
+            detallesConLote.forEach((det) => {
               initial[det.id_solicitud_detalle] = {};
-              res.data
+              resLotes.data
                 .filter((l) => l.id_producto === det.id_producto)
                 .forEach((l) => {
                   initial[det.id_solicitud_detalle][l.id_lote] = 0;
@@ -153,18 +181,34 @@ export const useRegistroEntrega = ({
             });
             setEntregaCantidades(initial);
           }
+
+          if (resActivos.success) {
+            setActivosFijos(resActivos.data);
+            const initialActivos: Record<number, Record<number, number>> = {};
+            detallesActivoFijo.forEach((det) => {
+              initialActivos[det.id_solicitud_detalle] = {};
+              resActivos.data
+                .filter((a) => a.id_producto === det.id_producto)
+                .forEach((a) => {
+                  initialActivos[det.id_solicitud_detalle][a.id_activo] = 0;
+                });
+            });
+            setEntregaCantidadesActivos(initialActivos);
+          }
         } catch (err) {
           console.error(err);
         } finally {
           setLoadingLotes(false);
         }
       };
-      loadLotes();
+      loadLotesYActivos();
     } else {
       setLotes([]);
+      setActivosFijos([]);
       setEntregaCantidades({});
+      setEntregaCantidadesActivos({});
     }
-  }, [idAlmacenEntrega, idsProductos, selectedDetalles]);
+  }, [idAlmacenEntrega, idsProductos, idsActivoFijo, detallesConLote, detallesActivoFijo]);
 
   const handleCantChange = useCallback(
     (idSolicitudDetalle: number, idLote: number, val: number) => {
@@ -221,6 +265,47 @@ export const useRegistroEntrega = ({
     [lotes, handleCantChange],
   );
 
+  const handleCantActivoChange = useCallback(
+    (idSolicitudDetalle: number, idActivo: number, val: number) => {
+      setEntregaCantidadesActivos((prev) => {
+        const finalValue = Math.max(0, Math.min(val, 1));
+        const prevCantidades = prev[idSolicitudDetalle] || {};
+
+        const detail = selectedDetalles.find(
+          (d) => d.id_solicitud_detalle === idSolicitudDetalle,
+        );
+        if (!detail) return prev;
+
+        const totalOther = Object.entries(prevCantidades).reduce(
+          (sum, [aId, v]) => {
+            if (Number(aId) === idActivo) return sum;
+            return sum + (v || 0);
+          },
+          0,
+        );
+
+        const pendienteMaxDetalle = detail.pendiente_base;
+
+        const maxAllowed = Math.max(
+          0,
+          Math.min(1, pendienteMaxDetalle - totalOther),
+        );
+        const safeValue = Math.max(0, Math.min(finalValue, maxAllowed));
+
+        if (prevCantidades[idActivo] === safeValue) return prev;
+
+        return {
+          ...prev,
+          [idSolicitudDetalle]: {
+            ...prevCantidades,
+            [idActivo]: safeValue,
+          },
+        };
+      });
+    },
+    [selectedDetalles],
+  );
+
   const lotesPorProducto = useMemo(() => {
     const acc: Record<number, RES_LoteDisponible[]> = {};
     lotes.forEach((l) => {
@@ -238,6 +323,23 @@ export const useRegistroEntrega = ({
 
     const detallesApi: DTO_EntregasDetalleReabastecimiento[] = [];
 
+    // --- Activos Fijos: Selección de Activos ---
+    Object.entries(entregaCantidadesActivos).forEach(([idDet, activosMap]) => {
+      const idSolicitudDetalle = Number(idDet);
+      Object.entries(activosMap).forEach(([idA, cant]) => {
+        if (cant > 0) {
+          detallesApi.push({
+            id_solicitud_detalle: idSolicitudDetalle,
+            id_activo_fijo: Number(idA),
+            cantidad_base: 1,
+            cantidad_lote: 1,
+            cantidad_solicitud: 1,
+          });
+        }
+      });
+    });
+
+    // --- Lotes Comunes ---
     Object.entries(entregaCantidades).forEach(([idDet, lotesCants]) => {
       const idSolicitudDetalle = Number(idDet);
       const detalle = selectedDetalles.find(
@@ -301,6 +403,7 @@ export const useRegistroEntrega = ({
     almacenesPrincipales,
     personal,
     lotesPorProducto,
+    activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
     idPersonalRecibe,
@@ -311,8 +414,10 @@ export const useRegistroEntrega = ({
     evidencias,
     setEvidencias,
     entregaCantidades,
+    entregaCantidadesActivos,
     handleCantChange,
     handleCantLoteChange,
+    handleCantActivoChange,
     handleConfirmar,
     isProcessing,
     errorLocal,

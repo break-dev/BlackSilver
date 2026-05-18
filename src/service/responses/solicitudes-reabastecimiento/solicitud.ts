@@ -1,4 +1,5 @@
 import type { Premura } from "../../../shared/enums/_generic/premura";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_Solicitud,
   Estado_SolicitudDetalle,
@@ -35,6 +36,7 @@ export interface RES_SolicitudDetalle {
   producto: string;
   es_auditable: boolean;
   stock_minimo_base: number;
+  tipo_bien: TipoBien;
   //
   id_activo_fijo_destino: number | null;
   correlativo_activo_fijo_destino: string | null;

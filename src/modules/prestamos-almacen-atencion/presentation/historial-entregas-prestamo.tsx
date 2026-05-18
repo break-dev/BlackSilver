@@ -29,6 +29,7 @@ import {
   Estado_PrestamoEntrega,
   Estado_PrestamoEntregaDetalle,
 } from "../../../shared/enums/prestamo-almacen/prestamo-entrega";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface Props {
   entregas: RES_PrestamoEntrega[];
@@ -275,25 +276,47 @@ export const HistorialEntregasPrestamo = ({ entregas, loading }: Props) => {
                           {d.producto}
                         </Text>
 
-                        <Group gap="xs" wrap="nowrap" align="center">
-                          <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
-                          <Text
-                            size="11px"
-                            fw={800}
-                            c="zinc.4"
-                            className="uppercase tracking-widest leading-none"
-                          >
-                            Lote:
-                          </Text>
-                          <Badge
-                            variant="light"
-                            color="indigo"
-                            size="sm"
-                            className="font-bold tracking-wider"
-                          >
-                            {d.lote_correlativo}
-                          </Badge>
-                        </Group>
+                        {d.tipo_bien == TipoBien.ActivoFijo ? (
+                          <Group gap="xs" wrap="nowrap" align="center">
+                            <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                            <Text
+                              size="11px"
+                              fw={800}
+                              c="zinc.4"
+                              className="uppercase tracking-widest leading-none"
+                            >
+                              Activo:
+                            </Text>
+                            <Badge
+                              variant="outline"
+                              color="yellow"
+                              size="sm"
+                              className="font-bold tracking-wider"
+                            >
+                              {d.correlativo_activo_fijo}
+                            </Badge>
+                          </Group>
+                        ) : (
+                          <Group gap="xs" wrap="nowrap" align="center">
+                            <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                            <Text
+                              size="11px"
+                              fw={800}
+                              c="zinc.4"
+                              className="uppercase tracking-widest leading-none"
+                            >
+                              Lote:
+                            </Text>
+                            <Badge
+                              variant="light"
+                              color="indigo"
+                              size="sm"
+                              className="font-bold tracking-wider"
+                            >
+                              {d.lote_correlativo}
+                            </Badge>
+                          </Group>
+                        )}
                       </div>
 
                       <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">

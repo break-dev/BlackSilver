@@ -3,6 +3,7 @@ import type {
   Estado_OCTransferenciaDetalle,
 } from "../../../shared/enums/orden-compra/orden-compra-transferencia";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export interface RES_OCTransferencia {
   id_transferencia: number;
@@ -41,9 +42,15 @@ export interface RES_OCTransferenciaDetalle {
   //
   id_producto: number;
   producto: string;
+  tipo_bien: TipoBien;
   //
-  id_lote_producto: number;
-  lote_correlativo: string;
+  // lote (null para activos fijos)
+  id_lote_producto: number | null;
+  lote_correlativo: string | null;
+  //
+  // activo (null para productos comunes)
+  id_activo_fijo: number | null;
+  correlativo_activo_fijo: string | null;
   //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

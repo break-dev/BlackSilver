@@ -6,6 +6,20 @@ export interface DTO_RecepcionOCItem {
   descripcion: string | null;
   fecha_vencimiento: string | null;
   fecha_ingreso: string | null;
+  /** Activos fijos: true indica que es un activo, no un lote */
+  es_activo_fijo?: boolean;
+  /** Almacén donde queda el activo (mutuamente exclusivo con id_mina_destino) */
+  id_almacen_destino?: number | null;
+  /** Mina donde queda el activo (mutuamente exclusivo con id_almacen_destino) */
+  id_mina_destino?: number | null;
+  /** Descripción libre del activo recibido */
+  descripcion_activo?: string | null;
+  /** Campos específicos del activo fijo para creación directa */
+  codigo?: string | null;
+  numero_serie?: string | null;
+  modelo?: string | null;
+  id_marca?: number | null;
+  yearcito_modelo?: number | null;
 }
 
 export interface DTO_OCComprobante {

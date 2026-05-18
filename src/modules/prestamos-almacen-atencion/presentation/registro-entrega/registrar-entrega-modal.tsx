@@ -25,7 +25,9 @@ export const RegistrarEntregaModal = ({
     loading,
     itemsAEntregar,
     lotes,
+    activosFijos,
     entregaCantidades,
+    entregaCantidadesActivos,
     personal,
     idPersonalRecibe,
     setIdPersonalRecibe,
@@ -38,6 +40,7 @@ export const RegistrarEntregaModal = ({
     totalEntregaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
+    handleCantActivoChange,
     registrarEntrega,
     handleCrearPersonal,
   } = useRegistroEntrega({
@@ -91,9 +94,12 @@ export const RegistrarEntregaModal = ({
             idDetalle={detalle.id_prestamo_detalle}
             detalle={detalle}
             lotes={lotes.filter((l) => l.id_producto === detalle.id_producto)}
+            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
             loadingLotes={false} // Ya vienen en el batch inicial
             entregaCantidades={entregaCantidades}
+            entregaCantidadesActivos={entregaCantidadesActivos}
             handleCantLoteChange={handleCantLoteChange}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>

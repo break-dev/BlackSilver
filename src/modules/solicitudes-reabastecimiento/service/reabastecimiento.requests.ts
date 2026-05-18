@@ -18,6 +18,13 @@ export interface DTO_SolicitudDetalle {
 export interface DTO_RecibirEntregaItem {
   id_solicitud_reabastecimiento_detalle: number;
   id_entrega_detalle: number | null; // Nuevo: para vincular con el detalle de la entrega
+  /** false para activos fijos */
+  es_activo_fijo?: boolean;
+  /** Poblado solo para activos fijos */
+  id_activo_fijo?: number | null;
+  /** Opcional: destino del activo recibido */
+  id_almacen_destino?: number | null;
+  id_mina_destino?: number | null;
   es_nuevo_lote: boolean;
   cantidad_base: number; // Nueva: permite desglosar cantidades
   id_lote_existente?: number | null;

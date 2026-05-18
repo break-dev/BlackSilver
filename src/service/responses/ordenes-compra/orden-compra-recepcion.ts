@@ -1,3 +1,4 @@
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_OrdenCompraRecepcion,
   Estado_OrdenCompraRecepcionDetalle,
@@ -34,11 +35,19 @@ export interface RES_OrdenCompraRecepcionDetalle {
   id_recepcion_detalle: number;
   id_orden_compra_recepcion: number;
   id_orden_compra_detalle: number;
-  id_almacen_destino: number;
-  almacen_destino: string;
   //
   id_producto: number;
   producto: string;
+  tipo_bien: TipoBien;
+  //
+  id_activo_fijo: number | null;
+  correlativo_activo_fijo: string | null;
+  //
+  id_almacen_destino: number;
+  almacen_destino: string;
+  //
+  id_mina_destino: number;
+  mina_destino: string;
   //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;

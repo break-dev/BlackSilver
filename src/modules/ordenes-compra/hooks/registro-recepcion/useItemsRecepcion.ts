@@ -4,6 +4,7 @@ import type { RES_OrdenCompraDetalle } from "../../../../service/responses/orden
 import type { RES_LoteDisponible } from "../../../../service/responses/lote-producto";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
 import { AuxService } from "../../../../service/auxiliar.service";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 
 export interface DTO_RecepcionLotExtendido extends DTO_RecepcionOCItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
@@ -20,6 +21,9 @@ export interface GroupedReceptionOC {
   id_unidad_oc: number;
   es_perecible: boolean;
   id_producto: number;
+  tipo_bien: string;
+  id_mina_destino: number | null;
+  id_almacen_destino: number | null;
   id_unidad_medida_base: number;
   contenido_por_presentacion_oc: number;
   selected: boolean;
@@ -48,43 +52,73 @@ export const useItemsRecepcion = ({
 
   const getInitialGroupedItems = useCallback(
     (details: RES_OrdenCompraDetalle[]): GroupedReceptionOC[] => {
-      return details
-        .filter((d) => {
-          const req = Number(d.cantidad_requerida_base || 0);
-          const rec = Number(d.cantidad_recepcionada_base || 0);
-          return rec < req - 0.001;
-        })
-        .map((d) => ({
-          id_orden_compra_detalle: d.id_orden_compra_detalle,
-          almacen_recepcionista: d.almacen_recepcionista,
-          producto: d.producto,
-          cantidad_requerida_base:
-            Number(d.cantidad_requerida_base || 0) -
-            Number(d.cantidad_recepcionada_base || 0),
-          unidad_base_abv: d.unidad_medida_base_abv,
-          unidad_oc_abv: d.unidad_medida_oc_abv,
-          id_unidad_oc: d.id_unidad_medida_oc,
-          es_perecible: !!d.es_perecible,
-          id_producto: d.id_producto,
-          id_unidad_medida_base: d.id_unidad_medida_base,
-          contenido_por_presentacion_oc: d.contenido_por_presentacion,
-          selected: true,
-          lots: [
-            {
-              id_orden_compra_detalle: d.id_orden_compra_detalle,
-              cantidad_base:
-                Number(d.cantidad_requerida_base || 0) -
-                Number(d.cantidad_recepcionada_base || 0),
-              es_nuevo_lote: false,
-              id_lote_existente: null,
-              fecha_ingreso: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-              fecha_vencimiento: null,
-              descripcion: null,
-              es_perecible: !!d.es_perecible,
-              ajustes: {},
-            },
-          ],
-        }));
+      const pendingDetails = details.filter((d) => {
+        const req = Number(d.cantidad_requerida_base || 0);
+        const rec = Number(d.cantidad_recepcionada_base || 0);
+        return rec < req - 0.001;
+      });
+
+      const firstItem = pendingDetails[0];
+      const targetIsAsset = firstItem ? firstItem.tipo_bien === TipoBien.ActivoFijo : false;
+
+      return pendingDetails.map((d) => ({
+        id_orden_compra_detalle: d.id_orden_compra_detalle,
+        almacen_recepcionista: d.almacen_recepcionista,
+        producto: d.producto,
+        cantidad_requerida_base:
+          Number(d.cantidad_requerida_base || 0) -
+          Number(d.cantidad_recepcionada_base || 0),
+        unidad_base_abv: d.unidad_medida_base_abv,
+        unidad_oc_abv: d.unidad_medida_oc_abv,
+        id_unidad_oc: d.id_unidad_medida_oc,
+        es_perecible: !!d.es_perecible,
+        id_producto: d.id_producto,
+        tipo_bien: d.tipo_bien,
+        id_mina_destino: d.id_mina_destino,
+        id_almacen_destino: d.id_almacen_recepcionista,
+        id_unidad_medida_base: d.id_unidad_medida_base,
+        contenido_por_presentacion_oc: d.contenido_por_presentacion,
+        selected: d.tipo_bien === TipoBien.ActivoFijo ? targetIsAsset : !targetIsAsset,
+        lots:
+          d.tipo_bien === TipoBien.ActivoFijo
+            ? [
+                {
+                  id_orden_compra_detalle: d.id_orden_compra_detalle,
+                  cantidad_base: 1,
+                  es_nuevo_lote: false,
+                  id_lote_existente: null,
+                  fecha_ingreso: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                  fecha_vencimiento: null,
+                  descripcion: null,
+                  es_perecible: false,
+                  ajustes: {},
+                  es_activo_fijo: true,
+                  id_almacen_destino: d.id_almacen_recepcionista,
+                  id_mina_destino: null,
+                  codigo: "",
+                  numero_serie: "",
+                  modelo: "",
+                  id_marca: null,
+                  yearcito_modelo: new Date().getFullYear(),
+                  descripcion_activo: "",
+                },
+              ]
+            : [
+                {
+                  id_orden_compra_detalle: d.id_orden_compra_detalle,
+                  cantidad_base:
+                    Number(d.cantidad_requerida_base || 0) -
+                    Number(d.cantidad_recepcionada_base || 0),
+                  es_nuevo_lote: false,
+                  id_lote_existente: null,
+                  fecha_ingreso: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                  fecha_vencimiento: null,
+                  descripcion: null,
+                  es_perecible: !!d.es_perecible,
+                  ajustes: {},
+                },
+              ],
+      }));
     },
     [],
   );
@@ -99,7 +133,11 @@ export const useItemsRecepcion = ({
 
   useEffect(() => {
     if (selectedAlmacenId && detalles.length > 0) {
-      const ids = Array.from(new Set(detalles.map((d) => d.id_producto)));
+      const itemsConLote = detalles.filter(
+        (d) => d.tipo_bien !== TipoBien.ActivoFijo,
+      );
+      const ids = Array.from(new Set(itemsConLote.map((d) => d.id_producto)));
+      if (ids.length === 0) return;
       AuxService.get_lotes_disponibles(selectedAlmacenId, ids)
         .then((res) => {
           if (res.success && res.data) {
@@ -153,9 +191,24 @@ export const useItemsRecepcion = ({
 
   const toggleSelection = (index: number) => {
     setGroupedItems((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], selected: !copy[index].selected };
-      return copy;
+      const targetItem = prev[index];
+      const nextSelected = !targetItem.selected;
+      const targetIsAsset = targetItem.tipo_bien === TipoBien.ActivoFijo;
+
+      return prev.map((item, idx) => {
+        if (idx === index) {
+          return { ...item, selected: nextSelected };
+        }
+
+        if (nextSelected) {
+          const isAsset = item.tipo_bien === TipoBien.ActivoFijo;
+          if (isAsset !== targetIsAsset) {
+            return { ...item, selected: false };
+          }
+        }
+
+        return item;
+      });
     });
   };
 
@@ -191,23 +244,50 @@ export const useItemsRecepcion = ({
       const newGrouped = [...prev];
       const g = { ...newGrouped[groupIndex] };
       const lots = [...g.lots];
-      const lastIdx = lots.length - 1;
-      const lastLot = { ...lots[lastIdx] };
 
-      const currentQty = Number(lastLot.cantidad_base) || 0;
-      const halfQty = Math.floor(currentQty / 2);
-      const restQty = currentQty - halfQty;
+      if (g.tipo_bien === TipoBien.ActivoFijo) {
+        if (lots.length >= g.cantidad_requerida_base) {
+          return prev;
+        }
+        lots.push({
+          id_orden_compra_detalle: g.id_orden_compra_detalle,
+          cantidad_base: 1,
+          es_nuevo_lote: false,
+          id_lote_existente: null,
+          fecha_ingreso: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+          fecha_vencimiento: null,
+          descripcion: null,
+          es_perecible: false,
+          ajustes: {},
+          es_activo_fijo: true,
+          id_almacen_destino: g.id_almacen_destino,
+          id_mina_destino: g.id_mina_destino,
+          codigo: "",
+          numero_serie: "",
+          modelo: "",
+          id_marca: null,
+          yearcito_modelo: new Date().getFullYear(),
+          descripcion_activo: "",
+        });
+      } else {
+        const lastIdx = lots.length - 1;
+        const lastLot = { ...lots[lastIdx] };
 
-      lastLot.cantidad_base = restQty;
-      lots[lastIdx] = lastLot;
+        const currentQty = Number(lastLot.cantidad_base) || 0;
+        const halfQty = Math.floor(currentQty / 2);
+        const restQty = currentQty - halfQty;
 
-      lots.push({
-        ...lastLot,
-        cantidad_base: halfQty,
-        id_lote_existente: null,
-        ajustes: {},
-        es_nuevo_lote: true,
-      });
+        lastLot.cantidad_base = restQty;
+        lots[lastIdx] = lastLot;
+
+        lots.push({
+          ...lastLot,
+          cantidad_base: halfQty,
+          id_lote_existente: null,
+          ajustes: {},
+          es_nuevo_lote: true,
+        });
+      }
 
       g.lots = lots;
       newGrouped[groupIndex] = g;

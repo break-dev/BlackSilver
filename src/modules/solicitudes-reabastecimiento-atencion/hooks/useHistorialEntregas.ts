@@ -22,7 +22,7 @@ export interface RES_SolicitudEntregaCombinada extends Omit<
   "detalles" | "estado"
 > {
   tipo_entrega: "Solicitud" | "Prestamo";
-  estado: Estado_SolicitudEntrega | string;
+  estado: Estado_SolicitudEntrega | Estado_PrestamoEntrega;
   detalles: RES_SolicitudEntregaDetalleCombinada[];
 }
 
@@ -68,15 +68,7 @@ export const useHistorialEntregas = (idSolicitud: number) => {
             ...ent,
             id_reabastecimiento_entrega: ent.id_prestamo_entrega,
             tipo_entrega: "Prestamo" as const,
-            estado:
-              ent.estado === Estado_PrestamoEntrega.EnDespacho
-                ? "Procesada"
-                : ent.estado === Estado_PrestamoEntrega.RecepcionCompleta
-                  ? "Recibida"
-                  : ent.estado ===
-                      Estado_PrestamoEntrega.RecepcionadoParcialmente
-                    ? "Recepcionado Parcialmente"
-                    : ent.estado,
+            estado: ent.estado,
             detalles: (ent.detalles || []).map(
               (d: RES_PrestamoEntregaDetalle) => ({
                 ...d,

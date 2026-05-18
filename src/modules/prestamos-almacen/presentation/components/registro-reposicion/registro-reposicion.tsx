@@ -42,6 +42,7 @@ export const RegistroReposicion = ({
   const {
     loadingAlmacenes,
     loadingLotes,
+    loadingActivos,
     almacenesPrincipales,
     personal,
     idAlmacenEntrega,
@@ -49,8 +50,11 @@ export const RegistroReposicion = ({
     idPersonalRecibe,
     setIdPersonalRecibe,
     lotesPorProducto,
+    activosFijos,
     reposicionCantidades,
+    reposicionCantidadesActivos,
     handleUpdateLoteQuantity,
+    handleCantActivoChange,
     handleCrearPersonal,
     handleConfirmar,
     isProcessing,
@@ -201,9 +205,13 @@ export const RegistroReposicion = ({
             key={detalle.id_prestamo_detalle}
             detalle={detalle}
             lotes={lotesPorProducto[detalle.id_producto] || []}
+            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
             reposicionCantidades={reposicionCantidades}
+            reposicionCantidadesActivos={reposicionCantidadesActivos}
             loadingLotes={loadingLotes}
+            loadingActivos={loadingActivos}
             handleUpdateLoteQuantity={handleUpdateLoteQuantity}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>

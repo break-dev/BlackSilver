@@ -11,7 +11,10 @@ export interface REQ_RegistrarReposicion {
 
 export interface REQ_DetalleReposicionItem {
   id_prestamo_detalle: number;
-  id_lote_producto: number;
+  /** Nulo cuando es activo fijo */
+  id_lote_producto?: number | null;
+  /** Poblado solo para activos fijos */
+  id_activo_fijo?: number | null;
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_prestamo: number;

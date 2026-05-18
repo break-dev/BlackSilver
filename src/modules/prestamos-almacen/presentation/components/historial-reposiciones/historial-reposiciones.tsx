@@ -29,6 +29,7 @@ import type {
   RES_PrestamoReposicion,
   RES_PrestamoReposicionDetalle,
 } from "../../../../../service/responses/prestamos/prestamo-reposicion";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface HistorialReposicionesProps {
   idPrestamo: number;
@@ -267,21 +268,49 @@ export const HistorialReposiciones = ({
                       {/* Highlight lateral en hover item */}
                       <div className="absolute left-0 top-0 w-1 h-full bg-teal-500/0 group-hover/item:bg-teal-500/50 transition-colors" />
 
-                      <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
-                        <Group gap="xs" wrap="nowrap" align="baseline">
-                          <CubeIcon className="w-3.5 h-3.5 text-teal-400" />
+                      {d.tipo_bien == TipoBien.ActivoFijo ? (
+                        <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                          <Group gap="xs" wrap="nowrap" align="baseline">
+                            <CubeIcon className="w-3.5 h-3.5 text-teal-400" />
+                            <Text
+                              size="sm"
+                              fw={900}
+                              className="text-white leading-tight"
+                            >
+                              {d.producto}
+                            </Text>
+                          </Group>
                           <Text
-                            size="sm"
-                            fw={900}
-                            className="text-white leading-tight"
+                            size="10px"
+                            c="zinc.5"
+                            fw={700}
+                            className="pl-5"
                           >
-                            {d.producto}
+                            Activo: {d.correlativo_activo_fijo}
                           </Text>
-                        </Group>
-                        <Text size="10px" c="zinc.5" fw={700} className="pl-5">
-                          LOTE: {d.lote_correlativo}
-                        </Text>
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                          <Group gap="xs" wrap="nowrap" align="baseline">
+                            <CubeIcon className="w-3.5 h-3.5 text-teal-400" />
+                            <Text
+                              size="sm"
+                              fw={900}
+                              className="text-white leading-tight"
+                            >
+                              {d.producto}
+                            </Text>
+                          </Group>
+                          <Text
+                            size="10px"
+                            c="zinc.5"
+                            fw={700}
+                            className="pl-5"
+                          >
+                            LOTE: {d.lote_correlativo}
+                          </Text>
+                        </div>
+                      )}
 
                       <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">
                         <Group gap="xs" wrap="nowrap" align="center">

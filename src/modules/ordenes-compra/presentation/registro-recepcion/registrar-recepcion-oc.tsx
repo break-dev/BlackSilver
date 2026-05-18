@@ -12,6 +12,7 @@ import {
   Select,
   TextInput,
   Loader,
+  SegmentedControl,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import {
@@ -32,6 +33,7 @@ import type {
 import { TipoComprobante } from "../../../../shared/enums/_generic/tipo-comprobante";
 import { Switch, NumberInput } from "@mantine/core";
 import { MONEDAS } from "../../../../shared/variables/monedas";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 
 interface Props {
   orden: RES_OrdenCompra;
@@ -49,6 +51,11 @@ export const RegistroRecepcionOC = (props: Props) => {
     loadingAlmacenes,
     selectedAlmacenId,
     setSelectedAlmacenId,
+    minas,
+    tipoDestinoActivos,
+    setTipoDestinoActivos,
+    selectedMinaDestinoId,
+    setSelectedMinaDestinoId,
     groupedItems,
     toggleSelection,
     setLotValue,
@@ -75,6 +82,8 @@ export const RegistroRecepcionOC = (props: Props) => {
     lotesDisponibles,
     loadingLotes,
     comprobante,
+    marcas,
+    loadingMarcas,
   } = useRegistroRecepcionOC(props);
 
   const inputClasses = {
@@ -87,6 +96,11 @@ export const RegistroRecepcionOC = (props: Props) => {
     label: "text-zinc-400 mb-0.5 font-bold text-[10px] ",
   };
 
+  const selectedGroups = groupedItems.filter((g) => g.selected);
+  const isReceivingAssets = selectedGroups.some(
+    (g) => g.tipo_bien === TipoBien.ActivoFijo,
+  );
+
   return (
     <form onSubmit={handleSubmit}>
       <Stack gap={6} p={4}>
@@ -97,79 +111,155 @@ export const RegistroRecepcionOC = (props: Props) => {
           className="bg-zinc-900/30 border border-zinc-800/80 shadow-md overflow-hidden relative"
         >
           <Stack gap={10}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Select
-                label="Almacén Recepcionista"
-                placeholder={
-                  loadingAlmacenes ? "Cargando almacenes..." : "Seleccione"
-                }
-                data={almacenes.map((a) => ({
-                  value: a.id_almacen.toString(),
-                  label: a.nombre,
-                }))}
-                value={selectedAlmacenId?.toString()}
-                onChange={(val: string | null) =>
-                  setSelectedAlmacenId(Number(val))
-                }
-                disabled={loadingAlmacenes}
-                required
-                radius="md"
-                size="xs"
-                classNames={inputClasses}
-                leftSection={
-                  <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
-                }
-                rightSection={
-                  loadingAlmacenes ? <Loader size={12} color="indigo" /> : null
-                }
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+              {/* Si es Activo Fijo, mostramos la opción de elegir destino */}
+              {isReceivingAssets && (
+                <div className="lg:col-span-2">
+                  <SegmentedControl
+                    size="xs"
+                    radius="md"
+                    value={tipoDestinoActivos}
+                    onChange={(val) =>
+                      setTipoDestinoActivos(val as "almacen" | "mina")
+                    }
+                    data={[
+                      { label: "Almacén", value: "almacen" },
+                      { label: "Mina", value: "mina" },
+                    ]}
+                    classNames={{
+                      root: "bg-zinc-900/80 border border-zinc-800 h-[38px] flex items-center",
+                      indicator: "bg-indigo-600",
+                      control: "text-zinc-400 font-bold",
+                    }}
+                  />
+                </div>
+              )}
 
-              <DateTimePicker
-                label="Fecha y Hora"
-                placeholder="Fecha/Hora"
-                value={fechaHoraRecepcion}
-                onChange={(val) => {
-                  if (typeof val === "string") {
-                    setFechaHoraRecepcion(new Date(val));
-                  } else {
-                    setFechaHoraRecepcion(val as Date | null);
+              {/* Select de Almacén Recepcionista - Se muestra SOLO si NO es activo fijo o si es activo fijo con destino Almacén */}
+              {(!isReceivingAssets || tipoDestinoActivos === "almacen") && (
+                <div className="lg:col-span-3">
+                  <Select
+                    label="Almacén Recepcionista"
+                    placeholder={
+                      loadingAlmacenes ? "Cargando almacenes..." : "Seleccione"
+                    }
+                    data={almacenes.map((a) => ({
+                      value: a.id_almacen.toString(),
+                      label: a.nombre,
+                    }))}
+                    value={selectedAlmacenId?.toString()}
+                    onChange={(val: string | null) =>
+                      setSelectedAlmacenId(Number(val))
+                    }
+                    disabled={loadingAlmacenes}
+                    required
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                    leftSection={
+                      <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
+                    }
+                    rightSection={
+                      loadingAlmacenes ? (
+                        <Loader size={12} color="indigo" />
+                      ) : null
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Si es Activo Fijo y el destino es Mina, mostramos SOLO el Select de Mina */}
+              {isReceivingAssets && tipoDestinoActivos === "mina" && (
+                <div className="lg:col-span-3">
+                  <Select
+                    label="Mina Destino"
+                    placeholder="Seleccione mina"
+                    data={minas.map((m) => ({
+                      value: m.id_mina.toString(),
+                      label: m.nombre,
+                    }))}
+                    value={selectedMinaDestinoId?.toString() || null}
+                    onChange={(val) =>
+                      setSelectedMinaDestinoId(val ? Number(val) : null)
+                    }
+                    required
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                    leftSection={
+                      <BuildingStorefrontIcon className="w-4 h-4 text-indigo-400" />
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Fecha y Hora */}
+              <div
+                className={
+                  isReceivingAssets ? "lg:col-span-2" : "lg:col-span-3"
+                }
+              >
+                <DateTimePicker
+                  label="Fecha y Hora"
+                  placeholder="Fecha/Hora"
+                  value={fechaHoraRecepcion}
+                  onChange={(val) => {
+                    if (typeof val === "string") {
+                      setFechaHoraRecepcion(new Date(val));
+                    } else {
+                      setFechaHoraRecepcion(val as Date | null);
+                    }
+                  }}
+                  required
+                  radius="md"
+                  size="xs"
+                  classNames={inputClasses}
+                  leftSection={
+                    <CalendarDaysIcon className="w-4 h-4 text-indigo-400" />
                   }
-                }}
-                required
-                radius="md"
-                size="xs"
-                classNames={inputClasses}
-                leftSection={
-                  <CalendarDaysIcon className="w-4 h-4 text-indigo-400" />
-                }
-              />
+                />
+              </div>
 
-              <TextInput
-                label="Serie Guía"
-                placeholder="T001"
-                value={serieGuia}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSerieGuia(e.currentTarget.value)
+              {/* Serie Guía */}
+              <div
+                className={
+                  isReceivingAssets ? "lg:col-span-2" : "lg:col-span-3"
                 }
-                radius="md"
-                size="xs"
-                classNames={inputClasses}
-                leftSection={
-                  <DocumentTextIcon className="w-4 h-4 text-zinc-500" />
-                }
-              />
+              >
+                <TextInput
+                  label="Serie Guía"
+                  placeholder="T001"
+                  value={serieGuia}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSerieGuia(e.currentTarget.value)
+                  }
+                  radius="md"
+                  size="xs"
+                  classNames={inputClasses}
+                  leftSection={
+                    <DocumentTextIcon className="w-4 h-4 text-zinc-500" />
+                  }
+                />
+              </div>
 
-              <TextInput
-                label="Número Guía"
-                placeholder="000001"
-                value={numeroGuia}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNumeroGuia(e.currentTarget.value)
+              {/* Número Guía */}
+              <div
+                className={
+                  isReceivingAssets ? "lg:col-span-2" : "lg:col-span-3"
                 }
-                radius="md"
-                size="xs"
-                classNames={inputClasses}
-              />
+              >
+                <TextInput
+                  label="Número Guía"
+                  placeholder="000001"
+                  value={numeroGuia}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setNumeroGuia(e.currentTarget.value)
+                  }
+                  radius="md"
+                  size="xs"
+                  classNames={inputClasses}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
@@ -504,6 +594,8 @@ export const RegistroRecepcionOC = (props: Props) => {
               allLotes={lotesDisponibles}
               loadingLotes={loadingLotes}
               cantidadTotalError={errors[`groups.${idx}.cantidad_total`]}
+              marcas={marcas}
+              loadingMarcas={loadingMarcas}
             />
           ))}
         </Stack>

@@ -4,11 +4,14 @@ import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { DetalleSolicitudExtendido } from "../../../service/solicitudes-atencion.responses";
 import { DetalleEntregaSection } from "./DetalleEntregaSection";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_ActivoFijoDisponible } from "../../../../../service/responses/activo-fijo";
 
 interface ProductoEntregaCardProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteDisponible[];
+  activosFijos: RES_ActivoFijoDisponible[];
   entregaCantidades: Record<number, Record<number, number>>;
+  entregaCantidadesActivos: Record<number, Record<number, number>>;
   loadingLotes: boolean;
   handleCantChange: (
     idSolicitudDetalle: number,
@@ -20,15 +23,23 @@ interface ProductoEntregaCardProps {
     idLote: number,
     val: number,
   ) => void;
+  handleCantActivoChange: (
+    idSolicitudDetalle: number,
+    idActivo: number,
+    val: number,
+  ) => void;
 }
 
 export const ProductoEntregaCard = ({
   detalle,
   lotes,
+  activosFijos,
   entregaCantidades,
+  entregaCantidadesActivos,
   loadingLotes,
   handleCantChange,
   handleCantLoteChange,
+  handleCantActivoChange,
 }: ProductoEntregaCardProps) => {
   return (
     <Paper
@@ -84,10 +95,13 @@ export const ProductoEntregaCard = ({
         <DetalleEntregaSection
           detalle={detalle}
           lotes={lotes}
+          activosFijos={activosFijos}
           entregaCantidades={entregaCantidades}
+          entregaCantidadesActivos={entregaCantidadesActivos}
           loadingLotes={loadingLotes}
           handleCantChange={handleCantChange}
           handleCantLoteChange={handleCantLoteChange}
+          handleCantActivoChange={handleCantActivoChange}
         />
       </Stack>
     </Paper>

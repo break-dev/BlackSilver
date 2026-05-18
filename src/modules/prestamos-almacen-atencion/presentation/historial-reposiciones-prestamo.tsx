@@ -41,6 +41,7 @@ import type { RES_PrestamoReposicion } from "../../../service/responses/prestamo
 import { Estado_PrestamoReposicion } from "../../../shared/enums/prestamo-almacen/prestamo-reposicion";
 import type { RES_PrestamoEntregaDetalle } from "../../../service/responses/prestamos/prestamo-entrega";
 import type { Estado_PrestamoEntregaDetalle } from "../../../shared/enums/prestamo-almacen/prestamo-entrega";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface Props {
   reposiciones: RES_PrestamoReposicion[];
@@ -105,7 +106,10 @@ export const HistorialReposicionesPrestamo = ({
       id_producto: d.id_producto,
       producto: d.producto,
       es_perecible: !!d.es_perecible,
+      tipo_bien: d.tipo_bien,
       id_lote_producto: d.id_lote_producto,
+      id_activo_fijo: d.id_activo_fijo,
+      correlativo_activo_fijo: d.correlativo_activo_fijo,
       lote_correlativo: d.lote_correlativo,
       fecha_vencimiento: null,
       id_unidad_medida_base: d.id_unidad_medida_base,
@@ -387,15 +391,38 @@ export const HistorialReposicionesPrestamo = ({
                       >
                         <div className="absolute left-0 top-0 w-1 h-full bg-indigo-500/0 group-hover/item:bg-indigo-500/50 transition-colors" />
 
-                        <div className="flex flex-row gap-2 pl-2 z-10 w-full pr-4 items-center">
-                          <CubeIcon className="w-4 h-4 text-indigo-400" />
-                          <Text
-                            size="sm"
-                            fw={900}
-                            className="text-white leading-tight"
-                          >
-                            {d.producto}
-                          </Text>
+                        <div className="flex flex-col gap-1.5 pl-2 z-10 w-full pr-4">
+                          <Group gap="xs" wrap="nowrap" align="baseline">
+                            <CubeIcon className="w-3.5 h-3.5 text-indigo-400" />
+                            <Text
+                              size="sm"
+                              fw={900}
+                              className="text-white leading-tight"
+                            >
+                              {d.producto}
+                            </Text>
+                          </Group>
+                          {d.tipo_bien === TipoBien.ActivoFijo ? (
+                            <Text
+                              size="10px"
+                              c="zinc.5"
+                              fw={700}
+                              className="pl-5 font-mono uppercase tracking-tight"
+                            >
+                              Activo: {d.correlativo_activo_fijo}
+                            </Text>
+                          ) : (
+                            d.lote_correlativo && (
+                              <Text
+                                size="10px"
+                                c="zinc.5"
+                                fw={700}
+                                className="pl-5 font-mono uppercase tracking-tight"
+                              >
+                                Lote: {d.lote_correlativo}
+                              </Text>
+                            )
+                          )}
                         </div>
 
                         <div className="text-right pl-4 pr-1 border-l border-zinc-800/50 min-w-max z-10 flex flex-col items-end justify-center">

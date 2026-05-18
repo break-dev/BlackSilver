@@ -1,3 +1,4 @@
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_PrestamoReposicion,
   Estado_PrestamoReposicionDetalle,
@@ -31,14 +32,18 @@ export interface RES_PrestamoReposicionDetalle {
   id_producto: number;
   producto: string;
   es_perecible: boolean;
+  tipo_bien: TipoBien;
   //
   id_unidad_medida_base: number;
   unidad_medida_base: string;
   unidad_medida_base_abv: string;
   cantidad_base: number;
   //
-  id_lote_producto: number;
-  lote_correlativo: string;
+  id_lote_producto: number | null;
+  lote_correlativo: string | null;
+  //
+  id_activo_fijo: number | null;
+  correlativo_activo_fijo: string | null;
   //
   id_unidad_medida_lote: number;
   unidad_medida_lote: string;

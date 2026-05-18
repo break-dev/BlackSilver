@@ -8,10 +8,13 @@ export interface DTO_RegistrarEntrega {
 
 export interface DTO_DetalleEntrega {
   id_prestamo_detalle: number;
-  id_lote_producto: number;
-  cantidad_lote: number; // Cantidad en la unidad del Lote
-  cantidad_base: number; // Cantidad en la unidad Base
-  cantidad_solicitud: number; // Cantidad en la unidad de la Solicitud Reabastecimiento
+  /** Nulo cuando es activo fijo */
+  id_lote_producto?: number | null;
+  /** Poblado solo para activos fijos */
+  id_activo_fijo?: number | null;
+  cantidad_lote: number;
+  cantidad_base: number;
+  cantidad_solicitud: number;
 }
 
 export interface DTO_RecibirEntregaReposicionItem {
@@ -43,6 +46,14 @@ export interface DTO_RegistrarRecepcionReposicion {
 
 export interface DTO_ItemRecepcionReposicion {
   id_reposicion_detalle: number;
+  /** false para activos fijos */
+  es_activo_fijo?: boolean;
+  /** Poblado solo para activos fijos */
+  id_activo_fijo?: number | null;
+  /** Opcional: destino del activo devuelto */
+  id_almacen_destino?: number | null;
+  id_mina_destino?: number | null;
+
   cantidad_base: number;
   es_nuevo_lote: boolean;
   id_lote_existente?: number;

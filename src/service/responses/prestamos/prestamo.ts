@@ -3,6 +3,7 @@ import type {
   Estado_PrestamoDetalle,
   EstadoReposicion_Prestamo,
 } from "../../../shared/enums/prestamo-almacen/prestamo";
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export interface RES_Prestamo {
   id_prestamo: number;
@@ -35,6 +36,7 @@ export interface RES_PrestamoDetalle {
   id_producto: number;
   stock_minimo_base: number;
   producto: string;
+  tipo_bien: TipoBien;
   //
   id_producto_destino: number | null;
   producto_destino: string | null;

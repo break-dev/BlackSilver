@@ -2,12 +2,16 @@ import { Badge, Group, Text } from "@mantine/core";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { DetalleSolicitudExtendido } from "../../../service/solicitudes-atencion.responses";
 import { LotesTable } from "./LotesTable";
+import { ActivosTable } from "./activos/activos-table";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_ActivoFijoDisponible } from "../../../../../service/responses/activo-fijo";
 
 interface DetalleEntregaSectionProps {
   detalle: DetalleSolicitudExtendido;
   lotes: RES_LoteDisponible[];
+  activosFijos: RES_ActivoFijoDisponible[];
   entregaCantidades: Record<number, Record<number, number>>;
+  entregaCantidadesActivos: Record<number, Record<number, number>>;
   loadingLotes: boolean;
   handleCantChange: (
     idSolicitudDetalle: number,
@@ -19,22 +23,40 @@ interface DetalleEntregaSectionProps {
     idLote: number,
     val: number,
   ) => void;
+  handleCantActivoChange: (
+    idSolicitudDetalle: number,
+    idActivo: number,
+    val: number,
+  ) => void;
 }
 
 export const DetalleEntregaSection = ({
   detalle,
   lotes,
+  activosFijos,
   entregaCantidades,
+  entregaCantidadesActivos,
   loadingLotes,
   handleCantChange,
   handleCantLoteChange,
+  handleCantActivoChange,
 }: DetalleEntregaSectionProps) => {
+  const isActivoFijo = detalle.tipo_bien === "Activo Fijo";
+
   const currentDetailQuantities =
     entregaCantidades[detalle.id_solicitud_detalle] || {};
-  const tEntregadoDetalleActualBase = lotes.reduce(
-    (acc, l) => acc + (currentDetailQuantities[l.id_lote] || 0),
-    0,
-  );
+  const currentDetailQuantitiesActivos =
+    entregaCantidadesActivos[detalle.id_solicitud_detalle] || {};
+
+  const tEntregadoDetalleActualBase = isActivoFijo
+    ? Object.values(currentDetailQuantitiesActivos).reduce(
+        (acc, v) => acc + (v || 0),
+        0,
+      )
+    : lotes.reduce(
+        (acc, l) => acc + (currentDetailQuantities[l.id_lote] || 0),
+        0,
+      );
 
   return (
     <div className="p-5 space-y-5 transition-colors hover:bg-zinc-800/10">
@@ -151,17 +173,31 @@ export const DetalleEntregaSection = ({
         </div>
       </div>
 
-      <LotesTable
-        lotes={lotes}
-        idSolicitudDetalle={detalle.id_solicitud_detalle}
-        unidadMedidaBaseAbv={detalle.unidad_medida_base_abv}
-        entregaCantidades={entregaCantidades}
-        pendienteBase={detalle.pendiente_base}
-        tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
-        loadingLotes={loadingLotes}
-        handleCantChange={handleCantChange}
-        handleCantLoteChange={handleCantLoteChange}
-      />
+      {isActivoFijo ? (
+        <ActivosTable
+          activosFijos={activosFijos.filter(
+            (a) => a.id_producto === detalle.id_producto,
+          )}
+          idDetalleSolicitud={detalle.id_solicitud_detalle}
+          pendienteBase={detalle.pendiente_base}
+          tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
+          entregaCantidadesActivos={entregaCantidadesActivos}
+          detalle={detalle}
+          handleCantActivoChange={handleCantActivoChange}
+        />
+      ) : (
+        <LotesTable
+          lotes={lotes}
+          idSolicitudDetalle={detalle.id_solicitud_detalle}
+          unidadMedidaBaseAbv={detalle.unidad_medida_base_abv}
+          entregaCantidades={entregaCantidades}
+          pendienteBase={detalle.pendiente_base}
+          tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
+          loadingLotes={loadingLotes}
+          handleCantChange={handleCantChange}
+          handleCantLoteChange={handleCantLoteChange}
+        />
+      )}
     </div>
   );
 };

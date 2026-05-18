@@ -5,6 +5,7 @@ import type { RES_OCTransferenciaDetalle } from "../../../service/responses/orde
 import type { DTO_ItemRecepcionTransferencia } from "../service/oc-recepcion-transferencias.requests";
 import { OCTransService } from "../service/oc-recepcion-transferencias.service";
 import { AuxService } from "../../../service/auxiliar.service";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 // -------------------------------------------------------
 // Tipos locales del formulario de recepción
@@ -25,6 +26,9 @@ export interface GrupoRecepcionTrans {
   contenido_por_presentacion_oc: number;
   id_unidad_medida_lot: number;
   contenido_por_presentacion_lot: number;
+  tipo_bien: string;
+  es_activo_fijo?: boolean;
+  id_activo_fijo?: number | null;
   selected: boolean;
   lots: DTO_LoteRecepcionTrans[];
 }
@@ -79,16 +83,23 @@ export const useRegistrarRecepcion = ({
         contenido_por_presentacion_oc: d.contenido_por_presentacion_oc,
         id_unidad_medida_lot: d.id_unidad_medida_lot,
         contenido_por_presentacion_lot: d.contenido_por_presentacion_lot,
+        tipo_bien: d.tipo_bien,
+        es_activo_fijo: d.tipo_bien === TipoBien.ActivoFijo,
+        id_activo_fijo: d.id_activo_fijo,
         selected: true,
-        lots: [
-          {
-            id_detalle_transferencia: d.id_transferencia_detalle,
-            cantidad_base: d.cantidad_transferida_base,
-            es_nuevo_lote: false,
-            id_lote_existente: null,
-            ajustes: {},
-          },
-        ],
+        lots:
+          d.tipo_bien === TipoBien.ActivoFijo
+            ? []
+            : [
+                {
+                  id_detalle_transferencia: d.id_transferencia_detalle,
+                  cantidad_base: d.cantidad_transferida_base,
+                  es_nuevo_lote: false,
+                  id_lote_existente: null,
+                  es_activo_fijo: false,
+                  ajustes: {},
+                },
+              ],
       }));
       setGroupedItems(grupos);
     }
@@ -97,7 +108,12 @@ export const useRegistrarRecepcion = ({
   // 2. Cargar lotes disponibles en el almacén destino
   useEffect(() => {
     if (!idAlmacenRecepcionista || detalles.length === 0) return;
-    const ids = Array.from(new Set(detalles.map((d) => d.id_producto)));
+    const itemsConLote = detalles.filter(
+      (d) => d.tipo_bien !== TipoBien.ActivoFijo,
+    );
+    const ids = Array.from(new Set(itemsConLote.map((d) => d.id_producto)));
+    if (ids.length === 0) return;
+
     setLoadingLotes(true);
     AuxService.get_lotes_disponibles(idAlmacenRecepcionista, ids)
       .then((res) => {
@@ -256,6 +272,8 @@ export const useRegistrarRecepcion = ({
     }
 
     selectedGroups.forEach((group) => {
+      if (group.tipo_bien === TipoBien.ActivoFijo) return;
+
       const gIdx = groupedItems.indexOf(group);
       let sumBase = 0;
       group.lots.forEach((lot, lIdx) => {
@@ -290,6 +308,18 @@ export const useRegistrarRecepcion = ({
       const finalItems: DTO_ItemRecepcionTransferencia[] = [];
 
       selectedGroups.forEach((group) => {
+        if (group.tipo_bien === TipoBien.ActivoFijo) {
+          finalItems.push({
+            id_detalle_transferencia: group.id_detalle_transferencia,
+            es_activo_fijo: true,
+            id_activo_fijo: group.id_activo_fijo,
+            cantidad_base: 1,
+            es_nuevo_lote: false,
+            id_lote_existente: null,
+          });
+          return;
+        }
+
         group.lots.forEach((lot) => {
           if (!lot.es_nuevo_lote && lot.ajustes) {
             Object.entries(lot.ajustes).forEach(([idLote, qty]) => {
@@ -298,6 +328,7 @@ export const useRegistrarRecepcion = ({
                 cantidad_base: Number(qty),
                 es_nuevo_lote: false,
                 id_lote_existente: Number(idLote),
+                es_activo_fijo: false,
                 descripcion: lot.descripcion,
                 fecha_ingreso: lot.fecha_ingreso,
                 fecha_vencimiento: lot.fecha_vencimiento,
@@ -309,6 +340,7 @@ export const useRegistrarRecepcion = ({
               cantidad_base: lot.cantidad_base,
               es_nuevo_lote: lot.es_nuevo_lote,
               id_lote_existente: lot.id_lote_existente,
+              es_activo_fijo: false,
               descripcion: lot.descripcion,
               fecha_ingreso: lot.fecha_ingreso,
               fecha_vencimiento: lot.fecha_vencimiento,
@@ -351,6 +383,8 @@ export const useRegistrarRecepcion = ({
     if (selected.length === 0) return false;
 
     for (const group of selected) {
+      if (group.tipo_bien === TipoBien.ActivoFijo) continue;
+
       let sumBase = 0;
       for (const lot of group.lots) {
         const cant = Number(lot.cantidad_base) || 0;

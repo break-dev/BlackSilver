@@ -8,7 +8,9 @@ import type { RES_OrdenCompraRecepcionDetalle } from "../../../../service/respon
 
 interface Props {
   idRecepcion: number;
-  idAlmacenDestino: number;
+  idAlmacenDestino: number | null;
+  idMinaDestino?: number | null;
+  tipoDestino?: "almacen" | "mina";
   idAlmacenRecepcionista: number;
   selectedItemsIds: number[];
   detallesRecepcion: RES_OrdenCompraRecepcionDetalle[];
@@ -19,6 +21,8 @@ interface Props {
 export const RegistrarTransferenciaModal = ({
   idRecepcion,
   idAlmacenDestino,
+  idMinaDestino,
+  tipoDestino = "almacen",
   idAlmacenRecepcionista,
   selectedItemsIds,
   detallesRecepcion,
@@ -109,7 +113,7 @@ export const RegistrarTransferenciaModal = ({
       <FormActions
         onCancel={onCancel}
         handleConfirmar={() =>
-          registrarTransferencia(idRecepcion, idAlmacenDestino)
+          registrarTransferencia(idRecepcion, idAlmacenDestino, idMinaDestino, tipoDestino)
         }
         isProcessing={submitting}
         canSave={!!idPersonalRecibe && totalTransferenciaGeneralBase > 0}

@@ -1,5 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import dayjs from "dayjs";
+import { AuxService } from "../../../../service/auxiliar.service";
+import type { RES_Marca } from "../../../../service/responses/marca";
+import type { RES_Mina } from "../../../../service/responses/mina";
 import { useNotify } from "../../../../hooks/useNotify";
 import { usePrint } from "../../../../hooks/usePrint";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
@@ -14,6 +17,7 @@ import { useAlmacenesRecepcion } from "./useAlmacenesRecepcion";
 import { useHeaderRecepcion } from "./useHeaderRecepcion";
 import { useItemsRecepcion } from "./useItemsRecepcion";
 import { useComprobanteRecepcion } from "./useComprobanteRecepcion";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 
 // Re-exportar interfaces para mantener compatibilidad con componentes que las consumen
 export type {
@@ -54,6 +58,44 @@ export const useRegistroRecepcionOC = ({
 
   const [loadingAction, setLoadingAction] = useState(false);
 
+  const [marcas, setMarcas] = useState<RES_Marca[]>([]);
+  const [loadingMarcas, setLoadingMarcas] = useState(false);
+
+  const [minas, setMinas] = useState<RES_Mina[]>([]);
+  const [loadingMinas, setLoadingMinas] = useState(false);
+  const [tipoDestinoActivos, setTipoDestinoActivos] = useState<"almacen" | "mina">("almacen");
+  const [selectedMinaDestinoId, setSelectedMinaDestinoId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const loadMarcas = async () => {
+      setLoadingMarcas(true);
+      try {
+        const res = await AuxService.get_marcas();
+        if (res.success) setMarcas(res.data);
+      } catch (error) {
+        console.error("Error al cargar marcas auxiliares", error);
+      } finally {
+        setLoadingMarcas(false);
+      }
+    };
+    loadMarcas();
+  }, []);
+
+  useEffect(() => {
+    const loadMinas = async () => {
+      setLoadingMinas(true);
+      try {
+        const res = await AuxService.get_minas();
+        if (res.success) setMinas(res.data);
+      } catch (error) {
+        console.error("Error al cargar minas auxiliares", error);
+      } finally {
+        setLoadingMinas(false);
+      }
+    };
+    loadMinas();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orden?.id_orden_compra || !selectedAlmacenId) return;
@@ -67,9 +109,26 @@ export const useRegistroRecepcionOC = ({
       return;
     }
 
+    const isReceivingAssets = selectedGroups.some((g) => g.tipo_bien === TipoBien.ActivoFijo);
+    if (isReceivingAssets && tipoDestinoActivos === "mina" && !selectedMinaDestinoId) {
+      notifyError("Debe seleccionar una mina de destino para los activos fijos.");
+      return;
+    }
+
     // Validaciones detalladas por producto
     selectedGroups.forEach((group) => {
       const gIdx = items.groupedItems.indexOf(group);
+
+      if (group.tipo_bien === TipoBien.ActivoFijo) {
+        group.lots.forEach((lot, lIdx) => {
+          if (!lot.codigo || !lot.codigo.trim()) {
+            newErrors[`groups.${gIdx}.lots.${lIdx}.codigo`] =
+              "Código requerido.";
+            hasErrors = true;
+          }
+        });
+        return;
+      }
       let sumBase = 0;
 
       group.lots.forEach((lot, lIdx) => {
@@ -127,6 +186,32 @@ export const useRegistroRecepcionOC = ({
     try {
       const finalItems: DTO_RecepcionOCItem[] = [];
       selectedGroups.forEach((group) => {
+        if (group.tipo_bien === TipoBien.ActivoFijo) {
+          group.lots.forEach((lot) => {
+            finalItems.push({
+              id_orden_compra_detalle: group.id_orden_compra_detalle,
+              cantidad_base: 1, // En activos fijos cada item es 1
+              es_nuevo_lote: false,
+              es_activo_fijo: true,
+              id_almacen_destino: tipoDestinoActivos === "almacen" ? selectedAlmacenId : null,
+              id_mina_destino: tipoDestinoActivos === "mina" ? selectedMinaDestinoId : null,
+              id_lote_existente: null,
+              descripcion: lot.descripcion,
+              fecha_vencimiento: null,
+              fecha_ingreso: lot.fecha_ingreso
+                ? dayjs(lot.fecha_ingreso).format("YYYY-MM-DD HH:mm:ss")
+                : null,
+              codigo: lot.codigo || null,
+              numero_serie: lot.numero_serie || null,
+              modelo: lot.modelo || null,
+              id_marca: lot.id_marca || null,
+              yearcito_modelo: lot.yearcito_modelo || null,
+              descripcion_activo: lot.descripcion_activo || lot.descripcion || null,
+            });
+          });
+          return;
+        }
+
         group.lots.forEach((lot) => {
           if (!lot.es_nuevo_lote && lot.ajustes) {
             Object.entries(lot.ajustes).forEach(([idLote, qtyAjuste]) => {
@@ -232,6 +317,14 @@ export const useRegistroRecepcionOC = ({
     selectedAlmacenId,
     setSelectedAlmacenId,
 
+    // Minas
+    minas,
+    loadingMinas,
+    tipoDestinoActivos,
+    setTipoDestinoActivos,
+    selectedMinaDestinoId,
+    setSelectedMinaDestinoId,
+
     // Items/Productos
     ...items,
 
@@ -245,5 +338,9 @@ export const useRegistroRecepcionOC = ({
     loadingAction,
     handleSubmit,
     isFormValid,
+
+    // Marcas auxiliares
+    marcas,
+    loadingMarcas,
   };
 };

@@ -12,6 +12,7 @@ import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida"
 import type { RES_Solicitud } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
+import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 interface Props {
   onSuccess: (item: RES_Solicitud) => void;
@@ -217,6 +218,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
+      isActivoFijo: productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo,
       canAdd: idProducto && idUnidadMedida && cantidad > 0,
     },
     status: {

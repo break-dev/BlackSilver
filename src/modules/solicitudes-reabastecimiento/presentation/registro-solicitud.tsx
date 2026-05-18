@@ -80,7 +80,7 @@ export const RegistroSolicitud = ({
       observacion,
       setObservacion,
     },
-    derived: { sonUnidadesIdenticas, productoSeleccionado, canAdd },
+    derived: { sonUnidadesIdenticas, productoSeleccionado, isActivoFijo, canAdd },
     status: { submitting, loadingCatalogs, error },
     actions: { agregarItem, eliminarItem, handleSubmit, cargarCatalogos },
   } = useRegistroSolicitud({ onSuccess });
@@ -241,6 +241,7 @@ export const RegistroSolicitud = ({
                   }))}
                   value={idUnidadMedida ? String(idUnidadMedida) : null}
                   onChange={(val) => setIdUnidadMedida(Number(val))}
+                  disabled={isActivoFijo}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"

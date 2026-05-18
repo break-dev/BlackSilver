@@ -3,39 +3,59 @@ import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import type { RES_ActivoFijoDisponible } from "../../../../../service/responses/activo-fijo";
 import { LotesTableRepo } from "./LotesTableRepo";
+import { ActivosTableRepo } from "./ActivosTableRepo";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface ProductoRepoCardProps {
   detalle: RES_PrestamoDetalle;
   lotes: RES_LoteDisponible[];
+  activosFijos: RES_ActivoFijoDisponible[];
   reposicionCantidades: Record<number, Record<number, number>>;
+  reposicionCantidadesActivos: Record<number, Record<number, number>>;
   loadingLotes: boolean;
+  loadingActivos: boolean;
   handleUpdateLoteQuantity: (
     idDetalle: number,
     idLote: number,
     valBase: number,
+  ) => void;
+  handleCantActivoChange: (
+    idDetalle: number,
+    idActivo: number,
+    cant: number,
   ) => void;
 }
 
 export const ProductoRepoCard = ({
   detalle,
   lotes,
+  activosFijos,
   reposicionCantidades,
+  reposicionCantidadesActivos,
   loadingLotes,
+  loadingActivos,
   handleUpdateLoteQuantity,
+  handleCantActivoChange,
 }: ProductoRepoCardProps) => {
-  const currentDetailQuantities =
-    reposicionCantidades[detalle.id_prestamo_detalle] || {};
+  const isActivo = detalle.tipo_bien === TipoBien.ActivoFijo;
+
+  const currentDetailQuantities = isActivo
+    ? reposicionCantidadesActivos[detalle.id_prestamo_detalle] || {}
+    : reposicionCantidades[detalle.id_prestamo_detalle] || {};
+
   const totalAsignadoBase = Object.values(currentDetailQuantities).reduce(
-    (sum, val) => sum + val,
+    (sum, val) => sum + (val || 0),
     0,
   );
+
   const factor = Number(detalle.contenido_por_presentacion || 1);
-  const totalAsignadoSolicitud = totalAsignadoBase / factor;
+  const totalAsignadoSolicitud = isActivo ? totalAsignadoBase : totalAsignadoBase / factor;
 
   const faltanteSolicitud =
     detalle.cantidad_prestada - detalle.cantidad_repuesta;
-  const faltanteBase = faltanteSolicitud * factor;
+  const faltanteBase = isActivo ? faltanteSolicitud : faltanteSolicitud * factor;
 
   const esCompletado = totalAsignadoBase >= faltanteBase;
 
@@ -119,15 +139,27 @@ export const ProductoRepoCard = ({
 
         <Divider color="zinc.800" variant="dashed" />
 
-        <LotesTableRepo
-          lotes={lotes}
-          idDetalle={detalle.id_prestamo_detalle}
-          unidadMedidaBaseAbv={detalle.unidad_medida_pr_abv}
-          reposicionCantidades={reposicionCantidades}
-          pendienteBase={faltanteBase}
-          loadingLotes={loadingLotes}
-          handleUpdateLoteQuantity={handleUpdateLoteQuantity}
-        />
+        {isActivo ? (
+          <ActivosTableRepo
+            activosFijos={activosFijos}
+            idDetalle={detalle.id_prestamo_detalle}
+            pendienteBase={faltanteBase}
+            tRepuestoDetalleActualBase={totalAsignadoBase}
+            reposicionCantidadesActivos={reposicionCantidadesActivos}
+            loadingActivos={loadingActivos}
+            handleCantActivoChange={handleCantActivoChange}
+          />
+        ) : (
+          <LotesTableRepo
+            lotes={lotes}
+            idDetalle={detalle.id_prestamo_detalle}
+            unidadMedidaBaseAbv={detalle.unidad_medida_pr_abv}
+            reposicionCantidades={reposicionCantidades}
+            pendienteBase={faltanteBase}
+            loadingLotes={loadingLotes}
+            handleUpdateLoteQuantity={handleUpdateLoteQuantity}
+          />
+        )}
       </Stack>
     </Paper>
   );

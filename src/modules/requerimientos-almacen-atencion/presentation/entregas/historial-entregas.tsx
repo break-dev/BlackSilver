@@ -282,7 +282,7 @@ export const HistorialEntregasRequerimiento = ({
                             size="sm"
                             className="font-bold tracking-wider"
                           >
-                            {d.correlativo || d.correlativo_activo}
+                            {d.correlativo || d.correlativo_activo_fijo}
                           </Badge>
                         </Group>
                       </div>

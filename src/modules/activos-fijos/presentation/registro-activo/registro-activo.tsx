@@ -80,7 +80,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setSegmentedKey((prev) => prev + 1);
-    }, 150);
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 

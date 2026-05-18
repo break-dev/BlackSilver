@@ -1,13 +1,13 @@
 import { Stack, Group, Button } from "@mantine/core";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useRegistroRecepcion } from "../../hooks/useRegistroRecepcion";
+import type { RES_PrestamoEntregaDetalleExtendido } from "../../hooks/useRegistroRecepcion";
 import { ProductoRecepcionCard } from "./components/ProductoRecepcionCard";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
-import type { RES_PrestamoEntregaDetalle } from "../../../../service/responses/prestamos/prestamo-entrega";
 
 interface Props {
   idAlmacenSolicitante: number;
-  detalles: RES_PrestamoEntregaDetalle[];
+  detalles: RES_PrestamoEntregaDetalleExtendido[];
   onSuccess: (lotesNuevos?: RES_TicketLote[]) => void;
   idEntrega?: number;
   tipoEntrega?: "Solicitud" | "Prestamo" | "Reposicion";
@@ -28,6 +28,7 @@ export const RegistroRecepcion = ({
     addLot,
     removeLot,
     updateTabularAdjustment,
+    toggleActivoSeleccionado,
     getLotError,
     loadingAction,
     handleSubmit,
@@ -58,6 +59,7 @@ export const RegistroRecepcion = ({
             addLot={addLot}
             removeLot={removeLot}
             updateTabularAdjustment={updateTabularAdjustment}
+            toggleActivoSeleccionado={toggleActivoSeleccionado}
             getLotError={getLotError}
             lotesDisponibles={lotesDisponibles}
             loadingLotes={loadingLotesDisp}

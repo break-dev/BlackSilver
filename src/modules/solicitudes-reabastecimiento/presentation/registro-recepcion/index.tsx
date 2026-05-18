@@ -38,6 +38,7 @@ export const RegistroRecepcion = (props: Props) => {
     addLot,
     removeLot,
     updateTabularAdjustment,
+    toggleActivoSeleccionado,
     getLotError,
     loadingAction,
     handleSubmit,
@@ -223,6 +224,7 @@ export const RegistroRecepcion = (props: Props) => {
               addLot={addLot}
               removeLot={removeLot}
               updateTabularAdjustment={updateTabularAdjustment}
+              toggleActivoSeleccionado={toggleActivoSeleccionado}
               getLotError={getLotError}
               unidades={unidades}
               loadingUnidades={loadingUnidades}

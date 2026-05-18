@@ -2,18 +2,28 @@ import { Badge, Group, Paper, Text } from "@mantine/core";
 import { CubeIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { LotesTable } from "./LotesTable";
+import { ActivosTable } from "./activos/activos-table";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
+import type { RES_ActivoFijoDisponible } from "../../../../../service/responses/activo-fijo";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface ProductoEntregaCardProps {
   idDetalle: number;
   detalle: RES_PrestamoDetalle;
   lotes: RES_LoteDisponible[];
+  activosFijos: RES_ActivoFijoDisponible[];
   loadingLotes: boolean;
   entregaCantidades: Record<number, Record<number, number>>;
+  entregaCantidadesActivos: Record<number, Record<number, number>>;
   handleCantLoteChange: (
     idDetalle: number,
     idLote: number,
+    val: number,
+  ) => void;
+  handleCantActivoChange: (
+    idDetalle: number,
+    idActivo: number,
     val: number,
   ) => void;
 }
@@ -22,16 +32,28 @@ export const ProductoEntregaCard = ({
   idDetalle,
   detalle,
   lotes,
+  activosFijos,
   loadingLotes,
   entregaCantidades,
+  entregaCantidadesActivos,
   handleCantLoteChange,
+  handleCantActivoChange,
 }: ProductoEntregaCardProps) => {
+  const isActivo = detalle.tipo_bien === TipoBien.ActivoFijo;
+
   const pendienteBase =
     (detalle.cantidad_solicitada_base || 0) -
     (detalle.cantidad_prestada_base || 0);
-  const totalDespachadoActualmente = Object.values(
-    entregaCantidades[idDetalle] || {},
-  ).reduce((sum, val) => sum + (val || 0), 0);
+
+  const totalDespachadoActualmente = isActivo
+    ? Object.values(entregaCantidadesActivos[idDetalle] || {}).reduce(
+        (sum, val) => sum + (val || 0),
+        0,
+      )
+    : Object.values(entregaCantidades[idDetalle] || {}).reduce(
+        (sum, val) => sum + (val || 0),
+        0,
+      );
 
   const ratio = detalle.contenido_por_presentacion || 1;
 
@@ -176,17 +198,29 @@ export const ProductoEntregaCard = ({
           </div>
         </div>
 
-        <LotesTable
-          idDetalle={idDetalle}
-          detalle={detalle}
-          lotes={lotes}
-          loading={loadingLotes}
-          entregaCantidades={entregaCantidades}
-          handleCantLoteChange={handleCantLoteChange}
-          unidadAbv={detalle.unidad_medida_pr_abv}
-          baseAbv={detalle.unidad_medida_base_abv}
-          contenidoPorPresentacion={ratio}
-        />
+        {isActivo ? (
+          <ActivosTable
+            idDetallePrestamo={idDetalle}
+            detalle={detalle}
+            activosFijos={activosFijos}
+            pendienteBase={pendienteBase}
+            tEntregadoDetalleActualBase={totalDespachadoActualmente}
+            entregaCantidadesActivos={entregaCantidadesActivos}
+            handleCantActivoChange={handleCantActivoChange}
+          />
+        ) : (
+          <LotesTable
+            idDetalle={idDetalle}
+            detalle={detalle}
+            lotes={lotes}
+            loading={loadingLotes}
+            entregaCantidades={entregaCantidades}
+            handleCantLoteChange={handleCantLoteChange}
+            unidadAbv={detalle.unidad_medida_pr_abv}
+            baseAbv={detalle.unidad_medida_base_abv}
+            contenidoPorPresentacion={ratio}
+          />
+        )}
       </div>
     </Paper>
   );

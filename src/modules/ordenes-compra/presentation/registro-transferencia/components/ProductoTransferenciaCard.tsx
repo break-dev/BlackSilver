@@ -4,6 +4,7 @@ import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { LotesTableTransferencia } from "./LotesTableTransferencia";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import type { RES_OrdenCompraRecepcionDetalle } from "../../../../../service/responses/ordenes-compra/orden-compra-recepcion";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface ProductoTransferenciaCardProps {
   idDetalle: number;
@@ -128,18 +129,34 @@ export const ProductoTransferenciaCard = ({
           </div>
         </div>
 
-        <LotesTableTransferencia
-          idDetalle={idDetalle}
-          detalle={detalle}
-          lotes={lotes}
-          loading={loadingLotes}
-          transferenciaCantidades={transferenciaCantidades}
-          handleCantLoteChange={handleCantLoteChange}
-          unidadAbv={detalle.unidad_medida_oc_abv}
-          baseAbv={detalle.unidad_medida_base_abv}
-          contenidoPorPresentacion={ratio}
-          cantidadMaximaTransferirBase={totalRecepcionadoBase}
-        />
+        {detalle.tipo_bien === TipoBien.ActivoFijo ? (
+          <div className="bg-indigo-950/10 border border-indigo-900/30 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300">
+            <div className="flex flex-col gap-1">
+              <Text size="xs" fw={800} c="indigo.3" className="uppercase tracking-widest leading-none">
+                Tipo de Bien: Activo Fijo
+              </Text>
+              <Text size="xs" c="zinc.4" className="max-w-[480px]">
+                Los activos fijos son bienes únicos e identificables que se transfieren de forma individual e inalterable. Se transferirá la unidad única asignada.
+              </Text>
+            </div>
+            <Badge color="indigo" variant="light" size="md" radius="lg" className="h-8 font-black px-4 bg-indigo-900/20 border border-indigo-700/30 text-indigo-300">
+              1 Unidad (100% Base)
+            </Badge>
+          </div>
+        ) : (
+          <LotesTableTransferencia
+            idDetalle={idDetalle}
+            detalle={detalle}
+            lotes={lotes}
+            loading={loadingLotes}
+            transferenciaCantidades={transferenciaCantidades}
+            handleCantLoteChange={handleCantLoteChange}
+            unidadAbv={detalle.unidad_medida_oc_abv}
+            baseAbv={detalle.unidad_medida_base_abv}
+            contenidoPorPresentacion={ratio}
+            cantidadMaximaTransferirBase={totalRecepcionadoBase}
+          />
+        )}
       </div>
     </Paper>
   );
