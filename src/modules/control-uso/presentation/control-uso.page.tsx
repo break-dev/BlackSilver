@@ -75,12 +75,9 @@ export const ControlUsoPage = () => {
       accessor: "periodo",
       title: "Periodo de Uso",
       textAlign: "center",
-      width: 300,
+      width: 180,
       render: (r) => {
         const inicioDate = dayjs(r.fecha_hora_inicio_control);
-        const finDate = r.fecha_hora_fin_control
-          ? dayjs(r.fecha_hora_fin_control)
-          : null;
 
         return (
           <Group
@@ -94,7 +91,7 @@ export const ControlUsoPage = () => {
               <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
             </div>
 
-            {/* Inner Content holding Inicio | Fin */}
+            {/* Inner Content holding Inicio */}
             <Group gap="xs" wrap="nowrap" className="shrink-0">
               {/* Inicio Block */}
               <div className="flex flex-col items-start gap-0.5 min-w-[75px]">
@@ -116,44 +113,6 @@ export const ControlUsoPage = () => {
                 >
                   {inicioDate.format("HH:mm")}
                 </Text>
-              </div>
-
-              {/* Separator Divider */}
-              <div className="w-px h-8 bg-zinc-800/80 self-center shrink-0" />
-
-              {/* Fin Block */}
-              <div className="min-w-[95px] flex flex-col items-start justify-center">
-                {finDate ? (
-                  <div className="flex flex-col items-start gap-0.5">
-                    <Text
-                      size="8px"
-                      fw={900}
-                      className="text-zinc-500 uppercase tracking-widest leading-none"
-                    >
-                      Fin
-                    </Text>
-                    <Text size="11px" fw={800} className="text-zinc-200">
-                      {finDate.format("DD MMM YYYY")}
-                    </Text>
-                    <Text
-                      size="10px"
-                      c="dimmed"
-                      fw={700}
-                      className="tracking-tighter"
-                    >
-                      {finDate.format("HH:mm")}
-                    </Text>
-                  </div>
-                ) : (
-                  <Badge
-                    size="xs"
-                    color="blue"
-                    variant="light"
-                    className="font-black animate-pulse border border-blue-500/10 px-2 py-2.5"
-                  >
-                    En ejecución
-                  </Badge>
-                )}
               </div>
             </Group>
           </Group>

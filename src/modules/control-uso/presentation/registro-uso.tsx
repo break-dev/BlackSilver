@@ -9,7 +9,7 @@ import {
   Card,
   SimpleGrid,
 } from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
+//import { DateTimePicker } from "@mantine/dates";
 import { useState, useEffect, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ControlUsoService } from "../service/control-uso.service";
@@ -39,8 +39,6 @@ export const RegistroUso = ({
   const [saving, setSaving] = useState(false);
 
   // Form states
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
-  const [fechaFin, setFechaFin] = useState<Date | null>(null);
   const [lecturaInicio, setLecturaInicio] = useState<number>(0);
   const [lecturaFin, setLecturaFin] = useState<number>(0);
   const [precioUnitario, setPrecioUnitario] = useState<number>(0);
@@ -92,11 +90,6 @@ export const RegistroUso = ({
       return;
     }
 
-    if (!fechaInicio) {
-      notifyError("La fecha de inicio es requerida.");
-      return;
-    }
-
     if (lecturaFin < lecturaInicio) {
       notifyError(
         `La lectura final del ${labelLectura} no puede ser menor a la lectura inicial.`
@@ -104,17 +97,13 @@ export const RegistroUso = ({
       return;
     }
 
-    if (fechaFin && fechaFin < fechaInicio) {
-      notifyError("La fecha de fin no puede ser anterior a la fecha de inicio.");
-      return;
-    }
-
     setSaving(true);
     try {
+      const ahora = new Date();
       const resp = await ControlUsoService.registrarUso({
         id_activo_fijo: idActivoFijo,
-        fecha_hora_inicio_control: dayjs(fechaInicio).format("YYYY-MM-DD HH:mm:ss"),
-        fecha_hora_fin_control: fechaFin ? dayjs(fechaFin).format("YYYY-MM-DD HH:mm:ss") : null,
+        fecha_hora_inicio_control: dayjs(ahora).format("YYYY-MM-DD HH:mm:ss"),
+        fecha_hora_fin_control: null,
         horometro_inicio: lecturaInicio,
         horometro_fin: lecturaFin,
         precio_unitario: precioUnitario,
@@ -183,6 +172,9 @@ export const RegistroUso = ({
         </div>
       </div>
 
+      {/* 
+      Comentado por requerimiento: Se ocultan los campos de Fecha/Hora de Inicio y Fin.
+      La fecha de inicio se registra de forma automática con la hora del sistema al guardar.
       <SimpleGrid cols={2} spacing="md">
         <DateTimePicker
           label="Fecha / Hora Inicio"
@@ -191,7 +183,6 @@ export const RegistroUso = ({
           onChange={(val) => {
             const nextVal = typeof val === "string" ? (val ? new Date(val) : null) : (val as Date | null);
             setFechaInicio(nextVal);
-            // Comparamos el día calendario para limpiar si la nueva fecha de inicio es de un día posterior
             if (nextVal && fechaFin) {
               const startDay = new Date(nextVal.getFullYear(), nextVal.getMonth(), nextVal.getDate());
               const endDay = new Date(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
@@ -212,8 +203,6 @@ export const RegistroUso = ({
           onChange={(val) => {
             const nextVal = typeof val === "string" ? (val ? new Date(val) : null) : (val as Date | null);
             if (nextVal && fechaInicio) {
-              // Comparamos únicamente el día calendario para permitir seleccionar el mismo día
-              // sin que la hora por defecto (00:00) cause un error inmediato antes de que el usuario la cambie.
               const startDay = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
               const endDay = new Date(nextVal.getFullYear(), nextVal.getMonth(), nextVal.getDate());
               if (endDay < startDay) {
@@ -229,6 +218,7 @@ export const RegistroUso = ({
           classNames={fieldClasses}
         />
       </SimpleGrid>
+      */}
 
       <SimpleGrid cols={3} spacing="md">
         <NumberInput
