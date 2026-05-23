@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ControlConsumoService } from "../service/control-consumo.service";
 import { AuxService } from "../../../service/auxiliar.service";
-import type { RES_ControlConsumo } from "../service/control-consumo.responses";
+import type { RES_ControlConsumo, RES_ConsumoDetalle } from "../service/control-consumo.responses";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
@@ -101,6 +101,36 @@ export const useListarControlConsumo = () => {
     );
   }, [reporte, busqueda, en_modo_auditable]);
 
+  const agregarConsumoLocal = useCallback((nuevoConsumo: RES_ConsumoDetalle) => {
+    setReporte((prevReporte) =>
+      prevReporte.map((item) => {
+        if (
+          item.id_entrega_requerimiento_detalle ===
+          nuevoConsumo.id_requerimiento_almacen_entrega_detalle
+        ) {
+          const nuevaCantidadConsumida =
+            item.cantidad_consumida_base + nuevoConsumo.cantidad_base_consumida;
+
+          let nuevoEstado: "Sin Consumir" | "Consumo Parcial" | "Total" =
+            "Sin Consumir";
+          if (nuevaCantidadConsumida >= item.cantidad_entregada_base) {
+            nuevoEstado = "Total";
+          } else if (nuevaCantidadConsumida > 0) {
+            nuevoEstado = "Consumo Parcial";
+          }
+
+          return {
+            ...item,
+            cantidad_consumida_base: nuevaCantidadConsumida,
+            estado_consumo: nuevoEstado,
+            consumos: [...item.consumos, nuevoConsumo],
+          };
+        }
+        return item;
+      })
+    );
+  }, []);
+
   return {
     reporte: filtrados,
     loading,
@@ -115,6 +145,7 @@ export const useListarControlConsumo = () => {
     setIdActivoFijo,
     loadingActivos,
     recargar: cargarReporte,
+    agregarConsumoLocal,
   };
 };
 

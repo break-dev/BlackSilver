@@ -45,9 +45,9 @@ export const FiltrosConsumo = ({
   };
 
   return (
-    <div className="flex flex-col xl:flex-row items-end gap-3 w-full animate-fade-in">
+    <div className="flex flex-col md:flex-row items-end gap-3 w-full animate-fade-in">
       {/* Seleccionar Activo Fijo */}
-      <div className="w-full xl:w-80">
+      <div className="w-full md:w-80">
         <Select
           label="Activo Fijo"
           placeholder={
@@ -76,7 +76,7 @@ export const FiltrosConsumo = ({
       </div>
 
       {/* Mes */}
-      <div className="w-full sm:w-44">
+      <div className="w-full md:w-36">
         <Select
           label="Mes"
           data={MESES}
@@ -94,7 +94,7 @@ export const FiltrosConsumo = ({
       </div>
 
       {/* Año */}
-      <div className="w-full sm:w-28">
+      <div className="w-full md:w-28">
         <Select
           label="Año"
           data={yearsList}
@@ -112,7 +112,7 @@ export const FiltrosConsumo = ({
       </div>
 
       {/* Buscador (filtra los consumos en tiempo real) */}
-      <div className="flex-1 w-full min-w-[200px]">
+      <div className="flex-1 min-w-[200px] w-full">
         <TextInput
           label="Buscar en Consumo"
           placeholder="Buscar producto, requerimiento, contratista..."

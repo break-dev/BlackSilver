@@ -1,6 +1,6 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_ControlConsumo } from "./control-consumo.responses";
+import type { RES_ControlConsumo, RES_ConsumoDetalle } from "./control-consumo.responses";
 
 const path = "/control-consumo";
 
@@ -16,6 +16,22 @@ export const ControlConsumoService = {
         yearcito,
       },
     });
+    return data;
+  },
+
+  /**
+   * Registrar un nuevo log de consumo de un producto entregado.
+   */
+  registrarConsumo: async (payload: {
+    id_requerimiento_almacen_entrega_detalle: number;
+    cantidad_base_consumida: number;
+    fecha_hora_consumo: string;
+    comentario_consumo?: string | null;
+  }) => {
+    const { data } = await api.post<IRespuesta<RES_ConsumoDetalle>>(
+      `${path}/consumir`,
+      payload,
+    );
     return data;
   },
 };
