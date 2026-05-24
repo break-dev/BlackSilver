@@ -23,6 +23,7 @@ export interface GroupedReceptionOC {
   id_producto: number;
   tipo_bien: string;
   id_mina_destino: number | null;
+  mina_destino: string | null;
   id_almacen_destino: number | null;
   id_unidad_medida_base: number;
   contenido_por_presentacion_oc: number;
@@ -75,6 +76,7 @@ export const useItemsRecepcion = ({
         id_producto: d.id_producto,
         tipo_bien: d.tipo_bien,
         id_mina_destino: d.id_mina_destino,
+        mina_destino: d.mina_destino,
         id_almacen_destino: d.id_almacen_recepcionista,
         id_unidad_medida_base: d.id_unidad_medida_base,
         contenido_por_presentacion_oc: d.contenido_por_presentacion,
@@ -99,7 +101,7 @@ export const useItemsRecepcion = ({
                   numero_serie: "",
                   modelo: "",
                   id_marca: null,
-                  yearcito_modelo: new Date().getFullYear(),
+                  yearcito_modelo: null,
                   descripcion_activo: "",
                 },
               ]

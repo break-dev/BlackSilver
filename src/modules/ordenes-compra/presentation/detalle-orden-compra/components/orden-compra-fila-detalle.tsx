@@ -1,14 +1,16 @@
 import { ActionIcon, Badge, Checkbox, Group, Stack, Text } from "@mantine/core";
-import { ClockIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { ClockIcon, CubeIcon, CpuChipIcon } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import { getNombrePeriodo } from "../../../../../shared/functions/get-nombre-periodo.ts";
 import { Estado_OrdenCompraDetalle } from "../../../../../shared/enums/orden-compra/orden-compra.ts";
 import type { RES_OrdenCompraDetalle } from "../../../../../service/responses/ordenes-compra/orden-compra";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface OrdenCompraFilaDetalleProps {
   det: RES_OrdenCompraDetalle;
   idx: number;
   isSelected: boolean;
+  isDisabled: boolean;
   onSelect: (id: number) => void;
   onOpenTrace: (idDetalle: number, nombre: string) => void;
   symbol: string;
@@ -18,6 +20,7 @@ export const OrdenCompraFilaDetalle = ({
   det,
   idx,
   isSelected,
+  isDisabled,
   onSelect,
   onOpenTrace,
   symbol,
@@ -26,9 +29,13 @@ export const OrdenCompraFilaDetalle = ({
   const rec = Number(det.cantidad_recepcionada_base) || 0;
   const isAvailable = rec < req - 0.001;
 
+  const isAsset = det.tipo_bien === TipoBien.ActivoFijo;
+
   return (
     <tr
-      className={`hover:bg-zinc-900/40 transition-colors group ${isSelected ? "bg-indigo-500/5" : ""}`}
+      className={`hover:bg-zinc-900/40 transition-colors group ${
+        isSelected ? (isAsset ? "bg-violet-500/5" : "bg-indigo-500/5") : ""
+      } ${isDisabled ? "opacity-30 pointer-events-none select-none" : ""}`}
     >
       {/* Indice */}
       <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
@@ -40,10 +47,12 @@ export const OrdenCompraFilaDetalle = ({
         <Checkbox
           checked={isSelected}
           onChange={() => onSelect(det.id_orden_compra_detalle)}
-          disabled={!isAvailable}
-          color="indigo"
+          disabled={!isAvailable || isDisabled}
+          color={isAsset ? "violet" : "indigo"}
           size="sm"
-          className={isAvailable ? "cursor-pointer" : "opacity-40"}
+          className={
+            isAvailable && !isDisabled ? "cursor-pointer" : "opacity-40"
+          }
         />
       </td>
 
@@ -51,14 +60,35 @@ export const OrdenCompraFilaDetalle = ({
       <td className="px-6 py-4">
         <Stack gap={4}>
           <Group gap="sm">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-indigo-500/50 transition-all">
-              <CubeIcon className="w-4 h-4 text-zinc-400" />
+            <div
+              className={`w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center border border-zinc-800 transition-all ${
+                isAsset
+                  ? "group-hover:border-violet-500/50"
+                  : "group-hover:border-indigo-500/50"
+              }`}
+            >
+              {isAsset ? (
+                <CpuChipIcon className="w-4 h-4 text-violet-400" />
+              ) : (
+                <CubeIcon className="w-4 h-4 text-zinc-400" />
+              )}
             </div>
             <Text size="sm" fw={800} className="text-zinc-100 tracking-tight">
               {det.producto}
             </Text>
           </Group>
           <Group gap={4}>
+            {isAsset && (
+              <Badge
+                variant="light"
+                color="violet"
+                size="9px"
+                radius="xs"
+                className="font-black py-1.5!"
+              >
+                ACTIVO FIJO
+              </Badge>
+            )}
             {det.es_auditable && (
               <Badge
                 variant="filled"
@@ -88,15 +118,25 @@ export const OrdenCompraFilaDetalle = ({
       {/* Almacén/Entrega */}
       <td className="px-6 py-4 text-center">
         <Stack gap={0} align="center">
-          <Badge
-            size="sm"
-            fw={700}
-            variant="light"
-            color={det.mina_destino ? "orange.4" : "lime.4"}
-            className="italic line-clamp-1"
-          >
-            {det.mina_destino || det.almacen_recepcionista}
-          </Badge>
+          <Group justify="center" gap={4}>
+            <Text
+              fw={700}
+              c={"gray.4"}
+              size="xs"
+              className="italic line-clamp-1"
+            >
+              {det.mina_destino ? "Mina" : "Almacén"}:
+            </Text>
+            <Badge
+              size="sm"
+              fw={700}
+              variant="light"
+              color={det.mina_destino ? "orange.4" : "lime.4"}
+              className="italic line-clamp-1"
+            >
+              {det.mina_destino || det.almacen_recepcionista}
+            </Badge>
+          </Group>
           <Group gap={4} mt={4} justify="center">
             <Badge
               color="blue"

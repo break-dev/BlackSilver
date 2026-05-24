@@ -9,7 +9,7 @@ export const OrdenCompraProgreso = ({
 }: OrdenCompraProgresoProps) => {
   return (
     <div className="px-2">
-      <div className="bg-zinc-900/50 border border-zinc-800 p-1.5 rounded-lg">
+      <div className="bg-zinc-900/50 border border-zinc-800 p-1.5 rounded-xl">
         <div className="flex justify-between items-center mb-1 px-4">
           <Text
             size="xs"

@@ -16,6 +16,7 @@ import { TicketLotePDF } from "../../../../presentation/utils/ticket-lote-pdf.ts
 import { ListadoComprobantesOC } from "../listado-comprobantes/listado-comprobantes-oc.tsx";
 import { RegistroComprobante } from "../registro-comprobante/registro-comprobante.tsx";
 import { DocumentPlusIcon } from "@heroicons/react/24/outline";
+import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 
 // Sub-componentes factorizados
 import { OrdenCompraHeader } from "./components/orden-compra-header";
@@ -76,18 +77,30 @@ export const DetalleOrdenCompra = ({
     return rec < req - 0.001;
   });
 
-  const allAvailableSelected =
-    detallesDisponibles.length > 0 &&
-    selectedIds.length === detallesDisponibles.length;
+  const normalDisponibles = detallesDisponibles.filter((d) => d.tipo_bien !== TipoBien.ActivoFijo);
+  const assetDisponibles = detallesDisponibles.filter((d) => d.tipo_bien === TipoBien.ActivoFijo);
 
-  const someAvailableSelected =
-    selectedIds.length > 0 && selectedIds.length < detallesDisponibles.length;
-
-  const handleSelectAll = () => {
-    if (allAvailableSelected) {
-      setSelectedIds([]);
+  const handleSelectAllNormal = () => {
+    const allNormalSelected =
+      normalDisponibles.length > 0 &&
+      normalDisponibles.every((d) => selectedIds.includes(d.id_orden_compra_detalle));
+    if (allNormalSelected) {
+      const normalIds = normalDisponibles.map((d) => d.id_orden_compra_detalle);
+      setSelectedIds((prev) => prev.filter((id) => !normalIds.includes(id)));
     } else {
-      setSelectedIds(detallesDisponibles.map((d) => d.id_orden_compra_detalle));
+      setSelectedIds(normalDisponibles.map((d) => d.id_orden_compra_detalle));
+    }
+  };
+
+  const handleSelectAllAsset = () => {
+    const allAssetSelected =
+      assetDisponibles.length > 0 &&
+      assetDisponibles.every((d) => selectedIds.includes(d.id_orden_compra_detalle));
+    if (allAssetSelected) {
+      const assetIds = assetDisponibles.map((d) => d.id_orden_compra_detalle);
+      setSelectedIds((prev) => prev.filter((id) => !assetIds.includes(id)));
+    } else {
+      setSelectedIds(assetDisponibles.map((d) => d.id_orden_compra_detalle));
     }
   };
 
@@ -139,9 +152,8 @@ export const DetalleOrdenCompra = ({
           detalles={detalles}
           detallesDisponibles={detallesDisponibles}
           selectedIds={selectedIds}
-          allAvailableSelected={allAvailableSelected}
-          someAvailableSelected={someAvailableSelected}
-          onSelectAll={handleSelectAll}
+          onSelectAllNormal={handleSelectAllNormal}
+          onSelectAllAsset={handleSelectAllAsset}
           onSelectOne={handleSelectOne}
           onOpenHistorial={() => setOpenedHistorial(true)}
           onOpenComprobantes={() => setOpenedComprobantes(true)}

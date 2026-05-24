@@ -135,17 +135,7 @@ export const RecepcionGrupoDestino = ({
             radius="xl"
             className="hover:scale-105 active:scale-95 transition-transform"
             onClick={() => {
-              if (tipoDestino === "mina") {
-                const firstDet = detalles[0];
-                onTransfer(
-                  "almacen",
-                  firstDet.id_almacen_destino,
-                  itemsPendingTransfer,
-                  firstDet.almacen_destino
-                );
-              } else {
-                onTransfer(tipoDestino, idDestino, itemsPendingTransfer, destinoNombre);
-              }
+              onTransfer(tipoDestino, idDestino, itemsPendingTransfer, destinoNombre);
             }}
           >
             {isPartiallyTransferredGroup

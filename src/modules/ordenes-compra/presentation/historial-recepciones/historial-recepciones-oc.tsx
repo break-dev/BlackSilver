@@ -330,7 +330,7 @@ export const HistorialRecepcionesOC = ({
       <ModalEstandar
         opened={openedTransferencia}
         close={closeTransferencia}
-        title={`Transferir a ${tipoDestinoParaTransferir === "mina" ? selectedMinaDestinoNombre || "" : selectedAlmacenDestinoNombre || ""}`}
+        title={`Transferir a ${tipoDestinoParaTransferir === "mina" ? `Mina: ${selectedMinaDestinoNombre || ""}` : `Almacén: ${selectedAlmacenDestinoNombre || ""}`}`}
         size="75%"
         rightSection={
           <Badge variant="dot" color="indigo" size="sm" radius="sm">

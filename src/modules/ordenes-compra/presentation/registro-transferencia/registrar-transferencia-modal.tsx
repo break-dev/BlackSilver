@@ -33,7 +33,9 @@ export const RegistrarTransferenciaModal = ({
     loading,
     itemsATransferir,
     lotes,
+    activosFijos,
     transferenciaCantidades,
+    transferenciaCantidadesActivos,
     personal,
     idPersonalRecibe,
     setIdPersonalRecibe,
@@ -46,6 +48,7 @@ export const RegistrarTransferenciaModal = ({
     totalTransferenciaGeneralBase,
     cargarDatosIniciales,
     handleCantLoteChange,
+    handleCantActivoChange,
     registrarTransferencia,
     handleCrearPersonal,
   } = useRegistroTransferenciaOC({
@@ -102,9 +105,12 @@ export const RegistrarTransferenciaModal = ({
             idDetalle={detalle.id_recepcion_detalle}
             detalle={detalle}
             lotes={lotes.filter((l) => l.id_producto === detalle.id_producto)}
+            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
             loadingLotes={false} // Ya vienen en el batch inicial
             transferenciaCantidades={transferenciaCantidades}
+            transferenciaCantidadesActivos={transferenciaCantidadesActivos}
             handleCantLoteChange={handleCantLoteChange}
+            handleCantActivoChange={handleCantActivoChange}
           />
         ))}
       </Stack>

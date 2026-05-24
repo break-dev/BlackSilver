@@ -9,15 +9,15 @@ import type {
   RES_OrdenCompraDetalle,
 } from "../../../../../service/responses/ordenes-compra/orden-compra";
 import { OrdenCompraFilaDetalle } from "./orden-compra-fila-detalle";
+import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 
 interface OrdenCompraTablaDetalleProps {
   orden: RES_OrdenCompra;
   detalles: RES_OrdenCompraDetalle[];
   detallesDisponibles: RES_OrdenCompraDetalle[];
   selectedIds: number[];
-  allAvailableSelected: boolean;
-  someAvailableSelected: boolean;
-  onSelectAll: () => void;
+  onSelectAllNormal: () => void;
+  onSelectAllAsset: () => void;
   onSelectOne: (id: number) => void;
   onOpenHistorial: () => void;
   onOpenComprobantes: () => void;
@@ -31,9 +31,8 @@ export const OrdenCompraTablaDetalle = ({
   detalles,
   detallesDisponibles,
   selectedIds,
-  allAvailableSelected,
-  someAvailableSelected,
-  onSelectAll,
+  onSelectAllNormal,
+  onSelectAllAsset,
   onSelectOne,
   onOpenHistorial,
   onOpenComprobantes,
@@ -41,6 +40,50 @@ export const OrdenCompraTablaDetalle = ({
   onOpenTrace,
   symbol,
 }: OrdenCompraTablaDetalleProps) => {
+  const normalProducts = detalles.filter(
+    (d) => d.tipo_bien !== TipoBien.ActivoFijo,
+  );
+  const assetProducts = detalles.filter(
+    (d) => d.tipo_bien === TipoBien.ActivoFijo,
+  );
+
+  const normalDisponibles = detallesDisponibles.filter(
+    (d) => d.tipo_bien !== TipoBien.ActivoFijo,
+  );
+  const assetDisponibles = detallesDisponibles.filter(
+    (d) => d.tipo_bien === TipoBien.ActivoFijo,
+  );
+
+  const allNormalSelected =
+    normalDisponibles.length > 0 &&
+    normalDisponibles.every((d) =>
+      selectedIds.includes(d.id_orden_compra_detalle),
+    );
+  const someNormalSelected =
+    normalDisponibles.some((d) =>
+      selectedIds.includes(d.id_orden_compra_detalle),
+    ) && !allNormalSelected;
+
+  const allAssetSelected =
+    assetDisponibles.length > 0 &&
+    assetDisponibles.every((d) =>
+      selectedIds.includes(d.id_orden_compra_detalle),
+    );
+  const someAssetSelected =
+    assetDisponibles.some((d) =>
+      selectedIds.includes(d.id_orden_compra_detalle),
+    ) && !allAssetSelected;
+
+  const selectedDetails = detalles.filter((d) =>
+    selectedIds.includes(d.id_orden_compra_detalle),
+  );
+  const hasSelectedAsset = selectedDetails.some(
+    (d) => d.tipo_bien === TipoBien.ActivoFijo,
+  );
+  const hasSelectedNormal = selectedDetails.some(
+    (d) => d.tipo_bien !== TipoBien.ActivoFijo,
+  );
+
   return (
     <div className="space-y-4 px-2">
       <Group justify="space-between" align="center" px={4}>
@@ -104,34 +147,15 @@ export const OrdenCompraTablaDetalle = ({
         </Group>
       </Group>
       {(() => {
-        const hasMina = detalles.some((d) => d.mina_destino);
-        const hasAlmacen = detalles.some((d) => d.almacen_recepcionista);
-        const columnHeader =
-          hasMina && !hasAlmacen
-            ? "Mina/Entrega"
-            : hasMina && hasAlmacen
-              ? "Almacén/Mina/Entrega"
-              : "Almacén/Entrega";
-
         return (
           <div className="overflow-hidden border border-zinc-800 rounded-2xl shadow-2xl bg-zinc-950/20">
             <Table verticalSpacing="md" horizontalSpacing="xl">
               <thead className="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 text-xs font-bold tracking-wider">
                 <tr>
                   <th className="px-6 py-4 text-center w-12">#</th>
-                  <th className="px-6 py-4 text-center w-12">
-                    <Checkbox
-                      checked={allAvailableSelected}
-                      indeterminate={someAvailableSelected}
-                      onChange={onSelectAll}
-                      color="indigo"
-                      size="xs"
-                      disabled={detallesDisponibles.length === 0}
-                      className="cursor-pointer"
-                    />
-                  </th>
+                  <th className="px-6 py-4 text-center w-16">Sel.</th>
                   <th className="px-6 py-4 text-left">Producto</th>
-                  <th className="px-6 py-4 text-center">{columnHeader}</th>
+                  <th className="px-6 py-4 text-center">Destino / Entrega</th>
                   <th className="px-6 py-4 text-center">Cant. Solicitada</th>
                   <th className="px-6 py-4 text-center">Costo</th>
                   <th className="px-6 py-4 text-center">Progreso Rec.</th>
@@ -140,19 +164,105 @@ export const OrdenCompraTablaDetalle = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
-                {detalles.map((det, idx) => (
-                  <OrdenCompraFilaDetalle
-                    key={det.id_orden_compra_detalle}
-                    det={det}
-                    idx={idx}
-                    isSelected={selectedIds.includes(
-                      det.id_orden_compra_detalle,
-                    )}
-                    onSelect={onSelectOne}
-                    onOpenTrace={onOpenTrace}
-                    symbol={symbol}
-                  />
-                ))}
+                {/* Grupo 1: Productos de Consumo Común */}
+                {normalProducts.length > 0 && (
+                  <>
+                    <tr className="bg-zinc-900/40 border-y border-zinc-800/80">
+                      <td colSpan={9} className="px-6 py-2.5">
+                        <Group gap="xs">
+                          <Checkbox
+                            checked={allNormalSelected}
+                            indeterminate={someNormalSelected}
+                            onChange={onSelectAllNormal}
+                            disabled={
+                              normalDisponibles.length === 0 || hasSelectedAsset
+                            }
+                            size="xs"
+                            color="indigo"
+                            className="cursor-pointer"
+                          />
+                          <Badge
+                            variant="light"
+                            color="indigo"
+                            radius="sm"
+                            size="xs"
+                            className="font-bold uppercase tracking-wider"
+                          >
+                            Productos de Consumo Común ({normalProducts.length})
+                          </Badge>
+                        </Group>
+                      </td>
+                    </tr>
+                    {normalProducts.map((det, idx) => (
+                      <OrdenCompraFilaDetalle
+                        key={det.id_orden_compra_detalle}
+                        det={det}
+                        idx={idx}
+                        isSelected={selectedIds.includes(
+                          det.id_orden_compra_detalle,
+                        )}
+                        isDisabled={hasSelectedAsset}
+                        onSelect={onSelectOne}
+                        onOpenTrace={onOpenTrace}
+                        symbol={symbol}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {/* Grupo 2: Activos Fijos */}
+                {assetProducts.length > 0 && (
+                  <>
+                    <tr className="bg-zinc-900/40 border-y border-zinc-800/80">
+                      <td colSpan={9} className="px-6 py-2.5">
+                        <Group gap="xs">
+                          <Checkbox
+                            checked={allAssetSelected}
+                            indeterminate={someAssetSelected}
+                            onChange={onSelectAllAsset}
+                            disabled={
+                              assetDisponibles.length === 0 || hasSelectedNormal
+                            }
+                            size="xs"
+                            color="violet"
+                            className="cursor-pointer"
+                          />
+                          <Badge
+                            variant="light"
+                            color="violet"
+                            radius="sm"
+                            size="xs"
+                            className="font-bold uppercase tracking-wider"
+                          >
+                            Activos Fijos ({assetProducts.length})
+                          </Badge>
+                          <Text
+                            size="11px"
+                            c="violet.4"
+                            fw={500}
+                            className="italic ml-2"
+                          >
+                            * Los activos fijos se recepcionan por separado.
+                          </Text>
+                        </Group>
+                      </td>
+                    </tr>
+                    {assetProducts.map((det, idx) => (
+                      <OrdenCompraFilaDetalle
+                        key={det.id_orden_compra_detalle}
+                        det={det}
+                        idx={idx}
+                        isSelected={selectedIds.includes(
+                          det.id_orden_compra_detalle,
+                        )}
+                        isDisabled={hasSelectedNormal}
+                        onSelect={onSelectOne}
+                        onOpenTrace={onOpenTrace}
+                        symbol={symbol}
+                      />
+                    ))}
+                  </>
+                )}
               </tbody>
             </Table>
           </div>

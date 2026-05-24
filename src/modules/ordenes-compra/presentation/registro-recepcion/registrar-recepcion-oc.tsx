@@ -12,7 +12,6 @@ import {
   Select,
   TextInput,
   Loader,
-  SegmentedControl,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import {
@@ -115,22 +114,23 @@ export const RegistroRecepcionOC = (props: Props) => {
               {/* Si es Activo Fijo, mostramos la opción de elegir destino */}
               {isReceivingAssets && (
                 <div className="lg:col-span-2">
-                  <SegmentedControl
-                    size="xs"
-                    radius="md"
-                    value={tipoDestinoActivos}
-                    onChange={(val) =>
-                      setTipoDestinoActivos(val as "almacen" | "mina")
-                    }
+                  <Select
+                    label="Destino"
+                    placeholder="Seleccione"
                     data={[
                       { label: "Almacén", value: "almacen" },
                       { label: "Mina", value: "mina" },
                     ]}
-                    classNames={{
-                      root: "bg-zinc-900/80 border border-zinc-800 h-[38px] flex items-center",
-                      indicator: "bg-indigo-600",
-                      control: "text-zinc-400 font-bold",
-                    }}
+                    value={tipoDestinoActivos}
+                    onChange={(val) =>
+                      setTipoDestinoActivos(
+                        (val || "almacen") as "almacen" | "mina",
+                      )
+                    }
+                    required
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
                   />
                 </div>
               )}
@@ -262,6 +262,30 @@ export const RegistroRecepcionOC = (props: Props) => {
               </div>
             </div>
 
+            {conIncidencia && (
+              <Alert
+                icon={<ExclamationCircleIcon className="w-4 h-4" />}
+                color="crimson"
+                variant="filled"
+                radius="md"
+                px={12}
+                py={5}
+                mt={4}
+                classNames={{
+                  wrapper: "items-center gap-2",
+                  icon: "mr-0 w-auto",
+                }}
+              >
+                <Text
+                  size="xs"
+                  fw={700}
+                  className="uppercase tracking-wide leading-none"
+                >
+                  Es obligatorio detallar la incidencia y adjuntar evidencias.
+                </Text>
+              </Alert>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="md:col-span-10">
                 <Textarea
@@ -305,30 +329,6 @@ export const RegistroRecepcionOC = (props: Props) => {
                 />
               </div>
             </div>
-
-            {conIncidencia && (
-              <Alert
-                icon={<ExclamationCircleIcon className="w-4 h-4" />}
-                color="crimson"
-                variant="filled"
-                radius="md"
-                px={12}
-                py={5}
-                mt={4}
-                classNames={{
-                  wrapper: "items-center gap-2",
-                  icon: "mr-0 w-auto",
-                }}
-              >
-                <Text
-                  size="xs"
-                  fw={700}
-                  className="uppercase tracking-wide leading-none"
-                >
-                  Es obligatorio detallar la incidencia y adjuntar evidencias.
-                </Text>
-              </Alert>
-            )}
 
             <div className="mt-2">
               <MultiFilePicker
@@ -377,7 +377,7 @@ export const RegistroRecepcionOC = (props: Props) => {
 
             {comprobante.incluirComprobante && (
               <Stack gap={10} className="animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                   <Select
                     label="Tipo"
                     data={Object.values(TipoComprobante)}
@@ -425,9 +425,6 @@ export const RegistroRecepcionOC = (props: Props) => {
                     size="xs"
                     classNames={inputClasses}
                   />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <Select
                     label="Moneda"
                     data={Object.values(MONEDAS).map((m) => ({
@@ -453,6 +450,9 @@ export const RegistroRecepcionOC = (props: Props) => {
                     disabled
                     classNames={inputClasses}
                   />
+                </div>
+
+                {/* <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
                   <div className="flex items-end pb-2">
                     <Checkbox
                       label={
@@ -472,7 +472,7 @@ export const RegistroRecepcionOC = (props: Props) => {
                       size="xs"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 <Divider
                   variant="dashed"
@@ -483,19 +483,7 @@ export const RegistroRecepcionOC = (props: Props) => {
                   }}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                  <NumberInput
-                    label="Total Antes IGV"
-                    value={comprobante.totalAntesIgv}
-                    onChange={(val) =>
-                      comprobante.setTotalAntesIgv(Number(val) || 0)
-                    }
-                    prefix={comprobante.moneda === "Soles" ? "S/ " : "$ "}
-                    radius="md"
-                    size="xs"
-                    classNames={inputClasses}
-                    disabled
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_1fr_1fr_1fr] gap-3">
                   <div className="flex items-end pb-2">
                     <Checkbox
                       label={
@@ -515,6 +503,18 @@ export const RegistroRecepcionOC = (props: Props) => {
                       size="xs"
                     />
                   </div>
+                  <NumberInput
+                    label="Total Antes IGV"
+                    value={comprobante.totalAntesIgv}
+                    onChange={(val) =>
+                      comprobante.setTotalAntesIgv(Number(val) || 0)
+                    }
+                    prefix={comprobante.moneda === "Soles" ? "S/ " : "$ "}
+                    radius="md"
+                    size="xs"
+                    classNames={inputClasses}
+                    disabled
+                  />
                   <NumberInput
                     label="% IGV"
                     value={comprobante.porcentajeIgv}

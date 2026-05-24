@@ -186,22 +186,20 @@ export const AuxService = {
     return data;
   },
 
-  /**
-   * Obtener lista de activos disponibles
-   */
   get_activos_disponibles: async (filters?: {
     id_activo?: number;
     id_almacen?: number;
     id_mina?: number;
-    id_producto?: number | number[];
+    ids_productos?: number | number[];
     para_transporte?: boolean;
     control_por_odometro?: boolean;
     control_por_horometro?: boolean;
     estado?: EstadoActivoFijo;
   }): Promise<IRespuesta<RES_ActivoFijoDisponible[]>> => {
+    const apiParams = { ...filters };
     const { data } = await api.get<IRespuesta<RES_ActivoFijoDisponible[]>>(
       `${path}/activos-disponibles`,
-      { params: filters },
+      { params: apiParams },
     );
     return data;
   },

@@ -90,7 +90,7 @@ export const useRegistroEntrega = ({
         idsActivoFijo.length > 0
           ? AuxService.get_activos_disponibles({
               id_almacen: idAlmacenPrestamista,
-              id_producto: idsActivoFijo,
+              ids_productos: idsActivoFijo,
             })
           : Promise.resolve({ success: true, data: [] }),
       ];
