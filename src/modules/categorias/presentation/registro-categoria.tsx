@@ -49,6 +49,8 @@ interface RegistroCategoriaProps {
   setControlPorOdometro: (val: boolean) => void;
   controlPorHorometro: boolean;
   setControlPorHorometro: (val: boolean) => void;
+  controlPorVueltas: boolean;
+  setControlPorVueltas: (val: boolean) => void;
   idsConsumidoras: number[];
   setIdsConsumidoras: (val: number[]) => void;
   coincidencias: SearchResult<RES_CategoriaResumen>[];
@@ -83,6 +85,8 @@ export const RegistroCategoria = ({
   setControlPorOdometro,
   controlPorHorometro,
   setControlPorHorometro,
+  controlPorVueltas,
+  setControlPorVueltas,
   idsConsumidoras,
   coincidencias,
   onOpenDestinos,
@@ -305,6 +309,29 @@ export const RegistroCategoria = ({
                   checked={controlPorHorometro}
                   onChange={(e) =>
                     setControlPorHorometro(e.currentTarget.checked)
+                  }
+                  disabled={loading}
+                  color="indigo"
+                  size="xs"
+                  classNames={{
+                    label: "text-zinc-300",
+                    input: "cursor-pointer",
+                  }}
+                />
+              </Tooltip>
+
+              <Tooltip
+                label="Lleva un control por número de vueltas para el módulo de Uso."
+                position="top"
+                withArrow
+                multiline
+                w={220}
+              >
+                <Checkbox
+                  label="Vueltas"
+                  checked={controlPorVueltas}
+                  onChange={(e) =>
+                    setControlPorVueltas(e.currentTarget.checked)
                   }
                   disabled={loading}
                   color="indigo"

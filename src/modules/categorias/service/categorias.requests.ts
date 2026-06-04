@@ -17,6 +17,7 @@ export const Schema_RegistroCategoria = z.object({
   para_transporte: z.boolean().default(false),
   control_por_odometro: z.boolean().default(false),
   control_por_horometro: z.boolean().default(false),
+  control_por_vueltas: z.boolean().default(false),
   ids_categorias_consumidoras: z.array(z.number()).default([]),
 });
 

@@ -39,6 +39,7 @@ export const useRegistroCategoria = ({
   const [paraTransporte, setParaTransporte] = useState(false);
   const [controlPorOdometro, setControlPorOdometro] = useState(false);
   const [controlPorHorometro, setControlPorHorometro] = useState(false);
+  const [controlPorVueltas, setControlPorVueltas] = useState(false);
   const [idsConsumidoras, setIdsConsumidoras] = useState<number[]>([]);
   const [coincidencias, setCoincidencias] = useState<
     SearchResult<RES_CategoriaResumen>[]
@@ -59,6 +60,7 @@ export const useRegistroCategoria = ({
     setParaTransporte(false);
     setControlPorOdometro(false);
     setControlPorHorometro(false);
+    setControlPorVueltas(false);
     setIdsConsumidoras([]);
     setCoincidencias([]);
     setError("");
@@ -107,6 +109,7 @@ export const useRegistroCategoria = ({
       para_transporte: paraTransporte,
       control_por_odometro: controlPorOdometro,
       control_por_horometro: controlPorHorometro,
+      control_por_vueltas: controlPorVueltas,
       ids_categorias_consumidoras: idsConsumidoras,
     };
 
@@ -158,6 +161,8 @@ export const useRegistroCategoria = ({
     setControlPorOdometro,
     controlPorHorometro,
     setControlPorHorometro,
+    controlPorVueltas,
+    setControlPorVueltas,
     idsConsumidoras,
     setIdsConsumidoras,
     coincidencias,

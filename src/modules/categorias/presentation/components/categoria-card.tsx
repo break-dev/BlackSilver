@@ -6,6 +6,7 @@ import {
   FireIcon,
   ClockIcon,
   ArrowTrendingUpIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import type { RES_CategoriaResumen } from "../../service/categorias.responses";
 import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
@@ -175,6 +176,17 @@ export const CategoriaCard = ({ cat, onAddDestino }: CategoriaCardProps) => {
                 >
                   <div className="w-6 h-6 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                     <ClockIcon className="w-3.5 h-3.5" />
+                  </div>
+                </Tooltip>
+              )}
+              {!!cat.control_por_vueltas && (
+                <Tooltip
+                  label="Control por Vueltas"
+                  position="top"
+                  withArrow
+                >
+                  <div className="w-6 h-6 rounded-md bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                    <ArrowPathIcon className="w-3.5 h-3.5" />
                   </div>
                 </Tooltip>
               )}
