@@ -15,3 +15,7 @@ export const PersonalLayout = () => {
 export const UsuariosLayout = () => {
   return <Outlet />;
 };
+
+export const SociosComercialesLayout = () => {
+  return <Outlet />;
+};

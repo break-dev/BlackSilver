@@ -1,17 +1,17 @@
 import { IconDeviceFloppy, IconExclamationCircle } from "@tabler/icons-react";
 import { Button, Grid, Select, TextInput, Alert } from "@mantine/core";
-import { useRegistroProveedor } from "../../hooks/useRegistroProveedor";
+import { useRegistroCliente } from "../../hooks/useRegistroCliente";
 import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
-import type { ProveedorResponse } from "../../service/proveedores.responses";
+import type { ClienteResponse } from "../../service/clientes.responses";
 
 interface Props {
   onCancel: () => void;
-  onSuccess: (p: ProveedorResponse) => void;
+  onSuccess: (p: ClienteResponse) => void;
 }
 
-export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
+export const RegistroCliente = ({ onCancel, onSuccess }: Props) => {
   const { payload, handleChange, handleSelectChange, submit, loading, error } =
-    useRegistroProveedor((p) => {
+    useRegistroCliente((p) => {
       onSuccess(p);
     });
 
@@ -80,7 +80,7 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
         <Grid.Col span={{ base: 12 }}>
           <TextInput
             label={payload.tipo_entidad === TipoEntidad.Natural ? "Nombre Completo" : "Razón Social"}
-            placeholder={payload.tipo_entidad === TipoEntidad.Natural ? "Ej. Juan Perez" : "Ej. Comercializadora XYZ S.A.C."}
+            placeholder={payload.tipo_entidad === TipoEntidad.Natural ? "Ej. Juan Perez" : "Ej. Minera Los Andes S.A.C."}
             radius="xl"
             withAsterisk
             value={payload.razon_social || ""}
@@ -95,7 +95,7 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
         <Grid.Col span={{ base: 12 }}>
           <TextInput
             label="Dirección Principal (opc)"
-            placeholder="Ej. Av. Principal 123, Ciudad"
+            placeholder="Ej. Av. Los Incas 123, Arequipa"
             radius="xl"
             value={payload.direccion || ""}
             onChange={(e) => handleChange("direccion", e.target.value)}
@@ -156,7 +156,7 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
           leftSection={<IconDeviceFloppy size={18} />}
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
         >
-          Guardar Proveedor
+          Guardar Cliente
         </Button>
       </div>
     </form>

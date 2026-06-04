@@ -10,6 +10,7 @@ import {
   EmpresasLayout,
   PersonalLayout,
   UsuariosLayout,
+  SociosComercialesLayout,
 } from "../layouts/configuracion.layout.tsx";
 import {
   LogisticaLayout,
@@ -41,6 +42,7 @@ import { PerfilPage } from "../../modules/perfil/presentation/perfil.page.tsx";
 import { SolicitudesReabastecimientoAtencionPage } from "../../modules/solicitudes-reabastecimiento-atencion/presentation/atencion-solicitudes.page.tsx";
 import { AtencionPrestamosPage } from "../../modules/prestamos-almacen-atencion/presentation/atencion-prestamos.page.tsx";
 import { PrestamosAlmacenPage } from "../../modules/prestamos-almacen/presentation/prestamos-almacen.page.tsx";
+import { ClientesPage } from "../../modules/clientes/presentation/clientes-page/clientes.page.tsx";
 import { ProveedoresPage } from "../../modules/proveedores/presentation/proveedores-page/proveedores.page.tsx";
 import CotizacionesPage from "../../modules/cotizaciones/presentation/cotizaciones.page.tsx";
 import { OrdenesCompraPage } from "../../modules/ordenes-compra/presentation/ordenes-compra-page.tsx";
@@ -128,6 +130,12 @@ export const App = () => {
             <Route path="roles" element={<RolesPage />} />
             <Route path="cuentas" element={<CuentasPage />} />
           </Route>
+
+          {/* Socios Comerciales */}
+          <Route path="socios-comerciales" element={<SociosComercialesLayout />}>
+            <Route path="proveedores" element={<ProveedoresPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+          </Route>
         </Route>
 
         {/* Logistica */}
@@ -186,7 +194,6 @@ export const App = () => {
 
           {/* Compras */}
           <Route path="compras" element={<ComprasLayout />}>
-            <Route path="proveedores" element={<ProveedoresPage />} />
             <Route path="cotizaciones" element={<CotizacionesPage />} />
             <Route path="ordenes-compra" element={<OrdenesCompraPage />} />
             <Route
