@@ -111,6 +111,8 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     codigo: "",
     numero_serie: "",
     modelo: "",
+    serie_placa: "",
+    numero_placa: "",
     yearcito_modelo: new Date().getFullYear(),
     descripcion: "",
     especificaciones: [],
@@ -158,20 +160,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
    */
   const handleProductChange = (val: string | null) => {
     const idProd = val ? Number(val) : 0;
-    const selectedProd = productosAF.find((p) => p.id_producto === idProd);
-    
-    let newSpecs = [...especificaciones];
-    const isTransport = selectedProd?.para_transporte === true || selectedProd?.para_transporte === 1;
-
-    if (isTransport) {
-      const hasPlaca = newSpecs.some((sp) => sp.clave.trim().toLowerCase() === "placa");
-      if (!hasPlaca) {
-        newSpecs = [{ clave: "Placa", valor: "" }, ...newSpecs];
-      }
-    }
-
     setForm((prev) => ({ ...prev, id_producto: idProd }));
-    setEspecificaciones(newSpecs);
   };
 
   /**
@@ -179,11 +168,8 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
    */
   const handleSubmit = async () => {
     if (isTransport) {
-      const placaSpec = especificaciones.find(
-        (sp) => sp.clave.trim().toLowerCase() === "placa",
-      );
-      if (!placaSpec || !placaSpec.valor.trim()) {
-        notifyError("La especificación 'Placa' es obligatoria para activos de transporte.");
+      if (!form.serie_placa?.trim() || !form.numero_placa?.trim()) {
+        notifyError("La serie y el número de placa son obligatorios para activos de transporte.");
         return;
       }
     }
@@ -435,6 +421,40 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             />
           </Grid.Col>
 
+          {isTransport && (
+            <>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="Serie de Placa"
+                  placeholder="Ej. AAA"
+                  value={form.serie_placa || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, serie_placa: e.target.value })
+                  }
+                  required
+                  size="xs"
+                  radius="lg"
+                  classNames={fieldClasses}
+                />
+              </Grid.Col>
+
+              <Grid.Col span={6}>
+                <TextInput
+                  label="Número de Placa"
+                  placeholder="Ej. 123"
+                  value={form.numero_placa || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, numero_placa: e.target.value })
+                  }
+                  required
+                  size="xs"
+                  radius="lg"
+                  classNames={fieldClasses}
+                />
+              </Grid.Col>
+            </>
+          )}
+
           <Grid.Col span={4}>
             <DateTimePicker
               label="Fecha de Ingreso"
@@ -501,7 +521,6 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
 
         <Stack gap="xs">
           {especificaciones.map((esp, index) => {
-            const isPlacaRow = isTransport && esp.clave.trim().toLowerCase() === "placa";
             return (
               <Group key={index} gap="xs" align="flex-end">
                 <TextInput
@@ -512,7 +531,6 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
                     newEsp[index].clave = e.target.value;
                     setEspecificaciones(newEsp);
                   }}
-                  disabled={isPlacaRow}
                   size="xs"
                   radius="lg"
                   className="flex-1"
@@ -535,7 +553,6 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
                   color="red.8"
                   variant="light"
                   onClick={() => handleRemoveEspecificacion(index)}
-                  disabled={isPlacaRow}
                   size="sm"
                   radius="md"
                 >

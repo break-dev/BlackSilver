@@ -38,4 +38,30 @@ export const ActivosService = {
     );
     return data;
   },
+
+  configurarAlertas: async (payload: {
+    id_activo: number;
+    intervalo_horas?: number | null;
+    intervalo_kilometros?: number | null;
+    intervalo_vueltas?: number | null;
+  }) => {
+    const { data } = await api.post<IRespuesta<null>>(
+      `${path}/configurar-alertas`,
+      payload,
+    );
+    return data;
+  },
+
+  registrarMantenimiento: async (payload: {
+    id_activo: number;
+    id_empleado_registro: number;
+    tipo_control: "horometro" | "odometro" | "vueltas";
+    observacion?: string | null;
+  }) => {
+    const { data } = await api.post<IRespuesta<null>>(
+      `${path}/mantenimiento`,
+      payload,
+    );
+    return data;
+  },
 };

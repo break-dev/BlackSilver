@@ -1,0 +1,120 @@
+import { useState } from "react";
+import {
+  Stack,
+  Button,
+  Group,
+  Text,
+  Textarea,
+} from "@mantine/core";
+import { CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { ActivosService } from "../../service/activos.service";
+import { useNotify } from "../../../../hooks/useNotify";
+import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
+import { useAuthStore } from "../../../../stores/auth.store";
+
+interface Props {
+  opened: boolean;
+  close: () => void;
+  activo: RES_ActivoFijoResumen;
+  tipoControl: "horometro" | "odometro" | "vueltas";
+  onSuccess: () => void;
+}
+
+export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, onSuccess }: Props) => {
+  const { notifySuccess, notifyError } = useNotify();
+  const { usuario } = useAuthStore();
+  const [saving, setSaving] = useState(false);
+  const [observacion, setObservacion] = useState("");
+
+  const handleSubmit = async () => {
+    if (!usuario?.id_empleado) {
+      notifyError("No se pudo identificar al empleado activo.");
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const res = await ActivosService.registrarMantenimiento({
+        id_activo: activo.id_activo,
+        id_empleado_registro: usuario.id_empleado,
+        tipo_control: tipoControl,
+        observacion: observacion.trim() || null,
+      });
+
+      if (res.success) {
+        notifySuccess("Mantenimiento registrado con éxito");
+        onSuccess();
+        close();
+      } else {
+        notifyError(res.message);
+      }
+    } catch (error) {
+      console.error(error);
+      notifyError("Error al registrar mantenimiento");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tipoLabel = {
+    horometro: "Horas",
+    odometro: "Kilómetros",
+    vueltas: "Vueltas"
+  }[tipoControl];
+
+  const fieldClasses = {
+    input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
+  return (
+    <ModalEstandar
+      opened={opened}
+      close={close}
+      title="Resolver Advertencia de Mantenimiento"
+      size="md"
+    >
+      <Stack gap="md">
+        <Group wrap="nowrap" align="flex-start" className="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+          <ExclamationTriangleIcon className="w-6 h-6 text-red-500 shrink-0" />
+          <Stack gap={4}>
+            <Text size="sm" c="white" fw={500}>
+              Mantenimiento por {tipoLabel} Requerido
+            </Text>
+            <Text size="xs" c="red.2">
+              Al confirmar esta acción, registrarás que se ha realizado el mantenimiento correspondiente y la alerta se reprogramará basándose en el intervalo configurado.
+            </Text>
+          </Stack>
+        </Group>
+
+        <Textarea
+          label="Observaciones (Opcional)"
+          placeholder="Ej: Cambio de aceite y filtros..."
+          value={observacion}
+          onChange={(e) => setObservacion(e.target.value)}
+          minRows={3}
+          size="xs"
+          radius="lg"
+          classNames={fieldClasses}
+        />
+
+        <Group justify="flex-end" mt="md">
+          <Button variant="subtle" color="zinc.5" onClick={close} disabled={saving} size="xs" radius="lg">
+            Cancelar
+          </Button>
+          <Button
+            color="green.6"
+            onClick={handleSubmit}
+            loading={saving}
+            size="xs"
+            radius="lg"
+            leftSection={<CheckCircleIcon className="w-4 h-4" />}
+          >
+            Confirmar Mantenimiento
+          </Button>
+        </Group>
+      </Stack>
+    </ModalEstandar>
+  );
+};

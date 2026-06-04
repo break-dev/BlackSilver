@@ -27,6 +27,8 @@ import {
   ProductGroupCard,
   type GroupedActivoProducto,
 } from "./components/product-group-card";
+import { ActivoConfigAlertasModal } from "./components/config-alertas-modal";
+import { ActivoMantenimientoModal } from "./components/resolver-mantenimiento-modal";
 
 export const ActivosFijosPage = () => {
   useTitlePage("Activos Fijos");
@@ -53,6 +55,11 @@ export const ActivosFijosPage = () => {
     useState<RES_ActivoFijoResumen | null>(null);
   const [openedUbicacion, { open: openUbicacion, close: closeUbicacion }] =
     useDisclosure(false);
+  const [openedAlertas, { open: openAlertas, close: closeAlertas }] =
+    useDisclosure(false);
+  const [openedMantenimiento, { open: openMantenimiento, close: closeMantenimiento }] =
+    useDisclosure(false);
+  const [tipoMantenimiento, setTipoMantenimiento] = useState<"horometro" | "odometro" | "vueltas">("horometro");
 
   const groupedProducts = useMemo<GroupedActivoProducto[]>(() => {
     const groups: Record<number, GroupedActivoProducto> = {};
@@ -67,6 +74,7 @@ export const ActivosFijosPage = () => {
           para_transporte: !!a.para_transporte,
           control_por_odometro: !!a.control_por_odometro,
           control_por_horometro: !!a.control_por_horometro,
+          control_por_vueltas: !!a.control_por_vueltas,
           activos: [],
         };
       }
@@ -203,6 +211,15 @@ export const ActivosFijosPage = () => {
                 openUbicacion();
               }}
               onVerHistorial={() => {}}
+              onConfigurarAlertas={(record) => {
+                setSelectedActivo(record);
+                openAlertas();
+              }}
+              onResolverMantenimiento={(record, tipo) => {
+                setSelectedActivo(record);
+                setTipoMantenimiento(tipo);
+                openMantenimiento();
+              }}
             />
           ))}
         </Stack>
@@ -248,6 +265,24 @@ export const ActivosFijosPage = () => {
           />
         )}
       </ModalEstandar>
+
+      {selectedActivo && (
+        <>
+          <ActivoConfigAlertasModal
+            opened={openedAlertas}
+            close={closeAlertas}
+            activo={selectedActivo}
+            onSuccess={refresh}
+          />
+          <ActivoMantenimientoModal
+            opened={openedMantenimiento}
+            close={closeMantenimiento}
+            activo={selectedActivo}
+            tipoControl={tipoMantenimiento}
+            onSuccess={refresh}
+          />
+        </>
+      )}
     </div>
   );
 };

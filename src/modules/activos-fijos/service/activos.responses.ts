@@ -10,6 +10,7 @@ export interface RES_ActivoFijoResumen {
   para_transporte: boolean;
   control_por_odometro: boolean;
   control_por_horometro: boolean;
+  control_por_vueltas: boolean;
   //
   id_marca: number | null;
   marca: string | null;
@@ -27,7 +28,21 @@ export interface RES_ActivoFijoResumen {
   modelo: string | null;
   yearcito_modelo: number | null;
   descripcion: string | null;
+  serie_placa: string | null;
+  numero_placa: string | null;
   especificaciones: { clave: string; valor: string }[] | null;
+  //
+  total_horas: number;
+  total_kilometros: number;
+  total_vueltas: number;
+  //
+  proxima_advertencia_horas: number | null;
+  proxima_advertencia_kilometros: number | null;
+  proxima_advertencia_vueltas: number | null;
+  //
+  intervalo_mantenimiento_horas: number | null;
+  intervalo_mantenimiento_kilometros: number | null;
+  intervalo_mantenimiento_vueltas: number | null;
   //
   fecha_hora_ingreso: string;
   created_at: string;

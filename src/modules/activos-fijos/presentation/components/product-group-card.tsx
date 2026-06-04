@@ -2,7 +2,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
 import { ProductGroupHeader } from "./product-group-header";
-import { Badge, Text, Group, Stack, Tooltip } from "@mantine/core";
+import { Badge, Text, Group, Stack, Tooltip, Button } from "@mantine/core";
 import { MapPinIcon, MapIcon, StarIcon } from "@heroicons/react/24/outline";
 
 export interface GroupedActivoProducto {
@@ -13,6 +13,7 @@ export interface GroupedActivoProducto {
   para_transporte: boolean;
   control_por_odometro: boolean;
   control_por_horometro: boolean;
+  control_por_vueltas: boolean;
   activos: RES_ActivoFijoResumen[];
 }
 
@@ -21,6 +22,8 @@ interface ProductGroupCardProps {
   loading: boolean;
   onMoverActivo: (record: RES_ActivoFijoResumen) => void;
   onVerHistorial: (record: RES_ActivoFijoResumen) => void;
+  onConfigurarAlertas: (record: RES_ActivoFijoResumen) => void;
+  onResolverMantenimiento: (record: RES_ActivoFijoResumen, tipo: "horometro" | "odometro" | "vueltas") => void;
 }
 
 const parseEspecificaciones = (
@@ -44,6 +47,9 @@ const parseEspecificaciones = (
 export const ProductGroupCard = ({
   product,
   loading,
+  onMoverActivo,
+  onConfigurarAlertas,
+  onResolverMantenimiento,
 }: ProductGroupCardProps) => {
   const columns: DataTableColumn<RES_ActivoFijoResumen>[] = [
     {
@@ -177,6 +183,55 @@ export const ProductGroupCard = ({
       },
     },
     {
+      accessor: "control",
+      title: "Control de Mantenimiento",
+      width: 250,
+      render: (record) => {
+        const hasWarningH = record.proxima_advertencia_horas && record.total_horas >= record.proxima_advertencia_horas;
+        const hasWarningKm = record.proxima_advertencia_kilometros && record.total_kilometros >= record.proxima_advertencia_kilometros;
+        const hasWarningV = record.proxima_advertencia_vueltas && record.total_vueltas >= record.proxima_advertencia_vueltas;
+
+        if (!product.control_por_horometro && !product.control_por_odometro && !product.control_por_vueltas) {
+          return <Text size="xs" c="dimmed" fs="italic">No aplica</Text>;
+        }
+
+        return (
+          <Stack gap={6}>
+            {product.control_por_horometro && (
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Text size="xs" c="zinc.4">Horas: <Text span fw={700} c="white">{record.total_horas}</Text></Text>
+                {hasWarningH ? (
+                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "horometro")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
+                ) : record.proxima_advertencia_horas ? (
+                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_horas}</Text>
+                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
+              </Group>
+            )}
+            {product.control_por_odometro && (
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Text size="xs" c="zinc.4">Km: <Text span fw={700} c="white">{record.total_kilometros}</Text></Text>
+                {hasWarningKm ? (
+                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "odometro")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
+                ) : record.proxima_advertencia_kilometros ? (
+                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_kilometros}</Text>
+                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
+              </Group>
+            )}
+            {product.control_por_vueltas && (
+              <Group justify="space-between" align="center" wrap="nowrap">
+                <Text size="xs" c="zinc.4">Vueltas: <Text span fw={700} c="white">{record.total_vueltas}</Text></Text>
+                {hasWarningV ? (
+                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "vueltas")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
+                ) : record.proxima_advertencia_vueltas ? (
+                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_vueltas}</Text>
+                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
+              </Group>
+            )}
+          </Stack>
+        );
+      }
+    },
+    {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
@@ -201,6 +256,19 @@ export const ProductGroupCard = ({
         );
       },
     },
+    {
+      accessor: "acciones",
+      title: "Acciones",
+      width: 140,
+      textAlign: "center",
+      render: (record) => (
+        <Group justify="center" gap="xs">
+          <Button variant="light" size="compact-xs" color="indigo" onClick={() => onConfigurarAlertas(record)}>
+            Alertas
+          </Button>
+        </Group>
+      )
+    }
   ];
 
   return (
