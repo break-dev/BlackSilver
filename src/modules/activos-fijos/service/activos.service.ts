@@ -57,6 +57,7 @@ export const ActivosService = {
     id_empleado_registro: number;
     tipo_control: "horometro" | "odometro" | "vueltas";
     observacion?: string | null;
+    fecha_hora_mantenimiento?: string | null;
   }) => {
     const { data } = await api.post<IRespuesta<null>>(
       `${path}/mantenimiento`,

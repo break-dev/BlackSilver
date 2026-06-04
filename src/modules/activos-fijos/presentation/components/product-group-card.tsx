@@ -3,7 +3,7 @@ import { DataTableEstandar } from "../../../../presentation/utils/datatable-esta
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
 import { ProductGroupHeader } from "./product-group-header";
 import { Badge, Text, Group, Stack, Tooltip, Button } from "@mantine/core";
-import { MapPinIcon, MapIcon, StarIcon } from "@heroicons/react/24/outline";
+import { MapPinIcon, MapIcon, StarIcon, AdjustmentsHorizontalIcon, ClockIcon, ArrowTrendingUpIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export interface GroupedActivoProducto {
   id_producto: number;
@@ -47,7 +47,7 @@ const parseEspecificaciones = (
 export const ProductGroupCard = ({
   product,
   loading,
-  onMoverActivo,
+  //onMoverActivo,
   onConfigurarAlertas,
   onResolverMantenimiento,
 }: ProductGroupCardProps) => {
@@ -185,7 +185,7 @@ export const ProductGroupCard = ({
     {
       accessor: "control",
       title: "Control de Mantenimiento",
-      width: 250,
+      width: 380,
       render: (record) => {
         const hasWarningH = record.proxima_advertencia_horas && record.total_horas >= record.proxima_advertencia_horas;
         const hasWarningKm = record.proxima_advertencia_kilometros && record.total_kilometros >= record.proxima_advertencia_kilometros;
@@ -195,37 +195,119 @@ export const ProductGroupCard = ({
           return <Text size="xs" c="dimmed" fs="italic">No aplica</Text>;
         }
 
+        const renderControlRow = (
+          icon: React.ReactNode,
+          actualVal: number,
+          alertVal: number | null,
+          hasWarning: boolean,
+          unit: string,
+          onResolve: () => void
+        ) => {
+          return (
+            <Group gap={8} wrap="nowrap" align="center" className="w-full">
+              {/* Icon at left */}
+              <div className="p-1.5 bg-zinc-850/60 rounded-xl border border-zinc-800/80 shrink-0 shadow-sm flex items-center justify-center">
+                {icon}
+              </div>
+
+              {/* Content Group (mimics Costo Operativo) */}
+              <Group gap="xs" wrap="nowrap" className="shrink-0 flex-1">
+                {/* Lectura Actual Block */}
+                <div className="flex flex-col items-start gap-0.5 min-w-[95px]">
+                  <Text
+                    size="8px"
+                    fw={900}
+                    className="text-zinc-500 uppercase tracking-widest leading-none"
+                  >
+                    Uso Actual
+                  </Text>
+                  <Badge
+                    variant="light"
+                    color="indigo"
+                    radius="sm"
+                    size="sm"
+                    className="font-bold border border-indigo-500/10 px-1.5 mt-0.5"
+                  >
+                    {actualVal} {unit}
+                  </Badge>
+                </div>
+
+                {/* Separator Divider */}
+                <div className="w-px h-8 bg-zinc-800/80 self-center shrink-0" />
+
+                {/* Limit Block */}
+                <div className="flex flex-col items-start gap-0.5 min-w-[120px] flex-1">
+                  <Text
+                    size="8px"
+                    fw={900}
+                    className="text-zinc-500 uppercase tracking-widest leading-none"
+                  >
+                    Mantenimiento
+                  </Text>
+                  {hasWarning ? (
+                    <Badge
+                      variant="filled"
+                      color="red"
+                      radius="sm"
+                      size="sm"
+                      onClick={onResolve}
+                      className="font-bold px-1.5 mt-0.5 animate-pulse cursor-pointer border border-red-500/20"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Requiere Mantenimiento
+                    </Badge>
+                  ) : alertVal ? (
+                    <Badge
+                      variant="light"
+                      color="pink"
+                      radius="sm"
+                      size="sm"
+                      className="font-bold border border-pink-500/10 px-1.5 mt-0.5"
+                    >
+                      Próx: {alertVal} {unit}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="light"
+                      color="zinc"
+                      radius="sm"
+                      size="sm"
+                      className="font-bold border border-zinc-700/10 px-1.5 mt-0.5 text-zinc-400"
+                    >
+                      Sin Alerta
+                    </Badge>
+                  )}
+                </div>
+              </Group>
+            </Group>
+          );
+        };
+
         return (
-          <Stack gap={6}>
-            {product.control_por_horometro && (
-              <Group justify="space-between" align="center" wrap="nowrap">
-                <Text size="xs" c="zinc.4">Horas: <Text span fw={700} c="white">{record.total_horas}</Text></Text>
-                {hasWarningH ? (
-                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "horometro")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
-                ) : record.proxima_advertencia_horas ? (
-                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_horas}</Text>
-                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
-              </Group>
+          <Stack gap={10}>
+            {product.control_por_horometro && renderControlRow(
+              <ClockIcon className="w-4 h-4 text-zinc-400" />,
+              record.total_horas,
+              record.proxima_advertencia_horas,
+              !!hasWarningH,
+              "h.",
+              () => onResolverMantenimiento(record, "horometro")
             )}
-            {product.control_por_odometro && (
-              <Group justify="space-between" align="center" wrap="nowrap">
-                <Text size="xs" c="zinc.4">Km: <Text span fw={700} c="white">{record.total_kilometros}</Text></Text>
-                {hasWarningKm ? (
-                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "odometro")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
-                ) : record.proxima_advertencia_kilometros ? (
-                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_kilometros}</Text>
-                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
-              </Group>
+            {product.control_por_odometro && renderControlRow(
+              <ArrowTrendingUpIcon className="w-4 h-4 text-zinc-400" />,
+              record.total_kilometros,
+              record.proxima_advertencia_kilometros,
+              !!hasWarningKm,
+              "km",
+              () => onResolverMantenimiento(record, "odometro")
             )}
-            {product.control_por_vueltas && (
-              <Group justify="space-between" align="center" wrap="nowrap">
-                <Text size="xs" c="zinc.4">Vueltas: <Text span fw={700} c="white">{record.total_vueltas}</Text></Text>
-                {hasWarningV ? (
-                  <Badge color="red.6" variant="filled" size="xs" onClick={() => onResolverMantenimiento(record, "vueltas")} style={{ cursor: 'pointer' }}>Requiere Mant.</Badge>
-                ) : record.proxima_advertencia_vueltas ? (
-                  <Text size="xs" c="zinc.5">Próx: {record.proxima_advertencia_vueltas}</Text>
-                ) : <Text size="xs" c="zinc.6">Sin alerta</Text>}
-              </Group>
+            {product.control_por_vueltas && renderControlRow(
+              <ArrowPathIcon className="w-4 h-4 text-zinc-400" />,
+              record.total_vueltas,
+              record.proxima_advertencia_vueltas,
+              !!hasWarningV,
+              "vueltas",
+              () => onResolverMantenimiento(record, "vueltas")
             )}
           </Stack>
         );
@@ -263,7 +345,13 @@ export const ProductGroupCard = ({
       textAlign: "center",
       render: (record) => (
         <Group justify="center" gap="xs">
-          <Button variant="light" size="compact-xs" color="indigo" onClick={() => onConfigurarAlertas(record)}>
+          <Button 
+            variant="light" 
+            size="compact-xs" 
+            color="cyan" 
+            leftSection={<AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />}
+            onClick={() => onConfigurarAlertas(record)}
+          >
             Alertas
           </Button>
         </Group>

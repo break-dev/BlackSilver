@@ -407,7 +407,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             />
           </Grid.Col>
 
-          <Grid.Col span={4}>
+          <Grid.Col span={isTransport ? 4 : 12}>
             <NumberInput
               label="Año del Modelo"
               value={form.yearcito_modelo || 0}
@@ -423,7 +423,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
 
           {isTransport && (
             <>
-              <Grid.Col span={6}>
+              <Grid.Col span={4}>
                 <TextInput
                   label="Serie de Placa"
                   placeholder="Ej. AAA"
@@ -438,7 +438,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
                 />
               </Grid.Col>
 
-              <Grid.Col span={6}>
+              <Grid.Col span={4}>
                 <TextInput
                   label="Número de Placa"
                   placeholder="Ej. 123"
@@ -455,7 +455,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             </>
           )}
 
-          <Grid.Col span={4}>
+          <Grid.Col span={6}>
             <DateTimePicker
               label="Fecha de Ingreso"
               value={
@@ -476,7 +476,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             />
           </Grid.Col>
 
-          <Grid.Col span={4}>
+          <Grid.Col span={6}>
             <Select
               label="Estado Inicial"
               placeholder="Seleccione el estado..."

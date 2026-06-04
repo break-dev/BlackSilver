@@ -5,13 +5,17 @@ import {
   Group,
   Text,
   Textarea,
+  Badge,
 } from "@mantine/core";
-import { CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { DateTimePicker } from "@mantine/dates";
+import type { DateValue } from "@mantine/dates";
+import { CheckCircleIcon, ExclamationTriangleIcon, CalendarIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { ActivosService } from "../../service/activos.service";
 import { useNotify } from "../../../../hooks/useNotify";
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
 import { useAuthStore } from "../../../../stores/auth.store";
+import dayjs from "dayjs";
 
 interface Props {
   opened: boolean;
@@ -26,6 +30,7 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
   const { usuario } = useAuthStore();
   const [saving, setSaving] = useState(false);
   const [observacion, setObservacion] = useState("");
+  const [fechaMantenimiento, setFechaMantenimiento] = useState<Date | null>(new Date());
 
   const handleSubmit = async () => {
     if (!usuario?.id_empleado) {
@@ -40,6 +45,7 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
         id_empleado_registro: usuario.id_empleado,
         tipo_control: tipoControl,
         observacion: observacion.trim() || null,
+        fecha_hora_mantenimiento: fechaMantenimiento ? dayjs(fechaMantenimiento).format("YYYY-MM-DD HH:mm:ss") : null
       });
 
       if (res.success) {
@@ -63,6 +69,12 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
     vueltas: "Vueltas"
   }[tipoControl];
 
+  const actualValue = {
+    horometro: `${activo.total_horas} h.`,
+    odometro: `${activo.total_kilometros} km`,
+    vueltas: `${activo.total_vueltas} vueltas`
+  }[tipoControl];
+
   const fieldClasses = {
     input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
     label: "text-zinc-300 mb-1 font-medium",
@@ -76,6 +88,7 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
       size="md"
     >
       <Stack gap="md">
+        {/* Warning Indicator */}
         <Group wrap="nowrap" align="flex-start" className="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
           <ExclamationTriangleIcon className="w-6 h-6 text-red-500 shrink-0" />
           <Stack gap={4}>
@@ -88,6 +101,40 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
           </Stack>
         </Group>
 
+        {/* Visual Details Card */}
+        <Stack gap="xs" className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+          <Group justify="space-between" align="center">
+            <Group gap="xs">
+              <CubeIcon className="w-4 h-4 text-zinc-400" />
+              <Text size="xs" c="zinc.4" fw={500}>Activo Fijo:</Text>
+            </Group>
+            <Text size="xs" fw={700} c="white">{activo.correlativo} - {activo.producto}</Text>
+          </Group>
+
+          <Group justify="space-between" align="center">
+            <Group gap="xs">
+              <CalendarIcon className="w-4 h-4 text-zinc-400" />
+              <Text size="xs" c="zinc.4" fw={500}>Tipo de Control / Valor:</Text>
+            </Group>
+            <Group gap="xs">
+              <Badge variant="light" color="indigo" size="xs">{tipoLabel}</Badge>
+              <Text size="xs" fw={700} c="white">{actualValue}</Text>
+            </Group>
+          </Group>
+        </Stack>
+
+        {/* Fecha Mantenimiento picker */}
+        <DateTimePicker
+          label="Fecha y Hora de Mantenimiento"
+          value={fechaMantenimiento}
+          onChange={(val: DateValue) => setFechaMantenimiento(val ? new Date(val) : null)}
+          required
+          size="xs"
+          radius="lg"
+          classNames={fieldClasses}
+        />
+
+        {/* Observation Textarea */}
         <Textarea
           label="Observaciones (Opcional)"
           placeholder="Ej: Cambio de aceite y filtros..."

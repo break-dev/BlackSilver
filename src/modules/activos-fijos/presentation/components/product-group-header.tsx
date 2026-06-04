@@ -4,6 +4,8 @@ import {
   ShieldCheckIcon,
   TruckIcon,
   ClockIcon,
+  ArrowPathIcon,
+  ArrowTrendingUpIcon,
 } from "@heroicons/react/24/outline";
 import type { GroupedActivoProducto } from "./product-group-card";
 
@@ -56,8 +58,13 @@ export const ProductGroupHeader = ({ product }: Props) => {
               )}
               {product.control_por_odometro && (
                 <Tooltip label="Control de kilometraje (Odómetro) habilitado">
-                  <Badge color="blue" variant="light" size="xs">
-                    Odo
+                  <Badge 
+                    color="blue" 
+                    variant="light" 
+                    size="xs"
+                    leftSection={<ArrowTrendingUpIcon className="w-3.5 h-3.5" />}
+                  >
+                    Odómetro
                   </Badge>
                 </Tooltip>
               )}
@@ -69,7 +76,19 @@ export const ProductGroupHeader = ({ product }: Props) => {
                     size="xs"
                     leftSection={<ClockIcon className="w-3.5 h-3.5" />}
                   >
-                    Hor
+                    Horómetro
+                  </Badge>
+                </Tooltip>
+              )}
+              {product.control_por_vueltas && (
+                <Tooltip label="Control de vueltas habilitado">
+                  <Badge
+                    color="grape"
+                    variant="light"
+                    size="xs"
+                    leftSection={<ArrowPathIcon className="w-3.5 h-3.5" />}
+                  >
+                    Vueltas
                   </Badge>
                 </Tooltip>
               )}

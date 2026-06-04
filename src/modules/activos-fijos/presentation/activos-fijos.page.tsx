@@ -272,14 +272,14 @@ export const ActivosFijosPage = () => {
             opened={openedAlertas}
             close={closeAlertas}
             activo={selectedActivo}
-            onSuccess={refresh}
+            onSuccess={() => refresh(false)}
           />
           <ActivoMantenimientoModal
             opened={openedMantenimiento}
             close={closeMantenimiento}
             activo={selectedActivo}
             tipoControl={tipoMantenimiento}
-            onSuccess={refresh}
+            onSuccess={() => refresh(false)}
           />
         </>
       )}

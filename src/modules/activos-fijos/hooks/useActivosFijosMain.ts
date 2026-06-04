@@ -16,8 +16,8 @@ export const useActivosMain = () => {
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
   const [idMina, setIdMina] = useState<string | null>(null);
 
-  const fetchActivos = async () => {
-    setLoading(true);
+  const fetchActivos = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const res = await ActivosService.getActivos();
       if (res.success) setActivos(res.data);
@@ -25,7 +25,7 @@ export const useActivosMain = () => {
       console.error("Error al cargar activos", error);
       notifyError("Error al cargar activos");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -88,7 +88,7 @@ export const useActivosMain = () => {
     setIdAlmacen,
     idMina,
     setIdMina,
-    refresh: fetchActivos,
+    refresh: (showLoading?: boolean) => fetchActivos(showLoading),
     addActivo,
   };
 };
