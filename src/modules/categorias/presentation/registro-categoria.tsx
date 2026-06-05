@@ -252,7 +252,7 @@ export const RegistroCategoria = ({
             >
               Opciones de Control
             </Text>
-            <Group gap="xl">
+            <Group gap="md">
               <Tooltip
                 label="Permite registrar datos propios de un vehículo para consultas y gestión de flota."
                 position="top"
@@ -275,7 +275,7 @@ export const RegistroCategoria = ({
               </Tooltip>
 
               <Tooltip
-                label="Lleva un control por kilometraje para el módulo de Uso/Mantenimiento."
+                label="Lleva un control por kilometraje para el módulo de Uso."
                 position="top"
                 withArrow
                 multiline
@@ -298,7 +298,7 @@ export const RegistroCategoria = ({
               </Tooltip>
 
               <Tooltip
-                label="Lleva un control por horas de trabajo para el módulo de Uso/Mantenimiento."
+                label="Lleva un control por horas de trabajo para el módulo de Uso."
                 position="top"
                 withArrow
                 multiline

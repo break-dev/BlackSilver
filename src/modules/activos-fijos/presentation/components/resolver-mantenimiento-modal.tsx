@@ -84,41 +84,59 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
     <ModalEstandar
       opened={opened}
       close={close}
-      title="Resolver Advertencia de Mantenimiento"
+      title="Resolver Alerta de Mantenimiento"
       size="md"
     >
       <Stack gap="md">
         {/* Warning Indicator */}
-        <Group wrap="nowrap" align="flex-start" className="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+        <Group
+          wrap="nowrap"
+          align="flex-start"
+          className="bg-red-500/10 p-4 rounded-xl border border-red-500/20"
+        >
           <ExclamationTriangleIcon className="w-6 h-6 text-red-500 shrink-0" />
           <Stack gap={4}>
             <Text size="sm" c="white" fw={500}>
-              Mantenimiento por {tipoLabel} Requerido
+              Mantenimiento por {tipoLabel.toLowerCase()} requerido
             </Text>
             <Text size="xs" c="red.2">
-              Al confirmar esta acción, registrarás que se ha realizado el mantenimiento correspondiente y la alerta se reprogramará basándose en el intervalo configurado.
+              Al confirmar que se ha realizado el mantenimiento , la alerta se
+              reprogramará basándose en el intervalo configurado.
             </Text>
           </Stack>
         </Group>
 
         {/* Visual Details Card */}
-        <Stack gap="xs" className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+        <Stack
+          gap="xs"
+          className="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30"
+        >
           <Group justify="space-between" align="center">
             <Group gap="xs">
               <CubeIcon className="w-4 h-4 text-zinc-400" />
-              <Text size="xs" c="zinc.4" fw={500}>Activo Fijo:</Text>
+              <Text size="xs" c="zinc.4" fw={500}>
+                Activo:
+              </Text>
             </Group>
-            <Text size="xs" fw={700} c="white">{activo.correlativo} - {activo.producto}</Text>
+            <Text size="xs" fw={700} c="white">
+              {activo.correlativo} - {activo.producto}
+            </Text>
           </Group>
 
           <Group justify="space-between" align="center">
             <Group gap="xs">
               <CalendarIcon className="w-4 h-4 text-zinc-400" />
-              <Text size="xs" c="zinc.4" fw={500}>Tipo de Control / Valor:</Text>
+              <Text size="xs" c="zinc.4" fw={500}>
+                Tipo de Control / Valor:
+              </Text>
             </Group>
             <Group gap="xs">
-              <Badge variant="light" color="indigo" size="xs">{tipoLabel}</Badge>
-              <Text size="xs" fw={700} c="white">{actualValue}</Text>
+              <Badge variant="light" color="indigo" size="xs">
+                {tipoLabel}
+              </Badge>
+              <Text size="xs" fw={700} c="white">
+                {actualValue}
+              </Text>
             </Group>
           </Group>
         </Stack>
@@ -127,7 +145,9 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
         <DateTimePicker
           label="Fecha y Hora de Mantenimiento"
           value={fechaMantenimiento}
-          onChange={(val: DateValue) => setFechaMantenimiento(val ? new Date(val) : null)}
+          onChange={(val: DateValue) =>
+            setFechaMantenimiento(val ? new Date(val) : null)
+          }
           required
           size="xs"
           radius="lg"
@@ -136,7 +156,7 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
 
         {/* Observation Textarea */}
         <Textarea
-          label="Observaciones (Opcional)"
+          label="Observaciones (opc.)"
           placeholder="Ej: Cambio de aceite y filtros..."
           value={observacion}
           onChange={(e) => setObservacion(e.target.value)}
@@ -147,7 +167,14 @@ export const ActivoMantenimientoModal = ({ opened, close, activo, tipoControl, o
         />
 
         <Group justify="flex-end" mt="md">
-          <Button variant="subtle" color="zinc.5" onClick={close} disabled={saving} size="xs" radius="lg">
+          <Button
+            variant="subtle"
+            color="zinc.5"
+            onClick={close}
+            disabled={saving}
+            size="xs"
+            radius="lg"
+          >
             Cancelar
           </Button>
           <Button

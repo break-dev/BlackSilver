@@ -130,7 +130,9 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
   );
 
   const isTransport = useMemo(
-    () => selectedProd?.para_transporte === true || selectedProd?.para_transporte === 1,
+    () =>
+      selectedProd?.para_transporte === true ||
+      selectedProd?.para_transporte === 1,
     [selectedProd],
   );
 
@@ -169,7 +171,9 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
   const handleSubmit = async () => {
     if (isTransport) {
       if (!form.serie_placa?.trim() || !form.numero_placa?.trim()) {
-        notifyError("La serie y el número de placa son obligatorios para activos de transporte.");
+        notifyError(
+          "La serie y el número de placa son obligatorios para activos de transporte.",
+        );
         return;
       }
     }
@@ -194,7 +198,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
         <Grid gutter="md">
           <Grid.Col span={12}>
             <Select
-              label="Producto Base (Activo Fijo)"
+              label="Producto Base"
               placeholder={
                 loadingProductos
                   ? "Cargando productos..."
@@ -407,7 +411,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             />
           </Grid.Col>
 
-          <Grid.Col span={isTransport ? 4 : 12}>
+          <Grid.Col span={4}>
             <NumberInput
               label="Año del Modelo"
               value={form.yearcito_modelo || 0}
@@ -421,39 +425,37 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
             />
           </Grid.Col>
 
-          {isTransport && (
-            <>
-              <Grid.Col span={4}>
-                <TextInput
-                  label="Serie de Placa"
-                  placeholder="Ej. AAA"
-                  value={form.serie_placa || ""}
-                  onChange={(e) =>
-                    setForm({ ...form, serie_placa: e.target.value })
-                  }
-                  required
-                  size="xs"
-                  radius="lg"
-                  classNames={fieldClasses}
-                />
-              </Grid.Col>
+          <Grid.Col span={4}>
+            <TextInput
+              label="Serie de Placa"
+              placeholder="Ej. AAA"
+              value={form.serie_placa || ""}
+              onChange={(e) =>
+                setForm({ ...form, serie_placa: e.target.value })
+              }
+              required={isTransport}
+              disabled={!isTransport}
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
 
-              <Grid.Col span={4}>
-                <TextInput
-                  label="Número de Placa"
-                  placeholder="Ej. 123"
-                  value={form.numero_placa || ""}
-                  onChange={(e) =>
-                    setForm({ ...form, numero_placa: e.target.value })
-                  }
-                  required
-                  size="xs"
-                  radius="lg"
-                  classNames={fieldClasses}
-                />
-              </Grid.Col>
-            </>
-          )}
+          <Grid.Col span={4}>
+            <TextInput
+              label="Número de Placa"
+              placeholder="Ej. 123"
+              value={form.numero_placa || ""}
+              onChange={(e) =>
+                setForm({ ...form, numero_placa: e.target.value })
+              }
+              required={isTransport}
+              disabled={!isTransport}
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
 
           <Grid.Col span={6}>
             <DateTimePicker
@@ -482,7 +484,10 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
               placeholder="Seleccione el estado..."
               data={[
                 { value: EstadoActivoFijo.EnUso, label: "En Uso" },
-                { value: EstadoActivoFijo.EnMantenimiento, label: "En Mantenimiento" },
+                {
+                  value: EstadoActivoFijo.EnMantenimiento,
+                  label: "En Mantenimiento",
+                },
                 { value: EstadoActivoFijo.EnAlmacen, label: "En Almacén" },
                 { value: EstadoActivoFijo.DadoDeBaja, label: "Dado de Baja" },
               ]}
