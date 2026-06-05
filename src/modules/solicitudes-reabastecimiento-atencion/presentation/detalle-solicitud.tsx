@@ -302,7 +302,8 @@ export const DetalleSolicitud = ({
                     (d) =>
                       (d.estado === Estado_SolicitudDetalle.Aprobado ||
                         d.estado === Estado_SolicitudDetalle.EnDespacho ||
-                        d.estado === Estado_SolicitudDetalle.SolicitandoPrestamo) &&
+                        d.estado ===
+                          Estado_SolicitudDetalle.SolicitandoPrestamo) &&
                       d.pendiente_base > 0,
                   ) && (
                     <div className="flex justify-center">
@@ -353,7 +354,8 @@ export const DetalleSolicitud = ({
                   <td className="px-4 py-4 text-center">
                     {(item.estado === Estado_SolicitudDetalle.Aprobado ||
                       item.estado === Estado_SolicitudDetalle.EnDespacho ||
-                      item.estado === Estado_SolicitudDetalle.SolicitandoPrestamo) &&
+                      item.estado ===
+                        Estado_SolicitudDetalle.SolicitandoPrestamo) &&
                     item.pendiente_base > 0 ? (
                       <Checkbox
                         checked={selectedItemsIds.includes(
@@ -380,17 +382,6 @@ export const DetalleSolicitud = ({
                       >
                         {item.producto}
                       </Text>
-                      {item.producto_destino && (
-                        <Badge
-                          size="xs"
-                          variant="filled"
-                          color="pink"
-                          className="w-fit font-bold tracking-tight px-3"
-                          style={{ color: "white" }}
-                        >
-                          PARA: {item.producto_destino}
-                        </Badge>
-                      )}
                       {(() => {
                         const stock = Number(item.stock_disponible_base || 0);
                         const pendiente = item.pendiente_base;

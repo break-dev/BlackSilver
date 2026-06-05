@@ -38,11 +38,6 @@ export interface RES_PrestamoDetalle {
   producto: string;
   tipo_bien: TipoBien;
   //
-  id_producto_destino: number | null;
-  producto_destino: string | null;
-  id_activo_fijo_destino: number | null;
-  correlativo_activo_fijo_destino: string | null;
-  //
   stock_disponible_base: number;
   //
   id_unidad_medida_base: number;

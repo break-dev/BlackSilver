@@ -19,9 +19,9 @@ export const useControlUso = () => {
 
   // Default values: current month and year
   const currentDate = new Date();
-  const [tipoControl, setTipoControl] = useState<"horometro" | "odometro" | "vueltas">(
-    "horometro",
-  );
+  const [tipoControl, setTipoControl] = useState<
+    "horometro" | "odometro" | "vueltas"
+  >("horometro");
   const [mes, setMes] = useState<number>(currentDate.getMonth() + 1); // 1-indexed (Jan = 1, Dec = 12)
   const [anio, setAnio] = useState<number>(currentDate.getFullYear());
 
@@ -131,9 +131,13 @@ export const useControlUso = () => {
       odometro_fin: nuevo.odometro_fin || null,
       cantidad_vueltas: nuevo.cantidad_vueltas || null,
       total_horas: nuevo.total_horas || null,
-      total_km: nuevo.odometro_fin != null && nuevo.odometro_inicio != null
-        ? Math.max(0, Number(nuevo.odometro_fin) - Number(nuevo.odometro_inicio))
-        : null,
+      total_km:
+        nuevo.odometro_fin != null && nuevo.odometro_inicio != null
+          ? Math.max(
+              0,
+              Number(nuevo.odometro_fin) - Number(nuevo.odometro_inicio),
+            )
+          : null,
       precio_unitario: nuevo.precio_unitario || null,
       costo_total: nuevo.costo_total || null,
       es_para_mina: nuevo.es_para_mina || null,
@@ -143,6 +147,8 @@ export const useControlUso = () => {
       labor: nuevo.labor || null,
       id_cliente: nuevo.id_cliente || null,
       cliente: nuevo.cliente || null,
+      ubicacion_activo: nuevo.ubicacion_activo,
+      tipo_material: nuevo.tipo_material,
       tipo_carga: nuevo.tipo_carga || null,
       id_tarifa: nuevo.id_tarifa || null,
       tarifa_desc: nuevo.tarifa_desc || null,

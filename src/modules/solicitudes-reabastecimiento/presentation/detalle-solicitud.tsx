@@ -369,17 +369,6 @@ export const DetalleSolicitud = ({
                             >
                               {det.producto}
                             </Text>
-                            {det.producto_destino && (
-                              <Badge
-                                size="xs"
-                                variant="filled"
-                                color="pink"
-                                className="w-fit font-bold tracking-tight px-3"
-                                style={{ color: "white" }}
-                              >
-                                PARA: {det.producto_destino}
-                              </Badge>
-                            )}
                           </div>
                         </Group>
                       </td>

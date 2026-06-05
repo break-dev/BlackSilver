@@ -451,31 +451,15 @@ export const DetalleRequerimiento = ({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1.5">
-                        {item.producto_destino && (
-                          <Badge
-                            size="xs"
-                            variant="filled"
-                            color="pink"
-                            className="w-fit font-bold tracking-tight px-3"
-                            style={{ color: "white" }}
-                          >
-                            PARA: {item.producto_destino}
-                          </Badge>
+                      <Text
+                        size="xs"
+                        c="zinc.5"
+                        className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
+                      >
+                        {item.comentario || (
+                          <span className="text-zinc-400">Sin comentarios</span>
                         )}
-                        <Text
-                          size="xs"
-                          c="zinc.5"
-                          className="max-w-[220px] italic leading-tight group-hover:text-zinc-300 transition-colors"
-                        >
-                          {item.comentario ||
-                            (!item.producto_destino && (
-                              <span className="text-zinc-400">
-                                Sin comentarios
-                              </span>
-                            ))}
-                        </Text>
-                      </div>
+                      </Text>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Badge

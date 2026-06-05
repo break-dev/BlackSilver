@@ -44,7 +44,8 @@ export const GroupByDetalleRequerimiento = ({
 
   const tEntregadoDetalleActualBase = isActivoFijo
     ? activosFijos.reduce(
-        (acc, a) => acc + (entregaCantidadesActivos[idDetalleReq]?.[a.id_activo] || 0),
+        (acc, a) =>
+          acc + (entregaCantidadesActivos[idDetalleReq]?.[a.id_activo] || 0),
         0,
       )
     : lotes.reduce(
@@ -68,16 +69,6 @@ export const GroupByDetalleRequerimiento = ({
                 {detalle_req.unidad_medida_req_abv}
               </span>
             </Text>
-            {detalle_req.producto_destino && (
-              <Badge
-                size="sm"
-                variant="filled"
-                color="pink"
-                className="font-black px-2 py-3 rounded-lg"
-              >
-                Para: {detalle_req.producto_destino}
-              </Badge>
-            )}
           </div>
           {detalle_req.id_unidad_medida_base !==
             detalle_req.id_unidad_medida_req && (

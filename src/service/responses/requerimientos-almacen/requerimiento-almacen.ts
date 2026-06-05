@@ -50,11 +50,6 @@ export interface RES_DetalleRequerimiento {
   es_auditable: boolean;
   tipo_bien: TipoBien;
   //
-  id_activo_fijo_destino: number | null;
-  correlativo_activo_fijo_destino: string | null;
-  id_producto_destino: number | null;
-  producto_destino: string | null;
-  //
   id_unidad_medida_base: number;
   unidad_medida_base_abv: string;
   contenido_por_presentacion: number;

@@ -226,22 +226,9 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
                   </Text>
 
                   <View style={tw("w-[25%] text-left")}>
-                    {det.producto_destino ? (
-                      <View>
-                        <Text style={tw("text-[8pt] font-bold text-pink-600")}>
-                          PARA: {det.producto_destino} {det.correlativo_activo_fijo_destino ? `[${det.correlativo_activo_fijo_destino}]` : ""}
-                        </Text>
-                        {det.comentario && (
-                          <Text style={tw("text-[8pt] text-zinc-500 mt-1")}>
-                            {det.comentario}
-                          </Text>
-                        )}
-                      </View>
-                    ) : (
-                      <Text style={tw("text-[8pt] text-zinc-500")}>
-                        {det.comentario || "---"}
-                      </Text>
-                    )}
+                    <Text style={tw("text-[8pt] text-zinc-500")}>
+                      {det.comentario || "---"}
+                    </Text>
                   </View>
                 </View>
               );

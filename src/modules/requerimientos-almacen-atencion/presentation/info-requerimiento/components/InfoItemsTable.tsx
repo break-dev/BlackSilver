@@ -359,37 +359,15 @@ export const InfoItemsTable = ({
                   </td>
 
                   <td className="px-6 py-4">
-                    {item.producto_destino ? (
-                      <div className="flex flex-col gap-0.5">
-                        <Badge
-                          size="xs"
-                          variant="filled"
-                          color="pink"
-                          className="w-fit font-black px-1.5 text-white"
-                        >
-                          PARA: {item.producto_destino} {item.correlativo_activo_fijo_destino ? `[${item.correlativo_activo_fijo_destino}]` : ""}
-                        </Badge>
-                        {item.comentario && (
-                          <Text
-                            size="xs"
-                            c="zinc.5"
-                            className="italic leading-tight whitespace-pre-wrap"
-                          >
-                            {item.comentario}
-                          </Text>
-                        )}
-                      </div>
-                    ) : (
-                      <Text
-                        size="xs"
-                        c="zinc.5"
-                        className="italic leading-tight whitespace-pre-wrap"
-                      >
-                        {item.comentario || (
-                          <span className="text-zinc-500">Sin comentarios</span>
-                        )}
-                      </Text>
-                    )}
+                    <Text
+                      size="xs"
+                      c="zinc.5"
+                      className="italic leading-tight whitespace-pre-wrap"
+                    >
+                      {item.comentario || (
+                        <span className="text-zinc-500">Sin comentarios</span>
+                      )}
+                    </Text>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <Badge
