@@ -7,6 +7,7 @@ import type {
   RES_TipoMaterial,
   RES_UltimoHorometro,
   RES_UltimoOdometro,
+  RES_ReporteMensual,
 } from "./control-uso.responses";
 
 const path = "/control-uso";
@@ -72,6 +73,14 @@ export const ControlUsoService = {
 
   crearMaterial: async (payload: REQ_CrearMaterial) => {
     const { data } = await api.post<IRespuesta<RES_TipoMaterial>>(`${path}/materiales`, payload);
+    return data;
+  },
+
+  // Reporte
+  getReporteMensual: async (mes: number, anio: number) => {
+    const { data } = await api.get<IRespuesta<RES_ReporteMensual>>(`${path}/reportes/mensual`, {
+      params: { mes, anio },
+    });
     return data;
   },
 };

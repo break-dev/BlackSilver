@@ -6,6 +6,8 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { RegistroUso } from "./registro-uso";
 import { useExcel } from "../../../hooks/useExcel";
+import { useNotify } from "../../../hooks/useNotify";
+import { ControlUsoService } from "../service/control-uso.service";
 import { buildControlUsoExcel } from "./control-uso-excel";
 import { IconFileSpreadsheet } from "@tabler/icons-react";
 import {
@@ -56,19 +58,34 @@ export const ControlUsoPage = () => {
     pushNuevoLog,
   } = useControlUso();
 
-  // Registration modal controller
   const [opened, { open, close }] = useDisclosure(false);
 
   const { generateExcel, isGeneratingExcel } = useExcel();
+  const { notifyError } = useNotify();
 
   const handleExportExcel = () => {
-    if (logs.length === 0) return;
-    const nombreActivo = selectedAssetObj ? selectedAssetObj.producto : "Activo";
-
     generateExcel({
-      filename: `Control_Uso_${dayjs().format("YYYYMMDD_HHmm")}.xlsx`,
+      filename: `Control_Uso_${mes}_${anio}.xlsx`,
       builder: async (workbook) => {
-        await buildControlUsoExcel(workbook, logs, nombreActivo);
+        try {
+          const resp = await ControlUsoService.getReporteMensual(Number(mes), Number(anio));
+          if (resp.success) {
+            await buildControlUsoExcel(
+              workbook, 
+              resp.data.logs, 
+              resp.data.mantenimientos, 
+              Number(mes), 
+              Number(anio),
+              resp.data.empresa_logo
+            );
+          } else {
+            notifyError(resp.message || "Error al obtener datos para el reporte");
+            throw new Error(resp.message);
+          }
+        } catch (e) {
+          console.error(e);
+          throw e;
+        }
       },
     });
   };

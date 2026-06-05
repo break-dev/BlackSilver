@@ -8,6 +8,7 @@ export interface RES_ControlUsoLog {
   categoria: string;
   control_por_horometro: number;
   control_por_odometro: number;
+  ubicacion_activo: string | null;
   fecha_hora_inicio_control: string;
   fecha_hora_fin_control: string | null;
   horometro_inicio: string | number | null;
@@ -30,6 +31,7 @@ export interface RES_ControlUsoLog {
   id_tarifa: number | null;
   tarifa_desc: string | null;
   observacion: string | null;
+  tipo_material: string | null;
   created_at: string;
 }
 
@@ -56,4 +58,21 @@ export interface RES_TipoMaterial {
   id: number;
   nombre: string;
   created_at: string;
+}
+
+export interface RES_MantenimientoReporte {
+  id: number;
+  id_activo_fijo: number;
+  fecha_hora_mantenimiento: string;
+  tipo_control: string;
+  observacion: string;
+  horometro_actual: string | number | null;
+  odometro_actual: string | number | null;
+  vueltas_actuales: string | number | null;
+}
+
+export interface RES_ReporteMensual {
+  logs: RES_ControlUsoLog[];
+  mantenimientos: RES_MantenimientoReporte[];
+  empresa_logo?: string | null;
 }

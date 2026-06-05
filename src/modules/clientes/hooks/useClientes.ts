@@ -20,7 +20,7 @@ export const useClientes = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [notifyError]);
 
   useEffect(() => {
     fetchClientes();
