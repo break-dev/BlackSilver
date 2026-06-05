@@ -19,7 +19,7 @@ export const useControlUso = () => {
 
   // Default values: current month and year
   const currentDate = new Date();
-  const [tipoControl, setTipoControl] = useState<"horometro" | "odometro">(
+  const [tipoControl, setTipoControl] = useState<"horometro" | "odometro" | "vueltas">(
     "horometro",
   );
   const [mes, setMes] = useState<number>(currentDate.getMonth() + 1); // 1-indexed (Jan = 1, Dec = 12)
@@ -33,6 +33,7 @@ export const useControlUso = () => {
         const resp = await AuxService.get_activos_disponibles({
           control_por_horometro: tipoControl === "horometro" ? true : undefined,
           control_por_odometro: tipoControl === "odometro" ? true : undefined,
+          control_por_vueltas: tipoControl === "vueltas" ? true : undefined,
         });
         if (resp.success) {
           setActivos(resp.data);
@@ -123,13 +124,29 @@ export const useControlUso = () => {
       control_por_horometro: activeAsset?.control_por_horometro ? 1 : 0,
       control_por_odometro: activeAsset?.control_por_odometro ? 1 : 0,
       fecha_hora_inicio_control: nuevo.fecha_hora_inicio_control,
-      fecha_hora_fin_control: nuevo.fecha_hora_fin_control,
-      horometro_inicio: nuevo.horometro_inicio,
-      horometro_fin: nuevo.horometro_fin,
-      total_horas: nuevo.total_horas,
-      precio_unitario: nuevo.precio_unitario,
-      costo_total: nuevo.costo_total,
-      observacion: nuevo.observacion,
+      fecha_hora_fin_control: nuevo.fecha_hora_fin_control || null,
+      horometro_inicio: nuevo.horometro_inicio || null,
+      horometro_fin: nuevo.horometro_fin || null,
+      odometro_inicio: nuevo.odometro_inicio || null,
+      odometro_fin: nuevo.odometro_fin || null,
+      cantidad_vueltas: nuevo.cantidad_vueltas || null,
+      total_horas: nuevo.total_horas || null,
+      total_km: nuevo.odometro_fin != null && nuevo.odometro_inicio != null
+        ? Math.max(0, Number(nuevo.odometro_fin) - Number(nuevo.odometro_inicio))
+        : null,
+      precio_unitario: nuevo.precio_unitario || null,
+      costo_total: nuevo.costo_total || null,
+      es_para_mina: nuevo.es_para_mina || null,
+      id_mina: nuevo.id_mina || null,
+      mina: nuevo.mina || null,
+      id_labor: nuevo.id_labor || null,
+      labor: nuevo.labor || null,
+      id_cliente: nuevo.id_cliente || null,
+      cliente: nuevo.cliente || null,
+      tipo_carga: nuevo.tipo_carga || null,
+      id_tarifa: nuevo.id_tarifa || null,
+      tarifa_desc: nuevo.tarifa_desc || null,
+      observacion: nuevo.observacion || null,
       created_at: nuevo.created_at,
     };
 

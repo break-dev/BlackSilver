@@ -194,6 +194,7 @@ export const AuxService = {
     para_transporte?: boolean;
     control_por_odometro?: boolean;
     control_por_horometro?: boolean;
+    control_por_vueltas?: boolean;
     estado?: EstadoActivoFijo;
   }): Promise<IRespuesta<RES_ActivoFijoDisponible[]>> => {
     const apiParams = { ...filters };

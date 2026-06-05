@@ -187,9 +187,9 @@ export const ProductGroupCard = ({
       title: "Control de Mantenimiento",
       width: 380,
       render: (record) => {
-        const hasWarningH = record.proxima_advertencia_horas && record.total_horas >= record.proxima_advertencia_horas;
-        const hasWarningKm = record.proxima_advertencia_kilometros && record.total_kilometros >= record.proxima_advertencia_kilometros;
-        const hasWarningV = record.proxima_advertencia_vueltas && record.total_vueltas >= record.proxima_advertencia_vueltas;
+        const hasWarningH = record.proxima_advertencia_horas && Number(record.total_horas) >= Number(record.proxima_advertencia_horas);
+        const hasWarningKm = record.proxima_advertencia_kilometros && Number(record.total_kilometros) >= Number(record.proxima_advertencia_kilometros);
+        const hasWarningV = record.proxima_advertencia_vueltas && Number(record.total_vueltas) >= Number(record.proxima_advertencia_vueltas);
 
         if (!product.control_por_horometro && !product.control_por_odometro && !product.control_por_vueltas) {
           return <Text size="xs" c="dimmed" fs="italic">No aplica</Text>;

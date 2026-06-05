@@ -10,15 +10,50 @@ export interface RES_ControlUsoLog {
   control_por_odometro: number;
   fecha_hora_inicio_control: string;
   fecha_hora_fin_control: string | null;
-  horometro_inicio: string | number;
-  horometro_fin: string | number;
-  total_horas: string | number;
-  precio_unitario: string | number;
-  costo_total: string | number;
+  horometro_inicio: string | number | null;
+  horometro_fin: string | number | null;
+  odometro_inicio: string | number | null;
+  odometro_fin: string | number | null;
+  cantidad_vueltas: string | number | null;
+  total_horas: string | number | null;
+  total_km: string | number | null;
+  precio_unitario: string | number | null;
+  costo_total: string | number | null;
+  es_para_mina: boolean | number | null;
+  id_mina: number | null;
+  mina: string | null;
+  id_labor: number | null;
+  labor: string | null;
+  id_cliente: number | null;
+  cliente: string | null;
+  tipo_carga: string | null;
+  id_tarifa: number | null;
+  tarifa_desc: string | null;
   observacion: string | null;
   created_at: string;
 }
 
 export interface RES_UltimoHorometro {
   ultimo_horometro: number;
+}
+
+export interface RES_UltimoOdometro {
+  ultimo_odometro: number;
+}
+
+export interface RES_Tarifa {
+  id: number;
+  id_activo_fijo: number;
+  tipo_control: string;
+  precio_unitario: string | number;
+  descripcion: string;
+  id_tipo_material: number | null;
+  tipo_material: string | null;
+  created_at: string;
+}
+
+export interface RES_TipoMaterial {
+  id: number;
+  nombre: string;
+  created_at: string;
 }

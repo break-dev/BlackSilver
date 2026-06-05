@@ -19,6 +19,7 @@ export interface RES_ActivoFijoDisponible {
   para_transporte: boolean;
   control_por_odometro: boolean;
   control_por_horometro: boolean;
+  control_por_vueltas: boolean;
   //
   id_unidad_medida_base: number;
   unidad_medida_base: string;

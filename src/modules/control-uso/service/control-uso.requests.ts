@@ -2,8 +2,29 @@ export interface REQ_RegistrarUso {
   id_activo_fijo: number;
   fecha_hora_inicio_control: string;
   fecha_hora_fin_control?: string | null;
-  horometro_inicio: number;
-  horometro_fin: number;
-  precio_unitario?: number;
+  horometro_inicio?: number | null;
+  horometro_fin?: number | null;
+  odometro_inicio?: number | null;
+  odometro_fin?: number | null;
+  cantidad_vueltas?: number | null;
+  id_tarifa?: number | null;
+  precio_unitario?: number | null;
+  es_para_mina?: boolean | null;
+  id_mina?: number | null;
+  id_labor?: number | null;
+  id_cliente?: number | null;
+  tipo_carga?: string | null;
   observacion?: string | null;
+}
+
+export interface REQ_CrearTarifa {
+  id_activo_fijo: number;
+  tipo_control: string;
+  precio_unitario: number;
+  descripcion: string;
+  id_tipo_material?: number | null;
+}
+
+export interface REQ_CrearMaterial {
+  nombre: string;
 }

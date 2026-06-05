@@ -5,6 +5,9 @@ import dayjs from "dayjs";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { RegistroUso } from "./registro-uso";
+import { useExcel } from "../../../hooks/useExcel";
+import { buildControlUsoExcel } from "./control-uso-excel";
+import { IconFileSpreadsheet } from "@tabler/icons-react";
 import {
   Button,
   Group,
@@ -55,6 +58,20 @@ export const ControlUsoPage = () => {
 
   // Registration modal controller
   const [opened, { open, close }] = useDisclosure(false);
+
+  const { generateExcel, isGeneratingExcel } = useExcel();
+
+  const handleExportExcel = () => {
+    if (logs.length === 0) return;
+    const nombreActivo = selectedAssetObj ? selectedAssetObj.producto : "Activo";
+
+    generateExcel({
+      filename: `Control_Uso_${dayjs().format("YYYYMMDD_HHmm")}.xlsx`,
+      builder: async (workbook) => {
+        await buildControlUsoExcel(workbook, logs, nombreActivo);
+      },
+    });
+  };
 
   // Generate years list
   const currentYear = new Date().getFullYear();
@@ -121,7 +138,7 @@ export const ControlUsoPage = () => {
     },
     {
       accessor: "lecturas",
-      title: tipoControl === "horometro" ? "Horómetro" : "Odómetro",
+      title: tipoControl === "horometro" ? "Horómetro" : tipoControl === "odometro" ? "Odómetro" : "Vueltas",
       width: 180,
       render: (r) => (
         <Group gap={8} wrap="nowrap">
@@ -129,30 +146,47 @@ export const ControlUsoPage = () => {
             <ClockIcon className="w-4 h-4 text-zinc-400" />
           </div>
           <div className="flex flex-col items-start gap-0.5">
-            <Text size="11px" fw={700} className="text-zinc-200">
-              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                Inicio:
-              </span>
-              {formatNumber(r.horometro_inicio)}
-            </Text>
-            <Text size="11px" fw={700} className="text-zinc-200">
-              <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                Fin:
-              </span>
-              {formatNumber(r.horometro_fin)}
-            </Text>
+            {tipoControl === "vueltas" ? (
+              <Text size="11px" fw={700} className="text-zinc-200">
+                <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                  Total Vueltas:
+                </span>
+                {formatNumber(r.cantidad_vueltas ?? 0)}
+              </Text>
+            ) : (
+              <>
+                <Text size="11px" fw={700} className="text-zinc-200">
+                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                    Inicio:
+                  </span>
+                  {formatNumber(tipoControl === "horometro" ? (r.horometro_inicio ?? 0) : (r.odometro_inicio ?? 0))}
+                </Text>
+                <Text size="11px" fw={700} className="text-zinc-200">
+                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                    Fin:
+                  </span>
+                  {formatNumber(tipoControl === "horometro" ? (r.horometro_fin ?? 0) : (r.odometro_fin ?? 0))}
+                </Text>
+              </>
+            )}
           </div>
         </Group>
       ),
     },
     {
       accessor: "total_horas",
-      title: tipoControl === "horometro" ? "Total Horas" : "Total Km",
+      title: tipoControl === "horometro" ? "Total Horas" : tipoControl === "odometro" ? "Total Km" : "Total Vueltas",
       textAlign: "center",
       width: 140,
       render: (r) => {
-        const value = formatNumber(r.total_horas);
-        const unit = tipoControl === "horometro" ? "hrs" : "Km";
+        const value = formatNumber(
+          tipoControl === "vueltas"
+            ? (r.cantidad_vueltas ?? 0)
+            : tipoControl === "odometro"
+            ? (r.total_km ?? 0)
+            : (r.total_horas ?? 0)
+        );
+        const unit = tipoControl === "horometro" ? "hrs" : tipoControl === "odometro" ? "Km" : "vlts";
         return (
           <Badge
             variant="light"
@@ -164,6 +198,47 @@ export const ControlUsoPage = () => {
           </Badge>
         );
       },
+    },
+    {
+      accessor: "destino",
+      title: "Destino / Trabajo",
+      width: 250,
+      hidden: tipoControl !== "horometro",
+      render: (r) => (
+        <Stack gap={2} className="py-1">
+          {r.es_para_mina ? (
+            <>
+              {r.mina && (
+                <Text size="11px" c="zinc.300">
+                  <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Mina:</span>
+                  {r.mina}
+                </Text>
+              )}
+              {r.labor && (
+                <Text size="11px" c="zinc.400">
+                  <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Labor:</span>
+                  {r.labor}
+                </Text>
+              )}
+            </>
+          ) : (
+            <>
+              {r.cliente && (
+                <Text size="11px" c="zinc.300">
+                  <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Cliente:</span>
+                  {r.cliente}
+                </Text>
+              )}
+            </>
+          )}
+          {r.tipo_carga && (
+            <Text size="11px" c="zinc.400" mt={2}>
+              <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Carga / Servicio:</span>
+              {r.tipo_carga}
+            </Text>
+          )}
+        </Stack>
+      ),
     },
     {
       accessor: "costo",
@@ -195,8 +270,13 @@ export const ControlUsoPage = () => {
                 size="sm"
                 className="font-bold border border-indigo-500/10 px-1.5 mt-0.5"
               >
-                S/. {formatNumber(r.precio_unitario)}
+                S/. {formatNumber(r.precio_unitario ?? 0)}
               </Badge>
+              {r.tarifa_desc && (
+                <Text size="8px" c="zinc.500" fw={600} className="mt-1 truncate max-w-[95px]" title={r.tarifa_desc}>
+                  {r.tarifa_desc}
+                </Text>
+              )}
             </div>
 
             {/* Separator Divider */}
@@ -218,7 +298,7 @@ export const ControlUsoPage = () => {
                 size="sm"
                 className="font-bold border border-pink-500/10 px-1.5 mt-0.5"
               >
-                S/. {formatNumber(r.costo_total)}
+                S/. {formatNumber(r.costo_total ?? 0)}
               </Badge>
             </div>
           </Group>
@@ -269,10 +349,11 @@ export const ControlUsoPage = () => {
             data={[
               { value: "horometro", label: "Horómetro" },
               { value: "odometro", label: "Odómetro" },
+              { value: "vueltas", label: "Vueltas" },
             ]}
             value={tipoControl}
             onChange={(val) =>
-              setTipoControl((val as "horometro" | "odometro") || "horometro")
+              setTipoControl((val as "horometro" | "odometro" | "vueltas") || "horometro")
             }
             radius="lg"
             size="sm"
@@ -362,8 +443,19 @@ export const ControlUsoPage = () => {
           />
         </div>
 
-        {/* Botón Registrar Uso */}
-        <div className="w-full md:w-auto">
+        {/* Botones de acción */}
+        <div className="w-full md:w-auto flex items-center gap-2">
+          <Button
+            color="green.7"
+            onClick={handleExportExcel}
+            loading={isGeneratingExcel}
+            disabled={logs.length === 0 || isGeneratingExcel}
+            radius="lg"
+            className="h-9 transition-all px-4 disabled:opacity-50"
+            leftSection={!isGeneratingExcel && <IconFileSpreadsheet size={18} />}
+          >
+            Exportar
+          </Button>
           <Button
             color="blue.6"
             leftSection={<PlusIcon className="w-4 h-4" />}
@@ -491,7 +583,7 @@ export const ControlUsoPage = () => {
       <ModalEstandar
         opened={opened}
         close={close}
-        title={`Registrar Control por ${tipoControl === "horometro" ? "Horómetro" : "Odómetro"}`}
+        title={`Registrar Control por ${tipoControl === "horometro" ? "Horómetro" : tipoControl === "odometro" ? "Odómetro" : "Vueltas"}`}
         size="md"
       >
         {selectedAssetObj && (
