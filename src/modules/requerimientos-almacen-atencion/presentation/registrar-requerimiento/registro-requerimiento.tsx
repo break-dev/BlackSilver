@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Badge,
   Button,
   Group,
   NumberInput,
@@ -99,20 +98,16 @@ export const RegistroRequerimiento = ({
       setCantidad,
       contenido,
       setContenido,
-      idActivoFijoDestino,
-      setIdActivoFijoDestino,
       comentarioItem,
       setComentarioItem,
       idAlmacenDestino,
-      activos,
     },
-    status: { submitting, error, loadingMinas, loadingMinaData, loadingActivos },
+    status: { submitting, error, loadingMinas, loadingMinaData },
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
       canAdd,
       productosFiltrados,
-      destinosDisponibles,
     },
     actions: {
       agregarItem,
@@ -180,7 +175,9 @@ export const RegistroRequerimiento = ({
               value: String(r.id_contratista),
               label: r.nombre_completo,
             }))}
-            value={idContratistaSolicitante ? String(idContratistaSolicitante) : null}
+            value={
+              idContratistaSolicitante ? String(idContratistaSolicitante) : null
+            }
             onChange={(val) => setIdContratistaSolicitante(Number(val))}
             classNames={inputClasses}
             radius="lg"
@@ -343,7 +340,9 @@ export const RegistroRequerimiento = ({
                   }))}
                   value={idUnidadMedida ? String(idUnidadMedida) : null}
                   onChange={(val) => setIdUnidadMedida(Number(val))}
-                  disabled={productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo}
+                  disabled={
+                    productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo
+                  }
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -378,35 +377,15 @@ export const RegistroRequerimiento = ({
               </div>
 
               <div className="md:col-span-6 mb-10">
-                {productoSeleccionado?.ids_categorias_consumidoras ? (
-                  <Select
-                    label="Destino del producto (Activo Fijo)"
-                    placeholder="Seleccione maquinaria o activo..."
-                    description="Especifique a qué equipo se asignará este insumo"
-                    withAsterisk
-                    disabled={loadingActivos}
-                    data={destinosDisponibles.map((a) => ({
-                      value: String(a.id_activo),
-                      label: `${a.correlativo} - ${a.producto}`,
-                    }))}
-                    value={idActivoFijoDestino ? String(idActivoFijoDestino) : null}
-                    onChange={(val) => setIdActivoFijoDestino(Number(val))}
-                    searchable
-                    classNames={inputClasses}
-                    radius="lg"
-                    size="sm"
-                  />
-                ) : (
-                  <TextInput
-                    label="Comentario del ítem"
-                    placeholder="Notas adicionales para este producto..."
-                    value={comentarioItem}
-                    onChange={(e) => setComentarioItem(e.target.value)}
-                    classNames={inputClasses}
-                    radius="lg"
-                    size="sm"
-                  />
-                )}
+                <TextInput
+                  label="Comentario del ítem"
+                  placeholder="Notas adicionales para este producto..."
+                  value={comentarioItem}
+                  onChange={(e) => setComentarioItem(e.target.value)}
+                  classNames={inputClasses}
+                  radius="lg"
+                  size="sm"
+                />
               </div>
 
               <div className="md:col-span-2 mb-10">
@@ -524,7 +503,7 @@ export const RegistroRequerimiento = ({
               </th>
               <th className="px-4 py-3 text-center min-w-[300px]">Cantidad</th>
               <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
-                Destino / Comentario
+                Comentario
               </th>
               <th className="px-4 py-3 text-center w-16"></th>
             </tr>
@@ -546,9 +525,6 @@ export const RegistroRequerimiento = ({
                 );
                 const uni = unidades.find(
                   (u) => u.id_unidad_medida === det.id_unidad_medida,
-                );
-                const destActivo = activos.find(
-                  (a) => a.id_activo === det.id_activo_fijo_destino,
                 );
                 const conError = det.cantidad_solicitada <= 0;
 
@@ -652,25 +628,7 @@ export const RegistroRequerimiento = ({
                       </Stack>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
-                      {destActivo ? (
-                        <div className="flex flex-col gap-1">
-                          <Badge
-                            size="xs"
-                            variant="filled"
-                            color="pink"
-                            className="w-fit font-bold tracking-tight px-3 text-white"
-                          >
-                            PARA: {destActivo.producto} [{destActivo.correlativo}]
-                          </Badge>
-                          {det.comentario && (
-                            <Text size="xs" c="dimmed" mt={2}>
-                              {det.comentario}
-                            </Text>
-                          )}
-                        </div>
-                      ) : (
-                        det.comentario || "-"
-                      )}
+                      {det.comentario || "-"}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <ActionIcon
