@@ -101,7 +101,7 @@ export const RegistrarSolicitudLogistica = ({
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-6">
           <CustomDatePicker
-            label="Fecha de Entrega (Opcional)"
+            label="Fecha de Entrega (opc.)"
             placeholder="Seleccione fecha"
             value={fechaEntrega}
             onChange={(val) => setFechaEntrega(val as Date | null)}

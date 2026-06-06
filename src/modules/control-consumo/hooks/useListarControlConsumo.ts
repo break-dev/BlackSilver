@@ -2,20 +2,27 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ControlConsumoService } from "../service/control-consumo.service";
 import { AuxService } from "../../../service/auxiliar.service";
-import type { RES_ControlConsumo, RES_ConsumoDetalle } from "../service/control-consumo.responses";
+import type {
+  RES_ResumenEntregasReq,
+  RES_Consumo,
+} from "../service/control-consumo.responses";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Almacen } from "../../../service/responses/almacen";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 export const useListarControlConsumo = () => {
   const { notifyError } = useNotify();
   const { en_modo_auditable } = useAuditoriaStore();
-  const [reporte, setReporte] = useState<RES_ControlConsumo[]>([]);
+  const [reporte, setReporte] = useState<RES_ResumenEntregasReq[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
-  // Assets states
+  const [idMina, setIdMina] = useState<string | null>(null);
+  const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
+
+  // Available fixed assets for registration modal
   const [activos, setActivos] = useState<RES_ActivoFijoDisponible[]>([]);
-  const [idActivoFijo, setIdActivoFijo] = useState<string | null>(null);
   const [loadingActivos, setLoadingActivos] = useState(false);
 
   // Default values: current month and year
@@ -23,46 +30,68 @@ export const useListarControlConsumo = () => {
   const [mes, setMes] = useState<number>(currentDate.getMonth() + 1); // 1-indexed (Jan = 1, Dec = 12)
   const [anio, setAnio] = useState<number>(currentDate.getFullYear());
 
-  // Fetch available assets on mount
+  // Fetch assets on mount
   useEffect(() => {
-    const fetchActivos = async () => {
+    const fetchCatalogos = async () => {
       setLoadingActivos(true);
       try {
-        const resp = await AuxService.get_activos_disponibles();
-        if (resp.success) {
-          setActivos(resp.data);
-          if (resp.data.length > 0) {
-            setIdActivoFijo(String(resp.data[0].id_activo));
-          } else {
-            setIdActivoFijo(null);
-          }
+        const activosResp = await AuxService.get_activos_disponibles();
+
+        if (activosResp.success) {
+          setActivos(activosResp.data);
         } else {
-          notifyError(resp.message || "Error al cargar la lista de activos");
+          notifyError(
+            activosResp.message || "Error al cargar la lista de activos",
+          );
         }
       } catch (err) {
-        notifyError("Error al conectar con el servidor para listar activos.");
+        notifyError(
+          "Error al conectar con el servidor para obtener los activos.",
+        );
         console.error(err);
       } finally {
         setLoadingActivos(false);
       }
     };
 
-    fetchActivos();
+    fetchCatalogos();
   }, [notifyError]);
 
-  // Fetch consumption logs when asset, month, or year changes
+  // Derive minas and almacenes from the loaded report data
+  const minas = useMemo<RES_Mina[]>(() => {
+    const unique = new Map<number, RES_Mina>();
+    reporte.forEach((item) => {
+      if (item.id_mina && !unique.has(item.id_mina)) {
+        unique.set(item.id_mina, {
+          id_mina: item.id_mina,
+          nombre: item.mina,
+          id_concesion: 0,
+          concesion: "",
+        });
+      }
+    });
+    return Array.from(unique.values());
+  }, [reporte]);
+
+  const almacenes = useMemo<RES_Almacen[]>(() => {
+    const unique = new Map<number, RES_Almacen>();
+    reporte.forEach((item) => {
+      if (item.id_almacen_destino && !unique.has(item.id_almacen_destino)) {
+        unique.set(item.id_almacen_destino, {
+          id_almacen: item.id_almacen_destino,
+          nombre: item.almacen_destino,
+          es_principal: 0,
+        });
+      }
+    });
+    return Array.from(unique.values());
+  }, [reporte]);
+
+  // Fetch consumption logs when filters change
   const cargarReporte = useCallback(async () => {
-    if (!idActivoFijo) {
-      setReporte([]);
-      return;
-    }
     setLoading(true);
     try {
-      const resp = await ControlConsumoService.getReporte(
-        Number(idActivoFijo),
-        mes,
-        anio,
-      );
+      const resp = await ControlConsumoService.getReporte(mes, anio);
 
       if (resp.success) {
         setReporte(resp.data);
@@ -75,23 +104,33 @@ export const useListarControlConsumo = () => {
     } finally {
       setLoading(false);
     }
-  }, [idActivoFijo, mes, anio, notifyError]);
+  }, [mes, anio, notifyError]);
 
   useEffect(() => {
     cargarReporte();
   }, [cargarReporte]);
 
-  // Filter logs in real-time on search query
+  // Filter logs in real-time on search query and local filters
   const filtrados = useMemo(() => {
-    const baseList = reporte.filter((item) => {
+    let list = reporte.filter((item) => {
       if (en_modo_auditable && item.es_auditable) return false;
       return true;
     });
 
-    const query = busqueda.toLowerCase().trim();
-    if (!query) return baseList;
+    if (idMina) {
+      list = list.filter((item) => String(item.id_mina) === idMina);
+    }
 
-    return baseList.filter(
+    if (idAlmacen) {
+      list = list.filter(
+        (item) => String(item.id_almacen_destino) === idAlmacen,
+      );
+    }
+
+    const query = busqueda.toLowerCase().trim();
+    if (!query) return list;
+
+    return list.filter(
       (item) =>
         item.producto.toLowerCase().includes(query) ||
         String(item.correlativo_requerimiento).toLowerCase().includes(query) ||
@@ -99,9 +138,9 @@ export const useListarControlConsumo = () => {
         item.almacen_destino.toLowerCase().includes(query) ||
         item.contratista_solicitante.toLowerCase().includes(query),
     );
-  }, [reporte, busqueda, en_modo_auditable]);
+  }, [reporte, idMina, idAlmacen, busqueda, en_modo_auditable]);
 
-  const agregarConsumoLocal = useCallback((nuevoConsumo: RES_ConsumoDetalle) => {
+  const agregarConsumoLocal = useCallback((nuevoConsumo: RES_Consumo) => {
     setReporte((prevReporte) =>
       prevReporte.map((item) => {
         if (
@@ -109,11 +148,12 @@ export const useListarControlConsumo = () => {
           nuevoConsumo.id_requerimiento_almacen_entrega_detalle
         ) {
           const nuevaCantidadConsumida =
-            item.cantidad_consumida_base + nuevoConsumo.cantidad_base_consumida;
+            Number(item.cantidad_consumida_base) +
+            Number(nuevoConsumo.cantidad_base_consumida);
 
           let nuevoEstado: "Sin Consumir" | "Consumo Parcial" | "Total" =
             "Sin Consumir";
-          if (nuevaCantidadConsumida >= item.cantidad_entregada_base) {
+          if (nuevaCantidadConsumida >= Number(item.cantidad_entregada_base)) {
             nuevoEstado = "Total";
           } else if (nuevaCantidadConsumida > 0) {
             nuevoEstado = "Consumo Parcial";
@@ -127,7 +167,7 @@ export const useListarControlConsumo = () => {
           };
         }
         return item;
-      })
+      }),
     );
   }, []);
 
@@ -140,9 +180,15 @@ export const useListarControlConsumo = () => {
     setMes,
     anio,
     setAnio,
+    minas,
+    idMina,
+    setIdMina,
+    loadingMinas: false,
+    almacenes,
+    idAlmacen,
+    setIdAlmacen,
+    loadingAlmacenes: false,
     activos,
-    idActivoFijo,
-    setIdActivoFijo,
     loadingActivos,
     recargar: cargarReporte,
     agregarConsumoLocal,

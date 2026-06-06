@@ -13,6 +13,7 @@ import type { TipoBien } from "../shared/enums/_generic/tipo-bien";
 import type { RES_Marca } from "./responses/marca";
 import type { RES_ActivoFijoDisponible } from "./responses/activo-fijo";
 import type { EstadoActivoFijo } from "../shared/enums/activo-fijo";
+import type { RES_Labor } from "./responses/labor";
 
 const path = "/aux";
 
@@ -201,6 +202,21 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_ActivoFijoDisponible[]>>(
       `${path}/activos-disponibles`,
       { params: apiParams },
+    );
+    return data;
+  },
+
+  /**
+   * Obtener labores globalmente
+   */
+  get_labores: async (filters?: {
+    id_mina?: number;
+    id_labor?: number;
+    id_requerimiento?: number;
+  }): Promise<IRespuesta<RES_Labor[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Labor[]>>(
+      `${path}/labores`,
+      { params: filters },
     );
     return data;
   },

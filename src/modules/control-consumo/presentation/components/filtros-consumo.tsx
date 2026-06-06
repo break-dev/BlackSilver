@@ -1,13 +1,18 @@
 import { Select, TextInput, Loader } from "@mantine/core";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import type { RES_ActivoFijoDisponible } from "../../../../service/responses/activo-fijo";
+import type { RES_Mina } from "../../../../service/responses/mina";
+import type { RES_Almacen } from "../../../../service/responses/almacen";
 import { MESES } from "../../../../shared/variables/meses";
 
 interface FiltrosConsumoProps {
-  idActivoFijo: string | null;
-  setIdActivoFijo: (val: string | null) => void;
-  activos: RES_ActivoFijoDisponible[];
-  loadingActivos: boolean;
+  idMina: string | null;
+  setIdMina: (val: string | null) => void;
+  minas: RES_Mina[];
+  loadingMinas: boolean;
+  idAlmacen: string | null;
+  setIdAlmacen: (val: string | null) => void;
+  almacenes: RES_Almacen[];
+  loadingAlmacenes: boolean;
   mes: number;
   setMes: (val: number) => void;
   anio: number;
@@ -17,10 +22,14 @@ interface FiltrosConsumoProps {
 }
 
 export const FiltrosConsumo = ({
-  idActivoFijo,
-  setIdActivoFijo,
-  activos,
-  loadingActivos,
+  idMina,
+  setIdMina,
+  minas,
+  loadingMinas,
+  idAlmacen,
+  setIdAlmacen,
+  almacenes,
+  loadingAlmacenes,
   mes,
   setMes,
   anio,
@@ -46,23 +55,54 @@ export const FiltrosConsumo = ({
 
   return (
     <div className="flex flex-col md:flex-row items-end gap-3 w-full animate-fade-in">
-      {/* Seleccionar Activo Fijo */}
-      <div className="w-full md:w-80">
+      {/* Seleccionar Mina */}
+      <div className="w-full md:w-56">
         <Select
-          label="Activo Fijo"
+          label="Mina"
           placeholder={
-            loadingActivos ? "Cargando activos..." : "Seleccione un activo..."
+            loadingMinas ? "Cargando minas..." : "Todas las minas"
           }
-          data={activos.map((a) => ({
-            value: String(a.id_activo),
-            label: `${a.correlativo} - ${a.producto}`,
+          data={minas.map((m) => ({
+            value: String(m.id_mina),
+            label: m.nombre,
           }))}
-          value={idActivoFijo}
-          onChange={setIdActivoFijo}
+          value={idMina}
+          onChange={setIdMina}
           searchable
-          disabled={loadingActivos}
+          clearable
+          disabled={loadingMinas}
           rightSection={
-            loadingActivos ? <Loader size={12} color="indigo" /> : null
+            loadingMinas ? <Loader size={12} color="indigo" /> : null
+          }
+          radius="lg"
+          size="sm"
+          classNames={inputClasses}
+          comboboxProps={{
+            withinPortal: true,
+            zIndex: 9999,
+            transitionProps: { transition: "pop", duration: 200 },
+          }}
+        />
+      </div>
+
+      {/* Seleccionar Almacén */}
+      <div className="w-full md:w-56">
+        <Select
+          label="Almacén"
+          placeholder={
+            loadingAlmacenes ? "Cargando almacenes..." : "Todos los almacenes"
+          }
+          data={almacenes.map((a) => ({
+            value: String(a.id_almacen),
+            label: a.nombre,
+          }))}
+          value={idAlmacen}
+          onChange={setIdAlmacen}
+          searchable
+          clearable
+          disabled={loadingAlmacenes}
+          rightSection={
+            loadingAlmacenes ? <Loader size={12} color="indigo" /> : null
           }
           radius="lg"
           size="sm"

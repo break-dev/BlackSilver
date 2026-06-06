@@ -161,7 +161,7 @@ export const RegistroRequerimiento = ({
           />
 
           <CustomDatePicker
-            label="Fecha de Entrega (Opcional)"
+            label="Fecha de Entrega (opc.)"
             placeholder="Seleccione fecha"
             value={fechaEntregaRequerida}
             onChange={(val) => setFechaEntregaRequerida(val as Date | null)}
@@ -172,7 +172,7 @@ export const RegistroRequerimiento = ({
 
           <div className="lg:col-span-3">
             <MultiSelect
-              label="Labores Destino (Opcional)"
+              label="Labores Destino (opc.)"
               placeholder="Asigne labores..."
               description="Seleccione las labores donde se emplearán estos materiales"
               data={labores.map((l) => ({

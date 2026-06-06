@@ -80,7 +80,12 @@ export const RegistroSolicitud = ({
       observacion,
       setObservacion,
     },
-    derived: { sonUnidadesIdenticas, productoSeleccionado, isActivoFijo, canAdd },
+    derived: {
+      sonUnidadesIdenticas,
+      productoSeleccionado,
+      isActivoFijo,
+      canAdd,
+    },
     status: { submitting, loadingCatalogs, error },
     actions: { agregarItem, eliminarItem, handleSubmit, cargarCatalogos },
   } = useRegistroSolicitud({ onSuccess });
@@ -135,7 +140,7 @@ export const RegistroSolicitud = ({
           />
 
           <CustomDatePicker
-            label="Fecha de Entrega (opcional)"
+            label="Fecha de Entrega (opc.)"
             placeholder="Seleccione fecha"
             value={fechaEntregaRequerida}
             onChange={(val) => setFechaEntregaRequerida(val as Date | null)}

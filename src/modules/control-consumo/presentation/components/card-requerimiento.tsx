@@ -1,18 +1,27 @@
-import { Card, Group, Stack, Text, Badge, Button } from "@mantine/core";
-import { InboxStackIcon } from "@heroicons/react/24/outline";
+import React, { useState } from "react";
+import {
+  Card,
+  Group,
+  Stack,
+  Text,
+  Badge,
+  Button,
+  Divider,
+  ActionIcon,
+} from "@mantine/core";
+import { InboxStackIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { type DataTableColumn } from "mantine-datatable";
 import dayjs from "dayjs";
-import type {
-  RES_ControlConsumo,
-  RES_ConsumoDetalle,
-} from "../../service/control-consumo.responses";
+import type { RES_ResumenEntregasReq } from "../../service/control-consumo.responses";
+import { HistorialConsumos } from "./historial-consumos";
+import { isActivoFijo, isConsumible, isOtros } from "./helpers";
 
 export interface GroupedEntrega {
   id_requerimiento_almacen_entrega: number;
   fecha_hora_entrega: string;
-  detalles: RES_ControlConsumo[];
+  detalles: RES_ResumenEntregasReq[];
 }
 
 export interface GroupedRequerimiento {
@@ -29,7 +38,7 @@ export interface GroupedRequerimiento {
 interface CardRequerimientoProps {
   req: GroupedRequerimiento;
   loading: boolean;
-  onConsumir: (det: RES_ControlConsumo) => void;
+  onConsumir: (det: RES_ResumenEntregasReq) => void;
 }
 
 export const CardRequerimiento = ({
@@ -37,8 +46,10 @@ export const CardRequerimiento = ({
   loading,
   onConsumir,
 }: CardRequerimientoProps) => {
+  const [expandedRecordIds, setExpandedRecordIds] = useState<number[]>([]);
+
   // Define columns matching kardex style guide
-  const columns: DataTableColumn<RES_ControlConsumo>[] = [
+  const columns: DataTableColumn<RES_ResumenEntregasReq>[] = [
     {
       accessor: "index",
       title: "#",
@@ -50,9 +61,44 @@ export const CardRequerimiento = ({
       title: "Producto",
       width: 250,
       render: (r) => (
-        <Text size="xs" fw={700} className="text-white">
-          {r.producto}
-        </Text>
+        <Group gap={6}>
+          <Text size="xs" fw={700} className="text-white">
+            {r.producto}
+          </Text>
+          <Divider my="xs" orientation="horizontal" />
+          <Group gap={4}>
+            {isActivoFijo(r) && (
+              <Badge
+                color="pink"
+                variant="light"
+                size="xs"
+                className="font-extrabold h-4"
+              >
+                Activo Fijo
+              </Badge>
+            )}
+            {isConsumible(r) && (
+              <Badge
+                color="cyan"
+                variant="light"
+                size="xs"
+                className="font-extrabold h-4"
+              >
+                Consumible
+              </Badge>
+            )}
+            {isOtros(r) && (
+              <Badge
+                color="zinc"
+                variant="light"
+                size="xs"
+                className="font-extrabold h-4"
+              >
+                Otros
+              </Badge>
+            )}
+          </Group>
+        </Group>
       ),
     },
     {
@@ -60,17 +106,22 @@ export const CardRequerimiento = ({
       title: "Entregado",
       textAlign: "center",
       width: 180,
-      render: (r) => (
-        <Group gap="xs" justify="center" wrap="nowrap">
-          {/* <Badge variant="light" color="indigo" size="sm" className="font-bold">
-            Req: {formatNumber(r.cantidad_solicitada)} {r.unidad_medida_req_abv}
-          </Badge>
-          <div className="w-px h-3 bg-zinc-800 shrink-0" /> */}
-          <Badge variant="light" color="teal" size="sm" className="font-bold">
-            {formatNumber(r.cantidad_entregada_base)} {r.unidad_medida_base_abv}
-          </Badge>
-        </Group>
-      ),
+      render: (r) => {
+        const showReqUnit = isOtros(r);
+        const qty = showReqUnit
+          ? r.cantidad_entregada_req
+          : r.cantidad_entregada_base;
+        const unit = showReqUnit
+          ? r.unidad_medida_req_abv
+          : r.unidad_medida_base_abv;
+        return (
+          <Group gap="xs" justify="center" wrap="nowrap">
+            <Badge variant="light" color="teal" size="sm" className="font-bold">
+              {formatNumber(qty)} {unit}
+            </Badge>
+          </Group>
+        );
+      },
     },
     {
       accessor: "consumido",
@@ -78,11 +129,18 @@ export const CardRequerimiento = ({
       textAlign: "center",
       width: 180,
       render: (r) => {
+        const showReqUnit = isOtros(r);
+        const qty = showReqUnit
+          ? r.cantidad_consumida_base *
+            (r.cantidad_entregada_req / r.cantidad_entregada_base)
+          : r.cantidad_consumida_base;
+        const unit = showReqUnit
+          ? r.unidad_medida_req_abv
+          : r.unidad_medida_base_abv;
         return (
           <Group gap="xs" justify="center" wrap="nowrap">
             <Text size="xs" className="text-zinc-400 font-medium">
-              {formatNumber(r.cantidad_consumida_base)}{" "}
-              {r.unidad_medida_base_abv}
+              {formatNumber(qty)} {unit}
             </Text>
           </Group>
         );
@@ -94,12 +152,26 @@ export const CardRequerimiento = ({
       textAlign: "center",
       width: 180,
       render: (r) => {
-        const restante = r.cantidad_entregada_base - r.cantidad_consumida_base;
+        const showReqUnit = isOtros(r);
+        const qty = showReqUnit
+          ? (r.cantidad_entregada_base - r.cantidad_consumida_base) *
+            (r.cantidad_entregada_req / r.cantidad_entregada_base)
+          : r.cantidad_entregada_base - r.cantidad_consumida_base;
+        const unit = showReqUnit
+          ? r.unidad_medida_req_abv
+          : r.unidad_medida_base_abv;
+        const restanteBase =
+          r.cantidad_entregada_base - r.cantidad_consumida_base;
         return (
           <Group gap="xs" justify="center" wrap="nowrap">
-            <Text size="xs" c={restante > 0 ? "amber.4" : "emerald.4"} fw={800}>
-              {formatNumber(restante)} {r.unidad_medida_base_abv}
-            </Text>
+            <Badge
+              variant="light"
+              color={restanteBase > 0 ? "yellow.4" : "green.4"}
+              size="sm"
+              className="font-bold"
+            >
+              {formatNumber(qty)} {unit}
+            </Badge>
           </Group>
         );
       },
@@ -112,10 +184,10 @@ export const CardRequerimiento = ({
       render: (r) => {
         const entregado = r.cantidad_entregada_base;
         const consumido = r.cantidad_consumida_base;
-        let estado_consumo: "Sin Consumir" | "Consumo Parcial" | "Total" =
+        let estado_consumo: "Sin Consumir" | "Consumo Parcial" | "Consumo Total" =
           "Sin Consumir";
         if (consumido >= entregado) {
-          estado_consumo = "Total";
+          estado_consumo = "Consumo Total";
         } else if (consumido > 0) {
           estado_consumo = "Consumo Parcial";
         }
@@ -123,7 +195,7 @@ export const CardRequerimiento = ({
         let color = "gray";
         if (estado_consumo === "Consumo Parcial") {
           color = "blue";
-        } else if (estado_consumo === "Total") {
+        } else if (estado_consumo === "Consumo Total") {
           color = "teal";
         }
         return (
@@ -142,27 +214,55 @@ export const CardRequerimiento = ({
       accessor: "acciones",
       title: "Acciones",
       textAlign: "center",
-      width: 120,
+      width: 160,
       render: (r) => {
         const restante = r.cantidad_entregada_base - r.cantidad_consumida_base;
-        return restante > 0 ? (
-          <Button
-            size="xs"
-            variant="light"
-            color="indigo"
-            radius="md"
-            className="font-semibold h-7 px-3 border border-indigo-500/10"
-            onClick={(e) => {
-              e.stopPropagation();
-              onConsumir(r);
-            }}
-          >
-            Consumir
-          </Button>
-        ) : (
-          <span className="text-zinc-500 text-xs font-semibold">
-            Completado
-          </span>
+        const isExpanded = expandedRecordIds.includes(
+          r.id_entrega_requerimiento_detalle,
+        );
+        const toggleExpand = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          setExpandedRecordIds((prev) =>
+            isExpanded
+              ? prev.filter((id) => id !== r.id_entrega_requerimiento_detalle)
+              : [...prev, r.id_entrega_requerimiento_detalle],
+          );
+        };
+        return (
+          <Group gap="xs" justify="center" wrap="nowrap">
+            {restante > 0 ? (
+              <Button
+                size="xs"
+                variant="light"
+                color="indigo"
+                radius="md"
+                className="font-semibold h-7 px-3 border border-indigo-500/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onConsumir(r);
+                }}
+              >
+                Consumir
+              </Button>
+            ) : (
+              <span className="text-zinc-500 text-xs font-semibold px-2">
+                Completado
+              </span>
+            )}
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              color="indigo"
+              className="text-zinc-400 hover:text-white"
+              onClick={toggleExpand}
+            >
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </ActionIcon>
+          </Group>
         );
       },
     },
@@ -178,9 +278,10 @@ export const CardRequerimiento = ({
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-zinc-800/60">
         <Group gap="xs">
           <Text
-            size="sm"
-            fw={800}
+            size="xs"
+            fw={700}
             className="text-white uppercase tracking-tight"
+            mt={3}
           >
             Requerimiento
           </Text>
@@ -200,7 +301,7 @@ export const CardRequerimiento = ({
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-zinc-400">
           <div>
-            <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
+            <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
               Solicitante:
             </span>
             <span className="text-zinc-300 font-semibold">
@@ -208,13 +309,13 @@ export const CardRequerimiento = ({
             </span>
           </div>
           <div>
-            <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
+            <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
               Mina Destino:
             </span>
             <span className="text-zinc-300 font-semibold">{req.mina}</span>
           </div>
           <div>
-            <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
+            <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
               Almacén:
             </span>
             <span className="text-zinc-300 font-semibold">
@@ -222,7 +323,7 @@ export const CardRequerimiento = ({
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
+            <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
               Fecha:
             </span>
             <span className="text-zinc-300 font-semibold">
@@ -245,20 +346,13 @@ export const CardRequerimiento = ({
                 <div className="p-1 bg-teal-500/10 rounded-lg border border-teal-500/20">
                   <InboxStackIcon className="w-4 h-4 text-teal-400" />
                 </div>
-                <Text
-                  size="xs"
-                  fw={800}
-                  className="text-zinc-300 uppercase tracking-wider"
-                >
-                  Entrega Realizada
+                <Text size="10px" fw={700} className="uppercase" c={"gray"}>
+                  Entrega Realizada:
+                </Text>
+                <Text size="10px" fw={800} className="uppercase" c={"teal.6"}>
+                  {dayjs(entrega.fecha_hora_entrega).format("DD/MM/YYYY HH:mm")}
                 </Text>
               </Group>
-              <Text size="xs" fw={700} className="text-zinc-500">
-                Fecha de Entrega:{" "}
-                <span className="text-zinc-300">
-                  {dayjs(entrega.fecha_hora_entrega).format("DD/MM/YYYY HH:mm")}
-                </span>
-              </Text>
             </div>
 
             {/* DataTableEstandar showing delivered details */}
@@ -269,85 +363,13 @@ export const CardRequerimiento = ({
               loading={loading}
               minHeight={0}
               rowExpansion={{
-                content: ({ record }: { record: RES_ControlConsumo }) => (
-                  <div className="p-5 bg-zinc-950/40 border-l-2 border-indigo-500/40 pl-6 py-4 flex flex-col gap-3">
-                    <Text size="xs" fw={800} className="text-zinc-400  mb-1">
-                      Historial de Consumo ({record.consumos.length})
-                    </Text>
-                    {record.consumos.length === 0 ? (
-                      <Text size="xs" c="dimmed" fs="italic" className="py-1">
-                        Sin consumos registrados para esta entrega
-                      </Text>
-                    ) : (
-                      <Stack gap="xs">
-                        {record.consumos.map((c: RES_ConsumoDetalle) => (
-                          <div
-                            key={c.id}
-                            className="bg-zinc-900/45 border border-zinc-800/50 hover:border-zinc-700/50 rounded-xl p-3.5 transition-all duration-200"
-                          >
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                              {/* Left details: Badge, consumption quantity and user comments */}
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 flex-1">
-                                <Badge
-                                  color={
-                                    c.estado === "Consumo Total"
-                                      ? "teal.4"
-                                      : "indigo.4"
-                                  }
-                                  size="xs"
-                                  variant="light"
-                                  className="font-extrabold uppercase border border-current/10 py-1"
-                                >
-                                  {c.estado}
-                                </Badge>
-                                <Text
-                                  size="xs"
-                                  className="text-zinc-200 font-semibold flex items-center gap-1"
-                                >
-                                  <span>Consumió</span>
-                                  <span className="text-indigo-400 font-extrabold text-sm">
-                                    {formatNumber(c.cantidad_base_consumida)}
-                                  </span>
-                                  <span className="text-[10px] text-zinc-500 uppercase font-bold">
-                                    {record.unidad_medida_base_abv}
-                                  </span>
-                                </Text>
-                                <span className="hidden md:inline text-zinc-700 font-light">
-                                  |
-                                </span>
-                                <Text
-                                  size="xs"
-                                  className="text-zinc-400 italic"
-                                >
-                                  "{c.comentario_consumo || "Sin comentarios"}"
-                                </Text>
-                              </div>
-
-                              {/* Right details: Who registered the consumption and when */}
-                              <div className="flex flex-row items-center md:items-end gap-x-3 gap-y-0.5 text-[11px] text-zinc-500 border-t md:border-t-0 border-zinc-800/40 pt-2 md:pt-0 w-full md:w-auto self-stretch md:self-auto justify-between md:justify-start">
-                                <div>
-                                  <span className="text-[9px] text-zinc-500 uppercase font-bold mr-1">
-                                    Por:
-                                  </span>
-                                  <strong className="text-zinc-300 font-semibold">
-                                    {c.empleado_registro}
-                                  </strong>
-                                </div>
-                                <div className="text-zinc-400 font-medium">
-                                  <span className="text-[9px] text-zinc-600 uppercase font-extrabold mr-1 md:hidden">
-                                    Fecha:
-                                  </span>
-                                  {dayjs(c.fecha_hora_consumo).format(
-                                    "DD/MM/YYYY HH:mm",
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </Stack>
-                    )}
-                  </div>
+                trigger: "never",
+                expanded: {
+                  recordIds: expandedRecordIds,
+                  onRecordIdsChange: setExpandedRecordIds,
+                },
+                content: ({ record }: { record: RES_ResumenEntregasReq }) => (
+                  <HistorialConsumos record={record} />
                 ),
               }}
             />

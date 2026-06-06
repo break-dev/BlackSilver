@@ -431,8 +431,9 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
               placeholder="Ej. AAA"
               value={form.serie_placa || ""}
               onChange={(e) =>
-                setForm({ ...form, serie_placa: e.target.value })
+                setForm({ ...form, serie_placa: e.target.value.toUpperCase() })
               }
+              maxLength={3}
               required={isTransport}
               disabled={!isTransport}
               size="xs"
@@ -447,8 +448,9 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
               placeholder="Ej. 123"
               value={form.numero_placa || ""}
               onChange={(e) =>
-                setForm({ ...form, numero_placa: e.target.value })
+                setForm({ ...form, numero_placa: e.target.value.toUpperCase() })
               }
+              maxLength={3}
               required={isTransport}
               disabled={!isTransport}
               size="xs"

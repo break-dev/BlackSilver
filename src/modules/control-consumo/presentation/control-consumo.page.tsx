@@ -1,17 +1,16 @@
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useListarControlConsumo } from "../hooks/useListarControlConsumo";
 import { FiltrosConsumo } from "./components/filtros-consumo";
-import { ResumenActivo } from "./components/resumen-activo";
 import { CardRequerimiento } from "./components/card-requerimiento";
-import { ModalRegistroConsumo } from "./components/modal-registro-consumo";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroConsumo } from "./registro-consumo/registro-consumo";
 import { Stack, Text } from "@mantine/core";
 import {
   InboxStackIcon,
-  Cog8ToothIcon,
   ArchiveBoxArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useMemo } from "react";
-import type { RES_ControlConsumo } from "../service/control-consumo.responses";
+import type { RES_ResumenEntregasReq } from "../service/control-consumo.responses";
 import type { GroupedRequerimiento } from "./components/card-requerimiento";
 
 export const ControlConsumoPage = () => {
@@ -26,22 +25,22 @@ export const ControlConsumoPage = () => {
     setMes,
     anio,
     setAnio,
+    minas,
+    idMina,
+    setIdMina,
+    loadingMinas,
+    almacenes,
+    idAlmacen,
+    setIdAlmacen,
+    loadingAlmacenes,
     activos,
-    idActivoFijo,
-    setIdActivoFijo,
-    loadingActivos,
     agregarConsumoLocal,
   } = useListarControlConsumo();
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDetail, setSelectedDetail] =
-    useState<RES_ControlConsumo | null>(null);
-
-  // Find the selected asset object to show summaries
-  const selectedAssetObj = activos.find(
-    (a) => String(a.id_activo) === idActivoFijo,
-  );
+    useState<RES_ResumenEntregasReq | null>(null);
 
   // Group data by Requerimiento (Level 1) and then by Entrega (Level 2)
   const groupedData = useMemo(() => {
@@ -84,7 +83,7 @@ export const ControlConsumoPage = () => {
     return Array.from(reqsMap.values());
   }, [reporte]);
 
-  const handleOpenRegistrar = (det: RES_ControlConsumo) => {
+  const handleOpenRegistrar = (det: RES_ResumenEntregasReq) => {
     setSelectedDetail(det);
     setModalOpen(true);
   };
@@ -98,10 +97,14 @@ export const ControlConsumoPage = () => {
     <Stack gap="lg" className="animate-fade-in text-zinc-100">
       {/* Search and Period Filter Component */}
       <FiltrosConsumo
-        idActivoFijo={idActivoFijo}
-        setIdActivoFijo={setIdActivoFijo}
-        activos={activos}
-        loadingActivos={loadingActivos}
+        idMina={idMina}
+        setIdMina={setIdMina}
+        minas={minas}
+        loadingMinas={loadingMinas}
+        idAlmacen={idAlmacen}
+        setIdAlmacen={setIdAlmacen}
+        almacenes={almacenes}
+        loadingAlmacenes={loadingAlmacenes}
         mes={mes}
         setMes={setMes}
         anio={anio}
@@ -109,11 +112,6 @@ export const ControlConsumoPage = () => {
         busqueda={busqueda}
         setBusqueda={setBusqueda}
       />
-
-      {/* Main Header Asset Summary Component */}
-      {selectedAssetObj && (
-        <ResumenActivo asset={selectedAssetObj} totalInsumos={reporte.length} />
-      )}
 
       {/* Grouped Content Body */}
       <div className="relative">
@@ -136,21 +134,6 @@ export const ControlConsumoPage = () => {
               Cargando historial de consumos...
             </Text>
           </Stack>
-        ) : !idActivoFijo ? (
-          <div className="flex flex-col items-center justify-center p-20 bg-zinc-900/65 border border-zinc-800 rounded-[24px] text-center animate-fade-in">
-            <Cog8ToothIcon className="size-12 text-zinc-700 mb-4 animate-pulse" />
-            <Text
-              size="sm"
-              fw={700}
-              className="text-zinc-400 uppercase tracking-widest"
-            >
-              Seleccione un Activo Fijo
-            </Text>
-            <Text size="xs" c="dimmed" className="mt-1">
-              Debe seleccionar un activo fijo para poder visualizar y registrar
-              sus consumos.
-            </Text>
-          </div>
         ) : groupedData.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-20 bg-zinc-900/65 border border-zinc-800 rounded-[24px] animate-fade-in">
             <InboxStackIcon className="size-12 text-zinc-700 mb-4 animate-bounce" />
@@ -162,8 +145,7 @@ export const ControlConsumoPage = () => {
               Sin entregas registradas
             </Text>
             <Text size="xs" c="dimmed" className="mt-1">
-              No se registraron entregas de almacén asociadas a este activo en
-              este periodo.
+              No se encontraron entregas de almacén asociadas en este periodo.
             </Text>
           </div>
         ) : (
@@ -181,12 +163,21 @@ export const ControlConsumoPage = () => {
       </div>
 
       {/* Register Consumption Modal Wrapper */}
-      <ModalRegistroConsumo
+      <ModalEstandar
         opened={modalOpen}
         close={handleCloseModal}
-        selectedDetail={selectedDetail}
-        onSuccess={agregarConsumoLocal}
-      />
+        title={`Registrar Consumo`}
+        size="lg"
+      >
+        {selectedDetail && (
+          <RegistroConsumo
+            selectedDetail={selectedDetail}
+            onSuccess={agregarConsumoLocal}
+            activos={activos}
+            close={handleCloseModal}
+          />
+        )}
+      </ModalEstandar>
     </Stack>
   );
 };

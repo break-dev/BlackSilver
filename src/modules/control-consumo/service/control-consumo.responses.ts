@@ -1,13 +1,18 @@
+import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { Estado_ConsumoDetalleEntregaReq } from "../../../shared/enums/requerimiento-almacen/requerimiento-entrega";
 
 /**
  * Representa el detalle individual de un consumo registrado para una entrega de requerimiento.
  */
-export interface RES_ConsumoDetalle {
+export interface RES_Consumo {
   /** ID único del registro de consumo */
-  id: number;
+  id_consumo: number;
   /** ID de la entrega del requerimiento (detalle) asociada */
   id_requerimiento_almacen_entrega_detalle: number;
+  /** ID del activo fijo que consume lo entregado */
+  id_activo_fijo_consumidor: number | null;
+  /** ID de la labor de destino */
+  id_labor_destino: number | null;
   /** ID del empleado que registró el consumo */
   id_empleado_registro: number;
   /** Nombre completo del empleado que registró el consumo */
@@ -25,9 +30,9 @@ export interface RES_ConsumoDetalle {
 }
 
 /**
- * Representa un registro de control de consumo para los activos fijos, agrupado por detalle de entrega.
+ * Representa un registro de todas las entregas realizadas en los requerimientos de almacen
  */
-export interface RES_ControlConsumo {
+export interface RES_ResumenEntregasReq {
   /** ID único del detalle de la entrega */
   id_entrega_requerimiento_detalle: number;
   /** ID único del requerimiento de almacén */
@@ -65,6 +70,8 @@ export interface RES_ControlConsumo {
   /** Abreviatura de la unidad de medida del requerimiento */
   unidad_medida_req_abv: string;
   /** Cantidad total solicitada en la Unidad de Medida Base */
+  es_consumible: boolean;
+  tipo_bien: TipoBien;
   cantidad_solicitada_base: number;
   /** Cantidad solicitada en la unidad original del requerimiento */
   cantidad_solicitada: number;
@@ -84,5 +91,5 @@ export interface RES_ControlConsumo {
    */
   estado_consumo?: "Sin Consumir" | "Consumo Parcial" | "Total";
   /** Historial cronológico de consumos individuales realizados sobre este detalle de entrega */
-  consumos: RES_ConsumoDetalle[];
+  consumos: RES_Consumo[];
 }
