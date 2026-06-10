@@ -121,7 +121,7 @@ export const useKardex = () => {
   }, [movimientos, filtroProducto]);
 
   const filteredRecords = useMemo(() => {
-    return movimientos.filter((m) => {
+    const filtered = movimientos.filter((m) => {
       // Filtro modo auditoría
       if (en_modo_auditable && m.es_auditable) return false;
 
@@ -138,6 +138,9 @@ export const useKardex = () => {
 
       return matchProducto && matchLote && matchBusqueda;
     });
+
+    // Ordenar de más reciente a más antiguo por fecha
+    return filtered.sort((a, b) => dayjs(b.created_at).valueOf() - dayjs(a.created_at).valueOf());
   }, [movimientos, busqueda, filtroProducto, filtroLote, en_modo_auditable]);
 
   return {
