@@ -50,6 +50,9 @@ export const buildControlUsoExcel = async (
     });
 
     columns.push({ header: "", key: "total_qty", width: 15 });
+    if (type === 'vueltas') {
+      columns.push({ header: "", key: "total_sacos", width: 15 });
+    }
     columns.push({ header: "", key: "costo_total", width: 15 });
     columns.push({ header: "", key: "mant_fecha", width: 22 });
     columns.push({ header: "", key: "mant_lectura", width: 22 });
@@ -134,6 +137,9 @@ export const buildControlUsoExcel = async (
       });
       
       headerRow.getCell('total_qty').value = type === 'vueltas' ? "TOTAL VUELTAS" : (type === 'horometro' ? "TOTAL HORAS" : "TOTAL KM");
+      if (type === 'vueltas') {
+        headerRow.getCell('total_sacos').value = "TOTAL SACOS";
+      }
       headerRow.getCell('costo_total').value = "COSTO TOTAL";
       headerRow.getCell('mant_fecha').value = "MANTENIMIENTO FECHA";
       headerRow.getCell('mant_lectura').value = "MANTENIMIENTO LECTURA";
@@ -206,18 +212,25 @@ export const buildControlUsoExcel = async (
                 material: materialStr.toUpperCase()
               };
               let totalVts = 0;
+              let totalSacos = 0;
               let totalCost = 0;
 
               daysArray.forEach(d => {
-                const sumDay = tarifasObj[key].filter(l => dayjs(l.fecha_hora_inicio_control).date() === d).reduce((sum, l) => sum + Number(l.cantidad_vueltas || 0), 0);
+                const logsDay = tarifasObj[key].filter(l => dayjs(l.fecha_hora_inicio_control).date() === d);
+                const sumDay = logsDay.reduce((sum, l) => sum + Number(l.cantidad_vueltas || 0), 0);
+                const sumSacos = logsDay.reduce((sum, l) => sum + Number(l.cantidad_sacos || 0), 0);
                 if (sumDay > 0) {
                   rowData[`d${d}`] = sumDay;
                   totalVts += sumDay;
+                }
+                if (sumSacos > 0) {
+                  totalSacos += sumSacos;
                 }
               });
 
               totalCost = tarifasObj[key].reduce((sum, l) => sum + Number(l.costo_total || 0), 0);
               rowData.total_qty = totalVts > 0 ? totalVts : "";
+              rowData.total_sacos = totalSacos > 0 ? totalSacos : "";
               rowData.costo_total = totalCost > 0 ? totalCost : "";
 
               if (rowIndex === startRowForMergeEquipo) {

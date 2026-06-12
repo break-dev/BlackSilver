@@ -68,6 +68,7 @@ export const RegistroUso = ({
   const [lecturaInicio, setLecturaInicio] = useState<number | "">(0);
   const [lecturaFin, setLecturaFin] = useState<number | "">(0);
   const [cantidadVueltas, setCantidadVueltas] = useState<number | "">(0);
+  const [cantidadSacos, setCantidadSacos] = useState<number | "">("" );
   const [observacion, setObservacion] = useState("");
 
   const selectedTarifa = useMemo(() => {
@@ -75,6 +76,11 @@ export const RegistroUso = ({
   }, [idTarifa, tarifas]);
 
   const precioUnitario = selectedTarifa ? Number(selectedTarifa.precio_unitario) : 0;
+
+  // Detecta si la tarifa seleccionada es de material Saco (sin precio)
+  const esTarifaSaco = selectedTarifa
+    ? (selectedTarifa.tipo_material || "").toLowerCase().includes("saco")
+    : false;
 
   // Load initial data
   useEffect(() => {
@@ -209,6 +215,7 @@ export const RegistroUso = ({
         odometro_inicio: tipoControl === "odometro" ? (Number(lecturaInicio) || 0) : undefined,
         odometro_fin: tipoControl === "odometro" ? (Number(lecturaFin) || 0) : undefined,
         cantidad_vueltas: tipoControl === "vueltas" ? (Number(cantidadVueltas) || 0) : undefined,
+        cantidad_sacos: tipoControl === "vueltas" && esTarifaSaco && cantidadSacos !== "" ? Number(cantidadSacos) : undefined,
 
         precio_unitario: precioUnitario,
         id_tarifa: idTarifa ? Number(idTarifa) : undefined,
@@ -228,6 +235,22 @@ export const RegistroUso = ({
         if (idMina) enhancedLog.mina = minas.find((m) => m.value === String(idMina))?.label || null;
         if (idLabor) enhancedLog.labor = labores.find((l) => l.value === String(idLabor))?.label || null;
         if (idCliente) enhancedLog.cliente = clientes.find((c) => c.value === String(idCliente))?.label || null;
+        
+        if (tipoControl === "vueltas") {
+          if (idTarifa) {
+            const t = tarifas.find((tar) => tar.id === Number(idTarifa));
+            if (t) {
+              enhancedLog.tarifa_desc = t.descripcion;
+              enhancedLog.tipo_material = t.tipo_material;
+              enhancedLog.tarifa_material = t.tipo_material;
+              enhancedLog.tarifa_distancia_metros = t.distancia_metros;
+            }
+          }
+          if (esTarifaSaco && cantidadSacos !== "") {
+            enhancedLog.cantidad_sacos = Number(cantidadSacos);
+          }
+        }
+
         onSuccess(enhancedLog);
       } else {
         notifyError(resp.message || "Error al registrar el control de uso");
@@ -269,38 +292,8 @@ export const RegistroUso = ({
         </div>
       </div>
 
-      {/* Lecturas: Inicial / Final  (horómetro u odómetro) */}
-      {tipoControl !== "vueltas" && (
-        <SimpleGrid cols={2} spacing="md">
-          <NumberInput
-            label={`${labelLectura} Inicial`}
-            value={lecturaInicio}
-            onChange={(val) => setLecturaInicio(val as number | "")}
-            min={0}
-            decimalScale={2}
-            fixedDecimalScale
-            required
-            size="xs"
-            radius="lg"
-            disabled={loadingData}
-          />
-          <NumberInput
-            label={`${labelLectura} Final`}
-            value={lecturaFin}
-            onChange={(val) => setLecturaFin(val as number | "")}
-            min={0}
-            decimalScale={2}
-            fixedDecimalScale
-            required
-            size="xs"
-            radius="lg"
-            disabled={loadingData}
-          />
-        </SimpleGrid>
-      )}
-
-      {/* Tarifa (+ vueltas cuando aplica) */}
-      <SimpleGrid cols={tipoControl === "vueltas" ? 2 : 1} spacing="md">
+      {/* Tarifa de Uso (siempre arriba) */}
+      <SimpleGrid cols={1} spacing="md">
         <Group gap={6} align="flex-end" wrap="nowrap">
           <Select
             className="flex-1"
@@ -308,14 +301,25 @@ export const RegistroUso = ({
             placeholder="Seleccione tarifa..."
             data={tarifas
               .filter((t) => t.tipo_control === tipoControl)
-              .map((t) => ({
-                value: t.id.toString(),
-                label: [
-                  `S/. ${Number(t.precio_unitario).toFixed(2)}`,
-                  t.tipo_material ? `x ${t.tipo_material}` : null,
-                  t.descripcion ? `· ${t.descripcion}` : null,
-                ].filter(Boolean).join(" "),
-              }))}
+              .map((t) => {
+                const esSaco = (t.tipo_material || "").toLowerCase().includes("saco");
+                if (tipoControl === "vueltas") {
+                  const parts = [
+                    esSaco ? "Sin precio" : `S/. ${Number(t.precio_unitario).toFixed(2)}`,
+                    t.distancia_metros ? `x ${t.distancia_metros}m` : null,
+                    t.tipo_material ? `x ${t.tipo_material}` : null,
+                  ].filter(Boolean);
+                  return { value: t.id.toString(), label: parts.join(" ") };
+                }
+                return {
+                  value: t.id.toString(),
+                  label: [
+                    `S/. ${Number(t.precio_unitario).toFixed(2)}`,
+                    t.tipo_material ? `x ${t.tipo_material}` : null,
+                    t.descripcion ? `· ${t.descripcion}` : null,
+                  ].filter(Boolean).join(" "),
+                };
+              })}
             value={idTarifa}
             onChange={setIdTarifa}
             searchable
@@ -348,8 +352,38 @@ export const RegistroUso = ({
             </ActionIcon>
           </Tooltip>
         </Group>
+      </SimpleGrid>
 
-        {tipoControl === "vueltas" && (
+      {/* Lecturas: Inicial / Final (horómetro u odómetro) o Cantidad de Vueltas */}
+      {tipoControl !== "vueltas" ? (
+        <SimpleGrid cols={2} spacing="md">
+          <NumberInput
+            label={`${labelLectura} Inicial`}
+            value={lecturaInicio}
+            onChange={(val) => setLecturaInicio(val as number | "")}
+            min={0}
+            decimalScale={2}
+            fixedDecimalScale
+            required
+            size="xs"
+            radius="lg"
+            disabled={loadingData}
+          />
+          <NumberInput
+            label={`${labelLectura} Final`}
+            value={lecturaFin}
+            onChange={(val) => setLecturaFin(val as number | "")}
+            min={0}
+            decimalScale={2}
+            fixedDecimalScale
+            required
+            size="xs"
+            radius="lg"
+            disabled={loadingData}
+          />
+        </SimpleGrid>
+      ) : (
+        <SimpleGrid cols={1} spacing="md">
           <NumberInput
             label="Cantidad de Vueltas"
             value={cantidadVueltas}
@@ -359,8 +393,22 @@ export const RegistroUso = ({
             size="xs"
             radius="lg"
           />
-        )}
-      </SimpleGrid>
+          {esTarifaSaco && (
+            <NumberInput
+              label="Cantidad de Sacos"
+              placeholder="Ej: 30"
+              value={cantidadSacos}
+              onChange={(val) => setCantidadSacos(val as number | "")}
+              min={0}
+              allowDecimal={false}
+              required
+              size="xs"
+              radius="lg"
+              description="Ingrese la cantidad de sacos transportados"
+            />
+          )}
+        </SimpleGrid>
+      )}
 
       <Card
         withBorder
@@ -552,8 +600,18 @@ export const RegistroUso = ({
           asset={asset}
           initialTipoControl={tipoControl}
           onCancel={() => setModalTarifaOpened(false)}
-          onSuccess={(nuevaTarifa) => {
-            setTarifas((prev) => [...prev, nuevaTarifa]);
+          onSuccess={async (nuevaTarifa) => {
+            // Recargamos todas las tarifas para obtener los datos completos (con tipo_material via JOIN)
+            try {
+              const respTarifas = await ControlUsoService.getTarifas(idActivoFijo);
+              if (respTarifas.success) {
+                setTarifas(respTarifas.data);
+              } else {
+                setTarifas((prev) => [...prev, nuevaTarifa]);
+              }
+            } catch {
+              setTarifas((prev) => [...prev, nuevaTarifa]);
+            }
             setIdTarifa(nuevaTarifa.id.toString());
             setModalTarifaOpened(false);
           }}
@@ -567,7 +625,7 @@ export const RegistroUso = ({
         title={`Historial de Tarifas - ${
           tipoControl.charAt(0).toUpperCase() + tipoControl.slice(1)
         }`}
-        size="lg"
+        size="xl"
       >
         <div className="mt-2 h-[350px]">
           <DataTableEstandar
@@ -578,32 +636,63 @@ export const RegistroUso = ({
               .sort((a, b) => b.id - a.id)}
             columns={[
               {
-                accessor: "precio_unitario",
-                title: "Precio Unit.",
-                render: (record) => (
-                  <Badge color="violet" variant="light" size="sm" radius="sm">
-                    S/. {Number(record.precio_unitario).toFixed(2)}
-                  </Badge>
+                accessor: "id",
+                title: "#",
+                width: 50,
+                render: (_record, index) => (
+                  <span className="text-zinc-500 text-xs font-mono">{(index ?? 0) + 1}</span>
                 ),
               },
               {
-                accessor: "tipo_material",
-                title: "Material",
-                render: (record) =>
-                  record.tipo_material ? (
-                    <Badge size="xs" color="gray" variant="dot">
-                      {record.tipo_material}
+                accessor: "precio_unitario",
+                title: "Precio Unit.",
+                render: (record) => {
+                  if (Number(record.precio_unitario) === 0) {
+                    return <span className="text-zinc-600 text-xs italic">Sin precio</span>;
+                  }
+                  return (
+                    <Badge color="violet" variant="filled" size="sm" radius="sm">
+                      S/. {Number(record.precio_unitario).toFixed(2)}
                     </Badge>
-                  ) : (
-                    <span className="text-zinc-600 text-xs italic">N/A</span>
-                  ),
+                  );
+                },
               },
+              // Columna Distancia: solo en Vueltas
+              ...(tipoControl === "vueltas"
+                ? [{
+                    accessor: "distancia_metros",
+                    title: "Distancia hasta",
+                    render: (record: typeof tarifas[0]) =>
+                      record.distancia_metros ? (
+                        <Badge size="xs" color="teal" variant="filled">
+                          {record.distancia_metros} m.
+                        </Badge>
+                      ) : (
+                        <span className="text-zinc-600 text-xs italic">—</span>
+                      ),
+                  }]
+                : []),
+              // Columna Material: solo en Vueltas
+              ...(tipoControl === "vueltas"
+                ? [{
+                    accessor: "tipo_material",
+                    title: "Material",
+                    render: (record: typeof tarifas[0]) =>
+                      record.tipo_material ? (
+                        <Badge size="xs" color="pink" variant="filled">
+                          {record.tipo_material}
+                        </Badge>
+                      ) : (
+                        <span className="text-zinc-600 text-xs italic">—</span>
+                      ),
+                  }]
+                : []),
               {
                 accessor: "descripcion",
                 title: "Descripción",
                 render: (record) =>
                   record.descripcion ? (
-                    <span className="text-zinc-300 text-sm">{record.descripcion}</span>
+                    <span className="text-zinc-400 text-xs">{record.descripcion}</span>
                   ) : (
                     <span className="text-zinc-600 text-xs italic">Sin descripción</span>
                   ),
@@ -620,11 +709,6 @@ export const RegistroUso = ({
             ]}
           />
         </div>
-        <Group justify="flex-end" mt="md">
-          <Button variant="default" onClick={() => setModalHistorialOpened(false)} size="xs" radius="lg">
-            Cerrar
-          </Button>
-        </Group>
       </ModalEstandar>
     </Stack>
   );

@@ -30,9 +30,15 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
   const [tipoControl, setTipoControl] = useState<string>(initialTipoControl || "horometro");
   const [precioUnitario, setPrecioUnitario] = useState<number | "">("");
   const [descripcion, setDescripcion] = useState<string>("");
+  const [distanciaMetros, setDistanciaMetros] = useState<number | "">("");
 
   const [materiales, setMateriales] = useState<RES_TipoMaterial[]>([]);
   const [idTipoMaterial, setIdTipoMaterial] = useState<string | null>(null);
+
+  // Detecta si el material seleccionado es "Saco" (sin precio)
+  const esMaterialSaco = idTipoMaterial
+    ? (materiales.find(m => m.id.toString() === idTipoMaterial)?.nombre || "").toLowerCase().includes("saco")
+    : false;
 
   // Mini modal para crear material
   const [modalMaterialOpened, setModalMaterialOpened] = useState(false);
@@ -73,7 +79,8 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
   };
 
   const handleSubmit = async () => {
-    if (!precioUnitario || precioUnitario <= 0) {
+    // Si NO es saco, el precio es requerido
+    if (!esMaterialSaco && (!precioUnitario || precioUnitario <= 0)) {
       notifyError("El precio unitario debe ser mayor a cero.");
       return;
     }
@@ -83,9 +90,10 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
       const resp = await ControlUsoService.crearTarifa({
         id_activo_fijo: asset.id_activo,
         tipo_control: tipoControl,
-        precio_unitario: Number(precioUnitario),
+        precio_unitario: esMaterialSaco ? 0 : Number(precioUnitario),
         descripcion: descripcion ? descripcion.trim() : "",
         id_tipo_material: tipoControl === "vueltas" && idTipoMaterial ? Number(idTipoMaterial) : undefined,
+        distancia_metros: tipoControl === "vueltas" && distanciaMetros !== "" ? Number(distanciaMetros) : undefined,
       });
 
       if (resp.success) {
@@ -145,15 +153,29 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
           </Group>
         )}
 
+        {tipoControl === "vueltas" && (
+          <NumberInput
+            label="Distancia hasta (metros)"
+            placeholder="Ej: 100, 200, 300"
+            value={distanciaMetros}
+            onChange={(val) => setDistanciaMetros(val as number | "")}
+            min={1}
+            allowDecimal={false}
+            radius="lg"
+            description="Opcional: límite de distancia para esta tarifa"
+          />
+        )}
+
         <NumberInput
-          label="Precio Unitario (S/.)"
-          placeholder="0.00"
-          value={precioUnitario}
+          label={esMaterialSaco ? "Precio Unitario (S/.) — No aplica para Sacos" : "Precio Unitario (S/.)"}
+          placeholder={esMaterialSaco ? "No aplica" : "0.00"}
+          value={esMaterialSaco ? "" : precioUnitario}
           onChange={(val) => setPrecioUnitario(val as number | "")}
           min={0}
           decimalScale={2}
-          fixedDecimalScale
-          required
+          fixedDecimalScale={!esMaterialSaco}
+          required={!esMaterialSaco}
+          disabled={esMaterialSaco}
           radius="lg"
         />
 

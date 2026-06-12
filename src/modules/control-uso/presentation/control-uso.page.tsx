@@ -164,12 +164,33 @@ export const ControlUsoPage = () => {
           </div>
           <div className="flex flex-col items-start gap-0.5">
             {tipoControl === "vueltas" ? (
-              <Text size="11px" fw={700} className="text-zinc-200">
-                <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                  Total Vueltas:
-                </span>
-                {formatNumber(r.cantidad_vueltas ?? 0)}
-              </Text>
+              <div className="flex flex-col gap-1.5 mt-0.5 mb-0.5">
+                <Text size="11px" fw={700} className="text-zinc-200">
+                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                    Vueltas:
+                  </span>
+                  {formatNumber(r.cantidad_vueltas ?? 0)}
+                </Text>
+                {(r.tarifa_material || r.tarifa_distancia_metros || r.cantidad_sacos) && (
+                  <Group gap={4} wrap="wrap">
+                    {r.tarifa_distancia_metros && (
+                      <Badge size="xs" color="blue" variant="filled">
+                        {r.tarifa_distancia_metros} m.
+                      </Badge>
+                    )}
+                    {r.tarifa_material && (
+                      <Badge size="xs" color="pink" variant="filled">
+                        {r.tarifa_material}
+                      </Badge>
+                    )}
+                    {r.cantidad_sacos ? (
+                      <Badge size="xs" color="orange" variant="filled">
+                        {r.cantidad_sacos} sacos
+                      </Badge>
+                    ) : null}
+                  </Group>
+                )}
+              </div>
             ) : (
               <>
                 <Text size="11px" fw={700} className="text-zinc-200">
@@ -193,6 +214,7 @@ export const ControlUsoPage = () => {
     {
       accessor: "total_horas",
       title: tipoControl === "horometro" ? "Total Horas" : tipoControl === "odometro" ? "Total Km" : "Total Vueltas",
+      hidden: tipoControl === "vueltas",
       textAlign: "center",
       width: 140,
       render: (r) => {

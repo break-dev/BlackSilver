@@ -16,6 +16,7 @@ export interface RES_ControlUsoLog {
   odometro_inicio: string | number | null;
   odometro_fin: string | number | null;
   cantidad_vueltas: string | number | null;
+  cantidad_sacos: string | number | null;
   total_horas: string | number | null;
   total_km: string | number | null;
   precio_unitario: string | number | null;
@@ -30,8 +31,11 @@ export interface RES_ControlUsoLog {
   tipo_carga: string | null;
   id_tarifa: number | null;
   tarifa_desc: string | null;
+  tarifa_distancia_metros: string | number | null;
+  tarifa_material: string | null;
   observacion: string | null;
   tipo_material: string | null;
+  cantidad_sacos: number | null;
   created_at: string;
 }
 
@@ -51,6 +55,7 @@ export interface RES_Tarifa {
   descripcion: string;
   id_tipo_material: number | null;
   tipo_material: string | null;
+  distancia_metros: number | null;
   created_at: string;
 }
 

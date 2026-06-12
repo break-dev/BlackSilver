@@ -7,6 +7,7 @@ export interface REQ_RegistrarUso {
   odometro_inicio?: number | null;
   odometro_fin?: number | null;
   cantidad_vueltas?: number | null;
+  cantidad_sacos?: number | null;
   id_tarifa?: number | null;
   precio_unitario?: number | null;
   es_para_mina?: boolean | null;
@@ -20,9 +21,10 @@ export interface REQ_RegistrarUso {
 export interface REQ_CrearTarifa {
   id_activo_fijo: number;
   tipo_control: string;
-  precio_unitario: number;
+  precio_unitario?: number;
   descripcion: string;
   id_tipo_material?: number | null;
+  distancia_metros?: number | null;
 }
 
 export interface REQ_CrearMaterial {
