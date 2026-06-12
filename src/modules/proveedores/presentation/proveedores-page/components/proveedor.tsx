@@ -9,6 +9,7 @@ import {
 import { IconBuildingBank, IconBuilding, IconUser } from "@tabler/icons-react";
 import { DataTableEstandar } from "../../../../../presentation/utils/datatable-estandar";
 import type { ProveedorResponse } from "../../../service/proveedores.responses";
+import { TipoEntidad } from "../../../../../shared/enums/_generic/tipo-entidad";
 
 interface Props {
   proveedores: ProveedorResponse[];
@@ -38,11 +39,13 @@ export const Proveedor = ({ proveedores, loading, onOpenCuentas }: Props) => {
             <Group gap="sm">
               <ThemeIcon
                 variant="light"
-                color={r.tipo_entidad === "Persona Natural" ? "cyan" : "indigo"}
+                color={
+                  r.tipo_entidad === TipoEntidad.Natural ? "cyan" : "indigo"
+                }
                 radius="xl"
                 size="lg"
               >
-                {r.tipo_entidad === "Persona Natural" ? (
+                {r.tipo_entidad === TipoEntidad.Natural ? (
                   <IconUser className="w-5 h-5" />
                 ) : (
                   <IconBuilding className="w-5 h-5" />
@@ -121,6 +124,24 @@ export const Proveedor = ({ proveedores, loading, onOpenCuentas }: Props) => {
           render: (r: ProveedorResponse) => (
             <Text size="sm" className="text-zinc-400">
               {r.correo || "—"}
+            </Text>
+          ),
+        },
+        {
+          accessor: "indicadores",
+          title: "Indicadores",
+          textAlign: "center",
+          render: (r: ProveedorResponse) => (
+            <Text size="sm" className="text-zinc-400">
+              {r.para_mantenimiento == true ? (
+                <Badge color="blue" variant="light" size="sm" radius="xl">
+                  Da Mantenimiento
+                </Badge>
+              ) : (
+                <Text size="sm" className="text-zinc-400">
+                  -
+                </Text>
+              )}
             </Text>
           ),
         },

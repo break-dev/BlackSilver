@@ -17,6 +17,7 @@ export const useRegistroProveedor = (
 
   const [payload, setPayload] = useState<CrearProveedorRequest>({
     tipo_entidad: TipoEntidad.Juridica,
+    para_mantenimiento: false,
     dni: "",
     ruc: "",
     razon_social: "",
@@ -25,7 +26,10 @@ export const useRegistroProveedor = (
     correo: "",
   });
 
-  const handleChange = (field: keyof CrearProveedorRequest, value: string) => {
+  const handleChange = <K extends keyof CrearProveedorRequest>(
+    field: K,
+    value: CrearProveedorRequest[K],
+  ) => {
     setPayload((prev) => ({ ...prev, [field]: value }));
     if (error) setError(null);
   };
@@ -58,6 +62,7 @@ export const useRegistroProveedor = (
       notifySuccess("Proveedor registrado exitosamente");
       setPayload({
         tipo_entidad: TipoEntidad.Juridica,
+        para_mantenimiento: false,
         dni: "",
         ruc: "",
         razon_social: "",

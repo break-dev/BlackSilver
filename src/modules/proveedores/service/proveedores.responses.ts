@@ -1,8 +1,10 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import type { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 
 export interface ProveedorResponse {
   id_proveedor: number;
-  tipo_entidad: string;
+  tipo_entidad: TipoEntidad;
+  para_mantenimiento: boolean;
   dni: string | null;
   ruc: string | null;
   razon_social: string;

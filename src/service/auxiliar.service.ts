@@ -16,6 +16,7 @@ import type { EstadoActivoFijo } from "../shared/enums/activo-fijo";
 import type { RES_Labor } from "./responses/labor";
 import type { RES_Contratista } from "./responses/contratista";
 import type { EstadoBase } from "../shared/enums/_generic/estado-base";
+import type { TipoEntidad } from "../shared/enums/_generic/tipo-entidad";
 
 const path = "/aux";
 
@@ -50,7 +51,9 @@ export const AuxService = {
     id_proveedor?: number;
     estado?: EstadoBase;
   }): Promise<IRespuesta<RES_PersonalExterno[]>> => {
-    const { data } = await api.get(`${path}/personal-externo`, { params: filters });
+    const { data } = await api.get(`${path}/personal-externo`, {
+      params: filters,
+    });
     return data;
   },
 
@@ -118,10 +121,40 @@ export const AuxService = {
     id_proveedor?: number;
     estado?: string;
     tipo_entidad?: string;
+    para_mantenimiento?: boolean;
   }): Promise<IRespuesta<RES_Proveedor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Proveedor[]>>(
       `${path}/proveedores`,
       { params: filters },
+    );
+    return data;
+  },
+
+  /**
+   * Crear un proveedor
+   */
+  crear_proveedor: async (nuevoProveedor: {
+    tipo_entidad: TipoEntidad;
+    razon_social: string;
+    para_mantenimiento: boolean;
+    dni?: string;
+    ruc?: string;
+    direccion?: string;
+    telefono?: string;
+    correo?: string;
+  }): Promise<IRespuesta<RES_Proveedor>> => {
+    const { data } = await api.post<IRespuesta<RES_Proveedor>>(
+      `${path}/proveedores`,
+      {
+        tipo_entidad: nuevoProveedor.tipo_entidad,
+        razonSocial: nuevoProveedor.razon_social,
+        paraMantenimiento: nuevoProveedor.para_mantenimiento,
+        dni: nuevoProveedor.dni,
+        ruc: nuevoProveedor.ruc,
+        direccion: nuevoProveedor.direccion,
+        telefono: nuevoProveedor.telefono,
+        correo: nuevoProveedor.correo,
+      },
     );
     return data;
   },
@@ -219,10 +252,9 @@ export const AuxService = {
     id_labor?: number;
     id_requerimiento?: number;
   }): Promise<IRespuesta<RES_Labor[]>> => {
-    const { data } = await api.get<IRespuesta<RES_Labor[]>>(
-      `${path}/labores`,
-      { params: filters },
-    );
+    const { data } = await api.get<IRespuesta<RES_Labor[]>>(`${path}/labores`, {
+      params: filters,
+    });
     return data;
   },
 

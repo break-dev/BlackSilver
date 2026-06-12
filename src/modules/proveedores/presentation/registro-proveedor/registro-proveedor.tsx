@@ -1,5 +1,5 @@
 import { IconDeviceFloppy, IconExclamationCircle } from "@tabler/icons-react";
-import { Button, Grid, Select, TextInput, Alert } from "@mantine/core";
+import { Button, Grid, Select, TextInput, Alert, Switch } from "@mantine/core";
 import { useRegistroProveedor } from "../../hooks/useRegistroProveedor";
 import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
 import type { ProveedorResponse } from "../../service/proveedores.responses";
@@ -136,6 +136,25 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
               label: "text-zinc-400 font-medium text-xs",
             }}
           />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12 }}>
+          <div className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-xl flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-zinc-300 font-medium text-sm">
+                ¿Es para mantenimiento?
+              </span>
+              <span className="text-zinc-500 text-xs">
+                Si se confirma, este proveedor se listará en el módulo de mantenimiento.
+              </span>
+            </div>
+            <Switch
+              checked={payload.para_mantenimiento}
+              onChange={(e) => handleChange("para_mantenimiento", e.currentTarget.checked)}
+              color="indigo"
+              size="md"
+              className="cursor-pointer"
+            />
+          </div>
         </Grid.Col>
       </Grid>
 

@@ -170,8 +170,11 @@ export const useEditarCotizacion = (
             {
               id_proveedor: cotizacionInicial.id_proveedor,
               razon_social: cotizacionInicial.proveedor,
-              documento: cotizacionInicial.documento_proveedor,
               direccion: null,
+              ruc: cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Juridica ? cotizacionInicial.documento_proveedor : null,
+              dni: cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Natural ? cotizacionInicial.documento_proveedor : null,
+              tipo_entidad: (cotizacionInicial.tipo_entidad_proveedor as TipoEntidad) || TipoEntidad.Juridica,
+              para_mantenimiento: false,
             },
           ],
     empresas:

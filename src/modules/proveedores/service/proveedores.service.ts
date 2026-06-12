@@ -18,7 +18,16 @@ export const ProveedoresService = {
   crearProveedor: async (
     payload: CrearProveedorRequest,
   ): Promise<ProveedorResponse> => {
-    const { data } = await api.post("/proveedores", payload);
+    const { data } = await api.post("/proveedores", {
+      tipo_entidad: payload.tipo_entidad,
+      paraMantenimiento: payload.para_mantenimiento,
+      dni: payload.dni,
+      ruc: payload.ruc,
+      razon_social: payload.razon_social,
+      direccion: payload.direccion,
+      telefono: payload.telefono,
+      correo: payload.correo,
+    });
     return data.data;
   },
 
