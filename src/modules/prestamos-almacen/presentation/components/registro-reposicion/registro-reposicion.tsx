@@ -11,7 +11,6 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useState } from "react";
 import {
   BuildingStorefrontIcon,
   ExclamationCircleIcon,
@@ -25,6 +24,7 @@ import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multi
 import { ProductoRepoCard } from "./producto-repo-card";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
 import { FormPersonalExterno } from "../../../../../presentation/utils/form-personal-externo";
+import { usePersonalExterno } from "../../../../../hooks/usePersonalExterno";
 
 interface RegistroReposicionProps {
   idPrestamo: number;
@@ -70,23 +70,22 @@ export const RegistroReposicion = ({
   });
 
   const [opened, { open, close }] = useDisclosure(false);
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [dni, setDni] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleCreateNew = async () => {
-    if (!nombre.trim()) return;
-    setIsSubmitting(true);
-    const success = await handleCrearPersonal({ nombre, apellido, dni });
-    if (success) {
+  const {
+    nombre,
+    setNombre,
+    apellido,
+    setApellido,
+    dni,
+    setDni,
+    isSubmitting,
+    handleCrearPersonal: triggerCrearPersonal,
+  } = usePersonalExterno({
+    autoFetch: false,
+    onRegisterSuccess: (nuevo) => {
+      handleCrearPersonal(nuevo);
       close();
-      setNombre("");
-      setApellido("");
-      setDni("");
-    }
-    setIsSubmitting(false);
-  };
+    },
+  });
 
   const canSubmit = !!idAlmacenEntrega && !!idPersonalRecibe && !isProcessing;
 
@@ -205,7 +204,9 @@ export const RegistroReposicion = ({
             key={detalle.id_prestamo_detalle}
             detalle={detalle}
             lotes={lotesPorProducto[detalle.id_producto] || []}
-            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
+            activosFijos={activosFijos.filter(
+              (a) => a.id_producto === detalle.id_producto,
+            )}
             reposicionCantidades={reposicionCantidades}
             reposicionCantidadesActivos={reposicionCantidadesActivos}
             loadingLotes={loadingLotes}
@@ -269,7 +270,7 @@ export const RegistroReposicion = ({
           setNombre={setNombre}
           setApellido={setApellido}
           setDni={setDni}
-          onSubmit={handleCreateNew}
+          onSubmit={triggerCrearPersonal}
           isSubmitting={isSubmitting}
         />
       </ModalEstandar>

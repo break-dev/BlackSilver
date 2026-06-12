@@ -12,6 +12,7 @@ import type { RES_SolicitudDetalle } from "../../../service/responses/solicitude
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
@@ -35,15 +36,20 @@ export const useRegistroEntrega = ({
   const { notifySuccess } = useNotify();
 
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(true);
-  const [loadingPersonal, setLoadingPersonal] = useState(true);
   const [loadingLotes, setLoadingLotes] = useState(false);
 
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     RES_Almacen[]
   >([]);
-  const [personal, setPersonal] = useState<RES_PersonalExterno[]>([]);
+  const {
+    personal,
+    loading: loadingPersonal,
+    setPersonal,
+  } = usePersonalExterno({ autoFetch: true });
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
-  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>([]);
+  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
+    [],
+  );
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
   const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
@@ -109,56 +115,32 @@ export const useRegistroEntrega = ({
       }
     };
 
-    const loadPersonal = async () => {
-      setLoadingPersonal(true);
-      try {
-        const resEmp = await AuxService.get_personal_externo();
-        if (resEmp.success) {
-          setPersonal(resEmp.data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingPersonal(false);
-      }
-    };
-
     loadAlmacenes();
-    loadPersonal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedEmployeeId, idEmpleadoSolicitante]);
 
-  const handleCrearPersonal = async (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    try {
-      const res = await AuxService.crear_personal_externo(dto);
-      if (res.success) {
-        notifySuccess("Personal registrado correctamente");
-        // Update the list with the new entry
-        const nuevoPersonal = res.data as unknown as RES_PersonalExterno;
-        setPersonal((prev) => [...prev, nuevoPersonal]);
-        setIdPersonalRecibe(String(nuevoPersonal.id_personal));
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error(err);
-      setErrorLocal("Error al registrar personal externo");
-      return false;
-    }
-  };
+  const handleCrearPersonal = useCallback(
+    (nuevoPersonal: RES_PersonalExterno) => {
+      setPersonal((prev) => [...prev, nuevoPersonal]);
+      setIdPersonalRecibe(String(nuevoPersonal.id_personal));
+    },
+    [setPersonal],
+  );
 
   useEffect(() => {
-    if (idAlmacenEntrega && (idsProductos.length > 0 || idsActivoFijo.length > 0)) {
+    if (
+      idAlmacenEntrega &&
+      (idsProductos.length > 0 || idsActivoFijo.length > 0)
+    ) {
       const loadLotesYActivos = async () => {
         setLoadingLotes(true);
         try {
           const [resLotes, resActivos] = await Promise.all([
             idsProductos.length > 0
-              ? AuxService.get_lotes_disponibles(Number(idAlmacenEntrega), idsProductos)
+              ? AuxService.get_lotes_disponibles(
+                  Number(idAlmacenEntrega),
+                  idsProductos,
+                )
               : Promise.resolve({ success: true, data: [] }),
             idsActivoFijo.length > 0
               ? AuxService.get_activos_disponibles({
@@ -208,7 +190,13 @@ export const useRegistroEntrega = ({
       setEntregaCantidades({});
       setEntregaCantidadesActivos({});
     }
-  }, [idAlmacenEntrega, idsProductos, idsActivoFijo, detallesConLote, detallesActivoFijo]);
+  }, [
+    idAlmacenEntrega,
+    idsProductos,
+    idsActivoFijo,
+    detallesConLote,
+    detallesActivoFijo,
+  ]);
 
   const handleCantChange = useCallback(
     (idSolicitudDetalle: number, idLote: number, val: number) => {

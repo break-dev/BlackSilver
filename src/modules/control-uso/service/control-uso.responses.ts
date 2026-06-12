@@ -35,7 +35,6 @@ export interface RES_ControlUsoLog {
   tarifa_material: string | null;
   observacion: string | null;
   tipo_material: string | null;
-  cantidad_sacos: number | null;
   created_at: string;
 }
 

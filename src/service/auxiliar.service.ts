@@ -15,6 +15,7 @@ import type { RES_ActivoFijoDisponible } from "./responses/activo-fijo";
 import type { EstadoActivoFijo } from "../shared/enums/activo-fijo";
 import type { RES_Labor } from "./responses/labor";
 import type { RES_Contratista } from "./responses/contratista";
+import type { EstadoBase } from "../shared/enums/_generic/estado-base";
 
 const path = "/aux";
 
@@ -44,14 +45,17 @@ export const AuxService = {
     return data;
   },
 
-  get_personal_externo: async (): Promise<
-    IRespuesta<RES_PersonalExterno[]>
-  > => {
-    const { data } = await api.get(`${path}/personal-externo`);
+  get_personal_externo: async (filters?: {
+    id_personal?: number;
+    id_proveedor?: number;
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_PersonalExterno[]>> => {
+    const { data } = await api.get(`${path}/personal-externo`, { params: filters });
     return data;
   },
 
   crear_personal_externo: async (nuevoPersonal: {
+    id_proveedor?: number;
     nombre: string;
     apellido?: string;
     dni?: string;

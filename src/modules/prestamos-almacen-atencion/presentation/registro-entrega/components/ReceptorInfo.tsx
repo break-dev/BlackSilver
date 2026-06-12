@@ -1,20 +1,17 @@
 import { Paper, Select, Textarea, ActionIcon, Group } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multifile-picker";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
 import { FormPersonalExterno } from "../../../../../presentation/utils/form-personal-externo";
+import { usePersonalExterno } from "../../../../../hooks/usePersonalExterno";
+import type { RES_PersonalExterno } from "../../../../../service/responses/personal-externo";
 
 interface ReceptorInfoProps {
   personal: { value: string; label: string }[];
   idPersonalRecibe: string | null;
   setIdPersonalRecibe: (val: string | null) => void;
-  onAddPersonal?: (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => Promise<boolean>;
+  onAddPersonal?: (nuevo: RES_PersonalExterno) => void;
   observacion: string;
   setObservacion: (val: string) => void;
   evidencias: File[];
@@ -32,25 +29,22 @@ export const ReceptorInfo = ({
   setEvidencias,
 }: ReceptorInfoProps) => {
   const [opened, { open, close }] = useDisclosure(false);
-  const [nombre, setNombre] = useState("");
-  const [apellido, setApellido] = useState("");
-  const [dni, setDni] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleCreateNew = async () => {
-    if (!nombre.trim()) return;
-    setIsSubmitting(true);
-    if (onAddPersonal) {
-      const success = await onAddPersonal({ nombre, apellido, dni });
-      if (success) {
-        close();
-        setNombre("");
-        setApellido("");
-        setDni("");
-      }
-    }
-    setIsSubmitting(false);
-  };
+  const {
+    nombre,
+    setNombre,
+    apellido,
+    setApellido,
+    dni,
+    setDni,
+    isSubmitting,
+    handleCrearPersonal,
+  } = usePersonalExterno({
+    autoFetch: false,
+    onRegisterSuccess: (nuevo) => {
+      onAddPersonal?.(nuevo);
+      close();
+    },
+  });
 
   return (
     <Paper
@@ -127,7 +121,7 @@ export const ReceptorInfo = ({
           setNombre={setNombre}
           setApellido={setApellido}
           setDni={setDni}
-          onSubmit={handleCreateNew}
+          onSubmit={handleCrearPersonal}
           isSubmitting={isSubmitting}
         />
       </ModalEstandar>

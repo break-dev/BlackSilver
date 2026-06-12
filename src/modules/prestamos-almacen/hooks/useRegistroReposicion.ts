@@ -9,6 +9,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroReposicionProps {
   idPrestamo: number;
@@ -22,10 +23,9 @@ export const useRegistroReposicion = ({
   onSuccess,
 }: UseRegistroReposicionProps) => {
   const { usuario } = useAuthStore();
-  const { notifySuccess, notifyError } = useNotify();
+  const { notifySuccess } = useNotify();
 
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
-  const [loadingPersonal, setLoadingPersonal] = useState(false);
   const [loadingLotes, setLoadingLotes] = useState(false);
   const [loadingActivos, setLoadingActivos] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,9 +34,18 @@ export const useRegistroReposicion = ({
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     { id_almacen: number; nombre: string }[]
   >([]);
-  const [personal, setPersonal] = useState<{ value: string; label: string }[]>(
-    [],
-  );
+  const {
+    personal: rawPersonal,
+    loading: loadingPersonal,
+    setPersonal: setRawPersonal,
+  } = usePersonalExterno({ autoFetch: true });
+
+  const personal = useMemo(() => {
+    return rawPersonal.map((p) => ({
+      value: String(p.id_personal),
+      label: `${p.nombre_completo} | ${p.dni || "S/N"}`,
+    }));
+  }, [rawPersonal]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
   const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
@@ -81,27 +90,7 @@ export const useRegistroReposicion = ({
       }
     };
 
-    const fetchPersonal = async () => {
-      setLoadingPersonal(true);
-      try {
-        const res = await AuxService.get_personal_externo();
-        if (res.success) {
-          setPersonal(
-            res.data.map((p: RES_PersonalExterno) => ({
-              value: String(p.id_personal),
-              label: `${p.nombre_completo} | ${p.dni || "S/N"}`,
-            })),
-          );
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingPersonal(false);
-      }
-    };
-
     fetchAlmacenes();
-    fetchPersonal();
   }, []);
 
   const detallesConLote = useMemo(
@@ -130,22 +119,26 @@ export const useRegistroReposicion = ({
       setLoadingLotes(true);
       setLoadingActivos(true);
       try {
-        const promises: Promise<any>[] = [
+        const [resLotes, resActivos] = await Promise.all([
           idsProductos.length > 0
             ? AuxService.get_lotes_disponibles(
                 Number(idAlmacenEntrega),
                 idsProductos,
               )
-            : Promise.resolve({ success: true, data: [] }),
+            : Promise.resolve({
+                success: true,
+                data: [] as RES_LoteDisponible[],
+              }),
           idsActivoFijo.length > 0
             ? AuxService.get_activos_disponibles({
                 id_almacen: Number(idAlmacenEntrega),
                 ids_productos: idsActivoFijo,
               })
-            : Promise.resolve({ success: true, data: [] }),
-        ];
-
-        const [resLotes, resActivos] = await Promise.all(promises);
+            : Promise.resolve({
+                success: true,
+                data: [] as RES_ActivoFijoDisponible[],
+              }),
+        ]);
 
         if (resLotes.success) {
           const grouped = resLotes.data.reduce(
@@ -236,32 +229,13 @@ export const useRegistroReposicion = ({
     [selectedDetalles],
   );
 
-  const handleCrearPersonal = async (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    try {
-      const res = await AuxService.crear_personal_externo(dto);
-      if (res.success) {
-        notifySuccess("Personal registrado correctamente");
-        const nuevo = res.data as unknown as RES_PersonalExterno;
-        setPersonal((prev) => [
-          ...prev,
-          {
-            value: String(nuevo.id_personal),
-            label: `${nuevo.nombre_completo} - DNI: ${nuevo.dni || "S/N"}`,
-          },
-        ]);
-        setIdPersonalRecibe(String(nuevo.id_personal));
-        return true;
-      }
-      return false;
-    } catch {
-      notifyError("Error al registrar personal externo");
-      return false;
-    }
-  };
+  const handleCrearPersonal = useCallback(
+    (nuevo: RES_PersonalExterno) => {
+      setRawPersonal((prev) => [...prev, nuevo]);
+      setIdPersonalRecibe(String(nuevo.id_personal));
+    },
+    [setRawPersonal],
+  );
 
   const handleConfirmar = async () => {
     if (!idAlmacenEntrega || !idPersonalRecibe || !usuario) return;

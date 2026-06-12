@@ -8,6 +8,7 @@ import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,
@@ -25,7 +26,11 @@ export const useRegistroTransferenciaOC = ({
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
     [],
   );
-  const [personal, setPersonal] = useState<RES_PersonalExterno[]>([]);
+  const {
+    personal,
+    loading: loadingPersonal,
+    setPersonal,
+  } = usePersonalExterno({ autoFetch: true });
   const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
@@ -41,13 +46,11 @@ export const useRegistroTransferenciaOC = ({
   const [transferenciaCantidadesActivos, setTransferenciaCantidadesActivos] =
     useState<Record<number, Record<number, number>>>({});
 
-  const itemsATransferir = detallesRecepcion.filter((d) =>
-    selectedItemsIds.includes(d.id_recepcion_detalle),
-  );
-
-  const itemsKey = itemsATransferir
-    .map((i) => i.id_recepcion_detalle)
-    .join(",");
+  const itemsATransferir = useMemo(() => {
+    return detallesRecepcion.filter((d) =>
+      selectedItemsIds.includes(d.id_recepcion_detalle),
+    );
+  }, [detallesRecepcion, selectedItemsIds]);
 
   const cargarDatosIniciales = useCallback(async () => {
     setLoading(true);
@@ -57,8 +60,7 @@ export const useRegistroTransferenciaOC = ({
         .filter((item) => item.tipo_bien === TipoBien.ActivoFijo)
         .map((item) => item.id_producto);
 
-      const [personalRes, lotesRes, activosRes] = await Promise.all([
-        AuxService.get_personal_externo(),
+      const [lotesRes, activosRes] = await Promise.all([
         idsProductos.length > 0
           ? AuxService.get_lotes_disponibles(
               idAlmacenRecepcionista,
@@ -79,10 +81,6 @@ export const useRegistroTransferenciaOC = ({
             }),
       ]);
 
-      if (personalRes.success && personalRes.data) {
-        setPersonal(personalRes.data);
-      }
-
       if (lotesRes.success && lotesRes.data) {
         setLotes(lotesRes.data);
       }
@@ -90,7 +88,10 @@ export const useRegistroTransferenciaOC = ({
       if (activosRes.success && activosRes.data) {
         // Construir los activos a mostrar a partir de los que se recibieron originalmente
         const assetsFromReception = itemsATransferir
-          .filter((item) => item.tipo_bien === TipoBien.ActivoFijo && item.id_activo_fijo)
+          .filter(
+            (item) =>
+              item.tipo_bien === TipoBien.ActivoFijo && item.id_activo_fijo,
+          )
           .map((item) => {
             const extraInfo = (activosRes.data || []).find(
               (a) => Number(a.id_activo) === Number(item.id_activo_fijo),
@@ -101,17 +102,25 @@ export const useRegistroTransferenciaOC = ({
               correlativo: item.correlativo_activo_fijo || "",
               id_producto: item.id_producto,
               producto: item.producto,
-              id_almacen: extraInfo ? extraInfo.id_almacen : idAlmacenRecepcionista,
+              id_almacen: extraInfo
+                ? extraInfo.id_almacen
+                : idAlmacenRecepcionista,
               almacen: extraInfo ? extraInfo.almacen : null,
-              en_almacen_principal: extraInfo ? extraInfo.en_almacen_principal : true,
+              en_almacen_principal: extraInfo
+                ? extraInfo.en_almacen_principal
+                : true,
               id_mina: extraInfo ? extraInfo.id_mina : null,
               mina: extraInfo ? extraInfo.mina : null,
               es_auditable: extraInfo ? extraInfo.es_auditable : false,
               id_categoria: extraInfo ? extraInfo.id_categoria : 0,
               categoria: extraInfo ? extraInfo.categoria : "",
               para_transporte: extraInfo ? extraInfo.para_transporte : false,
-              control_por_odometro: extraInfo ? extraInfo.control_por_odometro : false,
-              control_por_horometro: extraInfo ? extraInfo.control_por_horometro : false,
+              control_por_odometro: extraInfo
+                ? extraInfo.control_por_odometro
+                : false,
+              control_por_horometro: extraInfo
+                ? extraInfo.control_por_horometro
+                : false,
               id_unidad_medida_base: item.id_unidad_medida_base,
               unidad_medida_base: "",
               unidad_medida_base_abv: item.unidad_medida_base_abv,
@@ -136,7 +145,7 @@ export const useRegistroTransferenciaOC = ({
     } finally {
       setLoading(false);
     }
-  }, [idAlmacenRecepcionista, itemsKey]);
+  }, [idAlmacenRecepcionista, itemsATransferir]);
 
   const handleCantLoteChange = (
     idDetalle: number,
@@ -170,17 +179,13 @@ export const useRegistroTransferenciaOC = ({
     [],
   );
 
-  const handleCrearPersonal = async (nuevoPersonal: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    const res = await AuxService.crear_personal_externo(nuevoPersonal);
-    if (res.success && res.data) {
-      setPersonal((prev) => [...prev, res.data!]);
-      setIdPersonalRecibe(res.data!.id_personal.toString());
-    }
-  };
+  const handleCrearPersonal = useCallback(
+    (nuevo: RES_PersonalExterno) => {
+      setPersonal((prev) => [...prev, nuevo]);
+      setIdPersonalRecibe(nuevo.id_personal.toString());
+    },
+    [setPersonal],
+  );
 
   const totalTransferenciaGeneralBase = useMemo(() => {
     let total = 0;
@@ -332,7 +337,7 @@ export const useRegistroTransferenciaOC = ({
   };
 
   return {
-    loading,
+    loading: loading || loadingPersonal,
     itemsATransferir,
     lotes,
     activosFijos,

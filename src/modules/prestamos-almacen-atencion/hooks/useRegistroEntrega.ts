@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { PrestamosAtencionService } from "../service/prestamos-atencion.service";
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
@@ -8,6 +8,7 @@ import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/p
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
@@ -27,9 +28,19 @@ export const useRegistroEntrega = ({
   const { notifySuccess, notifyError } = useNotify();
 
   const [loading, setLoading] = useState(false);
-  const [personal, setPersonal] = useState<{ value: string; label: string }[]>(
-    [],
-  );
+  const {
+    personal: rawPersonal,
+    loading: loadingPersonal,
+    setPersonal: setRawPersonal,
+  } = usePersonalExterno({ autoFetch: true });
+
+  const personal = useMemo(() => {
+    return rawPersonal.map((p) => ({
+      value: String(p.id_personal),
+      label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
+    }));
+  }, [rawPersonal]);
+
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
     [],
@@ -82,38 +93,23 @@ export const useRegistroEntrega = ({
     setError("");
 
     try {
-      const promises: Promise<any>[] = [
-        AuxService.get_personal_externo(),
+      const [resLotes, resActivos] = await Promise.all([
         idsProductos.length > 0
           ? AuxService.get_lotes_disponibles(idAlmacenPrestamista, idsProductos)
-          : Promise.resolve({ success: true, data: [] }),
+          : Promise.resolve({
+              success: true,
+              data: [] as RES_LoteDisponible[],
+            }),
         idsActivoFijo.length > 0
           ? AuxService.get_activos_disponibles({
               id_almacen: idAlmacenPrestamista,
               ids_productos: idsActivoFijo,
             })
-          : Promise.resolve({ success: true, data: [] }),
-      ];
-
-      const [resPers, resLotes, resActivos] = await Promise.all(promises);
-
-      if (resPers.success) {
-        const persMapped = resPers.data.map((p: RES_PersonalExterno) => ({
-          value: String(p.id_personal),
-          label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
-        }));
-        setPersonal(persMapped);
-
-        // AUTO-SELECCIÓN: Si tenemos un personal por defecto
-        if (idEmpleadoDefault) {
-          const exists = persMapped.some(
-            (e: { value: string }) => e.value === String(idEmpleadoDefault),
-          );
-          if (exists) {
-            setIdPersonalRecibe(String(idEmpleadoDefault));
-          }
-        }
-      }
+          : Promise.resolve({
+              success: true,
+              data: [] as RES_ActivoFijoDisponible[],
+            }),
+      ]);
 
       if (resLotes.success) {
         const castedLotes: RES_LoteDisponible[] = resLotes.data.map(
@@ -167,35 +163,27 @@ export const useRegistroEntrega = ({
     idAlmacenPrestamista,
     detallesConLote,
     detallesActivoFijo,
-    idEmpleadoDefault,
   ]);
 
-  const handleCrearPersonal = async (dto: {
-    nombre: string;
-    apellido?: string;
-    dni?: string;
-  }) => {
-    try {
-      const res = await AuxService.crear_personal_externo(dto);
-      if (res.success) {
-        notifySuccess("Personal registrado correctamente");
-        const nuevo = res.data as unknown as RES_PersonalExterno;
-        setPersonal((prev) => [
-          ...prev,
-          {
-            value: String(nuevo.id_personal),
-            label: `${nuevo.nombre_completo} - DNI: ${nuevo.dni || "S/N"}`,
-          },
-        ]);
-        setIdPersonalRecibe(String(nuevo.id_personal));
-        return true;
+  // AUTO-SELECCIÓN reactiva del empleado por defecto
+  useEffect(() => {
+    if (idEmpleadoDefault && personal.length > 0) {
+      const exists = personal.some(
+        (e) => e.value === String(idEmpleadoDefault),
+      );
+      if (exists) {
+        setIdPersonalRecibe(String(idEmpleadoDefault));
       }
-      return false;
-    } catch {
-      notifyError("Error al registrar personal externo");
-      return false;
     }
-  };
+  }, [idEmpleadoDefault, personal]);
+
+  const handleCrearPersonal = useCallback(
+    (nuevo: RES_PersonalExterno) => {
+      setRawPersonal((prev) => [...prev, nuevo]);
+      setIdPersonalRecibe(String(nuevo.id_personal));
+    },
+    [setRawPersonal],
+  );
 
   const handleCantLoteChange = useCallback(
     (idDetalle: number, idLote: number, valLote: number) => {
@@ -405,7 +393,7 @@ export const useRegistroEntrega = ({
   );
 
   return {
-    loading,
+    loading: loading || loadingPersonal,
     itemsAEntregar,
     lotes,
     activosFijos,
