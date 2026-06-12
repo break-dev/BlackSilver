@@ -9,6 +9,7 @@ import {
   ArrowsRightLeftIcon,
   ReceiptRefundIcon,
   ShoppingCartIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 
 // Asociacion de iconos a cada nivel de menú mediante
@@ -44,6 +45,7 @@ export const iconos_menu_navegacion = [
     icono: TruckIcon,
     submenus: [
       { submenu_path: "control-activos", icono: ClipboardDocumentListIcon },
+      { submenu_path: "produccion", icono: CubeIcon },
     ],
   },
 ];

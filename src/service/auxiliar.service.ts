@@ -14,6 +14,7 @@ import type { RES_Marca } from "./responses/marca";
 import type { RES_ActivoFijoDisponible } from "./responses/activo-fijo";
 import type { EstadoActivoFijo } from "../shared/enums/activo-fijo";
 import type { RES_Labor } from "./responses/labor";
+import type { RES_Contratista } from "./responses/contratista";
 
 const path = "/aux";
 
@@ -216,6 +217,19 @@ export const AuxService = {
   }): Promise<IRespuesta<RES_Labor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Labor[]>>(
       `${path}/labores`,
+      { params: filters },
+    );
+    return data;
+  },
+
+  /**
+   * Obtener contratistas
+   */
+  get_contratistas: async (filters?: {
+    id_mina?: number;
+  }): Promise<IRespuesta<RES_Contratista[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Contratista[]>>(
+      `${path}/contratistas`,
       { params: filters },
     );
     return data;

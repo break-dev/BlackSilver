@@ -55,9 +55,11 @@ import ModoAuditoriaPage from "../../modules/modo-auditoria/presentation/ModoAud
 import {
   ControlActivosLayout,
   OperacionesLayout,
+  ProduccionLayout,
 } from "../layouts/operaciones.layout.tsx";
 import { ControlConsumoPage } from "../../modules/control-consumo/presentation/control-consumo.page.tsx";
 import { ControlUsoPage } from "../../modules/control-uso/presentation/control-uso.page.tsx";
+import { LoteMineralPage } from "../../modules/lote-mineral/presentation/lote-mineral.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -207,6 +209,9 @@ export const App = () => {
           <Route path="control-activos" element={<ControlActivosLayout />}>
             <Route path="consumo" element={<ControlConsumoPage />} />
             <Route path="uso" element={<ControlUsoPage />} />
+          </Route>
+          <Route path="produccion" element={<ProduccionLayout />}>
+            <Route path="lote-mineral" element={<LoteMineralPage />} />
           </Route>
         </Route>
 

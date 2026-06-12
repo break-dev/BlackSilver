@@ -7,3 +7,7 @@ export const OperacionesLayout = () => {
 export const ControlActivosLayout = () => {
   return <Outlet />;
 };
+
+export const ProduccionLayout = () => {
+  return <Outlet />;
+};
