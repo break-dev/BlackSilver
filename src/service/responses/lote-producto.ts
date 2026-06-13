@@ -25,6 +25,12 @@ export interface RES_LoteDisponible {
   fecha_vencimiento: string | null;
   dias_para_vencer: number | null;
   estado_vencimiento: EstadoVencimientoProducto;
+  serie_factura_compra?: string | null;
+  numero_factura_compra?: string | null;
+  costo_por_unidad?: number | null;
+  id_orden_compra_detalle?: number | null;
+  id_orden_compra?: number | null;
+  id_orden_compra_comprobante?: number | null;
 }
 
 export interface RES_TicketLote {

@@ -116,29 +116,45 @@ export const RecepcionProductoCard = ({
               >
                 {group.producto}
               </Text>
-              <Badge
-                variant="dot"
-                color="teal"
-                size="xs"
-                mt={2}
-                className={`bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg ${!group.selected && "opacity-50 grayscale"}`}
-              >
-                Total a Recibir: {formatNumber(group.cantidad_transferida_base)}{" "}
-                {group.unidad_medida_base_abv}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Badge
+                  variant="dot"
+                  color="teal"
+                  size="xs"
+                  className={`bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg ${!group.selected && "opacity-50 grayscale"}`}
+                >
+                  Total a Recibir:{" "}
+                  {formatNumber(group.cantidad_transferida_base)}{" "}
+                  {group.unidad_medida_base_abv}
+                </Badge>
+                {group.tipo_bien !== TipoBien.ActivoFijo &&
+                  group.lote_correlativo && (
+                    <Badge
+                      variant="dot"
+                      color="yellow"
+                      size="xs"
+                      className={`bg-zinc-800/50 border-zinc-700/50 text-amber-400 font-bold px-3 py-3 rounded-lg ${!group.selected && "opacity-50 grayscale"}`}
+                    >
+                      Origen: {group.lote_correlativo}
+                      {group.lote_serie_factura || group.lote_numero_factura
+                        ? ` (${[group.lote_serie_factura, group.lote_numero_factura].filter(Boolean).join("-")})`
+                        : ""}
+                    </Badge>
+                  )}
+              </div>
             </div>
           </Group>
 
           {group.selected && !isActivoFijo && (
             <Button
-              size="compact-xs"
+              size="xs"
               variant="light"
               color="indigo"
               radius="xl"
               leftSection={<PlusIcon className="w-4 h-4" />}
               onClick={() => addLot(groupIndex)}
             >
-              Dividir en otro lote
+              Dividir
             </Button>
           )}
         </div>
@@ -249,6 +265,7 @@ export const RecepcionProductoCard = ({
                         }
                         maxQty={group.cantidad_transferida_base}
                         unidadBaseAbv={group.unidad_medida_base_abv}
+                        detallesOrigen={[group]}
                       />
                     </div>
                   ) : (

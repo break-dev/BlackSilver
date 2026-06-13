@@ -15,7 +15,7 @@ export const ProductGroupHeader = ({
   const { angry, close } = useBlackcito();
 
   const isBajoStock =
-    Number(product.total_stock_base) <= Number(product.stock_minimo_base);
+    Number(product.total_stock_base) < Number(product.stock_minimo_base);
 
   return (
     <div className="p-4 bg-zinc-900/20 border-b border-zinc-800/50 flex flex-col md:flex-row justify-between items-center gap-4">

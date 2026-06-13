@@ -7,6 +7,7 @@ import {
   Textarea,
   Paper,
   Divider,
+  TextInput,
 } from "@mantine/core";
 import {
   ArchiveBoxIcon,
@@ -49,6 +50,12 @@ export const RegistroLote = ({
     setFechaVencimiento,
     descripcion,
     setDescripcion,
+    serieFacturaCompra,
+    setSerieFacturaCompra,
+    numeroFacturaCompra,
+    setNumeroFacturaCompra,
+    costoPorUnidad,
+    setCostoPorUnidad,
     loadingProductos,
     loadingUnidades,
     submitting,
@@ -154,12 +161,12 @@ export const RegistroLote = ({
         />
 
         <NumberInput
-          label="Contenido por unidad"
+          label={`Contenido`}
           placeholder="1.0"
           description={
             derived.sonUnidadesIdenticas
-              ? "Misma unidad que la base (Bloqueado)"
-              : `Indique cuánt@s ${enPlural(derived.unidadBase?.nombre) || "unidades"} contiene cada ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
+              ? "Misma unidad que la base"
+              : `${enPlural(derived.unidadBase?.nombre) || "unidades"} x ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
           }
           min={0.1}
           fixedDecimalScale
@@ -259,6 +266,51 @@ export const RegistroLote = ({
             </Text>
           </div>
         )}
+
+        <Divider className="md:col-span-2 border-zinc-800/40 my-2" />
+
+        <NumberInput
+          label={`Costo x ${derived.unidadSeleccionada?.abreviatura || "---"} (S/.)`}
+          placeholder="Ej: 15.50"
+          min={0}
+          decimalScale={2}
+          value={
+            costoPorUnidad !== null && costoPorUnidad !== undefined
+              ? costoPorUnidad
+              : ""
+          }
+          onChange={(val) => setCostoPorUnidad(val ? Number(val) : null)}
+          classNames={inputClasses}
+          radius="lg"
+          size="sm"
+        />
+
+        <div className="grid grid-cols-2 gap-2">
+          <TextInput
+            label="Serie Factura"
+            placeholder="Ej. F001"
+            value={serieFacturaCompra}
+            onChange={(e) =>
+              setSerieFacturaCompra(e.currentTarget.value.toUpperCase())
+            }
+            classNames={inputClasses}
+            radius="lg"
+            size="sm"
+          />
+          <TextInput
+            label="Número Factura"
+            placeholder="Ej. 000123"
+            value={numeroFacturaCompra}
+            onChange={(e) =>
+              setNumeroFacturaCompra(e.currentTarget.value.toUpperCase())
+            }
+            classNames={inputClasses}
+            radius="lg"
+            size="sm"
+          />
+        </div>
+
+        <Divider className="md:col-span-2 border-zinc-800/40 my-2" />
 
         <Textarea
           label="Descripción o referencia (Opcional)"

@@ -13,6 +13,8 @@ export interface DTO_RecepcionLotExtendido extends DTO_RecepcionOCItem {
 
 export interface GroupedReceptionOC {
   id_orden_compra_detalle: number;
+  id_orden_compra: number;
+  precio_unitario: number;
   almacen_recepcionista: string;
   producto: string;
   cantidad_requerida_base: number;
@@ -64,6 +66,8 @@ export const useItemsRecepcion = ({
 
       return pendingDetails.map((d) => ({
         id_orden_compra_detalle: d.id_orden_compra_detalle,
+        id_orden_compra: d.id_orden_compra,
+        precio_unitario: d.precio_unitario,
         almacen_recepcionista: d.almacen_recepcionista,
         producto: d.producto,
         cantidad_requerida_base:
@@ -103,6 +107,7 @@ export const useItemsRecepcion = ({
                   id_marca: null,
                   yearcito_modelo: null,
                   descripcion_activo: "",
+                  id_empleado_responsable: null,
                 },
               ]
             : [
@@ -270,6 +275,7 @@ export const useItemsRecepcion = ({
           id_marca: null,
           yearcito_modelo: new Date().getFullYear(),
           descripcion_activo: "",
+          id_empleado_responsable: null,
         });
       } else {
         const lastIdx = lots.length - 1;

@@ -20,6 +20,7 @@ export interface DTO_RecepcionOCItem {
   modelo?: string | null;
   id_marca?: number | null;
   yearcito_modelo?: number | null;
+  id_empleado_responsable?: number | null;
 }
 
 export interface DTO_OCComprobante {

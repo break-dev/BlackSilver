@@ -18,9 +18,12 @@ import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export interface DTO_RecibirLotExtendido extends DTO_RecibirEntregaItem {
   ajustes?: Record<number, number>; // idLote -> cantidad
+  lote_correlativo?: string | null;
+  lote_serie_factura?: string | null;
+  lote_numero_factura?: string | null;
 }
 
-export interface GroupedReception {
+export type GroupedReception = HistorialEntregaDetalleItem & {
   id_solicitud_reabastecimiento_detalle: number;
   producto: string;
   total_entregado_base: number;
@@ -29,7 +32,7 @@ export interface GroupedReception {
   tipo_bien: string;
   detalles_origen: (HistorialEntregaDetalleItem & { selected?: boolean })[];
   lots: DTO_RecibirLotExtendido[];
-}
+};
 
 interface UseRegistroRecepcionProps {
   idEntrega?: number;
@@ -73,7 +76,8 @@ export const useRegistroRecepcion = ({
     if (detalles && detalles.length > 0 && groupedItems.length === 0) {
       const grouped: Record<number, GroupedReception> = {};
       detalles.forEach((d) => {
-        const key = d.id_solicitud_reabastecimiento_detalle;
+        const key = d.id_producto;
+
         if (!grouped[key]) {
           grouped[key] = {
             ...d,
@@ -92,38 +96,60 @@ export const useRegistroRecepcion = ({
         grouped[key].detalles_origen.push(d);
       });
 
-      const initialGrouped = Object.values(grouped).map((g) => ({
-        ...g,
-        detalles_origen: g.detalles_origen.map((d) => {
+      const initialGrouped = Object.values(grouped).map((g) => {
+        const itemsConPendiente = g.detalles_origen.filter((d) => {
           const pendiente =
             Number(d.cantidad_base) -
             (Number(d.cantidad_recibida_total_base) || 0);
-          return {
-            ...d,
-            selected: d.tipo_bien === TipoBien.ActivoFijo && pendiente > 0,
-          };
-        }),
-        lots:
-          g.tipo_bien === TipoBien.ActivoFijo
-            ? []
-            : [
-                {
-                  id_solicitud_reabastecimiento_detalle:
-                    g.id_solicitud_reabastecimiento_detalle,
-                  id_entrega_detalle: null,
-                  es_nuevo_lote: false, // Por defecto ajustar stock
-                  cantidad_base: g.total_entregado_base,
-                  max_permitido: g.total_entregado_base,
-                  id_lote_existente: null,
-                  fecha_vencimiento: null,
-                  id_unidad_medida: g.detalles_origen[0].id_unidad_medida_base,
-                  contenido_por_presentacion: 1,
-                  fecha_ingreso: new Date().toISOString(),
-                  es_perecible: g.es_perecible,
-                  ajustes: {},
-                },
-              ],
-      }));
+          return pendiente > 0;
+        });
+
+        return {
+          ...g,
+          detalles_origen: g.detalles_origen.map((d) => {
+            const pendiente =
+              Number(d.cantidad_base) -
+              (Number(d.cantidad_recibida_total_base) || 0);
+            return {
+              ...d,
+              selected: d.tipo_bien === TipoBien.ActivoFijo && pendiente > 0,
+            };
+          }),
+          lots:
+            g.tipo_bien === TipoBien.ActivoFijo
+              ? []
+              : itemsConPendiente.map((d) => {
+                  const pendiente =
+                    Number(d.cantidad_base) -
+                    (Number(d.cantidad_recibida_total_base) || 0);
+                  return {
+                    id_solicitud_reabastecimiento_detalle:
+                      d.id_solicitud_reabastecimiento_detalle,
+                    id_entrega_detalle: d.id_entrega_detalle,
+                    es_nuevo_lote: false,
+                    cantidad_base: pendiente,
+                    max_permitido: pendiente,
+                    id_lote_existente: null,
+                    fecha_vencimiento: null,
+                    id_unidad_medida: d.id_unidad_medida_base,
+                    contenido_por_presentacion: 1,
+                    fecha_ingreso: new Date().toISOString(),
+                    es_perecible: g.es_perecible,
+                    ajustes: {},
+                    lote_correlativo: d.lote_correlativo,
+                    lote_serie_factura: d.lote_serie_factura,
+                    lote_numero_factura: d.lote_numero_factura,
+                    lote_costo_por_unidad: d.lote_costo_por_unidad,
+                    lote_id_orden_compra_detalle:
+                      d.lote_id_orden_compra_detalle,
+                    lote_id_orden_compra: d.lote_id_orden_compra,
+                    lote_id_orden_compra_comprobante:
+                      d.lote_id_orden_compra_comprobante,
+                    id_lote_producto: d.id_lote_producto,
+                  };
+                }),
+        };
+      });
       setGroupedItems(initialGrouped);
     }
   }, [detalles, groupedItems.length]);
@@ -159,7 +185,7 @@ export const useRegistroRecepcion = ({
             setGroupedItems((prev) =>
               prev.map((group) => {
                 const productLots = res.data!.filter(
-                  (l) => l.id_producto === group.detalles_origen[0].id_producto,
+                  (l) => l.id_producto === group.id_producto,
                 );
                 if (productLots.length === 0) {
                   return {
@@ -192,10 +218,25 @@ export const useRegistroRecepcion = ({
       let finalValue = value;
       if (field === "cantidad_base") {
         const numVal = Number(value) || 0;
-        finalValue = Math.min(
-          numVal,
-          group.total_entregado_base,
-        ) as DTO_RecibirLotExtendido[K];
+        const thisDetailId = lots[lotIndex].id_entrega_detalle;
+        const originalDetail = group.detalles_origen.find(
+          (d) => d.id_entrega_detalle === thisDetailId,
+        );
+        const originalDetailQty = originalDetail
+          ? Number(originalDetail.cantidad_base) -
+            (Number(originalDetail.cantidad_recibida_total_base) || 0)
+          : group.total_entregado_base;
+
+        const otherSumForDetail = lots.reduce((acc, l, idx) => {
+          if (idx === lotIndex) return acc;
+          if (l.id_entrega_detalle === thisDetailId) {
+            return acc + (Number(l.cantidad_base) || 0);
+          }
+          return acc;
+        }, 0);
+
+        const maxAllowed = Math.max(0, originalDetailQty - otherSumForDetail);
+        finalValue = Math.min(numVal, maxAllowed) as DTO_RecibirLotExtendido[K];
       }
 
       lots[lotIndex] = { ...lots[lotIndex], [field]: finalValue };
@@ -215,23 +256,25 @@ export const useRegistroRecepcion = ({
     });
   };
 
-  const addLot = (groupIndex: number) => {
+  const addLot = (groupIndex: number, lotIndex: number) => {
     setGroupedItems((prev) => {
       const newGrouped = [...prev];
       const g = { ...newGrouped[groupIndex] };
       const lots = [...g.lots];
-      const lastIdx = lots.length - 1;
-      const lastLot = { ...lots[lastIdx] };
+      const targetLot = { ...lots[lotIndex] };
 
-      const currentQty = Number(lastLot.cantidad_base) || 0;
+      const currentQty = Number(targetLot.cantidad_base) || 0;
       const halfQty = Math.floor(currentQty / 2);
       const restQty = currentQty - halfQty;
 
-      lastLot.cantidad_base = restQty;
-      lots[lastIdx] = lastLot;
+      targetLot.cantidad_base = restQty;
+      if (!targetLot.es_nuevo_lote && targetLot.id_lote_existente) {
+        targetLot.ajustes = { [targetLot.id_lote_existente]: restQty };
+      }
+      lots[lotIndex] = targetLot;
 
-      lots.push({
-        ...lastLot,
+      lots.splice(lotIndex + 1, 0, {
+        ...targetLot,
         cantidad_base: halfQty,
         id_lote_existente: null,
         ajustes: {},
@@ -271,7 +314,7 @@ export const useRegistroRecepcion = ({
       const ajustes: Record<number, number> = {};
 
       if (isActive) {
-        const finalQty = qty ?? group.total_entregado_base;
+        const finalQty = qty ?? lot.cantidad_base;
         ajustes[idLote] = finalQty;
         lot.cantidad_base = finalQty;
         lot.id_lote_existente = idLote;
@@ -289,236 +332,231 @@ export const useRegistroRecepcion = ({
   };
 
   const toggleActivoSeleccionado = (
-      groupIndex: number,
-      detailIndex: number,
-    ) => {
-      setGroupedItems((prev) => {
-        const newGrouped = [...prev];
-        const group = { ...newGrouped[groupIndex] };
-        const detalles_origen = [...group.detalles_origen];
-        const d = { ...detalles_origen[detailIndex] };
-        d.selected = !d.selected;
-        detalles_origen[detailIndex] = d;
-        group.detalles_origen = detalles_origen;
-        newGrouped[groupIndex] = group;
-        return newGrouped;
-      });
-    };
+    groupIndex: number,
+    detailIndex: number,
+  ) => {
+    setGroupedItems((prev) => {
+      const newGrouped = [...prev];
+      const group = { ...newGrouped[groupIndex] };
+      const detalles_origen = [...group.detalles_origen];
+      const d = { ...detalles_origen[detailIndex] };
+      d.selected = !d.selected;
+      detalles_origen[detailIndex] = d;
+      group.detalles_origen = detalles_origen;
+      newGrouped[groupIndex] = group;
+      return newGrouped;
+    });
+  };
 
-    const getLotError = (
-      groupIndex: number,
-      lotIndex: number,
-      field: keyof DTO_RecibirLotExtendido,
-    ) => {
-      return errors[`groups.${groupIndex}.lots.${lotIndex}.${field}`] || null;
-    };
+  const getLotError = (
+    groupIndex: number,
+    lotIndex: number,
+    field: keyof DTO_RecibirLotExtendido,
+  ) => {
+    return errors[`groups.${groupIndex}.lots.${lotIndex}.${field}`] || null;
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!idEntrega) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!idEntrega) return;
 
-      const newErrors: Record<string, string> = {};
-      let hasErrors = false;
+    const newErrors: Record<string, string> = {};
+    let hasErrors = false;
 
-      groupedItems.forEach((group, gIdx) => {
-        if (group.tipo_bien === TipoBien.ActivoFijo) {
-          return;
-        }
+    groupedItems.forEach((group, gIdx) => {
+      if (group.tipo_bien === TipoBien.ActivoFijo) {
+        return;
+      }
 
-        let sumBase = 0;
-        group.lots.forEach((lot, lIdx) => {
-          const cant = Number(lot.cantidad_base) || 0;
-          sumBase += cant;
-          if (cant <= 0) {
-            newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] =
-              "Debe ser mayor a 0.";
-            hasErrors = true;
-          }
-        });
-        if (sumBase > group.total_entregado_base + 0.0001) {
-          newErrors[`groups.${gIdx}.cantidad_total`] =
-            `La suma supera el total entregado.`;
+      group.lots.forEach((lot, lIdx) => {
+        const cant = Number(lot.cantidad_base) || 0;
+        if (cant <= 0) {
+          newErrors[`groups.${gIdx}.lots.${lIdx}.cantidad_base`] =
+            "Debe ser mayor a 0.";
           hasErrors = true;
         }
       });
 
-      if (conIncidencia && (!observacion.trim() || evidencias.length === 0)) {
-        notifyError("Complete los datos de la incidencia.");
-        return;
-      }
+      // Validate that each detail's total in lots doesn't exceed its original pending quantity
+      group.detalles_origen.forEach((origen) => {
+        const pendiente =
+          Number(origen.cantidad_base) -
+          (Number(origen.cantidad_recibida_total_base) || 0);
+        const sumLotsForDetail = group.lots
+          .filter((l) => l.id_entrega_detalle === origen.id_entrega_detalle)
+          .reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
 
-      if (hasErrors) {
-        setErrors(newErrors);
-        notifyError("Revise las cantidades.");
-        return;
-      }
-
-      // --- PRE-APERTURA DE VENTANA DE IMPRESIÓN (Bypass de Popup Blocker) ---
-      const tieneLotesImprimibles = groupedItems.some((g) =>
-        g.lots.some((l) => l.es_nuevo_lote),
-      );
-      let printerWin: Window | null = null;
-
-      if (tieneLotesImprimibles) {
-        printerWin = prepare("TicketLotePrinter");
-      }
-
-      setLoadingAction(true);
-      try {
-        const items: DTO_RecibirEntregaItem[] = [];
-
-        groupedItems.forEach((group) => {
-          if (group.tipo_bien === TipoBien.ActivoFijo) {
-            group.detalles_origen.forEach((origen) => {
-              if (origen.selected) {
-                items.push({
-                  id_solicitud_reabastecimiento_detalle:
-                    group.id_solicitud_reabastecimiento_detalle,
-                  id_entrega_detalle: origen.id_entrega_detalle,
-                  es_activo_fijo: true,
-                  id_activo_fijo: origen.id_activo_fijo,
-                  cantidad_base: 1,
-                  es_nuevo_lote: false,
-                  es_perecible: false,
-                });
-              }
-            });
-            return;
-          }
-
-          // Distribuimos los lotes entre los detalles de origen
-          let currentDetIdx = 0;
-          let detResiduo =
-            Number(group.detalles_origen[0].cantidad_base) -
-            (Number(group.detalles_origen[0].cantidad_recibida_total_base) ||
-              0);
-
-          group.lots.forEach((lot) => {
-            let lotResiduo = Number(lot.cantidad_base);
-
-            while (
-              lotResiduo > 0 &&
-              currentDetIdx < group.detalles_origen.length
-            ) {
-              const currentDet = group.detalles_origen[currentDetIdx];
-              const partialQty = Math.min(lotResiduo, detResiduo);
-
-              // Mapear el ajuste tabular a id_lote_existente real
-              if (!lot.es_nuevo_lote && lot.ajustes) {
-                Object.entries(lot.ajustes).forEach(([idLote, qtyAjuste]) => {
-                  const proportionalQty =
-                    (qtyAjuste as number) *
-                    (partialQty / Number(lot.cantidad_base));
-                  items.push({
-                    ...lot,
-                    id_lote_existente: Number(idLote),
-                    cantidad_base: proportionalQty,
-                    id_entrega_detalle: currentDet.id_entrega_detalle,
-                  });
-                });
-              } else {
-                items.push({
-                  ...lot,
-                  cantidad_base: partialQty,
-                  id_entrega_detalle: currentDet.id_entrega_detalle,
-                });
-              }
-
-              lotResiduo -= partialQty;
-              detResiduo -= partialQty;
-
-              if (detResiduo <= 0.0001) {
-                currentDetIdx++;
-                if (currentDetIdx < group.detalles_origen.length) {
-                  detResiduo =
-                    Number(group.detalles_origen[currentDetIdx].cantidad_base) -
-                    (Number(
-                      group.detalles_origen[currentDetIdx]
-                        .cantidad_recibida_total_base,
-                    ) || 0);
-                }
-              }
-            }
-          });
-        });
-
-        const recepcion: DTO_RegistrarRecepcion = {
-          id_reabastecimiento_entrega: idEntrega,
-          tipo_entrega: tipoEntrega || "Solicitud",
-          con_incidencia: conIncidencia,
-          observacion: observacion,
-          fecha_hora_recepcion:
-            fechaHoraRecepcion?.toISOString() || new Date().toISOString(),
-          items,
-        };
-
-        const serviceMethod =
-          tipoEntrega === "Prestamo"
-            ? ReabastecimientoService.registrarRecepcionPrestamo
-            : ReabastecimientoService.registrarRecepcionLogistica;
-
-        const res = await serviceMethod(
-          usuario?.id_empleado ?? 0,
-          recepcion,
-          evidencias,
-        );
-
-        if (res.success) {
-          notifySuccess("Recepción registrada.");
-          onSuccess(res.data ?? undefined);
-        } else {
-          notifyError(res.message || "Error al registrar.");
-          printerWin?.close();
+        if (sumLotsForDetail > pendiente + 0.0001) {
+          newErrors[`groups.${gIdx}.cantidad_total`] =
+            `La cantidad para ${origen.lote_correlativo || "el lote"} supera el total entregado.`;
+          hasErrors = true;
         }
-      } catch {
-        notifyError("Error de conexión.");
-        printerWin?.close();
-      } finally {
-        setLoadingAction(false);
-      }
-    };
-
-    const hasAtLeastOneItem = groupedItems.some((group) => {
-      if (group.tipo_bien === TipoBien.ActivoFijo) {
-        return group.detalles_origen.some((d) => d.selected);
-      }
-      return group.lots.some((l) => (Number(l.cantidad_base) || 0) > 0);
+      });
     });
 
-    const isFormValid =
-      hasAtLeastOneItem &&
-      groupedItems.every((group) => {
-        if (group.tipo_bien === TipoBien.ActivoFijo) return true;
-        const sumBase = group.lots.reduce(
-          (acc, l) => acc + (Number(l.cantidad_base) || 0),
-          0,
-        );
-        return sumBase > 0 && sumBase <= group.total_entregado_base + 0.0001;
+    if (conIncidencia && (!observacion.trim() || evidencias.length === 0)) {
+      notifyError("Complete los datos de la incidencia.");
+      return;
+    }
+
+    if (hasErrors) {
+      setErrors(newErrors);
+      notifyError("Revise las cantidades.");
+      return;
+    }
+
+    // --- PRE-APERTURA DE VENTANA DE IMPRESIÓN (Bypass de Popup Blocker) ---
+    const tieneLotesImprimibles = groupedItems.some((g) =>
+      g.lots.some((l) => l.es_nuevo_lote),
+    );
+    let printerWin: Window | null = null;
+
+    if (tieneLotesImprimibles) {
+      printerWin = prepare("TicketLotePrinter");
+    }
+
+    setLoadingAction(true);
+    try {
+      const items: DTO_RecibirEntregaItem[] = [];
+
+      groupedItems.forEach((group) => {
+        if (group.tipo_bien === TipoBien.ActivoFijo) {
+          group.detalles_origen.forEach((origen) => {
+            if (origen.selected) {
+              items.push({
+                id_solicitud_reabastecimiento_detalle:
+                  origen.id_solicitud_reabastecimiento_detalle,
+                id_entrega_detalle: origen.id_entrega_detalle,
+                es_activo_fijo: true,
+                id_activo_fijo: origen.id_activo_fijo,
+                cantidad_base: 1,
+                es_nuevo_lote: false,
+                es_perecible: false,
+              });
+            }
+          });
+          return;
+        }
+
+        group.lots.forEach((lot) => {
+          if (!lot.es_nuevo_lote && lot.ajustes) {
+            Object.entries(lot.ajustes).forEach(([idLote, qtyAjuste]) => {
+              items.push({
+                id_solicitud_reabastecimiento_detalle:
+                  lot.id_solicitud_reabastecimiento_detalle,
+                id_entrega_detalle: lot.id_entrega_detalle,
+                es_activo_fijo: false,
+                es_nuevo_lote: false,
+                id_lote_existente: Number(idLote),
+                cantidad_base: Number(qtyAjuste),
+                fecha_vencimiento: lot.fecha_vencimiento,
+                id_unidad_medida: lot.id_unidad_medida,
+                contenido_por_presentacion: lot.contenido_por_presentacion,
+                fecha_ingreso: lot.fecha_ingreso,
+                es_perecible: lot.es_perecible,
+              });
+            });
+          } else {
+            items.push({
+              id_solicitud_reabastecimiento_detalle:
+                lot.id_solicitud_reabastecimiento_detalle,
+              id_entrega_detalle: lot.id_entrega_detalle,
+              es_activo_fijo: false,
+              es_nuevo_lote: lot.es_nuevo_lote,
+              id_lote_existente: lot.id_lote_existente,
+              cantidad_base: Number(lot.cantidad_base),
+              fecha_vencimiento: lot.fecha_vencimiento,
+              id_unidad_medida: lot.id_unidad_medida,
+              contenido_por_presentacion: lot.contenido_por_presentacion,
+              fecha_ingreso: lot.fecha_ingreso,
+              es_perecible: lot.es_perecible,
+            });
+          }
+        });
       });
 
-    return {
-      groupedItems,
-      setLotValue,
-      addLot,
-      removeLot,
-      updateTabularAdjustment,
-      toggleActivoSeleccionado,
-      getLotError,
-      loadingAction,
-      handleSubmit,
-      unidades,
-      loadingUnidades,
-      errors,
-      isFormValid,
-      conIncidencia,
-      setConIncidencia,
-      observacion,
-      setObservacion,
-      evidencias,
-      setEvidencias,
-      fechaHoraRecepcion,
-      setFechaHoraRecepcion,
-      lotesDisponibles,
-      loadingLotes,
-    };
+      const recepcion: DTO_RegistrarRecepcion = {
+        id_reabastecimiento_entrega: idEntrega,
+        tipo_entrega: tipoEntrega || "Solicitud",
+        con_incidencia: conIncidencia,
+        observacion: observacion,
+        fecha_hora_recepcion:
+          fechaHoraRecepcion?.toISOString() || new Date().toISOString(),
+        items,
+      };
+
+      const serviceMethod =
+        tipoEntrega === "Prestamo"
+          ? ReabastecimientoService.registrarRecepcionPrestamo
+          : ReabastecimientoService.registrarRecepcionLogistica;
+
+      const res = await serviceMethod(
+        usuario?.id_empleado ?? 0,
+        recepcion,
+        evidencias,
+      );
+
+      if (res.success) {
+        notifySuccess("Recepción registrada.");
+        onSuccess(res.data ?? undefined);
+      } else {
+        notifyError(res.message || "Error al registrar.");
+        printerWin?.close();
+      }
+    } catch {
+      notifyError("Error de conexión.");
+      printerWin?.close();
+    } finally {
+      setLoadingAction(false);
+    }
   };
+
+  const hasAtLeastOneItem = groupedItems.some((group) => {
+    if (group.tipo_bien === TipoBien.ActivoFijo) {
+      return group.detalles_origen.some((d) => d.selected);
+    }
+    return group.lots.some((l) => (Number(l.cantidad_base) || 0) > 0);
+  });
+
+  const isFormValid =
+    hasAtLeastOneItem &&
+    groupedItems.every((group) => {
+      if (group.tipo_bien === TipoBien.ActivoFijo) return true;
+      return group.detalles_origen.every((origen) => {
+        const pendiente =
+          Number(origen.cantidad_base) -
+          (Number(origen.cantidad_recibida_total_base) || 0);
+        const sumLotsForDetail = group.lots
+          .filter((l) => l.id_entrega_detalle === origen.id_entrega_detalle)
+          .reduce((acc, l) => acc + (Number(l.cantidad_base) || 0), 0);
+
+        return sumLotsForDetail >= 0 && sumLotsForDetail <= pendiente + 0.0001;
+      });
+    });
+
+  return {
+    groupedItems,
+    setLotValue,
+    addLot,
+    removeLot,
+    updateTabularAdjustment,
+    toggleActivoSeleccionado,
+    getLotError,
+    loadingAction,
+    handleSubmit,
+    unidades,
+    loadingUnidades,
+    errors,
+    isFormValid,
+    conIncidencia,
+    setConIncidencia,
+    observacion,
+    setObservacion,
+    evidencias,
+    setEvidencias,
+    fechaHoraRecepcion,
+    setFechaHoraRecepcion,
+    lotesDisponibles,
+    loadingLotes,
+  };
+};

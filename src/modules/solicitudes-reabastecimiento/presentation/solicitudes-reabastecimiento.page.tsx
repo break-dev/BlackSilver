@@ -142,8 +142,10 @@ export const SolicitudesReabastecimientoPage = () => {
             <Group gap={6}>
               <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
               <Text size="xs" fw={600} className="text-zinc-200">
-                Requerido:{" "}
-                {dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")}
+                Fecha Req.:{" "}
+                {item.fecha_entrega_requerida
+                  ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+                  : "---"}
               </Text>
             </Group>
             <Text size="11px" className="text-zinc-500 ml-[22px]">

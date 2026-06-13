@@ -3,11 +3,9 @@ import {
   Stack,
   Text,
   Group,
-  Divider,
   Paper,
   Textarea,
   Checkbox,
-  Badge,
   Alert,
   SimpleGrid,
 } from "@mantine/core";
@@ -60,10 +58,10 @@ export const RegistroRecepcion = (props: Props) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Stack gap="xl" p="md">
+      <Stack gap="md" p="md">
         {/* Cabecera de Recepción */}
         <Paper
-          p="xl"
+          p="lg"
           radius="xl"
           className="bg-zinc-900/40 border border-zinc-800 shadow-xl overflow-hidden relative"
         >
@@ -71,28 +69,6 @@ export const RegistroRecepcion = (props: Props) => {
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <ArchiveBoxArrowDownIcon className="w-40 h-40" />
           </div>
-
-          <Group justify="space-between" mb="xl">
-            <Stack gap={0}>
-              <Text fw={900} size="xl" className="tracking-tight text-white">
-                Datos del Ingreso de Mercancía
-              </Text>
-              <Text size="xs" c="dimmed" fw={600}>
-                Registre los detalles del evento de recepción física.
-              </Text>
-            </Stack>
-            {conIncidencia && (
-              <Badge
-                color="red"
-                variant="filled"
-                size="sm"
-                radius="xl"
-                fw={700}
-              >
-                INCIDENCIA DETECTADA
-              </Badge>
-            )}
-          </Group>
 
           <Stack gap="lg">
             {/* Fila 1: Fecha (Izquierda) y Check Incidencia (Derecha) */}
@@ -199,25 +175,10 @@ export const RegistroRecepcion = (props: Props) => {
           </Stack>
         </Paper>
 
-        <Divider
-          label={
-            <Text
-              fw={900}
-              size="xs"
-              className="uppercase tracking-[0.2em] text-indigo-400"
-            >
-              Detalle de Productos
-            </Text>
-          }
-          labelPosition="center"
-          my={1}
-          className="opacity-50"
-        />
-
         <Stack gap="lg">
           {groupedItems.map((group, idx) => (
             <ProductoRecepcionCard
-              key={group.id_solicitud_reabastecimiento_detalle}
+              key={group.id_producto}
               group={group}
               groupIndex={idx}
               setLotValue={setLotValue}

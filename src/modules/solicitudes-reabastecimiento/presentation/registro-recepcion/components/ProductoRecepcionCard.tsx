@@ -8,7 +8,6 @@ import {
   Button,
   Stack,
   ActionIcon,
-  Divider,
   Checkbox,
 } from "@mantine/core";
 import { CubeIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -33,7 +32,7 @@ interface ProductoRecepcionCardProps {
     field: K,
     value: DTO_RecibirLotExtendido[K],
   ) => void;
-  addLot: (groupIndex: number) => void;
+  addLot: (groupIndex: number, lotIndex: number) => void;
   removeLot: (groupIndex: number, lotIndex: number) => void;
   updateTabularAdjustment: (
     groupIndex: number,
@@ -73,9 +72,7 @@ export const ProductoRecepcionCard = ({
   const isPerecible = group.es_perecible;
   const isActivoFijo = group.tipo_bien === TipoBien.ActivoFijo;
 
-  const lotes = allLotes.filter(
-    (l) => l.id_producto === group.detalles_origen[0].id_producto,
-  );
+  const lotes = allLotes.filter((l) => l.id_producto === group.id_producto);
 
   return (
     <Paper
@@ -98,30 +95,19 @@ export const ProductoRecepcionCard = ({
               >
                 {group.producto}
               </Text>
-              <Badge
-                variant="dot"
-                color="teal"
-                size="xs"
-                mt={2}
-                className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
-              >
-                Total a Recibir: {formatNumber(group.total_entregado_base)}{" "}
-                {group.unidad_base_abv}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Badge
+                  variant="dot"
+                  color="teal"
+                  size="xs"
+                  className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
+                >
+                  Total a Recibir: {formatNumber(group.total_entregado_base)}{" "}
+                  {group.unidad_base_abv}
+                </Badge>
+              </div>
             </div>
           </div>
-          {!isActivoFijo && (
-            <Button
-              size="compact-xs"
-              variant="light"
-              color="indigo"
-              radius="xl"
-              leftSection={<PlusIcon className="w-4 h-4" />}
-              onClick={() => addLot(groupIndex)}
-            >
-              Dividir en otro lote
-            </Button>
-          )}
         </div>
       </div>
 
@@ -218,30 +204,63 @@ export const ProductoRecepcionCard = ({
               "id_lote_existente",
             );
 
+            const originDetail = group.detalles_origen.find(
+              (d) => d.id_entrega_detalle === lot.id_entrega_detalle,
+            );
+
             return (
-              <div key={lotIndex} className="p-5 space-y-4 relative group/lot">
-                {lotIndex > 0 && (
-                  <Divider color="zinc.8" variant="dashed" mb="md" />
-                )}
+              <div
+                key={lotIndex}
+                className="px-5 py-4 space-y-4 relative group/lot"
+              >
                 <div className="flex justify-between items-center mb-2">
-                  <Text
-                    size="xs"
-                    fw={800}
-                    c="dimmed"
-                    className="uppercase tracking-widest"
-                  >
-                    Partida #{lotIndex + 1}
-                  </Text>
-                  {group.lots.length > 1 && (
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      size="sm"
-                      onClick={() => removeLot(groupIndex, lotIndex)}
+                  <Group gap="sm" wrap="nowrap">
+                    <Text
+                      size="xs"
+                      fw={800}
+                      c="dimmed"
+                      className="uppercase tracking-widest whitespace-nowrap"
                     >
-                      <TrashIcon className="w-4 h-4" />
-                    </ActionIcon>
-                  )}
+                      Partida #{lotIndex + 1}
+                    </Text>
+                    {lot.lote_correlativo && (
+                      <Badge
+                        variant="dot"
+                        color="yellow"
+                        size="xs"
+                        className="bg-zinc-800/50 border-zinc-700/50 text-amber-400 font-bold px-2.5 py-2.5 rounded-lg"
+                      >
+                        Origen: {lot.lote_correlativo}
+                        {lot.lote_serie_factura || lot.lote_numero_factura
+                          ? ` (${[lot.lote_serie_factura, lot.lote_numero_factura].filter(Boolean).join("-")})`
+                          : ""}
+                      </Badge>
+                    )}
+                  </Group>
+                  <Group gap="xs">
+                    {!isActivoFijo && (
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="indigo"
+                        radius="xl"
+                        leftSection={<PlusIcon className="w-3.5 h-3.5" />}
+                        onClick={() => addLot(groupIndex, lotIndex)}
+                      >
+                        Dividir
+                      </Button>
+                    )}
+                    {group.lots.length > 1 && (
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        size="sm"
+                        onClick={() => removeLot(groupIndex, lotIndex)}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    )}
+                  </Group>
                 </div>
 
                 <Group justify="space-between">
@@ -293,7 +312,8 @@ export const ProductoRecepcionCard = ({
                         )
                       }
                       unidadBaseAbv={group.unidad_base_abv}
-                      maxQty={group.total_entregado_base}
+                      maxQty={lot.cantidad_base}
+                      detallesOrigen={originDetail ? [originDetail] : []}
                     />
                     {fieldError && (
                       <Text size="xs" color="red" mt={4} fw={700}>

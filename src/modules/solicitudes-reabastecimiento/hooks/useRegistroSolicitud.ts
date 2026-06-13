@@ -13,6 +13,7 @@ import type { RES_Solicitud } from "../../../service/responses/solicitudes-reaba
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { useAuthStore } from "../../../stores/auth.store";
 
 interface Props {
   onSuccess: (item: RES_Solicitud) => void;
@@ -51,7 +52,10 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     if (almacenes.length > 0) return;
     setLoadingCatalogs(true);
     try {
-      const res_almacenes = await AuxService.get_almacenes();
+      const res_almacenes = await AuxService.get_almacenes({
+        es_principal: false,
+        id_empleado_responsable: useAuthStore.getState().usuario?.id_empleado,
+      });
       const res_productos = await AuxService.get_productos();
       const res_unidades = await AuxService.get_unidades_medida();
       if (

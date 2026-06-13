@@ -88,6 +88,11 @@ export const ProductGroupCard = ({
             Año: {record.yearcito_modelo || "N/A"}{" "}
             {record.numero_serie ? `| S/N: ${record.numero_serie}` : ""}
           </Text>
+          {record.empleado_responsable && (
+            <Text size="10px" c="indigo.3" fw={650}>
+              Resp: {record.empleado_responsable}
+            </Text>
+          )}
         </Stack>
       ),
     },

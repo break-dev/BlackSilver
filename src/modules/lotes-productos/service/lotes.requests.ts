@@ -26,6 +26,9 @@ export const Schema_CrearLote = z.object({
     })
     .nullable()
     .optional(),
+  serie_factura_compra: z.string().optional().nullable(),
+  numero_factura_compra: z.string().optional().nullable(),
+  costo_por_unidad: z.coerce.number().optional().nullable(),
 });
 
 export type DTO_CrearLote = z.infer<typeof Schema_CrearLote>;

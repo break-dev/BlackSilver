@@ -31,6 +31,14 @@ export interface GrupoRecepcionTrans {
   id_activo_fijo?: number | null;
   selected: boolean;
   lots: DTO_LoteRecepcionTrans[];
+  lote_serie_factura?: string | null;
+  lote_numero_factura?: string | null;
+  lote_costo_por_unidad?: number | null;
+  lote_id_orden_compra_detalle?: number | null;
+  lote_id_orden_compra?: number | null;
+  id_lote_producto?: number | null;
+  lote_id_orden_compra_comprobante?: number | null;
+  lote_correlativo?: string | null;
 }
 
 interface UseRegistrarRecepcionProps {
@@ -87,6 +95,14 @@ export const useRegistrarRecepcion = ({
         es_activo_fijo: d.tipo_bien === TipoBien.ActivoFijo,
         id_activo_fijo: d.id_activo_fijo,
         selected: true,
+        lote_serie_factura: d.lote_serie_factura,
+        lote_numero_factura: d.lote_numero_factura,
+        lote_costo_por_unidad: d.lote_costo_por_unidad,
+        lote_id_orden_compra_detalle: d.lote_id_orden_compra_detalle,
+        lote_id_orden_compra: d.lote_id_orden_compra,
+        id_lote_producto: d.id_lote_producto,
+        lote_id_orden_compra_comprobante: d.lote_id_orden_compra_comprobante,
+        lote_correlativo: d.lote_correlativo,
         lots:
           d.tipo_bien === TipoBien.ActivoFijo
             ? []

@@ -84,7 +84,7 @@ export const AuxService = {
 
   get_empleados: async (filters?: {
     id_empleado?: number;
-    estado?: string;
+    estado?: EstadoBase;
   }): Promise<IRespuesta<RES_Empleado[]>> => {
     const { data } = await api.get(`${path}/empleados`, {
       params: filters,

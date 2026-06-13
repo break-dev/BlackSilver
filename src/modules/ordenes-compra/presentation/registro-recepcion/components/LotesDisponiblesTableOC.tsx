@@ -3,6 +3,7 @@ import { Table, Text, Group, Radio, NumberInput } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import { validarAjusteLoteClient } from "../../../../../shared/functions/validar-lote";
 
 interface LotesDisponiblesTableOCProps {
   lotes: RES_LoteDisponible[];
@@ -11,6 +12,10 @@ interface LotesDisponiblesTableOCProps {
   onUpdateTabular: (idLote: number, isActive: boolean, qty?: number) => void;
   unidadBaseAbv: string;
   maxQty?: number;
+  idOrdenCompra?: number;
+  precioUnitario?: number;
+  serieFactura?: string;
+  numeroFactura?: string;
 }
 
 export const LotesDisponiblesTableOC = ({
@@ -20,6 +25,10 @@ export const LotesDisponiblesTableOC = ({
   onUpdateTabular,
   unidadBaseAbv,
   maxQty,
+  idOrdenCompra,
+  precioUnitario,
+  serieFactura = "",
+  numeroFactura = "",
 }: LotesDisponiblesTableOCProps) => {
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-xl bg-zinc-950/40 shadow-inner">
@@ -66,13 +75,33 @@ export const LotesDisponiblesTableOC = ({
               const currentQty = selectedAjustes[lote.id_lote];
               const isActive = currentQty !== undefined;
 
+              const isCompatible = validarAjusteLoteClient(
+                {
+                  id_orden_compra: lote.id_orden_compra,
+                  id_orden_compra_detalle: lote.id_orden_compra_detalle,
+                  serie_factura_compra: lote.serie_factura_compra,
+                  numero_factura_compra: lote.numero_factura_compra,
+                  costo_por_unidad: lote.costo_por_unidad,
+                  id_orden_compra_comprobante: lote.id_orden_compra_comprobante,
+                },
+                null, // No origin batch for PO receipts
+                {
+                  id_orden_compra: idOrdenCompra,
+                  precio_unitario: precioUnitario,
+                  serie_factura_compra: serieFactura,
+                  numero_factura_compra: numeroFactura,
+                },
+              );
+
               return (
                 <tr
                   key={lote.id_lote}
                   className={`transition-all duration-200 ${
                     isActive
                       ? "bg-indigo-500/10 shadow-inner"
-                      : "hover:bg-zinc-800/30 font-light"
+                      : !isCompatible
+                        ? "opacity-50 font-light"
+                        : "hover:bg-zinc-800/30 font-light"
                   }`}
                 >
                   <td className="py-3 text-center">
@@ -83,6 +112,16 @@ export const LotesDisponiblesTableOC = ({
                     >
                       {lote.correlativo}
                     </Text>
+                    {!isCompatible && (
+                      <Text
+                        size="9px"
+                        c="red.5"
+                        fw={700}
+                        className="uppercase tracking-wider block mt-0.5"
+                      >
+                        Origen de Compra Incompatible
+                      </Text>
+                    )}
                   </td>
                   <td className="text-center">
                     {lote.fecha_vencimiento ? (
@@ -118,12 +157,15 @@ export const LotesDisponiblesTableOC = ({
                     <Group gap="xs" justify="center" wrap="nowrap">
                       <Radio
                         checked={isActive}
+                        disabled={!isCompatible}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           onUpdateTabular(lote.id_lote, e.currentTarget.checked)
                         }
                         color="indigo"
                         size="sm"
-                        className="cursor-pointer"
+                        className={
+                          isCompatible ? "cursor-pointer" : "cursor-not-allowed"
+                        }
                       />
                       <NumberInput
                         size="xs"
@@ -133,7 +175,7 @@ export const LotesDisponiblesTableOC = ({
                         max={maxQty}
                         clampBehavior="strict"
                         hideControls
-                        disabled={!isActive}
+                        disabled={!isActive || !isCompatible}
                         value={isActive ? currentQty : ""}
                         onChange={(val) =>
                           onUpdateTabular(lote.id_lote, true, Number(val))

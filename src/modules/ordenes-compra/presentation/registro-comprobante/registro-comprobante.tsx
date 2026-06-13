@@ -133,12 +133,13 @@ export const RegistroComprobante = ({
                   placeholder="Ej: F001"
                   value={form.serie}
                   size="xs"
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.currentTarget.value.toUpperCase();
                     setForm((prev) => ({
                       ...prev,
-                      serie: e.currentTarget.value.toUpperCase(),
-                    }))
-                  }
+                      serie: value,
+                    }));
+                  }}
                   radius="md"
                   classNames={inputClasses}
                 />
@@ -147,12 +148,13 @@ export const RegistroComprobante = ({
                   placeholder="Ej: 000123"
                   value={form.numero}
                   size="xs"
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
                     setForm((prev) => ({
                       ...prev,
-                      numero: e.currentTarget.value,
-                    }))
-                  }
+                      numero: value,
+                    }));
+                  }}
                   radius="md"
                   classNames={inputClasses}
                 />
@@ -205,12 +207,13 @@ export const RegistroComprobante = ({
                 <Textarea
                   placeholder="Indique cualquier detalle relevante sobre este documento..."
                   value={form.observacion}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const value = e.currentTarget.value;
                     setForm((prev) => ({
                       ...prev,
-                      observacion: e.currentTarget.value,
-                    }))
-                  }
+                      observacion: value,
+                    }));
+                  }}
                   radius="lg"
                   minRows={4}
                   classNames={inputClasses}

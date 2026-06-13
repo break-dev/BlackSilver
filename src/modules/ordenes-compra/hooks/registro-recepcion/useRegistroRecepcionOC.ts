@@ -4,9 +4,11 @@ import { AuxService } from "../../../../service/auxiliar.service";
 import type { RES_Marca } from "../../../../service/responses/marca";
 import type { RES_Mina } from "../../../../service/responses/mina";
 import { useNotify } from "../../../../hooks/useNotify";
+import { EstadoBase } from "../../../../shared/enums/_generic/estado-base";
 import { usePrint } from "../../../../hooks/usePrint";
 import { type DTO_RecepcionOCItem } from "../../service/recepcion.requests";
 import type { RES_TicketLote } from "../../../../service/responses/lote-producto";
+import type { RES_Empleado } from "../../../../service/responses/empleado";
 import type {
   RES_OrdenCompra,
   RES_OrdenCompraDetalle,
@@ -66,6 +68,9 @@ export const useRegistroRecepcionOC = ({
   const [tipoDestinoActivos, setTipoDestinoActivos] = useState<"almacen" | "mina">("almacen");
   const [selectedMinaDestinoId, setSelectedMinaDestinoId] = useState<number | null>(null);
 
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingEmpleados, setLoadingEmpleados] = useState(false);
+
   useEffect(() => {
     const loadMarcas = async () => {
       setLoadingMarcas(true);
@@ -96,6 +101,21 @@ export const useRegistroRecepcionOC = ({
     loadMinas();
   }, []);
 
+  useEffect(() => {
+    const loadEmpleados = async () => {
+      setLoadingEmpleados(true);
+      try {
+        const res = await AuxService.get_empleados({ estado: EstadoBase.Activo });
+        if (res.success) setEmpleados(res.data);
+      } catch (error) {
+        console.error("Error al cargar empleados auxiliares", error);
+      } finally {
+        setLoadingEmpleados(false);
+      }
+    };
+    loadEmpleados();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orden?.id_orden_compra || !selectedAlmacenId) return;
@@ -120,13 +140,7 @@ export const useRegistroRecepcionOC = ({
       const gIdx = items.groupedItems.indexOf(group);
 
       if (group.tipo_bien === TipoBien.ActivoFijo) {
-        group.lots.forEach((lot, lIdx) => {
-          if (!lot.codigo || !lot.codigo.trim()) {
-            newErrors[`groups.${gIdx}.lots.${lIdx}.codigo`] =
-              "Código requerido.";
-            hasErrors = true;
-          }
-        });
+        // Código interno es opcional para activos fijos durante recepciones por OC
         return;
       }
       let sumBase = 0;
@@ -207,6 +221,7 @@ export const useRegistroRecepcionOC = ({
               id_marca: lot.id_marca || null,
               yearcito_modelo: lot.yearcito_modelo || null,
               descripcion_activo: lot.descripcion_activo || lot.descripcion || null,
+              id_empleado_responsable: lot.id_empleado_responsable || null,
             });
           });
           return;
@@ -342,5 +357,9 @@ export const useRegistroRecepcionOC = ({
     // Marcas auxiliares
     marcas,
     loadingMarcas,
+
+    // Empleados auxiliares
+    empleados,
+    loadingEmpleados,
   };
 };

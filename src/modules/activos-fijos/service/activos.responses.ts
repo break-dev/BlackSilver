@@ -47,4 +47,12 @@ export interface RES_ActivoFijoResumen {
   fecha_hora_ingreso: string;
   created_at: string;
   estado: string;
+  id_empleado_responsable: number | null;
+  empleado_responsable: string | null;
+  serie_factura_compra: string | null;
+  numero_factura_compra: string | null;
+  costo_compra: number | null;
+  id_orden_compra_recepcion_detalle: number | null;
+  id_orden_compra_detalle: number | null;
+  costo_promedio_base: number | null;
 }

@@ -42,6 +42,9 @@ export const useRegistroLote = ({
   );
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | null>(null);
   const [descripcion, setDescripcion] = useState("");
+  const [serieFacturaCompra, setSerieFacturaCompra] = useState("");
+  const [numeroFacturaCompra, setNumeroFacturaCompra] = useState("");
+  const [costoPorUnidad, setCostoPorUnidad] = useState<number | null>(null);
 
   // Load catalogs
   useEffect(() => {
@@ -128,6 +131,9 @@ export const useRegistroLote = ({
       contenido_por_presentacion: contenidoPorPresentacion,
       fecha_hora_ingreso: fechaHoraIngreso || new Date(),
       fecha_vencimiento: fechaVencimiento,
+      serie_factura_compra: serieFacturaCompra || null,
+      numero_factura_compra: numeroFacturaCompra || null,
+      costo_por_unidad: costoPorUnidad,
     };
 
     // Validation using Zod
@@ -175,6 +181,12 @@ export const useRegistroLote = ({
     setFechaVencimiento,
     descripcion,
     setDescripcion,
+    serieFacturaCompra,
+    setSerieFacturaCompra,
+    numeroFacturaCompra,
+    setNumeroFacturaCompra,
+    costoPorUnidad,
+    setCostoPorUnidad,
 
     // Status
     loadingProductos,

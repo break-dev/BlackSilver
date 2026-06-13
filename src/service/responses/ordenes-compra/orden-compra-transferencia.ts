@@ -47,6 +47,12 @@ export interface RES_OCTransferenciaDetalle {
   // lote (null para activos fijos)
   id_lote_producto: number | null;
   lote_correlativo: string | null;
+  lote_serie_factura?: string | null;
+  lote_numero_factura?: string | null;
+  lote_costo_por_unidad?: number | null;
+  lote_id_orden_compra_detalle?: number | null;
+  lote_id_orden_compra?: number | null;
+  lote_id_orden_compra_comprobante?: number | null;
   //
   // activo (null para productos comunes)
   id_activo_fijo: number | null;

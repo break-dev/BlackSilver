@@ -4,11 +4,13 @@ import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Marca } from "../../../service/responses/marca";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import { ActivosService } from "../service/activos.service";
 import type { REQ_CrearActivo } from "../service/activos.requests";
 import type { RES_ActivoFijoResumen } from "../service/activos.responses";
 import { useNotify } from "../../../hooks/useNotify";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 /**
  * Hook para gestionar el registro de un nuevo activo fijo.
@@ -22,12 +24,14 @@ export const useRegistrarActivo = () => {
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [marcas, setMarcas] = useState<RES_Marca[]>([]);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
 
   // Estados de carga individuales por cada petición API
   const [loadingProductos, setLoadingProductos] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingMarcas, setLoadingMarcas] = useState(false);
+  const [loadingEmpleados, setLoadingEmpleados] = useState(false);
 
   useEffect(() => {
     /**
@@ -92,11 +96,27 @@ export const useRegistrarActivo = () => {
       }
     };
 
+    /**
+     * Carga el catálogo de empleados de forma individual y asíncrona.
+     */
+    const loadEmpleados = async () => {
+      setLoadingEmpleados(true);
+      try {
+        const res = await AuxService.get_empleados({ estado: EstadoBase.Activo });
+        if (res.success) setEmpleados(res.data);
+      } catch (error) {
+        console.error("Error al cargar empleados auxiliares", error);
+      } finally {
+        setLoadingEmpleados(false);
+      }
+    };
+
     // Lanzar las peticiones de forma concurrente pero totalmente independiente
     loadProductos();
     loadAlmacenes();
     loadMinas();
     loadMarcas();
+    loadEmpleados();
   }, []);
 
   /**
@@ -134,10 +154,12 @@ export const useRegistrarActivo = () => {
     almacenes,
     minas,
     marcas,
+    empleados,
     loadingProductos,
     loadingAlmacenes,
     loadingMinas,
     loadingMarcas,
+    loadingEmpleados,
     addMarca,
     crearActivo,
   };

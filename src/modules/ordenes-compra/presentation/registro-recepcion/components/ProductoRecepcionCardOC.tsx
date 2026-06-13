@@ -17,6 +17,7 @@ import type {
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import type { RES_Marca } from "../../../../../service/responses/marca";
+import type { RES_Empleado } from "../../../../../service/responses/empleado";
 import { ActivoRecepcionRowOC } from "./ActivoRecepcionRowOC";
 import { LoteRecepcionRowOC } from "./LoteRecepcionRowOC";
 
@@ -49,6 +50,10 @@ interface Props {
   cantidadTotalError?: string;
   marcas: RES_Marca[];
   loadingMarcas: boolean;
+  empleados: RES_Empleado[];
+  loadingEmpleados: boolean;
+  comprobanteSerie?: string;
+  comprobanteNumero?: string;
 }
 
 export const ProductoRecepcionCardOC = ({
@@ -65,6 +70,10 @@ export const ProductoRecepcionCardOC = ({
   cantidadTotalError,
   marcas,
   loadingMarcas,
+  empleados,
+  loadingEmpleados,
+  comprobanteSerie = "",
+  comprobanteNumero = "",
 }: Props) => {
   const isActivoFijo = group.tipo_bien === TipoBien.ActivoFijo;
 
@@ -177,14 +186,14 @@ export const ProductoRecepcionCardOC = ({
 
           {group.selected && !isActivoFijo && (
             <Button
-              size="compact-xs"
+              size="xs"
               variant="light"
               color="indigo"
               radius="xl"
               leftSection={<PlusIcon className="w-4 h-4" />}
               onClick={() => addLot(groupIndex)}
             >
-              Dividir en otro lote
+              Dividir
             </Button>
           )}
         </div>
@@ -206,6 +215,8 @@ export const ProductoRecepcionCardOC = ({
                   }
                   marcas={marcas}
                   loadingMarcas={loadingMarcas}
+                  empleados={empleados}
+                  loadingEmpleados={loadingEmpleados}
                   setLotValue={setLotValue}
                   removeLot={removeLot}
                   inputClasses={inputClasses}
@@ -244,6 +255,8 @@ export const ProductoRecepcionCardOC = ({
                 setLotValue={setLotValue}
                 removeLot={removeLot}
                 updateTabularAdjustment={updateTabularAdjustment}
+                comprobanteSerie={comprobanteSerie}
+                comprobanteNumero={comprobanteNumero}
               />
             ))
           )}

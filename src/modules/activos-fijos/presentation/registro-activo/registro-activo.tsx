@@ -51,10 +51,12 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     almacenes,
     minas,
     marcas,
+    empleados,
     loadingProductos,
     loadingAlmacenes,
     loadingMinas,
     loadingMarcas,
+    loadingEmpleados,
     addMarca,
     crearActivo,
   } = useRegistrarActivo();
@@ -118,6 +120,10 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     especificaciones: [],
     fecha_hora_ingreso: new Date().toISOString(),
     estado: EstadoActivoFijo.EnUso,
+    id_empleado_responsable: null,
+    serie_factura_compra: "",
+    numero_factura_compra: "",
+    costo_compra: null,
   });
 
   const [especificaciones, setEspecificaciones] = useState<
@@ -498,6 +504,98 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
                 setForm({ ...form, estado: val as EstadoActivoFijo })
               }
               required
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <Select
+              label="Empleado Responsable"
+              placeholder={
+                loadingEmpleados
+                  ? "Cargando empleados..."
+                  : "Seleccione un responsable..."
+              }
+              data={empleados.map((e) => ({
+                value: String(e.id_empleado),
+                label: e.nombre_completo,
+              }))}
+              value={
+                form.id_empleado_responsable
+                  ? String(form.id_empleado_responsable)
+                  : null
+              }
+              onChange={(val) =>
+                setForm({
+                  ...form,
+                  id_empleado_responsable: val ? Number(val) : null,
+                })
+              }
+              clearable
+              searchable
+              disabled={loadingEmpleados}
+              rightSection={
+                loadingEmpleados ? (
+                  <Loader size="xs" color="indigo" />
+                ) : undefined
+              }
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <NumberInput
+              label="Costo de Compra"
+              placeholder="Costo en Soles"
+              value={
+                form.costo_compra !== null && form.costo_compra !== undefined
+                  ? form.costo_compra
+                  : ""
+              }
+              onChange={(val) =>
+                setForm({ ...form, costo_compra: val ? Number(val) : null })
+              }
+              hideControls
+              decimalScale={2}
+              min={0}
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <TextInput
+              label="Serie Factura"
+              placeholder="Ej. F001"
+              value={form.serie_factura_compra || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  serie_factura_compra: e.target.value.toUpperCase(),
+                })
+              }
+              size="xs"
+              radius="lg"
+              classNames={fieldClasses}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <TextInput
+              label="Número Factura"
+              placeholder="Ej. 000123"
+              value={form.numero_factura_compra || ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  numero_factura_compra: e.target.value.toUpperCase(),
+                })
+              }
               size="xs"
               radius="lg"
               classNames={fieldClasses}

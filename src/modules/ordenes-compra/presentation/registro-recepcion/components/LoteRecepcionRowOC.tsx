@@ -31,6 +31,8 @@ interface LoteRecepcionRowOCProps {
     active: boolean,
     qty?: number,
   ) => void;
+  comprobanteSerie?: string;
+  comprobanteNumero?: string;
 }
 
 export const LoteRecepcionRowOC = ({
@@ -44,6 +46,8 @@ export const LoteRecepcionRowOC = ({
   setLotValue,
   removeLot,
   updateTabularAdjustment,
+  comprobanteSerie = "",
+  comprobanteNumero = "",
 }: LoteRecepcionRowOCProps) => {
   const esNuevoLote = lot.es_nuevo_lote;
 
@@ -101,6 +105,10 @@ export const LoteRecepcionRowOC = ({
             }
             maxQty={group.cantidad_requerida_base}
             unidadBaseAbv={group.unidad_base_abv}
+            idOrdenCompra={group.id_orden_compra}
+            precioUnitario={group.precio_unitario}
+            serieFactura={comprobanteSerie}
+            numeroFactura={comprobanteNumero}
           />
         </div>
       )}

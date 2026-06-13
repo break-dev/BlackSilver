@@ -5,6 +5,7 @@ import {
   ClockIcon,
   PencilSquareIcon,
   PrinterIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
@@ -113,6 +114,72 @@ export const useLotesColumns = ({
                 </ActionIcon>
               </Group>
             </div>
+          );
+        },
+      },
+      {
+        accessor: "costo_por_unidad",
+        title: "Costo",
+        textAlign: "center",
+        width: 130,
+        render: (record) => (
+          <Text size="xs" fw={700} className="font-mono" c={"teal.5"}>
+            {record.costo_por_unidad !== null &&
+            record.costo_por_unidad !== undefined ? (
+              `S/. ${formatNumber(record.costo_por_unidad)}`
+            ) : (
+              <span className="text-zinc-500 italic">No reg.</span>
+            )}
+          </Text>
+        ),
+      },
+      {
+        accessor: "origen_compra",
+        title: "Origen Compra",
+        textAlign: "center",
+        width: 180,
+        render: (record) => {
+          const tieneFactura =
+            record.serie_factura_compra && record.numero_factura_compra;
+          const tieneOC = record.id_orden_compra ? true : false;
+
+          if (!tieneFactura && !tieneOC) {
+            return (
+              <Text size="xs" c="dimmed" fs="italic">
+                Carga Manual
+              </Text>
+            );
+          }
+
+          return (
+            <Group gap={6} wrap="nowrap" justify="center">
+              <div className="p-1.5 bg-zinc-800/40 rounded-lg border border-zinc-700/30 flex items-center justify-center">
+                <DocumentTextIcon className="w-4 h-4 text-zinc-400" />
+              </div>
+              <div className="flex flex-col items-start gap-0.5">
+                {tieneFactura ? (
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color="cyan"
+                    radius="sm"
+                    className="font-bold border border-cyan-500/10 px-1 py-0"
+                  >
+                    {record.serie_factura_compra}-{record.numero_factura_compra}
+                  </Badge>
+                ) : null}
+                {tieneOC ? null : (
+                  <Text
+                    size="9px"
+                    c="orange"
+                    fw={700}
+                    className="uppercase tracking-wider"
+                  >
+                    Sin O.C.
+                  </Text>
+                )}
+              </div>
+            </Group>
           );
         },
       },

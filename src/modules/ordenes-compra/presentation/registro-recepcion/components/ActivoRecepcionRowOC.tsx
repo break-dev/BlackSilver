@@ -2,6 +2,7 @@ import { TextInput, Select, NumberInput, Textarea, Loader, ActionIcon, Group, Te
 import { TrashIcon } from "@heroicons/react/24/outline";
 import type { DTO_RecepcionLotExtendido } from "../../../hooks/registro-recepcion/useRegistroRecepcionOC";
 import type { RES_Marca } from "../../../../../service/responses/marca";
+import type { RES_Empleado } from "../../../../../service/responses/empleado";
 
 interface ActivoRecepcionRowOCProps {
   lot: DTO_RecepcionLotExtendido;
@@ -11,6 +12,8 @@ interface ActivoRecepcionRowOCProps {
   codigoError?: string;
   marcas: RES_Marca[];
   loadingMarcas: boolean;
+  empleados: RES_Empleado[];
+  loadingEmpleados: boolean;
   setLotValue: <K extends keyof DTO_RecepcionLotExtendido>(
     groupIndex: number,
     lotIndex: number,
@@ -29,6 +32,8 @@ export const ActivoRecepcionRowOC = ({
   codigoError,
   marcas,
   loadingMarcas,
+  empleados,
+  loadingEmpleados,
   setLotValue,
   removeLot,
   inputClasses,
@@ -145,7 +150,7 @@ export const ActivoRecepcionRowOC = ({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[150px_1fr] gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-[150px_220px_1fr] gap-3">
         <NumberInput
           label="Año del Modelo"
           placeholder="Ej. 2026"
@@ -162,6 +167,35 @@ export const ActivoRecepcionRowOC = ({
           size="xs"
           radius="lg"
           classNames={inputClasses}
+        />
+
+        <Select
+          label="Responsable"
+          placeholder="Seleccione"
+          data={empleados.map((e) => ({
+            value: e.id_empleado.toString(),
+            label: e.nombre_completo,
+          }))}
+          value={lot.id_empleado_responsable?.toString() || null}
+          onChange={(val) =>
+            setLotValue(
+              groupIndex,
+              lotIndex,
+              "id_empleado_responsable",
+              val ? Number(val) : null,
+            )
+          }
+          searchable
+          clearable
+          comboboxProps={{ withinPortal: true }}
+          size="xs"
+          radius="lg"
+          classNames={inputClasses}
+          rightSection={
+            loadingEmpleados ? (
+              <Loader size={12} color="indigo" />
+            ) : null
+          }
         />
 
         <Textarea

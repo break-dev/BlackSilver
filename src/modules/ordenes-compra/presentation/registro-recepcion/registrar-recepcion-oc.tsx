@@ -83,6 +83,8 @@ export const RegistroRecepcionOC = (props: Props) => {
     comprobante,
     marcas,
     loadingMarcas,
+    empleados,
+    loadingEmpleados,
   } = useRegistroRecepcionOC(props);
 
   const inputClasses = {
@@ -596,6 +598,10 @@ export const RegistroRecepcionOC = (props: Props) => {
               cantidadTotalError={errors[`groups.${idx}.cantidad_total`]}
               marcas={marcas}
               loadingMarcas={loadingMarcas}
+              empleados={empleados}
+              loadingEmpleados={loadingEmpleados}
+              comprobanteSerie={comprobante.serie}
+              comprobanteNumero={comprobante.numero}
             />
           ))}
         </Stack>

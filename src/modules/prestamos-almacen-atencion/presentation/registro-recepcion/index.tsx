@@ -52,7 +52,7 @@ export const RegistroRecepcion = ({
       <Stack gap="xl">
         {groupedItems.map((grouped, index) => (
           <ProductoRecepcionCard
-            key={grouped.id_solicitud_reabastecimiento_detalle}
+            key={grouped.id_producto}
             grouped={grouped}
             index={index}
             setLotValue={setLotValue}

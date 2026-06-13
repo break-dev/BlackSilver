@@ -15,6 +15,10 @@ export interface REQ_CrearActivo {
   especificaciones?: { clave: string; valor: string }[] | null;
   fecha_hora_ingreso?: string | null;
   estado?: EstadoActivoFijo;
+  id_empleado_responsable?: number | null;
+  serie_factura_compra?: string | null;
+  numero_factura_compra?: string | null;
+  costo_compra?: number | null;
 }
 
 export interface REQ_ActualizarUbicacion {

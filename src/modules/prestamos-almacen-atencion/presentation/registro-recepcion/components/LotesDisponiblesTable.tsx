@@ -3,6 +3,10 @@ import { Table, Text, Group, Radio, NumberInput } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
+import {
+  validarAjusteLoteClient,
+  type ValidarLoteOrigenProps,
+} from "../../../../../shared/functions/validar-lote";
 
 interface LotesDisponiblesTableProps {
   lotes: RES_LoteDisponible[];
@@ -11,6 +15,8 @@ interface LotesDisponiblesTableProps {
   onUpdateTabular: (idLote: number, isActive: boolean, qty?: number) => void;
   unidadBaseAbv: string;
   isReadOnly?: boolean;
+  maxQty?: number;
+  detallesOrigen?: ValidarLoteOrigenProps[];
 }
 
 export const LotesDisponiblesTable = ({
@@ -20,6 +26,8 @@ export const LotesDisponiblesTable = ({
   onUpdateTabular,
   unidadBaseAbv,
   isReadOnly,
+  maxQty,
+  detallesOrigen = [],
 }: LotesDisponiblesTableProps) => {
   return (
     <div className="overflow-hidden border border-zinc-800/60 rounded-xl bg-zinc-950/40 shadow-inner">
@@ -66,10 +74,33 @@ export const LotesDisponiblesTable = ({
               const currentQty = selectedAjustes[lote.id_lote];
               const isActive = currentQty !== undefined;
 
+              const isCompatible =
+                detallesOrigen.length === 0 ||
+                detallesOrigen.some((origen) =>
+                  validarAjusteLoteClient(
+                    {
+                      id_orden_compra: lote.id_orden_compra,
+                      id_orden_compra_detalle: lote.id_orden_compra_detalle,
+                      serie_factura_compra: lote.serie_factura_compra,
+                      numero_factura_compra: lote.numero_factura_compra,
+                      costo_por_unidad: lote.costo_por_unidad,
+                      id_orden_compra_comprobante:
+                        lote.id_orden_compra_comprobante,
+                    },
+                    origen,
+                  ),
+                );
+
               return (
                 <tr
                   key={lote.id_lote}
-                  className={`transition-all duration-200 ${isActive ? "bg-indigo-500/10 shadow-inner" : "hover:bg-zinc-800/30 font-light"}`}
+                  className={`transition-all duration-200 ${
+                    isActive
+                      ? "bg-indigo-500/10 shadow-inner"
+                      : !isCompatible
+                        ? "opacity-50 font-light"
+                        : "hover:bg-zinc-800/30 font-light"
+                  }`}
                 >
                   <td className="py-3 text-center">
                     <Text
@@ -79,6 +110,16 @@ export const LotesDisponiblesTable = ({
                     >
                       {lote.correlativo}
                     </Text>
+                    {!isCompatible && (
+                      <Text
+                        size="9px"
+                        c="red.5"
+                        fw={700}
+                        className="uppercase tracking-wider block mt-0.5"
+                      >
+                        Origen de Compra Incompatible
+                      </Text>
+                    )}
                   </td>
                   <td className="text-center">
                     {lote.fecha_vencimiento ? (
@@ -114,27 +155,34 @@ export const LotesDisponiblesTable = ({
                     <Group gap="xs" justify="center" wrap="nowrap">
                       <Radio
                         checked={isActive}
+                        disabled={!isCompatible}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           onUpdateTabular(lote.id_lote, e.currentTarget.checked)
                         }
                         color="indigo"
                         size="sm"
-                        className="cursor-pointer"
+                        className={
+                          isCompatible ? "cursor-pointer" : "cursor-not-allowed"
+                        }
                       />
                       <NumberInput
                         size="xs"
                         placeholder="0"
                         min={0}
+                        max={maxQty}
+                        clampBehavior="strict"
                         readOnly={isReadOnly}
                         variant={isReadOnly ? "filled" : "default"}
                         hideControls
-                        disabled={!isActive}
+                        disabled={!isActive || !isCompatible}
                         value={isActive ? currentQty : ""}
                         onChange={(val) =>
                           onUpdateTabular(lote.id_lote, true, Number(val))
                         }
                         classNames={{
-                          input: `w-20 bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${!isActive ? "opacity-30" : "opacity-100"} ${isReadOnly ? "cursor-not-allowed text-indigo-400 font-black" : ""}`,
+                          input: `w-20 bg-zinc-900 border-zinc-800 focus:border-indigo-500 text-right font-mono transition-opacity ${
+                            !isActive ? "opacity-30" : "opacity-100"
+                          } ${isReadOnly ? "cursor-not-allowed text-indigo-400 font-black" : ""}`,
                         }}
                       />
                     </Group>
