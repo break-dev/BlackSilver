@@ -23,14 +23,11 @@ import {
 import { LazyMotion, domAnimation, m, AnimatePresence } from "motion/react";
 import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_ProductoResumen } from "../service/productos.responses";
-import type { RES_CategoriaResumen } from "../../categorias/service/categorias.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
-import { RegistroCategoria } from "../../categorias/presentation/registro-categoria";
-import { CategoriasDestinos } from "../../categorias/presentation/components/categorias-destinos";
-import { useRegistroCategoria } from "../../categorias/hooks/useRegistroCategoria";
+import { FormCategoria } from "../../../presentation/utils/form-categoria";
 import { LabelForm } from "./components/label-form";
 import { useMemo } from "react";
 import { enPlural } from "../../../shared/functions/en-plural";
@@ -79,28 +76,6 @@ export const RegistroProducto = ({
 
   const [openedAddCat, { open: openAddCat, close: closeAddCat }] =
     useDisclosure(false);
-
-  // Nuevo estado para el modal de destinos (dentro de la creación de categoría)
-  const [openedDestinos, { open: openDestinos, close: closeDestinos }] =
-    useDisclosure(false);
-
-  const registroCat = useRegistroCategoria({
-    categoriasExistentes: categorias as unknown as RES_CategoriaResumen[],
-    onSuccess: (nueva) => {
-      cargarCategorias();
-      setField("id_categoria", nueva.id_categoria);
-    },
-    onClose: closeAddCat,
-  });
-
-  const categoriasParaConsumo = useMemo(
-    () =>
-      categorias.map((c) => ({
-        value: String(c.id_categoria),
-        label: c.nombre,
-      })),
-    [categorias],
-  );
 
   return (
     <LazyMotion features={domAnimation}>
@@ -408,6 +383,23 @@ export const RegistroProducto = ({
               }}
               disabled={isActivoFijo}
             />
+
+            <Checkbox
+              label="Mantenimiento"
+              description="Usado para mantenimiento."
+              checked={!!form.para_mantenimiento}
+              onChange={(e) =>
+                setField("para_mantenimiento", e.currentTarget.checked)
+              }
+              color="indigo"
+              radius="sm"
+              size="sm"
+              classNames={{
+                label:
+                  "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
+                description: "text-zinc-600 text-[11px] mt-0.5",
+              }}
+            />
           </Group>
 
           <AnimatePresence>
@@ -508,64 +500,13 @@ export const RegistroProducto = ({
           size="md"
           zIndex={1001} // Para que se vea por encima del modal de producto
         >
-          <RegistroCategoria
-            todasCategorias={categorias as unknown as RES_CategoriaResumen[]}
-            nombre={registroCat.nombre}
-            setNombre={registroCat.setNombre}
-            descripcion={registroCat.descripcion}
-            setDescripcion={registroCat.setDescripcion}
-            tipoProducto={registroCat.tipoProducto}
-            setTipoProducto={registroCat.setTipoProducto}
-            clasificacionBien={registroCat.clasificacionBien}
-            setClasificacionBien={registroCat.setClasificacionBien}
-            esConsumible={registroCat.esConsumible}
-            setEsConsumible={registroCat.setEsConsumible}
-            paraCocina={registroCat.paraCocina}
-            setParaCocina={registroCat.setParaCocina}
-            paraMina={registroCat.paraMina}
-            setParaMina={registroCat.setParaMina}
-            esAuditable={registroCat.esAuditable}
-            setEsAuditable={registroCat.setEsAuditable}
-            paraTransporte={registroCat.paraTransporte}
-            setParaTransporte={registroCat.setParaTransporte}
-            controlPorOdometro={registroCat.controlPorOdometro}
-            setControlPorOdometro={registroCat.setControlPorOdometro}
-            controlPorHorometro={registroCat.controlPorHorometro}
-            setControlPorHorometro={registroCat.setControlPorHorometro}
-            controlPorVueltas={registroCat.controlPorVueltas}
-            setControlPorVueltas={registroCat.setControlPorVueltas}
-            idsConsumidoras={registroCat.idsConsumidoras}
-            setIdsConsumidoras={registroCat.setIdsConsumidoras}
-            coincidencias={registroCat.coincidencias}
-            onOpenDestinos={openDestinos}
-            error={registroCat.error}
-            loading={registroCat.loading}
-            onSave={registroCat.handleGuardar}
-            onCancel={() => {
+          <FormCategoria
+            onSuccess={(nueva) => {
+              cargarCategorias();
+              setField("id_categoria", nueva.id_categoria);
               closeAddCat();
-              registroCat.reset();
             }}
-          />
-        </ModalEstandar>
-
-        {/* MODAL GESTIÓN DE DESTINOS (Para la creación de categoría) */}
-        <ModalEstandar
-          opened={openedDestinos}
-          close={closeDestinos}
-          title="Categorías de Destino"
-          size="md"
-          zIndex={1002} // Por encima de todo
-        >
-          <CategoriasDestinos
-            categoriaNombre=""
-            idsDestinosTemp={registroCat.idsConsumidoras}
-            setIdsDestinosTemp={registroCat.setIdsConsumidoras}
-            categoriasParaConsumo={categoriasParaConsumo}
-            todasCategorias={categorias}
-            onSave={closeDestinos}
-            onClose={closeDestinos}
-            loading={false}
-            isCreationMode={true}
+            onCancel={closeAddCat}
           />
         </ModalEstandar>
       </Stack>

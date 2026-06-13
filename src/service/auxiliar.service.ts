@@ -17,6 +17,8 @@ import type { RES_Labor } from "./responses/labor";
 import type { RES_Contratista } from "./responses/contratista";
 import type { EstadoBase } from "../shared/enums/_generic/estado-base";
 import type { TipoEntidad } from "../shared/enums/_generic/tipo-entidad";
+import type { TipoProducto } from "../shared/enums/_generic/tipo-producto";
+import type { RES_Categoria } from "./responses/categoria";
 
 const path = "/aux";
 
@@ -115,6 +117,45 @@ export const AuxService = {
   },
 
   /**
+   * Obtener categorias
+   */
+  get_categorias: async (filters?: {
+    id_categoria?: number;
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_Categoria[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Categoria[]>>(
+      `${path}/categorias`,
+      { params: filters },
+    );
+    return data;
+  },
+
+  /**
+   * Crear una categoria
+   */
+  crear_categoria: async (nuevaCategoria: {
+    nombre: string;
+    tipo_producto: TipoProducto;
+    clasificacion_bien: TipoBien;
+    descripcion?: string;
+    para_transporte?: boolean;
+    control_por_odometro?: boolean;
+    control_por_horometro?: boolean;
+    control_por_vueltas?: boolean;
+    es_consumible?: boolean;
+    para_cocina?: boolean;
+    para_mina?: boolean;
+    es_auditable?: boolean;
+    ids_categorias_consumidoras?: number[];
+  }): Promise<IRespuesta<RES_Categoria>> => {
+    const { data } = await api.post<IRespuesta<RES_Categoria>>(
+      `${path}/categorias`,
+      nuevaCategoria,
+    );
+    return data;
+  },
+
+  /**
    * Obtener proveedores
    */
   get_proveedores: async (filters?: {
@@ -181,6 +222,40 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_Producto[]>>(
       `${path}/productos`,
       { params: filters },
+    );
+    return data;
+  },
+
+  /**
+   * Crear un producto
+   */
+  crear_producto: async (nuevoProducto: {
+    id_categoria: number;
+    id_unidad_medida_base: number;
+    nombre: string;
+    prefijo?: string;
+    es_auditable: boolean;
+    es_perecible: boolean;
+    para_mantenimiento: boolean;
+    stock_minimo_base?: number;
+    costo_promedio_base?: number;
+    tiempo_espera_vencimiento?: number;
+    periodo_espera_vencimiento?: string;
+  }): Promise<IRespuesta<RES_Producto>> => {
+    const { data } = await api.post<IRespuesta<RES_Producto>>(
+      `${path}/productos`,
+      {
+        id_unidad_medida_base: nuevoProducto.id_unidad_medida_base,
+        nombre: nuevoProducto.nombre,
+        prefijo: nuevoProducto.prefijo,
+        es_auditable: nuevoProducto.es_auditable,
+        es_perecible: nuevoProducto.es_perecible,
+        para_mantenimiento: nuevoProducto.para_mantenimiento,
+        stock_minimo_base: nuevoProducto.stock_minimo_base,
+        costo_promedio_base: nuevoProducto.costo_promedio_base,
+        tiempo_espera_vencimiento: nuevoProducto.tiempo_espera_vencimiento,
+        periodo_espera_vencimiento: nuevoProducto.periodo_espera_vencimiento,
+      },
     );
     return data;
   },

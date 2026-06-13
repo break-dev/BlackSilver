@@ -1,7 +1,7 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_CrearProducto } from "./productos.requests";
-import type { RES_ProductoResumen, RES_CategoriaBien } from "./productos.responses";
+import type { RES_ProductoResumen } from "./productos.responses";
 
 export class ProductosService {
   private static PATH = "/productos";
@@ -10,13 +10,6 @@ export class ProductosService {
     IRespuesta<RES_ProductoResumen[]>
   > => {
     const { data } = await api.get(this.PATH);
-    return data;
-  };
-
-  public static get_categorias = async (): Promise<
-    IRespuesta<RES_CategoriaBien[]>
-  > => {
-    const { data } = await api.get(`${this.PATH}/aux/categorias`);
     return data;
   };
 

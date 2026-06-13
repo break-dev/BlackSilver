@@ -19,6 +19,7 @@ export interface RES_Producto {
   //
   es_perecible: boolean;
   es_auditable: boolean;
+  para_mantenimiento: boolean;
   //
   prefijo: string | null;
   costo_promedio_base: number;

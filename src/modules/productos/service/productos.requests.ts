@@ -13,6 +13,7 @@ export const Schema_CrearProducto = z
     prefijo: z.string().max(4, "Máximo 4 caracteres").optional().nullable(),
     es_auditable: z.boolean(),
     es_perecible: z.boolean(),
+    para_mantenimiento: z.boolean(),
     stock_minimo_base: z.number().min(0, "Mínimo 0"),
     costo_promedio_base: z.number().min(0, "Mínimo 0"),
     tiempo_espera_vencimiento: z.number().nullable().optional(),

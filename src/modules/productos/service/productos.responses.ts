@@ -22,6 +22,7 @@ export interface RES_ProductoResumen {
   //
   es_auditable: boolean;
   es_perecible: boolean;
+  para_mantenimiento: boolean;
   //
   stock_minimo_base: number;
   costo_promedio_base: number;
@@ -32,11 +33,4 @@ export interface RES_ProductoResumen {
   dias_espera_vencimiento: number | null;
   //
   estado: EstadoBase;
-}
-
-export interface RES_CategoriaBien {
-  id_categoria: number;
-  nombre: string;
-  es_auditable: boolean;
-  clasificacion_bien: TipoBien;
 }

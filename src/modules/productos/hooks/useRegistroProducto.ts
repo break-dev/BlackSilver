@@ -5,10 +5,7 @@ import {
   Schema_CrearProducto,
   type DTO_CrearProducto,
 } from "../service/productos.requests";
-import type {
-  RES_CategoriaBien,
-  RES_ProductoResumen,
-} from "../service/productos.responses";
+import type { RES_ProductoResumen } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
@@ -17,6 +14,7 @@ import {
   type SearchResult,
 } from "../../../shared/functions/get-coincidencias";
 import { AuxService } from "../../../service/auxiliar.service";
+import type { RES_Categoria } from "../../../service/responses/categoria";
 
 const INITIAL_FORM: DTO_CrearProducto = {
   id_categoria: 0,
@@ -25,6 +23,7 @@ const INITIAL_FORM: DTO_CrearProducto = {
   prefijo: null,
   es_auditable: false,
   es_perecible: false,
+  para_mantenimiento: false,
   stock_minimo_base: 0,
   costo_promedio_base: 0,
   tiempo_espera_vencimiento: null,
@@ -37,7 +36,7 @@ export const useRegistroProducto = (
 ) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearProducto>(INITIAL_FORM);
-  const [categorias, setCategorias] = useState<RES_CategoriaBien[]>([]);
+  const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -52,7 +51,7 @@ export const useRegistroProducto = (
   const cargarCategorias = useCallback(async () => {
     setLoadingCategorias(true);
     try {
-      const resp = await ProductosService.get_categorias();
+      const resp = await AuxService.get_categorias();
       if (resp.success) setCategorias(resp.data);
     } catch (err) {
       console.error(err);
@@ -133,7 +132,10 @@ export const useRegistroProducto = (
       categoriaSeleccionada?.clasificacion_bien === TipoBien.ActivoFijo &&
       (!form.prefijo || form.prefijo.trim() === "")
     ) {
-      notify({ type: "error", content: "El prefijo es obligatorio para activos fijos" });
+      notify({
+        type: "error",
+        content: "El prefijo es obligatorio para activos fijos",
+      });
       return;
     }
 
