@@ -12,6 +12,9 @@ export const useCategorias = () => {
   const [categorias, setCategorias] = useState<RES_CategoriaResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroClasificacion, setFiltroClasificacion] = useState<string | null>(null);
+  const [filtroDestino, setFiltroDestino] = useState<string | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
 
   // Modales
   const [openedCreate, { open: openCreate, close: closeCreate }] =
@@ -44,13 +47,49 @@ export const useCategorias = () => {
     const q = busqueda.toLowerCase();
     return categorias
       .filter((cat) => !(en_modo_auditable && cat.es_auditable)) // Filtro modo auditoría
-      .filter(
-        (cat) =>
+      .filter((cat) => {
+        // Filtro por búsqueda
+        const matchesBusqueda =
           !q ||
           cat.nombre.toLowerCase().includes(q) ||
-          (cat.descripcion || "").toLowerCase().includes(q),
-      );
-  }, [categorias, busqueda, en_modo_auditable]);
+          (cat.descripcion || "").toLowerCase().includes(q);
+
+        // Filtro por clasificación
+        let matchesClasif = true;
+        if (filtroClasificacion) {
+          if (filtroClasificacion === "Servicio") {
+            matchesClasif = cat.tipo_producto === "Servicio";
+          } else {
+            matchesClasif =
+              cat.clasificacion_bien === filtroClasificacion &&
+              cat.tipo_producto === "Bien";
+          }
+        }
+
+        // Filtro por destino de uso
+        let matchesDestino = true;
+        if (filtroDestino === "Mina") {
+          matchesDestino = !!cat.para_mina;
+        } else if (filtroDestino === "Cocina") {
+          matchesDestino = !!cat.para_cocina;
+        }
+
+        // Filtro por estado
+        let matchesEstado = true;
+        if (filtroEstado) {
+          matchesEstado = cat.estado === filtroEstado;
+        }
+
+        return matchesBusqueda && matchesClasif && matchesDestino && matchesEstado;
+      });
+  }, [
+    categorias,
+    busqueda,
+    en_modo_auditable,
+    filtroClasificacion,
+    filtroDestino,
+    filtroEstado,
+  ]);
 
   const onCategoriaGuardada = (nueva: RES_CategoriaResumen) => {
     setCategorias((prev) => {
@@ -71,6 +110,12 @@ export const useCategorias = () => {
     loading,
     busqueda,
     setBusqueda,
+    filtroClasificacion,
+    setFiltroClasificacion,
+    filtroDestino,
+    setFiltroDestino,
+    filtroEstado,
+    setFiltroEstado,
     categoriasFiltradas,
 
     // Modales

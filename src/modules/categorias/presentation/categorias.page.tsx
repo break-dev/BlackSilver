@@ -1,23 +1,38 @@
-import { Button, TextInput, Group, Skeleton, Stack } from "@mantine/core";
+import { Button, TextInput, Stack, Select } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
-  Squares2X2Icon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
 import { CategoriasDestinos } from "./components/categorias-destinos";
-import { CategoriaCard } from "./components/categoria-card";
 import { useCategoriasPage } from "../hooks/useCategoriasPage";
+import { useCategoriasColumns } from "../hooks/useCategoriasColumns";
+import { CategoriaGroupCard } from "./components/categoria-group-card";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
-import { enPlural } from "../../../shared/functions/en-plural";
 import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
+
+// Styling configuration for inputs
+const INPUT_CLASSES = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+  label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+  dropdown:
+    "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+  option:
+    "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
+};
 
 export const CategoriasPage = () => {
   const {
     loading,
     busqueda,
     setBusqueda,
+    filtroClasificacion,
+    setFiltroClasificacion,
+    filtroDestino,
+    setFiltroDestino,
     categoriasFiltradas,
     openedCreate,
     openCreate,
@@ -37,71 +52,102 @@ export const CategoriasPage = () => {
     openDestinos,
   } = useCategoriasPage();
 
+  // Dynamic columns generator hook
+  const { getColumns } = useCategoriasColumns({
+    onOpenGestionDestinos: handleOpenGestionDestinos,
+  });
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header — Buscador y Nueva Categoría */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
-        <TextInput
-          label="Buscar Categoría"
-          placeholder="Buscar categorías por nombre..."
-          leftSection={
-            <MagnifyingGlassIcon className="size-4 text-zinc-400" />
-          }
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.currentTarget.value)}
-          className="flex-1 min-w-64"
-          radius="lg"
-          size="sm"
-          classNames={{
-            label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
-          }}
-        />
-        <Button
-          leftSection={<PlusIcon className="size-5" />}
-          onClick={openCreate}
-          radius="lg"
-          size="sm"
-          loading={loading}
-          className="bg-zinc-100 hover:bg-white text-zinc-950 shadow-lg shadow-white/5 shrink-0 px-6 font-bold h-[38px] transition-all"
-        >
-          Nueva Categoría
-        </Button>
+      {/* Header — Buscador y Filtros en fila única horizontal */}
+      <div className="flex flex-col md:flex-row items-end gap-3 w-full animate-fade-in">
+        <div className="flex-1 min-w-[240px] w-full">
+          <TextInput
+            label="Buscar Categoría"
+            placeholder="Buscar por nombre, descripción..."
+            leftSection={
+              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
+            }
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.currentTarget.value)}
+            radius="lg"
+            size="sm"
+            classNames={INPUT_CLASSES}
+          />
+        </div>
+
+        <div className="w-full md:w-52">
+          <Select
+            label="Clasificación"
+            placeholder="Todas..."
+            data={[
+              { value: "all", label: "Todas" },
+              { value: TipoBien.ActivoFijo, label: "Activos Fijos" },
+              { value: TipoBien.Herramienta, label: "Herramientas" },
+              { value: TipoBien.Suministro, label: "Suministros" },
+              { value: TipoBien.Repuesto, label: "Repuestos" },
+              { value: TipoBien.EPP, label: "EPPs" },
+              { value: "Servicio", label: "Servicios" },
+            ]}
+            value={filtroClasificacion || "all"}
+            onChange={(val) =>
+              setFiltroClasificacion(val === "all" ? null : val)
+            }
+            radius="lg"
+            size="sm"
+            classNames={INPUT_CLASSES}
+          />
+        </div>
+
+        <div className="w-full md:w-44">
+          <Select
+            label="Destino de Uso"
+            placeholder="Todos..."
+            data={[
+              { value: "all", label: "Todos" },
+              { value: "Mina", label: "Mina" },
+              { value: "Cocina", label: "Cocina" },
+            ]}
+            value={filtroDestino || "all"}
+            onChange={(val) => setFiltroDestino(val === "all" ? null : val)}
+            radius="lg"
+            size="sm"
+            classNames={INPUT_CLASSES}
+          />
+        </div>
+
+        <div className="shrink-0 w-full md:w-auto">
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openCreate}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold h-[38px] w-full md:w-auto transition-all"
+          >
+            Nueva Categoría
+          </Button>
+        </div>
       </div>
 
       {loading && categorias.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div
-              key={`skeleton-categoria-${i}`}
-              className="h-44 rounded-2xl bg-zinc-900/30 border border-zinc-800/50 p-4"
-            >
-              <Stack gap="xs">
-                <Group justify="space-between">
-                  <Skeleton h={14} w={80} radius="sm" />
-                  <Skeleton h={16} w={40} radius="sm" />
-                </Group>
-                <Skeleton h={18} w="90%" radius="sm" mt={10} />
-                <Skeleton h={12} w="100%" radius="sm" />
-                <Skeleton h={12} w="60%" radius="sm" />
-
-                <div className="mt-auto pt-2 border-t border-zinc-800/50">
-                  <Group justify="space-between">
-                    <Skeleton h={10} w={60} radius="sm" />
-                    <Skeleton h={16} w={30} radius="sm" />
-                  </Group>
-                </div>
-              </Stack>
-            </div>
-          ))}
-        </div>
+        <Stack align="center" gap="md" py={100}>
+          <div className="relative">
+            <div className="size-16 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+            <TagIcon className="size-6 text-indigo-400 absolute inset-0 m-auto animate-pulse" />
+          </div>
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500 block">
+            Cargando Categorías...
+          </span>
+        </Stack>
       ) : categoriasFiltradas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
-          <Squares2X2Icon className="size-10 text-zinc-700 mb-3" />
-          <p className="text-zinc-500 text-sm font-medium">
-            No se encontraron categorías registradas
-          </p>
+        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-[32px] bg-zinc-900/10 backdrop-blur-sm animate-fade-in">
+          <TagIcon className="size-12 text-zinc-700 mb-4 animate-pulse" />
+          <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest block">
+            Sin resultados
+          </span>
+          <span className="text-xs text-zinc-500 mt-1 block">
+            No se encontraron categorías para los filtros aplicados.
+          </span>
         </div>
       ) : (
         <Stack gap="xl">
@@ -110,13 +156,13 @@ export const CategoriasPage = () => {
             TipoBien.Herramienta,
             TipoBien.Suministro,
             TipoBien.Repuesto,
-            // TipoBien.Material,
             TipoBien.EPP,
             TipoProducto.Servicio,
           ].map((clasif) => {
             const grupo = categoriasFiltradas.filter((c) => {
-              if (clasif === TipoProducto.Servicio)
+              if (clasif === TipoProducto.Servicio) {
                 return c.tipo_producto === TipoProducto.Servicio;
+              }
               return (
                 c.clasificacion_bien === clasif &&
                 c.tipo_producto === TipoProducto.Bien
@@ -124,29 +170,14 @@ export const CategoriasPage = () => {
             });
             if (grupo.length === 0) return null;
 
-            const labelClasif =
-              clasif === TipoProducto.Servicio ? "Servicios" : clasif;
-
             return (
-              <Stack key={clasif} gap="md">
-                <div className="flex items-center gap-3 px-1">
-                  <div className="h-px flex-1 bg-zinc-800" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-                    {enPlural(labelClasif)} ({grupo.length})
-                  </span>
-                  <div className="h-px flex-1 bg-zinc-800" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {grupo.map((cat) => (
-                    <CategoriaCard
-                      key={cat.id_categoria}
-                      cat={cat}
-                      onAddDestino={handleOpenGestionDestinos}
-                    />
-                  ))}
-                </div>
-              </Stack>
+              <CategoriaGroupCard
+                key={clasif}
+                clasif={clasif}
+                grupo={grupo}
+                loading={loading}
+                columns={getColumns()}
+              />
             );
           })}
         </Stack>

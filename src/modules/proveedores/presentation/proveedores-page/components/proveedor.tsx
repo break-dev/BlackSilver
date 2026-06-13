@@ -131,19 +131,16 @@ export const Proveedor = ({ proveedores, loading, onOpenCuentas }: Props) => {
           accessor: "indicadores",
           title: "Indicadores",
           textAlign: "center",
-          render: (r: ProveedorResponse) => (
-            <Text size="sm" className="text-zinc-400">
-              {r.para_mantenimiento == true ? (
-                <Badge color="blue" variant="light" size="sm" radius="xl">
-                  Da Mantenimiento
-                </Badge>
-              ) : (
-                <Text size="sm" className="text-zinc-400">
-                  -
-                </Text>
-              )}
-            </Text>
-          ),
+          render: (r: ProveedorResponse) =>
+            r.para_mantenimiento == true ? (
+              <Badge color="blue" variant="light" size="sm" radius="xl">
+                Da Mantenimiento
+              </Badge>
+            ) : (
+              <Text size="sm" className="text-zinc-500">
+                —
+              </Text>
+            ),
         },
         {
           accessor: "estado",
