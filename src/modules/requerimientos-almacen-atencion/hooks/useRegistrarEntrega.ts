@@ -9,6 +9,7 @@ import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_DetalleRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import type { RES_LoteMineral } from "../../../service/responses/lote-mineral";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { useNotify } from "../../../hooks/useNotify";
 
@@ -19,6 +20,12 @@ interface UseRegistrarEntregaBatchProps {
   detallesRequerimiento: RES_DetalleRequerimiento[];
   idContratistaSolicitante: number;
   onSuccess: (entregados: Record<number, number>) => void;
+}
+
+export interface DestinoItem {
+  tipo: "mantenimiento" | "produccion" | "";
+  id_activo_fijo_destino?: number | null;
+  id_lote_mineral?: number | null;
 }
 
 export const useRegistrarEntregaBatch = ({
@@ -36,6 +43,8 @@ export const useRegistrarEntregaBatch = ({
   const [loading, setLoading] = useState(true);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>([]);
+  const [allActivos, setAllActivos] = useState<RES_ActivoFijoDisponible[]>([]);
+  const [lotesMineral, setLotesMineral] = useState<RES_LoteMineral[]>([]);
   const [entregaCantidadesActivos, setEntregaCantidadesActivos] = useState<
     Record<number, Record<number, number>>
   >({});
@@ -46,6 +55,7 @@ export const useRegistrarEntregaBatch = ({
   const [entregaCantidades, setEntregaCantidades] = useState<
     Record<number, Record<number, number>>
   >({});
+  const [destinosMap, setDestinosMap] = useState<Record<string, DestinoItem>>({});
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
@@ -104,11 +114,11 @@ export const useRegistrarEntregaBatch = ({
           new Set(detallesActivoFijo.map((d) => d.id_producto)),
         );
         if (idsConLote.length === 0 && idsActivoFijo.length === 0) {
-            setLoading(false);
-            return;
+          setLoading(false);
+          return;
         }
 
-        const [resEmps, resLotes, resActivos] = await Promise.all([
+        const [resEmps, resLotes, resActivos, resAllActivos, resLotesMineral] = await Promise.all([
           AuxService.get_empleados(),
           idsConLote.length > 0
             ? AuxService.get_lotes_disponibles(idAlmacen, idsConLote)
@@ -119,9 +129,15 @@ export const useRegistrarEntregaBatch = ({
                 ids_productos: idsActivoFijo,
               })
             : Promise.resolve({ success: true, data: [] }),
+          AuxService.get_activos_disponibles(),
+          AuxService.get_lotes_mineral(),
         ]);
 
         if (cancelled) return;
+
+        const mineralBatches = resLotesMineral.success && resLotesMineral.data ? resLotesMineral.data : [];
+        const firstLoteMineralId = mineralBatches.length > 0 ? mineralBatches[0].id_lote_mineral : null;
+        const initialDestinos: Record<string, DestinoItem> = {};
 
         if (resLotes.success) {
           const castedLotes = resLotes.data.map((l: RES_LoteDisponible) => ({
@@ -136,10 +152,29 @@ export const useRegistrarEntregaBatch = ({
           const initial: Record<number, Record<number, number>> = {};
           detallesConLote.forEach((d) => {
             initial[d.id_requerimiento_almacen_detalle] = {};
+            
+            const isMantenimiento = Boolean(d.para_mantenimiento) && Boolean(d.producto_para_mantenimiento);
+            const defaultActivoFijoId = d.id_activo_fijo_destino || null;
+
             castedLotes
               .filter((l) => l.id_producto === d.id_producto)
               .forEach((l) => {
                 initial[d.id_requerimiento_almacen_detalle][l.id_lote] = 0;
+                
+                const key = `${d.id_requerimiento_almacen_detalle}_lote_${l.id_lote}`;
+                if (isMantenimiento) {
+                  initialDestinos[key] = {
+                    tipo: "mantenimiento",
+                    id_activo_fijo_destino: defaultActivoFijoId,
+                    id_lote_mineral: null,
+                  };
+                } else {
+                  initialDestinos[key] = {
+                    tipo: "produccion",
+                    id_activo_fijo_destino: null,
+                    id_lote_mineral: firstLoteMineralId,
+                  };
+                }
               });
           });
           setEntregaCantidades(initial);
@@ -152,13 +187,42 @@ export const useRegistrarEntregaBatch = ({
           const initialActivos: Record<number, Record<number, number>> = {};
           detallesActivoFijo.forEach((d) => {
             initialActivos[d.id_requerimiento_almacen_detalle] = {};
+            
+            const isMantenimiento = Boolean(d.para_mantenimiento) && Boolean(d.producto_para_mantenimiento);
+            const defaultActivoFijoId = d.id_activo_fijo_destino || null;
+
             resActivos.data
               .filter((a: RES_ActivoFijoDisponible) => a.id_producto === d.id_producto)
               .forEach((a: RES_ActivoFijoDisponible) => {
                 initialActivos[d.id_requerimiento_almacen_detalle][a.id_activo] = 0;
+
+                const key = `${d.id_requerimiento_almacen_detalle}_activo_${a.id_activo}`;
+                if (isMantenimiento) {
+                  initialDestinos[key] = {
+                    tipo: "mantenimiento",
+                    id_activo_fijo_destino: defaultActivoFijoId,
+                    id_lote_mineral: null,
+                  };
+                } else {
+                  initialDestinos[key] = {
+                    tipo: "produccion",
+                    id_activo_fijo_destino: null,
+                    id_lote_mineral: firstLoteMineralId,
+                  };
+                }
               });
           });
           setEntregaCantidadesActivos(initialActivos);
+        }
+
+        setDestinosMap(initialDestinos);
+
+        if (resAllActivos.success && resAllActivos.data) {
+          setAllActivos(resAllActivos.data);
+        }
+
+        if (resLotesMineral.success && resLotesMineral.data) {
+          setLotesMineral(resLotesMineral.data);
         }
 
         if (resEmps.success) {
@@ -326,6 +390,31 @@ export const useRegistrarEntregaBatch = ({
     [lotes, handleCantChange],
   );
 
+  const firstLoteMineralId = useMemo(() => {
+    return lotesMineral.length > 0 ? lotesMineral[0].id_lote_mineral : null;
+  }, [lotesMineral]);
+
+  const handleDestinoChange = useCallback(
+    (key: string, field: string, value: string | number | null) => {
+      setDestinosMap((prev) => {
+        const current = prev[key] || { tipo: "" };
+        return {
+          ...prev,
+          [key]: {
+            ...current,
+            [field]: value,
+            // Reset other fields if type changes
+            ...(field === "tipo" && {
+              id_activo_fijo_destino: null,
+              id_lote_mineral: value === "produccion" ? firstLoteMineralId : null,
+            }),
+          } as DestinoItem,
+        };
+      });
+    },
+    [firstLoteMineralId],
+  );
+
   const lotesPorProducto = useMemo(() => {
     const agrupado: Record<number, RES_LoteDisponible[]> = {};
     lotes.forEach((l) => {
@@ -359,6 +448,71 @@ export const useRegistrarEntregaBatch = ({
     }
     setError("");
 
+    // Validar destinos para items seleccionados
+    let validationError = "";
+
+    // Activos fijos
+    for (const [idDet, activosMap] of Object.entries(entregaCantidadesActivos)) {
+      const idDetalleReq = Number(idDet);
+      const detail = selectedDetalles.find(
+        (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+      );
+      if (!detail) continue;
+
+      for (const [idAct, cant] of Object.entries(activosMap)) {
+        if (cant > 0) {
+          const numIdActivo = Number(idAct);
+          const key = `${idDetalleReq}_activo_${numIdActivo}`;
+          const dest = destinosMap[key] || { tipo: "" };
+
+          if (dest.tipo === "mantenimiento" && !dest.id_activo_fijo_destino) {
+            validationError = `Debe seleccionar el equipo destino para el activo fijo correlativo "${detail.producto}"`;
+            break;
+          }
+          if (dest.tipo === "produccion" && !dest.id_lote_mineral) {
+            validationError = `Debe seleccionar el lote de mineral destino para el activo fijo correlativo "${detail.producto}"`;
+            break;
+          }
+        }
+      }
+      if (validationError) break;
+    }
+
+    if (!validationError) {
+      // Productos con lote
+      for (const [idDet, lotesMap] of Object.entries(entregaCantidades)) {
+        const idDetalleReq = Number(idDet);
+        const detail = selectedDetalles.find(
+          (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+        );
+        if (!detail) continue;
+
+        for (const [idLot, cant] of Object.entries(lotesMap)) {
+          if (cant > 0) {
+            const numIdLote = Number(idLot);
+            const key = `${idDetalleReq}_lote_${numIdLote}`;
+            const dest = destinosMap[key] || { tipo: "" };
+
+            if (dest.tipo === "mantenimiento" && !dest.id_activo_fijo_destino) {
+              validationError = `Debe seleccionar el equipo destino para el producto "${detail.producto}"`;
+              break;
+            }
+            if (dest.tipo === "produccion" && !dest.id_lote_mineral) {
+              validationError = `Debe seleccionar el lote de mineral destino para el producto "${detail.producto}"`;
+              break;
+            }
+          }
+        }
+        if (validationError) break;
+      }
+    }
+
+    if (validationError) {
+      setError(validationError);
+      notifyError(validationError);
+      return;
+    }
+
     const detallesParaApi: DTO_RegistrarEntregaDetalle[] = [];
 
     // --- Activos fijos ---
@@ -372,16 +526,19 @@ export const useRegistrarEntregaBatch = ({
       Object.entries(activosMap).forEach(([idAct, cant]) => {
         if (cant > 0) {
           const numIdActivo = Number(idAct);
-          const cBase = cant;
-          const cLote = cant; // Same as base
-          const cReq = cant; // Same as base because it's 1 unit always
+          const key = `${idDetalleReq}_activo_${numIdActivo}`;
+          const dest = destinosMap[key] || { tipo: "" };
 
           detallesParaApi.push({
             id_requerimiento_almacen_detalle: idDetalleReq,
             id_activo_fijo: numIdActivo,
-            cantidad_base: cBase,
-            cantidad_lote: cLote,
-            cantidad_requerimiento: cReq,
+            cantidad_base: cant,
+            cantidad_lote: cant,
+            cantidad_requerimiento: cant,
+            para_mantenimiento: dest.tipo === "mantenimiento",
+            para_produccion: dest.tipo === "produccion",
+            id_activo_fijo_destino: dest.tipo === "mantenimiento" ? dest.id_activo_fijo_destino : null,
+            id_lote_mineral: dest.tipo === "produccion" ? dest.id_lote_mineral : null,
           });
         }
       });
@@ -406,12 +563,19 @@ export const useRegistrarEntregaBatch = ({
           const cLote = cBase / equivLote;
           const cReq = cBase / detail.equivReq;
 
+          const key = `${idDetalleReq}_lote_${numIdLote}`;
+          const dest = destinosMap[key] || { tipo: "" };
+
           detallesParaApi.push({
             id_requerimiento_almacen_detalle: idDetalleReq,
             id_lote_producto: numIdLote,
             cantidad_base: cBase,
             cantidad_lote: cLote,
             cantidad_requerimiento: cReq,
+            para_mantenimiento: dest.tipo === "mantenimiento",
+            para_produccion: dest.tipo === "produccion",
+            id_activo_fijo_destino: dest.tipo === "mantenimiento" ? dest.id_activo_fijo_destino : null,
+            id_lote_mineral: dest.tipo === "produccion" ? dest.id_lote_mineral : null,
           });
         }
       });
@@ -470,8 +634,11 @@ export const useRegistrarEntregaBatch = ({
     detallesActivoFijo,
     lotesPorProducto,
     activosFijosPorProducto,
+    allActivos,
+    lotesMineral,
     entregaCantidades,
     entregaCantidadesActivos,
+    destinosMap,
     empleados,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
@@ -485,6 +652,7 @@ export const useRegistrarEntregaBatch = ({
     handleCantChange,
     handleCantLoteChange,
     handleCantActivoChange,
+    handleDestinoChange,
     handleConfirmar,
   };
 };

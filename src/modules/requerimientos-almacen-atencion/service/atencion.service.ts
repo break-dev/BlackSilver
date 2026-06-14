@@ -115,7 +115,10 @@ export const AtencionService = {
       // Laravel expects details as a nested array/object structure in FormData
       dto.detalles.forEach((detalle, index) => {
         Object.entries(detalle).forEach(([key, value]) => {
-          formData.append(`detalles[${index}][${key}]`, value.toString());
+          if (value !== null && value !== undefined) {
+            const strVal = typeof value === "boolean" ? (value ? "1" : "0") : value.toString();
+            formData.append(`detalles[${index}][${key}]`, strVal);
+          }
         });
       });
 

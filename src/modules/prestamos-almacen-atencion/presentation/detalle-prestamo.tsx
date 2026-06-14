@@ -765,7 +765,7 @@ export const DetallePrestamo = ({
       <ModalEstandar
         opened={openedNuevaEntrega}
         close={closeNuevaEntrega}
-        title="Nueva Entrega de Materiales"
+        title="Nueva Entrega"
         size="80%"
       >
         <RegistrarEntregaModal

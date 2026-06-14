@@ -27,6 +27,13 @@ export interface RES_Consumo {
   created_at: string;
   /** Estado del consumo (Consumo Parcial o Consumo Total) */
   estado: Estado_ConsumoDetalleEntregaReq;
+  // Nuevos campos
+  correlativo_lote_mineral?: string | null;
+  labores_destinos?: string | null;
+  id_labores?: string | null;
+  para_mantenimiento?: boolean | number;
+  para_produccion?: boolean | number;
+  id_lote_mineral?: number | null;
 }
 
 /**

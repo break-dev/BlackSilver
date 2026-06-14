@@ -2,6 +2,9 @@ import { Table } from "@mantine/core";
 import { LoteRow } from "./lote-row";
 import type { DetalleRequerimientoExtendido } from "../../../../../service/atencion.responses";
 import type { RES_LoteDisponible } from "../../../../../../../service/responses/lote-producto";
+import type { RES_ActivoFijoDisponible } from "../../../../../../../service/responses/activo-fijo";
+import type { RES_LoteMineral } from "../../../../../../../service/responses/lote-mineral";
+import type { DestinoItem } from "../../../../../hooks/useRegistrarEntrega";
 import { JsonScanner } from "../../../../../../../presentation/utils/json-scanner";
 import { useJsonScanner } from "../../../../../../../hooks/useJsonScanner";
 
@@ -12,11 +15,19 @@ interface LotesTableProps {
   tEntregadoDetalleActualBase: number;
   entregaCantidades: Record<number, Record<number, number>>;
   detalle_req: DetalleRequerimientoExtendido;
+  allActivos: RES_ActivoFijoDisponible[];
+  lotesMineral: RES_LoteMineral[];
+  destinosMap: Record<string, DestinoItem>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
     idLote: number,
     cant: number,
+  ) => void;
+  handleDestinoChange: (
+    key: string,
+    field: string,
+    value: string | number | null,
   ) => void;
 }
 
@@ -27,8 +38,12 @@ export const LotesTable = ({
   tEntregadoDetalleActualBase,
   entregaCantidades,
   detalle_req,
+  allActivos,
+  lotesMineral,
+  destinosMap,
   handleCantChange,
   handleCantLoteChange,
+  handleDestinoChange,
 }: LotesTableProps) => {
   const { isFiltering, clearFilter, handleScanned, filterItems } =
     useJsonScanner();
@@ -54,17 +69,20 @@ export const LotesTable = ({
       >
         <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800/60">
           <tr>
-            <th className="py-4" style={{ width: "25%" }}>
+            <th className="py-4 text-center" style={{ width: "15%" }}>
               Lote
             </th>
-            <th className="text-center" style={{ width: "20%" }}>
+            <th className="text-center" style={{ width: "10%" }}>
               Vencimiento
             </th>
-            <th className="text-center" style={{ width: "25%" }}>
+            <th className="text-center" style={{ width: "10%" }}>
               Stock Disponible
             </th>
-            <th className="pr-8 text-center" style={{ width: "30%" }}>
+            <th className="text-center" style={{ width: "15%" }}>
               Cant. a Despachar
+            </th>
+            <th className="pr-8 text-left" style={{ width: "35%" }}>
+              Activo Destino
             </th>
           </tr>
         </thead>
@@ -72,7 +90,7 @@ export const LotesTable = ({
           {lotesVisibles.length === 0 ? (
             <tr>
               <td
-                colSpan={4}
+                colSpan={5}
                 className="py-10 text-center text-zinc-600 italic text-sm font-medium"
               >
                 {isFiltering
@@ -116,8 +134,12 @@ export const LotesTable = ({
                   maxLote={maxLote}
                   detalle_req={detalle_req}
                   stockVisible={stockVisible}
+                  allActivos={allActivos}
+                  lotesMineral={lotesMineral}
+                  destinosMap={destinosMap}
                   handleCantChange={handleCantChange}
                   handleCantLoteChange={handleCantLoteChange}
+                  handleDestinoChange={handleDestinoChange}
                 />
               );
             })

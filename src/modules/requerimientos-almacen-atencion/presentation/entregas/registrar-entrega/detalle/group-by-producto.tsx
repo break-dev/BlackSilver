@@ -6,6 +6,8 @@ import type { RES_LoteDisponible } from "../../../../../../service/responses/lot
 import { GroupByDetalleRequerimiento } from "./group-by-detalle-req";
 
 import type { RES_ActivoFijoDisponible } from "../../../../../../service/responses/activo-fijo";
+import type { RES_LoteMineral } from "../../../../../../service/responses/lote-mineral";
+import type { DestinoItem } from "../../../../hooks/useRegistrarEntrega";
 
 interface GroupByProductoProps {
   idProducto: number;
@@ -20,6 +22,9 @@ interface GroupByProductoProps {
   activosFijosPorProducto: Record<number, RES_ActivoFijoDisponible[]>;
   entregaCantidades: Record<number, Record<number, number>>;
   entregaCantidadesActivos: Record<number, Record<number, number>>;
+  allActivos: RES_ActivoFijoDisponible[];
+  lotesMineral: RES_LoteMineral[];
+  destinosMap: Record<string, DestinoItem>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
@@ -31,6 +36,7 @@ interface GroupByProductoProps {
     idActivo: number,
     cant: number,
   ) => void;
+  handleDestinoChange: (key: string, field: string, value: string | number | null) => void;
 }
 
 export const GroupByProducto = ({
@@ -40,9 +46,13 @@ export const GroupByProducto = ({
   activosFijosPorProducto,
   entregaCantidades,
   entregaCantidadesActivos,
+  allActivos,
+  lotesMineral,
+  destinosMap,
   handleCantChange,
   handleCantLoteChange,
   handleCantActivoChange,
+  handleDestinoChange,
 }: GroupByProductoProps) => {
   const lotes = lotesPorProducto[idProducto] || [];
   const activosFijos = activosFijosPorProducto[idProducto] || [];
@@ -108,9 +118,13 @@ export const GroupByProducto = ({
             index={index}
             entregaCantidades={entregaCantidades}
             entregaCantidadesActivos={entregaCantidadesActivos}
+            allActivos={allActivos}
+            lotesMineral={lotesMineral}
+            destinosMap={destinosMap}
             handleCantChange={handleCantChange}
             handleCantLoteChange={handleCantLoteChange}
             handleCantActivoChange={handleCantActivoChange}
+            handleDestinoChange={handleDestinoChange}
           />
         ))}
       </Stack>

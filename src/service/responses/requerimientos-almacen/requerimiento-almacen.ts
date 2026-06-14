@@ -69,4 +69,9 @@ export interface RES_DetalleRequerimiento {
   comentario_decision: string | null;
   //
   estado: Estado_RequerimientoDetalle;
+  para_mantenimiento?: boolean | number;
+  id_activo_fijo_destino?: number | null;
+  producto_para_mantenimiento?: boolean | number;
+  activo_fijo_destino_correlativo?: string | null;
+  activo_fijo_destino_codigo?: string | null;
 }

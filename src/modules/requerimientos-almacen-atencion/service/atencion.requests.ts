@@ -4,8 +4,8 @@ import { z } from "zod";
 import { Premura } from "../../../shared/enums/_generic/premura";
 
 export interface DTO_CrearRequerimiento {
-  id_contratista_solicitante: number;
-  id_mina: number;
+  id_contratista_solicitante?: number | null;
+  id_mina?: number | null;
   id_labores?: number[] | null;
   id_almacen_destino: number;
   premura: Premura;
@@ -23,6 +23,7 @@ export interface DTO_CrearRequerimientoDetalle {
   contenido_por_presentacion: number;
   comentario?: string | null;
   id_activo_fijo_destino?: number | null;
+  para_mantenimiento?: boolean;
 }
 
 // Zod schemas for validation
@@ -35,11 +36,12 @@ export const Schema_CrearRequerimientoDetalle = z.object({
     .min(0.0001, "El contenido debe ser mayor a 0"),
   comentario: z.string().nullable().optional(),
   id_activo_fijo_destino: z.number().nullable().optional(),
+  para_mantenimiento: z.boolean().optional(),
 });
 
 export const Schema_CrearRequerimiento = z.object({
-  id_contratista_solicitante: z.number().min(1, "Seleccione un solicitante"),
-  id_mina: z.number().min(1, "Seleccione una mina"),
+  id_contratista_solicitante: z.number().nullable().optional(),
+  id_mina: z.number().nullable().optional(),
   id_labores: z.array(z.number()).nullable().optional(),
   id_almacen_destino: z.number().min(1, "Seleccione un almacén de destino"),
   premura: z.nativeEnum(Premura),
@@ -75,6 +77,10 @@ export interface DTO_RegistrarEntregaDetalle {
   cantidad_base: number;
   cantidad_lote: number;
   cantidad_requerimiento: number;
+  para_mantenimiento?: boolean;
+  para_produccion?: boolean;
+  id_activo_fijo_destino?: number | null;
+  id_lote_mineral?: number | null;
 }
 
 export interface DTO_CrearSolicitudLogistica {

@@ -314,11 +314,11 @@ export const CardRequerimiento = ({
             </span>
             <span className="text-zinc-300 font-semibold">{req.mina}</span>
           </div>
-          <div>
-            <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
+          <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1 text-amber-200 shadow-xs">
+            <span className="text-amber-400/80 font-black uppercase tracking-wider text-[9px]">
               Almacén:
             </span>
-            <span className="text-zinc-300 font-semibold">
+            <span className="font-extrabold text-[11px]">
               {req.almacen_destino}
             </span>
           </div>

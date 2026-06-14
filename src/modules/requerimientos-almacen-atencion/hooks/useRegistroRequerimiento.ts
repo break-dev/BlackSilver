@@ -14,6 +14,7 @@ import { AtencionService } from "../service/atencion.service";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 
 interface Props {
   onSuccess: (
@@ -31,10 +32,14 @@ export const useRegistroRequerimiento = ({
   const { prepare } = usePrint();
   const { notifySuccess, notifyError } = useNotify();
   const [submitting, setSubmitting] = useState(false);
-  const [loadingCatalogs, setLoadingCatalogs] = useState(false);
+  const [loadingProductos, setLoadingProductos] = useState(false);
+  const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingMinaData, setLoadingMinaData] = useState(false);
+  const [loadingActivos, setLoadingActivos] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadingCatalogs = loadingProductos || loadingUnidades;
 
   // Catálogos
   const [minas, setMinas] = useState<RES_Mina[]>([]);
@@ -44,6 +49,7 @@ export const useRegistroRequerimiento = ({
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
+  const [activos, setActivos] = useState<RES_ActivoFijoDisponible[]>([]);
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
   // Estado Formulario Cabecera
@@ -65,30 +71,42 @@ export const useRegistroRequerimiento = ({
   const [cantidad, setCantidad] = useState<number>(0);
   const [contenido, setContenido] = useState<number>(1);
   const [comentarioItem, setComentarioItem] = useState("");
+  const [paraMantenimientoItem, setParaMantenimientoItem] = useState(false);
+  const [idActivoFijoDestino, setIdActivoFijoDestino] = useState<number>(0);
 
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
 
-  // 1. Cargar Catálogos Iniciales (Productos, Unidades)
+  // 1. Cargar Productos y Unidades en paralelo (sin bloquearse secuencialmente)
   useEffect(() => {
-    const loadInitial = async () => {
-      setLoadingCatalogs(true);
+    const loadProductos = async () => {
+      setLoadingProductos(true);
       try {
-        const res_productos = await AuxService.get_productos({
+        const res = await AuxService.get_productos({
           con_categorias_consumidoras: true,
         });
-        const res_unidades = await AuxService.get_unidades_medida();
-        if (res_productos.success && res_productos.data) {
-          setProductos(res_productos.data);
-        }
-        if (res_unidades.success && res_unidades.data) {
-          setUnidades(res_unidades.data);
+        if (res.success && res.data) {
+          setProductos(res.data);
         }
       } finally {
-        setLoadingCatalogs(false);
+        setLoadingProductos(false);
       }
     };
-    loadInitial();
+
+    const loadUnidades = async () => {
+      setLoadingUnidades(true);
+      try {
+        const res = await AuxService.get_unidades_medida();
+        if (res.success && res.data) {
+          setUnidades(res.data);
+        }
+      } finally {
+        setLoadingUnidades(false);
+      }
+    };
+
+    loadProductos();
+    loadUnidades();
   }, []);
 
   // 2. Cargar minas cuando cambia almacén
@@ -147,10 +165,46 @@ export const useRegistroRequerimiento = ({
       };
 
       loadMinaData();
+    } else {
+      // Si no hay mina seleccionada, cargar todos los contratistas
+      const loadAllContratistas = async () => {
+        setLoadingMinaData(true);
+        try {
+          const res = await AuxService.get_contratistas();
+          if (res.success && res.data) {
+            const mapped = res.data.map((c) => ({
+              id_contratista: c.id_contratista,
+              nombre_completo: `${c.nombre} ${c.apellido}`.trim(),
+            }));
+            setResponsables(mapped);
+            if (mapped.length > 0) {
+              setIdContratistaSolicitante(mapped[0].id_contratista);
+            }
+          }
+        } finally {
+          setLoadingMinaData(false);
+        }
+      };
+      loadAllContratistas();
     }
     // Remove idEmpleadoSolicitante from dependencies to prevent double-fetching
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idMina]);
+
+  // Cargar activos fijos disponibles
+  useEffect(() => {
+    const loadActivos = async () => {
+      setLoadingActivos(true);
+      try {
+        const res = await AuxService.get_activos_disponibles();
+        if (res.success && res.data) {
+          setActivos(res.data);
+        }
+      } finally {
+        setLoadingActivos(false);
+      }
+    };
+    loadActivos();
+  }, []);
 
   // 4. Lógica de Unidades al elegir Producto/Unidad
   const productoSeleccionado = productos.find(
@@ -160,10 +214,10 @@ export const useRegistroRequerimiento = ({
     (u) => u.id_unidad_medida === idUnidadMedida,
   );
   const sonUnidadesIdenticas =
-    productoSeleccionado &&
-    unidadSeleccionada &&
-    productoSeleccionado.id_unidad_medida_base ===
-      unidadSeleccionada.id_unidad_medida;
+      productoSeleccionado &&
+      unidadSeleccionada &&
+      productoSeleccionado.id_unidad_medida_base ===
+        unidadSeleccionada.id_unidad_medida;
 
   useEffect(() => {
     if (sonUnidadesIdenticas) {
@@ -173,15 +227,17 @@ export const useRegistroRequerimiento = ({
 
   // Auto-selección de unidad al elegir producto
   useEffect(() => {
-    if (idProducto && !loadingCatalogs && productos.length > 0) {
+    if (idProducto && productos.length > 0) {
       const prod = productos.find((p) => p.id_producto === idProducto);
       if (prod) {
         setIdUnidadMedida(prod.id_unidad_medida_base);
       }
     }
-    // Al cambiar de producto, reseteamos el comentario
+    // Al cambiar de producto, reseteamos el comentario y mantenimiento
     setComentarioItem("");
-  }, [idProducto, loadingCatalogs, productos]);
+    setParaMantenimientoItem(false);
+    setIdActivoFijoDestino(0);
+  }, [idProducto, productos]);
 
   // Filtrar productos que ya están presentes en la lista de detalles
   const productosFiltrados = useMemo(() => {
@@ -202,12 +258,30 @@ export const useRegistroRequerimiento = ({
       return;
     }
 
+    if (paraMantenimientoItem && !idActivoFijoDestino) {
+      notifyError("Debe seleccionar el equipo destino para mantenimiento");
+      return;
+    }
+
+    let finalComentario = comentarioItem;
+    if (paraMantenimientoItem && idActivoFijoDestino > 0) {
+      const activo = activos.find((a) => a.id_activo === idActivoFijoDestino);
+      finalComentario = activo
+        ? `Para el mantenimiento de ${activo.producto} ${activo.correlativo}`
+        : `Para el mantenimiento de Equipo #${idActivoFijoDestino}`;
+    }
+
     const nuevoItem: DTO_CrearRequerimientoDetalle = {
       id_producto: idProducto,
       id_unidad_medida: idUnidadMedida,
       cantidad_solicitada: cantidad,
       contenido_por_presentacion: contenido,
-      comentario: comentarioItem,
+      comentario: finalComentario,
+      para_mantenimiento: paraMantenimientoItem,
+      id_activo_fijo_destino:
+        paraMantenimientoItem && idActivoFijoDestino > 0
+          ? idActivoFijoDestino
+          : null,
     };
 
     setDetalles((prev) => [...prev, nuevoItem]);
@@ -218,12 +292,17 @@ export const useRegistroRequerimiento = ({
     setCantidad(0);
     setContenido(1);
     setComentarioItem("");
+    setParaMantenimientoItem(false);
+    setIdActivoFijoDestino(0);
   }, [
     idProducto,
     idUnidadMedida,
     cantidad,
     contenido,
     comentarioItem,
+    paraMantenimientoItem,
+    idActivoFijoDestino,
+    activos,
     notifyError,
   ]);
 
@@ -268,8 +347,9 @@ export const useRegistroRequerimiento = ({
     });
 
     const dto: DTO_CrearRequerimiento = {
-      id_contratista_solicitante: idContratistaSolicitante,
-      id_mina: idMina,
+      id_contratista_solicitante:
+        idContratistaSolicitante > 0 ? idContratistaSolicitante : null,
+      id_mina: idMina > 0 ? idMina : null,
       id_almacen_destino: idAlmacenDestino,
       id_labores: idLabores.length > 0 ? idLabores : null,
       premura,
@@ -371,6 +451,11 @@ export const useRegistroRequerimiento = ({
       setContenido,
       comentarioItem,
       setComentarioItem,
+      paraMantenimientoItem,
+      setParaMantenimientoItem,
+      idActivoFijoDestino,
+      setIdActivoFijoDestino,
+      activos,
       detalles,
     },
     derived: {
@@ -384,6 +469,7 @@ export const useRegistroRequerimiento = ({
       loadingCatalogs,
       loadingMinas,
       loadingMinaData,
+      loadingActivos,
       error,
     },
     actions: {

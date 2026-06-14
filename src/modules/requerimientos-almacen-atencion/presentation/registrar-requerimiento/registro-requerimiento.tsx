@@ -11,6 +11,7 @@ import {
   MultiSelect,
   Textarea,
   Loader,
+  Checkbox,
 } from "@mantine/core";
 import {
   WrenchScrewdriverIcon,
@@ -100,6 +101,11 @@ export const RegistroRequerimiento = ({
       setContenido,
       comentarioItem,
       setComentarioItem,
+      paraMantenimientoItem,
+      setParaMantenimientoItem,
+      idActivoFijoDestino,
+      setIdActivoFijoDestino,
+      activos,
       idAlmacenDestino,
     },
     status: { submitting, error, loadingMinas, loadingMinaData },
@@ -147,7 +153,6 @@ export const RegistroRequerimiento = ({
           <Select
             label="Mina"
             placeholder="Seleccione mina"
-            withAsterisk
             data={minas.map((m) => ({
               value: String(m.id_mina),
               label: m.nombre,
@@ -170,7 +175,6 @@ export const RegistroRequerimiento = ({
           <Select
             label="Solicitante"
             placeholder="Seleccione responsable"
-            withAsterisk
             data={responsables.map((r) => ({
               value: String(r.id_contratista),
               label: r.nombre_completo,
@@ -182,7 +186,7 @@ export const RegistroRequerimiento = ({
             classNames={inputClasses}
             radius="lg"
             searchable
-            disabled={!idMina}
+            disabled={!idAlmacenDestino}
             leftSection={
               loadingMinaData ? (
                 <Loader size="xs" />
@@ -375,20 +379,59 @@ export const RegistroRequerimiento = ({
                   size="sm"
                 />
               </div>
+              <div className="md:col-span-6 self-start flex flex-col gap-1.5">
+                <div className="flex justify-between items-center h-5 mb-0.5">
+                  <span className="text-zinc-300 font-semibold tracking-tight text-[13px] md:text-sm">
+                    {paraMantenimientoItem && productoSeleccionado ? "Equipo Destino" : "Comentario del ítem"}
+                  </span>
+                  <Checkbox
+                    label="Mantenimiento"
+                    checked={paraMantenimientoItem}
+                    disabled={!productoSeleccionado || !productoSeleccionado.para_mantenimiento}
+                    onChange={(event) => setParaMantenimientoItem(event.currentTarget.checked)}
+                    size="xs"
+                    color="indigo"
+                    radius="sm"
+                    classNames={{
+                      input: (productoSeleccionado && productoSeleccionado.para_mantenimiento) ? "cursor-pointer" : "cursor-not-allowed",
+                      label: `font-semibold text-xs ${
+                        (productoSeleccionado && productoSeleccionado.para_mantenimiento)
+                          ? "text-zinc-300 cursor-pointer"
+                          : "text-zinc-600 cursor-not-allowed"
+                      }`,
+                    }}
+                  />
+                </div>
 
-              <div className="md:col-span-6 mb-10">
-                <TextInput
-                  label="Comentario del ítem"
-                  placeholder="Notas adicionales para este producto..."
-                  value={comentarioItem}
-                  onChange={(e) => setComentarioItem(e.target.value)}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
+                <div className="animate-fade-in">
+                  {paraMantenimientoItem && productoSeleccionado ? (
+                    <Select
+                      placeholder="Seleccione equipo"
+                      data={activos.map((a) => ({
+                        value: String(a.id_activo),
+                        label: `${a.correlativo} - ${a.producto}`,
+                      }))}
+                      value={idActivoFijoDestino ? String(idActivoFijoDestino) : null}
+                      onChange={(val) => setIdActivoFijoDestino(Number(val))}
+                      searchable
+                      classNames={inputClasses}
+                      radius="lg"
+                      size="sm"
+                    />
+                  ) : (
+                    <TextInput
+                      placeholder="Notas adicionales para este producto..."
+                      value={comentarioItem}
+                      onChange={(e) => setComentarioItem(e.target.value)}
+                      classNames={inputClasses}
+                      radius="lg"
+                      size="sm"
+                    />
+                  )}
+                </div>
               </div>
 
-              <div className="md:col-span-2 mb-10">
+              <div className="md:col-span-2 self-start mt-[26px]">
                 <Button
                   onClick={agregarItem}
                   disabled={!canAdd}
@@ -404,7 +447,7 @@ export const RegistroRequerimiento = ({
                 </Button>
               </div>
 
-              <div className="md:col-span-4">
+              <div className="md:col-span-4 self-start">
                 <div className="bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/50 border-dashed">
                   <Text
                     component="div"
@@ -537,7 +580,7 @@ export const RegistroRequerimiento = ({
                       {index + 1}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-zinc-100">
-                      {prod?.nombre}
+                      <div>{prod?.nombre}</div>
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Stack gap={4} align="center">
@@ -628,7 +671,14 @@ export const RegistroRequerimiento = ({
                       </Stack>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
-                      {det.comentario || "-"}
+                      {det.para_mantenimiento ? (
+                        <div className="text-xs text-amber-500 font-semibold flex items-center gap-1.5">
+                          <WrenchScrewdriverIcon className="w-3.5 h-3.5 text-amber-500" />
+                          <span>{det.comentario}</span>
+                        </div>
+                      ) : (
+                        det.comentario || "-"
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <ActionIcon

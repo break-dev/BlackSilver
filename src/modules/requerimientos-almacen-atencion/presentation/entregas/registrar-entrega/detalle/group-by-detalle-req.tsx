@@ -5,6 +5,8 @@ import { LotesTable } from "./lotes/lotes-table";
 import { ActivosTable } from "./activos/activos-table";
 import type { RES_LoteDisponible } from "../../../../../../service/responses/lote-producto";
 import type { RES_ActivoFijoDisponible } from "../../../../../../service/responses/activo-fijo";
+import type { RES_LoteMineral } from "../../../../../../service/responses/lote-mineral";
+import type { DestinoItem } from "../../../../hooks/useRegistrarEntrega";
 import { TipoBien } from "../../../../../../shared/enums/_generic/tipo-bien";
 
 interface GroupByDetalleRequerimientoProps {
@@ -14,6 +16,9 @@ interface GroupByDetalleRequerimientoProps {
   index: number;
   entregaCantidades: Record<number, Record<number, number>>;
   entregaCantidadesActivos: Record<number, Record<number, number>>;
+  allActivos: RES_ActivoFijoDisponible[];
+  lotesMineral: RES_LoteMineral[];
+  destinosMap: Record<string, DestinoItem>;
   handleCantChange: (idDetalle: number, idLote: number, cant: number) => void;
   handleCantLoteChange: (
     idDetalle: number,
@@ -25,6 +30,7 @@ interface GroupByDetalleRequerimientoProps {
     idActivo: number,
     cant: number,
   ) => void;
+  handleDestinoChange: (key: string, field: string, value: string | number | null) => void;
 }
 
 export const GroupByDetalleRequerimiento = ({
@@ -34,9 +40,13 @@ export const GroupByDetalleRequerimiento = ({
   index,
   entregaCantidades,
   entregaCantidadesActivos,
+  allActivos,
+  lotesMineral,
+  destinosMap,
   handleCantChange,
   handleCantLoteChange,
   handleCantActivoChange,
+  handleDestinoChange,
 }: GroupByDetalleRequerimientoProps) => {
   const idDetalleReq = detalle_req.id_requerimiento_almacen_detalle;
   const pendienteBase = detalle_req.pendiente_base;
@@ -167,7 +177,11 @@ export const GroupByDetalleRequerimiento = ({
           tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
           entregaCantidadesActivos={entregaCantidadesActivos}
           detalle_req={detalle_req}
+          allActivos={allActivos}
+          lotesMineral={lotesMineral}
+          destinosMap={destinosMap}
           handleCantActivoChange={handleCantActivoChange}
+          handleDestinoChange={handleDestinoChange}
         />
       ) : (
         <LotesTable
@@ -177,8 +191,12 @@ export const GroupByDetalleRequerimiento = ({
           tEntregadoDetalleActualBase={tEntregadoDetalleActualBase}
           entregaCantidades={entregaCantidades}
           detalle_req={detalle_req}
+          allActivos={allActivos}
+          lotesMineral={lotesMineral}
+          destinosMap={destinosMap}
           handleCantChange={handleCantChange}
           handleCantLoteChange={handleCantLoteChange}
+          handleDestinoChange={handleDestinoChange}
         />
       )}
     </div>

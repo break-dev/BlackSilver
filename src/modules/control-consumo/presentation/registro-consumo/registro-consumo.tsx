@@ -9,6 +9,7 @@ import {
   Group,
   ActionIcon,
   Tooltip,
+  MultiSelect,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { ListBulletIcon } from "@heroicons/react/24/outline";
@@ -20,6 +21,7 @@ import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../../service/responses/activo-fijo";
 import type { RES_Labor } from "../../../../service/responses/labor";
+import type { RES_LoteMineral } from "../../../../service/responses/lote-mineral";
 import type {
   RES_Consumo,
   RES_ResumenEntregasReq,
@@ -39,21 +41,7 @@ export const RegistroConsumo = ({
   activos,
 }: RegistroConsumoProps) => {
   const { notifySuccess, notifyError } = useNotify();
-  const [formCantidad, setFormCantidad] = useState<number | string>("");
-  const [formFechaHora, setFormFechaHora] = useState<Date | null>(new Date());
-  const [formComentario, setFormComentario] = useState("");
-  const [formActivoFijo, setFormActivoFijo] = useState<string | null>(null);
-  const [formLabor, setFormLabor] = useState<string | null>(null);
-
-  // Labores list states
-  const [laboresRequerimiento, setLaboresRequerimiento] = useState<RES_Labor[]>(
-    [],
-  );
-  const [todasLabores, setTodasLabores] = useState<RES_Labor[]>([]);
-  const [loadingLabores, setLoadingLabores] = useState(false);
-  const [verMasLabores, setVerMasLabores] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
+  
   const isAF = selectedDetail.tipo_bien === TipoBien.ActivoFijo;
   const isCons =
     selectedDetail.es_consumible === true ||
@@ -66,20 +54,42 @@ export const RegistroConsumo = ({
   const restanteBase = totalEntregadoBase - totalConsumidoBase;
 
   const totalEntregadoReq = selectedDetail.cantidad_entregada_req;
-  // Conversion factor: req to base -> base = req * factor
   const factorConversio =
     totalEntregadoReq > 0 ? totalEntregadoBase / totalEntregadoReq : 1;
   const restanteReq = factorConversio > 0 ? restanteBase / factorConversio : 0;
 
+  const [formCantidad, setFormCantidad] = useState<number | string>(
+    isOtr ? restanteReq : restanteBase
+  );
+  const [formFechaHora, setFormFechaHora] = useState<Date | null>(new Date());
+  const [formComentario, setFormComentario] = useState("");
+  const [formActivoFijo, setFormActivoFijo] = useState<string | null>(null);
+  const [formLabores, setFormLabores] = useState<string[]>([]);
+  const [formLoteMineral, setFormLoteMineral] = useState<string | null>(null);
+
+  // Labores list states
+  const [laboresRequerimiento, setLaboresRequerimiento] = useState<RES_Labor[]>(
+    [],
+  );
+  const [todasLabores, setTodasLabores] = useState<RES_Labor[]>([]);
+  const [lotesMineral, setLotesMineral] = useState<RES_LoteMineral[]>([]);
+  const [loadingLabores, setLoadingLabores] = useState(false);
+  const [loadingLotes, setLoadingLotes] = useState(false);
+  const [verMasLabores, setVerMasLabores] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   useEffect(() => {
-    setFormCantidad("");
+    const defaultQty = isOtr ? restanteReq : restanteBase;
+    setFormCantidad(defaultQty);
     setFormFechaHora(new Date());
     setFormComentario("");
     setFormActivoFijo(null);
-    setFormLabor(null);
+    setFormLabores([]);
+    setFormLoteMineral(null);
     setVerMasLabores(false);
     setLaboresRequerimiento([]);
     setTodasLabores([]);
+    setLotesMineral([]);
 
     // Fetch labors associated with the requirement
     const fetchLabores = async () => {
@@ -98,19 +108,32 @@ export const RegistroConsumo = ({
       }
     };
 
+    const fetchLotesMineral = async () => {
+      setLoadingLotes(true);
+      try {
+        const resp = await AuxService.get_lotes_mineral();
+        if (resp.success && resp.data) {
+          setLotesMineral(resp.data);
+        }
+      } catch (err) {
+        console.error("Error al cargar lotes mineral:", err);
+      } finally {
+        setLoadingLotes(false);
+      }
+    };
+
     fetchLabores();
-  }, [selectedDetail]);
+    fetchLotesMineral();
+  }, [selectedDetail, isOtr, restanteReq, restanteBase]);
 
   const handleToggleLabores = async () => {
     if (verMasLabores) {
       setVerMasLabores(false);
-      if (formLabor) {
-        const exists = laboresRequerimiento.some(
-          (l) => String(l.id_labor) === formLabor,
+      if (formLabores.length > 0) {
+        const filtered = formLabores.filter((id) =>
+          laboresRequerimiento.some((l) => String(l.id_labor) === id),
         );
-        if (!exists) {
-          setFormLabor(null);
-        }
+        setFormLabores(filtered);
       }
     } else {
       if (todasLabores.length > 0) {
@@ -228,7 +251,10 @@ export const RegistroConsumo = ({
           formActivoFijo && formActivoFijo !== "otros"
             ? Number(formActivoFijo)
             : null,
-        id_labor_destino: formLabor ? Number(formLabor) : null,
+        id_labores: formLabores.length > 0 ? formLabores.map(Number) : null,
+        id_lote_mineral: formLoteMineral ? Number(formLoteMineral) : null,
+        para_mantenimiento: !!formActivoFijo && formActivoFijo !== "otros",
+        para_produccion: !!formLoteMineral,
       });
 
       if (resp.success && resp.data) {
@@ -412,26 +438,46 @@ export const RegistroConsumo = ({
                 zIndex: 9999,
               }}
             />
+
+            {/* Selector de Lote Mineral */}
+            <Select
+              label="Lote de Mineral (opc.)"
+              placeholder={loadingLotes ? "Cargando lotes..." : "Seleccione un lote..."}
+              data={lotesMineral.map((lm) => ({
+                value: String(lm.id_lote_mineral),
+                label: lm.correlativo,
+              }))}
+              value={formLoteMineral}
+              onChange={setFormLoteMineral}
+              searchable
+              clearable
+              radius="lg"
+              size="sm"
+              classNames={modalFieldClasses}
+              comboboxProps={{
+                withinPortal: true,
+                zIndex: 9999,
+              }}
+            />
           </Group>
         )}
         <Group gap="xs" grow>
-          {/* Selector de Labor de Destino (Opcional) con botón Ver Más */}
+          {/* Selector de Labores de Destino (Opcional) con botón Ver Más */}
           <Group gap="xs" align="flex-end" className="w-full">
             <div className="flex-1">
-              <Select
-                label="Labor de Destino (opc.)"
+              <MultiSelect
+                label="Labores de Destino (opc.)"
                 placeholder={
                   loadingLabores
                     ? "Cargando labores..."
                     : laboresSelectData.length > 0
-                      ? "Seleccione una labor..."
+                      ? "Seleccione labores..."
                       : "Sin labores asociadas"
                 }
                 data={laboresSelectData}
-                value={formLabor}
-                onChange={setFormLabor}
+                value={formLabores}
+                onChange={setFormLabores}
                 searchable
-                clearable
                 disabled={loadingLabores}
                 radius="lg"
                 size="sm"

@@ -62,6 +62,21 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                         {unit}
                       </span>
                     </Text>
+                    {c.correlativo_lote_mineral && (
+                      <Badge size="xs" color="orange" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
+                        Lote: {c.correlativo_lote_mineral}
+                      </Badge>
+                    )}
+                    {c.labores_destinos && (
+                      <Badge size="xs" color="grape" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
+                        Labores: {c.labores_destinos}
+                      </Badge>
+                    )}
+                    {c.para_mantenimiento && (
+                      <Badge size="xs" color="pink" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
+                        Mantenimiento
+                      </Badge>
+                    )}
                     <span className="hidden md:inline text-zinc-700 font-light">
                       |
                     </span>

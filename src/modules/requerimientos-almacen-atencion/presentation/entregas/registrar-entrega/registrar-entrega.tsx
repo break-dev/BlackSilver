@@ -28,10 +28,13 @@ export const RegistrarEntrega = ({
   const {
     loading,
     selectedDetalles,
+    allActivos,
+    lotesMineral,
     lotesPorProducto,
     activosFijosPorProducto,
     entregaCantidades,
     entregaCantidadesActivos,
+    destinosMap,
     empleados,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
@@ -45,6 +48,7 @@ export const RegistrarEntrega = ({
     handleCantChange,
     handleCantLoteChange,
     handleCantActivoChange,
+    handleDestinoChange,
     handleConfirmar,
   } = useRegistrarEntregaBatch({
     idRequerimiento,
@@ -112,11 +116,15 @@ export const RegistrarEntrega = ({
             group={group}
             lotesPorProducto={lotesPorProducto}
             activosFijosPorProducto={activosFijosPorProducto}
+            allActivos={allActivos}
+            lotesMineral={lotesMineral}
             entregaCantidades={entregaCantidades}
             entregaCantidadesActivos={entregaCantidadesActivos}
+            destinosMap={destinosMap}
             handleCantChange={handleCantChange}
             handleCantLoteChange={handleCantLoteChange}
             handleCantActivoChange={handleCantActivoChange}
+            handleDestinoChange={handleDestinoChange}
           />
         ))}
       </Stack>

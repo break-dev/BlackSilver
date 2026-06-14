@@ -2,6 +2,8 @@ import { Table } from "@mantine/core";
 import { ActivoRow } from "./activo-row";
 import type { DetalleRequerimientoExtendido } from "../../../../../service/atencion.responses";
 import type { RES_ActivoFijoDisponible } from "../../../../../../../service/responses/activo-fijo";
+import type { RES_LoteMineral } from "../../../../../../../service/responses/lote-mineral";
+import type { DestinoItem } from "../../../../../hooks/useRegistrarEntrega";
 import { JsonScanner } from "../../../../../../../presentation/utils/json-scanner";
 import { useJsonScanner } from "../../../../../../../hooks/useJsonScanner";
 
@@ -12,10 +14,18 @@ interface ActivosTableProps {
   tEntregadoDetalleActualBase: number;
   entregaCantidadesActivos: Record<number, Record<number, number>>;
   detalle_req: DetalleRequerimientoExtendido;
+  allActivos: RES_ActivoFijoDisponible[];
+  lotesMineral: RES_LoteMineral[];
+  destinosMap: Record<string, DestinoItem>;
   handleCantActivoChange: (
     idDetalle: number,
     idActivo: number,
     cant: number,
+  ) => void;
+  handleDestinoChange: (
+    key: string,
+    field: string,
+    value: string | number | null,
   ) => void;
 }
 
@@ -26,7 +36,11 @@ export const ActivosTable = ({
   tEntregadoDetalleActualBase,
   entregaCantidadesActivos,
   detalle_req,
+  allActivos,
+  lotesMineral,
+  destinosMap,
   handleCantActivoChange,
+  handleDestinoChange,
 }: ActivosTableProps) => {
   const { isFiltering, clearFilter, handleScanned, filterItems } =
     useJsonScanner();
@@ -52,17 +66,20 @@ export const ActivosTable = ({
       >
         <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800/60">
           <tr>
-            <th className="py-4 text-center" style={{ width: "25%" }}>
+            <th className="py-4 text-center" style={{ width: "15%" }}>
               Activo Fijo
             </th>
-            <th className="text-center" style={{ width: "20%" }}>
+            <th className="text-center" style={{ width: "15%" }}>
               Ubicación
             </th>
-            <th className="text-center" style={{ width: "25%" }}>
+            <th className="text-center" style={{ width: "15%" }}>
               Control
             </th>
-            <th className="pr-8 text-center" style={{ width: "30%" }}>
+            <th className="text-center" style={{ width: "25%" }}>
               Despachar
+            </th>
+            <th className="pr-8 text-left" style={{ width: "30%" }}>
+              Activo Destino
             </th>
           </tr>
         </thead>
@@ -70,7 +87,7 @@ export const ActivosTable = ({
           {activosVisibles.length === 0 ? (
             <tr>
               <td
-                colSpan={4}
+                colSpan={5}
                 className="py-10 text-center text-zinc-600 italic text-sm font-medium"
               >
                 {isFiltering
@@ -104,7 +121,11 @@ export const ActivosTable = ({
                   maxBase={maxBase}
                   detalle_req={detalle_req}
                   isSelectedElsewhere={isSelectedElsewhere}
+                  allActivos={allActivos}
+                  lotesMineral={lotesMineral}
+                  destinosMap={destinosMap}
                   handleCantActivoChange={handleCantActivoChange}
+                  handleDestinoChange={handleDestinoChange}
                 />
               );
             })

@@ -121,7 +121,7 @@ export const LoteMineralPage = () => {
           {lotesFiltrados.map((lote: LoteMineral) => (
             <div
               key={lote.id_lote_mineral}
-              className="relative bg-gradient-to-br from-zinc-900/40 to-zinc-900/10 border border-zinc-800/40 rounded-2xl p-4 flex flex-col hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-900/10 hover:bg-gradient-to-br hover:from-indigo-950/20 hover:to-zinc-900/40 transition-all duration-300 group overflow-hidden backdrop-blur-sm"
+              className="relative bg-linear-to-br from-zinc-900/40 to-zinc-900/10 border border-zinc-800/40 rounded-2xl p-4 flex flex-col hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-900/10 hover:bg-linear-to-br hover:from-indigo-950/20 hover:to-zinc-900/40 transition-all duration-300 group overflow-hidden backdrop-blur-sm"
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2.5">
