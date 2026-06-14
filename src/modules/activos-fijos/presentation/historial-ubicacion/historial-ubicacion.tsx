@@ -8,7 +8,7 @@ import {
   Textarea,
   Alert,
 } from "@mantine/core";
-import { DateTimePicker, type DateValue } from "@mantine/dates";
+import { DateTimePicker } from "@mantine/dates";
 import {
   ExclamationCircleIcon,
   MapIcon,
@@ -19,6 +19,7 @@ import type { REQ_ActualizarUbicacion } from "../../service/activos.requests";
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
 import { MovimientoActivoFijo } from "../../../../shared/enums/activo-fijo";
 import { useMoverActivo } from "../../hooks/useMoverActivo";
+import dayjs from "dayjs";
 
 interface Props {
   activo: RES_ActivoFijoResumen;
@@ -33,13 +34,15 @@ export const HistorialUbicacionActivo = ({
 }: Props) => {
   const { almacenes, minas, loading, actualizarUbicacion } = useMoverActivo();
 
+  const [fechaMovimiento, setFechaMovimiento] = useState<Date | null>(new Date());
+
   const [form, setForm] = useState<REQ_ActualizarUbicacion>({
     id_activo: activo.id_activo,
     tipo_movimiento: MovimientoActivoFijo.DeAlmacenAMina,
     id_almacen: null,
     id_mina: null,
     descripcion: "",
-    fecha_hora_movimiento: new Date().toISOString(),
+    fecha_hora_movimiento: null,
   });
 
   const fieldClasses = {
@@ -147,18 +150,8 @@ export const HistorialUbicacionActivo = ({
         <Grid.Col span={12}>
           <DateTimePicker
             label="Fecha y Hora del Movimiento"
-            value={
-              form.fecha_hora_movimiento
-                ? new Date(form.fecha_hora_movimiento)
-                : null
-            }
-            onChange={(val: DateValue) =>
-              setForm({
-                ...form,
-                fecha_hora_movimiento:
-                  val instanceof Date ? val.toISOString() : null,
-              })
-            }
+            value={fechaMovimiento}
+            onChange={(val) => setFechaMovimiento(val ? new Date(val) : null)}
             size="xs"
             radius="lg"
             classNames={fieldClasses}
@@ -192,7 +185,13 @@ export const HistorialUbicacionActivo = ({
         <Button
           color="indigo.6"
           onClick={async () => {
-            const ok = await actualizarUbicacion(form);
+            const ok = await actualizarUbicacion({
+              ...form,
+              fecha_hora_movimiento:
+                fechaMovimiento && !isNaN(fechaMovimiento.getTime())
+                  ? dayjs(fechaMovimiento).format("YYYY-MM-DD HH:mm:ss")
+                  : null,
+            });
             if (ok) onSuccess();
           }}
           disabled={

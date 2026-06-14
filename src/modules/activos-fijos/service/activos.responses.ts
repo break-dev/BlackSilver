@@ -55,4 +55,6 @@ export interface RES_ActivoFijoResumen {
   id_orden_compra_recepcion_detalle: number | null;
   id_orden_compra_detalle: number | null;
   costo_promedio_base: number | null;
+  id_orden_compra: number | null;
+  id_orden_compra_comprobante: number | null;
 }

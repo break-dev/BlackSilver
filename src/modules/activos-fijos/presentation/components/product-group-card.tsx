@@ -3,7 +3,17 @@ import { DataTableEstandar } from "../../../../presentation/utils/datatable-esta
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
 import { ProductGroupHeader } from "./product-group-header";
 import { Badge, Text, Group, Stack, Tooltip, Button } from "@mantine/core";
-import { MapPinIcon, MapIcon, StarIcon, AdjustmentsHorizontalIcon, ClockIcon, ArrowTrendingUpIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import {
+  MapPinIcon,
+  MapIcon,
+  StarIcon,
+  AdjustmentsHorizontalIcon,
+  ClockIcon,
+  ArrowTrendingUpIcon,
+  ArrowPathIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
+import { formatNumber } from "../../../../shared/functions/formatNumber";
 
 export interface GroupedActivoProducto {
   id_producto: number;
@@ -23,7 +33,10 @@ interface ProductGroupCardProps {
   onMoverActivo: (record: RES_ActivoFijoResumen) => void;
   onVerHistorial: (record: RES_ActivoFijoResumen) => void;
   onConfigurarAlertas: (record: RES_ActivoFijoResumen) => void;
-  onResolverMantenimiento: (record: RES_ActivoFijoResumen, tipo: "horometro" | "odometro" | "vueltas") => void;
+  onResolverMantenimiento: (
+    record: RES_ActivoFijoResumen,
+    tipo: "horometro" | "odometro" | "vueltas",
+  ) => void;
 }
 
 const parseEspecificaciones = (
@@ -78,7 +91,7 @@ export const ProductGroupCard = ({
     {
       accessor: "marca_modelo",
       title: "Marca & Modelo",
-      width: 220,
+      width: 180,
       render: (record) => (
         <Stack gap={1}>
           <Text size="xs" fw={700} c="white">
@@ -88,18 +101,13 @@ export const ProductGroupCard = ({
             Año: {record.yearcito_modelo || "N/A"}{" "}
             {record.numero_serie ? `| S/N: ${record.numero_serie}` : ""}
           </Text>
-          {record.empleado_responsable && (
-            <Text size="10px" c="indigo.3" fw={650}>
-              Resp: {record.empleado_responsable}
-            </Text>
-          )}
         </Stack>
       ),
     },
     {
       accessor: "ubicacion",
       title: "Ubicación",
-      width: 220,
+      width: 180,
       render: (record) => {
         const isMina = !!record.id_mina;
         const isAlmacen = !!record.id_almacen;
@@ -156,6 +164,101 @@ export const ProductGroupCard = ({
       },
     },
     {
+      accessor: "empleado_responsable",
+      title: "Responsable",
+      textAlign: "center",
+      width: 200,
+      render: (record) => {
+        if (!record.empleado_responsable) {
+          return (
+            <Text size="xs" c="dimmed" fs="italic">
+              Sin asignar
+            </Text>
+          );
+        }
+        return (
+          <Text size="xs" c="indigo.3" fw={650}>
+            {record.empleado_responsable}
+          </Text>
+        );
+      },
+    },
+    {
+      accessor: "costo_compra",
+      title: "Costo",
+      textAlign: "center",
+      width: 130,
+      render: (record) => (
+        <Text size="xs" fw={700} className="font-mono" c="teal.5">
+          {record.costo_compra !== null && record.costo_compra !== undefined ? (
+            `S/. ${formatNumber(record.costo_compra)}`
+          ) : (
+            <span className="text-zinc-500 italic">No reg.</span>
+          )}
+        </Text>
+      ),
+    },
+    {
+      accessor: "origen_compra",
+      title: "Origen Compra",
+      textAlign: "center",
+      width: 180,
+      render: (record) => {
+        const tieneFactura =
+          record.serie_factura_compra && record.numero_factura_compra;
+        const tieneOC = record.id_orden_compra ? true : false;
+
+        if (!tieneFactura && !tieneOC) {
+          return (
+            <Text size="xs" c="dimmed" fs="italic">
+              Carga Manual
+            </Text>
+          );
+        }
+
+        return (
+          <Group gap={6} wrap="nowrap" justify="center">
+            <div className="p-1.5 bg-zinc-800/40 rounded-lg border border-zinc-700/30 flex items-center justify-center">
+              <DocumentTextIcon className="w-4 h-4 text-zinc-400" />
+            </div>
+            <div className="flex flex-col items-start gap-0.5">
+              {tieneFactura ? (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color="cyan"
+                  radius="sm"
+                  className="font-bold border border-cyan-500/10 px-1"
+                >
+                  {record.serie_factura_compra}-{record.numero_factura_compra}
+                </Badge>
+              ) : null}
+              {tieneOC ? (
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color="cyan"
+                  radius="sm"
+                  className="font-bold border border-cyan-500/10 px-1 py-0"
+                >
+                  OC #{record.id_orden_compra}
+                </Badge>
+              ) : (
+                <Text
+                  size="9px"
+                  c="orange"
+                  fw={700}
+                  className="uppercase tracking-wider"
+                >
+                  Sin O.C.
+                </Text>
+              )}
+            </div>
+          </Group>
+        );
+      },
+    },
+    {
       accessor: "especificaciones",
       title: "Especificaciones",
       render: (record) => {
@@ -191,13 +294,31 @@ export const ProductGroupCard = ({
       accessor: "control",
       title: "Control de Mantenimiento",
       width: 380,
+      textAlign: "center",
       render: (record) => {
-        const hasWarningH = record.proxima_advertencia_horas && Number(record.total_horas) >= Number(record.proxima_advertencia_horas);
-        const hasWarningKm = record.proxima_advertencia_kilometros && Number(record.total_kilometros) >= Number(record.proxima_advertencia_kilometros);
-        const hasWarningV = record.proxima_advertencia_vueltas && Number(record.total_vueltas) >= Number(record.proxima_advertencia_vueltas);
+        const hasWarningH =
+          record.proxima_advertencia_horas &&
+          Number(record.total_horas) >=
+            Number(record.proxima_advertencia_horas);
+        const hasWarningKm =
+          record.proxima_advertencia_kilometros &&
+          Number(record.total_kilometros) >=
+            Number(record.proxima_advertencia_kilometros);
+        const hasWarningV =
+          record.proxima_advertencia_vueltas &&
+          Number(record.total_vueltas) >=
+            Number(record.proxima_advertencia_vueltas);
 
-        if (!product.control_por_horometro && !product.control_por_odometro && !product.control_por_vueltas) {
-          return <Text size="xs" c="dimmed" fs="italic">No aplica</Text>;
+        if (
+          !product.control_por_horometro &&
+          !product.control_por_odometro &&
+          !product.control_por_vueltas
+        ) {
+          return (
+            <Text size="xs" c="dimmed" fs="italic">
+              No aplica
+            </Text>
+          );
         }
 
         const renderControlRow = (
@@ -206,17 +327,17 @@ export const ProductGroupCard = ({
           alertVal: number | null,
           hasWarning: boolean,
           unit: string,
-          onResolve: () => void
+          onResolve: () => void,
         ) => {
           return (
-            <Group gap={8} wrap="nowrap" align="center" className="w-full">
+            <Group gap={8} wrap="nowrap" align="center" justify="center" className="w-full">
               {/* Icon at left */}
               <div className="p-1.5 bg-zinc-850/60 rounded-xl border border-zinc-800/80 shrink-0 shadow-sm flex items-center justify-center">
                 {icon}
               </div>
 
               {/* Content Group (mimics Costo Operativo) */}
-              <Group gap="xs" wrap="nowrap" className="shrink-0 flex-1">
+              <Group gap="xs" wrap="nowrap" className="shrink-0">
                 {/* Lectura Actual Block */}
                 <div className="flex flex-col items-start gap-0.5 min-w-[95px]">
                   <Text
@@ -241,7 +362,7 @@ export const ProductGroupCard = ({
                 <div className="w-px h-8 bg-zinc-800/80 self-center shrink-0" />
 
                 {/* Limit Block */}
-                <div className="flex flex-col items-start gap-0.5 min-w-[120px] flex-1">
+                <div className="flex flex-col items-start gap-0.5 min-w-[120px]">
                   <Text
                     size="8px"
                     fw={900}
@@ -257,7 +378,7 @@ export const ProductGroupCard = ({
                       size="sm"
                       onClick={onResolve}
                       className="font-bold px-1.5 mt-0.5 animate-pulse cursor-pointer border border-red-500/20"
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     >
                       Requiere Mantenimiento
                     </Badge>
@@ -289,34 +410,37 @@ export const ProductGroupCard = ({
         };
 
         return (
-          <Stack gap={10}>
-            {product.control_por_horometro && renderControlRow(
-              <ClockIcon className="w-4 h-4 text-zinc-400" />,
-              record.total_horas,
-              record.proxima_advertencia_horas,
-              !!hasWarningH,
-              "h.",
-              () => onResolverMantenimiento(record, "horometro")
-            )}
-            {product.control_por_odometro && renderControlRow(
-              <ArrowTrendingUpIcon className="w-4 h-4 text-zinc-400" />,
-              record.total_kilometros,
-              record.proxima_advertencia_kilometros,
-              !!hasWarningKm,
-              "km",
-              () => onResolverMantenimiento(record, "odometro")
-            )}
-            {product.control_por_vueltas && renderControlRow(
-              <ArrowPathIcon className="w-4 h-4 text-zinc-400" />,
-              record.total_vueltas,
-              record.proxima_advertencia_vueltas,
-              !!hasWarningV,
-              "vueltas",
-              () => onResolverMantenimiento(record, "vueltas")
-            )}
+          <Stack gap={10} align="center" className="w-full">
+            {product.control_por_horometro &&
+              renderControlRow(
+                <ClockIcon className="w-4 h-4 text-zinc-400" />,
+                record.total_horas,
+                record.proxima_advertencia_horas,
+                !!hasWarningH,
+                "h.",
+                () => onResolverMantenimiento(record, "horometro"),
+              )}
+            {product.control_por_odometro &&
+              renderControlRow(
+                <ArrowTrendingUpIcon className="w-4 h-4 text-zinc-400" />,
+                record.total_kilometros,
+                record.proxima_advertencia_kilometros,
+                !!hasWarningKm,
+                "km",
+                () => onResolverMantenimiento(record, "odometro"),
+              )}
+            {product.control_por_vueltas &&
+              renderControlRow(
+                <ArrowPathIcon className="w-4 h-4 text-zinc-400" />,
+                record.total_vueltas,
+                record.proxima_advertencia_vueltas,
+                !!hasWarningV,
+                "vueltas",
+                () => onResolverMantenimiento(record, "vueltas"),
+              )}
           </Stack>
         );
-      }
+      },
     },
     {
       accessor: "estado",
@@ -350,18 +474,18 @@ export const ProductGroupCard = ({
       textAlign: "center",
       render: (record) => (
         <Group justify="center" gap="xs">
-          <Button 
-            variant="light" 
-            size="compact-xs" 
-            color="cyan" 
+          <Button
+            variant="light"
+            size="compact-xs"
+            color="cyan"
             leftSection={<AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />}
             onClick={() => onConfigurarAlertas(record)}
           >
             Alertas
           </Button>
         </Group>
-      )
-    }
+      ),
+    },
   ];
 
   return (

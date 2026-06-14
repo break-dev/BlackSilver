@@ -16,7 +16,7 @@ import {
   Input,
   Box,
 } from "@mantine/core";
-import { DateTimePicker, type DateValue } from "@mantine/dates";
+import { DateTimePicker } from "@mantine/dates";
 import {
   PlusIcon,
   TrashIcon,
@@ -25,6 +25,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState, useMemo, useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
+import dayjs from "dayjs";
 
 import type { REQ_CrearActivo } from "../../service/activos.requests";
 import type { RES_ActivoFijoResumen } from "../../service/activos.responses";
@@ -105,6 +106,8 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     [productos],
   );
 
+  const [fechaIngreso, setFechaIngreso] = useState<Date | null>(new Date());
+
   const [form, setForm] = useState<REQ_CrearActivo>({
     id_producto: 0,
     id_almacen: null,
@@ -118,7 +121,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     yearcito_modelo: new Date().getFullYear(),
     descripcion: "",
     especificaciones: [],
-    fecha_hora_ingreso: new Date().toISOString(),
+    fecha_hora_ingreso: null,
     estado: EstadoActivoFijo.EnUso,
     id_empleado_responsable: null,
     serie_factura_compra: "",
@@ -188,6 +191,10 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     try {
       const nuevoActivo = await crearActivo({
         ...form,
+        fecha_hora_ingreso:
+          fechaIngreso && !isNaN(fechaIngreso.getTime())
+            ? dayjs(fechaIngreso).format("YYYY-MM-DD HH:mm:ss")
+            : null,
         especificaciones: especificaciones.length > 0 ? especificaciones : null,
       });
       if (nuevoActivo) {
@@ -468,18 +475,8 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
           <Grid.Col span={6}>
             <DateTimePicker
               label="Fecha de Ingreso"
-              value={
-                form.fecha_hora_ingreso
-                  ? new Date(form.fecha_hora_ingreso)
-                  : null
-              }
-              onChange={(val: DateValue) =>
-                setForm({
-                  ...form,
-                  fecha_hora_ingreso:
-                    val instanceof Date ? val.toISOString() : null,
-                })
-              }
+              value={fechaIngreso}
+              onChange={(val) => setFechaIngreso(val ? new Date(val) : null)}
               size="xs"
               radius="lg"
               classNames={fieldClasses}
