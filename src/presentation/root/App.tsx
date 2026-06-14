@@ -5,21 +5,7 @@ import { ProtectedRoute } from "./protectedRoute.tsx";
 import { PublicRoute } from "./publicRoute.tsx";
 // import { PlaceholderPage } from "../pages/placeholder.page.tsx";
 // Layouts
-import {
-  ConfiguracionLayout,
-  EmpresasLayout,
-  PersonalLayout,
-  UsuariosLayout,
-  SociosComercialesLayout,
-} from "../layouts/configuracion.layout.tsx";
-import {
-  LogisticaLayout,
-  InventarioLayout,
-  RequerimientoAlmacenLayout,
-  SolicitudReabastecimientoLayout,
-  PrestamosAlmacenLayout,
-  ComprasLayout,
-} from "../layouts/logistica.layout.tsx";
+import { GenericLayout } from "../layouts/generic.layout.tsx";
 // Vistas
 import { LoginPage } from "../../modules/login/presentation/login.page.tsx";
 import { HomePage } from "../pages/home/home.page.tsx";
@@ -52,14 +38,11 @@ import { useEffect } from "react";
 import { onSocketEvent } from "../../service/_socket.ts";
 import { useAuditoriaStore } from "../../stores/auditoria.store.ts";
 import ModoAuditoriaPage from "../../modules/modo-auditoria/presentation/ModoAuditoriaPage.tsx";
-import {
-  ControlActivosLayout,
-  OperacionesLayout,
-  ProduccionLayout,
-} from "../layouts/operaciones.layout.tsx";
 import { ControlConsumoPage } from "../../modules/control-consumo/presentation/control-consumo.page.tsx";
 import { ControlUsoPage } from "../../modules/control-uso/presentation/control-uso.page.tsx";
 import { LoteMineralPage } from "../../modules/lote-mineral/presentation/lote-mineral.page.tsx";
+import { MantenimientoPage } from "../../modules/mantenimiento-activos/presentation/mantenimiento.page.tsx";
+import { ProduccionMineralPage } from "../../modules/produccion-mineral/presentation/produccion.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -112,9 +95,9 @@ export const App = () => {
         <Route path="/perfil" element={<PerfilPage />} />
 
         {/* Configuracion */}
-        <Route path="/configuracion" element={<ConfiguracionLayout />}>
+        <Route path="/configuracion" element={<GenericLayout />}>
           {/* Empresas */}
-          <Route path="empresas" element={<EmpresasLayout />}>
+          <Route path="empresas" element={<GenericLayout />}>
             <Route path="empresas" element={<EmpresasPage />} />
             <Route path="almacenes" element={<AlmacenesPage />} />
             <Route path="concesiones" element={<ConcesionesPage />} />
@@ -122,28 +105,28 @@ export const App = () => {
           </Route>
 
           {/* Personal */}
-          <Route path="personal" element={<PersonalLayout />}>
+          <Route path="personal" element={<GenericLayout />}>
             <Route path="areas_cargos" element={<OrganigramaPage />} />
             <Route path="trabajadores" element={<PersonalPage />} />
           </Route>
 
           {/* Usuarios */}
-          <Route path="usuarios" element={<UsuariosLayout />}>
+          <Route path="usuarios" element={<GenericLayout />}>
             <Route path="roles" element={<RolesPage />} />
             <Route path="cuentas" element={<CuentasPage />} />
           </Route>
 
           {/* Socios Comerciales */}
-          <Route path="socios-comerciales" element={<SociosComercialesLayout />}>
+          <Route path="socios-comerciales" element={<GenericLayout />}>
             <Route path="proveedores" element={<ProveedoresPage />} />
             <Route path="clientes" element={<ClientesPage />} />
           </Route>
         </Route>
 
         {/* Logistica */}
-        <Route path="/logistica" element={<LogisticaLayout />}>
+        <Route path="/logistica" element={<GenericLayout />}>
           {/* Inventario */}
-          <Route path="inventario" element={<InventarioLayout />}>
+          <Route path="inventario" element={<GenericLayout />}>
             <Route path="categorias" element={<CategoriasPage />} />
             {/* <Route
               path="familias"
@@ -156,10 +139,7 @@ export const App = () => {
           </Route>
 
           {/* Requerimientos de Almacen */}
-          <Route
-            path="requerimiento_almacen"
-            element={<RequerimientoAlmacenLayout />}
-          >
+          <Route path="requerimiento_almacen" element={<GenericLayout />}>
             {/* <Route
               path="requerimientos"
               element={<RequerimientosAlmacenPage />}
@@ -171,10 +151,7 @@ export const App = () => {
           </Route>
 
           {/* Solicitudes de Reabastecimiento */}
-          <Route
-            path="solicitud_reabastecimiento"
-            element={<SolicitudReabastecimientoLayout />}
-          >
+          <Route path="solicitud_reabastecimiento" element={<GenericLayout />}>
             <Route
               path="solicitudes"
               element={<SolicitudesReabastecimientoPage />}
@@ -186,7 +163,7 @@ export const App = () => {
           </Route>
 
           {/* Préstamos entre Almacenes */}
-          <Route path="prestamos_almacen" element={<PrestamosAlmacenLayout />}>
+          <Route path="prestamos_almacen" element={<GenericLayout />}>
             <Route path="prestamos" element={<PrestamosAlmacenPage />} />
             <Route
               path="atencion_prestamos"
@@ -195,7 +172,7 @@ export const App = () => {
           </Route>
 
           {/* Compras */}
-          <Route path="compras" element={<ComprasLayout />}>
+          <Route path="compras" element={<GenericLayout />}>
             <Route path="cotizaciones" element={<CotizacionesPage />} />
             <Route path="ordenes-compra" element={<OrdenesCompraPage />} />
             <Route
@@ -205,13 +182,18 @@ export const App = () => {
           </Route>
         </Route>
 
-        <Route path="/operaciones" element={<OperacionesLayout />}>
-          <Route path="control-activos" element={<ControlActivosLayout />}>
+        <Route path="/operaciones" element={<GenericLayout />}>
+          <Route path="control-activos" element={<GenericLayout />}>
             <Route path="consumo" element={<ControlConsumoPage />} />
             <Route path="uso" element={<ControlUsoPage />} />
+            <Route path="mantenimiento" element={<MantenimientoPage />} />
           </Route>
-          <Route path="produccion" element={<ProduccionLayout />}>
+          <Route path="produccion" element={<GenericLayout />}>
             <Route path="lote-mineral" element={<LoteMineralPage />} />
+            <Route
+              path="produccion-mineral"
+              element={<ProduccionMineralPage />}
+            />
           </Route>
         </Route>
 

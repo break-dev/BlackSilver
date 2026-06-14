@@ -19,6 +19,8 @@ import type { EstadoBase } from "../shared/enums/_generic/estado-base";
 import type { TipoEntidad } from "../shared/enums/_generic/tipo-entidad";
 import type { TipoProducto } from "../shared/enums/_generic/tipo-producto";
 import type { RES_Categoria } from "./responses/categoria";
+import type { EstadoLoteMineral } from "../shared/enums/lote-mineral";
+import type { RES_LoteMineral } from "./responses/lote-mineral";
 
 const path = "/aux";
 
@@ -342,6 +344,22 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_Contratista[]>>(
       `${path}/contratistas`,
       { params: filters },
+    );
+    return data;
+  },
+
+  /**Obtener lotes de mineral */
+  get_lotes_mineral: async (filters?: {
+    id_lote_mineral?: number;
+    id_contratista?: number;
+    id_mina?: number;
+    id_labor?: number;
+    estado?: EstadoLoteMineral;
+  }): Promise<IRespuesta<RES_LoteMineral[]>> => {
+    const apiParams = { ...filters };
+    const { data } = await api.get<IRespuesta<RES_LoteMineral[]>>(
+      `${path}/lotes-mineral`,
+      { params: apiParams },
     );
     return data;
   },

@@ -90,24 +90,6 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
     <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
-          label="Contratista"
-          placeholder="Seleccionar contratista"
-          data={contratistasOpciones}
-          value={idContratista}
-          onChange={setIdContratista}
-          searchable
-          required
-          classNames={inputClasses}
-          radius="lg"
-          size="sm"
-          comboboxProps={{
-            withinPortal: true,
-            zIndex: 9999,
-            transitionProps: { transition: "pop", duration: 200 },
-          }}
-        />
-
-        <Select
           label="Mina"
           placeholder="Seleccionar mina"
           data={minasOpciones}
@@ -129,7 +111,25 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         />
 
         <Select
-          label="Labor (Opcional)"
+          label="Contratista"
+          placeholder="Seleccionar contratista"
+          data={contratistasOpciones}
+          value={idContratista}
+          onChange={setIdContratista}
+          searchable
+          required
+          classNames={inputClasses}
+          radius="lg"
+          size="sm"
+          comboboxProps={{
+            withinPortal: true,
+            zIndex: 9999,
+            transitionProps: { transition: "pop", duration: 200 },
+          }}
+        />
+
+        <Select
+          label="Labor (opc.)"
           placeholder="Seleccionar labor"
           data={laboresOpciones}
           value={idLabor}
@@ -148,7 +148,7 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         />
 
         <TextInput
-          label="Código Interno (Opcional)"
+          label="Código Interno (opc.)"
           placeholder="Ej. LOTE-001"
           value={codigoInterno}
           onChange={(e) => setCodigoInterno(e.currentTarget.value)}
@@ -158,7 +158,7 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         />
 
         <Textarea
-          label="Descripción (Opcional)"
+          label="Descripción (opc.)"
           placeholder="Detalles adicionales del lote..."
           value={descripcion}
           onChange={(e) => setDescripcion(e.currentTarget.value)}
