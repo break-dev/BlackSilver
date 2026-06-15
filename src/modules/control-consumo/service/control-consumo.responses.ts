@@ -29,6 +29,7 @@ export interface RES_Consumo {
   estado: Estado_ConsumoDetalleEntregaReq;
   // Nuevos campos
   correlativo_lote_mineral?: string | null;
+  correlativo_activo_fijo_consumidor?: string | null;
   labores_destinos?: string | null;
   id_labores?: string | null;
   para_mantenimiento?: boolean | number;
@@ -97,6 +98,16 @@ export interface RES_ResumenEntregasReq {
    * (Nota: No es retornado por la API, es calculado a nivel del cliente en base a cantidades)
    */
   estado_consumo?: "Sin Consumir" | "Consumo Parcial" | "Total";
+  
+  // Destino original de la entrega
+  para_mantenimiento?: boolean | number;
+  para_produccion?: boolean | number;
+  id_activo_fijo_destino?: number | null;
+  id_lote_mineral?: number | null;
+  correlativo_activo_fijo_destino?: string | null;
+  correlativo_lote_mineral_destino?: string | null;
+  producto_para_mantenimiento?: boolean | number;
+
   /** Historial cronológico de consumos individuales realizados sobre este detalle de entrega */
   consumos: RES_Consumo[];
 }

@@ -10,6 +10,7 @@ import {
   ActionIcon,
   Tooltip,
   MultiSelect,
+  Switch,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { ListBulletIcon } from "@heroicons/react/24/outline";
@@ -66,6 +67,12 @@ export const RegistroConsumo = ({
   const [formActivoFijo, setFormActivoFijo] = useState<string | null>(null);
   const [formLabores, setFormLabores] = useState<string[]>([]);
   const [formLoteMineral, setFormLoteMineral] = useState<string | null>(null);
+  const [destinoTipo, setDestinoTipo] = useState<"mantenimiento" | "produccion">("produccion");
+
+  const puedeMantenimiento = useMemo(() => {
+    return selectedDetail.producto_para_mantenimiento === true ||
+      Number(selectedDetail.producto_para_mantenimiento) === 1;
+  }, [selectedDetail.producto_para_mantenimiento]);
 
   // Labores list states
   const [laboresRequerimiento, setLaboresRequerimiento] = useState<RES_Labor[]>(
@@ -83,9 +90,16 @@ export const RegistroConsumo = ({
     setFormCantidad(defaultQty);
     setFormFechaHora(new Date());
     setFormComentario("");
-    setFormActivoFijo(null);
+    
+    const initialTipo = (selectedDetail.para_mantenimiento === true || Number(selectedDetail.para_mantenimiento) === 1) 
+      ? "mantenimiento" 
+      : "produccion";
+    setDestinoTipo(initialTipo);
+    
+    setFormActivoFijo(selectedDetail.id_activo_fijo_destino ? String(selectedDetail.id_activo_fijo_destino) : null);
+    setFormLoteMineral(selectedDetail.id_lote_mineral ? String(selectedDetail.id_lote_mineral) : null);
+    
     setFormLabores([]);
-    setFormLoteMineral(null);
     setVerMasLabores(false);
     setLaboresRequerimiento([]);
     setTodasLabores([]);
@@ -231,12 +245,16 @@ export const RegistroConsumo = ({
       }
     }
 
-    // Validation for active fixed asset if consumable
-    if (isCons && !formActivoFijo) {
-      notifyError(
-        "Debe seleccionar un activo fijo de destino o elegir 'Para otros'.",
-      );
-      return;
+    // Validation for destination tipo
+    if (!isAF) {
+      if (destinoTipo === "mantenimiento" && !formActivoFijo) {
+        notifyError("Debe seleccionar un activo fijo para el mantenimiento.");
+        return;
+      }
+      if (destinoTipo === "produccion" && !formLoteMineral) {
+        notifyError("Debe seleccionar un lote de mineral para la producción.");
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -248,13 +266,16 @@ export const RegistroConsumo = ({
         fecha_hora_consumo: dayjs(formFechaHora).format("YYYY-MM-DD HH:mm:ss"),
         comentario_consumo: formComentario.trim() || null,
         id_activo_fijo_consumidor:
-          formActivoFijo && formActivoFijo !== "otros"
+          destinoTipo === "mantenimiento" && formActivoFijo
             ? Number(formActivoFijo)
             : null,
         id_labores: formLabores.length > 0 ? formLabores.map(Number) : null,
-        id_lote_mineral: formLoteMineral ? Number(formLoteMineral) : null,
-        para_mantenimiento: !!formActivoFijo && formActivoFijo !== "otros",
-        para_produccion: !!formLoteMineral,
+        id_lote_mineral:
+          destinoTipo === "produccion" && formLoteMineral
+            ? Number(formLoteMineral)
+            : null,
+        para_mantenimiento: destinoTipo === "mantenimiento",
+        para_produccion: destinoTipo === "produccion",
       });
 
       if (resp.success && resp.data) {
@@ -282,12 +303,11 @@ export const RegistroConsumo = ({
       "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
   };
 
-  // Group assets by product and mix with ungrouped "Para otros" option
+  // Group assets by product
   const activosData = useMemo(() => {
     const dataList: Array<
-      | { value: string; label: string }
       | { group: string; items: Array<{ value: string; label: string }> }
-    > = [{ value: "otros", label: "Para otros" }];
+    > = [];
 
     // Grouping by product
     const groupsMap = new Map<
@@ -384,82 +404,127 @@ export const RegistroConsumo = ({
         )}
 
         {!isAF && (
-          <Group gap="xs" grow>
-            {/* Input de cantidad (solo para consumibles o no-coincidentes) */}
-            <NumberInput
-              label={
-                isOtr
-                  ? `Cantidad (${selectedDetail.unidad_medida_req_abv})`
-                  : `Cantidad (${selectedDetail.unidad_medida_base_abv})`
-              }
-              placeholder={
-                isOtr
-                  ? `4 ${selectedDetail.unidad_medida_req_abv}...`
-                  : `4 ${selectedDetail.unidad_medida_base_abv}...`
-              }
-              value={formCantidad}
-              onChange={(val) => {
-                const maxVal = isOtr ? restanteReq : restanteBase;
-                if (typeof val === "number") {
-                  setFormCantidad(val > maxVal ? maxVal : val);
-                } else {
-                  const num = parseFloat(val);
-                  if (!isNaN(num) && num > maxVal) {
-                    setFormCantidad(maxVal);
-                  } else {
-                    setFormCantidad(val);
-                  }
+          <Stack gap="md">
+            <Group gap="md" grow align="flex-end">
+              {/* Input de cantidad (solo para consumibles o no-coincidentes) */}
+              <NumberInput
+                label={
+                  isOtr
+                    ? `Cantidad (${selectedDetail.unidad_medida_req_abv})`
+                    : `Cantidad (${selectedDetail.unidad_medida_base_abv})`
                 }
-              }}
-              max={isOtr ? restanteReq : restanteBase}
-              clampBehavior="strict"
-              min={0}
-              required
-              radius="lg"
-              size="sm"
-              classNames={modalFieldClasses}
-            />
+                placeholder={
+                  isOtr
+                    ? `4 ${selectedDetail.unidad_medida_req_abv}...`
+                    : `4 ${selectedDetail.unidad_medida_base_abv}...`
+                }
+                value={formCantidad}
+                onChange={(val) => {
+                  const maxVal = isOtr ? restanteReq : restanteBase;
+                  if (typeof val === "number") {
+                    setFormCantidad(val > maxVal ? maxVal : val);
+                  } else {
+                    const num = parseFloat(val);
+                    if (!isNaN(num) && num > maxVal) {
+                      setFormCantidad(maxVal);
+                    } else {
+                      setFormCantidad(val);
+                    }
+                  }
+                }}
+                max={isOtr ? restanteReq : restanteBase}
+                clampBehavior="strict"
+                min={0}
+                required
+                radius="lg"
+                size="sm"
+                classNames={modalFieldClasses}
+              />
 
-            {/* Selector de Activo Fijo (Obligatorio para Consumible, Opcional para Otros, Oculto para Activo Fijo) */}
-            <Select
-              label={isCons ? "Activo" : "Activo (opc.)"}
-              placeholder="Seleccione un activo..."
-              data={activosData}
-              value={formActivoFijo}
-              onChange={setFormActivoFijo}
-              searchable
-              clearable={!isCons}
-              required={isCons}
-              radius="lg"
-              size="sm"
-              classNames={modalFieldClasses}
-              comboboxProps={{
-                withinPortal: true,
-                zIndex: 9999,
-              }}
-            />
+              {/* Switch conmutador para confirmar si es Producción o Mantenimiento */}
+              <div className="flex flex-col gap-1.5 h-10 justify-center">
+                <Text size="xs" fw={600} className="text-zinc-300 ml-0.5 mb-1">
+                  Destinado a
+                </Text>
+                <Group gap={6} wrap="nowrap" align="center" className="bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-1.5 h-9">
+                  <Text
+                    size="xs"
+                    fw={600}
+                    className={`font-bold select-none transition-colors ${destinoTipo === "mantenimiento" ? "text-zinc-500" : "text-emerald-400 font-black"}`}
+                  >
+                    Producción
+                  </Text>
+                  <Switch
+                    checked={destinoTipo === "mantenimiento"}
+                    onChange={(event) => {
+                      const newTipo = event.currentTarget.checked ? "mantenimiento" : "produccion";
+                      setDestinoTipo(newTipo);
+                      // Reset the other selection
+                      if (newTipo === "mantenimiento") {
+                        setFormLoteMineral(null);
+                      } else {
+                        setFormActivoFijo(null);
+                      }
+                    }}
+                    disabled={!puedeMantenimiento}
+                    color="indigo"
+                    size="sm"
+                    classNames={{
+                      track: "cursor-pointer disabled:cursor-not-allowed",
+                    }}
+                  />
+                  <Text
+                    size="xs"
+                    fw={600}
+                    className={`font-bold select-none transition-colors ${destinoTipo === "mantenimiento" ? "text-amber-500 font-black" : "text-zinc-500"}`}
+                  >
+                    Mantenimiento
+                  </Text>
+                </Group>
+              </div>
+            </Group>
 
-            {/* Selector de Lote Mineral */}
-            <Select
-              label="Lote de Mineral (opc.)"
-              placeholder={loadingLotes ? "Cargando lotes..." : "Seleccione un lote..."}
-              data={lotesMineral.map((lm) => ({
-                value: String(lm.id_lote_mineral),
-                label: lm.correlativo,
-              }))}
-              value={formLoteMineral}
-              onChange={setFormLoteMineral}
-              searchable
-              clearable
-              radius="lg"
-              size="sm"
-              classNames={modalFieldClasses}
-              comboboxProps={{
-                withinPortal: true,
-                zIndex: 9999,
-              }}
-            />
-          </Group>
+            <Group gap="md" grow>
+              {destinoTipo === "mantenimiento" ? (
+                <Select
+                  label="Activo Fijo (Mantenimiento) *"
+                  placeholder="Seleccione el activo a mantener..."
+                  data={activosData}
+                  value={formActivoFijo}
+                  onChange={setFormActivoFijo}
+                  searchable
+                  required
+                  radius="lg"
+                  size="sm"
+                  classNames={modalFieldClasses}
+                  comboboxProps={{
+                    withinPortal: true,
+                    zIndex: 9999,
+                  }}
+                />
+              ) : (
+                <Select
+                  label="Lote de Mineral (Producción) *"
+                  placeholder={loadingLotes ? "Cargando lotes..." : "Seleccione lote mineral..."}
+                  data={lotesMineral.map((lm) => ({
+                    value: String(lm.id_lote_mineral),
+                    label: lm.correlativo,
+                  }))}
+                  value={formLoteMineral}
+                  onChange={setFormLoteMineral}
+                  searchable
+                  required
+                  radius="lg"
+                  size="sm"
+                  classNames={modalFieldClasses}
+                  comboboxProps={{
+                    withinPortal: true,
+                    zIndex: 9999,
+                  }}
+                />
+              )}
+            </Group>
+          </Stack>
         )}
         <Group gap="xs" grow>
           {/* Selector de Labores de Destino (Opcional) con botón Ver Más */}

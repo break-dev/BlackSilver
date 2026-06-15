@@ -184,8 +184,10 @@ export const CardRequerimiento = ({
       render: (r) => {
         const entregado = r.cantidad_entregada_base;
         const consumido = r.cantidad_consumida_base;
-        let estado_consumo: "Sin Consumir" | "Consumo Parcial" | "Consumo Total" =
-          "Sin Consumir";
+        let estado_consumo:
+          | "Sin Consumir"
+          | "Consumo Parcial"
+          | "Consumo Total" = "Sin Consumir";
         if (consumido >= entregado) {
           estado_consumo = "Consumo Total";
         } else if (consumido > 0) {
@@ -300,6 +302,14 @@ export const CardRequerimiento = ({
         </Group>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-zinc-400">
+          <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1 text-amber-200 shadow-xs relative bottom-1">
+            <span className="text-amber-400/80 font-black uppercase tracking-wider text-[9px]">
+              Almacén:
+            </span>
+            <span className="font-extrabold text-[11px]">
+              {req.almacen_destino}
+            </span>
+          </div>
           <div>
             <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">
               Solicitante:
@@ -313,14 +323,6 @@ export const CardRequerimiento = ({
               Mina Destino:
             </span>
             <span className="text-zinc-300 font-semibold">{req.mina}</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-1 text-amber-200 shadow-xs">
-            <span className="text-amber-400/80 font-black uppercase tracking-wider text-[9px]">
-              Almacén:
-            </span>
-            <span className="font-extrabold text-[11px]">
-              {req.almacen_destino}
-            </span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-zinc-400 font-extrabold uppercase tracking-wider text-[9px] mr-1.5">

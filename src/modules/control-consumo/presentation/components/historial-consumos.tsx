@@ -62,9 +62,9 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                         {unit}
                       </span>
                     </Text>
-                    {c.correlativo_lote_mineral && (
-                      <Badge size="xs" color="orange" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
-                        Lote: {c.correlativo_lote_mineral}
+                    {(c.para_produccion === true || Number(c.para_produccion) === 1) && (
+                      <Badge size="xs" color="teal" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
+                        Prod.: {c.correlativo_lote_mineral || "S/L"}
                       </Badge>
                     )}
                     {c.labores_destinos && (
@@ -72,9 +72,9 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                         Labores: {c.labores_destinos}
                       </Badge>
                     )}
-                    {c.para_mantenimiento && (
+                    {(c.para_mantenimiento === true || Number(c.para_mantenimiento) === 1) && (
                       <Badge size="xs" color="pink" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
-                        Mantenimiento
+                        Mant.: {c.correlativo_activo_fijo_consumidor || "S/A"}
                       </Badge>
                     )}
                     <span className="hidden md:inline text-zinc-700 font-light">
