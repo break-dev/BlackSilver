@@ -1,15 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Button,
   Group,
-  NumberInput,
   Select,
-  Stack,
   Text,
   TextInput,
   Textarea,
   Table,
-  Badge,
   ActionIcon,
   Tooltip,
   SegmentedControl,
@@ -21,31 +18,40 @@ import {
   PlusIcon,
   TrashIcon,
   UserPlusIcon,
+  ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistrarMantenimiento } from "../hooks/useRegistrarMantenimiento";
-import { FormPersonalExterno } from "./form-personal-externo";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { FormProveedor } from "../../../presentation/utils/form-proveedor";
+import { FormPersonalExterno } from "../../../presentation/utils/form-personal-externo";
+import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import dayjs from "dayjs";
 
 interface RegistroMantenimientoProps {
   initialActivoId?: number | null;
+  activos: RES_ActivoFijoDisponible[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export const RegistroMantenimiento = ({
   initialActivoId,
+  activos,
   onSuccess,
   onCancel,
 }: RegistroMantenimientoProps) => {
   const {
     state: {
-      activos,
       minas,
       almacenes,
       empleados,
-      proveedores,
-      personalExterno,
+      consumosPendientes,
+      consumosConfirmados,
+      verTodosProveedores,
+      verTodoPersonal,
       idActivoFijo,
       setIdActivoFijo,
       tipoLugar,
@@ -84,6 +90,7 @@ export const RegistroMantenimiento = ({
     status: {
       loadingCatalogs,
       loadingPersonal,
+      loadingTodoPersonal,
       loadingDespachados,
       submitting,
     },
@@ -94,11 +101,36 @@ export const RegistroMantenimiento = ({
       actualizarCantidadProducto,
       actualizarComentarioProducto,
       handleConfirmarPersonalExterno,
+      handleConfirmarProveedor,
       handleSubmit,
+      handleVerTodosProveedores,
+      handleVerTodoPersonal,
+      toggleConsumoConfirmado,
     },
-  } = useRegistrarMantenimiento({ initialActivoId, onSuccess });
+    selectsData: { proveedoresSelectData, personalExternoSelectData },
+  } = useRegistrarMantenimiento({ initialActivoId, onSuccess, activos });
 
-  const [personalExternoModalOpen, setPersonalExternoModalOpen] = useState(false);
+  const [proveedorModalOpen, setProveedorModalOpen] = useState(false);
+  const [personalExternoModalOpen, setPersonalExternoModalOpen] =
+    useState(false);
+
+  const {
+    nombre: extNombre,
+    setNombre: setExtNombre,
+    apellido: extApellido,
+    setApellido: setExtApellido,
+    dni: extDni,
+    setDni: setExtDni,
+    isSubmitting: extSubmitting,
+    handleCrearPersonal,
+  } = usePersonalExterno({
+    idProveedor: idProveedor || undefined,
+    autoFetch: false,
+    onRegisterSuccess: (nuevo) => {
+      handleConfirmarPersonalExterno(nuevo);
+      setPersonalExternoModalOpen(false);
+    },
+  });
 
   const inputClasses = {
     input:
@@ -109,463 +141,663 @@ export const RegistroMantenimiento = ({
     label: "text-zinc-300 mb-1 font-semibold text-xs ml-0.5",
   };
 
+  const lugarSelectData = useMemo(() => {
+    const data: { group: string; items: { value: string; label: string }[] }[] =
+      [];
+    if (almacenes.length > 0) {
+      data.push({
+        group: "Almacenes",
+        items: almacenes.map((a) => ({
+          value: `almacen-${a.id_almacen}`,
+          label: a.nombre,
+        })),
+      });
+    }
+    if (minas.length > 0) {
+      data.push({
+        group: "Minas",
+        items: minas.map((m) => ({
+          value: `mina-${m.id_mina}`,
+          label: m.nombre,
+        })),
+      });
+    }
+    data.push({
+      group: "Otros",
+      items: [{ value: "otro", label: "Otro (Especificar)..." }],
+    });
+    return data;
+  }, [almacenes, minas]);
+
   return (
-    <form onSubmit={handleSubmit} className="animate-fade-in text-zinc-200">
-      <Stack gap={28}>
-        {/* Section: Activo Fijo */}
-        <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 shadow-inner">
-          <Group gap="md" align="flex-end" className="w-full">
-            <div className="flex-1">
-              <Select
-                label="Activo Fijo a Mantener"
-                placeholder={loadingCatalogs ? "Cargando activos..." : "Seleccione maquinaria o activo..."}
-                data={activos.map((a) => ({
-                  value: String(a.id_activo),
-                  label: `${a.correlativo} - ${a.producto}`,
-                }))}
-                value={idActivoFijo ? String(idActivoFijo) : null}
-                onChange={(val) => setIdActivoFijo(val ? Number(val) : null)}
-                searchable
-                required
-                classNames={inputClasses}
-                radius="lg"
-              />
-            </div>
-            <DateTimePicker
-              label="Fecha y Hora de Mantenimiento"
-              placeholder="Seleccione fecha y hora..."
-              value={fechaHoraMantenimiento}
-              onChange={(val: DateValue) => setFechaHoraMantenimiento(val ? new Date(val) : null)}
-              required
-              maxDate={new Date()}
-              classNames={inputClasses}
-              radius="lg"
-              className="w-64"
-            />
-          </Group>
+    <form onSubmit={handleSubmit} className="space-y-6 text-zinc-200">
+      {/* 3-Column Top Row: Activo Fijo, Supervisor, Fecha */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-zinc-800/60 pb-5">
+        <Select
+          label="Activo Fijo"
+          placeholder="Seleccione..."
+          data={activos.map((a) => ({
+            value: String(a.id_activo),
+            label: `${a.correlativo} - ${a.producto}`,
+          }))}
+          value={idActivoFijo ? String(idActivoFijo) : null}
+          onChange={(val) => setIdActivoFijo(val ? Number(val) : null)}
+          searchable
+          required
+          classNames={inputClasses}
+          radius="md"
+        />
+
+        <Select
+          label="Supervisor"
+          placeholder="Seleccione..."
+          data={empleados.map((e) => ({
+            value: String(e.id_empleado),
+            label: e.nombre_completo,
+          }))}
+          value={idEmpleadoSupervisor ? String(idEmpleadoSupervisor) : null}
+          onChange={(val) => setIdEmpleadoSupervisor(val ? Number(val) : null)}
+          searchable
+          classNames={inputClasses}
+          radius="md"
+        />
+
+        <DateTimePicker
+          label="Fecha / Hora"
+          placeholder="Seleccione..."
+          value={fechaHoraMantenimiento}
+          onChange={(val: DateValue) =>
+            setFechaHoraMantenimiento(val ? new Date(val) : null)
+          }
+          required
+          maxDate={new Date()}
+          classNames={inputClasses}
+          radius="md"
+        />
+      </div>
+
+      {/* Row: Lugar de Trabajo & Ejecución Tipo/Interno */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 border-b border-zinc-800/60 pb-5">
+        <Select
+          label="Lugar de Trabajo"
+          placeholder="Seleccione..."
+          data={lugarSelectData}
+          value={
+            tipoLugar === "almacen" && idAlmacen
+              ? `almacen-${idAlmacen}`
+              : tipoLugar === "mina" && idMina
+                ? `mina-${idMina}`
+                : tipoLugar === "otro"
+                  ? "otro"
+                  : null
+          }
+          onChange={(val) => {
+            if (!val) {
+              setTipoLugar("");
+              setIdAlmacen(null);
+              setIdMina(null);
+              setLugarOtro("");
+              return;
+            }
+            if (val.startsWith("almacen-")) {
+              setTipoLugar("almacen");
+              setIdAlmacen(Number(val.replace("almacen-", "")));
+              setIdMina(null);
+              setLugarOtro("");
+            } else if (val.startsWith("mina-")) {
+              setTipoLugar("mina");
+              setIdMina(Number(val.replace("mina-", "")));
+              setIdAlmacen(null);
+              setLugarOtro("");
+            } else if (val === "otro") {
+              setTipoLugar("otro");
+              setIdAlmacen(null);
+              setIdMina(null);
+            }
+          }}
+          searchable
+          required
+          classNames={inputClasses}
+          radius="md"
+        />
+
+        {tipoLugar === "otro" ? (
+          <TextInput
+            label="Especificar Lugar"
+            placeholder="Ej. Taller, campo..."
+            value={lugarOtro}
+            onChange={(e) => setLugarOtro(e.currentTarget.value)}
+            required
+            classNames={inputClasses}
+            radius="md"
+          />
+        ) : (
+          <div className="hidden md:block" />
+        )}
+
+        <div className="flex flex-col justify-end">
+          <label className="text-zinc-300 mb-1.5 font-semibold text-xs ml-0.5">
+            Tipo Ejecutor
+          </label>
+          <SegmentedControl
+            value={tipoEjecutor}
+            onChange={(val) => setTipoEjecutor(val as "interno" | "externo")}
+            data={[
+              { label: "Interno", value: "interno" },
+              { label: "Externo", value: "externo" },
+            ]}
+            radius="md"
+            classNames={{
+              root: "bg-zinc-950 border border-zinc-800 p-0.5",
+              indicator: "bg-indigo-600",
+              control:
+                "text-zinc-300 data-[active]:text-white font-semibold text-[11px] px-2.5 h-7",
+            }}
+          />
         </div>
 
-        {/* Grid: Lugar de Trabajo & Ejecución */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Box: Lugar de Trabajo */}
-          <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 flex flex-col gap-4">
-            <Text size="sm" fw={800} className="text-zinc-300 uppercase tracking-wider">
-              Lugar de Trabajo
-            </Text>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {tipoEjecutor === "interno" ? (
+          <Select
+            label="Ejecutor Interno"
+            placeholder="Seleccione..."
+            data={empleados.map((e) => ({
+              value: String(e.id_empleado),
+              label: e.nombre_completo,
+            }))}
+            value={idEmpleadoEjecutor ? String(idEmpleadoEjecutor) : null}
+            onChange={(val) => setIdEmpleadoEjecutor(val ? Number(val) : null)}
+            required
+            searchable
+            classNames={inputClasses}
+            radius="md"
+          />
+        ) : (
+          <div className="hidden md:block" />
+        )}
+      </div>
+
+      {/* Row: Ejecutor Proveedor Externo */}
+      {tipoEjecutor === "externo" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-zinc-800/60 pb-5 animate-fade-in">
+          <div>
+            <Group gap={6} align="flex-end" wrap="nowrap" className="w-full">
               <Select
-                label="Tipo de Lugar"
+                label="Proveedor"
                 placeholder="Seleccione..."
-                data={[
-                  { value: "almacen", label: "Almacén" },
-                  { value: "mina", label: "Mina" },
-                  { value: "otro", label: "Otro Lugar" },
-                ]}
-                value={tipoLugar}
-                onChange={(val) => {
-                  setTipoLugar((val as "almacen" | "mina" | "otro" | null) || "");
-                  setIdMina(null);
-                  setIdAlmacen(null);
-                  setLugarOtro("");
-                }}
+                data={proveedoresSelectData}
+                value={idProveedor ? String(idProveedor) : null}
+                onChange={(val) => setIdProveedor(val ? Number(val) : null)}
+                required
+                searchable
                 classNames={inputClasses}
                 radius="md"
+                className="flex-1"
               />
-
-              {tipoLugar === "almacen" && (
-                <Select
-                  label="Seleccione Almacén"
-                  placeholder="Buscar almacén..."
-                  data={almacenes.map((a) => ({
-                    value: String(a.id_almacen),
-                    label: a.nombre,
-                  }))}
-                  value={idAlmacen ? String(idAlmacen) : null}
-                  onChange={(val) => setIdAlmacen(val ? Number(val) : null)}
-                  required
-                  searchable
-                  classNames={inputClasses}
+              <div className="flex gap-1 shrink-0 pb-0.5">
+                <Tooltip
+                  label={
+                    verTodosProveedores ? "Solo Mantenimiento" : "Ver Todos"
+                  }
+                  withArrow
                   radius="md"
-                  className="animate-fade-in"
-                />
-              )}
-
-              {tipoLugar === "mina" && (
-                <Select
-                  label="Seleccione Mina"
-                  placeholder="Buscar mina..."
-                  data={minas.map((m) => ({
-                    value: String(m.id_mina),
-                    label: m.nombre,
-                  }))}
-                  value={idMina ? String(idMina) : null}
-                  onChange={(val) => setIdMina(val ? Number(val) : null)}
-                  required
-                  searchable
-                  classNames={inputClasses}
-                  radius="md"
-                  className="animate-fade-in"
-                />
-              )}
-
-              {tipoLugar === "otro" && (
-                <TextInput
-                  label="Especifique Lugar"
-                  placeholder="Describa el lugar..."
-                  value={lugarOtro}
-                  onChange={(e) => setLugarOtro(e.currentTarget.value)}
-                  required
-                  classNames={inputClasses}
-                  radius="md"
-                  className="animate-fade-in"
-                />
-              )}
-            </div>
+                >
+                  <ActionIcon
+                    color={verTodosProveedores ? "teal" : "indigo"}
+                    variant={verTodosProveedores ? "filled" : "light"}
+                    size="34px"
+                    radius="md"
+                    onClick={handleVerTodosProveedores}
+                    disabled={loadingCatalogs}
+                    className="border border-zinc-800 text-zinc-400"
+                  >
+                    <ListBulletIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Nuevo Proveedor" withArrow radius="md">
+                  <ActionIcon
+                    color="indigo"
+                    variant="filled"
+                    size="34px"
+                    radius="md"
+                    onClick={() => setProveedorModalOpen(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    <PlusIcon className="w-4 h-4 text-white" />
+                  </ActionIcon>
+                </Tooltip>
+              </div>
+            </Group>
           </div>
 
-          {/* Box: Ejecución del Mantenimiento */}
-          <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 flex flex-col gap-4">
-            <Group justify="space-between" align="center">
-              <Text size="sm" fw={800} className="text-zinc-300 uppercase tracking-wider">
-                Ejecutado por
-              </Text>
-              <SegmentedControl
-                value={tipoEjecutor}
-                onChange={(val) => setTipoEjecutor(val as "interno" | "externo")}
-                data={[
-                  { label: "Personal Interno", value: "interno" },
-                  { label: "Proveedor Externo", value: "externo" },
-                ]}
+          <div>
+            <Group gap={6} align="flex-end" wrap="nowrap" className="w-full">
+              <Select
+                label="Personal de Proveedor"
+                placeholder={
+                  !idProveedor
+                    ? "Seleccione proveedor primero"
+                    : "Seleccione..."
+                }
+                data={personalExternoSelectData}
+                value={idPersonalExterno ? String(idPersonalExterno) : null}
+                onChange={(val) =>
+                  setIdPersonalExterno(val ? Number(val) : null)
+                }
+                disabled={!idProveedor || loadingPersonal}
+                required
+                searchable
+                classNames={inputClasses}
                 radius="md"
-                classNames={{
-                  root: "bg-zinc-950/80 border border-zinc-800 p-0.5",
-                  indicator: "bg-indigo-600",
-                  control: "text-zinc-300 data-[active]:text-white font-semibold text-xs",
-                }}
+                className="flex-1"
               />
-            </Group>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tipoEjecutor === "interno" ? (
-                <Select
-                  label="Ejecutor (Empleado)"
-                  placeholder="Seleccione empleado..."
-                  data={empleados.map((e) => ({
-                    value: String(e.id_empleado),
-                    label: e.nombre_completo,
-                  }))}
-                  value={idEmpleadoEjecutor ? String(idEmpleadoEjecutor) : null}
-                  onChange={(val) => setIdEmpleadoEjecutor(val ? Number(val) : null)}
-                  required
-                  searchable
-                  classNames={inputClasses}
+              <div className="flex gap-1 shrink-0 pb-0.5">
+                <Tooltip
+                  label={verTodoPersonal ? "Solo del Proveedor" : "Ver Todo"}
+                  withArrow
                   radius="md"
-                />
-              ) : (
-                <>
-                  <Select
-                    label="Proveedor Externo"
-                    placeholder="Seleccione proveedor..."
-                    data={proveedores.map((p) => ({
-                      value: String(p.id_proveedor),
-                      label: p.razon_social,
-                    }))}
-                    value={idProveedor ? String(idProveedor) : null}
-                    onChange={(val) => setIdProveedor(val ? Number(val) : null)}
+                >
+                  <ActionIcon
+                    color={verTodoPersonal ? "teal" : "indigo"}
+                    variant={verTodoPersonal ? "filled" : "light"}
+                    size="34px"
+                    radius="md"
+                    onClick={handleVerTodoPersonal}
+                    disabled={
+                      !idProveedor || loadingPersonal || loadingTodoPersonal
+                    }
+                    className="border border-zinc-800 text-zinc-400"
+                  >
+                    <ListBulletIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Nuevo Personal" withArrow radius="md">
+                  <ActionIcon
+                    color="indigo"
+                    variant="filled"
+                    size="34px"
+                    radius="md"
+                    disabled={!idProveedor}
+                    onClick={() => setPersonalExternoModalOpen(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    <UserPlusIcon className="w-4 h-4 text-white" />
+                  </ActionIcon>
+                </Tooltip>
+              </div>
+            </Group>
+          </div>
+        </div>
+      )}
+
+      {/* Grid: Factura, Costos y Gastos Adicionales */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 border-b border-zinc-800/60 pb-5">
+        <TextInput
+          label="Serie Factura"
+          placeholder="F001"
+          value={serieFactura}
+          onChange={(e) => setSerieFactura(e.currentTarget.value.toUpperCase())}
+          classNames={inputClasses}
+          radius="md"
+        />
+        <TextInput
+          label="Número Factura"
+          placeholder="000123"
+          value={numeroFactura}
+          onChange={(e) =>
+            setNumeroFactura(e.currentTarget.value.toUpperCase())
+          }
+          classNames={inputClasses}
+          radius="md"
+        />
+        <TextInput
+          label="Costo Mano Obra"
+          placeholder="0.00"
+          value={costoManoObra}
+          onChange={(e) => {
+            const val = e.currentTarget.value.replace(/[^0-9.]/g, "");
+            setCostoManoObra(val);
+          }}
+          classNames={inputClasses}
+          radius="md"
+        />
+
+        {/* Otros Gastos Section */}
+        <div className="md:col-span-3 bg-zinc-950/20 border border-zinc-800/80 rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <Text
+              size="xs"
+              fw={850}
+              className="text-zinc-400 uppercase tracking-widest"
+            >
+              Gastos Adicionales ({otrosGastos.length})
+            </Text>
+            <Button
+              size="xs"
+              variant="light"
+              color="indigo"
+              onClick={agregarGasto}
+              leftSection={<PlusIcon className="w-3.5 h-3.5" />}
+              className="h-7 text-xs font-bold"
+            >
+              Agregar Gasto
+            </Button>
+          </div>
+
+          <div className="max-h-28 overflow-y-auto space-y-2 pr-1">
+            {otrosGastos.length === 0 ? (
+              <Text
+                size="xs"
+                c="dimmed"
+                className="italic text-center py-4 text-zinc-500"
+              >
+                Sin otros gastos adicionales registrados.
+              </Text>
+            ) : (
+              otrosGastos.map((g, idx) => (
+                <Group
+                  key={idx}
+                  gap="xs"
+                  wrap="nowrap"
+                  className="animate-fade-in"
+                >
+                  <TextInput
+                    placeholder="Concepto (ej. Repuestos, herramientas)..."
+                    value={g.concepto}
+                    onChange={(e) =>
+                      actualizarGasto(idx, "concepto", e.currentTarget.value)
+                    }
                     required
-                    searchable
                     classNames={inputClasses}
                     radius="md"
+                    className="flex-1"
                   />
-                  <Group gap="xs" align="flex-end" className="w-full">
-                    <div className="flex-1">
-                      <Select
-                        label="Personal del Proveedor"
-                        placeholder={
-                          !idProveedor
-                            ? "Seleccione proveedor primero"
-                            : loadingPersonal
-                              ? "Cargando..."
-                              : personalExterno.length > 0
-                                ? "Seleccione ejecutor..."
-                                : "Sin personal registrado"
-                        }
-                        data={personalExterno.map((pe) => ({
-                          value: String(pe.id_personal),
-                          label: pe.nombre_completo,
-                        }))}
-                        value={idPersonalExterno ? String(idPersonalExterno) : null}
-                        onChange={(val) => setIdPersonalExterno(val ? Number(val) : null)}
-                        disabled={!idProveedor || loadingPersonal}
-                        required
-                        searchable
-                        classNames={inputClasses}
-                        radius="md"
-                      />
-                    </div>
-                    <Tooltip label="Registrar Personal Externo" withArrow radius="md">
-                      <ActionIcon
-                        color="indigo"
-                        variant="filled"
-                        size="36px"
-                        radius="md"
-                        disabled={!idProveedor}
-                        onClick={() => setPersonalExternoModalOpen(true)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0"
-                      >
-                        <UserPlusIcon className="w-4 h-4" />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
-                </>
-              )}
-
-              <Select
-                label="Supervisor del Mantenimiento"
-                placeholder="Seleccione supervisor..."
-                data={empleados.map((e) => ({
-                  value: String(e.id_empleado),
-                  label: e.nombre_completo,
-                }))}
-                value={idEmpleadoSupervisor ? String(idEmpleadoSupervisor) : null}
-                onChange={(val) => setIdEmpleadoSupervisor(val ? Number(val) : null)}
-                searchable
-                classNames={inputClasses}
-                radius="md"
-              />
-            </div>
+                  <TextInput
+                    placeholder="Costo"
+                    value={g.costo === 0 ? "" : String(g.costo)}
+                    onChange={(e) => {
+                      const val = e.currentTarget.value.replace(/[^0-9.]/g, "");
+                      actualizarGasto(
+                        idx,
+                        "costo",
+                        val === "" ? 0 : Number(val),
+                      );
+                    }}
+                    required
+                    classNames={inputClasses}
+                    radius="md"
+                    className="w-28"
+                  />
+                  <ActionIcon
+                    color="red"
+                    variant="subtle"
+                    onClick={() => eliminarGasto(idx)}
+                    radius="md"
+                    size="md"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                  </ActionIcon>
+                </Group>
+              ))
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Grid: Facturación e Insumos Consumidos */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Metadata Factura */}
-          <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 flex flex-col gap-4">
-            <Text size="sm" fw={800} className="text-zinc-300 uppercase tracking-wider">
-              Datos de Factura / Costos
-            </Text>
-            <Stack gap="md">
-              <Group gap="xs" grow>
-                <TextInput
-                  label="Serie Factura"
-                  placeholder="F001"
-                  value={serieFactura}
-                  onChange={(e) => setSerieFactura(e.currentTarget.value)}
-                  classNames={inputClasses}
-                  radius="md"
-                />
-                <TextInput
-                  label="Número Factura"
-                  placeholder="000123"
-                  value={numeroFactura}
-                  onChange={(e) => setNumeroFactura(e.currentTarget.value)}
-                  classNames={inputClasses}
-                  radius="md"
-                />
-              </Group>
-              <NumberInput
-                label="Costo de Mano de Obra"
-                placeholder="0.00"
-                value={costoManoObra}
-                onChange={(val) => setCostoManoObra(val)}
-                min={0}
-                classNames={inputClasses}
-                radius="md"
-              />
-            </Stack>
-          </div>
+      {/* Insumos / Materiales Section */}
+      <div className="space-y-4">
+        <Text
+          size="xs"
+          fw={850}
+          className="text-zinc-400 uppercase tracking-widest block border-b border-zinc-800/60 pb-2"
+        >
+          Insumos / Materiales
+        </Text>
 
-          {/* Otros Gastos Dinámicos */}
-          <div className="lg:col-span-2 bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 flex flex-col gap-4">
-            <Group justify="space-between" align="center">
-              <Text size="sm" fw={800} className="text-zinc-300 uppercase tracking-wider">
-                Otros Gastos Adicionales
-              </Text>
-              <Button
-                size="xs"
-                variant="light"
-                color="indigo"
-                radius="md"
-                leftSection={<PlusIcon className="w-3.5 h-3.5" />}
-                onClick={agregarGasto}
-                className="font-bold border border-indigo-500/10"
-              >
-                Agregar Gasto
-              </Button>
-            </Group>
-
-            <Stack gap="xs" className="max-h-52 overflow-y-auto pr-1">
-              {otrosGastos.length === 0 ? (
-                <Text size="xs" c="dimmed" className="italic py-3 text-center">
-                  Sin gastos adicionales declarados.
-                </Text>
-              ) : (
-                otrosGastos.map((g, idx) => (
-                  <Group key={idx} gap="xs" wrap="nowrap" className="animate-fade-in">
-                    <TextInput
-                      placeholder="Concepto (Ej: Repuestos, lubricantes adicionales)"
-                      value={g.concepto}
-                      onChange={(e) => actualizarGasto(idx, "concepto", e.currentTarget.value)}
-                      required
-                      className="flex-1"
-                      classNames={inputClasses}
-                      radius="md"
-                    />
-                    <NumberInput
-                      placeholder="Costo"
-                      value={g.costo}
-                      onChange={(val) => actualizarGasto(idx, "costo", Number(val))}
-                      required
-                      min={0}
-                      className="w-32"
-                      classNames={inputClasses}
-                      radius="md"
-                    />
-                    <ActionIcon
-                      color="red"
-                      variant="subtle"
-                      onClick={() => eliminarGasto(idx)}
-                      radius="md"
-                      size="lg"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </ActionIcon>
-                  </Group>
-                ))
-              )}
-            </Stack>
-          </div>
-        </div>
-
-        {/* Section: Productos Despachados para Mantenimiento */}
-        <div className="bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-5 flex flex-col gap-4">
-          <Text size="sm" fw={800} className="text-zinc-300 uppercase tracking-wider">
-            Declaración de Consumos de Materiales / Insumos
+        {loadingDespachados ? (
+          <Text size="xs" c="dimmed" className="italic text-center py-6 block">
+            Cargando insumos disponibles...
           </Text>
-          {loadingDespachados ? (
-            <Text size="xs" c="dimmed" className="italic text-center py-6">
-              Cargando productos despachados...
-            </Text>
-          ) : productosConsumidos.length === 0 ? (
-            <Text size="xs" c="dimmed" className="italic text-center py-6">
-              Este equipo no tiene materiales entregados pendientes por consumir para mantenimiento.
-            </Text>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-zinc-800">
-              <Table variant="unstyled" className="w-full text-zinc-300 text-xs">
-                <thead className="bg-zinc-950 text-zinc-400 font-bold">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Insumo / Repuesto</th>
-                    <th className="px-4 py-3 text-center">Por Consumir (Base)</th>
-                    <th className="px-4 py-3 text-center w-40">Cantidad Consumida</th>
-                    <th className="px-4 py-3 text-left">Comentario / Justificación</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800 bg-zinc-900/20">
-                  {productosConsumidos.map((p, idx) => (
-                    <tr key={p.id_entrega_detalle} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-white">
-                        {p.producto}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge variant="light" color="teal" size="sm" className="font-bold">
-                          {formatNumber(p.maxCantidad)} {p.unidad}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <NumberInput
-                          placeholder="0"
-                          value={p.cantidad}
-                          onChange={(val) => actualizarCantidadProducto(idx, Number(val))}
-                          min={0}
-                          max={p.maxCantidad}
-                          decimalScale={4}
-                          clampBehavior="strict"
-                          rightSection={
-                            <Text size="10px" fw={900} c="zinc.5" className="mr-3">
-                              {p.unidad}
-                            </Text>
-                          }
-                          rightSectionWidth={45}
-                          classNames={{
-                            input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-xs h-9 shadow-inner text-right pr-12 text-white`,
-                          }}
-                          radius="md"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <TextInput
-                          placeholder="Indique estado, merma, etc..."
-                          value={p.comentario}
-                          onChange={(e) => actualizarComentarioProducto(idx, e.currentTarget.value)}
-                          classNames={inputClasses}
-                          radius="md"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Entregas por Consumir */}
+            <div className="space-y-2">
+              <Text
+                size="xs"
+                fw={850}
+                className="text-zinc-400 uppercase tracking-widest"
+              >
+                Entregas por Consumir
+              </Text>
+              {productosConsumidos.length === 0 ? (
+                <div className="py-6 text-center text-zinc-500 text-xs font-semibold">
+                  No hay entregas pendientes de consumir.
+                </div>
+              ) : (
+                <div className="border border-zinc-800/50 rounded-lg overflow-hidden bg-zinc-950/25">
+                  <Table
+                    variant="unstyled"
+                    className="w-full text-xs text-zinc-300"
+                  >
+                    <thead className="bg-zinc-950/80 text-zinc-400 border-b border-zinc-800/50 text-[10px] uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-2 px-3 text-left">Insumo</th>
+                        <th className="p-2 text-center w-24">Pendiente</th>
+                        <th className="p-2 text-center w-24">A Consumir</th>
+                        <th className="p-2 px-3 text-left">Comentario</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900 bg-zinc-900/10">
+                      {productosConsumidos.map((p, idx) => (
+                        <tr
+                          key={p.id_entrega_detalle}
+                          className="hover:bg-white/5 transition-colors"
+                        >
+                          <td className="p-2 px-3 font-medium truncate max-w-[150px]">
+                            {p.producto}
+                          </td>
+                          <td className="p-2 text-center">
+                            <span className="text-[11px] font-bold text-teal-400 font-mono">
+                              {formatNumber(p.maxCantidad)} {p.unidad}
+                            </span>
+                          </td>
+                          <td className="p-2">
+                            <TextInput
+                              placeholder="0"
+                              value={p.cantidad === 0 ? "" : String(p.cantidad)}
+                              onChange={(e) => {
+                                const val = Number(
+                                  e.currentTarget.value.replace(/[^0-9.]/g, ""),
+                                );
+                                actualizarCantidadProducto(idx, val);
+                              }}
+                              classNames={{
+                                input:
+                                  "bg-zinc-950/80 border-zinc-800/80 focus:border-zinc-500 text-white text-[11px] h-7 text-center w-20 px-1 font-mono font-bold transition-all",
+                              }}
+                              radius="sm"
+                            />
+                          </td>
+                          <td className="p-2 px-3">
+                            <TextInput
+                              placeholder="Nota..."
+                              value={p.comentario}
+                              onChange={(e) =>
+                                actualizarComentarioProducto(
+                                  idx,
+                                  e.currentTarget.value,
+                                )
+                              }
+                              classNames={{
+                                input:
+                                  "bg-zinc-950/80 border-zinc-800/80 focus:border-zinc-500 text-white text-[11px] h-7 px-2 transition-all",
+                              }}
+                              radius="sm"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Observaciones generales & Evidencias */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <Textarea
-              label="Observaciones Generales"
-              placeholder="Describa el estado del mantenimiento..."
-              value={observacion}
-              onChange={(e) => setObservacion(e.currentTarget.value)}
-              minRows={4}
-              classNames={inputClasses}
-              radius="lg"
-            />
+            {/* Consumos por Confirmar */}
+            <div className="space-y-2">
+              <Text
+                size="xs"
+                fw={850}
+                className="text-zinc-400 uppercase tracking-widest"
+              >
+                Consumos por Confirmar
+              </Text>
+              {consumosPendientes.length === 0 ? (
+                <div className="py-6 text-center text-zinc-500 text-xs font-semibold">
+                  No hay consumos previos por confirmar.
+                </div>
+              ) : (
+                <div className="border border-zinc-800/50 rounded-lg overflow-hidden bg-zinc-950/25">
+                  <Table
+                    variant="unstyled"
+                    className="w-full text-xs text-zinc-300"
+                  >
+                    <thead className="bg-zinc-950/80 text-zinc-400 border-b border-zinc-800/50 text-[10px] uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-2 text-center w-12">Asoc.</th>
+                        <th className="p-2 px-3 text-left">Insumo</th>
+                        <th className="p-2 text-center w-20">Cantidad</th>
+                        <th className="p-2 px-3 text-center w-24">Fecha</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900 bg-zinc-900/10">
+                      {consumosPendientes.map((c) => {
+                        const isSelected = consumosConfirmados.includes(
+                          c.id_consumo,
+                        );
+                        return (
+                          <tr
+                            key={c.id_consumo}
+                            onClick={() =>
+                              toggleConsumoConfirmado(c.id_consumo)
+                            }
+                            className={`cursor-pointer hover:bg-white/5 transition-colors ${isSelected ? "bg-indigo-500/5!" : ""}`}
+                          >
+                            <td
+                              className="p-2 text-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() =>
+                                  toggleConsumoConfirmado(c.id_consumo)
+                                }
+                                className="rounded border-zinc-800 bg-zinc-950 text-indigo-600 focus:ring-indigo-500 cursor-pointer size-3.5"
+                              />
+                            </td>
+                            <td className="p-2 px-3 font-medium truncate max-w-[150px]">
+                              {c.producto}
+                            </td>
+                            <td className="p-2 text-center font-bold text-indigo-400 font-mono">
+                              {formatNumber(c.cantidad_base_consumida)}{" "}
+                              {c.unidad_base_abv}
+                            </td>
+                            <td className="p-2 px-3 text-center text-zinc-500 font-mono text-[10px]">
+                              {dayjs(c.fecha_hora_consumo).format(
+                                "DD/MM/YY HH:mm",
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="lg:col-span-2">
-            <MultiFilePicker
-              label="Evidencias / Facturas / Informes de Mantenimiento"
-              files={evidencias}
-              onFilesChange={setEvidencias}
-            />
-          </div>
-        </div>
+        )}
+      </div>
 
-        {/* Buttons */}
-        <Group justify="flex-end" className="pt-4 border-t border-zinc-800">
-          <Button
-            variant="subtle"
-            color="gray"
-            onClick={onCancel}
-            disabled={submitting}
-            radius="lg"
-            className="text-zinc-400 hover:text-white px-6 font-bold"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            loading={submitting}
-            disabled={!idActivoFijo}
-            radius="lg"
-            className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"
-            leftSection={<WrenchScrewdriverIcon className="w-5 h-5 text-zinc-900" />}
-          >
-            Guardar Mantenimiento
-          </Button>
-        </Group>
-      </Stack>
+      {/* Observaciones y Evidencias */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-zinc-800/60">
+        <Textarea
+          label="Observaciones"
+          placeholder="Describa el estado o diagnostico del mantenimiento..."
+          value={observacion}
+          onChange={(e) => setObservacion(e.currentTarget.value)}
+          minRows={3}
+          classNames={inputClasses}
+          radius="md"
+        />
+
+        <MultiFilePicker
+          label="Evidencias (Facturas, Informes, etc.)"
+          files={evidencias}
+          onFilesChange={setEvidencias}
+        />
+      </div>
+
+      {/* Action Buttons */}
+      <Group justify="flex-end" className="pt-4 border-t border-zinc-800 gap-3">
+        <Button
+          variant="subtle"
+          color="gray"
+          onClick={onCancel}
+          disabled={submitting}
+          radius="md"
+          className="text-zinc-400 hover:text-white px-5 font-semibold"
+        >
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          loading={submitting}
+          disabled={!idActivoFijo}
+          radius="md"
+          className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-md border-0 px-6"
+          leftSection={
+            <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-900" />
+          }
+        >
+          Guardar Mantenimiento
+        </Button>
+      </Group>
+
+      {/* Modal: FormProveedor */}
+      <ModalEstandar
+        opened={proveedorModalOpen}
+        close={() => setProveedorModalOpen(false)}
+        title="Nuevo Proveedor"
+        size="md"
+      >
+        <FormProveedor
+          onSuccess={(nuevo) => {
+            handleConfirmarProveedor(nuevo);
+            setProveedorModalOpen(false);
+          }}
+          onCancel={() => setProveedorModalOpen(false)}
+        />
+      </ModalEstandar>
 
       {/* Modal: FormPersonalExterno */}
-      {idProveedor && (
+      <ModalEstandar
+        opened={personalExternoModalOpen}
+        close={() => setPersonalExternoModalOpen(false)}
+        title="Nuevo Personal Externo"
+        size="md"
+      >
         <FormPersonalExterno
-          opened={personalExternoModalOpen}
-          onClose={() => setPersonalExternoModalOpen(false)}
-          idProveedor={idProveedor}
-          onSuccess={handleConfirmarPersonalExterno}
+          nombre={extNombre}
+          apellido={extApellido}
+          dni={extDni}
+          setNombre={setExtNombre}
+          setApellido={setExtApellido}
+          setDni={setExtDni}
+          onSubmit={handleCrearPersonal}
+          isSubmitting={extSubmitting}
         />
-      )}
+      </ModalEstandar>
     </form>
   );
 };

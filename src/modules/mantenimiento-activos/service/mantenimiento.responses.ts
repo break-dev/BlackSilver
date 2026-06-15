@@ -1,3 +1,15 @@
+import type { IArchivo } from "../../../shared/interfaces/archivo";
+
+export interface RES_MantenimientoConsumo {
+  id_consumo: number;
+  id_mantenimiento: number;
+  cantidad: number;
+  fecha_hora_consumo: string;
+  comentario: string | null;
+  producto: string;
+  unidad: string;
+}
+
 export interface RES_Mantenimiento {
   id_mantenimiento: number;
   id_activo_fijo: number;
@@ -18,7 +30,8 @@ export interface RES_Mantenimiento {
   ejecutor_nombre: string | null;
   id_empleado_supervisor: number | null;
   supervisor_nombre: string | null;
-  evidencias: string | string[] | null;
+  evidencias: IArchivo[] | null;
+  consumos: RES_MantenimientoConsumo[];
 }
 
 export interface RES_ProductoDespachadoPendiente {
@@ -30,4 +43,20 @@ export interface RES_ProductoDespachadoPendiente {
   unidad_base_abv: string;
   consumido_base: number;
   restante_base: number;
+}
+
+export interface RES_ConsumoPendiente {
+  id_consumo: number;
+  id_entrega_detalle: number;
+  cantidad_base_consumida: number;
+  fecha_hora_consumo: string;
+  comentario_consumo: string | null;
+  id_producto: number;
+  producto: string;
+  unidad_base_abv: string;
+}
+
+export interface RES_MaterialesMantenimientoResponse {
+  entregas_pendientes: RES_ProductoDespachadoPendiente[];
+  consumos_pendientes: RES_ConsumoPendiente[];
 }

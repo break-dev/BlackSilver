@@ -3,7 +3,7 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { DTO_CrearMantenimiento } from "./mantenimiento.requests";
 import type {
   RES_Mantenimiento,
-  RES_ProductoDespachadoPendiente,
+  RES_MaterialesMantenimientoResponse,
 } from "./mantenimiento.responses";
 
 const path = "/mantenimiento-activos";
@@ -12,7 +12,7 @@ export const MantenimientoService = {
   getMantenimientos: async (
     mes: number,
     yearcito: number,
-    id_activo_fijo?: number | null
+    id_activo_fijo?: number | null,
   ) => {
     const { data } = await api.get<IRespuesta<RES_Mantenimiento[]>>(path, {
       params: { mes, yearcito, id_activo_fijo },
@@ -22,7 +22,7 @@ export const MantenimientoService = {
 
   getProductosDespachados: async (id_activo_fijo: number) => {
     const { data } = await api.get<
-      IRespuesta<RES_ProductoDespachadoPendiente[]>
+      IRespuesta<RES_MaterialesMantenimientoResponse>
     >(`${path}/productos-despachados`, {
       params: { id_activo_fijo },
     });
@@ -60,18 +60,21 @@ export const MantenimientoService = {
       dto.productos_consumidos.forEach((p, index) => {
         fd.append(
           `productos_consumidos[${index}][id_entrega_detalle]`,
-          String(p.id_entrega_detalle)
+          String(p.id_entrega_detalle),
         );
         fd.append(
           `productos_consumidos[${index}][cantidad]`,
-          String(p.cantidad)
+          String(p.cantidad),
         );
         if (p.comentario) {
-          fd.append(
-            `productos_consumidos[${index}][comentario]`,
-            p.comentario
-          );
+          fd.append(`productos_consumidos[${index}][comentario]`, p.comentario);
         }
+      });
+    }
+
+    if (dto.consumos_confirmados) {
+      dto.consumos_confirmados.forEach((id) => {
+        fd.append("consumos_confirmados[]", String(id));
       });
     }
 

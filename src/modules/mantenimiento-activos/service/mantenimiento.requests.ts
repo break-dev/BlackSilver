@@ -20,6 +20,7 @@ export interface DTO_CrearMantenimiento {
     cantidad: number;
     comentario?: string | null;
   }> | null;
+  consumos_confirmados?: number[] | null;
   evidencias?: File[] | null;
 }
 
@@ -42,7 +43,7 @@ export const Schema_CrearMantenimiento = z.object({
       z.object({
         concepto: z.string().min(1),
         costo: z.number().nonnegative(),
-      })
+      }),
     )
     .nullable()
     .optional(),
@@ -52,8 +53,12 @@ export const Schema_CrearMantenimiento = z.object({
         id_entrega_detalle: z.number().int().positive(),
         cantidad: z.number().positive(),
         comentario: z.string().nullable().optional(),
-      })
+      }),
     )
+    .nullable()
+    .optional(),
+  consumos_confirmados: z
+    .array(z.number().int().positive())
     .nullable()
     .optional(),
 });
