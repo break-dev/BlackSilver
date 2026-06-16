@@ -9,11 +9,9 @@ import { useNotify } from "../../../hooks/useNotify";
 export const useProduccion = () => {
   const { notifySuccess, notifyError } = useNotify();
 
-  const [lotesEnProduccion, setLotesEnProduccion] = useState<
-    RES_LoteMineralEnProduccion[]
-  >([]);
+  const [lotes, setLotes] = useState<RES_LoteMineralEnProduccion[]>([]);
   const [lotesPendientes, setLotesPendientes] = useState<RES_LoteMineral[]>([]);
-  
+
   const [loading, setLoading] = useState(false);
   const [loadingPendientes, setLoadingPendientes] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +23,7 @@ export const useProduccion = () => {
     try {
       const resp = await ProduccionService.getResumen();
       if (resp.success && resp.data) {
-        setLotesEnProduccion(resp.data);
+        setLotes(resp.data);
       } else {
         setError(resp.message || "Error al cargar resumen de producción");
       }
@@ -59,11 +57,49 @@ export const useProduccion = () => {
       const resp = await ProduccionService.iniciarProduccion(id_lote_mineral);
       if (resp.success) {
         notifySuccess("Proceso de producción iniciado correctamente.");
-        fetchResumen();
+        // Traer consumos del lote nuevo
+        const loteResp = await ProduccionService.getResumen();
+        if (loteResp.success && loteResp.data) {
+          const nuevoLote = loteResp.data.find(
+            (l) => l.id_lote_mineral === id_lote_mineral
+          );
+          if (nuevoLote) {
+            // Agregar al inicio sin recargar todo
+            setLotes((prev) => [nuevoLote, ...prev]);
+          }
+        }
         fetchLotesPendientes();
         return true;
       } else {
         notifyError(resp.message || "Error al iniciar producción");
+        return false;
+      }
+    } catch (err) {
+      console.error(err);
+      notifyError("Error de conexión");
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const finalizarProduccion = async (id_lote_mineral: number) => {
+    setSubmitting(true);
+    try {
+      const resp = await ProduccionService.finalizarProduccion(id_lote_mineral);
+      if (resp.success) {
+        notifySuccess("Proceso de producción finalizado correctamente.");
+        // Actualizar estado del lote en la lista sin recargar
+        setLotes((prev) =>
+          prev.map((lote) =>
+            lote.id_lote_mineral === id_lote_mineral
+              ? { ...lote, estado: EstadoLoteMineral.Finalizado }
+              : lote
+          )
+        );
+        return true;
+      } else {
+        notifyError(resp.message || "Error al finalizar producción");
         return false;
       }
     } catch (err) {
@@ -82,7 +118,7 @@ export const useProduccion = () => {
 
   return {
     state: {
-      lotesEnProduccion,
+      lotes,
       lotesPendientes,
     },
     status: {
@@ -95,6 +131,7 @@ export const useProduccion = () => {
       fetchResumen,
       fetchLotesPendientes,
       iniciarProduccion,
+      finalizarProduccion,
     },
   };
 };

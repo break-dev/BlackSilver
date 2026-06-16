@@ -18,4 +18,14 @@ export const ProduccionService = {
     });
     return data;
   },
+
+  finalizarProduccion: async (id_lote_mineral: number) => {
+    const { data } = await api.post<IRespuesta<unknown>>(
+      `${path}/finalizar`,
+      {
+        id_lote_mineral,
+      }
+    );
+    return data;
+  },
 };
