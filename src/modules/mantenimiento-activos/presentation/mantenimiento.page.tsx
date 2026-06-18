@@ -165,7 +165,7 @@ export const MantenimientoPage = () => {
         render: (record) => (
           <Text size="xs" fw={700} className="font-mono text-zinc-300">
             {record.costo_mano_obra !== null
-              ? `$${formatNumber(Number(record.costo_mano_obra))}`
+              ? `S/.${formatNumber(Number(record.costo_mano_obra))}`
               : "-"}
           </Text>
         ),
@@ -192,7 +192,7 @@ export const MantenimientoPage = () => {
           return (
             <Stack gap={1} align="end">
               <Text size="xs" fw={700} className="font-mono text-zinc-300">
-                {total > 0 ? `$${formatNumber(total)}` : "-"}
+                {total > 0 ? `S/.${formatNumber(total)}` : "-"}
               </Text>
               {gastos.length > 0 && (
                 <Text
@@ -479,7 +479,7 @@ export const MantenimientoPage = () => {
                                     {g.concepto}
                                   </td>
                                   <td className="px-3 py-2 text-right font-mono font-bold text-white">
-                                    ${formatNumber(Number(g.costo))}
+                                    S/.{formatNumber(Number(g.costo))}
                                   </td>
                                 </tr>
                               ))}
