@@ -84,7 +84,7 @@ export const useEmpleados = () => {
 
     filtrados.forEach((emp) => {
       const id = emp.id_empresa || 0;
-      const nombre = emp.empresa || "Sin empresa asignada";
+      const nombre = emp.empresa || "Trabajadores que no están en planilla";
 
       if (!groups[id]) {
         groups[id] = { id, nombre, empleados: [] };

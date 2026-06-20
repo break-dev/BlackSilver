@@ -137,15 +137,19 @@ export const CuentasPage = () => {
 
                 {/* Row 1: Badges superiores (Empresa y Estado) */}
                 <div className="flex items-center justify-between mb-1">
-                  <Badge
-                    size="xs"
-                    variant="filled"
-                    color="pink"
-                    radius="sm"
-                    className="text-white font-bold border-none"
-                  >
-                    {cuenta.empresa_pertenece}
-                  </Badge>
+                  {cuenta.empresa_pertenece ? (
+                    <Badge
+                      size="xs"
+                      variant="filled"
+                      color="pink"
+                      radius="sm"
+                      className="text-white font-bold border-none"
+                    >
+                      {cuenta.empresa_pertenece}
+                    </Badge>
+                  ) : (
+                    <div />
+                  )}
                   <Badge
                     color={isActive ? "green" : "gray"}
                     variant="light"

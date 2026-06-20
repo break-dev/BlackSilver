@@ -147,14 +147,13 @@ export const RegistroEmpleado = ({
           value: e.id_empresa.toString(),
           label: e.razon_social,
         }))}
-        value={form.id_empresa === 0 ? null : form.id_empresa.toString()}
-        onChange={(val) => setField("id_empresa", Number(val))}
+        value={form.id_empresa ? form.id_empresa.toString() : null}
+        onChange={(val) => setField("id_empresa", val ? Number(val) : null)}
         leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
         classNames={fieldClasses}
         radius="lg"
-        required
-        withAsterisk
         searchable
+        clearable
         disabled={loadingEmpresas || loading}
       />
 

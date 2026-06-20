@@ -80,7 +80,10 @@ export const useOrganigrama = () => {
     recargarCargos: () =>
       areaSeleccionada && listarCargos(areaSeleccionada.id_area),
     onAreaCreada: (nueva: RES_Area) => setAreas((prev) => [nueva, ...prev]),
-    onCargoCreado: (nuevo: RES_Cargo) => setCargos((prev) => [nuevo, ...prev]),
+    onCargoCreado: (nuevo: RES_Cargo) => {
+      setCargos((prev) => [nuevo, ...prev]);
+      listarAreas();
+    },
     handleCambiarEstadoCargo: async (id_cargo: number) => {
       try {
         const resp = await OrganigramaService.cambiar_estado_cargo(id_cargo);
@@ -95,6 +98,7 @@ export const useOrganigrama = () => {
                 : c,
             ),
           );
+          listarAreas();
         }
       } catch (err) {
         console.error(err);

@@ -168,19 +168,37 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
 
             <Grid.Col span={12}>
               <div className="flex items-center justify-between gap-4 bg-zinc-900/50 border border-zinc-800 p-3 rounded-xl">
-                <Switch
-                  label="Es cuenta de detracción"
-                  color="yellow"
-                  checked={payload.es_para_detraccion === 1}
-                  disabled={
-                    !selectedBanco?.es_nacional ||
-                    payload.moneda !== MONEDAS.PEN.label
-                  }
-                  onChange={(e) =>
-                    handleToggleDetraccion(e.currentTarget.checked)
-                  }
-                  classNames={{ label: "text-zinc-300 font-medium" }}
-                />
+                <div className="flex items-center gap-2">
+                  <Switch
+                    color="yellow"
+                    checked={payload.es_para_detraccion === 1}
+                    disabled={
+                      !selectedBanco?.es_nacional ||
+                      payload.moneda !== MONEDAS.PEN.label
+                    }
+                    onChange={(e) =>
+                      handleToggleDetraccion(e.currentTarget.checked)
+                    }
+                  />
+                  <span
+                    className={`text-sm font-medium transition-colors ${
+                      !selectedBanco?.es_nacional ||
+                      payload.moneda !== MONEDAS.PEN.label
+                        ? "text-zinc-500 cursor-not-allowed select-none"
+                        : "text-zinc-300 cursor-pointer hover:text-white"
+                    }`}
+                    onClick={() => {
+                      const isDisabled =
+                        !selectedBanco?.es_nacional ||
+                        payload.moneda !== MONEDAS.PEN.label;
+                      if (!isDisabled) {
+                        handleToggleDetraccion(payload.es_para_detraccion !== 1);
+                      }
+                    }}
+                  >
+                    Es cuenta de detracción
+                  </span>
+                </div>
 
                 <Button
                   type="submit"

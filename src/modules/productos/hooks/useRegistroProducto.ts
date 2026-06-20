@@ -124,21 +124,6 @@ export const useRegistroProducto = (
   };
 
   const handleSubmit = async () => {
-    // Validar prefijo si es Activo Fijo
-    const categoriaSeleccionada = categorias.find(
-      (c) => c.id_categoria === form.id_categoria,
-    );
-    if (
-      categoriaSeleccionada?.clasificacion_bien === TipoBien.ActivoFijo &&
-      (!form.prefijo || form.prefijo.trim() === "")
-    ) {
-      notify({
-        type: "error",
-        content: "El prefijo es obligatorio para activos fijos",
-      });
-      return;
-    }
-
     const validation = Schema_CrearProducto.safeParse(form);
     if (!validation.success) {
       notify({ type: "error", content: validation.error.issues[0].message });

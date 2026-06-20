@@ -13,6 +13,7 @@ import {
   PencilSquareIcon,
   MapPinIcon,
   UserGroupIcon,
+  CakeIcon,
 } from "@heroicons/react/24/outline";
 
 import { type DataTableColumn } from "mantine-datatable";
@@ -181,6 +182,30 @@ export const TabContratistas = ({
               </Tooltip>
             </Group>
           </div>
+        );
+      },
+    },
+    {
+      accessor: "fecha_nacimiento",
+      title: "Fecha de Nacimiento",
+      width: 160,
+      render: (r) => {
+        if (!r.fecha_nacimiento) {
+          return (
+            <Text size="xs" c="dimmed" fs="italic">
+              No especificado
+            </Text>
+          );
+        }
+        const parts = r.fecha_nacimiento.split("-");
+        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.fecha_nacimiento;
+        return (
+          <Group gap={6}>
+            <CakeIcon className="w-4 h-4 text-pink-400 shrink-0" />
+            <Text size="xs" fw={500} className="text-zinc-300">
+              {formattedDate}
+            </Text>
+          </Group>
         );
       },
     },

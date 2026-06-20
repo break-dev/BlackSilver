@@ -39,7 +39,7 @@ export const Schema_CrearEmpleado = z.object({
       return val;
     }),
   path_foto: z.any().nullable().optional(),
-  id_empresa: z.number().min(1, "Debe seleccionar una empresa"),
+  id_empresa: z.number().nullable().optional(),
   id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
 });
 

@@ -14,7 +14,7 @@ import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
-  id_empresa: 0,
+  id_empresa: null,
   id_cargo: 0,
   nombre: "",
   apellido: "",

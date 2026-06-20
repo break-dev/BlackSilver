@@ -271,7 +271,7 @@ export const RegistroProducto = ({
                 transition={{ duration: 0.2 }}
               >
                 <TextInput
-                  label={<LabelForm text="Prefijo (Activo Fijo)" required />}
+                  label={<LabelForm text="Prefijo (Activo Fijo)" />}
                   placeholder="Ej: SCOO"
                   maxLength={4}
                   value={form.prefijo || ""}
