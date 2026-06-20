@@ -165,17 +165,24 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
     <Document title={`Orden de Compra - ${orden.correlativo}`}>
       <Page size="A4" style={styles.page}>
         {/* ── Banda de logo superior (izquierda) ── */}
-        {orden.empresa_logo && (
-          <View style={styles.logoContainer}>
-            <Image
-              src={orden.empresa_logo}
-              style={{ width: 90, height: 45, objectFit: "contain" }}
-            />
-            <Text style={{ fontSize: 8, color: "#166534" }}>
-              Documento Oficial de Orden de Compra
-            </Text>
-          </View>
-        )}
+        {orden.empresa_logo && (() => {
+          const isCupper = orden.empresa.toUpperCase().includes("CUPPER") || orden.empresa.toUpperCase().includes("HANNIA");
+          return (
+            <View style={[styles.logoContainer, { alignItems: "center" }]}>
+              <Image
+                src={orden.empresa_logo}
+                style={
+                  isCupper
+                    ? { width: 70, height: 70, objectFit: "contain" }
+                    : { width: 110, height: 40, objectFit: "contain" }
+                }
+              />
+              <Text style={{ fontSize: 8, color: "#166534" }}>
+                Documento Oficial de Orden de Compra
+              </Text>
+            </View>
+          );
+        })()}
 
         {/* Header */}
         <View style={styles.header}>
@@ -286,9 +293,9 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                 </Text>
                 <View style={[styles.row, styles.tableHeader]}>
                   <Text style={styles.col0}>#</Text>
-                  <Text style={styles.col1}>Cant.</Text>
-                  <Text style={styles.col2}>U.M.</Text>
                   <Text style={styles.col3}>Descripción</Text>
+                  <Text style={styles.col2}>U.M.</Text>
+                  <Text style={styles.col1}>Cant.</Text>
                   <Text style={styles.col4}>P. Unit.</Text>
                   <Text style={styles.col5}>Total</Text>
                 </View>
@@ -301,12 +308,6 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                   return (
                     <View key={det.id_orden_compra_detalle} style={styles.row}>
                       <Text style={styles.col0}>{idx + 1}</Text>
-                      <Text style={styles.col1}>
-                        {formatNumber(det.cantidad_requerida)}
-                      </Text>
-                      <Text style={styles.col2}>
-                        {det.unidad_medida_oc_abv}
-                      </Text>
                       <View style={styles.col3}>
                         <Text style={{ fontWeight: 700 }}>{det.producto}</Text>
                         {hasEquivalence && (
@@ -334,6 +335,12 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                           </Text>
                         )}
                       </View>
+                      <Text style={styles.col2}>
+                        {det.unidad_medida_oc_abv}
+                      </Text>
+                      <Text style={styles.col1}>
+                        {formatNumber(det.cantidad_requerida)}
+                      </Text>
                       <Text style={styles.col4}>
                         {symbol} {formatNumber(det.precio_unitario)}
                       </Text>
@@ -423,7 +430,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
             </View>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>Carlos Avalos</Text>
+              <Text style={styles.signatureName}>Yosi Henriquez</Text>
               <Text style={styles.signatureRole}>Jefe de Logística</Text>
             </View>
           </View>
@@ -434,8 +441,12 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View style={[styles.signatureSection, { justifyContent: "center" }]}>
             <View style={styles.signatureBox}>
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
-              <Text style={styles.signatureRole}>Contabilidad</Text>
+              <Text style={styles.signatureName}>
+                {orden.empleado_registro || "Ana Haro Culquitante"}
+              </Text>
+              <Text style={styles.signatureRole}>
+                {orden.cargo_empleado_registro || "Contabilidad"}
+              </Text>
             </View>
           </View>
         </View>

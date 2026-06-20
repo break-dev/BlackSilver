@@ -163,6 +163,20 @@ export const ModalSeleccionProductos = ({
       close={onClose}
       title="Añadir Productos al Comparativo"
       size="xl"
+      rightSection={
+        seleccionadosActuales.length > 0 && (
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="md"
+            size="sm"
+            className="font-bold flex items-center gap-1.5 px-3 py-1 shadow-inner bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+            leftSection={<CubeIcon className="w-3.5 h-3.5" />}
+          >
+            {seleccionadosActuales.length} {seleccionadosActuales.length === 1 ? "seleccionado" : "seleccionados"}
+          </Badge>
+        )
+      }
     >
       <Stack gap="md" className="relative">
         <Group grow gap="sm">

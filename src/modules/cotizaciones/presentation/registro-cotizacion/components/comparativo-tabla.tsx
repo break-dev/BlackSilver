@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Table, Text, Skeleton, Tooltip, ActionIcon } from "@mantine/core";
+import { Table, Text, Skeleton, Tooltip, ActionIcon, Badge, Stack } from "@mantine/core";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 import type {
@@ -34,7 +34,12 @@ interface ComparativoTablaProps {
   almacenes: RES_Almacen[];
   minas: RES_Mina[];
   proveedores: RES_Proveedor[];
+  onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: RES_Empresa[];
+  copiedCotizacion?: any;
+  onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
+  onPegarCotizacion?: (targetIndex: number) => void;
+  onCancelarCopiaCotizacion?: () => void;
   loadingProveedores?: boolean;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
@@ -84,7 +89,12 @@ export const ComparativoTabla = ({
   almacenes,
   minas,
   proveedores,
+  onAgregarProveedorLocal,
   empresas,
+  copiedCotizacion,
+  onIniciarCopiaCotizacion,
+  onPegarCotizacion,
+  onCancelarCopiaCotizacion,
   loadingProveedores,
   onUpdateHeader,
   onUpdateDetail,
@@ -163,15 +173,28 @@ export const ComparativoTabla = ({
             {/* Esquina PRODUCTOS: Fija vertical y horizontalmente */}
             <Table.Th
               style={{ width: 120, minWidth: 120, verticalAlign: "middle" }}
-              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-100 p-6 shadow-xl"
+              className="bg-zinc-900 border-b border-r border-zinc-800 sticky top-0 left-0 z-100 p-3 shadow-xl"
             >
-              <Text
-                size="xs"
-                fw={800}
-                className="text-white uppercase tracking-widest text-center"
-              >
-                Productos
-              </Text>
+              <Stack gap={4} align="center">
+                <Text
+                  size="xs"
+                  fw={800}
+                  className="text-white uppercase tracking-widest text-center"
+                >
+                  Productos
+                </Text>
+                {productos.length > 0 && (
+                  <Badge
+                    variant="light"
+                    color="indigo"
+                    size="xs"
+                    radius="sm"
+                    className="font-bold border border-indigo-500/20 bg-indigo-500/10 text-indigo-400"
+                  >
+                    {productos.length} {productos.length === 1 ? "item" : "items"}
+                  </Badge>
+                )}
+              </Stack>
             </Table.Th>
 
             {/* Renderizar Cotizaciones Reales */}
@@ -190,7 +213,12 @@ export const ComparativoTabla = ({
                   cot={cot}
                   idx={idx}
                   proveedores={proveedores}
+                  onAgregarProveedorLocal={onAgregarProveedorLocal}
                   empresas={empresas}
+                  copiedCotizacion={copiedCotizacion}
+                  onIniciarCopiaCotizacion={onIniciarCopiaCotizacion}
+                  onPegarCotizacion={onPegarCotizacion}
+                  onCancelarCopiaCotizacion={onCancelarCopiaCotizacion}
                   loadingProveedores={loadingProveedores}
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
@@ -264,6 +292,7 @@ export const ComparativoTabla = ({
             productos.map((prod, pIdx) => (
               <Table.Tr
                 key={`${prod?.id_producto}-${pIdx}`}
+                id={prod ? `producto-fila-${prod.id_producto}` : undefined}
                 className="border-b border-zinc-900 hover:bg-zinc-900/10 transition-colors"
               >
                 {/* Columna fija del producto */}

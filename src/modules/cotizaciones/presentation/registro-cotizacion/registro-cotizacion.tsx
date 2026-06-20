@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle, useEffect } from "react";
 import { Group, Button } from "@mantine/core";
 import {
   useRegistroCotizacion,
@@ -21,6 +21,7 @@ interface RegistroCotizacionProps {
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
   esAuditableGlobal: boolean;
+  onProductosChange?: (prods: { id_producto: number; nombre: string }[]) => void;
 }
 
 export const RegistroCotizacion = forwardRef<
@@ -38,6 +39,7 @@ export const RegistroCotizacion = forwardRef<
       modalProductosOpened,
       setModalProductosOpened,
       esAuditableGlobal,
+      onProductosChange,
     },
     ref,
   ) => {
@@ -89,6 +91,7 @@ export const RegistroCotizacion = forwardRef<
       toggleCotizacionNoCotiza,
       handleSave,
       maestros,
+      agregarProveedorLocal,
       wizardAprobacionOpened,
       setWizardAprobacionOpened,
       wizardPayload,
@@ -98,6 +101,10 @@ export const RegistroCotizacion = forwardRef<
       iniciarCopia,
       cancelarCopia,
       pegarCopia,
+      copiedCotizacion,
+      iniciarCopiaCotizacion,
+      pegarCotizacion,
+      cancelarCopiaCotizacion,
     } = useRegistroCotizacion(handleInternalSuccess);
 
     // Exponemos la función al componente padre (CotizacionesPage)
@@ -122,6 +129,21 @@ export const RegistroCotizacion = forwardRef<
       };
     });
 
+    useEffect(() => {
+      const uniqueProds: { id_producto: number; nombre: string }[] = [];
+      const seen = new Set<number>();
+      for (const p of productosParaMostrar) {
+        if (!seen.has(p.id_producto)) {
+          seen.add(p.id_producto);
+          uniqueProds.push({
+            id_producto: p.id_producto,
+            nombre: p.nombre,
+          });
+        }
+      }
+      onProductosChange?.(uniqueProds);
+    }, [productosParaMostrar, onProductosChange]);
+
     return (
       <div className="flex flex-col h-[calc(100vh-180px)] overflow-hidden">
         {/* Área de la Tabla (La tabla maneja su propio scroll interno) */}
@@ -137,6 +159,7 @@ export const RegistroCotizacion = forwardRef<
             almacenes={maestros.almacenes}
             minas={maestros.minas}
             proveedores={maestros.proveedores}
+            onAgregarProveedorLocal={agregarProveedorLocal}
             empresas={maestros.empresas}
             loadingProveedores={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
@@ -150,6 +173,10 @@ export const RegistroCotizacion = forwardRef<
             onIniciarCopia={iniciarCopia}
             onCancelarCopia={cancelarCopia}
             onPegarCopia={pegarCopia}
+            copiedCotizacion={copiedCotizacion}
+            onIniciarCopiaCotizacion={iniciarCopiaCotizacion}
+            onPegarCotizacion={pegarCotizacion}
+            onCancelarCopiaCotizacion={cancelarCopiaCotizacion}
           />
         </div>
 

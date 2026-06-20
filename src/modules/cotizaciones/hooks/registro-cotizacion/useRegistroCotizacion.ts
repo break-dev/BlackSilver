@@ -17,7 +17,7 @@ export const useRegistroCotizacion = (
     printTarget?: string,
   ) => void,
 ) => {
-  const { maestros, loadingMaestros } = useCotizacionMaestros();
+  const { maestros, loadingMaestros, agregarProveedorLocal } = useCotizacionMaestros();
   
   const {
     productos,
@@ -41,6 +41,10 @@ export const useRegistroCotizacion = (
     iniciarCopia: _iniciarCopia,
     cancelarCopia,
     pegarCopia,
+    copiedCotizacion,
+    iniciarCopiaCotizacion,
+    pegarCotizacion,
+    cancelarCopiaCotizacion,
   } = useCotizacionHandlers(setProductos, setCotizaciones, maestros);
 
   const {
@@ -60,10 +64,19 @@ export const useRegistroCotizacion = (
     [_iniciarCopia, cotizaciones],
   );
 
+  // Wrapper para pasar cotizaciones al iniciar copia de cotización completa
+  const _iniciarCopiaCotizacion = useCallback(
+    (sourceIndex: number, type: "all" | "general" | "delivery") => {
+      iniciarCopiaCotizacion(sourceIndex, type, cotizaciones);
+    },
+    [iniciarCopiaCotizacion, cotizaciones],
+  );
+
   return {
     productos,
     cotizaciones,
     maestros,
+    agregarProveedorLocal,
     loading,
     loadingMaestros,
     toggleProductoEnComparador,
@@ -85,5 +98,9 @@ export const useRegistroCotizacion = (
     iniciarCopia,
     cancelarCopia,
     pegarCopia,
+    copiedCotizacion,
+    iniciarCopiaCotizacion: _iniciarCopiaCotizacion,
+    pegarCotizacion,
+    cancelarCopiaCotizacion,
   };
 };

@@ -63,6 +63,7 @@ export const CustomDatePicker = ({
           dropdown:
             "bg-zinc-900 border border-zinc-800 shadow-2xl rounded-xl p-4",
         },
+        ...props.popoverProps,
       }}
       classNames={{
         ...inputStyles,

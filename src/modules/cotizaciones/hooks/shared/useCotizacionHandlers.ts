@@ -11,12 +11,47 @@ import {
 import { TipoDespachoCompra } from "../../../../shared/enums/_generic/tipo-despacho-compra";
 import { Periodo } from "../../../../shared/enums/_generic/periodo";
 import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
+import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import {
   recalcularTotales,
   DIAS_POR_PERIODO,
   type MaestrosState,
 } from "./utils";
 import { useNotify } from "../../../../hooks/useNotify";
+
+export interface CopiedCotizacion {
+  sourceIndex: number;
+  type: "all" | "general" | "delivery";
+  headerData: {
+    empresas_ids: number[];
+    moneda: string;
+    tipo_cambio_venta_referencial?: number | null;
+    metodo_pago: MetodoPago;
+    fecha_vencimiento_pago?: string | null;
+    costo_flete?: number;
+    otros_gastos?: number;
+    incluye_igv: boolean;
+    porcentaje_igv: number;
+    observacion?: string | null;
+  };
+  detailsData: {
+    id_producto: number;
+    id_unidad_medida: number;
+    cantidad: number;
+    contenido_por_presentacion: number;
+    cantidad_base: number;
+    precio_unitario?: number | null;
+    precio_unitario_base?: number | null;
+    comentario?: string | null;
+    id_almacen_recepcionista?: number | null;
+    id_mina_destino?: number | null;
+    tipo_despacho: TipoDespachoCompra;
+    lugar_recojo?: string | null;
+    tiempo_entrega: number;
+    tiempo_entrega_periodo: Periodo;
+    tiempo_entrega_dias: number;
+  }[];
+}
 
 export const useCotizacionHandlers = (
   setProductos: React.Dispatch<React.SetStateAction<DTO_ProductoComparativo[]>>,
@@ -33,6 +68,8 @@ export const useCotizacionHandlers = (
     id_producto: number;
     data: Partial<DTO_CotizacionDetalle>;
   } | null>(null);
+
+  const [copiedCotizacion, setCopiedCotizacion] = useState<CopiedCotizacion | null>(null);
 
   const updateCotizacionHeader = useCallback(
     <K extends keyof DTO_CotizacionRequest>(
@@ -111,13 +148,10 @@ export const useCotizacionHandlers = (
               upd.contenido_por_presentacion = 1;
             }
 
-            // Sugerir precio si está vacío, es 0 o si el precio base actual coincide con el costo promedio (es sugerido)
+            // Sugerir precio si está vacío o es 0
             const esSugerido =
               !upd.precio_unitario ||
-              upd.precio_unitario === 0 ||
-              Math.abs(
-                (upd.precio_unitario_base || 0) - maestro.costo_promedio_base,
-              ) < 0.01;
+              upd.precio_unitario === 0;
 
             if (esSugerido) {
               upd.precio_unitario = Number(
@@ -135,13 +169,10 @@ export const useCotizacionHandlers = (
           );
 
           if (maestro) {
-            // Recalcular precio sugerido si es un valor sugerido (coincide con el base) o si es 0
+            // Recalcular precio sugerido si es 0 o vacío
             const esSugerido =
               !upd.precio_unitario ||
-              upd.precio_unitario === 0 ||
-              Math.abs(
-                (upd.precio_unitario_base || 0) - maestro.costo_promedio_base,
-              ) < 0.01;
+              upd.precio_unitario === 0;
 
             if (esSugerido) {
               upd.precio_unitario = Number(
@@ -382,6 +413,135 @@ export const useCotizacionHandlers = (
     [copySource, notify, setCotizaciones],
   );
 
+  const iniciarCopiaCotizacion = useCallback((
+    sourceIndex: number,
+    type: "all" | "general" | "delivery",
+    cotizaciones: DTO_CotizacionRequest[]
+  ) => {
+    const src = cotizaciones[sourceIndex];
+    if (!src) return;
+
+    setCopiedCotizacion({
+      sourceIndex,
+      type,
+      headerData: {
+        empresas_ids: src.empresas_ids,
+        moneda: src.moneda,
+        tipo_cambio_venta_referencial: src.tipo_cambio_venta_referencial ?? null,
+        metodo_pago: src.metodo_pago,
+        fecha_vencimiento_pago: src.fecha_vencimiento_pago ?? null,
+        costo_flete: src.costo_flete,
+        otros_gastos: src.otros_gastos,
+        incluye_igv: src.incluye_igv,
+        porcentaje_igv: src.porcentaje_igv,
+        observacion: src.observacion ?? null,
+      },
+      detailsData: src.detalles.map(d => ({
+        id_producto: d.id_producto,
+        id_unidad_medida: d.id_unidad_medida,
+        cantidad: d.cantidad,
+        contenido_por_presentacion: d.contenido_por_presentacion,
+        cantidad_base: d.cantidad_base,
+        precio_unitario: d.precio_unitario ?? null,
+        precio_unitario_base: d.precio_unitario_base ?? null,
+        comentario: d.comentario ?? null,
+        id_almacen_recepcionista: d.id_almacen_recepcionista ?? null,
+        id_mina_destino: d.id_mina_destino ?? null,
+        tipo_despacho: d.tipo_despacho,
+        lugar_recojo: d.lugar_recojo ?? null,
+        tiempo_entrega: d.tiempo_entrega,
+        tiempo_entrega_periodo: d.tiempo_entrega_periodo,
+        tiempo_entrega_dias: d.tiempo_entrega_dias,
+      }))
+    });
+
+    notify({
+      type: "success",
+      content: type === "all" 
+        ? "Toda la cotización (sin Proveedor) copiada."
+        : type === "general" 
+        ? "Datos generales (Empresas y Pago) copiados."
+        : "Destinos de entrega copiados."
+    });
+  }, [notify]);
+
+  const pegarCotizacion = useCallback((
+    targetIndex: number
+  ) => {
+    if (!copiedCotizacion) return;
+
+    setCotizaciones((prev) => {
+      const p = [...prev];
+      const target = { ...p[targetIndex] };
+
+      if (copiedCotizacion.type === "all") {
+        target.empresas_ids = copiedCotizacion.headerData.empresas_ids;
+        target.moneda = copiedCotizacion.headerData.moneda;
+        target.tipo_cambio_venta_referencial = copiedCotizacion.headerData.tipo_cambio_venta_referencial;
+        target.metodo_pago = copiedCotizacion.headerData.metodo_pago;
+        target.fecha_vencimiento_pago = copiedCotizacion.headerData.fecha_vencimiento_pago;
+        target.costo_flete = copiedCotizacion.headerData.costo_flete ?? 0;
+        target.otros_gastos = copiedCotizacion.headerData.otros_gastos ?? 0;
+        target.incluye_igv = copiedCotizacion.headerData.incluye_igv;
+        target.porcentaje_igv = copiedCotizacion.headerData.porcentaje_igv;
+        target.observacion = copiedCotizacion.headerData.observacion;
+      } else if (copiedCotizacion.type === "general") {
+        target.costo_flete = copiedCotizacion.headerData.costo_flete ?? 0;
+        target.otros_gastos = copiedCotizacion.headerData.otros_gastos ?? 0;
+        target.incluye_igv = copiedCotizacion.headerData.incluye_igv;
+        target.porcentaje_igv = copiedCotizacion.headerData.porcentaje_igv;
+      }
+
+      if (copiedCotizacion.type === "all") {
+        target.detalles = target.detalles.map((d, dIdx) => {
+          const srcDetail = copiedCotizacion.detailsData[dIdx];
+          if (!srcDetail) return d;
+          return {
+            ...d,
+            id_unidad_medida: srcDetail.id_unidad_medida,
+            cantidad: srcDetail.cantidad,
+            contenido_por_presentacion: srcDetail.contenido_por_presentacion,
+            cantidad_base: srcDetail.cantidad_base,
+            precio_unitario: srcDetail.precio_unitario,
+            precio_unitario_base: srcDetail.precio_unitario_base,
+            comentario: srcDetail.comentario,
+            id_almacen_recepcionista: srcDetail.id_almacen_recepcionista,
+            id_mina_destino: srcDetail.id_mina_destino,
+            tipo_despacho: srcDetail.tipo_despacho,
+            lugar_recojo: srcDetail.lugar_recojo,
+            tiempo_entrega: srcDetail.tiempo_entrega,
+            tiempo_entrega_periodo: srcDetail.tiempo_entrega_periodo,
+            tiempo_entrega_dias: srcDetail.tiempo_entrega_dias,
+          };
+        });
+      } else if (copiedCotizacion.type === "delivery") {
+        target.detalles = target.detalles.map((d, dIdx) => {
+          const srcDetail = copiedCotizacion.detailsData[dIdx];
+          if (!srcDetail) return d;
+          return {
+            ...d,
+            id_almacen_recepcionista: srcDetail.id_almacen_recepcionista,
+            id_mina_destino: srcDetail.id_mina_destino,
+            tipo_despacho: srcDetail.tipo_despacho,
+            lugar_recojo: srcDetail.lugar_recojo,
+            tiempo_entrega: srcDetail.tiempo_entrega,
+            tiempo_entrega_periodo: srcDetail.tiempo_entrega_periodo,
+            tiempo_entrega_dias: srcDetail.tiempo_entrega_dias,
+          };
+        });
+      }
+
+      Object.assign(target, recalcularTotales(target));
+      p[targetIndex] = target;
+      return p;
+    });
+
+    setCopiedCotizacion(null);
+    notify({ type: "success", content: "Datos pegados con éxito." });
+  }, [copiedCotizacion, setCotizaciones, notify]);
+
+  const cancelarCopiaCotizacion = useCallback(() => setCopiedCotizacion(null), []);
+
   return {
     updateCotizacionHeader,
     updateCotizacionDetail,
@@ -392,5 +552,9 @@ export const useCotizacionHandlers = (
     iniciarCopia,
     cancelarCopia,
     pegarCopia,
+    copiedCotizacion,
+    iniciarCopiaCotizacion,
+    pegarCotizacion,
+    cancelarCopiaCotizacion,
   };
 };

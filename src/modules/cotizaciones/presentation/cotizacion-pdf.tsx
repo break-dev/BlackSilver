@@ -191,14 +191,21 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             const logosConImg = empresas.filter((e) => e.path_logo);
             return (
               <View style={styles.logoContainer}>
-                <View style={{ flexDirection: "row", gap: 20 }}>
-                  {logosConImg.map((emp, i) => (
-                    <Image
-                      key={i}
-                      src={emp.path_logo as string}
-                      style={{ width: 90, height: 45, objectFit: "contain" }}
-                    />
-                  ))}
+                <View style={{ flexDirection: "row", gap: 20, alignItems: "center" }}>
+                  {logosConImg.map((emp, i) => {
+                    const isCupper = emp.razon_social.toUpperCase().includes("CUPPER") || emp.razon_social.toUpperCase().includes("HANNIA");
+                    return (
+                      <Image
+                        key={i}
+                        src={emp.path_logo as string}
+                        style={
+                          isCupper
+                            ? { width: 70, height: 70, objectFit: "contain" }
+                            : { width: 110, height: 40, objectFit: "contain" }
+                        }
+                      />
+                    );
+                  })}
                 </View>
                 <Text style={{ fontSize: 7, color: "#94a3b8" }}>
                   Documento de Cotización Interna
@@ -291,9 +298,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                     {/* Header Tabla */}
                     <View style={[styles.row, styles.tableHeader]}>
                       <Text style={styles.col0}>#</Text>
-                      <Text style={styles.col1}>Cant.</Text>
-                      <Text style={styles.col2}>U.M.</Text>
                       <Text style={styles.col3}>Descripción</Text>
+                      <Text style={styles.col2}>U.M.</Text>
+                      <Text style={styles.col1}>Cant.</Text>
                       <Text style={styles.col4}>P. Unit.</Text>
                       <Text style={styles.col5}>Total</Text>
                     </View>
@@ -309,12 +316,6 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                           style={styles.row}
                         >
                           <Text style={styles.col0}>{idx + 1}</Text>
-                          <Text style={styles.col1}>
-                            {formatNumber(det.cantidad)}
-                          </Text>
-                          <Text style={styles.col2}>
-                            {det.unidad_medida_ctz_abv}
-                          </Text>
                           <View style={styles.col3}>
                             <Text style={{ fontWeight: 600 }}>
                               {det.producto}
@@ -345,6 +346,12 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                               </Text>
                             )}
                           </View>
+                          <Text style={styles.col2}>
+                            {det.unidad_medida_ctz_abv}
+                          </Text>
+                          <Text style={styles.col1}>
+                            {formatNumber(det.cantidad)}
+                          </Text>
                           <Text style={styles.col4}>
                             {symbol} {formatNumber(det.precio_unitario)}
                           </Text>
@@ -426,7 +433,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                 </View>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>Carlos Avalos</Text>
+                  <Text style={styles.signatureName}>Yosi Henriquez</Text>
                   <Text style={styles.signatureRole}>Jefe de Logística</Text>
                 </View>
               </View>
@@ -437,8 +444,12 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               <View style={[styles.signatureSection, { justifyContent: "center" }]}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>Ana Haro Culquitante</Text>
-                  <Text style={styles.signatureRole}>Contabilidad</Text>
+                  <Text style={styles.signatureName}>
+                    {cotizacion.empleado_registro || "Ana Haro Culquitante"}
+                  </Text>
+                  <Text style={styles.signatureRole}>
+                    {cotizacion.cargo_empleado_registro || "Contabilidad"}
+                  </Text>
                 </View>
               </View>
             </View>

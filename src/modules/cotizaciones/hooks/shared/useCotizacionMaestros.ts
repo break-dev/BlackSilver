@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { MaestrosState } from "./utils";
 import { AuxService } from "../../../../service/auxiliar.service";
+import type { RES_Proveedor } from "../../../../service/responses/proveedor";
 
 export const useCotizacionMaestros = () => {
   const [loadingMaestros, setLoadingMaestros] = useState(true);
@@ -12,6 +13,13 @@ export const useCotizacionMaestros = () => {
     almacenes: [],
     minas: [],
   });
+
+  const agregarProveedorLocal = useCallback((nuevo: RES_Proveedor) => {
+    setMaestros((prev) => ({
+      ...prev,
+      proveedores: [...prev.proveedores, nuevo],
+    }));
+  }, []);
 
   useEffect(() => {
     const cargarMaestros = async () => {
@@ -44,5 +52,5 @@ export const useCotizacionMaestros = () => {
     cargarMaestros();
   }, []);
 
-  return { maestros, loadingMaestros };
+  return { maestros, loadingMaestros, agregarProveedorLocal };
 };

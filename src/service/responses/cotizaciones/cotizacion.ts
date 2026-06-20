@@ -91,6 +91,10 @@ export interface RES_Cotizacion {
   //
   evidencias: IArchivo[] | null;
   //
+  id_empleado_registro: number;
+  empleado_registro: string | null;
+  cargo_empleado_registro: string | null;
+  //
   created_at: string;
   estado: Estado_Cotizacion;
   // Insertados por la api

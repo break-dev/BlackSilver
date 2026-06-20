@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Group,
   Stack,
@@ -17,6 +17,7 @@ import {
   SegmentedControl,
   Center,
   Box,
+  Menu,
 } from "@mantine/core";
 import {
   XMarkIcon,
@@ -28,9 +29,13 @@ import {
   BuildingStorefrontIcon,
   ClockIcon,
   MapPinIcon,
+  PlusIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { FormProveedor } from "../../../../../presentation/utils/form-proveedor";
 import type { DTO_CotizacionRequest } from "../../../service/cotizaciones.requests";
 import { MetodoPago } from "../../../../../shared/enums/_generic/metodo-pago";
 import { Estado_Cotizacion } from "../../../../../shared/enums/cotizacion/cotizacion";
@@ -43,13 +48,19 @@ import { MONEDAS } from "../../../../../shared/variables/monedas";
 import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion-periodo";
 import { enPlural } from "../../../../../shared/functions/en-plural";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
+import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
   idx: number;
 
   proveedores: RES_Proveedor[];
+  onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: { id_empresa: number; razon_social: string }[];
+  copiedCotizacion?: CopiedCotizacion | null;
+  onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
+  onPegarCotizacion?: (targetIndex: number) => void;
+  onCancelarCopiaCotizacion?: () => void;
 
   loadingProveedores?: boolean;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
@@ -87,7 +98,11 @@ export const CabeceraCotizacion = ({
   cot,
   idx,
   proveedores,
+  onAgregarProveedorLocal,
   empresas,
+  copiedCotizacion,
+  onIniciarCopiaCotizacion,
+  onPegarCotizacion,
   loadingProveedores,
   onUpdateHeader,
   onRemoveCotizacion,
@@ -105,7 +120,16 @@ export const CabeceraCotizacion = ({
   ];
 
   const { notify } = useNotify();
+  const [openedAddProveedor, setOpenedAddProveedor] = useState(false);
   const [popoverOpened, setPopoverOpened] = useState(false);
+
+  const handleNuevoProveedorExitoso = (nuevo: RES_Proveedor) => {
+    if (onAgregarProveedorLocal) {
+      onAgregarProveedorLocal(nuevo);
+    }
+    onUpdateHeader(idx, "id_proveedor", nuevo.id_proveedor);
+    setOpenedAddProveedor(false);
+  };
   const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
   const [globalMina, setGlobalMina] = useState<string | null>(null);
   const [globalDestinoTipo, setGlobalDestinoTipo] = useState<"almacen" | "mina">("almacen");
@@ -117,6 +141,26 @@ export const CabeceraCotizacion = ({
 
   const [globalTiempo, setGlobalTiempo] = useState<number>(1);
   const [globalPeriodo, setGlobalPeriodo] = useState<Periodo>(Periodo.Semanal);
+
+  useEffect(() => {
+    const firstDetail = cot?.detalles?.[0];
+    if (firstDetail) {
+      const timer = setTimeout(() => {
+        if (firstDetail.id_almacen_recepcionista) {
+          setGlobalAlmacen(String(firstDetail.id_almacen_recepcionista));
+          setGlobalDestinoTipo("almacen");
+        } else if (firstDetail.id_mina_destino) {
+          setGlobalMina(String(firstDetail.id_mina_destino));
+          setGlobalDestinoTipo("mina");
+        }
+        setGlobalDespacho(firstDetail.tipo_despacho || TipoDespachoCompra.Envio);
+        setGlobalLugarRecojo(firstDetail.lugar_recojo || "");
+        setGlobalTiempo(firstDetail.tiempo_entrega ?? 1);
+        setGlobalPeriodo(firstDetail.tiempo_entrega_periodo || Periodo.Semanal);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [cot?.detalles]);
 
   const handleApplyGlobalLogistica = () => {
     if (!onUpdateGlobalLogistica) return;
@@ -168,14 +212,76 @@ export const CabeceraCotizacion = ({
 
   return (
     <Stack gap={4} className="pt-0 pb-3 px-1 relative group-header">
-      <Group justify="space-between" align="center">
-        <Text
-          size="sm"
-          fw={800}
-          className="text-white tracking-tight uppercase"
-        >
-          Cotización #{idx + 1}
-        </Text>
+      <Group justify="space-between" align="center" wrap="nowrap">
+        <Group gap="xs" align="center" wrap="nowrap">
+          <Text
+            size="sm"
+            fw={800}
+            className="text-white tracking-tight uppercase"
+          >
+            Cotización #{idx + 1}
+          </Text>
+
+          {cot && (
+            <Menu shadow="md" width={240} trigger="click" position="bottom-start" zIndex={10001}>
+              <Menu.Target>
+                <Tooltip label="Copiar datos" withArrow>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    className="hover:bg-zinc-800/50 rounded-md"
+                  >
+                    <DocumentDuplicateIcon className="w-4 h-4 text-zinc-400" />
+                  </ActionIcon>
+                </Tooltip>
+              </Menu.Target>
+              <Menu.Dropdown className="bg-zinc-950 border-zinc-800 text-zinc-300">
+                <Menu.Label className="text-zinc-500 font-bold uppercase tracking-wider text-[9px] px-2 py-1.5">Opciones</Menu.Label>
+                <Menu.Item
+                  leftSection={<DocumentDuplicateIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
+                  style={{ fontSize: "11px" }}
+                  onClick={() => onIniciarCopiaCotizacion?.(idx, "all")}
+                >
+                  Copiar cotización completa
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<ClipboardDocumentCheckIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
+                  style={{ fontSize: "11px" }}
+                  onClick={() => onIniciarCopiaCotizacion?.(idx, "general")}
+                >
+                  Copiar solo gastos
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<TruckIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
+                  style={{ fontSize: "11px" }}
+                  onClick={() => onIniciarCopiaCotizacion?.(idx, "delivery")}
+                >
+                  Copiar destinos de entrega
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
+
+          {copiedCotizacion && copiedCotizacion.sourceIndex !== idx && (
+            <Tooltip label="Pegar datos aquí" withArrow>
+              <Button
+                variant="filled"
+                color="teal"
+                size="xs"
+                radius="md"
+                h={22}
+                onClick={() => onPegarCotizacion?.(idx)}
+                className="animate-pulse px-2.5 font-bold uppercase shadow-lg shadow-teal-900/20 text-[9px] border-0"
+              >
+                Pegar aquí
+              </Button>
+            </Tooltip>
+          )}
+        </Group>
         <ActionIcon
           variant="subtle"
           color="red"
@@ -227,6 +333,18 @@ export const CabeceraCotizacion = ({
               transitionProps: { transition: "pop", duration: 200 },
             }}
           />
+          <Tooltip label="Añadir proveedor" withArrow zIndex={10000}>
+            <ActionIcon
+              variant="light"
+              color="indigo"
+              radius="lg"
+              size="32px"
+              className="border border-indigo-500/20 hover:border-indigo-500/40"
+              onClick={() => setOpenedAddProveedor(true)}
+            >
+              <PlusIcon className="w-4 h-4" />
+            </ActionIcon>
+          </Tooltip>
           <div
             className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
             onClick={() =>
@@ -653,6 +771,7 @@ export const CabeceraCotizacion = ({
                     }
                     size="xs"
                     radius="lg"
+                    popoverProps={{ withinPortal: false }}
                   />
                 )}
 
@@ -771,6 +890,18 @@ export const CabeceraCotizacion = ({
           </Popover>
         </Group>
       </Group>
+
+      <ModalEstandar
+        opened={openedAddProveedor}
+        close={() => setOpenedAddProveedor(false)}
+        title="Nuevo Proveedor"
+        size="lg"
+      >
+        <FormProveedor
+          onCancel={() => setOpenedAddProveedor(false)}
+          onSuccess={handleNuevoProveedorExitoso}
+        />
+      </ModalEstandar>
     </Stack>
   );
 };

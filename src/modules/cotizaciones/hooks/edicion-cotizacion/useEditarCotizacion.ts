@@ -26,7 +26,7 @@ export const useEditarCotizacion = (
   onSuccess: (data: RES_Comparativo[]) => void,
 ) => {
   const { notify } = useNotify();
-  const { maestros, loadingMaestros } = useCotizacionMaestros();
+  const { maestros, loadingMaestros, agregarProveedorLocal } = useCotizacionMaestros();
   const [loading, setLoading] = useState(false);
 
   // Mapear RES_Cotizacion a DTO_CotizacionRequest para el grid
@@ -93,6 +93,10 @@ export const useEditarCotizacion = (
     iniciarCopia: _iniciarCopia,
     cancelarCopia,
     pegarCopia,
+    copiedCotizacion,
+    iniciarCopiaCotizacion,
+    pegarCotizacion,
+    cancelarCopiaCotizacion,
   } = useCotizacionHandlers(setProductos, setCotizaciones, maestros);
 
   const iniciarCopia = useCallback(
@@ -100,6 +104,13 @@ export const useEditarCotizacion = (
       _iniciarCopia(cotIndex, rowIndex, id_producto, cotizaciones);
     },
     [_iniciarCopia, cotizaciones],
+  );
+
+  const _iniciarCopiaCotizacion = useCallback(
+    (sourceIndex: number, type: "all" | "general" | "delivery") => {
+      iniciarCopiaCotizacion(sourceIndex, type, cotizaciones);
+    },
+    [iniciarCopiaCotizacion, cotizaciones],
   );
 
   const handleSave = async () => {
@@ -243,6 +254,7 @@ export const useEditarCotizacion = (
     productos,
     cotizaciones,
     maestros: maestrosPreCargados,
+    agregarProveedorLocal,
     loading,
     loadingMaestros,
     updateCotizacionHeader,
@@ -254,5 +266,9 @@ export const useEditarCotizacion = (
     iniciarCopia,
     cancelarCopia,
     pegarCopia,
+    copiedCotizacion,
+    iniciarCopiaCotizacion: _iniciarCopiaCotizacion,
+    pegarCotizacion,
+    cancelarCopiaCotizacion,
   };
 };

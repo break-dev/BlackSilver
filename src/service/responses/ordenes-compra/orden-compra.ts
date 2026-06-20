@@ -42,6 +42,10 @@ export interface RES_OrdenCompra {
   monto_igv: number;
   total_despues_igv: number;
   //
+  id_empleado_registro: number;
+  empleado_registro: string | null;
+  cargo_empleado_registro: string | null;
+  //
   created_at: string;
   estado: Estado_OrdenCompra;
   // Detalles insertados por la api

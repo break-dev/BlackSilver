@@ -1,4 +1,4 @@
-import { Stack, Text, Button, Group, Divider } from "@mantine/core";
+import { Stack, Text, Button, Group, Divider, Select } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   ClipboardDocumentListIcon,
@@ -40,6 +40,7 @@ export const CotizacionesPage = () => {
   const [openedProductos, setOpenedProductos] = useState(false);
   const [esAuditableGlobal, setEsAuditableGlobal] = useState(false);
   const [openedConfirm, setOpenedConfirm] = useState(false);
+  const [productosEnCotizacion, setProductosEnCotizacion] = useState<{ id_producto: number; nombre: string }[]>([]);
 
   const { happy, close } = useBlackcito();
   const registroRef = useRef<{
@@ -119,6 +120,39 @@ export const CotizacionesPage = () => {
           <Group gap="sm">
             {openedCreate && (
               <>
+                {productosEnCotizacion.length > 0 && (
+                  <Select
+                    placeholder="Buscar producto..."
+                    data={productosEnCotizacion.map((p) => ({
+                      value: String(p.id_producto),
+                      label: p.nombre,
+                    }))}
+                    searchable
+                    clearable
+                    size="xs"
+                    radius="xl"
+                    classNames={{
+                      input: "bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 w-52 focus:border-zinc-500",
+                      dropdown: "bg-zinc-900 border-zinc-800",
+                      option: "text-zinc-300 hover:bg-zinc-800 data-[selected]:bg-indigo-600 data-[selected]:text-white",
+                    }}
+                    comboboxProps={{
+                      zIndex: 10002,
+                    }}
+                    onChange={(val) => {
+                      if (val) {
+                        const element = document.getElementById(`producto-fila-${val}`);
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "center" });
+                          element.classList.add("bg-indigo-500/10");
+                          setTimeout(() => {
+                            element.classList.remove("bg-indigo-500/10");
+                          }, 2000);
+                        }
+                      }
+                    }}
+                  />
+                )}
                 <Button
                   variant={esAuditableGlobal ? "filled" : "light"}
                   color="red"
@@ -180,6 +214,7 @@ export const CotizacionesPage = () => {
           modalProductosOpened={openedProductos}
           setModalProductosOpened={setOpenedProductos}
           esAuditableGlobal={esAuditableGlobal}
+          onProductosChange={setProductosEnCotizacion}
         />
       </ModalEstandar>
 
