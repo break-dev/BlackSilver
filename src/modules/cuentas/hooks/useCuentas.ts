@@ -1,16 +1,15 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { CuentasService } from "../service/cuentas.service";
 import { useDisclosure } from "@mantine/hooks";
-import type {
-  RES_Cuenta,
-  RES_RolDisponible,
-} from "../service/cuentas.responses";
+import type { RES_Cuenta } from "../service/cuentas.responses";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_Rol } from "../../../service/responses/rol";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export const useCuentas = () => {
   const [cuentas, setCuentas] = useState<RES_Cuenta[]>([]);
-  const [roles, setRoles] = useState<RES_RolDisponible[]>([]);
+  const [roles, setRoles] = useState<RES_Rol[]>([]);
   const [empleadosSinCuenta, setEmpleadosSinCuenta] = useState<RES_Empleado[]>(
     [],
   );
@@ -26,18 +25,11 @@ export const useCuentas = () => {
 
   const [selectedCuenta, setSelectedCuenta] = useState<RES_Cuenta | null>(null);
 
-  const cargarDatos = useCallback(async () => {
+  const cargarCuentas = useCallback(async () => {
     setLoading(true);
     try {
-      const [resCuentas, resRoles, resEmpleados] = await Promise.all([
-        CuentasService.fetchCuentas(),
-        CuentasService.fetchRolesDisponibles(),
-        CuentasService.fetchEmpleadosSinCuenta(),
-      ]);
-
+      const resCuentas = await CuentasService.fetchCuentas();
       if (resCuentas.success) setCuentas(resCuentas.data);
-      if (resRoles.success) setRoles(resRoles.data);
-      if (resEmpleados.success) setEmpleadosSinCuenta(resEmpleados.data);
     } catch (error) {
       console.error("Error cargando datos de cuentas:", error);
     } finally {
@@ -45,9 +37,41 @@ export const useCuentas = () => {
     }
   }, []);
 
+  const [loadingRoles, setLoadingRoles] = useState(false);
+  const [loadingEmpleados, setLoadingEmpleados] = useState(false);
+
+  const cargarRoles = useCallback(async () => {
+    setLoadingRoles(true);
+    try {
+      const res = await AuxService.get_roles_disponibles();
+      if (res.success) setRoles(res.data);
+    } catch (error) {
+      console.error("Error cargando roles:", error);
+    } finally {
+      setLoadingRoles(false);
+    }
+  }, []);
+
+  const cargarEmpleadosSinCuenta = useCallback(async () => {
+    setLoadingEmpleados(true);
+    try {
+      const res = await AuxService.get_empleados({ con_cuenta: false });
+      if (res.success) setEmpleadosSinCuenta(res.data);
+    } catch (error) {
+      console.error("Error cargando empleados sin cuenta:", error);
+    } finally {
+      setLoadingEmpleados(false);
+    }
+  }, []);
+
+  const cargarOpcionesFormulario = useCallback(() => {
+    cargarRoles();
+    cargarEmpleadosSinCuenta();
+  }, [cargarRoles, cargarEmpleadosSinCuenta]);
+
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
+    cargarCuentas();
+  }, [cargarCuentas]);
 
   const cuentasFiltradas = useMemo(() => {
     return cuentas.filter(
@@ -59,10 +83,17 @@ export const useCuentas = () => {
     );
   }, [cuentas, busqueda]);
 
-  const handleOpenEdit = (cuenta: RES_Cuenta) => {
-    setSelectedCuenta(cuenta);
+  const handleOpenCreate = useCallback(() => {
+    setSelectedCuenta(null);
+    cargarOpcionesFormulario();
     openCreate();
-  };
+  }, [cargarOpcionesFormulario, openCreate]);
+
+  const handleOpenEdit = useCallback((cuenta: RES_Cuenta) => {
+    setSelectedCuenta(cuenta);
+    cargarOpcionesFormulario();
+    openCreate();
+  }, [cargarOpcionesFormulario, openCreate]);
 
   const handleUpdatePhoto = async (idEmpleado: number, file: File) => {
     setUpdatingPhoto(idEmpleado);
@@ -73,9 +104,7 @@ export const useCuentas = () => {
         // Actualización local sin recargar todo el listado
         setCuentas((prev) =>
           prev.map((c) =>
-            c.id_empleado === idEmpleado
-              ? { ...c, path_foto: res.data.url }
-              : c,
+            c.id_empleado === idEmpleado ? { ...c, url_foto: res.data } : c,
           ),
         );
       } else {
@@ -88,21 +117,31 @@ export const useCuentas = () => {
     }
   };
 
+  const pushNuevaCuenta = useCallback((nueva: RES_Cuenta) => {
+    setCuentas((prev) => [nueva, ...prev]);
+    setEmpleadosSinCuenta((prev) =>
+      prev.filter((e) => e.id_empleado !== nueva.id_empleado),
+    );
+  }, []);
+
   return {
     cuentasFiltradas,
     roles,
     empleadosSinCuenta,
     loading,
+    loadingRoles,
+    loadingEmpleados,
     busqueda,
     setBusqueda,
     openedCreate,
-    openCreate,
+    openCreate: handleOpenCreate,
     closeCreate,
     selectedCuenta,
     setSelectedCuenta,
     handleOpenEdit,
     handleUpdatePhoto,
     updatingPhoto,
-    refresh: cargarDatos,
+    pushNuevaCuenta,
+    refresh: cargarCuentas,
   };
 };

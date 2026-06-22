@@ -5,13 +5,13 @@ import {
   Schema_CrearEmpleado,
   type DTO_CrearEmpleado,
 } from "../service/empleados.requests";
+import type { RES_EmpleadoResumen } from "../service/empleados.responses";
+import { AuxService } from "../../../service/auxiliar.service";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 import type {
   RES_Area,
   RES_Cargo,
-  RES_EmpleadoResumen,
-} from "../service/empleados.responses";
-import { AuxService } from "../../../service/auxiliar.service";
-import type { RES_Empresa } from "../../../service/responses/empresa";
+} from "../../../service/responses/organigrama";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
   id_empresa: null,
@@ -23,7 +23,7 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
   carnet_extranjeria: "",
   pasaporte: "",
   fecha_nacimiento: "",
-  path_foto: "",
+  foto: "",
 };
 
 export const useRegistroEmpleado = (
@@ -56,7 +56,7 @@ export const useRegistroEmpleado = (
   const cargarAreas = useCallback(async () => {
     setLoadingAreas(true);
     try {
-      const resp = await EmpleadosService.get_areas();
+      const resp = await AuxService.get_areas();
       if (resp.success) setAreas(resp.data);
     } catch (err) {
       console.error(err);
@@ -73,7 +73,7 @@ export const useRegistroEmpleado = (
   const cargarCargos = useCallback(async (areaId: number) => {
     setLoadingCargos(true);
     try {
-      const resp = await EmpleadosService.get_cargos(areaId);
+      const resp = await AuxService.get_cargos({ id_area: areaId });
       if (resp.success) setCargos(resp.data);
     } catch (err) {
       console.error(err);

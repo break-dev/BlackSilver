@@ -50,14 +50,14 @@ export const RegistroEmpleado = ({
   };
 
   const photoPreview =
-    form.path_foto instanceof File ? URL.createObjectURL(form.path_foto) : null;
+    form.foto instanceof File ? URL.createObjectURL(form.foto) : null;
 
   return (
     <Stack gap="md">
       {/* Selector de Foto Circular */}
       <div className="flex flex-col items-center justify-center py-4">
         <FileButton
-          onChange={(file) => setField("path_foto", file)}
+          onChange={(file) => setField("foto", file)}
           accept="image/png,image/jpeg,image/jpg"
         >
           {(props) => (
@@ -77,7 +77,7 @@ export const RegistroEmpleado = ({
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
                 <PencilIcon className="w-5 h-5 text-white mb-1 drop-shadow-md" />
                 <Text size="10px" fw={700} className="text-white leading-tight">
-                  {form.path_foto ? "Cambiar imagen" : "Subir imagen"}
+                  {form.foto ? "Cambiar imagen" : "Subir imagen"}
                 </Text>
               </div>
             </div>

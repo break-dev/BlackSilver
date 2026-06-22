@@ -26,3 +26,15 @@ export const Schema_CrearCliente = z.object({
 });
 
 export type CrearClienteRequest = z.infer<typeof Schema_CrearCliente>;
+
+export const Schema_CrearCuentaBancaria = z.object({
+  id_cliente: z.number().min(1, "Seleccione un cliente"),
+  id_banco: z.number().min(1, "Seleccione un banco válido"),
+  moneda: z.string().min(1, "Seleccione una moneda"),
+  numero_cuenta: z.string().min(1, "El número de cuenta es requerido"),
+  cci: z.string().optional().nullable(),
+  es_para_detraccion: z.number(), // 1 o 0
+});
+export type CrearCuentaBancariaRequest = z.infer<
+  typeof Schema_CrearCuentaBancaria
+>;

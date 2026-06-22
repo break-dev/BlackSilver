@@ -7,7 +7,6 @@ import type {
   DTO_CrearRequerimiento,
   DTO_CrearRequerimientoDetalle,
 } from "../service/atencion.requests";
-import type { RES_Labor, RES_Mina } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
@@ -15,6 +14,8 @@ import type { RES_RequerimientoAlmacen } from "../../../service/responses/requer
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
 
 interface Props {
   onSuccess: (
@@ -214,10 +215,10 @@ export const useRegistroRequerimiento = ({
     (u) => u.id_unidad_medida === idUnidadMedida,
   );
   const sonUnidadesIdenticas =
-      productoSeleccionado &&
-      unidadSeleccionada &&
-      productoSeleccionado.id_unidad_medida_base ===
-        unidadSeleccionada.id_unidad_medida;
+    productoSeleccionado &&
+    unidadSeleccionada &&
+    productoSeleccionado.id_unidad_medida_base ===
+      unidadSeleccionada.id_unidad_medida;
 
   useEffect(() => {
     if (sonUnidadesIdenticas) {

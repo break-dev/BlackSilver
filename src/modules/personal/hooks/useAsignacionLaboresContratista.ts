@@ -1,21 +1,19 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
-import {
-  ContratistasService,
-  EmpleadosService,
-} from "../service/empleados.service";
-import type {
-  RES_Contratista,
-  RES_Labor,
-  RES_Mina,
-} from "../service/empleados.responses";
+import { ContratistasService } from "../service/empleados.service";
+import { AuxService } from "../../../service/auxiliar.service";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
 
 export const useAsignacionLaboresContratista = (
-  onUpdateLocal: (editado: RES_Contratista) => void,
+  onUpdateLocal: (editado: RES_ContratistaResumen) => void,
 ) => {
   const { notify } = useNotify();
 
-  const [contratista, setContratista] = useState<RES_Contratista | null>(null);
+  const [contratista, setContratista] = useState<RES_ContratistaResumen | null>(
+    null,
+  );
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [idMina, setIdMina] = useState<number | null>(null);
   const [laboresDisponibles, setLaboresDisponibles] = useState<RES_Labor[]>([]);
@@ -27,7 +25,7 @@ export const useAsignacionLaboresContratista = (
   const cargarMinas = useCallback(async () => {
     setLoadingMinas(true);
     try {
-      const resp = await EmpleadosService.get_minas();
+      const resp = await AuxService.get_minas();
       if (resp.success) setMinas(resp.data);
     } catch (err) {
       console.error(err);
@@ -58,13 +56,13 @@ export const useAsignacionLaboresContratista = (
   );
 
   const abrir = useCallback(
-    async (emp: RES_Contratista) => {
+    async (emp: RES_ContratistaResumen) => {
       setContratista(emp);
       setIdMina(emp.id_mina || null);
       cargarMinas();
 
-      if (emp.ids_labor_asignadas) {
-        const ids = emp.ids_labor_asignadas.split(",").map(Number);
+      if (emp.labores_asignadas && emp.labores_asignadas.length > 0) {
+        const ids = emp.labores_asignadas.map((l) => l.id_labor);
         setSeleccionados(ids);
       } else {
         setSeleccionados([]);

@@ -3,7 +3,7 @@ import { ClockIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { BadgeField } from "../header/badge-field";
 import type { RES_RequerimientoAlmacen } from "../../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
-import type { RES_Labor } from "../../../service/atencion.responses";
+import type { RES_Labor } from "../../../../../service/responses/labor";
 
 interface InfoStatsProps {
   requerimiento: RES_RequerimientoAlmacen;

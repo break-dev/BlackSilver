@@ -57,7 +57,7 @@ export const useResponsablesMina = ({
   const handleResponsableAsignado = (nueva: RES_HistorialResponsable) => {
     setHistorial((prev) => [nueva, ...prev]);
 
-    onResponsableAsignado?.(nueva.contratista);
+    onResponsableAsignado?.(nueva.nombre_completo);
     notify({
       type: "success",
       content: "Responsable asignado correctamente",
@@ -86,7 +86,7 @@ export const useResponsablesMina = ({
           ),
         );
         
-        onResponsableInactivado?.(item.contratista);
+        onResponsableInactivado?.(item.nombre_completo);
 
         notify({
           type: "success",

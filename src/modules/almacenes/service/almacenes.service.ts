@@ -1,5 +1,6 @@
 import { api } from "../../../service/_api";
 import type { RES_Empleado } from "../../../service/responses/empleado";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   DTO_CrearAlmacen,
@@ -39,9 +40,9 @@ export const AlmacenesService = {
   get_empleados_disponibles: async (
     id_almacen: number,
   ): Promise<IRespuesta<RES_Empleado[]>> => {
-    const { data } = await api.post(
-      `${PATH}/responsables/empleados-disponibles/${id_almacen}`,
-    );
+    const { data } = await api.get(`/aux/empleados`, {
+      params: { id_almacen_excluyente: id_almacen, estado: EstadoBase.Activo },
+    });
     return data;
   },
 

@@ -8,7 +8,6 @@ import {
   Switch,
   Checkbox,
   Text,
-  Badge,
   ScrollArea,
   Popover,
   Tooltip,
@@ -16,7 +15,6 @@ import {
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
 import {
-  PlusIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -51,15 +49,11 @@ interface RegistroCategoriaProps {
   setControlPorHorometro: (val: boolean) => void;
   controlPorVueltas: boolean;
   setControlPorVueltas: (val: boolean) => void;
-  idsConsumidoras: number[];
-  setIdsConsumidoras: (val: number[]) => void;
   coincidencias: SearchResult<RES_CategoriaResumen>[];
-  onOpenDestinos: () => void;
   error: string;
   loading: boolean;
   onSave: () => void;
   onCancel: () => void;
-  todasCategorias: RES_CategoriaResumen[]; // Para buscar nombres de destinos
 }
 
 export const RegistroCategoria = ({
@@ -73,10 +67,10 @@ export const RegistroCategoria = ({
   setClasificacionBien,
   esConsumible,
   setEsConsumible,
-  paraCocina,
-  setParaCocina,
-  paraMina,
-  setParaMina,
+  // paraCocina,
+  // setParaCocina,
+  // paraMina,
+  // setParaMina,
   esAuditable,
   setEsAuditable,
   paraTransporte,
@@ -87,14 +81,11 @@ export const RegistroCategoria = ({
   setControlPorHorometro,
   controlPorVueltas,
   setControlPorVueltas,
-  idsConsumidoras,
   coincidencias,
-  onOpenDestinos,
   error,
   loading,
   onSave,
   onCancel,
-  todasCategorias,
 }: RegistroCategoriaProps) => {
   const inputClasses = {
     input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
@@ -347,35 +338,7 @@ export const RegistroCategoria = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-4 bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800">
-        <div className="text-zinc-300 text-sm font-medium">Destino de Uso</div>
-        <Group gap="xl">
-          <Checkbox
-            label="Mina"
-            checked={paraMina}
-            onChange={(e) => setParaMina(e.currentTarget.checked)}
-            disabled={loading}
-            color="indigo"
-            size="sm"
-            classNames={{
-              label: "text-zinc-300 cursor-pointer",
-              input: "cursor-pointer",
-            }}
-          />
-          <Checkbox
-            label="Cocina"
-            checked={paraCocina}
-            onChange={(e) => setParaCocina(e.currentTarget.checked)}
-            disabled={loading}
-            color="indigo"
-            size="sm"
-            classNames={{
-              label: "text-zinc-300 cursor-pointer",
-              input: "cursor-pointer",
-            }}
-          />
-        </Group>
-      </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Trazabilidad de consumo */}
@@ -421,63 +384,6 @@ export const RegistroCategoria = ({
             className="cursor-pointer"
           />
         </div>
-      </div>
-
-      {/* Listado de Destinos (solo si es consumible) */}
-      <div className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-zinc-900/40 border border-zinc-800 transition-all duration-200">
-        <div className="flex-1 min-w-0">
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider block leading-none mb-1.5 ${!esConsumible ? "text-zinc-600" : "text-zinc-400"}`}
-          >
-            Destinos seleccionados ({idsConsumidoras.length})
-          </span>
-          {esConsumible && idsConsumidoras.length > 0 ? (
-            <ScrollArea
-              w="100%"
-              type="never"
-              scrollbarSize={0}
-              offsetScrollbars={false}
-            >
-              <div className="flex items-center gap-1.5 pb-0.5">
-                {idsConsumidoras.map((id) => {
-                  const cat = todasCategorias.find(
-                    (c) => Number(c.id_categoria) === Number(id),
-                  );
-                  return (
-                    <Badge
-                      key={id}
-                      variant="filled"
-                      color="indigo.9"
-                      size="xs"
-                      radius="sm"
-                      className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 lowercase first-letter:uppercase shrink-0"
-                    >
-                      {cat?.nombre || "Cargando..."}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          ) : (
-            <span className="text-xs font-semibold text-zinc-600 italic block">
-              {esConsumible
-                ? "Sin destinos seleccionados"
-                : "Trazabilidad desactivada"}
-            </span>
-          )}
-        </div>
-        <Button
-          variant="filled"
-          color="indigo"
-          size="xs"
-          leftSection={<PlusIcon className="w-3 h-3" />}
-          radius="md"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 h-7 shrink-0 disabled:opacity-30 disabled:bg-zinc-800"
-          onClick={onOpenDestinos}
-          disabled={!esConsumible || loading}
-        >
-          Añadir
-        </Button>
       </div>
 
       <Textarea

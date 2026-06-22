@@ -52,7 +52,7 @@ export const HistorialResponsables = ({
         id_empleado: item.id_empleado,
         nombre_completo: item.nombre_completo,
         dni: item.dni,
-        path_foto: item.path_foto,
+        url_foto: item.url_foto,
       });
     }
   };

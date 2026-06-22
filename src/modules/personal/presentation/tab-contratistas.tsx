@@ -20,7 +20,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { useContratistas } from "../hooks/useContratistas";
 import { useAsignacionLaboresContratista } from "../hooks/useAsignacionLaboresContratista";
-import type { RES_Contratista } from "../service/empleados.responses";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
 interface TabContratistasProps {
@@ -34,12 +34,8 @@ export const TabContratistas = ({
 }: TabContratistasProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
-  const {
-    contratistas,
-    loading,
-    actualizarFoto,
-    idActualizandoFoto,
-  } = controller;
+  const { contratistas, loading, actualizarFoto, idActualizandoFoto } =
+    controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -51,7 +47,7 @@ export const TabContratistas = ({
     }
   };
 
-  const columns: DataTableColumn<RES_Contratista>[] = [
+  const columns: DataTableColumn<RES_ContratistaResumen>[] = [
     {
       accessor: "index",
       title: "#",
@@ -84,7 +80,7 @@ export const TabContratistas = ({
                     className={`w-full h-full cursor-pointer ${isUpdatingFoto ? "pointer-events-none" : ""}`}
                   >
                     <Avatar
-                      src={r.path_foto}
+                      src={r.url_foto}
                       radius="xl"
                       color="indigo"
                       variant="light"
@@ -103,7 +99,11 @@ export const TabContratistas = ({
               </FileButton>
             </div>
             <div className="min-w-0 flex-1">
-              <Text size="xs" fw={700} className="text-zinc-200 truncate leading-tight">
+              <Text
+                size="xs"
+                fw={700}
+                className="text-zinc-200 truncate leading-tight"
+              >
                 {r.nombre} {r.apellido}
               </Text>
               <Text size="10px" className="text-zinc-500 font-mono truncate">
@@ -121,16 +121,18 @@ export const TabContratistas = ({
       textAlign: "center",
       render: (r) => {
         const hasMina = r.id_mina && r.id_mina > 0;
-        const sinLabores =
-          r.labores_asignadas === "Sin asignar" ||
-          r.labores_asignadas === "No aplica" ||
-          !r.labores_asignadas;
+        const sinLabores = !r.labores_asignadas || r.labores_asignadas.length === 0;
 
         return (
           <div className="flex flex-row justify-center">
             <Group gap="lg" wrap="nowrap" justify="center" align="center">
               {!hasMina ? (
-                <Text size="xs" c="dimmed" fs="italic" className="min-w-[130px]">
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fs="italic"
+                  className="min-w-[130px]"
+                >
                   Sin asignar
                 </Text>
               ) : (
@@ -141,7 +143,9 @@ export const TabContratistas = ({
                     radius="md"
                     size="md"
                     className="font-bold h-7 border border-pink-500/20"
-                    leftSection={<MapPinIcon className="w-3.5 h-3.5 text-pink-400" />}
+                    leftSection={
+                      <MapPinIcon className="w-3.5 h-3.5 text-pink-400" />
+                    }
                   >
                     {r.mina}
                   </Badge>
@@ -152,7 +156,7 @@ export const TabContratistas = ({
                         Sin asignar
                       </Text>
                     ) : (
-                      r.labores_asignadas.split(" | ").map((lab, idx) => (
+                      r.labores_asignadas.map((lab, idx) => (
                         <Badge
                           key={idx}
                           variant="light"
@@ -161,7 +165,7 @@ export const TabContratistas = ({
                           size="xs"
                           className="font-bold h-6 border border-cyan-500/10"
                         >
-                          {lab}
+                          {lab.correlativo}
                         </Badge>
                       ))
                     )}
@@ -198,7 +202,10 @@ export const TabContratistas = ({
           );
         }
         const parts = r.fecha_nacimiento.split("-");
-        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.fecha_nacimiento;
+        const formattedDate =
+          parts.length === 3
+            ? `${parts[2]}/${parts[1]}/${parts[0]}`
+            : r.fecha_nacimiento;
         return (
           <Group gap={6}>
             <CakeIcon className="w-4 h-4 text-pink-400 shrink-0" />

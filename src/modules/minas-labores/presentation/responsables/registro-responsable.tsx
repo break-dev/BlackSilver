@@ -3,7 +3,7 @@ import { UserIcon } from "@heroicons/react/24/outline";
 import { useRegistroResponsable } from "../../hooks/responsables/useRegistroResponsable";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import type {
-  RES_ContratistaDisponible,
+  RES_EmpleadoDisponible,
   RES_HistorialResponsable,
 } from "../../service/minas.responses";
 import { forwardRef, useImperativeHandle } from "react";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export interface RegistroResponsableRef {
-  agregarDisponible: (constratista: RES_ContratistaDisponible) => void;
+  agregarDisponible: (empleado: RES_EmpleadoDisponible) => void;
 }
 
 const inputClasses = {
@@ -30,10 +30,10 @@ const inputClasses = {
 export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
   ({ idMina, nombreMina, onSuccess }, ref) => {
     const {
-      contratistasDisponibles,
+      empleadosDisponibles,
       loadingDisponibles,
-      idContratista,
-      setIdContratista,
+      idEmpleado,
+      setIdEmpleado,
       fechaInicio,
       setFechaInicio,
       formError,
@@ -77,14 +77,14 @@ export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
             placeholder="Seleccione un responsable"
             withAsterisk
             leftSection={<UserIcon className="w-4 h-4 text-zinc-400" />}
-            data={contratistasDisponibles.map((e) => ({
-              value: String(e.id_contratista),
-              label: e.contratista,
+            data={empleadosDisponibles.map((e) => ({
+              value: String(e.id_empleado),
+              label: e.nombre_completo,
             }))}
-            value={idContratista ? String(idContratista) : null}
-            onChange={(v) => setIdContratista(v ? parseInt(v) : null)}
+            value={idEmpleado ? String(idEmpleado) : null}
+            onChange={(v) => setIdEmpleado(v ? parseInt(v) : null)}
             searchable
-            nothingFoundMessage="Sin contratistas disponibles"
+            nothingFoundMessage="Sin empleados disponibles"
             classNames={inputClasses}
             radius="lg"
             disabled={isSubmitting || loadingDisponibles}
@@ -115,7 +115,7 @@ export const RegistroResponsable = forwardRef<RegistroResponsableRef, Props>(
               variant="filled"
               className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6"
               loading={isSubmitting}
-              disabled={!idContratista || !fechaInicio}
+              disabled={!idEmpleado || !fechaInicio}
               onClick={handleSubmit}
               radius="lg"
             >

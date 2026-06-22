@@ -73,7 +73,7 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
                     className={`w-full h-full cursor-pointer ${isUpdatingFoto ? "pointer-events-none" : ""}`}
                   >
                     <Avatar
-                      src={r.path_foto}
+                      src={r.url_foto}
                       radius="xl"
                       color="indigo"
                       variant="light"
@@ -137,7 +137,10 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
           );
         }
         const parts = r.fecha_nacimiento.split("-");
-        const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.fecha_nacimiento;
+        const formattedDate =
+          parts.length === 3
+            ? `${parts[2]}/${parts[1]}/${parts[0]}`
+            : r.fecha_nacimiento;
         return (
           <Group gap={6}>
             <CakeIcon className="w-4 h-4 text-pink-400 shrink-0" />

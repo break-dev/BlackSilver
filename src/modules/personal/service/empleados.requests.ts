@@ -38,7 +38,7 @@ export const Schema_CrearEmpleado = z.object({
       if (val instanceof Date) return val.toISOString().split("T")[0];
       return val;
     }),
-  path_foto: z.any().nullable().optional(),
+  foto: z.any().nullable().optional(),
   id_empresa: z.number().nullable().optional(),
   id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
 });
@@ -83,7 +83,7 @@ export const Schema_CrearContratista = z.object({
       if (val instanceof Date) return val.toISOString().split("T")[0];
       return val;
     }),
-  path_foto: z.any().nullable().optional(),
+  foto: z.any().nullable().optional(),
   id_mina: z.number().min(1, "Debe seleccionar una mina"),
   ids_labor: z.array(z.number()).optional().default([]),
 });

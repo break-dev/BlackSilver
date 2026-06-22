@@ -9,7 +9,7 @@ export interface RES_Usuario {
   carnet_extranjeria: string;
   pasaporte: string;
   fecha_nacimientto: string;
-  path_foto: string;
+  url_foto: string;
 }
 
 // Respuesta del endpoint

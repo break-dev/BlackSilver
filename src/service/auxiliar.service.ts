@@ -21,6 +21,9 @@ import type { TipoProducto } from "../shared/enums/_generic/tipo-producto";
 import type { RES_Categoria } from "./responses/categoria";
 import type { EstadoLoteMineral } from "../shared/enums/lote-mineral";
 import type { RES_LoteMineral } from "./responses/lote-mineral";
+import type { RES_Banco } from "./responses/banco";
+import type { RES_Area, RES_Cargo } from "./responses/organigrama";
+import type { RES_Rol } from "./responses/rol";
 
 const path = "/aux";
 
@@ -87,6 +90,9 @@ export const AuxService = {
   get_empleados: async (filters?: {
     id_empleado?: number;
     estado?: EstadoBase;
+    id_almacen_excluyente?: number;
+    id_mina_excluyente?: number;
+    con_cuenta?: boolean;
   }): Promise<IRespuesta<RES_Empleado[]>> => {
     const { data } = await api.get(`${path}/empleados`, {
       params: filters,
@@ -328,6 +334,7 @@ export const AuxService = {
     id_mina?: number;
     id_labor?: number;
     id_requerimiento?: number;
+    id_contratista_excluyente?: number;
   }): Promise<IRespuesta<RES_Labor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Labor[]>>(`${path}/labores`, {
       params: filters,
@@ -360,6 +367,54 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_LoteMineral[]>>(
       `${path}/lotes-mineral`,
       { params: apiParams },
+    );
+    return data;
+  },
+
+  get_bancos: async (): Promise<IRespuesta<RES_Banco[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Banco[]>>(`${path}/bancos`);
+    return data;
+  },
+
+  crear_banco: async (nuevoBanco: {
+    nombre: string;
+    abreviatura: string;
+  }): Promise<IRespuesta<RES_Banco>> => {
+    const { data } = await api.post<IRespuesta<RES_Banco>>(
+      `${path}/bancos`,
+      nuevoBanco,
+    );
+    return data;
+  },
+
+  get_areas: async (filters?: {
+    id_area?: number;
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_Area[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Area[]>>(`${path}/areas`, {
+      params: filters,
+    });
+    return data;
+  },
+
+  get_cargos: async (filters?: {
+    id_cargo?: number;
+    id_area?: number;
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_Cargo[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Cargo[]>>(`${path}/cargos`, {
+      params: filters,
+    });
+    return data;
+  },
+
+  get_roles_disponibles: async (filters?: {
+    id_rol?: number;
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_Rol[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Rol[]>>(
+      `${path}/roles-disponibles`,
+      { params: filters },
     );
     return data;
   },

@@ -3,7 +3,6 @@ import {
   PlusIcon,
   ClipboardDocumentCheckIcon,
   TruckIcon,
-  FireIcon,
   ClockIcon,
   ArrowTrendingUpIcon,
   ArrowPathIcon,
@@ -37,7 +36,7 @@ export const CategoriaCard = ({ cat, onAddDestino }: CategoriaCardProps) => {
       <div className="pr-14">
         {/* Áreas Operativas Arriba */}
         <Group gap={6} mb={8}>
-          {!!cat.para_mina && (
+          {/* {!!cat.para_mina && (
             <Badge
               variant="light"
               color="blue"
@@ -58,7 +57,7 @@ export const CategoriaCard = ({ cat, onAddDestino }: CategoriaCardProps) => {
             >
               Cocina
             </Badge>
-          )}
+          )} */}
           {!!cat.es_auditable && (
             <Badge variant="light" color="red" size="xs" radius="sm">
               Auditable

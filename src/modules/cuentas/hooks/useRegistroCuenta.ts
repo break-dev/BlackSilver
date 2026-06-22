@@ -6,6 +6,7 @@ import type { RES_Cuenta } from "../service/cuentas.responses";
 export const useRegistroCuenta = (
   cuentaEdit: RES_Cuenta | null,
   onClose: () => void,
+  onSuccess: (nueva: RES_Cuenta) => void,
   refresh: () => void,
 ) => {
   const [form, setForm] = useState({
@@ -15,7 +16,7 @@ export const useRegistroCuenta = (
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const { notify } = useNotify();
+  const { notifyError, notifySuccess, notifyInfo } = useNotify();
 
   useEffect(() => {
     if (cuentaEdit) {
@@ -47,10 +48,7 @@ export const useRegistroCuenta = (
       (!cuentaEdit && !form.password) ||
       (!cuentaEdit && !form.id_empleado)
     ) {
-      notify({
-        type: "info",
-        content: "Por favor, completa todos los campos requeridos.",
-      });
+      notifyInfo("Por favor, completa todos los campos requeridos.");
       return;
     }
 
@@ -73,23 +71,18 @@ export const useRegistroCuenta = (
       }
 
       if (res.success) {
-        notify({
-          type: "success",
-          content: res.message,
-        });
-        refresh();
+        notifySuccess(res.message);
+        if (cuentaEdit) {
+          refresh();
+        } else {
+          onSuccess(res.data!);
+        }
         onClose();
       } else {
-        notify({
-          type: "error",
-          content: res.message,
-        });
+        notifyError(res.message);
       }
     } catch {
-      notify({
-        type: "error",
-        content: "No se pudo comunicar con el servidor.",
-      });
+      notifyError("No se pudo comunicar con el servidor.");
     } finally {
       setLoading(false);
     }

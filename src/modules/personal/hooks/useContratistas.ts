@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { ContratistasService } from "../service/empleados.service";
-import type { RES_Contratista } from "../service/empleados.responses";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
 
 export const useContratistas = () => {
   const [idMina, setIdMina] = useState<number | null>(null);
-  const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
+  const [contratistas, setContratistas] = useState<RES_ContratistaResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
@@ -47,11 +47,11 @@ export const useContratistas = () => {
     return results;
   }, [contratistas, idMina, busqueda]);
 
-  const pushNuevoContratista = (nuevo: RES_Contratista) => {
+  const pushNuevoContratista = (nuevo: RES_ContratistaResumen) => {
     setContratistas((prev) => [nuevo, ...prev]);
   };
 
-  const actualizarContratistaEnLista = (editado: RES_Contratista) => {
+  const actualizarContratistaEnLista = (editado: RES_ContratistaResumen) => {
     setContratistas((prev) =>
       prev.map((e) => (e.id_contratista === editado.id_contratista ? editado : e)),
     );
@@ -62,7 +62,11 @@ export const useContratistas = () => {
     try {
       const resp = await ContratistasService.actualizar_foto(idContratista, file);
       if (resp.success) {
-        actualizarContratistaEnLista(resp.data);
+        setContratistas((prev) =>
+          prev.map((e) =>
+            e.id_contratista === idContratista ? { ...e, url_foto: resp.data } : e,
+          ),
+        );
         return true;
       }
     } catch (err) {

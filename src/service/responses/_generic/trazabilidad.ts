@@ -6,6 +6,6 @@ export interface RES_Trazabilidad {
   descripcion: string;
   created_at: string;
   empleado: string;
-  path_foto: string | null;
+  url_foto: string | null;
   estado: string;
 }

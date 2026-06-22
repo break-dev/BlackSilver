@@ -8,7 +8,7 @@ export interface RES_Perfil {
   carnet_extranjeria?: string;
   pasaporte?: string;
   fecha_nacimiento?: string;
-  path_foto: string | null;
+  url_foto: string | null;
   nombre_rol: string;
   nombre_cargo: string | null;
   nombre_area: string | null;

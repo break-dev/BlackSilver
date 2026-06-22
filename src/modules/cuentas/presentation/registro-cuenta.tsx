@@ -5,6 +5,7 @@ import {
   Stack,
   Group,
   PasswordInput,
+  Loader,
 } from "@mantine/core";
 import {
   UserIcon,
@@ -13,29 +14,33 @@ import {
   KeyIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroCuenta } from "../hooks/useRegistroCuenta";
-import type {
-  RES_Cuenta,
-  RES_RolDisponible,
-} from "../service/cuentas.responses";
+import type { RES_Cuenta } from "../service/cuentas.responses";
 import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_Rol } from "../../../service/responses/rol";
 
 interface RegistroCuentaProps {
   cuentaEdit: RES_Cuenta | null;
   onClose: () => void;
+  onSuccess: (nueva: RES_Cuenta) => void;
   refresh: () => void;
-  roles: RES_RolDisponible[];
+  roles: RES_Rol[];
   empleadosSinCuenta: RES_Empleado[];
+  loadingRoles?: boolean;
+  loadingEmpleados?: boolean;
 }
 
 export const RegistroCuenta = ({
   cuentaEdit,
   onClose,
+  onSuccess,
   refresh,
   roles,
   empleadosSinCuenta,
+  loadingRoles = false,
+  loadingEmpleados = false,
 }: RegistroCuentaProps) => {
   const { form, updateForm, loading, handleGuardar, isEdit } =
-    useRegistroCuenta(cuentaEdit, onClose, refresh);
+    useRegistroCuenta(cuentaEdit, onClose, onSuccess, refresh);
 
   const fieldClasses = {
     input:
@@ -64,7 +69,8 @@ export const RegistroCuenta = ({
           }
           value={form.id_empleado ? form.id_empleado.toString() : null}
           onChange={(val) => updateForm({ id_empleado: Number(val) })}
-          disabled={isEdit || loading}
+          disabled={isEdit || loading || loadingEmpleados}
+          rightSection={loadingEmpleados ? <Loader size="xs" color="indigo" /> : undefined}
           radius="lg"
           required
           withAsterisk
@@ -76,8 +82,8 @@ export const RegistroCuenta = ({
         <Select
           label="Rol de Usuario"
           placeholder="Seleccione un rol"
-          data={roles.map((r: RES_RolDisponible) => ({
-            value: r.id.toString(),
+          data={roles.map((r: RES_Rol) => ({
+            value: r.id_rol.toString(),
             label: r.nombre,
           }))}
           value={form.id_rol ? form.id_rol.toString() : null}
@@ -87,14 +93,15 @@ export const RegistroCuenta = ({
           withAsterisk
           leftSection={<ShieldCheckIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
-          disabled={isEdit || loading}
+          disabled={isEdit || loading || loadingRoles}
+          rightSection={loadingRoles ? <Loader size="xs" color="indigo" /> : undefined}
         />
       </Group>
 
       <Group grow>
         <TextInput
           label="Nombre de Usuario"
-          placeholder="Ej: jdoe"
+          placeholder="Ej: joe"
           value={form.username}
           onChange={(e) => updateForm({ username: e.currentTarget.value })}
           radius="lg"

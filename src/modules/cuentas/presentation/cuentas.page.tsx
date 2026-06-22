@@ -32,6 +32,8 @@ export const CuentasPage = () => {
   const {
     cuentasFiltradas,
     loading,
+    loadingRoles,
+    loadingEmpleados,
     busqueda,
     setBusqueda,
     openedCreate,
@@ -42,6 +44,7 @@ export const CuentasPage = () => {
     handleOpenEdit,
     handleUpdatePhoto,
     updatingPhoto,
+    pushNuevaCuenta,
     refresh,
     roles,
     empleadosSinCuenta,
@@ -176,7 +179,7 @@ export const CuentasPage = () => {
                           className={`relative cursor-pointer rounded-full transition-transform active:scale-95 ${updatingPhoto === cuenta.id_empleado ? "pointer-events-none" : ""}`}
                         >
                           <Avatar
-                            src={cuenta.path_foto}
+                            src={cuenta.url_foto}
                             size={56}
                             radius="xl"
                             className="border-2 border-zinc-800 group-hover/avatar:border-indigo-500/50 transition-all shadow-xl"
@@ -297,9 +300,12 @@ export const CuentasPage = () => {
         <RegistroCuenta
           cuentaEdit={selectedCuenta}
           onClose={closeCreate}
+          onSuccess={pushNuevaCuenta}
           refresh={refresh}
           roles={roles}
           empleadosSinCuenta={empleadosSinCuenta}
+          loadingRoles={loadingRoles}
+          loadingEmpleados={loadingEmpleados}
         />
       </ModalEstandar>
     </div>

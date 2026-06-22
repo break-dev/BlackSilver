@@ -14,14 +14,13 @@ import {
   WrenchScrewdriverIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import type {
-  RES_Contratista,
-  RES_Labor,
-  RES_Mina,
-} from "../service/empleados.responses";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
+
 
 interface AsignacionLaboresContratistaProps {
-  contratista: RES_Contratista;
+  contratista: RES_ContratistaResumen;
   minas: RES_Mina[];
   idMina: number | null;
   onMinaChange: (val: number | null) => void;
