@@ -3,12 +3,11 @@ import { PrestamosAtencionService } from "../service/prestamos-atencion.service"
 import type { DTO_DetalleEntrega } from "../service/prestamos-atencion.requests";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/prestamo";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
-import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroEntregaProps {
   idAlmacenPrestamista: number;
@@ -28,25 +27,39 @@ export const useRegistroEntrega = ({
   const { notifySuccess, notifyError } = useNotify();
 
   const [loading, setLoading] = useState(false);
-  const {
-    personal: rawPersonal,
-    loading: loadingPersonal,
-    setPersonal: setRawPersonal,
-  } = usePersonalExterno({ autoFetch: true });
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
+
+  useEffect(() => {
+    const loadEmpleados = async () => {
+      setLoadingPersonal(true);
+      try {
+        const res = await AuxService.get_empleados();
+        if (res.success && res.data) {
+          setEmpleados(res.data);
+        }
+      } catch (err) {
+        console.error("Error loading employees", err);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+    loadEmpleados();
+  }, []);
 
   const personal = useMemo(() => {
-    return rawPersonal.map((p) => ({
-      value: String(p.id_personal),
-      label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
+    return empleados.map((e) => ({
+      value: String(e.id_empleado),
+      label: e.nombre_completo,
     }));
-  }, [rawPersonal]);
+  }, [empleados]);
 
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
     [],
   );
 
-  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
+  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
 
@@ -172,18 +185,10 @@ export const useRegistroEntrega = ({
         (e) => e.value === String(idEmpleadoDefault),
       );
       if (exists) {
-        setIdPersonalRecibe(String(idEmpleadoDefault));
+        setIdEmpleadoRecibe(String(idEmpleadoDefault));
       }
     }
   }, [idEmpleadoDefault, personal]);
-
-  const handleCrearPersonal = useCallback(
-    (nuevo: RES_PersonalExterno) => {
-      setRawPersonal((prev) => [...prev, nuevo]);
-      setIdPersonalRecibe(String(nuevo.id_personal));
-    },
-    [setRawPersonal],
-  );
 
   const handleCantLoteChange = useCallback(
     (idDetalle: number, idLote: number, valLote: number) => {
@@ -295,7 +300,7 @@ export const useRegistroEntrega = ({
 
   const registrarEntrega = useCallback(
     async (idPrestamo: number) => {
-      if (!idPersonalRecibe) {
+      if (!idEmpleadoRecibe) {
         notifyError("Debe seleccionar el receptor");
         return;
       }
@@ -358,7 +363,7 @@ export const useRegistroEntrega = ({
         const res = await PrestamosAtencionService.registrarEntrega(
           {
             id_prestamo: idPrestamo,
-            id_personal_recibe: Number(idPersonalRecibe),
+            id_empleado_recibe: Number(idEmpleadoRecibe),
             fecha_hora_entrega: undefined, // Backend usará now()
             observacion: observacion || undefined,
             detalles: detallesParaApi,
@@ -379,7 +384,7 @@ export const useRegistroEntrega = ({
       }
     },
     [
-      idPersonalRecibe,
+      idEmpleadoRecibe,
       entregaCantidades,
       entregaCantidadesActivos,
       itemsAEntregar,
@@ -400,8 +405,8 @@ export const useRegistroEntrega = ({
     entregaCantidades,
     entregaCantidadesActivos,
     personal,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     submitting,
@@ -411,7 +416,7 @@ export const useRegistroEntrega = ({
     handleCantLoteChange,
     handleCantActivoChange,
     registrarEntrega,
-    handleCrearPersonal,
+
     // Evidencias
     evidencias,
     setEvidencias,

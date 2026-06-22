@@ -1,9 +1,14 @@
+import { useEffect } from "react";
 import { Text, Group, Switch, Divider, ActionIcon } from "@mantine/core";
 import { TrashIcon } from "@heroicons/react/24/outline";
-import type { DTO_RecepcionLotExtendido, GroupedReceptionOC } from "../../../hooks/registro-recepcion/useRegistroRecepcionOC";
+import type {
+  DTO_RecepcionLotExtendido,
+  GroupedReceptionOC,
+} from "../../../hooks/registro-recepcion/useRegistroRecepcionOC";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import { LotesDisponiblesTableOC } from "./LotesDisponiblesTableOC";
 import { NuevoLoteFormOC } from "./NuevoLoteFormOC";
+import { validarAjusteLoteClient } from "../../../../../shared/functions/validar-lote";
 
 interface LoteRecepcionRowOCProps {
   lot: DTO_RecepcionLotExtendido;
@@ -50,6 +55,46 @@ export const LoteRecepcionRowOC = ({
   comprobanteNumero = "",
 }: LoteRecepcionRowOCProps) => {
   const esNuevoLote = lot.es_nuevo_lote;
+
+  useEffect(() => {
+    if (loadingLotes) return;
+    if (lot.es_nuevo_lote) return;
+
+    const hasCompatible = productLots.some((lote) =>
+      validarAjusteLoteClient(
+        {
+          id_orden_compra: lote.id_orden_compra,
+          id_orden_compra_detalle: lote.id_orden_compra_detalle,
+          serie_factura_compra: lote.serie_factura_compra,
+          numero_factura_compra: lote.numero_factura_compra,
+          costo_por_unidad: lote.costo_por_unidad,
+          id_orden_compra_comprobante: lote.id_orden_compra_comprobante,
+        },
+        null,
+        {
+          id_orden_compra: group.id_orden_compra,
+          precio_unitario: group.precio_unitario,
+          serie_factura_compra: comprobanteSerie,
+          numero_factura_compra: comprobanteNumero,
+        },
+      ),
+    );
+
+    if (!hasCompatible) {
+      setLotValue(groupIndex, lotIndex, "es_nuevo_lote", true);
+    }
+  }, [
+    loadingLotes,
+    productLots,
+    lot.es_nuevo_lote,
+    group.id_orden_compra,
+    group.precio_unitario,
+    comprobanteSerie,
+    comprobanteNumero,
+    groupIndex,
+    lotIndex,
+    setLotValue,
+  ]);
 
   return (
     <div className="p-5 space-y-4 relative group/lot">

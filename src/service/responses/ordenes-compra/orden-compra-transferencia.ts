@@ -23,7 +23,7 @@ export interface RES_OCTransferencia {
   es_para_un_almacen_principal: boolean;
   //
   empleado_transferencia: string;
-  personal_recibe: string;
+  empleado_recibe: string;
   //
   fecha_hora_transferencia: string;
   observacion: string | null;

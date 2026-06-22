@@ -4,12 +4,11 @@ import type { RES_PrestamoDetalle } from "../../../service/responses/prestamos/p
 import type { REQ_DetalleReposicionItem } from "../service/prestamos.requests";
 import { useAuthStore } from "../../../stores/auth.store";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import { useNotify } from "../../../hooks/useNotify";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
-import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroReposicionProps {
   idPrestamo: number;
@@ -34,21 +33,35 @@ export const useRegistroReposicion = ({
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     { id_almacen: number; nombre: string }[]
   >([]);
-  const {
-    personal: rawPersonal,
-    loading: loadingPersonal,
-    setPersonal: setRawPersonal,
-  } = usePersonalExterno({ autoFetch: true });
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
+
+  useEffect(() => {
+    const loadEmpleados = async () => {
+      setLoadingPersonal(true);
+      try {
+        const res = await AuxService.get_empleados();
+        if (res.success && res.data) {
+          setEmpleados(res.data);
+        }
+      } catch (err) {
+        console.error("Error loading employees", err);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+    loadEmpleados();
+  }, []);
 
   const personal = useMemo(() => {
-    return rawPersonal.map((p) => ({
-      value: String(p.id_personal),
-      label: `${p.nombre_completo} | ${p.dni || "S/N"}`,
+    return empleados.map((e) => ({
+      value: String(e.id_empleado),
+      label: e.nombre_completo,
     }));
-  }, [rawPersonal]);
+  }, [empleados]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
-  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
+  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
 
   const [lotesPorProducto, setLotesPorProducto] = useState<
     Record<number, RES_LoteDisponible[]>
@@ -229,16 +242,8 @@ export const useRegistroReposicion = ({
     [selectedDetalles],
   );
 
-  const handleCrearPersonal = useCallback(
-    (nuevo: RES_PersonalExterno) => {
-      setRawPersonal((prev) => [...prev, nuevo]);
-      setIdPersonalRecibe(String(nuevo.id_personal));
-    },
-    [setRawPersonal],
-  );
-
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !idPersonalRecibe || !usuario) return;
+    if (!idAlmacenEntrega || !idEmpleadoRecibe || !usuario) return;
 
     setErrorLocal(null);
     setIsProcessing(true);
@@ -299,7 +304,7 @@ export const useRegistroReposicion = ({
         id_prestamo_almacen: idPrestamo,
         id_almacen_entrega: Number(idAlmacenEntrega),
         id_empleado_registro: usuario.id_empleado,
-        id_personal_recibe: Number(idPersonalRecibe),
+        id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_hora_reposicion: new Date().toISOString(),
         items: itemsFinal,
         observacion: observacion.trim() || undefined,
@@ -333,15 +338,15 @@ export const useRegistroReposicion = ({
     personal,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     lotesPorProducto,
     activosFijos,
     reposicionCantidades,
     reposicionCantidadesActivos,
     handleUpdateLoteQuantity,
     handleCantActivoChange,
-    handleCrearPersonal,
+
     handleConfirmar,
     isProcessing,
     errorLocal,

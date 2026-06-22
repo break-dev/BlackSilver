@@ -6,13 +6,12 @@ import type { DTO_EntregasDetalleReabastecimiento } from "../service/solicitudes
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import { useNotify } from "../../../hooks/useNotify";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_SolicitudDetalle } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
-import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 interface UseRegistroEntregaProps {
   idSolicitud: number;
@@ -41,18 +40,39 @@ export const useRegistroEntrega = ({
   const [almacenesPrincipales, setAlmacenesPrincipales] = useState<
     RES_Almacen[]
   >([]);
-  const {
-    personal,
-    loading: loadingPersonal,
-    setPersonal,
-  } = usePersonalExterno({ autoFetch: true });
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
+
+  useEffect(() => {
+    const loadEmpleados = async () => {
+      setLoadingPersonal(true);
+      try {
+        const res = await AuxService.get_empleados();
+        if (res.success && res.data) {
+          setEmpleados(res.data);
+        }
+      } catch (err) {
+        console.error("Error loading employees", err);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+    loadEmpleados();
+  }, []);
+
+  const personal = useMemo(() => {
+    return empleados.map((e) => ({
+      value: String(e.id_empleado),
+      label: e.nombre_completo,
+    }));
+  }, [empleados]);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
     [],
   );
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
-  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
+  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
@@ -118,14 +138,6 @@ export const useRegistroEntrega = ({
     loadAlmacenes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedEmployeeId, idEmpleadoSolicitante]);
-
-  const handleCrearPersonal = useCallback(
-    (nuevoPersonal: RES_PersonalExterno) => {
-      setPersonal((prev) => [...prev, nuevoPersonal]);
-      setIdPersonalRecibe(String(nuevoPersonal.id_personal));
-    },
-    [setPersonal],
-  );
 
   useEffect(() => {
     if (
@@ -304,7 +316,7 @@ export const useRegistroEntrega = ({
   }, [lotes]);
 
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !idPersonalRecibe) {
+    if (!idAlmacenEntrega || !idEmpleadoRecibe) {
       setErrorLocal("Complete todos los campos obligatorios");
       return;
     }
@@ -363,7 +375,7 @@ export const useRegistroEntrega = ({
       const res = await SolicitudesAtencionService.registrarEntrega({
         id_solicitud: idSolicitud,
         id_almacen_entrega: Number(idAlmacenEntrega),
-        id_personal_recibe: Number(idPersonalRecibe),
+        id_empleado_recibe: Number(idEmpleadoRecibe),
         fecha_hora_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
         evidencias,
@@ -394,9 +406,9 @@ export const useRegistroEntrega = ({
     activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
-    handleCrearPersonal,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
+
     observacion,
     setObservacion,
     evidencias,

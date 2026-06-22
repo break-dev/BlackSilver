@@ -29,8 +29,8 @@ export const RegistrarEntregaModal = ({
     entregaCantidades,
     entregaCantidadesActivos,
     personal,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     evidencias,
@@ -42,7 +42,6 @@ export const RegistrarEntregaModal = ({
     handleCantLoteChange,
     handleCantActivoChange,
     registrarEntrega,
-    handleCrearPersonal,
   } = useRegistroEntrega({
     idAlmacenPrestamista,
     selectedItemsIds,
@@ -77,9 +76,8 @@ export const RegistrarEntregaModal = ({
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
         personal={personal}
-        idPersonalRecibe={idPersonalRecibe}
-        setIdPersonalRecibe={setIdPersonalRecibe}
-        onAddPersonal={handleCrearPersonal}
+        idEmpleadoRecibe={idEmpleadoRecibe}
+        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -94,7 +92,9 @@ export const RegistrarEntregaModal = ({
             idDetalle={detalle.id_prestamo_detalle}
             detalle={detalle}
             lotes={lotes.filter((l) => l.id_producto === detalle.id_producto)}
-            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
+            activosFijos={activosFijos.filter(
+              (a) => a.id_producto === detalle.id_producto,
+            )}
             loadingLotes={false} // Ya vienen en el batch inicial
             entregaCantidades={entregaCantidades}
             entregaCantidadesActivos={entregaCantidadesActivos}
@@ -109,7 +109,7 @@ export const RegistrarEntregaModal = ({
         onCancel={onCancel}
         handleConfirmar={() => registrarEntrega(idPrestamo)}
         isProcessing={submitting}
-        canSave={!!idPersonalRecibe && totalEntregaGeneralBase > 0}
+        canSave={!!idEmpleadoRecibe && totalEntregaGeneralBase > 0}
       />
 
       {error && (

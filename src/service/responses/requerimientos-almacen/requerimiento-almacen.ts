@@ -17,6 +17,7 @@ export interface RES_RequerimientoAlmacen {
   almacen_destino: string;
   //
   id_contratista_solicitante: number;
+  id_empleado_solicitante?: number | null;
   solicitante: string;
   responsable: string;
   //

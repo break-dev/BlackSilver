@@ -18,6 +18,7 @@ export interface RES_PrestamoReposicion {
   observacion: string | null;
   evidencias: IArchivo[] | null;
   registrado_por: string;
+  empleado_recibe: string;
   created_at: string;
   estado: Estado_PrestamoReposicion;
   // Insertado por la api

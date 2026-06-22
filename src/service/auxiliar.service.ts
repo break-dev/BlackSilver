@@ -274,7 +274,8 @@ export const AuxService = {
   get_minas: async (filters?: {
     id_mina?: number;
     id_concesion?: number;
-    id_contratista_responsable?: number;
+    id_empleado_responsable?: number;
+    id_almacen_abastece?: number;
   }): Promise<IRespuesta<RES_Mina[]>> => {
     const { data } = await api.get<IRespuesta<RES_Mina[]>>(`${path}/minas`, {
       params: filters,

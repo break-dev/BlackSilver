@@ -37,8 +37,8 @@ export const RegistrarTransferenciaModal = ({
     transferenciaCantidades,
     transferenciaCantidadesActivos,
     personal,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     evidencias,
@@ -50,7 +50,6 @@ export const RegistrarTransferenciaModal = ({
     handleCantLoteChange,
     handleCantActivoChange,
     registrarTransferencia,
-    handleCrearPersonal,
   } = useRegistroTransferenciaOC({
     idAlmacenRecepcionista,
     selectedItemsIds,
@@ -84,13 +83,9 @@ export const RegistrarTransferenciaModal = ({
     <Stack gap="xl" className="font-sans py-2">
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
-        personal={personal.map((p) => ({
-          value: p.id_personal.toString(),
-          label: `${p.nombre_completo} - ${p.dni}`,
-        }))}
-        idPersonalRecibe={idPersonalRecibe}
-        setIdPersonalRecibe={setIdPersonalRecibe}
-        onAddPersonal={handleCrearPersonal}
+        personal={personal}
+        idEmpleadoRecibe={idEmpleadoRecibe}
+        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -105,7 +100,9 @@ export const RegistrarTransferenciaModal = ({
             idDetalle={detalle.id_recepcion_detalle}
             detalle={detalle}
             lotes={lotes.filter((l) => l.id_producto === detalle.id_producto)}
-            activosFijos={activosFijos.filter((a) => a.id_producto === detalle.id_producto)}
+            activosFijos={activosFijos.filter(
+              (a) => a.id_producto === detalle.id_producto,
+            )}
             loadingLotes={false} // Ya vienen en el batch inicial
             transferenciaCantidades={transferenciaCantidades}
             transferenciaCantidadesActivos={transferenciaCantidadesActivos}
@@ -119,10 +116,15 @@ export const RegistrarTransferenciaModal = ({
       <FormActions
         onCancel={onCancel}
         handleConfirmar={() =>
-          registrarTransferencia(idRecepcion, idAlmacenDestino, idMinaDestino, tipoDestino)
+          registrarTransferencia(
+            idRecepcion,
+            idAlmacenDestino,
+            idMinaDestino,
+            tipoDestino,
+          )
         }
         isProcessing={submitting}
-        canSave={!!idPersonalRecibe && totalTransferenciaGeneralBase > 0}
+        canSave={!!idEmpleadoRecibe && totalTransferenciaGeneralBase > 0}
       />
 
       {error && (

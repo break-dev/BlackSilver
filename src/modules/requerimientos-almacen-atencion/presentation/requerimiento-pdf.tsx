@@ -39,7 +39,7 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
               Almacén {req.almacen_destino}
             </Text>
             <Text style={tw("text-[9pt] text-zinc-600 mt-1")}>
-              Reporte de Requerimiento de Materiales
+              Requerimiento de Almacén
             </Text>
           </View>
           <View style={tw("items-end")}>
@@ -76,9 +76,15 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
               >
                 Mina Origen
               </Text>
-              <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
-                {req.mina}
-              </Text>
+              {req.mina ? (
+                <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
+                  {req.mina}
+                </Text>
+              ) : (
+                <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
+                  ---
+                </Text>
+              )}
             </View>
 
             <View style={tw("flex-1")}>

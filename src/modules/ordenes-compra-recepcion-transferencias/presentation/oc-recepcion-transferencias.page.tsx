@@ -181,7 +181,7 @@ export const RecepcionTransferenciasOCPage = () => {
       render: (r) => (
         <Stack gap={2}>
           <Text size="sm" className="text-zinc-200 font-medium">
-            {r.personal_recibe}
+            {r.empleado_recibe}
           </Text>
           {r.evidencias && r.evidencias.length > 0 && (
             <Group gap={4}>

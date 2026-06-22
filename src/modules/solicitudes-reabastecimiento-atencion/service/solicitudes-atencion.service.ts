@@ -75,7 +75,7 @@ export const SolicitudesAtencionService = {
       const formData = new FormData();
       formData.append("id_solicitud", dto.id_solicitud.toString());
       formData.append("id_almacen_entrega", dto.id_almacen_entrega.toString());
-      formData.append("id_personal_recibe", dto.id_personal_recibe.toString());
+      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
       formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);
 

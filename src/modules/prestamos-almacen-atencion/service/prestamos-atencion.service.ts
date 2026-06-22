@@ -55,7 +55,7 @@ export const PrestamosAtencionService = {
     if (evidencias && evidencias.length > 0) {
       const formData = new FormData();
       formData.append("id_prestamo", dto.id_prestamo.toString());
-      formData.append("id_personal_recibe", dto.id_personal_recibe.toString());
+      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
       if (dto.fecha_hora_entrega)
         formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);

@@ -1,14 +1,5 @@
-import {
-  Paper,
-  Select,
-  Textarea,
-  FileButton,
-  Button,
-  Group,
-  Text,
-  ActionIcon,
-} from "@mantine/core";
-import { IconUpload, IconTrash, IconFile } from "@tabler/icons-react";
+import { Paper, Select, Textarea } from "@mantine/core";
+import { MultiFilePicker } from "../../../../../../presentation/utils/archivo/multifile-picker";
 
 interface EntregaHeaderProps {
   empleados: { value: string; label: string }[];
@@ -29,10 +20,6 @@ export const EntregaHeader = ({
   evidencias,
   setEvidencias,
 }: EntregaHeaderProps) => {
-  const handleRemoveFile = (index: number) => {
-    setEvidencias((prev) => prev.filter((_, i) => i !== index));
-  };
-
   return (
     <Paper
       p="md"
@@ -75,64 +62,11 @@ export const EntregaHeader = ({
         </div>
 
         <div className="border-t border-zinc-800/50 pt-4">
-          <Group justify="space-between" mb="xs">
-            <Text size="sm" fw={500} c="zinc.3">
-              Evidencias de Entrega
-            </Text>
-            <FileButton
-              onChange={(files) => setEvidencias((prev) => [...prev, ...files])}
-              multiple
-            >
-              {(props) => (
-                <Button
-                  {...props}
-                  variant="subtle"
-                  size="xs"
-                  color="gray"
-                  leftSection={<IconUpload size={16} />}
-                  className="hover:bg-zinc-800 text-zinc-400"
-                >
-                  Subir Archivos
-                </Button>
-              )}
-            </FileButton>
-          </Group>
-
-          {evidencias.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-              {evidencias.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 rounded-lg bg-zinc-800/30 border border-zinc-800"
-                >
-                  <Group gap="xs" wrap="nowrap" className="overflow-hidden">
-                    <IconFile size={16} className="text-zinc-500 shrink-0" />
-                    <Text
-                      size="xs"
-                      c="zinc.4"
-                      truncate
-                      className="max-w-[120px]"
-                    >
-                      {file.name}
-                    </Text>
-                  </Group>
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="sm"
-                    onClick={() => handleRemoveFile(index)}
-                    className="hover:bg-red-500/10"
-                  >
-                    <IconTrash size={14} />
-                  </ActionIcon>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <Text size="xs" c="zinc.5" fs="italic">
-              No se han adjuntado evidencias.
-            </Text>
-          )}
+          <MultiFilePicker
+            label="Evidencias de Entrega"
+            files={evidencias}
+            onFilesChange={setEvidencias}
+          />
         </div>
       </div>
     </Paper>

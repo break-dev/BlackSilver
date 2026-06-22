@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Badge,
   Paper,
@@ -23,6 +24,7 @@ import type {
 import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
 import type { RES_LoteDisponible } from "../../../../../service/responses/lote-producto";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
+import { validarAjusteLoteClient } from "../../../../../shared/functions/validar-lote";
 
 interface ProductoRecepcionCardProps {
   grouped: GroupedReception;
@@ -72,6 +74,73 @@ export const ProductoRecepcionCard = ({
 }: ProductoRecepcionCardProps) => {
   const isPerecible = grouped.es_perecible;
   const isActivoFijo = grouped.tipo_bien === TipoBien.ActivoFijo;
+
+  useEffect(() => {
+    if (loadingLotes || isActivoFijo) return;
+
+    grouped.lots.forEach((lot, lotIndex) => {
+      if (lot.es_nuevo_lote) return;
+
+      const originDetail = grouped.detalles_origen.find(
+        (d) => d.id_entrega_detalle === lot.id_entrega_detalle,
+      );
+
+      const targetVencimiento = lot.fecha_vencimiento;
+      let lotes = lotesDisponibles.filter(
+        (l) => l.id_producto === grouped.id_producto,
+      );
+
+      if (isPerecible && targetVencimiento) {
+        const targetDateStr = targetVencimiento.split("T")[0].split(" ")[0];
+        lotes = lotes.filter((l) => {
+          if (!l.fecha_vencimiento) return true;
+          const lDateStr = l.fecha_vencimiento.split("T")[0].split(" ")[0];
+          return lDateStr === targetDateStr;
+        });
+      }
+
+      const hasCompatible = lotes.some((lote) =>
+        validarAjusteLoteClient(
+          {
+            id_orden_compra: lote.id_orden_compra,
+            id_orden_compra_detalle: lote.id_orden_compra_detalle,
+            serie_factura_compra: lote.serie_factura_compra,
+            numero_factura_compra: lote.numero_factura_compra,
+            costo_por_unidad: lote.costo_por_unidad,
+            id_orden_compra_comprobante: lote.id_orden_compra_comprobante,
+          },
+          originDetail
+            ? {
+                lote_id_orden_compra: originDetail.lote_id_orden_compra,
+                lote_id_orden_compra_detalle:
+                  originDetail.lote_id_orden_compra_detalle,
+                lote_serie_factura: originDetail.lote_serie_factura,
+                lote_numero_factura: originDetail.lote_numero_factura,
+                lote_costo_por_unidad: originDetail.lote_costo_por_unidad,
+                id_lote_producto: originDetail.id_lote_producto,
+                lote_id_orden_compra_comprobante:
+                  originDetail.lote_id_orden_compra_comprobante,
+              }
+            : null,
+          null,
+        ),
+      );
+
+      if (!hasCompatible) {
+        setLotValue(groupIndex, lotIndex, "es_nuevo_lote", true);
+      }
+    });
+  }, [
+    loadingLotes,
+    lotesDisponibles,
+    grouped.lots,
+    isActivoFijo,
+    isPerecible,
+    grouped.id_producto,
+    grouped.detalles_origen,
+    groupIndex,
+    setLotValue,
+  ]);
 
   return (
     <Paper
