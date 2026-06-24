@@ -1,6 +1,7 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
+  RES_AlmacenVecino,
   RES_HistorialEntregas,
   RES_StockTotalAlmacen,
 } from "./solicitudes-atencion.responses";
@@ -9,8 +10,6 @@ import type {
   DTO_RegistrarEntregaReabastecimiento,
   DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
-
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
@@ -132,7 +131,7 @@ export const SolicitudesAtencionService = {
     );
     params.append("id_almacen_excluido", id_almacen_excluido.toString());
 
-    const resp = await api.get<IRespuesta<RES_Almacen[]>>(
+    const resp = await api.get<IRespuesta<RES_AlmacenVecino[]>>(
       `${path}/aux/almacenes-con-stock?${params.toString()}`,
     );
     return resp.data;

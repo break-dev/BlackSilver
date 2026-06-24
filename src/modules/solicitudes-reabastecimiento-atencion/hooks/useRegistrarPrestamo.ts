@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import dayjs from "dayjs";
 import { SolicitudesAtencionService } from "../service/solicitudes-atencion.service";
-import type { RES_StockTotalAlmacen } from "../service/solicitudes-atencion.responses";
+import type {
+  RES_AlmacenVecino,
+  RES_StockTotalAlmacen,
+} from "../service/solicitudes-atencion.responses";
 import { useNotify } from "../../../hooks/useNotify";
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
@@ -15,8 +17,6 @@ interface UseRegistrarPrestamoProps {
   detalles: RES_SolicitudDetalle[];
   onSuccess: (nuevoPrestamo: RES_Prestamo) => void;
 }
-
-export type AlmacenAliado = RES_Almacen;
 
 export const useRegistrarPrestamo = ({
   solicitud,
@@ -34,7 +34,9 @@ export const useRegistrarPrestamo = ({
   const [cantidades, setCantidades] = useState<Record<number, number>>({});
   const [comentarios, setComentarios] = useState<Record<number, string>>({});
 
-  const [almacenesAliados, setAlmacenesAliados] = useState<AlmacenAliado[]>([]);
+  const [almacenesAliados, setAlmacenesAliados] = useState<RES_AlmacenVecino[]>(
+    [],
+  );
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [loadingStocks, setLoadingStocks] = useState(false);
   const [stocksAlmacen, setStocksAlmacen] = useState<
