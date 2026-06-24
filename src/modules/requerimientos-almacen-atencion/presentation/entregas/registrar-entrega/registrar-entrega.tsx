@@ -11,7 +11,7 @@ interface RegistrarEntregaProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  idContratistaSolicitante: number;
+  idContratistaSolicitante: number ;
   onSuccess: (entregados: Record<number, number>) => void;
   onCancel: () => void;
 }
