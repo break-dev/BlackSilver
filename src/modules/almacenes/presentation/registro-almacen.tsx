@@ -71,6 +71,7 @@ export const RegistroAlmacen = ({
         />
 
         <div
+          style={{ display: "none" }}
           className="p-3 bg-pink-500/10 border border-pink-500/20 
           rounded-lg flex items-center justify-between"
         >

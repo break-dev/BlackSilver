@@ -23,6 +23,8 @@ export const useAlmacenes = () => {
   ] = useDisclosure(false);
   const [openedAlcance, { open: openAlcance, close: closeAlcance }] =
     useDisclosure(false);
+  const [openedVecinos, { open: openVecinos, close: closeVecinos }] =
+    useDisclosure(false);
   const [selectedAlmacen, setSelectedAlmacen] = useState<RES_AlmacenResumen | null>(
     null,
   );
@@ -130,6 +132,9 @@ export const useAlmacenes = () => {
     openedAlcance,
     openAlcance,
     closeAlcance,
+    openedVecinos,
+    openVecinos,
+    closeVecinos,
     selectedAlmacen,
     setSelectedAlmacen,
 

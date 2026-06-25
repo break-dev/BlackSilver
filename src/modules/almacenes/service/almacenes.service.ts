@@ -11,6 +11,8 @@ import type {
   RES_MinaDisponible,
   RES_MinaAbastecida,
   RES_ResponsableAlmacen,
+  RES_AlmacenVecinoRel,
+  RES_AlmacenDisponibleVecino,
 } from "./almacenes.responses";
 
 const PATH = "/almacenes";
@@ -97,6 +99,39 @@ export const AlmacenesService = {
     const { data } = await api.get(
       `${PATH}/abastecimiento-minas/minas/${id_almacen}`,
     );
+    return data;
+  },
+
+  // ALMACENES VECINOS
+  get_vecinos: async (
+    id_almacen: number,
+  ): Promise<IRespuesta<RES_AlmacenVecinoRel[]>> => {
+    const { data } = await api.get(`${PATH}/vecinos/${id_almacen}`);
+    return data;
+  },
+
+  get_almacenes_disponibles_vecinos: async (
+    id_almacen: number,
+  ): Promise<IRespuesta<RES_AlmacenDisponibleVecino[]>> => {
+    const { data } = await api.get(`${PATH}/vecinos/disponibles/${id_almacen}`);
+    return data;
+  },
+
+  agregar_vecino: async (
+    id_almacen_a: number,
+    id_almacen_b: number,
+  ): Promise<IRespuesta<unknown>> => {
+    const { data } = await api.post(`${PATH}/vecinos`, {
+      id_almacen_a,
+      id_almacen_b,
+    });
+    return data;
+  },
+
+  eliminar_vecino: async (
+    id_almacen_vecino: number,
+  ): Promise<IRespuesta<null>> => {
+    const { data } = await api.delete(`${PATH}/vecinos/${id_almacen_vecino}`);
     return data;
   },
 };

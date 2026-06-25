@@ -36,3 +36,16 @@ export interface RES_MinaDisponible {
   nombre: string;
   concesion: string;
 }
+
+export interface RES_AlmacenVecinoRel {
+  id_almacen_vecino: number;
+  id_almacen: number;
+  nombre: string;
+  descripcion?: string;
+}
+
+export interface RES_AlmacenDisponibleVecino {
+  id_almacen: number;
+  nombre: string;
+  descripcion?: string;
+}

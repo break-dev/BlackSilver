@@ -13,12 +13,14 @@ import {
   UserIcon,
   BuildingStorefrontIcon,
   RectangleStackIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroAlmacen } from "./registro-almacen";
 import { HistorialResponsables } from "./historial-responsables";
 import { MinasAbastecidas } from "./minas-abastecidas";
+import { AlmacenesVecinos } from "./almacenes-vecinos";
 import { useAlmacenes } from "../hooks/useAlmacenes";
 import type { RES_AlmacenResumen } from "../service/almacenes.responses";
 
@@ -42,6 +44,9 @@ export const AlmacenesPage = () => {
     openedAlcance,
     openAlcance,
     closeAlcance,
+    openedVecinos,
+    openVecinos,
+    closeVecinos,
     selectedAlmacen,
     setSelectedAlmacen,
     // Registro
@@ -65,6 +70,11 @@ export const AlmacenesPage = () => {
   const handleOpenAlcance = (alm: RES_AlmacenResumen) => {
     setSelectedAlmacen(alm);
     openAlcance();
+  };
+
+  const handleOpenVecinos = (alm: RES_AlmacenResumen) => {
+    setSelectedAlmacen(alm);
+    openVecinos();
   };
 
   return (
@@ -260,6 +270,17 @@ export const AlmacenesPage = () => {
                         <UserIcon className="w-4 h-4" />
                       </ActionIcon>
                     </Tooltip>
+                    <Tooltip label="Gestionar Almacenes Vecinos">
+                      <ActionIcon
+                        variant="filled"
+                        color="teal"
+                        size="sm"
+                        radius="md"
+                        onClick={() => handleOpenVecinos(alm)}
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                      </ActionIcon>
+                    </Tooltip>
                     {!isPrincipal && (
                       <Tooltip label="Gestionar Alcance (Minas)">
                         <ActionIcon
@@ -356,6 +377,19 @@ export const AlmacenesPage = () => {
                   : null,
               );
             }}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Almacenes Vecinos */}
+      <ModalEstandar
+        opened={openedVecinos}
+        close={closeVecinos}
+        title="Gestión de Almacenes Vecinos"
+      >
+        {selectedAlmacen && (
+          <AlmacenesVecinos
+            almacen={selectedAlmacen}
           />
         )}
       </ModalEstandar>

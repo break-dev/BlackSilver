@@ -14,6 +14,7 @@ import { Periodo } from "../../../../../shared/enums/_generic/periodo";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Empresa } from "../../../../../service/responses/empresa";
+import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
 
 interface EdicionCotizacionTablaProps {
   productos: (
@@ -35,7 +36,7 @@ interface EdicionCotizacionTablaProps {
   proveedores: RES_Proveedor[];
   onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: RES_Empresa[];
-  copiedCotizacion?: any;
+  copiedCotizacion?: CopiedCotizacion | null;
   onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;

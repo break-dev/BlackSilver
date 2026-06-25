@@ -20,6 +20,7 @@ import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
   EyeIcon,
+  EyeSlashIcon,
   InformationCircleIcon,
   ExclamationTriangleIcon,
   NoSymbolIcon,
@@ -28,7 +29,7 @@ import { useRegistrarPrestamo } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { Estado_SolicitudDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 import { formatNumber } from "../../../shared/functions/formatNumber";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
@@ -55,10 +56,12 @@ const SectionHeader = ({
   icon: Icon,
   title,
   color = "amber",
+  rightSection,
 }: {
   icon: React.ElementType;
   title: string;
   color?: string;
+  rightSection?: React.ReactNode;
 }) => {
   const colors: Record<string, { text: string; line: string }> = {
     amber: { text: "text-amber-500", line: "from-amber-500/50" },
@@ -71,11 +74,14 @@ const SectionHeader = ({
 
   return (
     <div className="flex flex-col gap-2 mb-4">
-      <div className="flex items-center gap-2">
-        <Icon className={`w-5 h-5 ${activeColor.text}`} />
-        <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">
-          {title}
-        </Text>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className={`w-5 h-5 ${activeColor.text}`} />
+          <Text fw={700} size="sm" c="white" className="tracking-tight uppercase">
+            {title}
+          </Text>
+        </div>
+        {rightSection}
       </div>
       <div
         className={`h-0.5 w-full bg-linear-to-r ${activeColor.line} to-transparent rounded-full`}
@@ -116,6 +122,13 @@ export const RegistrarPrestamoAlmacen = ({
     handleRegistrar,
     cargarStockPrestamista,
   } = actions;
+
+  const [mostrarTodos, setMostrarTodos] = useState(false);
+
+  const almacenesFiltrados = useMemo(() => {
+    if (mostrarTodos) return almacenesAliados;
+    return almacenesAliados.filter((aliado) => !!aliado.es_vecino);
+  }, [almacenesAliados, mostrarTodos]);
 
   useEffect(() => {
     if (idAlmacenPrestamista) {
@@ -261,111 +274,155 @@ export const RegistrarPrestamoAlmacen = ({
             icon={BuildingOffice2Icon}
             title="2. Almacenes con Disponibilidad"
             color="indigo"
+            rightSection={
+              almacenesAliados.length > 0 && (
+                <Tooltip label={mostrarTodos ? "Ver solo vecinos" : "Ver todos los almacenes"}>
+                  <ActionIcon
+                    variant="light"
+                    color="indigo"
+                    onClick={() => setMostrarTodos((prev) => !prev)}
+                    size="sm"
+                    radius="md"
+                  >
+                    {mostrarTodos ? (
+                      <EyeSlashIcon className="w-4 h-4" />
+                    ) : (
+                      <EyeIcon className="w-4 h-4" />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
+              )
+            }
           />
           {loadingAlmacenes ? (
             <Text size="xs" c="dimmed" fs="italic">
               Buscando almacenes que puedan ayudarte...
             </Text>
           ) : almacenesAliados.length > 0 ? (
-            <Stack gap="md">
-              <div className="flex items-start gap-2 bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl mb-1">
-                <InformationCircleIcon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                <Text size="xs" c="indigo.4" className="leading-relaxed">
-                  Solo se muestran almacenes que cuentan con disponibilidad para{" "}
-                  <b>todos</b> los productos que has seleccionado previamente.
-                  Esto asegura que el préstamo se realice de forma íntegra.
-                </Text>
-              </div>
+            almacenesFiltrados.length > 0 ? (
+              <Stack gap="md">
+                <div className="flex items-start gap-2 bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl mb-1">
+                  <InformationCircleIcon className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                  <Text size="xs" c="indigo.4" className="leading-relaxed">
+                    Solo se muestran almacenes que cuentan con disponibilidad para{" "}
+                    <b>todos</b> los productos que has seleccionado previamente.
+                    Esto asegura que el préstamo se realice de forma íntegra.
+                  </Text>
+                </div>
 
-              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
-                {almacenesAliados.map((aliado: RES_AlmacenVecino) => {
-                  const isPicked =
-                    idAlmacenPrestamista === String(aliado.id_almacen);
-                  return (
-                    <Paper
-                      key={aliado.id_almacen}
-                      onClick={() =>
-                        setIdAlmacenPrestamista((prev) =>
-                          prev === String(aliado.id_almacen)
-                            ? null
-                            : String(aliado.id_almacen),
-                        )
-                      }
-                      p="md"
-                      radius="lg"
-                      className={`cursor-pointer border-2 transition-all group relative
-                        ${
-                          isPicked
-                            ? "bg-indigo-500/20 border-indigo-400 shadow-md shadow-indigo-500/10"
-                            : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50"
+                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+                  {almacenesFiltrados.map((aliado: RES_AlmacenVecino) => {
+                    const isPicked =
+                      idAlmacenPrestamista === String(aliado.id_almacen);
+                    return (
+                      <Paper
+                        key={aliado.id_almacen}
+                        onClick={() =>
+                          setIdAlmacenPrestamista((prev) =>
+                            prev === String(aliado.id_almacen)
+                              ? null
+                              : String(aliado.id_almacen),
+                          )
                         }
-                      `}
-                    >
-                      <Group
-                        justify="space-between"
-                        wrap="nowrap"
-                        align="center"
+                        p="md"
+                        radius="lg"
+                        className={`cursor-pointer border-2 transition-all group relative
+                          ${
+                            isPicked
+                              ? "bg-indigo-500/20 border-indigo-400 shadow-md shadow-indigo-500/10"
+                              : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50"
+                          }
+                        `}
                       >
                         <Group
-                          gap="sm"
+                          justify="space-between"
                           wrap="nowrap"
-                          className="min-w-0 flex-1"
+                          align="center"
                         >
-                          <div
-                            className={`p-2 rounded-xl shrink-0 ${
-                              isPicked
-                                ? "bg-indigo-400 text-zinc-950"
-                                : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
-                            }`}
+                          <Group
+                            gap="sm"
+                            wrap="nowrap"
+                            className="min-w-0 flex-1"
                           >
-                            <BuildingOffice2Icon className="w-5 h-5" />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <Text
-                              size="sm"
-                              fw={800}
-                              truncate="end"
-                              className="tracking-tight text-white m-0"
+                            <div
+                              className={`p-2 rounded-xl shrink-0 ${
+                                isPicked
+                                  ? "bg-indigo-400 text-zinc-950"
+                                  : "bg-zinc-800 text-zinc-400 group-hover:text-zinc-200"
+                              }`}
                             >
-                              {aliado.nombre}
-                            </Text>
-                          </div>
-                        </Group>
+                              <BuildingOffice2Icon className="w-5 h-5" />
+                            </div>
 
-                        <Group
-                          gap={6}
-                          wrap="nowrap"
-                          className="shrink-0 flex-none"
-                        >
-                          <Tooltip label="Ver Lotes" withArrow position="top">
-                            <ActionIcon
-                              variant="subtle"
-                              color="indigo"
-                              radius="md"
-                              size="md"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(
-                                  `/logistica/inventario/lotes?idAlmacen=${aliado.id_almacen}`,
-                                  "_blank",
-                                );
-                              }}
-                              className="hover:bg-indigo-500/20"
-                            >
-                              <EyeIcon className="w-4 h-4" />
-                            </ActionIcon>
-                          </Tooltip>
-                          {isPicked && (
-                            <CheckCircleIcon className="w-6 h-6 text-indigo-400" />
-                          )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <Text
+                                  size="sm"
+                                  fw={800}
+                                  truncate="end"
+                                  className="tracking-tight text-white m-0 flex-1"
+                                >
+                                  {aliado.nombre}
+                                </Text>
+                                {!!aliado.es_vecino && (
+                                  <Badge size="xs" variant="light" color="teal" radius="sm" className="shrink-0 font-bold">
+                                    Vecino
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </Group>
+
+                          <Group
+                            gap={6}
+                            wrap="nowrap"
+                            className="shrink-0 flex-none"
+                          >
+                            <Tooltip label="Ver Lotes" withArrow position="top">
+                              <ActionIcon
+                                variant="subtle"
+                                color="indigo"
+                                radius="md"
+                                size="md"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(
+                                    `/logistica/inventario/lotes?idAlmacen=${aliado.id_almacen}`,
+                                    "_blank",
+                                  );
+                                }}
+                                className="hover:bg-indigo-500/20"
+                              >
+                                <EyeIcon className="w-4 h-4" />
+                              </ActionIcon>
+                            </Tooltip>
+                            {isPicked && (
+                              <CheckCircleIcon className="w-6 h-6 text-indigo-400" />
+                            )}
+                          </Group>
                         </Group>
-                      </Group>
-                    </Paper>
-                  );
-                })}
-              </SimpleGrid>
-            </Stack>
+                      </Paper>
+                    );
+                  })}
+                </SimpleGrid>
+              </Stack>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-6 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/10">
+                <BuildingOffice2Icon className="w-8 h-8 text-zinc-700 mb-2 animate-pulse" />
+                <Text size="xs" c="zinc.5" className="text-center font-medium">
+                  No hay almacenes vecinos con disponibilidad de todos los productos seleccionados.
+                </Text>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  color="indigo"
+                  className="mt-2"
+                  onClick={() => setMostrarTodos(true)}
+                >
+                  Ver otros almacenes disponibles
+                </Button>
+              </div>
+            )
           ) : (
             <Text size="xs" c="red" fw={700}>
               Ningún otro almacén tiene stock de lo solicitado.

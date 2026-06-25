@@ -17,6 +17,7 @@ import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo
 import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Empleado } from "../../../service/responses/empleado";
+import type { RES_Contratista } from "../../../service/responses/contratista";
 
 interface Props {
   onSuccess: (
@@ -46,6 +47,8 @@ export const useRegistroRequerimiento = ({
   // Catálogos
   const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
+  const [verContratistas, setVerContratistas] = useState(false);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -84,17 +87,19 @@ export const useRegistroRequerimiento = ({
       setLoadingMinaData(true);
       setLoadingActivos(true);
       try {
-        const [resProd, resUnid, resEmp, resAct] = await Promise.all([
+        const [resProd, resUnid, resEmp, resAct, resCont] = await Promise.all([
           AuxService.get_productos({ con_categorias_consumidoras: true }),
           AuxService.get_unidades_medida(),
           AuxService.get_empleados(),
           AuxService.get_activos_disponibles(),
+          AuxService.get_contratistas(),
         ]);
 
         if (resProd.success && resProd.data) setProductos(resProd.data);
         if (resUnid.success && resUnid.data) setUnidades(resUnid.data);
         if (resEmp.success && resEmp.data) setEmpleados(resEmp.data);
         if (resAct.success && resAct.data) setActivos(resAct.data);
+        if (resCont.success && resCont.data) setContratistas(resCont.data);
       } catch (err) {
         console.error("Error loading catalogs", err);
       } finally {
@@ -395,6 +400,9 @@ export const useRegistroRequerimiento = ({
       idEmpleadoSolicitante,
       setIdEmpleadoSolicitante,
       empleados,
+      contratistas,
+      verContratistas,
+      setVerContratistas,
       idLabores,
       setIdLabores,
       premura,

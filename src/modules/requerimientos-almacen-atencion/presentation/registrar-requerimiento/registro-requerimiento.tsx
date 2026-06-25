@@ -12,6 +12,7 @@ import {
   Textarea,
   Loader,
   Checkbox,
+  Tooltip,
 } from "@mantine/core";
 import {
   WrenchScrewdriverIcon,
@@ -24,6 +25,8 @@ import {
   TrashIcon,
   MapPinIcon,
   UserIcon,
+  UserGroupIcon,
+  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroRequerimiento } from "../../hooks/useRegistroRequerimiento";
 import { Premura } from "../../../../shared/enums/_generic/premura";
@@ -73,6 +76,9 @@ export const RegistroRequerimiento = ({
     state: {
       minas,
       empleados,
+      contratistas,
+      verContratistas,
+      setVerContratistas,
       labores,
       productos,
       unidades,
@@ -172,26 +178,57 @@ export const RegistroRequerimiento = ({
             }
           />
 
-          <Select
-            label="Solicitante"
-            placeholder="Seleccione empleado"
-            data={empleados.map((r) => ({
-              value: String(r.id_empleado),
-              label: r.nombre_completo,
-            }))}
-            value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
-            onChange={(val) => setIdEmpleadoSolicitante(Number(val))}
-            classNames={inputClasses}
-            radius="lg"
-            searchable
-            leftSection={
-              loadingMinaData ? (
-                <Loader size="xs" />
-              ) : (
-                <UserIcon className="w-4 h-4 text-zinc-400" />
-              )
-            }
-          />
+          <div className="flex items-end gap-2">
+            <Select
+              label={verContratistas ? "Solicitante (Contratista)" : "Solicitante (Empleado)"}
+              placeholder={verContratistas ? "Seleccione contratista" : "Seleccione empleado"}
+              data={
+                verContratistas
+                  ? contratistas.map((r) => ({
+                      value: String(r.id_contratista),
+                      label: `${r.nombre} ${r.apellido}`,
+                    }))
+                  : empleados.map((r) => ({
+                      value: String(r.id_empleado),
+                      label: r.nombre_completo,
+                    }))
+              }
+              value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
+              onChange={(val) => setIdEmpleadoSolicitante(Number(val))}
+              classNames={inputClasses}
+              radius="lg"
+              searchable
+              className="flex-1"
+              leftSection={
+                loadingMinaData ? (
+                  <Loader size="xs" />
+                ) : verContratistas ? (
+                  <BriefcaseIcon className="w-4 h-4 text-zinc-400" />
+                ) : (
+                  <UserIcon className="w-4 h-4 text-zinc-400" />
+                )
+              }
+            />
+            <Tooltip label={verContratistas ? "Ver empleados" : "Ver contratistas"} position="top" withArrow>
+              <ActionIcon
+                variant="light"
+                color={verContratistas ? "teal" : "indigo"}
+                onClick={() => {
+                  setVerContratistas((prev) => !prev);
+                  setIdEmpleadoSolicitante(0);
+                }}
+                radius="lg"
+                className="shrink-0"
+                style={{ height: 36, width: 36 }}
+              >
+                {verContratistas ? (
+                  <UserIcon className="w-5 h-5" />
+                ) : (
+                  <UserGroupIcon className="w-5 h-5" />
+                )}
+              </ActionIcon>
+            </Tooltip>
+          </div>
 
           <CustomDatePicker
             label="Fecha de Entrega (opc.)"
