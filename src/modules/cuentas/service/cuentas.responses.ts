@@ -8,11 +8,6 @@ export interface RES_Cuenta {
   nombre_empleado: string;
   apellido_empleado: string;
   id_empresa_pertenece: number;
-  path_foto: string | null;
+  url_foto: string | null;
   empresa_pertenece: string;
-}
-
-export interface RES_RolDisponible {
-  id: number;
-  nombre: string;
 }

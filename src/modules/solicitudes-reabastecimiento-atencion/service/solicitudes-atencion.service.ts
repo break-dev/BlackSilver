@@ -1,6 +1,7 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
+  RES_AlmacenVecino,
   RES_HistorialEntregas,
   RES_StockTotalAlmacen,
 } from "./solicitudes-atencion.responses";
@@ -9,8 +10,6 @@ import type {
   DTO_RegistrarEntregaReabastecimiento,
   DTO_CrearPrestamo,
 } from "./solicitudes-atencion.requests";
-
-import type { RES_Almacen } from "../../../service/responses/almacen";
 import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
@@ -75,7 +74,7 @@ export const SolicitudesAtencionService = {
       const formData = new FormData();
       formData.append("id_solicitud", dto.id_solicitud.toString());
       formData.append("id_almacen_entrega", dto.id_almacen_entrega.toString());
-      formData.append("id_personal_recibe", dto.id_personal_recibe.toString());
+      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
       formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);
 
@@ -132,7 +131,7 @@ export const SolicitudesAtencionService = {
     );
     params.append("id_almacen_excluido", id_almacen_excluido.toString());
 
-    const resp = await api.get<IRespuesta<RES_Almacen[]>>(
+    const resp = await api.get<IRespuesta<RES_AlmacenVecino[]>>(
       `${path}/aux/almacenes-con-stock?${params.toString()}`,
     );
     return resp.data;

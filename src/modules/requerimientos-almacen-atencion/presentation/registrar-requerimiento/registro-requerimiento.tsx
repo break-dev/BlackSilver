@@ -72,15 +72,15 @@ export const RegistroRequerimiento = ({
   const {
     state: {
       minas,
-      responsables,
+      empleados,
       labores,
       productos,
       unidades,
       detalles,
       idMina,
       setIdMina,
-      idContratistaSolicitante,
-      setIdContratistaSolicitante,
+      idEmpleadoSolicitante,
+      setIdEmpleadoSolicitante,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       idLabores,
@@ -174,19 +174,16 @@ export const RegistroRequerimiento = ({
 
           <Select
             label="Solicitante"
-            placeholder="Seleccione responsable"
-            data={responsables.map((r) => ({
-              value: String(r.id_contratista),
+            placeholder="Seleccione empleado"
+            data={empleados.map((r) => ({
+              value: String(r.id_empleado),
               label: r.nombre_completo,
             }))}
-            value={
-              idContratistaSolicitante ? String(idContratistaSolicitante) : null
-            }
-            onChange={(val) => setIdContratistaSolicitante(Number(val))}
+            value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
+            onChange={(val) => setIdEmpleadoSolicitante(Number(val))}
             classNames={inputClasses}
             radius="lg"
             searchable
-            disabled={!idAlmacenDestino}
             leftSection={
               loadingMinaData ? (
                 <Loader size="xs" />
@@ -382,20 +379,32 @@ export const RegistroRequerimiento = ({
               <div className="md:col-span-6 self-start flex flex-col gap-1.5">
                 <div className="flex justify-between items-center h-5 mb-0.5">
                   <span className="text-zinc-300 font-semibold tracking-tight text-[13px] md:text-sm">
-                    {paraMantenimientoItem && productoSeleccionado ? "Equipo Destino" : "Comentario del ítem"}
+                    {paraMantenimientoItem && productoSeleccionado
+                      ? "Equipo Destino"
+                      : "Comentario del ítem"}
                   </span>
                   <Checkbox
                     label="Mantenimiento"
                     checked={paraMantenimientoItem}
-                    disabled={!productoSeleccionado || !productoSeleccionado.para_mantenimiento}
-                    onChange={(event) => setParaMantenimientoItem(event.currentTarget.checked)}
+                    disabled={
+                      !productoSeleccionado ||
+                      !productoSeleccionado.para_mantenimiento
+                    }
+                    onChange={(event) =>
+                      setParaMantenimientoItem(event.currentTarget.checked)
+                    }
                     size="xs"
                     color="indigo"
                     radius="sm"
                     classNames={{
-                      input: (productoSeleccionado && productoSeleccionado.para_mantenimiento) ? "cursor-pointer" : "cursor-not-allowed",
+                      input:
+                        productoSeleccionado &&
+                        productoSeleccionado.para_mantenimiento
+                          ? "cursor-pointer"
+                          : "cursor-not-allowed",
                       label: `font-semibold text-xs ${
-                        (productoSeleccionado && productoSeleccionado.para_mantenimiento)
+                        productoSeleccionado &&
+                        productoSeleccionado.para_mantenimiento
                           ? "text-zinc-300 cursor-pointer"
                           : "text-zinc-600 cursor-not-allowed"
                       }`,
@@ -411,7 +420,9 @@ export const RegistroRequerimiento = ({
                         value: String(a.id_activo),
                         label: `${a.correlativo} - ${a.producto}`,
                       }))}
-                      value={idActivoFijoDestino ? String(idActivoFijoDestino) : null}
+                      value={
+                        idActivoFijoDestino ? String(idActivoFijoDestino) : null
+                      }
                       onChange={(val) => setIdActivoFijoDestino(Number(val))}
                       searchable
                       classNames={inputClasses}

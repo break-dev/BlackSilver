@@ -15,7 +15,7 @@ export interface RES_PrestamoEntrega {
   almacen_entrega: string;
   //
   empleado_entrega: string;
-  personal_recibe: string;
+  empleado_recibe: string;
   //
   correlativo: string;
   fecha_hora_entrega: string;

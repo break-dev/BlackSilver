@@ -2,7 +2,6 @@ import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   RES_ConcesionItem,
-  RES_ContratistaDisponible,
   RES_EmpresaEjecutora,
   RES_HistorialResponsable,
   RES_Labor,
@@ -73,16 +72,6 @@ export const MinasService = {
   getHistorialResponsables: async (id_mina: number) => {
     const res = await api.get<IRespuesta<RES_HistorialResponsable[]>>(
       `${BASE_MINAS}/responsables`,
-      {
-        params: { id_mina },
-      },
-    );
-    return res.data;
-  },
-
-  getContratistasDisponibles: async (id_mina: number) => {
-    const res = await api.get<IRespuesta<RES_ContratistaDisponible[]>>(
-      `${BASE_MINAS}/responsables/contratistas-disponibles`,
       {
         params: { id_mina },
       },

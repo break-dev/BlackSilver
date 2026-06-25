@@ -28,9 +28,8 @@ export const RegistroEntrega = ({
     activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
-    handleCrearPersonal,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     entregaCantidades,
@@ -51,7 +50,7 @@ export const RegistroEntrega = ({
     onSuccess,
   });
 
-  const canSubmit = !!idAlmacenEntrega && !!idPersonalRecibe && !isProcessing;
+  const canSubmit = !!idAlmacenEntrega && !!idEmpleadoRecibe && !isProcessing;
 
   return (
     <Stack gap="xl" className="font-sans py-2">
@@ -63,14 +62,10 @@ export const RegistroEntrega = ({
         idAlmacenEntrega={idAlmacenEntrega}
         setIdAlmacenEntrega={setIdAlmacenEntrega}
         loadingAlmacenes={loadingAlmacenes}
-        personal={personal.map((p) => ({
-          value: String(p.id_personal),
-          label: `${p.nombre_completo} - DNI: ${p.dni || "S/N"}`,
-        }))}
-        idPersonalRecibe={idPersonalRecibe}
-        setIdPersonalRecibe={setIdPersonalRecibe}
+        personal={personal}
+        idEmpleadoRecibe={idEmpleadoRecibe}
+        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         loadingPersonal={loadingPersonal}
-        onAddPersonal={handleCrearPersonal}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}

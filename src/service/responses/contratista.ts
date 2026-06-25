@@ -6,7 +6,7 @@ export interface RES_Contratista {
   dni: string;
   ruc: string | null;
   fecha_nacimiento: string | null;
-  path_foto: string | null;
+  url_foto: string | null;
   id_mina: number | null;
   mina: string | null;
 }

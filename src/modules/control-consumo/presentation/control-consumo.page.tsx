@@ -54,7 +54,7 @@ export const ControlConsumoPage = () => {
           correlativo_requerimiento: item.correlativo_requerimiento,
           fecha_requerimiento: item.fecha_requerimiento,
           es_auditable: item.es_auditable,
-          contratista_solicitante: item.contratista_solicitante,
+          empleado_solicitante: item.empleado_solicitante,
           mina: item.mina,
           almacen_destino: item.almacen_destino,
           entregas: [],

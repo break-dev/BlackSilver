@@ -17,12 +17,12 @@ import {
   WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroContratista } from "../hooks/useRegistroContratista";
-import type { RES_Contratista } from "../service/empleados.responses";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface RegistroContratistaProps {
   idMinaDefault?: number | null;
-  onSuccess: (nuevo: RES_Contratista) => void;
+  onSuccess: (nuevo: RES_ContratistaResumen) => void;
   onCancel: () => void;
 }
 
@@ -49,14 +49,14 @@ export const RegistroContratista = ({
   };
 
   const photoPreview =
-    form.path_foto instanceof File ? URL.createObjectURL(form.path_foto) : null;
+    form.foto instanceof File ? URL.createObjectURL(form.foto) : null;
 
   return (
     <Stack gap="md">
       {/* Selector de Foto Circular */}
       <div className="flex flex-col items-center justify-center py-4">
         <FileButton
-          onChange={(file) => setField("path_foto", file)}
+          onChange={(file) => setField("foto", file)}
           accept="image/png,image/jpeg,image/jpg"
         >
           {(props) => (
@@ -65,13 +65,18 @@ export const RegistroContratista = ({
               className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
               style={{ width: 110, height: 110 }}
             >
-              <Avatar src={photoPreview} size={110} radius={100} className="bg-transparent">
+              <Avatar
+                src={photoPreview}
+                size={110}
+                radius={100}
+                className="bg-transparent"
+              >
                 <UserIcon className="w-10 h-10 text-indigo-400/40" />
               </Avatar>
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
                 <PencilIcon className="w-5 h-5 text-white mb-1 drop-shadow-md" />
                 <Text size="10px" fw={700} className="text-white leading-tight">
-                  {form.path_foto ? "Cambiar imagen" : "Subir imagen"}
+                  {form.foto ? "Cambiar imagen" : "Subir imagen"}
                 </Text>
               </div>
             </div>
@@ -139,7 +144,9 @@ export const RegistroContratista = ({
           value: m.id_mina.toString(),
           label: m.nombre,
         }))}
-        value={form.id_mina === 0 || !form.id_mina ? null : form.id_mina.toString()}
+        value={
+          form.id_mina === 0 || !form.id_mina ? null : form.id_mina.toString()
+        }
         onChange={(val) => setField("id_mina", val ? Number(val) : 0)}
         leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
         classNames={fieldClasses}
@@ -165,7 +172,9 @@ export const RegistroContratista = ({
         }))}
         value={form.ids_labor?.map((id) => id.toString()) || []}
         onChange={(vals) => setField("ids_labor", vals.map(Number))}
-        leftSection={<WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />}
+        leftSection={
+          <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-500" />
+        }
         classNames={{
           ...fieldClasses,
           pill: "bg-purple-600 text-white",
@@ -174,7 +183,9 @@ export const RegistroContratista = ({
         searchable
         clearable
         hidePickedOptions
-        disabled={!form.id_mina || form.id_mina === 0 || loadingLabores || loading}
+        disabled={
+          !form.id_mina || form.id_mina === 0 || loadingLabores || loading
+        }
       />
 
       {/* Acciones */}

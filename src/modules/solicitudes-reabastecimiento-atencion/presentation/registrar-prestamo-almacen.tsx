@@ -24,10 +24,7 @@ import {
   ExclamationTriangleIcon,
   NoSymbolIcon,
 } from "@heroicons/react/24/outline";
-import {
-  useRegistrarPrestamo,
-  type AlmacenAliado,
-} from "../hooks/useRegistrarPrestamo";
+import { useRegistrarPrestamo } from "../hooks/useRegistrarPrestamo";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { Estado_SolicitudDetalle } from "../../../shared/enums/solicitud-reabastecimiento/solicitud";
 import { formatNumber } from "../../../shared/functions/formatNumber";
@@ -37,6 +34,7 @@ import type {
   RES_SolicitudDetalle,
 } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
 import type { RES_Prestamo } from "../../../service/responses/prestamos/prestamo";
+import type { RES_AlmacenVecino } from "../service/solicitudes-atencion.responses";
 
 interface RegistrarPrestamoAlmacenProps {
   solicitud: RES_Solicitud;
@@ -280,7 +278,7 @@ export const RegistrarPrestamoAlmacen = ({
               </div>
 
               <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
-                {almacenesAliados.map((aliado: AlmacenAliado) => {
+                {almacenesAliados.map((aliado: RES_AlmacenVecino) => {
                   const isPicked =
                     idAlmacenPrestamista === String(aliado.id_almacen);
                   return (
@@ -389,7 +387,7 @@ export const RegistrarPrestamoAlmacen = ({
             onChange={(val) => setFechaLimiteDevolucion(val as Date | null)}
             radius="lg"
             minDate={new Date()}
-            className="max-w-[250px] mb-4"
+            className="max-w-62.5 mb-4"
             placeholder="Seleccionar fecha"
           />
 
@@ -397,16 +395,16 @@ export const RegistrarPrestamoAlmacen = ({
             <Table variant="unstyled" className="w-full text-zinc-300">
               <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-bold">
                 <tr>
-                  <th className="px-4 py-3 text-center min-w-[150px]">
+                  <th className="px-4 py-3 text-center min-w-37.5">
                     Producto
                   </th>
-                  <th className="px-4 py-3 text-center min-w-[120px]">
+                  <th className="px-4 py-3 text-center min-w-30">
                     Cantidad a Pedir
                   </th>
-                  <th className="px-4 py-3 text-center min-w-[150px]">
+                  <th className="px-4 py-3 text-center min-w-37.5">
                     Stock Disponible
                   </th>
-                  <th className="px-4 py-3 text-center font-semibold min-w-[300px]">
+                  <th className="px-4 py-3 text-center font-semibold min-w-75">
                     Comentario
                   </th>
                 </tr>

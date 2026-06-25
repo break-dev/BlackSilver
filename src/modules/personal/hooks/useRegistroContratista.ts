@@ -1,15 +1,14 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
-import { ContratistasService, EmpleadosService } from "../service/empleados.service";
+import { ContratistasService } from "../service/empleados.service";
+import { AuxService } from "../../../service/auxiliar.service";
 import {
   Schema_CrearContratista,
   type DTO_CrearContratista,
 } from "../service/empleados.requests";
-import type {
-  RES_Contratista,
-  RES_Mina,
-  RES_Labor,
-} from "../service/empleados.responses";
+import type { RES_ContratistaResumen } from "../service/empleados.responses";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
 
 const INITIAL_FORM: DTO_CrearContratista = {
   id_mina: 0,
@@ -20,12 +19,12 @@ const INITIAL_FORM: DTO_CrearContratista = {
   carnet_extranjeria: "",
   pasaporte: "",
   fecha_nacimiento: "",
-  path_foto: "",
+  foto: "",
   ids_labor: [],
 };
 
 export const useRegistroContratista = (
-  onSuccess: (nuevo: RES_Contratista) => void,
+  onSuccess: (nuevo: RES_ContratistaResumen) => void,
   idMinaDefault: number | null = null,
 ) => {
   const { notify } = useNotify();
@@ -43,7 +42,7 @@ export const useRegistroContratista = (
   const cargarMinas = useCallback(async () => {
     setLoadingMinas(true);
     try {
-      const resp = await EmpleadosService.get_minas();
+      const resp = await AuxService.get_minas();
       if (resp.success) setMinas(resp.data);
     } catch (err) {
       console.error(err);

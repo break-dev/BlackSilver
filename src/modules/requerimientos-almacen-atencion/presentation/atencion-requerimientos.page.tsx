@@ -113,12 +113,19 @@ export const RequerimientosAlmacenAtencionPage = () => {
         accessor: "mina",
         title: "Mina",
         width: 180,
+        textAlign: "left",
         render: (item) => (
           <Group gap="xs" wrap="nowrap">
             <MapPinIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-            <Text size="sm" className="text-zinc-200">
-              {item.mina}
-            </Text>
+            {item.mina ? (
+              <Text size="sm" className="text-zinc-200">
+                {item.mina}
+              </Text>
+            ) : (
+              <Text size="xs" className="italic" c="dimmed">
+                No especificada
+              </Text>
+            )}
           </Group>
         ),
       },

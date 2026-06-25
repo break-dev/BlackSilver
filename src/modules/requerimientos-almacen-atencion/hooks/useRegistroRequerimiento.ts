@@ -7,7 +7,6 @@ import type {
   DTO_CrearRequerimiento,
   DTO_CrearRequerimientoDetalle,
 } from "../service/atencion.requests";
-import type { RES_Labor, RES_Mina } from "../service/atencion.responses";
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
@@ -15,6 +14,9 @@ import type { RES_RequerimientoAlmacen } from "../../../service/responses/requer
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 
 interface Props {
   onSuccess: (
@@ -43,9 +45,7 @@ export const useRegistroRequerimiento = ({
 
   // Catálogos
   const [minas, setMinas] = useState<RES_Mina[]>([]);
-  const [responsables, setResponsables] = useState<
-    { id_contratista: number; nombre_completo: string }[]
-  >([]);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -57,8 +57,7 @@ export const useRegistroRequerimiento = ({
     idAlmacenFijo || 0,
   );
   const [idMina, setIdMina] = useState<number>(0);
-  const [idContratistaSolicitante, setIdContratistaSolicitante] =
-    useState<number>(0);
+  const [idEmpleadoSolicitante, setIdEmpleadoSolicitante] = useState<number>(0);
   const [idLabores, setIdLabores] = useState<number[]>([]);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
@@ -77,36 +76,36 @@ export const useRegistroRequerimiento = ({
   // Lista de detalles agregados
   const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
 
-  // 1. Cargar Productos y Unidades en paralelo (sin bloquearse secuencialmente)
+  // 1. Cargar Catálogos en paralelo al montar
   useEffect(() => {
-    const loadProductos = async () => {
+    const loadCatalogs = async () => {
       setLoadingProductos(true);
+      setLoadingUnidades(true);
+      setLoadingMinaData(true);
+      setLoadingActivos(true);
       try {
-        const res = await AuxService.get_productos({
-          con_categorias_consumidoras: true,
-        });
-        if (res.success && res.data) {
-          setProductos(res.data);
-        }
+        const [resProd, resUnid, resEmp, resAct] = await Promise.all([
+          AuxService.get_productos({ con_categorias_consumidoras: true }),
+          AuxService.get_unidades_medida(),
+          AuxService.get_empleados(),
+          AuxService.get_activos_disponibles(),
+        ]);
+
+        if (resProd.success && resProd.data) setProductos(resProd.data);
+        if (resUnid.success && resUnid.data) setUnidades(resUnid.data);
+        if (resEmp.success && resEmp.data) setEmpleados(resEmp.data);
+        if (resAct.success && resAct.data) setActivos(resAct.data);
+      } catch (err) {
+        console.error("Error loading catalogs", err);
       } finally {
         setLoadingProductos(false);
-      }
-    };
-
-    const loadUnidades = async () => {
-      setLoadingUnidades(true);
-      try {
-        const res = await AuxService.get_unidades_medida();
-        if (res.success && res.data) {
-          setUnidades(res.data);
-        }
-      } finally {
         setLoadingUnidades(false);
+        setLoadingMinaData(false);
+        setLoadingActivos(false);
       }
     };
 
-    loadProductos();
-    loadUnidades();
+    loadCatalogs();
   }, []);
 
   // 2. Cargar minas cuando cambia almacén
@@ -115,14 +114,11 @@ export const useRegistroRequerimiento = ({
       const loadMinas = async () => {
         setLoadingMinas(true);
         try {
-          const res =
-            await AtencionService.obtenerMinasPorAlmacen(idAlmacenDestino);
+          const res = await AuxService.get_minas({
+            id_almacen_abastece: idAlmacenDestino,
+          });
           if (res.success) {
             setMinas(res.data);
-            // Auto seleccionar primera mina si no hay una seleccionada
-            if (res.data.length > 0 && idMina === 0) {
-              setIdMina(res.data[0].id_mina);
-            }
           }
         } finally {
           setLoadingMinas(false);
@@ -133,61 +129,28 @@ export const useRegistroRequerimiento = ({
       setMinas([]);
       setIdMina(0);
     }
-    // Remove idMina from dependencies to prevent double-fetching when auto-selecting
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idAlmacenDestino]);
 
-  // 3. Cargar Responsables, Labores y Activos al elegir Mina
+  // 3. Cargar Labores al elegir Mina
   useEffect(() => {
-    setIdContratistaSolicitante(0);
     setIdLabores([]);
-    setResponsables([]);
     setLabores([]);
 
     if (idMina > 0) {
-      const loadMinaData = async () => {
+      const loadLabores = async () => {
         setLoadingMinaData(true);
         try {
-          const res = await AtencionService.obtenerDataByMina(idMina);
+          const res = await AuxService.get_labores({ id_mina: idMina });
           if (res.success) {
-            setResponsables(res.data.responsables);
-            setLabores(res.data.labores);
-
-            if (res.data.responsables.length > 0) {
-              setIdContratistaSolicitante(
-                res.data.responsables[0].id_contratista,
-              );
-            }
+            setLabores(res.data);
           }
         } finally {
           setLoadingMinaData(false);
         }
       };
 
-      loadMinaData();
-    } else {
-      // Si no hay mina seleccionada, cargar todos los contratistas
-      const loadAllContratistas = async () => {
-        setLoadingMinaData(true);
-        try {
-          const res = await AuxService.get_contratistas();
-          if (res.success && res.data) {
-            const mapped = res.data.map((c) => ({
-              id_contratista: c.id_contratista,
-              nombre_completo: `${c.nombre} ${c.apellido}`.trim(),
-            }));
-            setResponsables(mapped);
-            if (mapped.length > 0) {
-              setIdContratistaSolicitante(mapped[0].id_contratista);
-            }
-          }
-        } finally {
-          setLoadingMinaData(false);
-        }
-      };
-      loadAllContratistas();
+      loadLabores();
     }
-    // Remove idEmpleadoSolicitante from dependencies to prevent double-fetching
   }, [idMina]);
 
   // Cargar activos fijos disponibles
@@ -214,10 +177,10 @@ export const useRegistroRequerimiento = ({
     (u) => u.id_unidad_medida === idUnidadMedida,
   );
   const sonUnidadesIdenticas =
-      productoSeleccionado &&
-      unidadSeleccionada &&
-      productoSeleccionado.id_unidad_medida_base ===
-        unidadSeleccionada.id_unidad_medida;
+    productoSeleccionado &&
+    unidadSeleccionada &&
+    productoSeleccionado.id_unidad_medida_base ===
+      unidadSeleccionada.id_unidad_medida;
 
   useEffect(() => {
     if (sonUnidadesIdenticas) {
@@ -347,8 +310,8 @@ export const useRegistroRequerimiento = ({
     });
 
     const dto: DTO_CrearRequerimiento = {
-      id_contratista_solicitante:
-        idContratistaSolicitante > 0 ? idContratistaSolicitante : null,
+      id_empleado_solicitante:
+        idEmpleadoSolicitante > 0 ? idEmpleadoSolicitante : null,
       id_mina: idMina > 0 ? idMina : null,
       id_almacen_destino: idAlmacenDestino,
       id_labores: idLabores.length > 0 ? idLabores : null,
@@ -401,7 +364,7 @@ export const useRegistroRequerimiento = ({
       setSubmitting(false);
     }
   }, [
-    idContratistaSolicitante,
+    idEmpleadoSolicitante,
     idMina,
     idAlmacenDestino,
     idLabores,
@@ -429,9 +392,9 @@ export const useRegistroRequerimiento = ({
       setIdAlmacenDestino,
       idMina,
       setIdMina,
-      idContratistaSolicitante,
-      setIdContratistaSolicitante,
-      responsables,
+      idEmpleadoSolicitante,
+      setIdEmpleadoSolicitante,
+      empleados,
       idLabores,
       setIdLabores,
       premura,

@@ -17,7 +17,7 @@ export interface RES_ResponsableAlmacen {
   id_empleado: number;
   nombre_completo: string;
   dni?: string;
-  path_foto?: string;
+  url_foto?: string;
   fecha_inicio: string;
   fecha_fin?: string;
   estado: EstadoBase;

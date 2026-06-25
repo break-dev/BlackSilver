@@ -3,7 +3,7 @@ import { UserIcon } from "@heroicons/react/24/outline";
 
 interface ProfileHeaderProps {
   username?: string;
-  path_foto?: string | null;
+  url_foto?: string | null;
   nombre_rol?: string;
   nombre_cargo?: string | null;
   loading?: boolean;
@@ -11,7 +11,7 @@ interface ProfileHeaderProps {
 
 export const ProfileHeader = ({
   username,
-  path_foto,
+  url_foto,
   nombre_rol,
   nombre_cargo,
   loading,
@@ -22,7 +22,7 @@ export const ProfileHeader = ({
         <Skeleton height={90} width={90} radius="md" />
       ) : (
         <Avatar
-          src={path_foto}
+          src={url_foto}
           size={90}
           radius="md"
           className="border border-zinc-800 bg-zinc-900 shadow-xl animate-fade-in"

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Badge,
   Paper,
@@ -22,6 +23,7 @@ import type { RES_LoteDisponible } from "../../../../../service/responses/lote-p
 import type { RES_UnidadMedida } from "../../../../../service/responses/unidad-medida";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import { cn } from "../../../../../shared/functions/cn";
+import { validarAjusteLoteClient } from "../../../../../shared/functions/validar-lote";
 
 interface ProductoRecepcionCardProps {
   group: GroupedReception;
@@ -73,6 +75,58 @@ export const ProductoRecepcionCard = ({
   const isActivoFijo = group.tipo_bien === TipoBien.ActivoFijo;
 
   const lotes = allLotes.filter((l) => l.id_producto === group.id_producto);
+
+  useEffect(() => {
+    if (loadingLotes || isActivoFijo) return;
+
+    group.lots.forEach((lot, lotIndex) => {
+      if (lot.es_nuevo_lote) return;
+
+      const originDetail = group.detalles_origen.find(
+        (d) => d.id_entrega_detalle === lot.id_entrega_detalle,
+      );
+
+      const hasCompatible = lotes.some((lote) =>
+        validarAjusteLoteClient(
+          {
+            id_orden_compra: lote.id_orden_compra,
+            id_orden_compra_detalle: lote.id_orden_compra_detalle,
+            serie_factura_compra: lote.serie_factura_compra,
+            numero_factura_compra: lote.numero_factura_compra,
+            costo_por_unidad: lote.costo_por_unidad,
+            id_orden_compra_comprobante: lote.id_orden_compra_comprobante,
+          },
+          originDetail
+            ? {
+                lote_id_orden_compra: originDetail.lote_id_orden_compra,
+                lote_id_orden_compra_detalle:
+                  originDetail.lote_id_orden_compra_detalle,
+                lote_serie_factura: originDetail.lote_serie_factura,
+                lote_numero_factura: originDetail.lote_numero_factura,
+                lote_costo_por_unidad: originDetail.lote_costo_por_unidad,
+                id_lote_producto: originDetail.id_lote_producto,
+                lote_id_orden_compra_comprobante:
+                  originDetail.lote_id_orden_compra_comprobante,
+              }
+            : null,
+          null,
+        ),
+      );
+
+      if (!hasCompatible) {
+        setLotValue(groupIndex, lotIndex, "es_nuevo_lote", true);
+      }
+    });
+  }, [
+    loadingLotes,
+    lotes,
+    group.lots,
+    isActivoFijo,
+    group.id_producto,
+    group.detalles_origen,
+    groupIndex,
+    setLotValue,
+  ]);
 
   return (
     <Paper

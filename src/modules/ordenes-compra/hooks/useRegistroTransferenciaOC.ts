@@ -1,14 +1,13 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { OrdenCompraService } from "../service/orden-compra.service";
 import type { RES_OrdenCompraRecepcionDetalle } from "../../../service/responses/ordenes-compra/orden-compra-recepcion";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
+import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
-import { usePersonalExterno } from "../../../hooks/usePersonalExterno";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,
@@ -26,12 +25,34 @@ export const useRegistroTransferenciaOC = ({
   const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
     [],
   );
-  const {
-    personal,
-    loading: loadingPersonal,
-    setPersonal,
-  } = usePersonalExterno({ autoFetch: true });
-  const [idPersonalRecibe, setIdPersonalRecibe] = useState<string | null>(null);
+  const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
+  const [loadingPersonal, setLoadingPersonal] = useState(false);
+
+  useEffect(() => {
+    const loadEmpleados = async () => {
+      setLoadingPersonal(true);
+      try {
+        const res = await AuxService.get_empleados();
+        if (res.success && res.data) {
+          setEmpleados(res.data);
+        }
+      } catch (err) {
+        console.error("Error loading employees", err);
+      } finally {
+        setLoadingPersonal(false);
+      }
+    };
+    loadEmpleados();
+  }, []);
+
+  const personal = useMemo(() => {
+    return empleados.map((e) => ({
+      value: String(e.id_empleado),
+      label: e.nombre_completo,
+    }));
+  }, [empleados]);
+
+  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -179,14 +200,6 @@ export const useRegistroTransferenciaOC = ({
     [],
   );
 
-  const handleCrearPersonal = useCallback(
-    (nuevo: RES_PersonalExterno) => {
-      setPersonal((prev) => [...prev, nuevo]);
-      setIdPersonalRecibe(nuevo.id_personal.toString());
-    },
-    [setPersonal],
-  );
-
   const totalTransferenciaGeneralBase = useMemo(() => {
     let total = 0;
     Object.entries(transferenciaCantidades).forEach(([idDetStr, lotesMap]) => {
@@ -222,7 +235,7 @@ export const useRegistroTransferenciaOC = ({
     idMinaDestino?: number | null,
     tipoDestino?: "almacen" | "mina",
   ) => {
-    if (!idPersonalRecibe) return;
+    if (!idEmpleadoRecibe) return;
 
     setSubmitting(true);
     setError(null);
@@ -284,7 +297,7 @@ export const useRegistroTransferenciaOC = ({
       id_orden_compra_recepcion: idRecepcion,
       id_almacen_destino: tipoDestino === "mina" ? null : idAlmacenDestino,
       id_mina_destino: tipoDestino === "mina" ? idMinaDestino : null,
-      id_personal_recibe: Number(idPersonalRecibe),
+      id_empleado_recibe: Number(idEmpleadoRecibe),
       fecha_hora_transferencia: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       observacion,
       detalles,
@@ -344,8 +357,8 @@ export const useRegistroTransferenciaOC = ({
     transferenciaCantidades,
     transferenciaCantidadesActivos,
     personal,
-    idPersonalRecibe,
-    setIdPersonalRecibe,
+    idEmpleadoRecibe,
+    setIdEmpleadoRecibe,
     observacion,
     setObservacion,
     evidencias,
@@ -357,6 +370,5 @@ export const useRegistroTransferenciaOC = ({
     handleCantLoteChange,
     handleCantActivoChange,
     registrarTransferencia,
-    handleCrearPersonal,
   };
 };

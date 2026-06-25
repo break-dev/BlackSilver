@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Group,
   Paper,
@@ -21,6 +22,7 @@ import type {
 } from "../../../hooks/useRegistrarRecepcion";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
+import { validarAjusteLoteClient } from "../../../../../shared/functions/validar-lote";
 
 interface Props {
   group: GrupoRecepcionTrans;
@@ -68,6 +70,56 @@ export const RecepcionProductoCard = ({
   const productLots = allLotes.filter(
     (l) => l.id_producto === group.id_producto,
   );
+
+  useEffect(() => {
+    if (loadingLotes || isActivoFijo || !group.selected) return;
+
+    group.lots.forEach((lot, lotIndex) => {
+      if (lot.es_nuevo_lote) return;
+
+      const hasCompatible = productLots.some((lote) =>
+        validarAjusteLoteClient(
+          {
+            id_orden_compra: lote.id_orden_compra,
+            id_orden_compra_detalle: lote.id_orden_compra_detalle,
+            serie_factura_compra: lote.serie_factura_compra,
+            numero_factura_compra: lote.numero_factura_compra,
+            costo_por_unidad: lote.costo_por_unidad,
+            id_orden_compra_comprobante: lote.id_orden_compra_comprobante,
+          },
+          {
+            lote_id_orden_compra: group.lote_id_orden_compra,
+            lote_id_orden_compra_detalle: group.lote_id_orden_compra_detalle,
+            lote_serie_factura: group.lote_serie_factura,
+            lote_numero_factura: group.lote_numero_factura,
+            lote_costo_por_unidad: group.lote_costo_por_unidad,
+            id_lote_producto: group.id_lote_producto,
+            lote_id_orden_compra_comprobante: group.lote_id_orden_compra_comprobante,
+          },
+          null
+        )
+      );
+
+      if (!hasCompatible) {
+        setLotValue(groupIndex, lotIndex, "es_nuevo_lote", true);
+      }
+    });
+  }, [
+    loadingLotes,
+    productLots,
+    group.lots,
+    group.selected,
+    isActivoFijo,
+    group.lote_id_orden_compra,
+    group.lote_id_orden_compra_detalle,
+    group.lote_serie_factura,
+    group.lote_numero_factura,
+    group.lote_costo_por_unidad,
+    group.id_lote_producto,
+    group.lote_id_orden_compra_comprobante,
+    groupIndex,
+    setLotValue,
+  ]);
 
   return (
     <Paper

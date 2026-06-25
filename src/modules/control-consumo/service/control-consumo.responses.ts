@@ -52,9 +52,9 @@ export interface RES_ResumenEntregasReq {
   /** Indica si el requerimiento es auditable por el sistema */
   es_auditable: boolean | number;
   /** ID del contratista o empleado solicitante */
-  id_contratista_solicitante: number;
+  id_empleado_solicitante: number;
   /** Nombre del contratista o empleado solicitante */
-  contratista_solicitante: string;
+  empleado_solicitante: string;
   /** ID de la mina de destino */
   id_mina: number;
   /** Nombre de la mina de destino */

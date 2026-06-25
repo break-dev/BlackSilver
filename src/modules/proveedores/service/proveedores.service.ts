@@ -32,11 +32,11 @@ export const ProveedoresService = {
   },
 
   getBancos: async (): Promise<BancoResponse[]> => {
-    const { data } = await api.get("/proveedores/bancos");
+    const { data } = await api.get("/aux/bancos");
     return data.data;
   },
   crearBanco: async (payload: CrearBancoRequest): Promise<BancoResponse> => {
-    const { data } = await api.post("/proveedores/bancos", payload);
+    const { data } = await api.post("/aux/bancos", payload);
     return data.data;
   },
 

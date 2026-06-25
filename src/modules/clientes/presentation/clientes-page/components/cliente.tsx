@@ -3,17 +3,20 @@ import {
   Group,
   Text,
   ThemeIcon,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
-import { IconBuilding, IconUser } from "@tabler/icons-react";
+import { IconBuilding, IconUser, IconBuildingBank } from "@tabler/icons-react";
 import { DataTableEstandar } from "../../../../../presentation/utils/datatable-estandar";
 import type { ClienteResponse } from "../../../service/clientes.responses";
 
 interface Props {
   clientes: ClienteResponse[];
   loading: boolean;
+  onOpenCuentas: (cliente: ClienteResponse) => void;
 }
 
-export const Cliente = ({ clientes, loading }: Props) => {
+export const Cliente = ({ clientes, loading, onOpenCuentas }: Props) => {
   return (
     <DataTableEstandar
       idAccessor="id_cliente"
@@ -55,6 +58,37 @@ export const Cliente = ({ clientes, loading }: Props) => {
                   {r.dni && ` · DNI: ${r.dni}`}
                 </Text>
               </div>
+            </Group>
+          ),
+        },
+        {
+          accessor: "cantidad_cuentas_bancarias",
+          title: "Cuentas",
+          width: 150,
+          textAlign: "center",
+          render: (r: ClienteResponse) => (
+            <Group gap="xs" justify="center" wrap="nowrap">
+              <Badge
+                color={r.cantidad_cuentas_bancarias > 0 ? "blue" : "gray"}
+                variant="light"
+                size="sm"
+                radius="xl"
+              >
+                {r.cantidad_cuentas_bancarias === 1
+                  ? "1 cuenta"
+                  : `${r.cantidad_cuentas_bancarias} cuentas`}
+              </Badge>
+              <Tooltip label="Gestionar Cuentas" withArrow position="left">
+                <ActionIcon
+                  variant="subtle"
+                  color="blue"
+                  radius="xl"
+                  size="sm"
+                  onClick={() => onOpenCuentas(r)}
+                >
+                  <IconBuildingBank size={16} stroke={1.5} />
+                </ActionIcon>
+              </Tooltip>
             </Group>
           ),
         },

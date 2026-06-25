@@ -21,7 +21,7 @@ export const PerfilPage = () => {
         {/* Profile Header */}
         <ProfileHeader
           username={perfil?.username}
-          path_foto={perfil?.path_foto}
+          url_foto={perfil?.url_foto}
           nombre_rol={perfil?.nombre_rol}
           nombre_cargo={perfil?.nombre_cargo}
           loading={loading}
@@ -29,8 +29,16 @@ export const PerfilPage = () => {
 
         {/* SECCIÓN PERSONAL */}
         <ProfileSection title="Información Personal">
-          <ProfileDataField label="Nombres" value={perfil?.nombre} loading={loading} />
-          <ProfileDataField label="Apellidos" value={perfil?.apellido} loading={loading} />
+          <ProfileDataField
+            label="Nombres"
+            value={perfil?.nombre}
+            loading={loading}
+          />
+          <ProfileDataField
+            label="Apellidos"
+            value={perfil?.apellido}
+            loading={loading}
+          />
           <ProfileDataField
             label="Documento de Identidad (DNI)"
             value={perfil?.dni}
@@ -41,13 +49,21 @@ export const PerfilPage = () => {
             value={perfil?.fecha_nacimiento}
             loading={loading}
           />
-          <ProfileDataField label="RUC Personal" value={perfil?.ruc} loading={loading} />
+          <ProfileDataField
+            label="RUC Personal"
+            value={perfil?.ruc}
+            loading={loading}
+          />
           <ProfileDataField
             label="Carnet de Extranjería"
             value={perfil?.carnet_extranjeria}
             loading={loading}
           />
-          <ProfileDataField label="Pasaporte" value={perfil?.pasaporte} loading={loading} />
+          <ProfileDataField
+            label="Pasaporte"
+            value={perfil?.pasaporte}
+            loading={loading}
+          />
         </ProfileSection>
 
         {/* SECCIÓN LABORAL */}

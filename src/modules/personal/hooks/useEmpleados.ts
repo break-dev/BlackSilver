@@ -65,7 +65,11 @@ export const useEmpleados = () => {
     try {
       const resp = await EmpleadosService.actualizar_foto(idEmpleado, file);
       if (resp.success) {
-        actualizarEmpleadoEnLista(resp.data);
+        setEmpleados((prev) =>
+          prev.map((e) =>
+            e.id_empleado === idEmpleado ? { ...e, url_foto: resp.data } : e,
+          ),
+        );
         return true;
       }
     } catch (err) {

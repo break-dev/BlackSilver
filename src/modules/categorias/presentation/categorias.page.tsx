@@ -6,7 +6,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCategoria } from "./registro-categoria";
-import { CategoriasDestinos } from "./components/categorias-destinos";
 import { useCategoriasPage } from "../hooks/useCategoriasPage";
 import { useCategoriasColumns } from "../hooks/useCategoriasColumns";
 import { CategoriaGroupCard } from "./components/categoria-group-card";
@@ -31,31 +30,18 @@ export const CategoriasPage = () => {
     setBusqueda,
     filtroClasificacion,
     setFiltroClasificacion,
-    filtroDestino,
-    setFiltroDestino,
+    // filtroDestino,
+    // setFiltroDestino,
     categoriasFiltradas,
     openedCreate,
     openCreate,
     closeCreate,
     categorias,
-    openedDestinos,
-    closeDestinos,
-    categoriaSeleccionada,
-    setCategoriaSeleccionada,
-    idsDestinosTemp,
-    setIdsDestinosTemp,
-    loadingUpdate,
-    categoriasParaConsumo,
-    handleOpenGestionDestinos,
-    handleGuardarDestinos,
     registro,
-    openDestinos,
   } = useCategoriasPage();
 
   // Dynamic columns generator hook
-  const { getColumns } = useCategoriasColumns({
-    onOpenGestionDestinos: handleOpenGestionDestinos,
-  });
+  const { getColumns } = useCategoriasColumns();
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -99,22 +85,7 @@ export const CategoriasPage = () => {
           />
         </div>
 
-        <div className="w-full md:w-44">
-          <Select
-            label="Destino de Uso"
-            placeholder="Todos..."
-            data={[
-              { value: "all", label: "Todos" },
-              { value: "Mina", label: "Mina" },
-              { value: "Cocina", label: "Cocina" },
-            ]}
-            value={filtroDestino || "all"}
-            onChange={(val) => setFiltroDestino(val === "all" ? null : val)}
-            radius="lg"
-            size="sm"
-            classNames={INPUT_CLASSES}
-          />
-        </div>
+
 
         <div className="shrink-0 w-full md:w-auto">
           <Button
@@ -193,44 +164,10 @@ export const CategoriasPage = () => {
         <RegistroCategoria
           {...registro}
           onSave={registro.handleGuardar}
-          onOpenDestinos={() => {
-            setCategoriaSeleccionada(null); // NULL indica que estamos creando
-            setIdsDestinosTemp(registro.idsConsumidoras);
-            openDestinos();
-          }}
-          todasCategorias={categorias}
           onCancel={() => {
             closeCreate();
             registro.reset();
           }}
-        />
-      </ModalEstandar>
-
-      {/* MODAL GESTIÓN DE DESTINOS*/}
-      <ModalEstandar
-        opened={openedDestinos}
-        close={closeDestinos}
-        title={
-          categoriaSeleccionada
-            ? `${categoriaSeleccionada.nombre}`
-            : "Categorías de Destino"
-        }
-        size="md"
-      >
-        <CategoriasDestinos
-          categoriaNombre={categoriaSeleccionada?.nombre || ""}
-          idsDestinosTemp={idsDestinosTemp}
-          setIdsDestinosTemp={setIdsDestinosTemp}
-          categoriasParaConsumo={categoriasParaConsumo.filter((c) =>
-            categoriaSeleccionada
-              ? Number(c.value) !== categoriaSeleccionada.id_categoria
-              : true,
-          )}
-          todasCategorias={categorias}
-          onSave={handleGuardarDestinos}
-          onClose={closeDestinos}
-          loading={loadingUpdate}
-          isCreationMode={!categoriaSeleccionada}
         />
       </ModalEstandar>
     </div>

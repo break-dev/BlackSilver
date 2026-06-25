@@ -1,6 +1,6 @@
 export interface DTO_RegistrarEntrega {
   id_prestamo: number;
-  id_personal_recibe: number;
+  id_empleado_recibe: number;
   fecha_hora_entrega?: string;
   observacion?: string;
   detalles: DTO_DetalleEntrega[];

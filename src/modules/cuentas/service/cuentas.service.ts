@@ -1,8 +1,7 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Cuenta, RES_RolDisponible } from "./cuentas.responses";
+import type { RES_Cuenta } from "./cuentas.responses";
 import type { REQ_CrearCuenta, REQ_ActualizarCuenta } from "./cuentas.requests";
-import type { RES_Empleado } from "../../../service/responses/empleado";
 
 const path = "/cuentas";
 
@@ -10,18 +9,6 @@ const path = "/cuentas";
 export const CuentasService = {
   fetchCuentas: async () => {
     const res = await api.get<IRespuesta<RES_Cuenta[]>>(`${path}`);
-    return res.data;
-  },
-
-  fetchEmpleadosSinCuenta: async () => {
-    const res = await api.get<IRespuesta<RES_Empleado[]>>(
-      `${path}/empleados-disponibles`,
-    );
-    return res.data;
-  },
-
-  fetchRolesDisponibles: async () => {
-    const res = await api.get<IRespuesta<RES_RolDisponible[]>>(`${path}/roles`);
     return res.data;
   },
 
@@ -38,7 +25,7 @@ export const CuentasService = {
   actualizarFoto: async (id_empleado: number, file: File) => {
     const formData = new FormData();
     formData.append("foto", file);
-    const res = await api.post<IRespuesta<{ url: string }>>(
+    const res = await api.post<IRespuesta<string>>(
       `${path}/foto/${id_empleado}`,
       formData,
       {
