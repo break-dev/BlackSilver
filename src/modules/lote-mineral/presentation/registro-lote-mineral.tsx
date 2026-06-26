@@ -1,8 +1,7 @@
-import { Button, Select, TextInput, Textarea, Group } from "@mantine/core";
+import { Button, Select, Textarea, Group } from "@mantine/core";
 import { useState, useMemo, useEffect } from "react";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Contratista } from "../../../service/responses/contratista";
-import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
 import { useRegistrarLoteMineral } from "../hooks/useLoteMineral";
 import type { RegistrarLoteMineralRequest } from "../service/lote-mineral.requests";
@@ -17,54 +16,60 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
   const [idMina, setIdMina] = useState<string | null>(null);
   const [idContratista, setIdContratista] = useState<string | null>(null);
   const [idLabor, setIdLabor] = useState<string | null>(null);
-  const [codigoInterno, setCodigoInterno] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
 
   useEffect(() => {
-    AuxService.get_minas().then(r => { if(r?.success) setMinas(r.data || []); });
-    AuxService.get_contratistas().then(r => { if(r?.success) setContratistas(r.data || []); });
-    AuxService.get_labores().then(r => { if(r?.success) setLabores(r.data || []); });
+    AuxService.get_contratistas().then(r => {
+      if (r?.data) setContratistas(r.data);
+    });
+    AuxService.get_labores().then(r => {
+      if (r?.data) setLabores(r.data);
+    });
   }, []);
 
   const { mutate: registrar, isPending } = useRegistrarLoteMineral();
 
   const contratistasOpciones = useMemo(() => {
-    return (contratistas || []).map((c: RES_Contratista) => ({
-      value: (c?.id_contratista || c?.id)?.toString() || "",
-      label: `${c?.nombre || ""} ${c?.apellido || ""}`.trim(),
-    }));
+    return (contratistas || []).map((c: RES_Contratista) => {
+      const id = (c.id_contratista ?? c.id)?.toString() ?? "";
+      const nombre = c.nombre_completo || [c.nombre, c.apellido].filter(Boolean).join(" ").trim();
+      return { value: id, label: nombre || `Contratista #${id}` };
+    });
   }, [contratistas]);
 
-  const minasOpciones = useMemo(() => {
-    return (minas || []).map((m: RES_Mina) => ({
-      value: m?.id_mina?.toString() || "",
-      label: m?.nombre || "",
-    }));
-  }, [minas]);
+  const laboresAgrupadas = useMemo(() => {
+    const groups: { [minaName: string]: { value: string; label: string }[] } = {};
+    
+    (labores || []).forEach((l: RES_Labor) => {
+      const minaName = l.mina || "Mina Desconocida";
+      if (!groups[minaName]) {
+        groups[minaName] = [];
+      }
+      const label = [l.nombre, l.correlativo].filter(Boolean).join(" | ");
+      groups[minaName].push({
+        value: l.id_labor.toString(),
+        label: label || `Labor #${l.id_labor}`,
+      });
+    });
 
-  const laboresOpciones = useMemo(() => {
-    if (!idMina) return [];
-    return (labores || [])
-      .filter((l: RES_Labor) => l?.id_mina?.toString() === idMina)
-      .map((l: RES_Labor) => ({
-        value: l?.id_labor?.toString() || "",
-        label: l?.nombre || "",
-      }));
-  }, [labores, idMina]);
+    return Object.entries(groups).map(([minaName, items]) => ({
+      group: minaName,
+      items,
+    }));
+  }, [labores]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idContratista || !idMina) return;
+    if (!idContratista || !idMina || !idLabor) return;
 
     const request: RegistrarLoteMineralRequest = {
       id_contratista: parseInt(idContratista),
       id_mina: parseInt(idMina),
-      id_labor: idLabor ? parseInt(idLabor) : null,
-      codigo_interno: codigoInterno.trim() || null,
+      id_labor: parseInt(idLabor),
+      codigo_interno: null,
       descripcion: descripcion.trim() || null,
     };
 
@@ -90,27 +95,6 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
     <form onSubmit={handleSubmit} className="relative space-y-4 p-1">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
-          label="Mina"
-          placeholder="Seleccionar mina"
-          data={minasOpciones}
-          value={idMina}
-          onChange={(val) => {
-            setIdMina(val);
-            setIdLabor(null);
-          }}
-          searchable
-          required
-          classNames={inputClasses}
-          radius="lg"
-          size="sm"
-          comboboxProps={{
-            withinPortal: true,
-            zIndex: 9999,
-            transitionProps: { transition: "pop", duration: 200 },
-          }}
-        />
-
-        <Select
           label="Contratista"
           placeholder="Seleccionar contratista"
           data={contratistasOpciones}
@@ -129,14 +113,23 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         />
 
         <Select
-          label="Labor (opc.)"
+          label="Labor"
           placeholder="Seleccionar labor"
-          data={laboresOpciones}
+          data={laboresAgrupadas}
           value={idLabor}
-          onChange={setIdLabor}
+          onChange={(val) => {
+            setIdLabor(val);
+            if (val) {
+              const selectedLabor = labores.find((l) => l.id_labor.toString() === val);
+              if (selectedLabor) {
+                setIdMina(selectedLabor.id_mina.toString());
+              }
+            } else {
+              setIdMina(null);
+            }
+          }}
           searchable
-          disabled={!idMina}
-          nothingFoundMessage="No hay labores en esta mina"
+          required
           classNames={inputClasses}
           radius="lg"
           size="sm"
@@ -145,16 +138,6 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
             zIndex: 9999,
             transitionProps: { transition: "pop", duration: 200 },
           }}
-        />
-
-        <TextInput
-          label="Código Interno (opc.)"
-          placeholder="Ej. LOTE-001"
-          value={codigoInterno}
-          onChange={(e) => setCodigoInterno(e.currentTarget.value)}
-          classNames={inputClasses}
-          radius="lg"
-          size="sm"
         />
 
         <Textarea
@@ -188,7 +171,7 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         <Button
           type="submit"
           loading={isPending}
-          disabled={!idContratista || !idMina}
+          disabled={!idContratista || !idLabor || !idMina}
           radius="lg"
           size="sm"
           className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-bold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"

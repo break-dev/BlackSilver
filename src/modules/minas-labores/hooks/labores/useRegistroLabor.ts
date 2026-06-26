@@ -29,6 +29,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
   const [idEmpresa, setIdEmpresa] = useState<number | null>(null);
   const [idTipoLabor, setIdTipoLabor] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
+  const [prefijo, setPrefijo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipoSostenimiento, setTipoSostenimiento] = useState("Convencional");
   const [veta, setVeta] = useState("");
@@ -44,6 +45,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setIdEmpresa(null);
     setIdTipoLabor(null);
     setNombre("");
+    setPrefijo("");
     setDescripcion("");
     setTipoSostenimiento("Convencional");
     setVeta("");
@@ -91,7 +93,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
       id_mina: idMina,
       id_empresa: idEmpresa,
       id_tipo_labor: idTipoLabor,
-      nombre: nombre || null,
+      nombre: nombre,
+      prefijo: prefijo,
       descripcion: descripcion || null,
       tipo_sostenimiento: tipoSostenimiento,
       veta: veta || null,
@@ -144,6 +147,8 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setIdTipoLabor,
     nombre,
     setNombre,
+    prefijo,
+    setPrefijo,
     descripcion,
     setDescripcion,
     tipoSostenimiento,

@@ -134,13 +134,24 @@ export const LoteMineralPage = () => {
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-zinc-100 font-semibold text-base tracking-tight group-hover:text-indigo-300 transition-colors">
-                      {lote.correlativo}
-                    </span>
-                    {lote.codigo_interno && (
-                      <span className="text-zinc-500 text-[10px] font-mono mt-0.5">
-                        Cod: {lote.codigo_interno}
-                      </span>
+                    {lote.codigo_interno ? (
+                      <>
+                        <span className="text-zinc-100 font-bold text-base tracking-tight group-hover:text-indigo-300 transition-colors font-mono">
+                          {lote.codigo_interno}
+                        </span>
+                        <span className="text-zinc-500 text-[10px] mt-0.5">
+                          Correlativo: {lote.correlativo}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-zinc-100 font-semibold text-base tracking-tight group-hover:text-indigo-300 transition-colors">
+                          {lote.correlativo}
+                        </span>
+                        <span className="text-zinc-500 text-[10px] mt-0.5 italic">
+                          Sin iniciar producción
+                        </span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -170,6 +181,14 @@ export const LoteMineralPage = () => {
                     <span className="text-zinc-300 text-xs font-medium">{lote.labor}</span>
                   </div>
                 )}
+                {lote.inicio_produccion && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-500 text-xs font-medium">Inicio Producción</span>
+                    <span className="text-emerald-400 text-xs font-bold">
+                      {dayjs(lote.inicio_produccion).format("DD/MM/YYYY")}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 pt-3 border-t border-zinc-800/40 flex flex-col gap-2 px-1">
@@ -177,7 +196,7 @@ export const LoteMineralPage = () => {
                   <div className="flex items-center gap-1.5">
                     <CalendarDaysIcon className="size-3.5 group-hover:text-indigo-400 transition-colors" strokeWidth={1.5} />
                     <span className="text-[11px] font-medium group-hover:text-zinc-400 transition-colors">
-                      {dayjs(lote.created_at).format("DD MMM YYYY, HH:mm")}
+                      Creado: {dayjs(lote.created_at).format("DD MMM YYYY, HH:mm")}
                     </span>
                   </div>
                 </div>

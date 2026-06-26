@@ -8,6 +8,7 @@ import {
   Tooltip,
   ActionIcon,
   TextInput,
+  Skeleton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -22,6 +23,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { usePrestamosAlmacen } from "../hooks/usePrestamosAlmacen";
+import type { GrupoAlmacenPrestamos } from "../hooks/usePrestamosAlmacen";
 import { useDetallePrestamo } from "../hooks/useDetallePrestamo";
 import { useTrazabilidadPrestamo } from "../hooks/useTrazabilidadPrestamo";
 import { DetallePrestamo } from "./detalle-prestamo";
@@ -38,22 +40,72 @@ import type {
   RES_Prestamo,
   RES_PrestamoDetalle,
 } from "../../../service/responses/prestamos/prestamo";
-import type { RES_Almacen } from "../../../service/responses/almacen";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;
   return { value: String(year), label: String(year) };
 });
 
+// ─── Cabecera de grupo por almacén ───────────────────────────────────────────
+const AlmacenGroupHeader = ({
+  grupo,
+}: {
+  grupo: GrupoAlmacenPrestamos;
+}) => (
+  <div className="px-5 py-3 bg-zinc-900/60 border-b border-zinc-800/60 flex items-center justify-between gap-4">
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-teal-500/10 rounded-xl border border-teal-500/20">
+        <BuildingStorefrontIcon className="w-4 h-4 text-teal-400" />
+      </div>
+      <Stack gap={0}>
+        <Text
+          size="9px"
+          fw={900}
+          className="uppercase tracking-[0.25em] text-zinc-500"
+        >
+          Almacén Prestamista
+        </Text>
+        <Text size="sm" fw={800} className="text-white tracking-tight">
+          {grupo.almacen_prestamista}
+        </Text>
+      </Stack>
+    </div>
+    <Badge
+      variant="light"
+      color="teal"
+      radius="md"
+      size="sm"
+      className="shrink-0"
+    >
+      {grupo.prestamos.length}{" "}
+      {grupo.prestamos.length === 1 ? "préstamo" : "préstamos"}
+    </Badge>
+  </div>
+);
+
+// ─── Skeletons de grupo ───────────────────────────────────────────────────────
+const GroupSkeleton = () => (
+  <div className="bg-zinc-900/65 border border-zinc-800 rounded-[20px] overflow-hidden">
+    <div className="px-5 py-3 bg-zinc-900/60 border-b border-zinc-800/60 flex items-center gap-3">
+      <Skeleton height={36} width={36} radius="xl" />
+      <div className="space-y-1.5">
+        <Skeleton height={8} width={100} radius="sm" />
+        <Skeleton height={14} width={160} radius="sm" />
+      </div>
+    </div>
+    <div className="p-4 space-y-2">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} height={44} radius="sm" />
+      ))}
+    </div>
+  </div>
+);
+
 export const PrestamosAlmacenPage = () => {
   useTitlePage("Préstamos Solicitados");
   const {
-    almacenes,
-    prestamos,
+    groupedByAlmacen,
     loading,
-    loadingAlmacenes,
-    idAlmacen,
-    setIdAlmacen,
     mes,
     setMes,
     yearcito,
@@ -93,9 +145,15 @@ export const PrestamosAlmacenPage = () => {
   const [openedHistorial, { open: openHistorial, close: closeHistorial }] =
     useDisclosure(false);
 
+  // Todos los prestamos aplanados para encontrar el seleccionado
+  const allPrestamos = useMemo(
+    () => groupedByAlmacen.flatMap((g) => g.prestamos),
+    [groupedByAlmacen],
+  );
+
   const selectedPrestamo = useMemo(() => {
-    return prestamos.find((p) => p.id_prestamo === selectedPrestamoId);
-  }, [prestamos, selectedPrestamoId]);
+    return allPrestamos.find((p) => p.id_prestamo === selectedPrestamoId);
+  }, [allPrestamos, selectedPrestamoId]);
 
   const progresoGeneral = useMemo(() => {
     if (detalles.length === 0) return 0;
@@ -110,16 +168,22 @@ export const PrestamosAlmacenPage = () => {
     return Math.round((totalPrestado / totalSolicitado) * 100) || 0;
   }, [detalles]);
 
-  const filteredRecords = useMemo(() => {
-    if (!search) return prestamos;
+  // Filtrado por búsqueda dentro de cada grupo
+  const filteredGroups = useMemo(() => {
+    if (!search) return groupedByAlmacen;
     const s = search.toLowerCase();
-    return prestamos.filter(
-      (p) =>
-        p.correlativo.toLowerCase().includes(s) ||
-        p.almacen_solicitante.toLowerCase().includes(s) ||
-        p.solicitud_reabastecimiento.toLowerCase().includes(s),
-    );
-  }, [prestamos, search]);
+    return groupedByAlmacen
+      .map((grupo) => ({
+        ...grupo,
+        prestamos: grupo.prestamos.filter(
+          (p) =>
+            p.correlativo.toLowerCase().includes(s) ||
+            p.almacen_solicitante.toLowerCase().includes(s) ||
+            p.solicitud_reabastecimiento?.toLowerCase().includes(s),
+        ),
+      }))
+      .filter((g) => g.prestamos.length > 0);
+  }, [groupedByAlmacen, search]);
 
   const columns: DataTableColumn<RES_Prestamo>[] = useMemo(
     () => [
@@ -240,32 +304,9 @@ export const PrestamosAlmacenPage = () => {
 
   return (
     <div className="space-y-8 animate-fade-in text-zinc-100">
-      {/* Container de Filtros */}
+      {/* Filtros — solo mes y año */}
       <div className="flex flex-col lg:flex-row justify-between gap-4 items-end">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 flex-1 w-full">
-          <Select
-            label="Almacén prestamista"
-            placeholder="Seleccionar almacén"
-            data={almacenes.map((a: RES_Almacen) => ({
-              value: String(a.id_almacen),
-              label: a.nombre,
-            }))}
-            value={idAlmacen}
-            onChange={setIdAlmacen}
-            leftSection={<BuildingStorefrontIcon className="w-4 h-4" />}
-            searchable
-            disabled={loadingAlmacenes}
-            radius="lg"
-            size="sm"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
-              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 flex-1 w-full">
           <Select
             label="Mes"
             placeholder="Elegir mes"
@@ -304,7 +345,7 @@ export const PrestamosAlmacenPage = () => {
 
           <TextInput
             label="Búsqueda"
-            placeholder="Código o almacén..."
+            placeholder="Código, destino o solicitud..."
             leftSection={
               <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
             }
@@ -312,7 +353,7 @@ export const PrestamosAlmacenPage = () => {
             onChange={(e) => setSearch(e.target.value)}
             radius="lg"
             size="sm"
-            className="lg:col-span-2"
+            className="sm:col-span-2"
             classNames={{
               input:
                 "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
@@ -322,31 +363,48 @@ export const PrestamosAlmacenPage = () => {
         </div>
       </div>
 
-      {/* Tabla de Resultados */}
-      <div className="transition-all">
-        {filteredRecords.length === 0 && !loading ? (
-          <div className="flex flex-col items-center justify-center p-20 text-zinc-500 gap-4">
-            <div className="bg-zinc-900/50 p-6 rounded-full border border-zinc-800 animate-pulse">
-              <CubeIcon className="w-12 h-12 text-zinc-700" />
-            </div>
-            <div className="text-center">
-              <Text fw={600} size="lg" className="text-zinc-400">
-                No se encontraron préstamos
-              </Text>
-              <Text size="sm" className="text-zinc-600">
-                Intenta cambiando el almacén, periodo o ajustando tu búsqueda
-              </Text>
-            </div>
+      {/* Contenido agrupado */}
+      {loading ? (
+        <Stack gap="xl">
+          <GroupSkeleton />
+          <GroupSkeleton />
+        </Stack>
+      ) : filteredGroups.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-20 text-zinc-500 gap-4">
+          <div className="bg-zinc-900/50 p-6 rounded-full border border-zinc-800 animate-pulse">
+            <CubeIcon className="w-12 h-12 text-zinc-700" />
           </div>
-        ) : (
-          <DataTableEstandar
-            idAccessor="id_prestamo"
-            columns={columns}
-            records={filteredRecords}
-            loading={loading}
-          />
-        )}
-      </div>
+          <div className="text-center">
+            <Text fw={600} size="lg" className="text-zinc-400">
+              No se encontraron préstamos
+            </Text>
+            <Text size="sm" className="text-zinc-600">
+              Intenta cambiando el periodo o ajustando tu búsqueda
+            </Text>
+          </div>
+        </div>
+      ) : (
+        <Stack gap="xl">
+          {filteredGroups.map((grupo) => (
+            <div
+              key={grupo.id_almacen_prestamista}
+              className="bg-zinc-900/65 border border-zinc-800 rounded-[20px] shadow-2xl overflow-hidden"
+            >
+              <AlmacenGroupHeader grupo={grupo} />
+              <div className="relative shadow-inner">
+                <DataTableEstandar
+                  idAccessor="id_prestamo"
+                  columns={columns}
+                  records={grupo.prestamos}
+                  loading={false}
+                  initialPageSize={5}
+                  minHeight={0}
+                />
+              </div>
+            </div>
+          ))}
+        </Stack>
+      )}
 
       <ModalEstandar
         opened={openedDetail}

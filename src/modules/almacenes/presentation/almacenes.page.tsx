@@ -270,7 +270,7 @@ export const AlmacenesPage = () => {
                         <UserIcon className="w-4 h-4" />
                       </ActionIcon>
                     </Tooltip>
-                    <Tooltip label="Gestionar Almacenes Vecinos">
+                    <Tooltip label="Asignación de Almacenes Vecinos">
                       <ActionIcon
                         variant="filled"
                         color="teal"
@@ -385,7 +385,7 @@ export const AlmacenesPage = () => {
       <ModalEstandar
         opened={openedVecinos}
         close={closeVecinos}
-        title="Gestión de Almacenes Vecinos"
+        title="Asignación de Almacenes Vecinos"
       >
         {selectedAlmacen && (
           <AlmacenesVecinos

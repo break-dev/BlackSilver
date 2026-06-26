@@ -29,6 +29,7 @@ export const AlmacenesVecinos = ({ almacen }: AlmacenesVecinosProps) => {
     setSearchValue,
     formError,
     isLinking,
+    loadingIdDesvinculando,
     handleVincular,
     handleDesvincular,
   } = useAlmacenesVecinos(almacen.id_almacen);
@@ -169,6 +170,8 @@ export const AlmacenesVecinos = ({ almacen }: AlmacenesVecinosProps) => {
                   variant="subtle"
                   color="red"
                   size="sm"
+                  loading={loadingIdDesvinculando === item.id_almacen_vecino}
+                  disabled={loadingIdDesvinculando !== null && loadingIdDesvinculando !== item.id_almacen_vecino}
                   onClick={() => handleDesvincular(item.id_almacen_vecino)}
                 >
                   <TrashIcon className="size-4" />

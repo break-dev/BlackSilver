@@ -85,19 +85,36 @@ export const ProduccionMineralPage = () => {
         textAlign: "left",
         render: (record) => (
           <Stack gap={2} justify="flex-start" align="flex-start">
-            <Badge
-              color="indigo"
-              variant="light"
-              size="sm"
-              fw={700}
-              className="text-white"
-            >
-              {record.correlativo}
-            </Badge>
-            {record.codigo_interno && (
-              <Text size="9px" className="font-mono text-zinc-500 font-semibold">
-                Cód: {record.codigo_interno}
-              </Text>
+            {record.codigo_interno ? (
+              <>
+                <Badge
+                  color="indigo"
+                  variant="filled"
+                  size="sm"
+                  fw={800}
+                  className="font-mono text-white"
+                >
+                  {record.codigo_interno}
+                </Badge>
+                <Text size="10px" className="text-zinc-500 font-bold">
+                  Correlativo: {record.correlativo}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Badge
+                  color="violet"
+                  variant="light"
+                  size="sm"
+                  fw={700}
+                  className="text-white"
+                >
+                  {record.correlativo}
+                </Badge>
+                <Text size="10px" className="text-zinc-500 italic">
+                  Sin iniciar producción
+                </Text>
+              </>
             )}
             {record.descripcion && (
               <Text size="xs" className="text-zinc-400 italic max-w-xs truncate">
@@ -161,7 +178,8 @@ export const ProduccionMineralPage = () => {
         width: 140,
         textAlign: "center",
         render: (record) => {
-          const diasDiferencia = dayjs().diff(dayjs(record.created_at), "day");
+          const baseDate = record.inicio_produccion || record.created_at;
+          const diasDiferencia = dayjs().diff(dayjs(baseDate), "day");
           return (
             <Group gap={4} wrap="nowrap" justify="center" align="center">
               <div className="flex items-center justify-center size-6 rounded-full bg-blue-500/10 border border-blue-500/20">
@@ -172,7 +190,7 @@ export const ProduccionMineralPage = () => {
                   {diasDiferencia === 0 ? "Hoy" : `${diasDiferencia}d`}
                 </Text>
                 <Text size="9px" c="dimmed">
-                  {dayjs(record.created_at).format("DD/MM")}
+                  {dayjs(baseDate).format("DD/MM/YYYY")}
                 </Text>
               </div>
             </Group>

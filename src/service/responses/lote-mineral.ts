@@ -5,7 +5,10 @@ export interface RES_LoteMineral {
   mina: string;
   //
   id_labor: number;
+  labor: string | null;
+  labor_prefijo: string | null;
   //
   correlativo: string;
   codigo_interno: string | null;
+  inicio_produccion: string | null;
 }

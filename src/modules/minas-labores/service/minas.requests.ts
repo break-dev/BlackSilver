@@ -34,11 +34,12 @@ export const Schema_CrearLabor = z.object({
     .number()
     .int()
     .positive({ message: "La empresa es obligatoria" }),
-  id_tipo_labor: z
-    .number()
-    .int()
-    .positive({ message: "El tipo de labor es obligatorio" }),
-  nombre: z.string().max(128).optional().nullable(),
+  id_tipo_labor: z.number().int().positive().optional().nullable(),
+  nombre: z.string().min(1, "El nombre de la labor es obligatorio").max(128),
+  prefijo: z
+    .string()
+    .min(1, "El prefijo es obligatorio")
+    .max(32, "El prefijo no puede superar 32 caracteres"),
   descripcion: z.string().optional().nullable(),
   tipo_sostenimiento: z
     .string()

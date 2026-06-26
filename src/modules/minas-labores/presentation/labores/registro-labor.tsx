@@ -39,6 +39,8 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     setIdTipoLabor,
     nombre,
     setNombre,
+    prefijo,
+    setPrefijo,
     descripcion,
     setDescripcion,
     tipoSostenimiento,
@@ -71,6 +73,7 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
 
   return (
     <Stack gap="md" className="animate-fade-in">
+      {/* Empresa + Tipo de Labor (opcional) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
           label="Empresa Ejecutora"
@@ -91,11 +94,10 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         />
 
         <Select
-          label="Tipo de Labor"
+          label="Tipo de Labor (opc.)"
           placeholder="Seleccione tipo"
-          required
-          withAsterisk
           disabled={isSubmitting}
+          clearable
           data={tiposLabor.map((t) => ({
             value: String(t.id_tipo_labor),
             label: t.nombre,
@@ -109,17 +111,37 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Nombre (obligatorio) + Prefijo (obligatorio) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TextInput
-          label="Nombre de la Labor (opcional)"
-          placeholder="Ej. Tajo Esperanza Nivel 1"
+          label="Nombre de la Labor"
+          placeholder="Ej. San Blas Nivel 1"
+          required
+          withAsterisk
           disabled={isSubmitting}
           radius="lg"
           classNames={fieldClasses}
           value={nombre}
           onChange={(e) => setNombre(e.currentTarget.value)}
+          className="md:col-span-2"
         />
 
+        <TextInput
+          label="Prefijo"
+          placeholder="Ej. SB"
+          required
+          withAsterisk
+          disabled={isSubmitting}
+          radius="lg"
+          value={prefijo}
+          onChange={(e) => setPrefijo(e.currentTarget.value.toUpperCase())}
+          classNames={fieldClasses}
+          maxLength={32}
+        />
+      </div>
+
+      {/* Tipo sostenimiento */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Select
           label="Tipo Sostenimiento"
           placeholder="Seleccione..."
@@ -134,12 +156,13 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
         />
       </div>
 
+      {/* Fechas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-800/30 pt-4">
         <CustomDatePicker
           label="Fecha Inicio"
           placeholder="Seleccione fecha de inicio"
           value={fechaInicio}
-          onChange={(val: any) => setFechaInicio(val)}
+          onChange={(val: unknown) => setFechaInicio(val as Date | null)}
           disabled={isSubmitting}
           required
           withAsterisk
@@ -148,11 +171,12 @@ export const RegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
           label="Fecha Est. Término (Referencial)"
           placeholder="Seleccione fecha estimada"
           value={fechaFinEstimada}
-          onChange={(val: any) => setFechaFinEstimada(val)}
+          onChange={(val: unknown) => setFechaFinEstimada(val as Date | null)}
           disabled={isSubmitting}
         />
       </div>
 
+      {/* Datos técnicos */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-800/30 pt-4">
         <TextInput
           label="Veta"

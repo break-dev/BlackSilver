@@ -98,11 +98,11 @@ export const GestionLabores = ({
       render: (r) => (
         <Badge
           variant="light"
-          color="indigo"
+          color={r.correlativo ? "indigo" : "gray"}
           radius="md"
-          className="font-bold border border-indigo-500/20 py-3 mx-auto"
+          className="font-bold border border-zinc-800 py-3 mx-auto"
         >
-          {r.correlativo}
+          {r.correlativo || "No especificado"}
         </Badge>
       ),
     },
@@ -170,11 +170,11 @@ export const GestionLabores = ({
         <div className="flex flex-row gap-3 py-2">
           <Badge
             variant="filled"
-            color="cyan.9"
+            color={r.tipo_labor ? "cyan.9" : "gray"}
             size="xs"
             className="font-black px-2 shadow-sm w-fit uppercase tracking-wider"
           >
-            {r.tipo_labor}
+            {r.tipo_labor || "No especificado"}
           </Badge>
           {r.es_de_produccion == 1 && (
             <Badge

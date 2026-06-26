@@ -16,15 +16,15 @@ export const PrestamosService = {
    * Obtiene el resumen de préstamos por almacén y periodo
    */
   getPrestamosResumen: async (
-    idAlmacen: number,
     mes: number,
     yearcito: number,
+    idAlmacen?: number,
   ) => {
+    const params: Record<string, number> = { mes, yearcito };
+    if (idAlmacen) params.id_almacen = idAlmacen;
     const response = await api.get<IRespuesta<RES_Prestamo[]>>(
       `${path}/resumen`,
-      {
-        params: { id_almacen: idAlmacen, mes, yearcito },
-      },
+      { params },
     );
     return response.data.data;
   },
