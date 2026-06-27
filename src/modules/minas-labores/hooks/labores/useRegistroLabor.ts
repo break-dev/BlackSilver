@@ -123,8 +123,9 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
       } else {
         setFormError(res.message);
       }
-    } catch (error: any) {
-      const msg = error.response?.data?.message || "Error inesperado al crear la labor";
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const msg = err.response?.data?.message || "Error inesperado al crear la labor";
       setFormError(msg);
       notify({
         type: "error",

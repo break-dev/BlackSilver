@@ -10,7 +10,7 @@ export interface RES_LoteMineralEnProduccion {
   id_lote_mineral: number;
   correlativo: string;
   codigo_interno: string | null;
-  inicio_produccion: string | null;
+  fecha_inicio_produccion: string | null;
   descripcion: string | null;
   created_at: string;
   estado: string;

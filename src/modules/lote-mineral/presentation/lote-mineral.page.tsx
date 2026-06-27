@@ -139,9 +139,6 @@ export const LoteMineralPage = () => {
                         <span className="text-zinc-100 font-bold text-base tracking-tight group-hover:text-indigo-300 transition-colors font-mono">
                           {lote.codigo_interno}
                         </span>
-                        <span className="text-zinc-500 text-[10px] mt-0.5">
-                          Correlativo: {lote.correlativo}
-                        </span>
                       </>
                     ) : (
                       <>
@@ -181,11 +178,11 @@ export const LoteMineralPage = () => {
                     <span className="text-zinc-300 text-xs font-medium">{lote.labor}</span>
                   </div>
                 )}
-                {lote.inicio_produccion && (
+                {lote.fecha_inicio_produccion && (
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-500 text-xs font-medium">Inicio Producción</span>
                     <span className="text-emerald-400 text-xs font-bold">
-                      {dayjs(lote.inicio_produccion).format("DD/MM/YYYY")}
+                      {dayjs(lote.fecha_inicio_produccion).format("DD/MM/YYYY")}
                     </span>
                   </div>
                 )}

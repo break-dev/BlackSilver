@@ -4,19 +4,22 @@ import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Contratista } from "../../../service/responses/contratista";
 import type { RES_Labor } from "../../../service/responses/labor";
 import { useRegistrarLoteMineral } from "../hooks/useLoteMineral";
-import type { RegistrarLoteMineralRequest } from "../service/lote-mineral.requests";
 import type { LoteMineral } from "../service/lote-mineral.responses";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import dayjs from "dayjs";
 
 interface Props {
   onSuccess: (newLote?: LoteMineral) => void;
   onCancel: () => void;
+  isFromProduccion?: boolean;
 }
 
-export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
+export const RegistroLoteMineral = ({ onSuccess, onCancel, isFromProduccion = false }: Props) => {
   const [idMina, setIdMina] = useState<string | null>(null);
   const [idContratista, setIdContratista] = useState<string | null>(null);
   const [idLabor, setIdLabor] = useState<string | null>(null);
   const [descripcion, setDescripcion] = useState("");
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
 
   const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
@@ -63,14 +66,15 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idContratista || !idMina || !idLabor) return;
+    if (!idContratista || !idMina || !idLabor || !fechaInicio) return;
 
-    const request: RegistrarLoteMineralRequest = {
+    const request = {
       id_contratista: parseInt(idContratista),
       id_mina: parseInt(idMina),
       id_labor: parseInt(idLabor),
       codigo_interno: null,
       descripcion: descripcion.trim() || null,
+      fecha_inicio_produccion: dayjs(fechaInicio).format("YYYY-MM-DD"),
     };
 
     registrar(request, {
@@ -140,6 +144,17 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
           }}
         />
 
+        <div className="md:col-span-2">
+          <CustomDatePicker
+            label="Fecha Inicio Producción"
+            placeholder="Seleccione fecha"
+            value={fechaInicio}
+            onChange={(val: unknown) => setFechaInicio(val as Date | null)}
+            maxDate={isFromProduccion ? new Date() : undefined}
+            required
+          />
+        </div>
+
         <Textarea
           label="Descripción (opc.)"
           placeholder="Detalles adicionales del lote..."
@@ -171,7 +186,7 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel }: Props) => {
         <Button
           type="submit"
           loading={isPending}
-          disabled={!idContratista || !idLabor || !idMina}
+          disabled={!idContratista || !idLabor || !idMina || !fechaInicio}
           radius="lg"
           size="sm"
           className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-bold hover:from-white hover:to-zinc-200 shadow-lg border-0 px-8"

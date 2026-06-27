@@ -4,7 +4,7 @@ export interface LoteMineral {
   id_lote_mineral: number;
   correlativo: string;
   codigo_interno: string | null;
-  inicio_produccion: string | null;
+  fecha_inicio_produccion: string | null;
   descripcion: string | null;
   estado: EstadoLoteMineral;
   created_at: string;

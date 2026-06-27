@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { loteMineralService } from '../service/lote-mineral.service';
-import type { RegistrarLoteMineralRequest } from '../service/lote-mineral.requests';
+import { globalLoteMineralService, type RegistrarLoteMineralRequest } from '../../../service/lote-mineral.service';
 import type { LoteMineral } from '../service/lote-mineral.responses';
 import type { IRespuesta } from '../../../shared/interfaces/_response';
 import { useNotify } from '../../../hooks/useNotify';
@@ -12,7 +11,7 @@ export const useLotesMineral = (mes?: number, anio?: number) => {
   const fetchLotes = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await loteMineralService.getLotes({ mes, anio });
+      const response = await globalLoteMineralService.getLotes({ mes, anio });
       if (response.success) {
         setData(response);
       } else {
@@ -53,7 +52,7 @@ export const useRegistrarLoteMineral = () => {
   ) => {
     setIsPending(true);
     try {
-      const response = await loteMineralService.registrarLote(request);
+      const response = await globalLoteMineralService.registrarLote(request);
       if (response.success && response.data) {
         notifySuccess(response.message || 'Lote registrado correctamente');
         if (options?.onSuccess) {

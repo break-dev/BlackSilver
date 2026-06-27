@@ -27,6 +27,7 @@ import { useProduccion } from "../hooks/_useProduccion";
 import type { RES_LoteMineralEnProduccion } from "../service/produccion.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { IniciarProduccion } from "./iniciar-produccion";
+import { RegistroLoteMineral } from "../../lote-mineral/presentation/registro-lote-mineral";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { HistorialConsumosProduccion } from "./components/historial-consumos-produccion";
 import dayjs from "dayjs";
@@ -41,10 +42,11 @@ export const ProduccionMineralPage = () => {
   const {
     state: { lotes, lotesPendientes },
     status: { loading, loadingPendientes, submitting, error },
-    actions: { iniciarProduccion, finalizarProduccion },
+    actions: { iniciarProduccion, finalizarProduccion, fetchResumen, fetchLotesPendientes },
   } = useProduccion();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [expandedRecordIds, setExpandedRecordIds] = useState<
     (string | number)[]
@@ -80,7 +82,7 @@ export const ProduccionMineralPage = () => {
       },
       {
         accessor: "correlativo",
-        title: "Lote / Información",
+        title: "Cod. Lote",
         width: 220,
         textAlign: "left",
         render: (record) => (
@@ -88,17 +90,14 @@ export const ProduccionMineralPage = () => {
             {record.codigo_interno ? (
               <>
                 <Badge
-                  color="indigo"
-                  variant="filled"
+                  color="pink"
+                  variant="light"
                   size="sm"
                   fw={800}
                   className="font-mono text-white"
                 >
                   {record.codigo_interno}
                 </Badge>
-                <Text size="10px" className="text-zinc-500 font-bold">
-                  Correlativo: {record.correlativo}
-                </Text>
               </>
             ) : (
               <>
@@ -178,7 +177,7 @@ export const ProduccionMineralPage = () => {
         width: 140,
         textAlign: "center",
         render: (record) => {
-          const baseDate = record.inicio_produccion || record.created_at;
+          const baseDate = record.fecha_inicio_produccion || record.created_at;
           const diasDiferencia = dayjs().diff(dayjs(baseDate), "day");
           return (
             <Group gap={4} wrap="nowrap" justify="center" align="center">
@@ -325,14 +324,26 @@ return (
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
-        <Button
-          onClick={() => setModalOpen(true)}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-bold h-[38px] transition-all"
-        >
-          Iniciar Producción
-        </Button>
+        <Group gap="xs" align="end" className="shrink-0">
+          <Button
+            onClick={() => setRegisterModalOpen(true)}
+            radius="lg"
+            size="sm"
+            variant="light"
+            color="indigo"
+            className="font-bold h-[38px] transition-all"
+          >
+            Registrar Lote
+          </Button>
+          <Button
+            onClick={() => setModalOpen(true)}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 font-bold h-[38px] transition-all"
+          >
+            Iniciar Producción
+          </Button>
+        </Group>
       </div>
 
       {error && (
@@ -427,6 +438,24 @@ return (
           submitting={submitting}
           onIniciar={handleIniciar}
           onCancel={() => setModalOpen(false)}
+        />
+      </ModalEstandar>
+
+      {/* Modal: Registrar Lote */}
+      <ModalEstandar
+        opened={registerModalOpen}
+        close={() => setRegisterModalOpen(false)}
+        title="Nuevo Lote de Mineral"
+        size="md"
+      >
+        <RegistroLoteMineral
+          isFromProduccion={true}
+          onSuccess={() => {
+            setRegisterModalOpen(false);
+            fetchResumen();
+            fetchLotesPendientes();
+          }}
+          onCancel={() => setRegisterModalOpen(false)}
         />
       </ModalEstandar>
 

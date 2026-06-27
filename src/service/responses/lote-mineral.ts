@@ -10,5 +10,5 @@ export interface RES_LoteMineral {
   //
   correlativo: string;
   codigo_interno: string | null;
-  inicio_produccion: string | null;
+  fecha_inicio_produccion: string | null;
 }
