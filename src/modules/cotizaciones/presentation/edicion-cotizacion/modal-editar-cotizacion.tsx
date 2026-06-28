@@ -81,7 +81,6 @@ export const ModalEditarCotizacion = ({
           proveedores={maestros.proveedores}
           onAgregarProveedorLocal={agregarProveedorLocal}
           empresas={maestros.empresas}
-          loadingProveedores={loadingMaestros}
           loadingMaestros={loadingMaestros}
           onUpdateHeader={updateCotizacionHeader}
           onUpdateDetail={updateCotizacionDetail}

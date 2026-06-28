@@ -17,6 +17,7 @@ import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Empresa } from "../../../../../service/responses/empresa";
 import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
+import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
 
 interface ComparativoTablaProps {
   productos: (
@@ -41,7 +42,7 @@ interface ComparativoTablaProps {
   onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
-  loadingProveedores?: boolean;
+  loadingMaestros?: LoadingMaestrosState;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
     field: K,
@@ -96,7 +97,7 @@ export const ComparativoTabla = ({
   onIniciarCopiaCotizacion,
   onPegarCotizacion,
   onCancelarCopiaCotizacion,
-  loadingProveedores,
+  loadingMaestros,
   onUpdateHeader,
   onUpdateDetail,
   onToggleNoCotiza,
@@ -220,7 +221,7 @@ export const ComparativoTabla = ({
                   onIniciarCopiaCotizacion={onIniciarCopiaCotizacion}
                   onPegarCotizacion={onPegarCotizacion}
                   onCancelarCopiaCotizacion={onCancelarCopiaCotizacion}
-                  loadingProveedores={loadingProveedores}
+                  loadingMaestros={loadingMaestros}
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
                   onRemoveCotizacion={onRemoveCotizacion}
@@ -285,6 +286,7 @@ export const ComparativoTabla = ({
                     onToggleNoCotiza={onToggleNoCotiza}
                     isSkeleton={true}
                     rowIndex={0}
+                    loadingMaestros={loadingMaestros}
                   />
                 </Table.Td>
               ))}
@@ -401,6 +403,7 @@ export const ComparativoTabla = ({
                         copySource={copySource}
                         onIniciarCopia={onIniciarCopia}
                         onCancelarCopia={onCancelarCopia}
+                        loadingMaestros={loadingMaestros}
                         isCheapest={(() => {
                           if (det.no_cotiza || !det.precio_unitario)
                             return false;
@@ -464,6 +467,7 @@ export const ComparativoTabla = ({
                       onToggleNoCotiza={onToggleNoCotiza}
                       isSkeleton={true}
                       rowIndex={0}
+                      loadingMaestros={loadingMaestros}
                     />
                   </Table.Td>
                 ))}

@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
-import type { MaestrosState } from "./utils";
+import type { MaestrosState, LoadingMaestrosState } from "./utils";
 import { AuxService } from "../../../../service/auxiliar.service";
 import type { RES_Proveedor } from "../../../../service/responses/proveedor";
 
 export const useCotizacionMaestros = () => {
-  const [loadingMaestros, setLoadingMaestros] = useState(true);
+  const [loadingMaestros, setLoadingMaestros] = useState<LoadingMaestrosState>({
+    proveedores: true,
+    unidades: true,
+    catalogo: true,
+    empresas: true,
+    almacenes: true,
+    minas: true,
+  });
+
   const [maestros, setMaestros] = useState<MaestrosState>({
     proveedores: [],
     unidades: [],
@@ -22,34 +30,30 @@ export const useCotizacionMaestros = () => {
   }, []);
 
   useEffect(() => {
-    const cargarMaestros = async () => {
+    const cargarMaestro = async <K extends keyof MaestrosState>(
+      key: K,
+      fetchFn: () => Promise<{ success: boolean; data: any }>,
+    ) => {
       try {
-        setLoadingMaestros(true);
-        const [resProv, resUni, resProd, resEmp, resAlm, resMin] =
-          await Promise.all([
-            AuxService.get_proveedores(),
-            AuxService.get_unidades_medida(),
-            AuxService.get_productos(),
-            AuxService.get_empresas(),
-            AuxService.get_almacenes(),
-            AuxService.get_minas(),
-          ]);
-
-        setMaestros({
-          proveedores: resProv.success ? resProv.data : [],
-          unidades: resUni.success ? resUni.data : [],
-          catalogo: resProd.success ? resProd.data : [],
-          empresas: resEmp.success ? resEmp.data : [],
-          almacenes: resAlm.success ? resAlm.data : [],
-          minas: resMin.success ? resMin.data : [],
-        });
+        setLoadingMaestros((prev) => ({ ...prev, [key]: true }));
+        const res = await fetchFn();
+        setMaestros((prev) => ({
+          ...prev,
+          [key]: res.success ? res.data : [],
+        }));
       } catch (error) {
-        console.error("Error al cargar maestros en hook", error);
+        console.error(`Error al cargar maestro ${key} en hook`, error);
       } finally {
-        setLoadingMaestros(false);
+        setLoadingMaestros((prev) => ({ ...prev, [key]: false }));
       }
     };
-    cargarMaestros();
+
+    cargarMaestro("proveedores", AuxService.get_proveedores);
+    cargarMaestro("unidades", AuxService.get_unidades_medida);
+    cargarMaestro("catalogo", AuxService.get_productos);
+    cargarMaestro("empresas", AuxService.get_empresas);
+    cargarMaestro("almacenes", AuxService.get_almacenes);
+    cargarMaestro("minas", AuxService.get_minas);
   }, []);
 
   return { maestros, loadingMaestros, agregarProveedorLocal };

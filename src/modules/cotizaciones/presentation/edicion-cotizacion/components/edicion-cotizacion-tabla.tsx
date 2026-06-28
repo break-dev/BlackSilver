@@ -15,6 +15,7 @@ import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Empresa } from "../../../../../service/responses/empresa";
 import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
+import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
 
 interface EdicionCotizacionTablaProps {
   productos: (
@@ -43,8 +44,7 @@ interface EdicionCotizacionTablaProps {
   ) => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
-  loadingProveedores?: boolean;
-  loadingMaestros?: boolean;
+  loadingMaestros?: LoadingMaestrosState;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
     field: K,
@@ -84,7 +84,6 @@ export const EdicionCotizacionTabla = ({
   onIniciarCopiaCotizacion,
   onPegarCotizacion,
   onCancelarCopiaCotizacion,
-  loadingProveedores,
   loadingMaestros,
   onUpdateHeader,
   onUpdateDetail,
@@ -168,7 +167,6 @@ export const EdicionCotizacionTabla = ({
                 onIniciarCopiaCotizacion={onIniciarCopiaCotizacion}
                 onPegarCotizacion={onPegarCotizacion}
                 onCancelarCopiaCotizacion={onCancelarCopiaCotizacion}
-                loadingProveedores={loadingProveedores}
                 loadingMaestros={loadingMaestros}
                 onUpdateHeader={onUpdateHeader}
                 almacenes={almacenes}
@@ -225,6 +223,7 @@ export const EdicionCotizacionTabla = ({
                     onToggleNoCotiza={onToggleNoCotiza}
                     rowIndex={pIdx}
                     isReadOnlyNoCotiza={true} // Bloqueado en edición individual
+                    loadingMaestros={loadingMaestros}
                   />
                 )}
 

@@ -163,7 +163,7 @@ export const RegistroCotizacion = forwardRef<
             proveedores={maestros.proveedores}
             onAgregarProveedorLocal={agregarProveedorLocal}
             empresas={maestros.empresas}
-            loadingProveedores={loadingMaestros}
+            loadingMaestros={loadingMaestros}
             onUpdateHeader={updateCotizacionHeader}
             onUpdateDetail={updateCotizacionDetail}
             onToggleNoCotiza={toggleCotizacionNoCotiza}
@@ -215,7 +215,7 @@ export const RegistroCotizacion = forwardRef<
           seleccionadosActuales={productos.map((p) => p.id_producto)}
           productosBloqueados={productosEnUsoIds}
           catalogoProductos={maestros.catalogo}
-          loading={loadingMaestros}
+          loading={loadingMaestros.catalogo}
           soloAuditables={esAuditableGlobal}
         />
 

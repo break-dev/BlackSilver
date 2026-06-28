@@ -49,6 +49,7 @@ import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion
 import { enPlural } from "../../../../../shared/functions/en-plural";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
+import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
 
 interface CabeceraCotizacionProps {
   cot?: DTO_CotizacionRequest;
@@ -65,7 +66,7 @@ interface CabeceraCotizacionProps {
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
 
-  loadingProveedores?: boolean;
+  loadingMaestros?: LoadingMaestrosState;
   unidadesMedida: { value: string; label: string; abreviatura: string }[];
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
@@ -106,7 +107,7 @@ export const CabeceraCotizacion = ({
   copiedCotizacion,
   onIniciarCopiaCotizacion,
   onPegarCotizacion,
-  loadingProveedores,
+  loadingMaestros,
   onUpdateHeader,
   onRemoveCotizacion,
   isSkeleton = false,
@@ -319,7 +320,7 @@ export const CabeceraCotizacion = ({
         <Group align="flex-end" gap="xs">
           <Select
             placeholder={
-              loadingProveedores
+              loadingMaestros?.proveedores
                 ? "Buscando proveedores..."
                 : "Seleccione proveedor..."
             }
@@ -329,7 +330,7 @@ export const CabeceraCotizacion = ({
             }))}
             label="Proveedor"
             withAsterisk
-            disabled={loadingProveedores}
+            disabled={loadingMaestros?.proveedores}
             leftSection={
               <IdentificationIcon className="w-4 h-4 text-zinc-500" />
             }
@@ -401,8 +402,8 @@ export const CabeceraCotizacion = ({
 
         <MultiSelect
           placeholder={
-            loadingProveedores
-              ? "Cargando..."
+            loadingMaestros?.empresas
+              ? "Cargando empresas..."
               : "Seleccione empresas compradoras..."
           }
           data={empresas.map((e) => ({
@@ -411,7 +412,7 @@ export const CabeceraCotizacion = ({
           }))}
           label="Empresas Asociadas"
           withAsterisk
-          disabled={loadingProveedores}
+          disabled={loadingMaestros?.empresas}
           value={cot.empresas_ids.map(String)}
           onChange={(vals) =>
             onUpdateHeader(idx, "empresas_ids", vals.map(Number))
@@ -584,8 +585,13 @@ export const CabeceraCotizacion = ({
                 {globalDestinoTipo === "almacen" ? (
                   <Select
                     label="Almacén de Recepción"
-                    placeholder="Seleccione almacén..."
+                    placeholder={
+                      loadingMaestros?.almacenes
+                        ? "Cargando almacenes..."
+                        : "Seleccione almacén..."
+                    }
                     withAsterisk
+                    disabled={loadingMaestros?.almacenes}
                     leftSection={
                       <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
                     }
@@ -604,8 +610,13 @@ export const CabeceraCotizacion = ({
                 ) : (
                   <Select
                     label="Mina de Destino"
-                    placeholder="Seleccione mina..."
+                    placeholder={
+                      loadingMaestros?.minas
+                        ? "Cargando minas..."
+                        : "Seleccione mina..."
+                    }
                     withAsterisk
+                    disabled={loadingMaestros?.minas}
                     leftSection={
                       <MapPinIcon className="w-4 h-4 text-zinc-500" />
                     }

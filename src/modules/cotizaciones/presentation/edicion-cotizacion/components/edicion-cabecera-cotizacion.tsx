@@ -43,6 +43,7 @@ import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion
 import { enPlural } from "../../../../../shared/functions/en-plural";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
+import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
 
 interface EdicionCabeceraCotizacionProps {
   cot: DTO_CotizacionRequest;
@@ -58,8 +59,7 @@ interface EdicionCabeceraCotizacionProps {
   ) => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
-  loadingProveedores?: boolean;
-  loadingMaestros?: boolean;
+  loadingMaestros?: LoadingMaestrosState;
   onUpdateHeader: <K extends keyof DTO_CotizacionRequest>(
     index: number,
     field: K,
@@ -98,7 +98,6 @@ export const EdicionCabeceraCotizacion = ({
   copiedCotizacion,
   onIniciarCopiaCotizacion,
   onPegarCotizacion,
-  loadingProveedores,
   loadingMaestros,
   onUpdateHeader,
   almacenes = [],
@@ -278,7 +277,7 @@ export const EdicionCabeceraCotizacion = ({
         <Group align="flex-end" gap="xs">
           <Select
             placeholder={
-              loadingProveedores
+              loadingMaestros?.proveedores
                 ? "Buscando proveedores..."
                 : "Seleccione proveedor..."
             }
@@ -288,7 +287,7 @@ export const EdicionCabeceraCotizacion = ({
             }))}
             label="Proveedor"
             withAsterisk
-            disabled={loadingProveedores}
+            disabled={loadingMaestros?.proveedores}
             leftSection={
               <IdentificationIcon className="w-4 h-4 text-zinc-500" />
             }
@@ -315,13 +314,18 @@ export const EdicionCabeceraCotizacion = ({
         </Group>
 
         <MultiSelect
-          placeholder="Seleccione empresas compradoras..."
+          placeholder={
+            loadingMaestros?.empresas
+              ? "Cargando empresas..."
+              : "Seleccione empresas compradoras..."
+          }
           data={empresas.map((e) => ({
             value: String(e.id_empresa),
             label: e.razon_social,
           }))}
           label="Empresas Asociadas"
           withAsterisk
+          disabled={loadingMaestros?.empresas}
           value={cot.empresas_ids.map(String)}
           onChange={(vals) =>
             onUpdateHeader(idx, "empresas_ids", vals.map(Number))
@@ -492,11 +496,12 @@ export const EdicionCabeceraCotizacion = ({
                   <Select
                     label="Almacén de Recepción"
                     placeholder={
-                      loadingMaestros
+                      loadingMaestros?.almacenes
                         ? "Cargando almacenes..."
                         : "Seleccione almacén..."
                     }
                     withAsterisk
+                    disabled={loadingMaestros?.almacenes}
                     leftSection={
                       <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
                     }
@@ -515,8 +520,13 @@ export const EdicionCabeceraCotizacion = ({
                 ) : (
                   <Select
                     label="Mina de Destino"
-                    placeholder="Seleccione mina..."
+                    placeholder={
+                      loadingMaestros?.minas
+                        ? "Cargando minas..."
+                        : "Seleccione mina..."
+                    }
                     withAsterisk
+                    disabled={loadingMaestros?.minas}
                     leftSection={
                       <MapPinIcon className="w-4 h-4 text-zinc-500" />
                     }

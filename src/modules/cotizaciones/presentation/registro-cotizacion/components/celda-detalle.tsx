@@ -37,6 +37,7 @@ import { Periodo } from "../../../../../shared/enums/_generic/periodo";
 import type { RES_Almacen } from "../../../../../service/responses/almacen";
 import type { RES_Mina } from "../../../../../service/responses/mina";
 import { TipoBien } from "../../../../../shared/enums/_generic/tipo-bien";
+import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
 
 interface CeldaDetalleProps {
   det?: DTO_CotizacionDetalle;
@@ -75,6 +76,7 @@ interface CeldaDetalleProps {
   onCancelarCopia?: () => void;
   isCheapest?: boolean;
   isReadOnlyNoCotiza?: boolean;
+  loadingMaestros?: LoadingMaestrosState;
 }
 
 const inputStyles = {
@@ -101,6 +103,7 @@ export const CeldaDetalle = ({
   onCancelarCopia,
   isCheapest,
   isReadOnlyNoCotiza = false,
+  loadingMaestros,
 }: CeldaDetalleProps & { rowIndex: number }) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -252,6 +255,12 @@ export const CeldaDetalle = ({
         <Group grow align="flex-end" gap="xs">
           <Select
             label="Und. de Medida"
+            placeholder={
+              loadingMaestros?.unidades
+                ? "Cargando..."
+                : "Seleccione unidad..."
+            }
+            disabled={loadingMaestros?.unidades}
             data={unidadesMedida}
             value={String(det.id_unidad_medida)}
             onChange={(val) =>
@@ -483,8 +492,13 @@ export const CeldaDetalle = ({
                   {det.id_mina_destino === null ? (
                     <Select
                       label="Almacén de Recepción"
-                      placeholder="Seleccione almacén..."
+                      placeholder={
+                        loadingMaestros?.almacenes
+                          ? "Cargando almacenes..."
+                          : "Seleccione almacén..."
+                      }
                       withAsterisk
+                      disabled={loadingMaestros?.almacenes}
                       leftSection={
                         <BuildingStorefrontIcon className="w-4 h-4 text-zinc-500" />
                       }
@@ -516,8 +530,13 @@ export const CeldaDetalle = ({
                   ) : (
                     <Select
                       label="Mina de Destino"
-                      placeholder="Seleccione mina..."
+                      placeholder={
+                        loadingMaestros?.minas
+                          ? "Cargando minas..."
+                          : "Seleccione mina..."
+                      }
                       withAsterisk
+                      disabled={loadingMaestros?.minas}
                       leftSection={
                         <MapPinIcon className="w-4 h-4 text-zinc-500" />
                       }

@@ -21,6 +21,15 @@ export interface MaestrosState {
   minas: RES_Mina[];
 }
 
+export interface LoadingMaestrosState {
+  proveedores: boolean;
+  unidades: boolean;
+  catalogo: boolean;
+  empresas: boolean;
+  almacenes: boolean;
+  minas: boolean;
+}
+
 /** Días equivalentes por período de tiempo de entrega */
 export const DIAS_POR_PERIODO: Record<Periodo, number> = {
   [Periodo.Diario]: 1,

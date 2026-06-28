@@ -172,98 +172,10 @@ export const useEditarCotizacion = (
     }
   };
 
-  // Maestros precargados para carga optimista (mostrar nombres aunque la API no haya terminado)
-  const maestrosPreCargados = {
-    ...maestros,
-    proveedores:
-      maestros.proveedores.length > 0
-        ? maestros.proveedores
-        : [
-            {
-              id_proveedor: cotizacionInicial.id_proveedor,
-              razon_social: cotizacionInicial.proveedor,
-              direccion: null,
-              ruc:
-                cotizacionInicial.tipo_entidad_proveedor ===
-                TipoEntidad.Juridica
-                  ? cotizacionInicial.documento_proveedor
-                  : null,
-              dni:
-                cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Natural
-                  ? cotizacionInicial.documento_proveedor
-                  : null,
-              tipo_entidad:
-                (cotizacionInicial.tipo_entidad_proveedor as TipoEntidad) ||
-                TipoEntidad.Juridica,
-              para_mantenimiento: false,
-              para_transporte: false,
-            },
-          ],
-    empresas:
-      maestros.empresas.length > 0
-        ? maestros.empresas
-        : cotizacionInicial.empresas.map((e) => ({
-            id_empresa: e.id_empresa,
-            ruc: "",
-            razon_social: e.razon_social,
-            url_logo: null,
-          })),
-    unidades:
-      maestros.unidades.length > 0
-        ? maestros.unidades
-        : Array.from(
-            new Map(
-              cotizacionInicial.detalles.map((d) => [
-                d.id_unidad_medida_ctz,
-                {
-                  id_unidad_medida: d.id_unidad_medida_ctz,
-                  nombre: d.unidad_medida_ctz,
-                  abreviatura: d.unidad_medida_ctz_abv,
-                },
-              ]),
-            ).values(),
-          ),
-    almacenes:
-      maestros.almacenes.length > 0
-        ? maestros.almacenes
-        : Array.from(
-            new Map(
-              cotizacionInicial.detalles
-                .filter((d) => d.id_almacen_recepcionista)
-                .map((d) => [
-                  d.id_almacen_recepcionista,
-                  {
-                    id_almacen: d.id_almacen_recepcionista!,
-                    nombre: d.almacen_recepcionista!,
-                    es_principal: d.para_un_almacen_principal ? 1 : 0,
-                  },
-                ]),
-            ).values(),
-          ),
-    minas:
-      maestros.minas.length > 0
-        ? maestros.minas
-        : Array.from(
-            new Map(
-              cotizacionInicial.detalles
-                .filter((d) => d.id_mina_destino)
-                .map((d) => [
-                  d.id_mina_destino,
-                  {
-                    id_mina: d.id_mina_destino!,
-                    nombre: d.mina_destino!,
-                    id_concesion: 0,
-                    concesion: "Desconocida",
-                  },
-                ]),
-            ).values(),
-          ),
-  };
-
   return {
     productos,
     cotizaciones,
-    maestros: maestrosPreCargados,
+    maestros,
     agregarProveedorLocal,
     loading,
     loadingMaestros,
