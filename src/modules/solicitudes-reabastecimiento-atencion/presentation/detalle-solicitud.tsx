@@ -680,7 +680,7 @@ export const DetalleSolicitud = ({
         opened={openedEntrega}
         close={closeEntrega}
         title="Registrar Entrega"
-        size="90%"
+        size="65%"
       >
         <RegistroEntrega
           idSolicitud={solicitud.id_solicitud}

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { ProveedoresService } from "../service/proveedores.service";
 import { useNotify } from "../../../hooks/useNotify";
-import type { BancoResponse } from "../service/proveedores.responses";
 import {
   Schema_CrearBanco,
   type CrearBancoRequest,
 } from "../service/proveedores.requests";
+import type { RES_Banco } from "../../../service/responses/banco";
 
-export const useRegistroBanco = (onSuccess: (banco: BancoResponse) => void) => {
+export const useRegistroBanco = (onSuccess: (banco: RES_Banco) => void) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notifySuccess, notifyError } = useNotify();

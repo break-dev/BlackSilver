@@ -5,6 +5,7 @@ export const Schema_CrearProveedor = z
   .object({
     tipo_entidad: z.enum(TipoEntidad),
     para_mantenimiento: z.boolean(),
+    para_transporte: z.boolean(),
     dni: z.string().optional().nullable(),
     ruc: z.string().optional().nullable(),
     razon_social: z.string().min(3, "La razón social o nombre es muy corto"),

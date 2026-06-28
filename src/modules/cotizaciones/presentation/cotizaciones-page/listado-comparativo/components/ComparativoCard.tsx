@@ -150,7 +150,7 @@ export const ComparativoCard = ({
             <CotizacionCard
               key={cot.id_cotizacion}
               cot={cot}
-              isExpanded={expandedCots[cot.id_cotizacion] ?? false}
+              isExpanded={expandedCots[cot.id_cotizacion] ?? true}
               onToggle={() => onToggleCot(cot.id_cotizacion)}
               onPrintCotizacion={onPrintCotizacion}
               onPrintOC={onPrintOC}

@@ -37,7 +37,10 @@ interface EdicionCotizacionTablaProps {
   onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: RES_Empresa[];
   copiedCotizacion?: CopiedCotizacion | null;
-  onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
+  onIniciarCopiaCotizacion?: (
+    sourceIndex: number,
+    type: "all" | "general" | "delivery",
+  ) => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
   loadingProveedores?: boolean;
@@ -88,7 +91,6 @@ export const EdicionCotizacionTabla = ({
   onToggleNoCotiza,
   onUpdateGlobalLogistica,
 }: EdicionCotizacionTablaProps) => {
-  
   // En edición el ancho es fijo para una sola columna + la columna de productos
   const totalWidth = 120 + 400;
 
@@ -138,7 +140,8 @@ export const EdicionCotizacionTabla = ({
                     radius="sm"
                     className="font-bold border border-indigo-500/20 bg-indigo-500/10 text-indigo-400"
                   >
-                    {productos.length} {productos.length === 1 ? "item" : "items"}
+                    {productos.length}{" "}
+                    {productos.length === 1 ? "item" : "items"}
                   </Badge>
                 )}
               </Stack>
@@ -154,7 +157,7 @@ export const EdicionCotizacionTabla = ({
               }}
               className="bg-zinc-900 border-b border-zinc-800 p-0 sticky top-0 z-70"
             >
-                <EdicionCabeceraCotizacion
+              <EdicionCabeceraCotizacion
                 cot={cotizacion}
                 idx={0}
                 correlativo={correlativo}

@@ -29,8 +29,8 @@ export const RegistrarEntregaModal = ({
     entregaCantidades,
     entregaCantidadesActivos,
     personal,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     observacion,
     setObservacion,
     evidencias,
@@ -76,8 +76,8 @@ export const RegistrarEntregaModal = ({
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
         personal={personal}
-        idEmpleadoRecibe={idEmpleadoRecibe}
-        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
+        transporte={transporte}
+        onChangeTransporte={onChangeTransporte}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -95,7 +95,7 @@ export const RegistrarEntregaModal = ({
             activosFijos={activosFijos.filter(
               (a) => a.id_producto === detalle.id_producto,
             )}
-            loadingLotes={false} // Ya vienen en el batch inicial
+            loadingLotes={false} // Ya vienen en el batch batch inicial
             entregaCantidades={entregaCantidades}
             entregaCantidadesActivos={entregaCantidadesActivos}
             handleCantLoteChange={handleCantLoteChange}
@@ -109,7 +109,7 @@ export const RegistrarEntregaModal = ({
         onCancel={onCancel}
         handleConfirmar={() => registrarEntrega(idPrestamo)}
         isProcessing={submitting}
-        canSave={!!idEmpleadoRecibe && totalEntregaGeneralBase > 0}
+        canSave={!!transporte.medio_entrega && totalEntregaGeneralBase > 0}
       />
 
       {error && (

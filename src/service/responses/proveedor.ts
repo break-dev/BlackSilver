@@ -8,4 +8,5 @@ export interface RES_Proveedor {
   dni: string | null;
   tipo_entidad: TipoEntidad;
   para_mantenimiento: boolean;
+  para_transporte: boolean;
 }

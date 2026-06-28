@@ -1,9 +1,20 @@
 export interface DTO_RegistrarEntrega {
   id_prestamo: number;
-  id_empleado_recibe: number;
+  id_empleado_recibe?: number | null;
   fecha_hora_entrega?: string;
   observacion?: string;
   detalles: DTO_DetalleEntrega[];
+  // Transport fields
+  medio_entrega: string;
+  id_proveedor_transporte?: number | null;
+  id_agencia_transporte?: number | null;
+  numero_factura?: string | null;
+  serie_factura?: string | null;
+  serie_guia_transportista?: string | null;
+  numero_guia_transportista?: string | null;
+  serie_guia_remitente?: string | null;
+  numero_guia_remitente?: string | null;
+  costo_envio?: number | null;
 }
 
 export interface DTO_DetalleEntrega {

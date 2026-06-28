@@ -196,6 +196,7 @@ export const useEditarCotizacion = (
                 (cotizacionInicial.tipo_entidad_proveedor as TipoEntidad) ||
                 TipoEntidad.Juridica,
               para_mantenimiento: false,
+              para_transporte: false,
             },
           ],
     empresas:

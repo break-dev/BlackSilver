@@ -9,6 +9,8 @@ import { useNotify } from "../../../hooks/useNotify";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
+import { type TransporteData } from "../../../presentation/utils/transport/transporte-fields";
+import { MedioEntrega } from "../../../shared/enums/_generic/medio-entrega";
 
 interface UseRegistroReposicionProps {
   idPrestamo: number;
@@ -61,7 +63,23 @@ export const useRegistroReposicion = ({
   }, [empleados]);
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [transporte, setTransporte] = useState<TransporteData>({
+    medio_entrega: null,
+    id_proveedor_transporte: null,
+    id_agencia_transporte: null,
+    id_empleado_recibe: null,
+    numero_factura: "",
+    serie_factura: "",
+    serie_guia_transportista: "",
+    numero_guia_transportista: "",
+    serie_guia_remitente: "",
+    numero_guia_remitente: "",
+    costo_envio: "",
+  });
+
+  const onChangeTransporte = useCallback((field: keyof TransporteData, value: any) => {
+    setTransporte((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   const [lotesPorProducto, setLotesPorProducto] = useState<
     Record<number, RES_LoteDisponible[]>
@@ -243,7 +261,42 @@ export const useRegistroReposicion = ({
   );
 
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !idEmpleadoRecibe || !usuario) return;
+    if (!idAlmacenEntrega || !transporte.medio_entrega || !usuario) {
+      setErrorLocal("Complete todos los campos obligatorios");
+      return;
+    }
+
+    if (transporte.medio_entrega === MedioEntrega.Propio && !transporte.id_empleado_recibe) {
+      setErrorLocal("Debe seleccionar el chofer/encargado");
+      return;
+    }
+    if (transporte.medio_entrega === MedioEntrega.Terceros) {
+      if (
+        !transporte.id_proveedor_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_remitente ||
+        !transporte.numero_guia_remitente ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista ||
+        !transporte.costo_envio
+      ) {
+        setErrorLocal("Complete todos los campos de transporte obligatorios");
+        return;
+      }
+    }
+    if (transporte.medio_entrega === MedioEntrega.Agencia) {
+      if (
+        !transporte.id_agencia_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista
+      ) {
+        setErrorLocal("Complete todos los campos de la agencia obligatorios");
+        return;
+      }
+    }
 
     setErrorLocal(null);
     setIsProcessing(true);
@@ -304,11 +357,22 @@ export const useRegistroReposicion = ({
         id_prestamo_almacen: idPrestamo,
         id_almacen_entrega: Number(idAlmacenEntrega),
         id_empleado_registro: usuario.id_empleado,
-        id_empleado_recibe: Number(idEmpleadoRecibe),
+        id_empleado_recibe: transporte.medio_entrega === MedioEntrega.Propio ? Number(transporte.id_empleado_recibe) : null,
         fecha_hora_reposicion: new Date().toISOString(),
         items: itemsFinal,
         observacion: observacion.trim() || undefined,
         evidencias,
+        // Transport fields
+        medio_entrega: transporte.medio_entrega,
+        id_proveedor_transporte: transporte.id_proveedor_transporte ? Number(transporte.id_proveedor_transporte) : null,
+        id_agencia_transporte: transporte.id_agencia_transporte ? Number(transporte.id_agencia_transporte) : null,
+        numero_factura: transporte.numero_factura || null,
+        serie_factura: transporte.serie_factura || null,
+        serie_guia_transportista: transporte.serie_guia_transportista || null,
+        numero_guia_transportista: transporte.numero_guia_transportista || null,
+        serie_guia_remitente: transporte.serie_guia_remitente || null,
+        numero_guia_remitente: transporte.numero_guia_remitente || null,
+        costo_envio: transporte.costo_envio ? Number(transporte.costo_envio) : null,
       };
 
       const res = await PrestamosService.registrarReposicion(payload);
@@ -338,8 +402,8 @@ export const useRegistroReposicion = ({
     personal,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     lotesPorProducto,
     activosFijos,
     reposicionCantidades,

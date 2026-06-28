@@ -10,11 +10,22 @@ export interface DTO_DecisionDetalle {
 export interface DTO_RegistrarEntregaReabastecimiento {
   id_solicitud: number;
   id_almacen_entrega: number;
-  id_empleado_recibe: number;
+  id_empleado_recibe?: number | null;
   fecha_hora_entrega: string;
   observacion?: string;
   evidencias?: File[];
   detalles: DTO_EntregasDetalleReabastecimiento[];
+  // Transport fields
+  medio_entrega: string;
+  id_proveedor_transporte?: number | null;
+  id_agencia_transporte?: number | null;
+  numero_factura?: string | null;
+  serie_factura?: string | null;
+  serie_guia_transportista?: string | null;
+  numero_guia_transportista?: string | null;
+  serie_guia_remitente?: string | null;
+  numero_guia_remitente?: string | null;
+  costo_envio?: number | null;
 }
 
 export interface DTO_EntregasDetalleReabastecimiento {

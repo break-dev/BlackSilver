@@ -28,8 +28,8 @@ export const RegistroEntrega = ({
     activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     observacion,
     setObservacion,
     entregaCantidades,
@@ -50,7 +50,7 @@ export const RegistroEntrega = ({
     onSuccess,
   });
 
-  const canSubmit = !!idAlmacenEntrega && !!idEmpleadoRecibe && !isProcessing;
+  const canSubmit = !!idAlmacenEntrega && !!transporte.medio_entrega && !isProcessing;
 
   return (
     <Stack gap="xl" className="font-sans py-2">
@@ -63,9 +63,9 @@ export const RegistroEntrega = ({
         setIdAlmacenEntrega={setIdAlmacenEntrega}
         loadingAlmacenes={loadingAlmacenes}
         personal={personal}
-        idEmpleadoRecibe={idEmpleadoRecibe}
-        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
         loadingPersonal={loadingPersonal}
+        transporte={transporte}
+        onChangeTransporte={onChangeTransporte}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}

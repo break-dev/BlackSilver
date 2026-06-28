@@ -2,15 +2,17 @@ import { Group, Loader, Paper, Select, Textarea } from "@mantine/core";
 import { MapPinIcon } from "@heroicons/react/24/outline";
 import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multifile-picker";
 
+import { TransporteFields, type TransporteData } from "../../../../../presentation/utils/transport/transporte-fields";
+
 interface ReceptorInfoProps {
   almacenesPrincipales: { value: string; label: string }[];
   idAlmacenEntrega: string | null;
   setIdAlmacenEntrega: (val: string | null) => void;
   loadingAlmacenes: boolean;
   personal: { value: string; label: string }[];
-  idEmpleadoRecibe: string | null;
-  setIdEmpleadoRecibe: (val: string | null) => void;
   loadingPersonal: boolean;
+  transporte: TransporteData;
+  onChangeTransporte: (field: keyof TransporteData, value: any) => void;
   observacion: string;
   setObservacion: (val: string) => void;
   evidencias: File[];
@@ -23,9 +25,9 @@ export const ReceptorInfo = ({
   setIdAlmacenEntrega,
   loadingAlmacenes,
   personal,
-  idEmpleadoRecibe,
-  setIdEmpleadoRecibe,
   loadingPersonal,
+  transporte,
+  onChangeTransporte,
   observacion,
   setObservacion,
   evidencias,
@@ -60,28 +62,6 @@ export const ReceptorInfo = ({
             label: "text-zinc-300 mb-1 font-medium text-sm",
           }}
         />
-        <Select
-          className="w-full sm:w-[320px]"
-          label="¿Quién recibe los materiales?"
-          placeholder="Buscar por Nombre"
-          data={personal}
-          searchable
-          required
-          withAsterisk
-          value={idEmpleadoRecibe}
-          onChange={setIdEmpleadoRecibe}
-          disabled={loadingPersonal}
-          rightSection={
-            loadingPersonal ? <Loader size="xs" color="indigo" /> : undefined
-          }
-          size="sm"
-          radius="lg"
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
-            label: "text-zinc-300 mb-1 font-medium text-sm",
-          }}
-        />
         <Textarea
           className="w-full flex-1"
           label="Observación"
@@ -98,6 +78,15 @@ export const ReceptorInfo = ({
           }}
         />
       </Group>
+
+      <div className="mt-4">
+        <TransporteFields
+          data={transporte}
+          onChange={onChangeTransporte}
+          personal={personal}
+          loadingPersonal={loadingPersonal}
+        />
+      </div>
 
       <div className="border-t border-zinc-800/50 pt-4 mt-4">
         <MultiFilePicker

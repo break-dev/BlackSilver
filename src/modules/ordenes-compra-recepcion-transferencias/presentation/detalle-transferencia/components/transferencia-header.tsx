@@ -1,4 +1,4 @@
-import { Stack, Paper, Text, Group } from "@mantine/core";
+import { Stack, Paper, Text, Group, Badge } from "@mantine/core";
 import {
   CalendarDaysIcon,
   UserIcon,
@@ -7,6 +7,7 @@ import {
   InboxStackIcon,
   BuildingStorefrontIcon,
   MapPinIcon,
+  TruckIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import type { RES_OCTransferencia } from "../../../../../service/responses/ordenes-compra/orden-compra-transferencia";
@@ -81,6 +82,110 @@ export const TransferenciaHeader = ({ transferencia }: Props) => {
           />
         </div>
       </Paper>
+
+      {/* Detalles de Transporte */}
+      {transferencia.medio_entrega && (
+        <Paper
+          p="md"
+          radius="lg"
+          className="bg-zinc-950/40 border border-zinc-800/60 mx-2"
+        >
+          <div className="flex gap-3 items-start">
+            <TruckIcon className="w-5 h-5 text-indigo-400/50 mt-0.5 shrink-0" />
+            <div className="w-full">
+              <Text size="10px" fw={800} c="zinc.5" className="uppercase tracking-widest mb-2">
+                Detalles de Envío y Transporte
+              </Text>
+              <Group gap="xl" wrap="wrap">
+                <div>
+                  <Text size="10px" c="dimmed">MEDIO</Text>
+                  <Badge size="xs" variant="light" color={transferencia.medio_entrega === "Propio" ? "teal" : transferencia.medio_entrega === "Agencia" ? "cyan" : "indigo"}>
+                    {transferencia.medio_entrega}
+                  </Badge>
+                </div>
+                {transferencia.medio_entrega === "Propio" && (
+                  <>
+                    {transferencia.empleado_recibe && (
+                      <div>
+                        <Text size="10px" c="dimmed">CHOFER / ENCARGADO</Text>
+                        <Text size="xs" fw={700}>{transferencia.empleado_recibe}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_guia_remitente && (
+                      <div>
+                        <Text size="10px" c="dimmed">GUÍA REMITENTE</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_guia_remitente}-{transferencia.numero_guia_remitente}</Text>
+                      </div>
+                    )}
+                  </>
+                )}
+                {transferencia.medio_entrega === "Terceros" && (
+                  <>
+                    {transferencia.proveedor_transporte && (
+                      <div>
+                        <Text size="10px" c="dimmed">TRANSPORTISTA</Text>
+                        <Text size="xs" fw={700}>{transferencia.proveedor_transporte}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_factura && (
+                      <div>
+                        <Text size="10px" c="dimmed">FACTURA</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_factura}-{transferencia.numero_factura}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_guia_remitente && (
+                      <div>
+                        <Text size="10px" c="dimmed">GUÍA REMITENTE</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_guia_remitente}-{transferencia.numero_guia_remitente}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_guia_transportista && (
+                      <div>
+                        <Text size="10px" c="dimmed">GUÍA TRANSPORTISTA</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_guia_transportista}-{transferencia.numero_guia_transportista}</Text>
+                      </div>
+                    )}
+                    {transferencia.costo_envio !== undefined && transferencia.costo_envio !== null && (
+                      <div>
+                        <Text size="10px" c="dimmed">COSTO</Text>
+                        <Text size="xs" fw={700} c="emerald.4" className="font-mono">S/. {Number(transferencia.costo_envio).toFixed(2)}</Text>
+                      </div>
+                    )}
+                  </>
+                )}
+                {transferencia.medio_entrega === "Agencia" && (
+                  <>
+                    {transferencia.agencia_transporte && (
+                      <div>
+                        <Text size="10px" c="dimmed">AGENCIA</Text>
+                        <Text size="xs" fw={700}>{transferencia.agencia_transporte}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_factura && (
+                      <div>
+                        <Text size="10px" c="dimmed">COMPROBANTE</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_factura}-{transferencia.numero_factura}</Text>
+                      </div>
+                    )}
+                    {transferencia.serie_guia_transportista && (
+                      <div>
+                        <Text size="10px" c="dimmed">GUÍA TRANSPORTISTA</Text>
+                        <Text size="xs" fw={700}>{transferencia.serie_guia_transportista}-{transferencia.numero_guia_transportista}</Text>
+                      </div>
+                    )}
+                    {transferencia.costo_envio !== undefined && transferencia.costo_envio !== null && Number(transferencia.costo_envio) > 0 && (
+                      <div>
+                        <Text size="10px" c="dimmed">COSTO</Text>
+                        <Text size="xs" fw={700} c="emerald.4" className="font-mono">S/. {Number(transferencia.costo_envio).toFixed(2)}</Text>
+                      </div>
+                    )}
+                  </>
+                )}
+              </Group>
+            </div>
+          </div>
+        </Paper>
+      )}
 
       {/* Observaciones y Evidencias */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-2">

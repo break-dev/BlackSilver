@@ -4,6 +4,7 @@ import type {
 } from "../../../shared/enums/orden-compra/orden-compra-transferencia";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import type { MedioEntrega } from "../../../shared/enums/_generic/medio-entrega";
 
 export interface RES_OCTransferencia {
   id_transferencia: number;
@@ -14,6 +15,19 @@ export interface RES_OCTransferencia {
   //
   id_recepcion: number;
   numero_recepcion: number;
+  //
+  medio_entrega: MedioEntrega;
+  id_proveedor_transporte: number | null;
+  proveedor_transporte: string | null;
+  id_agencia_transporte: number | null;
+  agencia_transporte: string | null;
+  numero_factura: string | null;
+  serie_factura: string | null;
+  serie_guia_transportista: string | null;
+  numero_guia_transportista: string | null;
+  serie_guia_remitente: string | null;
+  numero_guia_remitente: string | null;
+  costo_envio: number | null;
   //
   almacen_origen: string;
   desde_un_almacen_principal: boolean;

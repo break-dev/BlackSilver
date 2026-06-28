@@ -1,3 +1,4 @@
+import type { MedioEntrega } from "../../../shared/enums/_generic/medio-entrega";
 import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import type {
   Estado_PrestamoEntrega,
@@ -18,6 +19,20 @@ export interface RES_PrestamoEntrega {
   empleado_recibe: string;
   //
   correlativo: string;
+  //
+  medio_entrega: MedioEntrega;
+  id_proveedor_transporte: number | null;
+  proveedor_transporte: string | null;
+  id_agencia_transporte: number | null;
+  agencia_transporte: string | null;
+  numero_factura: string | null;
+  serie_factura: string | null;
+  serie_guia_transportista: string | null;
+  numero_guia_transportista: string | null;
+  serie_guia_remitente: string | null;
+  numero_guia_remitente: string | null;
+  costo_envio: number | null;
+  //
   fecha_hora_entrega: string;
   observacion: string | null;
   evidencias: IArchivo[] | null;

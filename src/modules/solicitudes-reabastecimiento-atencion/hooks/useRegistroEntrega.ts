@@ -13,6 +13,9 @@ import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
+import { type TransporteData } from "../../../presentation/utils/transport/transporte-fields";
+import { MedioEntrega } from "../../../shared/enums/_generic/medio-entrega";
+
 interface UseRegistroEntregaProps {
   idSolicitud: number;
   idEmpleadoSolicitante: number;
@@ -72,7 +75,23 @@ export const useRegistroEntrega = ({
   );
 
   const [idAlmacenEntrega, setIdAlmacenEntrega] = useState<string | null>(null);
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [transporte, setTransporte] = useState<TransporteData>({
+    medio_entrega: null,
+    id_proveedor_transporte: null,
+    id_agencia_transporte: null,
+    id_empleado_recibe: null,
+    numero_factura: "",
+    serie_factura: "",
+    serie_guia_transportista: "",
+    numero_guia_transportista: "",
+    serie_guia_remitente: "",
+    numero_guia_remitente: "",
+    costo_envio: "",
+  });
+
+  const onChangeTransporte = useCallback((field: keyof TransporteData, value: any) => {
+    setTransporte((prev) => ({ ...prev, [field]: value }));
+  }, []);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [entregaCantidades, setEntregaCantidades] = useState<
@@ -314,11 +333,42 @@ export const useRegistroEntrega = ({
     });
     return acc;
   }, [lotes]);
-
   const handleConfirmar = async () => {
-    if (!idAlmacenEntrega || !idEmpleadoRecibe) {
+    if (!idAlmacenEntrega || !transporte.medio_entrega) {
       setErrorLocal("Complete todos los campos obligatorios");
       return;
+    }
+
+    if (transporte.medio_entrega === MedioEntrega.Propio && !transporte.id_empleado_recibe) {
+      setErrorLocal("Debe seleccionar el chofer/encargado");
+      return;
+    }
+    if (transporte.medio_entrega === MedioEntrega.Terceros) {
+      if (
+        !transporte.id_proveedor_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_remitente ||
+        !transporte.numero_guia_remitente ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista ||
+        !transporte.costo_envio
+      ) {
+        setErrorLocal("Complete todos los campos de transporte obligatorios");
+        return;
+      }
+    }
+    if (transporte.medio_entrega === MedioEntrega.Agencia) {
+      if (
+        !transporte.id_agencia_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista
+      ) {
+        setErrorLocal("Complete todos los campos de la agencia obligatorios");
+        return;
+      }
     }
 
     const detallesApi: DTO_EntregasDetalleReabastecimiento[] = [];
@@ -375,11 +425,22 @@ export const useRegistroEntrega = ({
       const res = await SolicitudesAtencionService.registrarEntrega({
         id_solicitud: idSolicitud,
         id_almacen_entrega: Number(idAlmacenEntrega),
-        id_empleado_recibe: Number(idEmpleadoRecibe),
+        id_empleado_recibe: transporte.medio_entrega === MedioEntrega.Propio ? Number(transporte.id_empleado_recibe) : null,
         fecha_hora_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
         evidencias,
         detalles: detallesApi,
+        // Transport fields
+        medio_entrega: transporte.medio_entrega,
+        id_proveedor_transporte: transporte.id_proveedor_transporte ? Number(transporte.id_proveedor_transporte) : null,
+        id_agencia_transporte: transporte.id_agencia_transporte ? Number(transporte.id_agencia_transporte) : null,
+        numero_factura: transporte.numero_factura || null,
+        serie_factura: transporte.serie_factura || null,
+        serie_guia_transportista: transporte.serie_guia_transportista || null,
+        numero_guia_transportista: transporte.numero_guia_transportista || null,
+        serie_guia_remitente: transporte.serie_guia_remitente || null,
+        numero_guia_remitente: transporte.numero_guia_remitente || null,
+        costo_envio: transporte.costo_envio ? Number(transporte.costo_envio) : null,
       });
 
       if (res.success) {
@@ -406,8 +467,8 @@ export const useRegistroEntrega = ({
     activosFijos,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
 
     observacion,
     setObservacion,

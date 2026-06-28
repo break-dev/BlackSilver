@@ -16,20 +16,18 @@ import {
 } from "@tabler/icons-react";
 import { MONEDAS } from "../../../../../shared/variables/monedas";
 import { useRegistroCuentaBancaria } from "../../../hooks/useRegistroCuentaBancaria";
-import type {
-  BancoResponse,
-  CuentaBancariaResponse,
-} from "../../../service/proveedores.responses";
+import type { CuentaBancariaResponse } from "../../../service/proveedores.responses";
 import { useState, forwardRef, useImperativeHandle } from "react";
 import { RegistroBanco } from "./registro-banco";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import type { RES_Banco } from "../../../../../service/responses/banco";
 
 interface Props {
   idProveedor: number;
-  bancos: BancoResponse[];
+  bancos: RES_Banco[];
   loadingBancos: boolean;
   onCuentaAdded: (account: CuentaBancariaResponse) => void;
-  onBancoAdded: (banco: BancoResponse) => void;
+  onBancoAdded: (banco: RES_Banco) => void;
 }
 
 export interface RegistroCuentaRef {
@@ -192,7 +190,9 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
                         !selectedBanco?.es_nacional ||
                         payload.moneda !== MONEDAS.PEN.label;
                       if (!isDisabled) {
-                        handleToggleDetraccion(payload.es_para_detraccion !== 1);
+                        handleToggleDetraccion(
+                          payload.es_para_detraccion !== 1,
+                        );
                       }
                     }}
                   >

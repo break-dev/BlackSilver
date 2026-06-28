@@ -24,6 +24,7 @@ import type { RES_LoteMineral } from "./responses/lote-mineral";
 import type { RES_Banco } from "./responses/banco";
 import type { RES_Area, RES_Cargo } from "./responses/organigrama";
 import type { RES_Rol } from "./responses/rol";
+import type { RES_Agencia } from "./responses/agencia";
 
 const path = "/aux";
 
@@ -171,10 +172,28 @@ export const AuxService = {
     estado?: string;
     tipo_entidad?: string;
     para_mantenimiento?: boolean;
+    para_transporte?: boolean;
   }): Promise<IRespuesta<RES_Proveedor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Proveedor[]>>(
       `${path}/proveedores`,
       { params: filters },
+    );
+    return data;
+  },
+
+  get_agencias_transporte: async (): Promise<IRespuesta<RES_Agencia[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Agencia[]>>(
+      `${path}/agencias-transporte`,
+    );
+    return data;
+  },
+
+  crear_agencia_transporte: async (nuevaAgencia: {
+    razon_social: string;
+  }): Promise<IRespuesta<RES_Agencia>> => {
+    const { data } = await api.post<IRespuesta<RES_Agencia>>(
+      `${path}/agencias-transporte`,
+      nuevaAgencia,
     );
     return data;
   },
@@ -186,6 +205,7 @@ export const AuxService = {
     tipo_entidad: TipoEntidad;
     razon_social: string;
     para_mantenimiento: boolean;
+    para_transporte?: boolean;
     dni?: string;
     ruc?: string;
     direccion?: string;
@@ -198,6 +218,7 @@ export const AuxService = {
         tipo_entidad: nuevoProveedor.tipo_entidad,
         razonSocial: nuevoProveedor.razon_social,
         paraMantenimiento: nuevoProveedor.para_mantenimiento,
+        paraTransporte: nuevoProveedor.para_transporte,
         dni: nuevoProveedor.dni,
         ruc: nuevoProveedor.ruc,
         direccion: nuevoProveedor.direccion,

@@ -8,6 +8,8 @@ import { useAuthStore } from "../../../stores/auth.store";
 import dayjs from "dayjs";
 import { AuxService } from "../../../service/auxiliar.service";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { type TransporteData } from "../../../presentation/utils/transport/transporte-fields";
+import { MedioEntrega } from "../../../shared/enums/_generic/medio-entrega";
 
 export const useRegistroTransferenciaOC = ({
   idAlmacenRecepcionista,
@@ -52,7 +54,23 @@ export const useRegistroTransferenciaOC = ({
     }));
   }, [empleados]);
 
-  const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [transporte, setTransporte] = useState<TransporteData>({
+    medio_entrega: null,
+    id_proveedor_transporte: null,
+    id_agencia_transporte: null,
+    id_empleado_recibe: null,
+    numero_factura: "",
+    serie_factura: "",
+    serie_guia_transportista: "",
+    numero_guia_transportista: "",
+    serie_guia_remitente: "",
+    numero_guia_remitente: "",
+    costo_envio: "",
+  });
+
+  const onChangeTransporte = useCallback((field: keyof TransporteData, value: any) => {
+    setTransporte((prev) => ({ ...prev, [field]: value }));
+  }, []);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -235,7 +253,42 @@ export const useRegistroTransferenciaOC = ({
     idMinaDestino?: number | null,
     tipoDestino?: "almacen" | "mina",
   ) => {
-    if (!idEmpleadoRecibe) return;
+    if (!transporte.medio_entrega) {
+      setError("Complete todos los campos obligatorios");
+      return;
+    }
+
+    if (transporte.medio_entrega === MedioEntrega.Propio && !transporte.id_empleado_recibe) {
+      setError("Debe seleccionar el chofer/encargado");
+      return;
+    }
+    if (transporte.medio_entrega === MedioEntrega.Terceros) {
+      if (
+        !transporte.id_proveedor_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_remitente ||
+        !transporte.numero_guia_remitente ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista ||
+        !transporte.costo_envio
+      ) {
+        setError("Complete todos los campos de transporte obligatorios");
+        return;
+      }
+    }
+    if (transporte.medio_entrega === MedioEntrega.Agencia) {
+      if (
+        !transporte.id_agencia_transporte ||
+        !transporte.serie_factura ||
+        !transporte.numero_factura ||
+        !transporte.serie_guia_transportista ||
+        !transporte.numero_guia_transportista
+      ) {
+        setError("Complete todos los campos de la agencia obligatorios");
+        return;
+      }
+    }
 
     setSubmitting(true);
     setError(null);
@@ -297,10 +350,21 @@ export const useRegistroTransferenciaOC = ({
       id_orden_compra_recepcion: idRecepcion,
       id_almacen_destino: tipoDestino === "mina" ? null : idAlmacenDestino,
       id_mina_destino: tipoDestino === "mina" ? idMinaDestino : null,
-      id_empleado_recibe: Number(idEmpleadoRecibe),
+      id_empleado_recibe: transporte.medio_entrega === MedioEntrega.Propio ? Number(transporte.id_empleado_recibe) : null,
       fecha_hora_transferencia: dayjs().format("YYYY-MM-DD HH:mm:ss"),
       observacion,
       detalles,
+      // Transport fields
+      medio_entrega: transporte.medio_entrega,
+      id_proveedor_transporte: transporte.id_proveedor_transporte ? Number(transporte.id_proveedor_transporte) : null,
+      id_agencia_transporte: transporte.id_agencia_transporte ? Number(transporte.id_agencia_transporte) : null,
+      numero_factura: transporte.numero_factura || null,
+      serie_factura: transporte.serie_factura || null,
+      serie_guia_transportista: transporte.serie_guia_transportista || null,
+      numero_guia_transportista: transporte.numero_guia_transportista || null,
+      serie_guia_remitente: transporte.serie_guia_remitente || null,
+      numero_guia_remitente: transporte.numero_guia_remitente || null,
+      costo_envio: transporte.costo_envio ? Number(transporte.costo_envio) : null,
     };
 
     try {
@@ -357,8 +421,8 @@ export const useRegistroTransferenciaOC = ({
     transferenciaCantidades,
     transferenciaCantidadesActivos,
     personal,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     observacion,
     setObservacion,
     evidencias,

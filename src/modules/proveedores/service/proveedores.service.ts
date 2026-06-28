@@ -1,11 +1,11 @@
 import { api } from "../../../service/_api";
+import type { RES_Banco } from "../../../service/responses/banco";
 import type {
   CrearBancoRequest,
   CrearCuentaBancariaRequest,
   CrearProveedorRequest,
 } from "./proveedores.requests";
 import type {
-  BancoResponse,
   CuentaBancariaResponse,
   ProveedorResponse,
 } from "./proveedores.responses";
@@ -21,6 +21,7 @@ export const ProveedoresService = {
     const { data } = await api.post("/proveedores", {
       tipo_entidad: payload.tipo_entidad,
       paraMantenimiento: payload.para_mantenimiento,
+      paraTransporte: payload.para_transporte,
       dni: payload.dni,
       ruc: payload.ruc,
       razon_social: payload.razon_social,
@@ -31,11 +32,11 @@ export const ProveedoresService = {
     return data.data;
   },
 
-  getBancos: async (): Promise<BancoResponse[]> => {
+  getBancos: async (): Promise<RES_Banco[]> => {
     const { data } = await api.get("/aux/bancos");
     return data.data;
   },
-  crearBanco: async (payload: CrearBancoRequest): Promise<BancoResponse> => {
+  crearBanco: async (payload: CrearBancoRequest): Promise<RES_Banco> => {
     const { data } = await api.post("/aux/bancos", payload);
     return data.data;
   },

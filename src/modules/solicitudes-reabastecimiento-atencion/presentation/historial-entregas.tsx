@@ -144,18 +144,128 @@ export const HistorialEntregas = ({ idSolicitud }: HistorialProps) => {
             </UnstyledButton>
             <Collapse in={expanded}>
               <div className="mt-4 pt-4 border-t border-zinc-800/30">
-                <Group gap="sm" mb="md" px="md">
+                <Group gap="sm" mb="md" px="md" wrap="wrap">
                   <UserIcon className="w-4 h-4 text-zinc-500" />
                   <Text size="xs" c="dimmed">
                     Atendido por:{" "}
                     <span className="text-white">{h.empleado_entrega}</span>
                   </Text>
-                  <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
-                  <UserIcon className="w-4 h-4 text-zinc-500" />
-                  <Text size="xs" c="dimmed">
-                    Entregado a:{" "}
-                    <span className="text-white">{h.empleado_recibe}</span>
-                  </Text>
+                  
+                  {h.medio_entrega && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                      <Text size="xs" c="dimmed">
+                        Medio:{" "}
+                        <Badge size="xs" variant="light" color={h.medio_entrega === "Propio" ? "teal" : h.medio_entrega === "Agencia" ? "cyan" : "indigo"}>
+                          {h.medio_entrega}
+                        </Badge>
+                      </Text>
+                    </>
+                  )}
+
+                  {h.medio_entrega === "Propio" && h.empleado_recibe && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                      <UserIcon className="w-4 h-4 text-zinc-500" />
+                      <Text size="xs" c="dimmed">
+                        Recibe/Chofer:{" "}
+                        <span className="text-white">{h.empleado_recibe}</span>
+                      </Text>
+                      {h.serie_guia_remitente && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Guía Remitente: <span className="text-white">{h.serie_guia_remitente}-{h.numero_guia_remitente}</span>
+                          </Text>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {h.medio_entrega === "Terceros" && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                      <Text size="xs" c="dimmed">
+                        Transportista: <span className="text-white">{h.proveedor_transporte}</span>
+                      </Text>
+                      {h.serie_factura && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Factura: <span className="text-white">{h.serie_factura}-{h.numero_factura}</span>
+                          </Text>
+                        </>
+                      )}
+                      {h.serie_guia_remitente && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Guía Rem.: <span className="text-white">{h.serie_guia_remitente}-{h.numero_guia_remitente}</span>
+                          </Text>
+                        </>
+                      )}
+                      {h.serie_guia_transportista && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Guía Trans.: <span className="text-white">{h.serie_guia_transportista}-{h.numero_guia_transportista}</span>
+                          </Text>
+                        </>
+                      )}
+                      {h.costo_envio !== undefined && h.costo_envio !== null && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Costo: <span className="text-emerald-400 font-mono">S/. {Number(h.costo_envio).toFixed(2)}</span>
+                          </Text>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {h.medio_entrega === "Agencia" && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                      <Text size="xs" c="dimmed">
+                        Agencia: <span className="text-white">{h.agencia_transporte}</span>
+                      </Text>
+                      {h.serie_factura && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Comprobante: <span className="text-white">{h.serie_factura}-{h.numero_factura}</span>
+                          </Text>
+                        </>
+                      )}
+                      {h.serie_guia_transportista && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Guía Trans.: <span className="text-white">{h.serie_guia_transportista}-{h.numero_guia_transportista}</span>
+                          </Text>
+                        </>
+                      )}
+                      {h.costo_envio !== undefined && h.costo_envio !== null && Number(h.costo_envio) > 0 && (
+                        <>
+                          <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                          <Text size="xs" c="dimmed">
+                            Costo: <span className="text-emerald-400 font-mono">S/. {Number(h.costo_envio).toFixed(2)}</span>
+                          </Text>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {!h.medio_entrega && h.empleado_recibe && (
+                    <>
+                      <div className="w-1 h-1 rounded-full bg-zinc-700 mx-2" />
+                      <UserIcon className="w-4 h-4 text-zinc-500" />
+                      <Text size="xs" c="dimmed">
+                        Entregado a:{" "}
+                        <span className="text-white">{h.empleado_recibe}</span>
+                      </Text>
+                    </>
+                  )}
                 </Group>
                 {h.observacion && (
                   <Paper

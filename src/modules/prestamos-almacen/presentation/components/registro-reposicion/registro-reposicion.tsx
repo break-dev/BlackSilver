@@ -19,6 +19,7 @@ import { useRegistroReposicion } from "../../../hooks/useRegistroReposicion";
 import type { RES_PrestamoDetalle } from "../../../../../service/responses/prestamos/prestamo";
 import { MultiFilePicker } from "../../../../../presentation/utils/archivo/multifile-picker";
 import { ProductoRepoCard } from "./producto-repo-card";
+import { TransporteFields } from "../../../../../presentation/utils/transport/transporte-fields";
 
 interface RegistroReposicionProps {
   idPrestamo: number;
@@ -41,8 +42,8 @@ export const RegistroReposicion = ({
     personal,
     idAlmacenEntrega,
     setIdAlmacenEntrega,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     lotesPorProducto,
     activosFijos,
     reposicionCantidades,
@@ -62,7 +63,7 @@ export const RegistroReposicion = ({
     onSuccess,
   });
 
-  const canSubmit = !!idAlmacenEntrega && !!idEmpleadoRecibe && !isProcessing;
+  const canSubmit = !!idAlmacenEntrega && !!transporte.medio_entrega && !isProcessing;
 
   return (
     <Stack gap="xl" className="py-2">
@@ -83,8 +84,9 @@ export const RegistroReposicion = ({
             </Text>
           </Group>
 
-          <Group align="flex-start" gap="md">
+          <Group align="flex-start" gap="md" className="w-full">
             <Select
+              className="w-full sm:w-[280px]"
               label="Almacén de Origen (Principal)"
               labelProps={{
                 className: "text-zinc-400 font-bold mb-1",
@@ -101,23 +103,6 @@ export const RegistroReposicion = ({
               radius="lg"
               size="sm"
             />
-            <Select
-              className="w-full sm:w-[300px]"
-              label="¿Quién recibe los materiales?"
-              labelProps={{
-                className: "text-zinc-400 font-bold mb-1",
-                size: "xs",
-              }}
-              placeholder="Buscar por Nombre"
-              data={personal}
-              searchable
-              required
-              withAsterisk
-              value={idEmpleadoRecibe}
-              onChange={setIdEmpleadoRecibe}
-              size="sm"
-              radius="lg"
-            />
             <Textarea
               label="Observación"
               labelProps={{
@@ -130,11 +115,19 @@ export const RegistroReposicion = ({
               radius="lg"
               size="sm"
               autosize
-              minRows={2}
+              minRows={1}
               maxRows={2}
               className="flex-1"
             />
           </Group>
+
+          <div className="mt-2">
+            <TransporteFields
+              data={transporte}
+              onChange={onChangeTransporte}
+              personal={personal}
+            />
+          </div>
         </Stack>
       </Paper>
 

@@ -9,9 +9,14 @@ import { useNotify } from "../../hooks/useNotify";
 export interface FormProveedorProps {
   onSuccess: (proveedor: RES_Proveedor) => void;
   onCancel?: () => void;
+  paraTransporteDefault?: boolean;
 }
 
-export const FormProveedor = ({ onSuccess, onCancel }: FormProveedorProps) => {
+export const FormProveedor = ({
+  onSuccess,
+  onCancel,
+  paraTransporteDefault = false,
+}: FormProveedorProps) => {
   const { notifySuccess, notifyError } = useNotify();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +29,7 @@ export const FormProveedor = ({ onSuccess, onCancel }: FormProveedorProps) => {
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [paraMantenimiento, setParaMantenimiento] = useState(false);
+  const [paraTransporte, setParaTransporte] = useState(paraTransporteDefault);
 
   const handleTipoEntidadChange = (val: string | null) => {
     if (val) {
@@ -72,6 +78,7 @@ export const FormProveedor = ({ onSuccess, onCancel }: FormProveedorProps) => {
         tipo_entidad: tipoEntidad,
         razon_social: razonSocial.trim(),
         para_mantenimiento: paraMantenimiento,
+        para_transporte: paraTransporte,
         dni: tipoEntidad === TipoEntidad.Natural ? dni : undefined,
         ruc: tipoEntidad === TipoEntidad.Juridica ? ruc : undefined,
         direccion: direccion.trim() || undefined,
@@ -217,6 +224,26 @@ export const FormProveedor = ({ onSuccess, onCancel }: FormProveedorProps) => {
             <Switch
               checked={paraMantenimiento}
               onChange={(e) => setParaMantenimiento(e.currentTarget.checked)}
+              color="indigo"
+              size="md"
+              className="cursor-pointer"
+            />
+          </div>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12 }}>
+          <div className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-xl flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-zinc-300 font-medium text-sm">
+                ¿Es para transporte?
+              </span>
+              <span className="text-zinc-500 text-xs">
+                Si se confirma, este proveedor se listará en el módulo de
+                transporte.
+              </span>
+            </div>
+            <Switch
+              checked={paraTransporte}
+              onChange={(e) => setParaTransporte(e.currentTarget.checked)}
               color="indigo"
               size="md"
               className="cursor-pointer"

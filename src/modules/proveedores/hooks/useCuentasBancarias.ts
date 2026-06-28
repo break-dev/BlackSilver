@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { ProveedoresService } from "../service/proveedores.service";
-import type {
-  BancoResponse,
-  CuentaBancariaResponse,
-} from "../service/proveedores.responses";
+import type { CuentaBancariaResponse } from "../service/proveedores.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_Banco } from "../../../service/responses/banco";
 
 export const useCuentasBancarias = (idProveedor: number | null) => {
   const [cuentas, setCuentas] = useState<CuentaBancariaResponse[]>([]);
-  const [bancos, setBancos] = useState<BancoResponse[]>([]);
+  const [bancos, setBancos] = useState<RES_Banco[]>([]);
   const [loadingCuentas, setLoadingCuentas] = useState(false);
   const [loadingBancos, setLoadingBancos] = useState(false);
   const { notifyError } = useNotify();

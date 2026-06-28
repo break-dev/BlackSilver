@@ -56,10 +56,30 @@ export const PrestamosAtencionService = {
     if (evidencias && evidencias.length > 0) {
       const formData = new FormData();
       formData.append("id_prestamo", dto.id_prestamo.toString());
-      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      if (dto.id_empleado_recibe) {
+        formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      }
       if (dto.fecha_hora_entrega)
         formData.append("fecha_hora_entrega", dto.fecha_hora_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);
+
+      // Transport fields
+      formData.append("medio_entrega", dto.medio_entrega);
+      if (dto.id_proveedor_transporte) {
+        formData.append("id_proveedor_transporte", dto.id_proveedor_transporte.toString());
+      }
+      if (dto.id_agencia_transporte) {
+        formData.append("id_agencia_transporte", dto.id_agencia_transporte.toString());
+      }
+      if (dto.numero_factura) formData.append("numero_factura", dto.numero_factura);
+      if (dto.serie_factura) formData.append("serie_factura", dto.serie_factura);
+      if (dto.serie_guia_transportista) formData.append("serie_guia_transportista", dto.serie_guia_transportista);
+      if (dto.numero_guia_transportista) formData.append("numero_guia_transportista", dto.numero_guia_transportista);
+      if (dto.serie_guia_remitente) formData.append("serie_guia_remitente", dto.serie_guia_remitente);
+      if (dto.numero_guia_remitente) formData.append("numero_guia_remitente", dto.numero_guia_remitente);
+      if (dto.costo_envio !== undefined && dto.costo_envio !== null) {
+        formData.append("costo_envio", dto.costo_envio.toString());
+      }
 
       evidencias.forEach((file) => {
         formData.append("evidencias[]", file);
@@ -67,7 +87,9 @@ export const PrestamosAtencionService = {
 
       dto.detalles.forEach((detalle, index) => {
         Object.entries(detalle).forEach(([key, value]) => {
-          formData.append(`detalles[${index}][${key}]`, String(value));
+          if (value !== undefined && value !== null) {
+            formData.append(`detalles[${index}][${key}]`, String(value));
+          }
         });
       });
 

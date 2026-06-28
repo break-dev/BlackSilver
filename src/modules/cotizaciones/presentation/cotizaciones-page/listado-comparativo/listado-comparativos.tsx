@@ -80,10 +80,16 @@ export const ListadoComparativos = ({
     useState<RES_Cotizacion | null>(null);
 
   const toggleComp = (id: number) =>
-    setExpandedComps((prev) => ({ ...prev, [id]: !prev[id] }));
+    setExpandedComps((prev) => {
+      const current = prev[id] ?? true;
+      return { ...prev, [id]: !current };
+    });
 
   const toggleCot = (id: number) =>
-    setExpandedCots((prev) => ({ ...prev, [id]: !prev[id] }));
+    setExpandedCots((prev) => {
+      const current = prev[id] ?? true;
+      return { ...prev, [id]: !current };
+    });
 
   const handleVerComparativo = (id: number) => {
     setSelectedCompId(id);
@@ -214,7 +220,7 @@ export const ListadoComparativos = ({
         <ComparativoCard
           key={comp.id_comparativo}
           comp={comp}
-          isExpanded={expandedComps[comp.id_comparativo] ?? false}
+          isExpanded={expandedComps[comp.id_comparativo] ?? true}
           onToggle={() => toggleComp(comp.id_comparativo)}
           onVerComparativo={handleVerComparativo}
           expandedCots={expandedCots}

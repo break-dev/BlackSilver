@@ -131,16 +131,32 @@ export const Proveedor = ({ proveedores, loading, onOpenCuentas }: Props) => {
           accessor: "indicadores",
           title: "Indicadores",
           textAlign: "center",
-          render: (r: ProveedorResponse) =>
-            r.para_mantenimiento == true ? (
-              <Badge color="blue" variant="light" size="sm" radius="xl">
-                Da Mantenimiento
-              </Badge>
+          render: (r: ProveedorResponse) => {
+            const badges = [];
+            if (r.para_mantenimiento) {
+              badges.push(
+                <Badge key="maint" color="blue" variant="light" size="sm" radius="xl">
+                  Da Mantenimiento
+                </Badge>
+              );
+            }
+            if (r.para_transporte) {
+              badges.push(
+                <Badge key="trans" color="teal" variant="light" size="sm" radius="xl">
+                  Transporte
+                </Badge>
+              );
+            }
+            return badges.length > 0 ? (
+              <Group gap="xs" justify="center">
+                {badges}
+              </Group>
             ) : (
               <Text size="sm" className="text-zinc-500">
                 —
               </Text>
-            ),
+            );
+          },
         },
         {
           accessor: "estado",

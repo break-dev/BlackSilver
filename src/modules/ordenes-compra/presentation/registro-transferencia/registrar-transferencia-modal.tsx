@@ -37,8 +37,8 @@ export const RegistrarTransferenciaModal = ({
     transferenciaCantidades,
     transferenciaCantidadesActivos,
     personal,
-    idEmpleadoRecibe,
-    setIdEmpleadoRecibe,
+    transporte,
+    onChangeTransporte,
     observacion,
     setObservacion,
     evidencias,
@@ -84,8 +84,8 @@ export const RegistrarTransferenciaModal = ({
       {/* Información del Receptor y Obs */}
       <ReceptorInfo
         personal={personal}
-        idEmpleadoRecibe={idEmpleadoRecibe}
-        setIdEmpleadoRecibe={setIdEmpleadoRecibe}
+        transporte={transporte}
+        onChangeTransporte={onChangeTransporte}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -124,7 +124,7 @@ export const RegistrarTransferenciaModal = ({
           )
         }
         isProcessing={submitting}
-        canSave={!!idEmpleadoRecibe && totalTransferenciaGeneralBase > 0}
+        canSave={!!transporte.medio_entrega && totalTransferenciaGeneralBase > 0}
       />
 
       {error && (

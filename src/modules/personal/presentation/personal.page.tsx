@@ -173,7 +173,7 @@ export const PersonalPage = () => {
             onClick={activeTab === "empleados" ? openRegEmp : openRegCon}
             radius="lg"
             size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[38px] px-8 mb-[1px]"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[38px] px-8 mb-px"
           >
             Nuevo {activeTab === "empleados" ? "Empleado" : "Contratista"}
           </Button>

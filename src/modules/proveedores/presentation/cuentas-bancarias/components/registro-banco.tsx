@@ -1,16 +1,16 @@
 import { TextInput, Button, Alert } from "@mantine/core";
 import { IconBuildingBank, IconExclamationCircle } from "@tabler/icons-react";
 import { useRegistroBanco } from "../../../hooks/useRegistroBanco";
-import type { BancoResponse } from "../../../service/proveedores.responses";
+import type { RES_Banco } from "../../../../../service/responses/banco";
 
 interface Props {
   onCancel: () => void;
-  onSuccess: (banco: BancoResponse) => void;
+  onSuccess: (banco: RES_Banco) => void;
 }
 
 export const RegistroBanco = ({ onCancel, onSuccess }: Props) => {
   const { payload, handleChange, submit, loading, error } = useRegistroBanco(
-    (banco: BancoResponse) => {
+    (banco: RES_Banco) => {
       onSuccess(banco);
     },
   );

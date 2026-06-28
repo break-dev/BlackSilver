@@ -18,6 +18,7 @@ export const useRegistroProveedor = (
   const [payload, setPayload] = useState<CrearProveedorRequest>({
     tipo_entidad: TipoEntidad.Juridica,
     para_mantenimiento: false,
+    para_transporte: false,
     dni: "",
     ruc: "",
     razon_social: "",
@@ -63,6 +64,7 @@ export const useRegistroProveedor = (
       setPayload({
         tipo_entidad: TipoEntidad.Juridica,
         para_mantenimiento: false,
+        para_transporte: false,
         dni: "",
         ruc: "",
         razon_social: "",

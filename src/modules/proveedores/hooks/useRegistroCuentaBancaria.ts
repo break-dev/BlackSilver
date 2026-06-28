@@ -5,14 +5,12 @@ import {
   Schema_CrearCuentaBancaria,
   type CrearCuentaBancariaRequest,
 } from "../service/proveedores.requests";
-import type {
-  BancoResponse,
-  CuentaBancariaResponse,
-} from "../service/proveedores.responses";
+import type { CuentaBancariaResponse } from "../service/proveedores.responses";
+import type { RES_Banco } from "../../../service/responses/banco";
 
 export const useRegistroCuentaBancaria = (
   idProveedor: number | null,
-  bancos: BancoResponse[],
+  bancos: RES_Banco[],
   onAccountAdded: (account: CuentaBancariaResponse) => void,
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -329,6 +329,103 @@ export const HistorialReposicionesPrestamo = ({
 
               <Collapse in={expanded}>
                 <div className="px-6 pt-2 border-t border-zinc-800/30">
+                  {h.medio_entrega && (
+                    <div className="mb-4 bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40 flex gap-3 items-start shadow-inner">
+                      <TruckIcon className="w-5 h-5 text-indigo-400/50 mt-0.5 shrink-0" />
+                      <div className="w-full">
+                        <Text size="10px" fw={800} c="zinc.5" className="uppercase tracking-widest mb-2">
+                          Detalles de Envío y Transporte
+                        </Text>
+                        <Group gap="xl" wrap="wrap">
+                          <div>
+                            <Text size="10px" c="dimmed">MEDIO</Text>
+                            <Badge size="xs" variant="light" color={h.medio_entrega === "Propio" ? "teal" : h.medio_entrega === "Agencia" ? "cyan" : "indigo"}>
+                              {h.medio_entrega}
+                            </Badge>
+                          </div>
+                          {h.medio_entrega === "Propio" && (
+                            <>
+                              {h.empleado_recibe && (
+                                <div>
+                                  <Text size="10px" c="dimmed">RECIBE/CHOFER</Text>
+                                  <Text size="xs" fw={700}>{h.empleado_recibe}</Text>
+                                </div>
+                              )}
+                              {h.serie_guia_remitente && (
+                                <div>
+                                  <Text size="10px" c="dimmed">GUÍA REMITENTE</Text>
+                                  <Text size="xs" fw={700}>{h.serie_guia_remitente}-{h.numero_guia_remitente}</Text>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {h.medio_entrega === "Terceros" && (
+                            <>
+                              {h.proveedor_transporte && (
+                                <div>
+                                  <Text size="10px" c="dimmed">TRANSPORTISTA</Text>
+                                  <Text size="xs" fw={700}>{h.proveedor_transporte}</Text>
+                                </div>
+                              )}
+                              {h.serie_factura && (
+                                <div>
+                                  <Text size="10px" c="dimmed">FACTURA</Text>
+                                  <Text size="xs" fw={700}>{h.serie_factura}-{h.numero_factura}</Text>
+                                </div>
+                              )}
+                              {h.serie_guia_remitente && (
+                                <div>
+                                  <Text size="10px" c="dimmed">GUÍA REMITENTE</Text>
+                                  <Text size="xs" fw={700}>{h.serie_guia_remitente}-{h.numero_guia_remitente}</Text>
+                                </div>
+                              )}
+                              {h.serie_guia_transportista && (
+                                <div>
+                                  <Text size="10px" c="dimmed">GUÍA TRANSPORTISTA</Text>
+                                  <Text size="xs" fw={700}>{h.serie_guia_transportista}-{h.numero_guia_transportista}</Text>
+                                </div>
+                              )}
+                              {h.costo_envio !== undefined && h.costo_envio !== null && (
+                                <div>
+                                  <Text size="10px" c="dimmed">COSTO</Text>
+                                  <Text size="xs" fw={700} c="emerald.4" className="font-mono">S/. {Number(h.costo_envio).toFixed(2)}</Text>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          {h.medio_entrega === "Agencia" && (
+                            <>
+                              {h.agencia_transporte && (
+                                <div>
+                                  <Text size="10px" c="dimmed">AGENCIA</Text>
+                                  <Text size="xs" fw={700}>{h.agencia_transporte}</Text>
+                                </div>
+                              )}
+                              {h.serie_factura && (
+                                <div>
+                                  <Text size="10px" c="dimmed">COMPROBANTE</Text>
+                                  <Text size="xs" fw={700}>{h.serie_factura}-{h.numero_factura}</Text>
+                                </div>
+                              )}
+                              {h.serie_guia_transportista && (
+                                <div>
+                                  <Text size="10px" c="dimmed">GUÍA TRANSPORTISTA</Text>
+                                  <Text size="xs" fw={700}>{h.serie_guia_transportista}-{h.numero_guia_transportista}</Text>
+                                </div>
+                              )}
+                              {h.costo_envio !== undefined && h.costo_envio !== null && Number(h.costo_envio) > 0 && (
+                                <div>
+                                  <Text size="10px" c="dimmed">COSTO</Text>
+                                  <Text size="xs" fw={700} c="emerald.4" className="font-mono">S/. {Number(h.costo_envio).toFixed(2)}</Text>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </Group>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mb-6 bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40 flex gap-3 items-start shadow-inner">
                     <ClipboardDocumentCheckIcon className="w-5 h-5 text-indigo-400/50 mt-0.5 shrink-0" />
                     <div>

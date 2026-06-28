@@ -156,6 +156,25 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
             />
           </div>
         </Grid.Col>
+        <Grid.Col span={{ base: 12 }}>
+          <div className="p-3 bg-zinc-900/30 border border-zinc-800 rounded-xl flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-zinc-300 font-medium text-sm">
+                ¿Es para transporte?
+              </span>
+              <span className="text-zinc-500 text-xs">
+                Si se confirma, este proveedor se listará en las opciones de despacho/entrega.
+              </span>
+            </div>
+            <Switch
+              checked={payload.para_transporte}
+              onChange={(e) => handleChange("para_transporte", e.currentTarget.checked)}
+              color="indigo"
+              size="md"
+              className="cursor-pointer"
+            />
+          </div>
+        </Grid.Col>
       </Grid>
 
       <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-800">
