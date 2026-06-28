@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback } from "react";
 import dayjs from "dayjs";
 import { useNotify } from "../../../../hooks/useNotify";
@@ -75,7 +76,7 @@ export const useRegistroLabor = ({ idMina, onSuccess, onCancel }: Props) => {
     } finally {
       setLoadingSelects(false);
     }
-  }, [idMina, notify]);
+  }, [idMina]);
 
   useEffect(() => {
     cargarSelects();

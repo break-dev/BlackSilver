@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { ProduccionService } from "../service/produccion.service";
 import { AuxService } from "../../../service/auxiliar.service";
-import type { RES_LoteMineralEnProduccion } from "../service/produccion.responses";
 import type { RES_LoteMineral } from "../../../service/responses/lote-mineral";
 import { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
 import { useNotify } from "../../../hooks/useNotify";
+import type { RES_LoteMineralProduccion } from "../service/produccion.responses";
 
 export const useProduccion = () => {
   const { notifySuccess, notifyError } = useNotify();
 
-  const [lotes, setLotes] = useState<RES_LoteMineralEnProduccion[]>([]);
+  const [lotes, setLotes] = useState<RES_LoteMineralProduccion[]>([]);
   const [lotesPendientes, setLotesPendientes] = useState<RES_LoteMineral[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,7 @@ export const useProduccion = () => {
         const loteResp = await ProduccionService.getResumen();
         if (loteResp.success && loteResp.data) {
           const nuevoLote = loteResp.data.find(
-            (l) => l.id_lote_mineral === id_lote_mineral
+            (l) => l.id_lote_mineral === id_lote_mineral,
           );
           if (nuevoLote) {
             // Agregar al inicio sin recargar todo
@@ -94,8 +94,8 @@ export const useProduccion = () => {
           prev.map((lote) =>
             lote.id_lote_mineral === id_lote_mineral
               ? { ...lote, estado: EstadoLoteMineral.Finalizado }
-              : lote
-          )
+              : lote,
+          ),
         );
         return true;
       } else {

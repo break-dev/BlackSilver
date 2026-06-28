@@ -35,7 +35,7 @@ export const useConcesiones = () => {
     return concesiones.filter(
       (c) =>
         c.nombre.toLowerCase().includes(q) ||
-        c.codigo_concesion.toLowerCase().includes(q),
+        c.codigo_reinfo?.toLowerCase().includes(q),
     );
   }, [concesiones, busqueda]);
 

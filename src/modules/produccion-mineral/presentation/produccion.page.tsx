@@ -24,7 +24,6 @@ import {
 import { type DataTableColumn } from "mantine-datatable";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useProduccion } from "../hooks/_useProduccion";
-import type { RES_LoteMineralEnProduccion } from "../service/produccion.responses";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { IniciarProduccion } from "./iniciar-produccion";
 import { RegistroLoteMineral } from "../../lote-mineral/presentation/registro-lote-mineral";
@@ -33,6 +32,7 @@ import { HistorialConsumosProduccion } from "./components/historial-consumos-pro
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/es";
+import type { RES_LoteMineralProduccion } from "../service/produccion.responses";
 
 dayjs.extend(relativeTime);
 dayjs.locale("es");
@@ -42,7 +42,12 @@ export const ProduccionMineralPage = () => {
   const {
     state: { lotes, lotesPendientes },
     status: { loading, loadingPendientes, submitting, error },
-    actions: { iniciarProduccion, finalizarProduccion, fetchResumen, fetchLotesPendientes },
+    actions: {
+      iniciarProduccion,
+      finalizarProduccion,
+      fetchResumen,
+      fetchLotesPendientes,
+    },
   } = useProduccion();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,9 +57,8 @@ export const ProduccionMineralPage = () => {
     (string | number)[]
   >([]);
   const [finalizarModalOpen, setFinalizarModalOpen] = useState(false);
-  const [loteAFinalizar, setLoteAFinalizar] = useState<RES_LoteMineralEnProduccion | null>(
-    null
-  );
+  const [loteAFinalizar, setLoteAFinalizar] =
+    useState<RES_LoteMineralProduccion | null>(null);
 
   const handleIniciar = async (idLote: number) => {
     const success = await iniciarProduccion(idLote);
@@ -72,7 +76,7 @@ export const ProduccionMineralPage = () => {
     }
   };
 
-  const columns: DataTableColumn<RES_LoteMineralEnProduccion>[] = useMemo(
+  const columns: DataTableColumn<RES_LoteMineralProduccion>[] = useMemo(
     () => [
       {
         accessor: "index",
@@ -87,36 +91,20 @@ export const ProduccionMineralPage = () => {
         textAlign: "left",
         render: (record) => (
           <Stack gap={2} justify="flex-start" align="flex-start">
-            {record.codigo_interno ? (
-              <>
-                <Badge
-                  color="pink"
-                  variant="light"
-                  size="sm"
-                  fw={800}
-                  className="font-mono text-white"
-                >
-                  {record.codigo_interno}
-                </Badge>
-              </>
-            ) : (
-              <>
-                <Badge
-                  color="violet"
-                  variant="light"
-                  size="sm"
-                  fw={700}
-                  className="text-white"
-                >
-                  {record.correlativo}
-                </Badge>
-                <Text size="10px" className="text-zinc-500 italic">
-                  Sin iniciar producción
-                </Text>
-              </>
-            )}
+            <Badge
+              color="pink"
+              variant="light"
+              size="sm"
+              fw={800}
+              className="font-mono text-white"
+            >
+              {record.codigo}
+            </Badge>
             {record.descripcion && (
-              <Text size="xs" className="text-zinc-400 italic max-w-xs truncate">
+              <Text
+                size="xs"
+                className="text-zinc-400 italic max-w-xs truncate"
+              >
                 "{record.descripcion}"
               </Text>
             )}
@@ -177,7 +165,7 @@ export const ProduccionMineralPage = () => {
         width: 140,
         textAlign: "center",
         render: (record) => {
-          const baseDate = record.fecha_inicio_produccion || record.created_at;
+          const baseDate = record.fecha_inicio_produccion;
           const diasDiferencia = dayjs().diff(dayjs(baseDate), "day");
           return (
             <Group gap={4} wrap="nowrap" justify="center" align="center">
@@ -202,19 +190,20 @@ export const ProduccionMineralPage = () => {
         width: 160,
         textAlign: "center",
         render: (record) => {
-return (
-           <Badge
-             color={record.consumos.length > 0 ? "indigo" : "gray"}
-             variant="filled"
-             size="sm"
-             className={`font-bold uppercase tracking-wider py-1.5 px-2 ${
-               record.consumos.length > 0
-                 ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white border border-indigo-400/20 shadow-md shadow-indigo-950/40"
-                 : "text-zinc-500 border border-zinc-800 bg-zinc-900/40"
-             }`}
-           >
-             {record.consumos.length} Registro{record.consumos.length !== 1 ? "s" : ""}
-           </Badge>
+          return (
+            <Badge
+              color={record.consumos.length > 0 ? "indigo" : "gray"}
+              variant="filled"
+              size="sm"
+              className={`font-bold uppercase tracking-wider py-1.5 px-2 ${
+                record.consumos.length > 0
+                  ? "bg-linear-to-r from-indigo-600 to-violet-600 text-white border border-indigo-400/20 shadow-md shadow-indigo-950/40"
+                  : "text-zinc-500 border border-zinc-800 bg-zinc-900/40"
+              }`}
+            >
+              {record.consumos.length} Registro
+              {record.consumos.length !== 1 ? "s" : ""}
+            </Badge>
           );
         },
       },
@@ -230,7 +219,7 @@ return (
             setExpandedRecordIds((prev) =>
               isExpanded
                 ? prev.filter((id) => id !== record.id_lote_mineral)
-                : [...prev, record.id_lote_mineral]
+                : [...prev, record.id_lote_mineral],
             );
           };
           const isEnProduccion = record.estado === "En Producción";
@@ -286,7 +275,7 @@ return (
         },
       },
     ],
-    [expandedRecordIds]
+    [expandedRecordIds],
   );
 
   const lotesFiltrados = useMemo(() => {
@@ -297,11 +286,10 @@ return (
     const term = busqueda.toLowerCase();
     return lotesData.filter(
       (l) =>
-        l.correlativo.toLowerCase().includes(term) ||
-        (l.codigo_interno && l.codigo_interno.toLowerCase().includes(term)) ||
+        l.codigo.toLowerCase().includes(term) ||
         l.contratista.toLowerCase().includes(term) ||
         l.mina.toLowerCase().includes(term) ||
-        (l.labor && l.labor.toLowerCase().includes(term))
+        (l.labor && l.labor.toLowerCase().includes(term)),
     );
   }, [lotes, busqueda]);
 
@@ -398,7 +386,7 @@ return (
               recordIds: expandedRecordIds,
               onRecordIdsChange: setExpandedRecordIds,
             },
-            content: ({ record }: { record: RES_LoteMineralEnProduccion }) => (
+            content: ({ record }: { record: RES_LoteMineralProduccion }) => (
               <div className="p-4 bg-zinc-950/40 rounded-lg border border-zinc-800/60 m-2 animate-fade-in">
                 <Text
                   size="xs"
@@ -488,15 +476,23 @@ return (
             {loteAFinalizar && (
               <div className="space-y-2">
                 <div className="flex justify-between items-start gap-2">
-                  <Text size="xs" c="dimmed" className="font-semibold uppercase">
-                    Correlativo
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    className="font-semibold uppercase"
+                  >
+                    Código
                   </Text>
                   <Badge color="indigo" variant="light" size="sm">
-                    {loteAFinalizar.correlativo}
+                    {loteAFinalizar.codigo}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-start gap-2">
-                  <Text size="xs" c="dimmed" className="font-semibold uppercase">
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    className="font-semibold uppercase"
+                  >
                     Contratista
                   </Text>
                   <Text size="xs" fw={600} className="text-zinc-200">
@@ -504,7 +500,11 @@ return (
                   </Text>
                 </div>
                 <div className="flex justify-between items-start gap-2">
-                  <Text size="xs" c="dimmed" className="font-semibold uppercase">
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    className="font-semibold uppercase"
+                  >
                     Mina
                   </Text>
                   <Text size="xs" fw={600} className="text-emerald-400">
@@ -534,9 +534,10 @@ return (
                     Consumos
                   </Text>
                   <Badge size="sm" variant="light" color="indigo">
-                    {new Set(
-                      loteAFinalizar.consumos.map((c) => c.id_producto)
-                    ).size}{" "}
+                    {
+                      new Set(loteAFinalizar.consumos.map((c) => c.id_producto))
+                        .size
+                    }{" "}
                     productos
                   </Badge>
                 </div>

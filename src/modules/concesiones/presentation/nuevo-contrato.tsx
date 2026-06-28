@@ -37,7 +37,7 @@ export const NuevoContrato = ({
 
   const selectData = empresas.map((e) => ({
     value: e.id_empresa.toString(),
-    label: e.nombre_comercial,
+    label: e.razon_social,
     disabled: empresasConContratoActivo.includes(e.id_empresa),
   }));
 

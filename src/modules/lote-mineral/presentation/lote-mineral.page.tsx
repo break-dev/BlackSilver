@@ -13,7 +13,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { useState, useMemo } from "react";
 import dayjs from "dayjs";
 import { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
-import type { LoteMineral } from "../service/lote-mineral.responses";
+import type { LoteMineralResumen } from "../service/lote-mineral.responses";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 
 export const LoteMineralPage = () => {
@@ -28,7 +28,7 @@ export const LoteMineralPage = () => {
     if (!busqueda) return lotesData;
     const term = busqueda.toLowerCase();
     return lotesData.filter(
-      (l: LoteMineral) =>
+      (l: LoteMineralResumen) =>
         l.correlativo.toLowerCase().includes(term) ||
         (l.codigo_interno && l.codigo_interno.toLowerCase().includes(term)) ||
         l.contratista.toLowerCase().includes(term) ||
@@ -118,7 +118,7 @@ export const LoteMineralPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {lotesFiltrados.map((lote: LoteMineral) => (
+          {lotesFiltrados.map((lote: LoteMineralResumen) => (
             <div
               key={lote.id_lote_mineral}
               className="relative bg-linear-to-br from-zinc-900/40 to-zinc-900/10 border border-zinc-800/40 rounded-2xl p-4 flex flex-col hover:border-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-900/10 hover:bg-linear-to-br hover:from-indigo-950/20 hover:to-zinc-900/40 transition-all duration-300 group overflow-hidden backdrop-blur-sm"

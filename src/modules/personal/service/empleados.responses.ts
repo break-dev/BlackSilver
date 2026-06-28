@@ -1,3 +1,5 @@
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+
 export interface RES_EmpleadoResumen {
   id_empleado: number;
   id_empresa: number;
@@ -14,7 +16,7 @@ export interface RES_EmpleadoResumen {
   pasaporte: string | null;
   fecha_nacimiento: string | null;
   url_foto: string | null;
-  estado: string;
+  estado: EstadoBase;
 }
 
 export interface RES_ContratistaResumen {
@@ -29,7 +31,7 @@ export interface RES_ContratistaResumen {
   pasaporte: string | null;
   fecha_nacimiento: string | null;
   url_foto: string | null;
-  estado: string;
+  estado: EstadoBase;
   labores_asignadas: RES_LaborContratista[];
   ids_labor_asignadas?: string | null;
 }
@@ -37,6 +39,5 @@ export interface RES_ContratistaResumen {
 export interface RES_LaborContratista {
   id_labor_contratista: number;
   id_labor: number;
-  correlativo: string;
-  nombre: string | null;
+  nombre: string;
 }

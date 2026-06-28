@@ -1,4 +1,11 @@
-import { Document, Page, View, Text, StyleSheet, Image } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { MONEDAS } from "../../../shared/variables/monedas";
@@ -10,7 +17,7 @@ import { TipoDespachoCompra } from "../../../shared/enums/_generic/tipo-despacho
 
 interface EmpresaInfo {
   razon_social: string;
-  path_logo: string | null;
+  url_logo: string | null;
 }
 
 interface CotizacionData {
@@ -186,79 +193,142 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             size="A4"
             style={styles.page}
           >
-          {/* ── Banda de logos superior ── */}
-          {empresas && empresas.some((e) => e.path_logo) && (() => {
-            const logosConImg = empresas.filter((e) => e.path_logo);
-            return (
-              <View style={styles.logoContainer}>
-                <View style={{ flexDirection: "row", gap: 20, alignItems: "center" }}>
-                  {logosConImg.map((emp, i) => {
-                    const isCupper = emp.razon_social.toUpperCase().includes("CUPPER") || emp.razon_social.toUpperCase().includes("HANNIA");
-                    return (
-                      <Image
-                        key={i}
-                        src={emp.path_logo as string}
-                        style={
-                          isCupper
-                            ? { width: 70, height: 70, objectFit: "contain" }
-                            : { width: 110, height: 40, objectFit: "contain" }
-                        }
-                      />
-                    );
-                  })}
-                </View>
-                <Text style={{ fontSize: 7, color: "#94a3b8" }}>
-                  Documento de Cotización Interna
+            {/* ── Banda de logos superior ── */}
+            {empresas &&
+              empresas.some((e) => e.url_logo) &&
+              (() => {
+                const logosConImg = empresas.filter((e) => e.url_logo);
+                return (
+                  <View style={styles.logoContainer}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        gap: 20,
+                        alignItems: "center",
+                      }}
+                    >
+                      {logosConImg.map((emp, i) => {
+                        const isCupper =
+                          emp.razon_social.toUpperCase().includes("CUPPER") ||
+                          emp.razon_social.toUpperCase().includes("HANNIA");
+                        return (
+                          <Image
+                            key={i}
+                            src={emp.url_logo as string}
+                            style={
+                              isCupper
+                                ? {
+                                    width: 70,
+                                    height: 70,
+                                    objectFit: "contain",
+                                  }
+                                : {
+                                    width: 110,
+                                    height: 40,
+                                    objectFit: "contain",
+                                  }
+                            }
+                          />
+                        );
+                      })}
+                    </View>
+                    <Text style={{ fontSize: 7, color: "#94a3b8" }}>
+                      Documento de Cotización Interna
+                    </Text>
+                  </View>
+                );
+              })()}
+
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={{ flex: 1.5 }}>
+                <Text style={styles.companyName}>
+                  {(empresas && empresas.length > 0
+                    ? empresas.map((e) => e.razon_social).join(" - ")
+                    : "BLACK SILVER S.A.C."
+                  ).toUpperCase()}
+                </Text>
+                <Text style={{ fontSize: 7, color: "#64748b", marginTop: 2 }}>
+                  Generado para Proceso de Selección
                 </Text>
               </View>
-            );
-          })()}
-
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={{ flex: 1.5 }}>
-              <Text style={styles.companyName}>
-                {(empresas && empresas.length > 0
-                  ? empresas.map((e) => e.razon_social).join(" - ")
-                  : "BLACK SILVER S.A.C."
-                ).toUpperCase()}
-              </Text>
-              <Text style={{ fontSize: 7, color: "#64748b", marginTop: 2 }}>
-                Generado para Proceso de Selección
-              </Text>
+              <View style={{ flex: 1, alignItems: "flex-end" }}>
+                <Text style={styles.documentType}>COTIZACIÓN</Text>
+                <Text style={styles.documentNumber}>
+                  N° {cotizacion.correlativo}
+                </Text>
+                <Text style={{ fontSize: 8, color: "#64748b", marginTop: 4 }}>
+                  Fecha de Emisión:{" "}
+                  {dayjs(cotizacion.fecha_hora_cotizacion).format("DD/MM/YYYY")}
+                </Text>
+              </View>
             </View>
-            <View style={{ flex: 1, alignItems: "flex-end" }}>
-              <Text style={styles.documentType}>COTIZACIÓN</Text>
-              <Text style={styles.documentNumber}>N° {cotizacion.correlativo}</Text>
-              <Text style={{ fontSize: 8, color: "#64748b", marginTop: 4 }}>
-                Fecha de Emisión: {dayjs(cotizacion.fecha_hora_cotizacion).format("DD/MM/YYYY")}
-              </Text>
-            </View>
-          </View>
 
             {/* Info Proveedor y Pago */}
             <View style={{ flexDirection: "row", marginBottom: 15, gap: 20 }}>
-              <View style={{ flex: 1, backgroundColor: "#f8fafc", padding: 8, borderRadius: 4 }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#f8fafc",
+                  padding: 8,
+                  borderRadius: 4,
+                }}
+              >
                 <Text style={styles.sectionTitle}>PROVEEDOR</Text>
-                <Text style={{ fontWeight: 700, fontSize: 10 }}>{cotizacion.proveedor}</Text>
+                <Text style={{ fontWeight: 700, fontSize: 10 }}>
+                  {cotizacion.proveedor}
+                </Text>
                 <Text style={{ fontSize: 8, color: "#64748b", marginTop: 2 }}>
                   Doc: {cotizacion.documento_proveedor}
                 </Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: "#f8fafc", padding: 8, borderRadius: 4 }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: "#f8fafc",
+                  padding: 8,
+                  borderRadius: 4,
+                }}
+              >
                 <Text style={styles.sectionTitle}>CONDICIONES DE PAGO</Text>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 2 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginTop: 2,
+                  }}
+                >
                   <Text style={{ fontSize: 8 }}>Método:</Text>
-                  <Text style={{ fontSize: 8, fontWeight: 700 }}>{cotizacion.metodo_pago}</Text>
+                  <Text style={{ fontSize: 8, fontWeight: 700 }}>
+                    {cotizacion.metodo_pago}
+                  </Text>
                 </View>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Text style={{ fontSize: 8 }}>Moneda:</Text>
-                  <Text style={{ fontSize: 8, fontWeight: 700 }}>{cotizacion.moneda}</Text>
+                  <Text style={{ fontSize: 8, fontWeight: 700 }}>
+                    {cotizacion.moneda}
+                  </Text>
                 </View>
                 {cotizacion.metodo_pago === "Crédito" &&
                   cotizacion.fecha_vencimiento_pago && (
-                    <Text style={{ fontWeight: 700, color: "#ef4444", fontSize: 8, marginTop: 4, textAlign: "right" }}>
-                      Vence: {dayjs(cotizacion.fecha_vencimiento_pago).format("DD/MM/YYYY")}
+                    <Text
+                      style={{
+                        fontWeight: 700,
+                        color: "#ef4444",
+                        fontSize: 8,
+                        marginTop: 4,
+                        textAlign: "right",
+                      }}
+                    >
+                      Vence:{" "}
+                      {dayjs(cotizacion.fecha_vencimiento_pago).format(
+                        "DD/MM/YYYY",
+                      )}
                     </Text>
                   )}
               </View>
@@ -416,7 +486,14 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             {cotizacion.observacion && (
               <View style={{ marginTop: 10 }}>
                 <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
-                <Text style={{ fontSize: 8, fontStyle: "italic", color: "#475569", paddingLeft: 6 }}>
+                <Text
+                  style={{
+                    fontSize: 8,
+                    fontStyle: "italic",
+                    color: "#475569",
+                    paddingLeft: 6,
+                  }}
+                >
                   {cotizacion.observacion}
                 </Text>
               </View>
@@ -428,7 +505,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
               <View style={styles.signatureSection}>
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
-                  <Text style={styles.signatureName}>Rosa Maria Henriquez Acosta</Text>
+                  <Text style={styles.signatureName}>
+                    Rosa Maria Henriquez Acosta
+                  </Text>
                   <Text style={styles.signatureRole}>Gerencia General</Text>
                 </View>
                 <View style={styles.signatureBox}>
@@ -441,7 +520,9 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
 
             <View style={{ marginTop: 15 }}>
               <Text style={styles.sectionTitle}>ELABORADO POR:</Text>
-              <View style={[styles.signatureSection, { justifyContent: "center" }]}>
+              <View
+                style={[styles.signatureSection, { justifyContent: "center" }]}
+              >
                 <View style={styles.signatureBox}>
                   <View style={styles.signatureLine} />
                   <Text style={styles.signatureName}>
@@ -457,10 +538,12 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
             {/* Footer */}
             <View style={styles.footer}>
               <Text>
-                Este documento es un reporte de Cotización oficial de Black Silver S.A.C.
+                Este documento es un reporte de Cotización oficial de Black
+                Silver S.A.C.
               </Text>
               <Text>
-                Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}
+                Generado automáticamente el{" "}
+                {dayjs().format("DD/MM/YYYY HH:mm:ss")}
               </Text>
             </View>
           </Page>

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ActionIcon, Badge, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Badge, Divider, Group, Stack, Text } from "@mantine/core";
 import {
   CalendarDaysIcon,
   ClockIcon,
@@ -12,6 +12,7 @@ import { type DataTableColumn } from "mantine-datatable";
 
 import type { RES_Lote } from "../service/lotes.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface UseLotesColumnsProps {
   onPrint: (lote: RES_Lote) => void;
@@ -71,7 +72,7 @@ export const useLotesColumns = ({
           return (
             <div className="flex flex-row justify-center">
               <Group gap="lg" wrap="nowrap" justify="center">
-                {record.unidad_medida_base !== record.unidad_medida && (
+                {record.unidad_medida_base_abv !== record.unidad_medida_abv && (
                   <>
                     <Badge
                       variant="filled"
@@ -79,13 +80,15 @@ export const useLotesColumns = ({
                       radius="md"
                       className="text-white font-bold h-7 px-3 shadow-lg shadow-teal-900/40"
                     >
-                      {formatNumber(record.stock_actual)} {record.unidad_medida}
+                      {formatNumber(record.stock_actual)}{" "}
+                      {record.unidad_medida_abv}
                     </Badge>
 
                     <div className="flex items-center gap-1 mt-1 px-1">
                       <Text size="10px" c="white" fw={800}>
                         {formatNumber(record.contenido_por_presentacion)}{" "}
-                        {record.unidad_medida_base} x {record.unidad_medida}
+                        {record.unidad_medida_base_abv} x{" "}
+                        {record.unidad_medida_abv}
                       </Text>
                     </div>
                   </>
@@ -99,7 +102,7 @@ export const useLotesColumns = ({
                     className="font-bold h-7 border border-pink-500/20"
                   >
                     {formatNumber(record.stock_actual_base)}{" "}
-                    {record.unidad_medida_base}
+                    {record.unidad_medida_base_abv}
                   </Badge>
                 </div>
 
@@ -121,17 +124,34 @@ export const useLotesColumns = ({
         accessor: "costo_por_unidad",
         title: "Costo",
         textAlign: "center",
-        width: 130,
-        render: (record) => (
-          <Text size="xs" fw={700} className="font-mono" c={"teal.5"}>
-            {record.costo_por_unidad !== null &&
-            record.costo_por_unidad !== undefined ? (
-              `S/. ${formatNumber(record.costo_por_unidad)}`
-            ) : (
-              <span className="text-zinc-500 italic">No reg.</span>
-            )}
-          </Text>
-        ),
+        width: 200,
+        render: (record) => {
+          const tieneCosto =
+            record.costo_por_unidad !== null &&
+            record.costo_por_unidad !== undefined;
+          if (!tieneCosto) {
+            return (
+              <Text size="xs" className="text-zinc-500 italic">
+                No reg.
+              </Text>
+            );
+          }
+
+          const costoUnitario = record.costo_por_unidad as number;
+          const costoTotal = costoUnitario * record.stock_actual;
+
+          return (
+            <div className="flex flex-row items-center justify-center gap-3">
+              <Text size="11px" fw={600} className="font-mono text-zinc-500">
+                S/.{formatNumber(costoUnitario)} x {record.unidad_medida_abv}
+              </Text>
+              <Divider orientation="vertical" color="dark.4" />
+              <Text size="xs" fw={800} className="font-mono" c="teal.4">
+                S/.{formatNumber(costoTotal)}
+              </Text>
+            </div>
+          );
+        },
       },
       {
         accessor: "origen_compra",
@@ -296,7 +316,7 @@ export const useLotesColumns = ({
         width: 100,
         render: (record) => (
           <Badge
-            color={record.estado === "Activo" ? "teal.9" : "grow.9"}
+            color={record.estado == EstadoBase.Activo ? "teal.9" : "grow.9"}
             variant="filled"
             size="xs"
             radius="sm"

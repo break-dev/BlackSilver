@@ -1,3 +1,5 @@
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+
 export interface RES_CategoriaResumen {
   id_categoria: number;
   nombre: string;
@@ -8,12 +10,9 @@ export interface RES_CategoriaResumen {
   control_por_odometro: boolean;
   control_por_horometro: boolean;
   control_por_vueltas: boolean;
-  estado: string;
+  estado: EstadoBase;
   es_consumible: boolean;
   es_auditable: boolean;
   para_cocina: boolean;
   para_mina: boolean;
-  categorias_consumidoras:
-    | { id_categoria_consumidora: number; nombre: string }[]
-    | null;
 }

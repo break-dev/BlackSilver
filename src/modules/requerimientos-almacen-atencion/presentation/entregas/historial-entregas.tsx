@@ -23,6 +23,7 @@ import {
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { ArchivoCard } from "../../../../presentation/utils/archivo/archivo-card";
 import { PaperClipIcon } from "@heroicons/react/24/outline";
+import { Estado_EntregaRequerimiento } from "../../../../shared/enums/requerimiento-almacen/requerimiento-entrega";
 
 interface HistorialProps {
   idRequerimiento: number;
@@ -114,7 +115,11 @@ export const HistorialEntregasRequerimiento = ({
                       </Text>
                       <Badge
                         variant="light"
-                        color={h.estado === "Procesado" ? "teal" : "violet"}
+                        color={
+                          h.estado === Estado_EntregaRequerimiento.ConsumoTotal
+                            ? "teal"
+                            : "violet"
+                        }
                         radius="sm"
                         className="font-bold"
                         size="xs"

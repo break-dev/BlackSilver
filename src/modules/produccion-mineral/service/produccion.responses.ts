@@ -1,25 +1,13 @@
-export interface RES_LoteMineralEnProduccionConsumo {
+import type { RES_LoteMineral } from "../../../service/responses/lote-mineral";
+
+export interface RES_LoteMineralProduccion extends RES_LoteMineral {
+  consumos: RES_ConsumoProduccion[];
+}
+
+export interface RES_ConsumoProduccion {
   id_producto: number;
   producto: string;
   fecha_consumo: string;
   total_consumido: number;
   unidad_base_abv: string;
-}
-
-export interface RES_LoteMineralEnProduccion {
-  id_lote_mineral: number;
-  correlativo: string;
-  codigo_interno: string | null;
-  fecha_inicio_produccion: string | null;
-  descripcion: string | null;
-  created_at: string;
-  estado: string;
-  id_contratista: number;
-  contratista: string;
-  id_mina: number;
-  mina: string;
-  id_labor: number | null;
-  labor: string | null;
-  labor_prefijo: string | null;
-  consumos: RES_LoteMineralEnProduccionConsumo[];
 }

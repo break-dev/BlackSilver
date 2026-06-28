@@ -141,7 +141,7 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
               </Text>
               <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
                 {req.labores && req.labores.length > 0
-                  ? req.labores.map((l) => l.correlativo).join(", ")
+                  ? req.labores.map((l) => l.nombre).join(", ")
                   : "---"}
               </Text>
             </View>

@@ -3,18 +3,23 @@ import { useState, useMemo, useEffect } from "react";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Contratista } from "../../../service/responses/contratista";
 import type { RES_Labor } from "../../../service/responses/labor";
-import { useRegistrarLoteMineral } from "../hooks/useLoteMineral";
-import type { LoteMineral } from "../service/lote-mineral.responses";
+import { useRegistrarLoteMineralResumen } from "../hooks/useLoteMineral";
+import type { LoteMineralResumen } from "../service/lote-mineral.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import dayjs from "dayjs";
+import { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
 
 interface Props {
-  onSuccess: (newLote?: LoteMineral) => void;
+  onSuccess: (newLote?: LoteMineralResumen) => void;
   onCancel: () => void;
   isFromProduccion?: boolean;
 }
 
-export const RegistroLoteMineral = ({ onSuccess, onCancel, isFromProduccion = false }: Props) => {
+export const RegistroLoteMineral = ({
+  onSuccess,
+  onCancel,
+  isFromProduccion = false,
+}: Props) => {
   const [idMina, setIdMina] = useState<string | null>(null);
   const [idContratista, setIdContratista] = useState<string | null>(null);
   const [idLabor, setIdLabor] = useState<string | null>(null);
@@ -25,33 +30,36 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel, isFromProduccion = fa
   const [labores, setLabores] = useState<RES_Labor[]>([]);
 
   useEffect(() => {
-    AuxService.get_contratistas().then(r => {
+    AuxService.get_contratistas().then((r) => {
       if (r?.data) setContratistas(r.data);
     });
-    AuxService.get_labores().then(r => {
+    AuxService.get_labores().then((r) => {
       if (r?.data) setLabores(r.data);
     });
   }, []);
 
-  const { mutate: registrar, isPending } = useRegistrarLoteMineral();
+  const { mutate: registrar, isPending } = useRegistrarLoteMineralResumen();
 
   const contratistasOpciones = useMemo(() => {
     return (contratistas || []).map((c: RES_Contratista) => {
       const id = (c.id_contratista ?? c.id)?.toString() ?? "";
-      const nombre = c.nombre_completo || [c.nombre, c.apellido].filter(Boolean).join(" ").trim();
+      const nombre =
+        c.nombre_completo ||
+        [c.nombre, c.apellido].filter(Boolean).join(" ").trim();
       return { value: id, label: nombre || `Contratista #${id}` };
     });
   }, [contratistas]);
 
   const laboresAgrupadas = useMemo(() => {
-    const groups: { [minaName: string]: { value: string; label: string }[] } = {};
-    
+    const groups: { [minaName: string]: { value: string; label: string }[] } =
+      {};
+
     (labores || []).forEach((l: RES_Labor) => {
       const minaName = l.mina || "Mina Desconocida";
       if (!groups[minaName]) {
         groups[minaName] = [];
       }
-      const label = [l.nombre, l.correlativo].filter(Boolean).join(" | ");
+      const label = [l.nombre].filter(Boolean).join(" | ");
       groups[minaName].push({
         value: l.id_labor.toString(),
         label: label || `Labor #${l.id_labor}`,
@@ -72,9 +80,9 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel, isFromProduccion = fa
       id_contratista: parseInt(idContratista),
       id_mina: parseInt(idMina),
       id_labor: parseInt(idLabor),
-      codigo_interno: null,
       descripcion: descripcion.trim() || null,
       fecha_inicio_produccion: dayjs(fechaInicio).format("YYYY-MM-DD"),
+      estado_inicial: EstadoLoteMineral.Pendiente,
     };
 
     registrar(request, {
@@ -124,7 +132,9 @@ export const RegistroLoteMineral = ({ onSuccess, onCancel, isFromProduccion = fa
           onChange={(val) => {
             setIdLabor(val);
             if (val) {
-              const selectedLabor = labores.find((l) => l.id_labor.toString() === val);
+              const selectedLabor = labores.find(
+                (l) => l.id_labor.toString() === val,
+              );
               if (selectedLabor) {
                 setIdMina(selectedLabor.id_mina.toString());
               }

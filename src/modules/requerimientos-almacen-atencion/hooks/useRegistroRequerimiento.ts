@@ -88,7 +88,7 @@ export const useRegistroRequerimiento = ({
       setLoadingActivos(true);
       try {
         const [resProd, resUnid, resEmp, resAct, resCont] = await Promise.all([
-          AuxService.get_productos({ con_categorias_consumidoras: true }),
+          AuxService.get_productos(),
           AuxService.get_unidades_medida(),
           AuxService.get_empleados(),
           AuxService.get_activos_disponibles(),

@@ -1,46 +1,33 @@
-import { Button, Group, TextInput, Stack, Select, Box, Text } from "@mantine/core";
+import { Button, Group, TextInput, Stack, Box, Text } from "@mantine/core";
 import { BriefcaseIcon } from "@heroicons/react/24/outline";
-import type { RES_Area } from "../service/organigrama.responses";
 
 interface Props {
   nombre: string;
   setNombre: (v: string) => void;
-  idArea: string | null;
-  setIdArea: (v: string | null) => void;
-  areas: RES_Area[];
   loading: boolean;
   error: string;
   onSave: () => void;
   onCancel: () => void;
+  contextLabel?: string; // Ej: "Área: Operaciones" o "Sin área asignada"
 }
 
 const fieldClasses = {
   input:
     "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
   label: "text-zinc-300 font-medium mb-1",
-  dropdown: "bg-zinc-900 border-zinc-800",
-  option: "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-0.5",
 };
 
 export const RegistroCargo = ({
   nombre,
   setNombre,
-  idArea,
-  setIdArea,
-  areas,
   loading,
   error,
   onSave,
   onCancel,
+  contextLabel,
 }: Props) => {
-  const areasData = areas.map((a) => ({
-    value: a.id_area.toString(),
-    label: a.nombre,
-  }));
-
   return (
     <Stack gap="md" className="animate-fade-in">
-      {/* Header — Estilo unificado */}
       <Group gap="sm" align="center" mb="xs">
         <Box className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
           <BriefcaseIcon className="w-4 h-4 text-emerald-400" />
@@ -49,26 +36,13 @@ export const RegistroCargo = ({
           <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
             Nuevo Cargo / Puesto
           </Text>
-          <Text size="xs" className="text-zinc-500">
-            Asigna un nuevo rol dentro de un área específica
-          </Text>
+          {contextLabel && (
+            <Text size="xs" className="text-zinc-500">
+              {contextLabel}
+            </Text>
+          )}
         </Stack>
       </Group>
-
-      <Select
-        label="Área Perteneciente"
-        placeholder="Seleccione el área..."
-        required
-        withAsterisk
-        disabled={loading}
-        radius="lg"
-        classNames={fieldClasses}
-        data={areasData}
-        value={idArea}
-        onChange={setIdArea}
-        searchable
-        nothingFoundMessage="No hay áreas disponibles"
-      />
 
       <TextInput
         label="Nombre del Cargo"
@@ -102,7 +76,7 @@ export const RegistroCargo = ({
         <Button
           onClick={onSave}
           loading={loading}
-          disabled={!nombre.trim() || !idArea}
+          disabled={!nombre.trim()}
           radius="lg"
           size="sm"
           className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20 px-8"

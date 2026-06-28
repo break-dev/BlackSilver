@@ -196,7 +196,7 @@ export const RegistroConsumo = ({
       }
       groupItems.push({
         value: String(l.id_labor),
-        label: `${l.correlativo} - ${l.nombre || "S/N"}`,
+        label: `${l.nombre || "S/N"}`,
       });
     });
 
@@ -508,7 +508,7 @@ export const RegistroConsumo = ({
                   placeholder={loadingLotes ? "Cargando lotes..." : "Seleccione lote mineral..."}
                   data={lotesMineral.map((lm) => ({
                     value: String(lm.id_lote_mineral),
-                    label: lm.correlativo,
+                    label: lm.codigo,
                   }))}
                   value={formLoteMineral}
                   onChange={setFormLoteMineral}

@@ -1,7 +1,9 @@
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+
 export interface RES_Cuenta {
   id_usuario: number;
   username: string;
-  estado: string;
+  estado: EstadoBase;
   id_rol: number;
   id_empleado: number;
   nombre_rol: string;

@@ -77,7 +77,7 @@ export const FinalizarLaborModal = ({
               radius="md"
               className="font-bold border border-indigo-500/20 py-3"
             >
-              {labor?.correlativo}
+              {labor?.nombre}
             </Badge>
             <Text fw={800} className="text-white">
               {labor?.nombre || "Sin nombre"}
@@ -115,7 +115,10 @@ export const FinalizarLaborModal = ({
                 <Text size="sm" fw={700}>
                   {dayjs(fechaCierre).isAfter(labor.fecha_fin_estimada, "day")
                     ? `Retraso de ${dayjs(fechaCierre).diff(labor.fecha_fin_estimada, "day")} días`
-                    : dayjs(fechaCierre).isBefore(labor.fecha_fin_estimada, "day")
+                    : dayjs(fechaCierre).isBefore(
+                          labor.fecha_fin_estimada,
+                          "day",
+                        )
                       ? `Adelantado por ${dayjs(labor.fecha_fin_estimada).diff(fechaCierre, "day")} días`
                       : "Finalizado a tiempo (según plan)"}
                 </Text>
@@ -125,12 +128,7 @@ export const FinalizarLaborModal = ({
         </div>
 
         <Group justify="flex-end" gap="md">
-          <Button
-            variant="subtle"
-            color="gray"
-            onClick={onClose}
-            radius="lg"
-          >
+          <Button variant="subtle" color="gray" onClick={onClose} radius="lg">
             Cancelar
           </Button>
           <Button

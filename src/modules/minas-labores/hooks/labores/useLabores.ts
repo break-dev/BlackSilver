@@ -41,7 +41,6 @@ export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
     return labores.filter(
       (l) =>
         (l.nombre?.toLowerCase()?.includes(q) ?? false) ||
-        (l.correlativo?.toLowerCase()?.includes(q) ?? false) ||
         (l.empresa?.toLowerCase()?.includes(q) ?? false) ||
         (l.veta?.toLowerCase()?.includes(q) ?? false) ||
         (l.nivel?.toLowerCase()?.includes(q) ?? false),
@@ -56,7 +55,7 @@ export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
 
   const handleLaborFinalizada = (actualizada: RES_Labor) => {
     setLabores((prev) =>
-      prev.map((l) => (l.id_labor === actualizada.id_labor ? actualizada : l))
+      prev.map((l) => (l.id_labor === actualizada.id_labor ? actualizada : l)),
     );
   };
 

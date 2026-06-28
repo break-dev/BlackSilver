@@ -1,31 +1,34 @@
-import { useState, useEffect, useCallback } from 'react';
-import { globalLoteMineralService, type RegistrarLoteMineralRequest } from '../../../service/lote-mineral.service';
-import type { LoteMineral } from '../service/lote-mineral.responses';
-import type { IRespuesta } from '../../../shared/interfaces/_response';
-import { useNotify } from '../../../hooks/useNotify';
+import { useState, useEffect, useCallback } from "react";
+import type { LoteMineralResumen } from "../service/lote-mineral.responses";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
+import { useNotify } from "../../../hooks/useNotify";
+import { loteMineralService } from "../service/lote-mineral.service";
+import type { RegistrarLoteMineralRequest } from "../service/lote-mineral.requests";
 
 export const useLotesMineral = (mes?: number, anio?: number) => {
-  const [data, setData] = useState<IRespuesta<LoteMineral[]> | null>(null);
+  const [data, setData] = useState<IRespuesta<LoteMineralResumen[]> | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchLotes = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await globalLoteMineralService.getLotes({ mes, anio });
+      const response = await loteMineralService.getLotes({ mes, anio });
       if (response.success) {
         setData(response);
       } else {
-        setData({ success: false, data: [], message: 'Error' });
+        setData({ success: false, data: [], message: "Error" });
       }
     } catch (error) {
       console.error(error);
-      setData({ success: false, data: [], message: 'Error' });
+      setData({ success: false, data: [], message: "Error" });
     } finally {
       setIsLoading(false);
     }
   }, [mes, anio]);
 
-  const addLote = useCallback((newLote: LoteMineral) => {
+  const addLote = useCallback((newLote: LoteMineralResumen) => {
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -42,28 +45,30 @@ export const useLotesMineral = (mes?: number, anio?: number) => {
   return { data, isLoading, refetch: fetchLotes, addLote };
 };
 
-export const useRegistrarLoteMineral = () => {
+export const useRegistrarLoteMineralResumen = () => {
   const { notifySuccess, notifyError } = useNotify();
   const [isPending, setIsPending] = useState(false);
 
   const mutate = async (
     request: RegistrarLoteMineralRequest,
-    options?: { onSuccess?: (data: LoteMineral) => void }
+    options?: { onSuccess?: (data: LoteMineralResumen) => void },
   ) => {
     setIsPending(true);
     try {
-      const response = await globalLoteMineralService.registrarLote(request);
+      const response = await loteMineralService.registrarLote(request);
       if (response.success && response.data) {
-        notifySuccess(response.message || 'Lote registrado correctamente');
+        notifySuccess(response.message || "Lote registrado correctamente");
         if (options?.onSuccess) {
           options.onSuccess(response.data);
         }
       } else {
-        notifyError(response.message || 'Ocurrió un error al registrar el lote');
+        notifyError(
+          response.message || "Ocurrió un error al registrar el lote",
+        );
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      notifyError(err?.response?.data?.message || 'Error de conexión');
+      notifyError(err?.response?.data?.message || "Error de conexión");
     } finally {
       setIsPending(false);
     }

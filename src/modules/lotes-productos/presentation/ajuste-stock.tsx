@@ -96,7 +96,7 @@ export const AjusteStockModal = ({
       {/* 1. Inputs de Cantidades (Grid Superior) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <NumberInput
-          label={`Stock (${lote.unidad_medida})`}
+          label={`Stock (${lote.unidad_medida_abv})`}
           placeholder="0"
           min={0}
           value={nuevoStock}
@@ -107,7 +107,7 @@ export const AjusteStockModal = ({
         />
 
         <NumberInput
-          label={`Nuevo stock total (${lote.unidad_medida_base})`}
+          label={`Nuevo stock total (${lote.unidad_medida_base_abv})`}
           placeholder="0"
           min={0}
           value={nuevoStockBase}
@@ -118,7 +118,7 @@ export const AjusteStockModal = ({
         />
 
         <NumberInput
-          label={`Contenido por ${lote.unidad_medida}`}
+          label={`Contenido por ${lote.unidad_medida_abv}`}
           value={lote.contenido_por_presentacion}
           readOnly
           disabled
@@ -183,7 +183,7 @@ export const AjusteStockModal = ({
                     : formatNumber(diff)}
               </Text>
               <Text size="xs" c="zinc.4" fw={600} className="italic opacity-80">
-                {lote.unidad_medida_base}
+                {lote.unidad_medida_base_abv}
               </Text>
             </Group>
           </div>

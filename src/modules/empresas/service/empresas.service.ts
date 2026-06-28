@@ -19,9 +19,9 @@ export class EmpresasService {
   public static actualizar_logo = async (
     id_empresa: number,
     logo: File,
-  ): Promise<IRespuesta<RES_Empresa>> => {
+  ): Promise<IRespuesta<string>> => {
     const formData = new FormData();
-    formData.append("path_logo", logo);
+    formData.append("logo", logo);
 
     const { data: response } = await api.post(
       `${this.PATH}/${id_empresa}/logo`,

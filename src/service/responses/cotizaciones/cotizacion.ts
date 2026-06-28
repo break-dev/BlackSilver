@@ -13,7 +13,7 @@ export interface RES_EmpresaCotizacion {
   id_cotizacion: number;
   id_empresa: number;
   razon_social: string;
-  path_logo: string | null;
+  url_logo: string | null;
 }
 
 export interface RES_CotizacionDetalle {

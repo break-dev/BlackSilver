@@ -180,8 +180,16 @@ export const RegistroRequerimiento = ({
 
           <div className="flex items-end gap-2">
             <Select
-              label={verContratistas ? "Solicitante (Contratista)" : "Solicitante (Empleado)"}
-              placeholder={verContratistas ? "Seleccione contratista" : "Seleccione empleado"}
+              label={
+                verContratistas
+                  ? "Solicitante (Contratista)"
+                  : "Solicitante (Empleado)"
+              }
+              placeholder={
+                verContratistas
+                  ? "Seleccione contratista"
+                  : "Seleccione empleado"
+              }
               data={
                 verContratistas
                   ? contratistas.map((r) => ({
@@ -193,7 +201,9 @@ export const RegistroRequerimiento = ({
                       label: r.nombre_completo,
                     }))
               }
-              value={idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null}
+              value={
+                idEmpleadoSolicitante ? String(idEmpleadoSolicitante) : null
+              }
               onChange={(val) => setIdEmpleadoSolicitante(Number(val))}
               classNames={inputClasses}
               radius="lg"
@@ -209,7 +219,11 @@ export const RegistroRequerimiento = ({
                 )
               }
             />
-            <Tooltip label={verContratistas ? "Ver empleados" : "Ver contratistas"} position="top" withArrow>
+            <Tooltip
+              label={verContratistas ? "Ver empleados" : "Ver contratistas"}
+              position="top"
+              withArrow
+            >
               <ActionIcon
                 variant="light"
                 color={verContratistas ? "teal" : "indigo"}
@@ -237,7 +251,6 @@ export const RegistroRequerimiento = ({
             onChange={(val) => setFechaEntregaRequerida(val as Date | null)}
             radius="lg"
             minDate={new Date()}
-            clearable
           />
 
           <div className="lg:col-span-3">
@@ -247,9 +260,7 @@ export const RegistroRequerimiento = ({
               description="Seleccione las labores donde se emplearán estos materiales"
               data={labores.map((l) => ({
                 value: String(l.id_labor),
-                label: l.nombre
-                  ? (l.correlativo ? `${l.correlativo} (${l.nombre})` : l.nombre)
-                  : (l.correlativo || `Labor #${l.id_labor}`),
+                label: `${l.nombre}`,
               }))}
               value={idLabores.map(String)}
               onChange={(vals) => setIdLabores(vals.map(Number))}

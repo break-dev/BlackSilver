@@ -4,14 +4,17 @@ import type {
   DTO_RegistroArea,
   DTO_RegistroCargo,
 } from "./organigrama.requests";
-import type { RES_Area, RES_Cargo } from "./organigrama.responses";
+import type {
+  RES_Area,
+  RES_Cargo,
+} from "../../../service/responses/organigrama";
 
 const PATH = "/organigrama";
 
 export const OrganigramaService = {
   // ÁREAS
-  get_areas: async (): Promise<IRespuesta<RES_Area[]>> => {
-    const { data } = await api.get(`${PATH}/areas`);
+  get_areas: async (con_cargos?: boolean): Promise<IRespuesta<RES_Area[]>> => {
+    const { data } = await api.get(`${PATH}/areas`, { params: { con_cargos } });
     return data;
   },
 
@@ -21,8 +24,13 @@ export const OrganigramaService = {
   },
 
   // CARGOS
-  get_cargos: async (id_area: number): Promise<IRespuesta<RES_Cargo[]>> => {
-    const { data } = await api.get(`${PATH}/cargos/${id_area}`);
+  get_todos_cargos: async (): Promise<IRespuesta<RES_Cargo[]>> => {
+    const { data } = await api.get(`${PATH}/cargos`);
+    return data;
+  },
+
+  get_cargos_sin_area: async (): Promise<IRespuesta<RES_Cargo[]>> => {
+    const { data } = await api.get(`${PATH}/cargos`, { params: { con_area: false } });
     return data;
   },
 
@@ -30,6 +38,14 @@ export const OrganigramaService = {
     dto: DTO_RegistroCargo,
   ): Promise<IRespuesta<RES_Cargo>> => {
     const { data } = await api.post(`${PATH}/cargos`, dto);
+    return data;
+  },
+
+  actualizar_area_cargo: async (
+    id_cargo: number,
+    id_area: number | null,
+  ): Promise<IRespuesta<null>> => {
+    const { data } = await api.patch(`${PATH}/cargos/${id_cargo}/area`, { id_area });
     return data;
   },
 

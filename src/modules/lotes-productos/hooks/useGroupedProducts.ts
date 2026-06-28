@@ -13,7 +13,7 @@ export const useGroupedProducts = (records: RES_Lote[]) => {
           id_producto: lote.id_producto,
           producto: lote.producto,
           categoria: lote.categoria,
-          unidad_medida_base: lote.unidad_medida_base,
+          unidad_medida_base: lote.unidad_medida_base_abv,
           stock_minimo_base: lote.stock_minimo_base,
           lotes: [],
           total_stock_base: 0,

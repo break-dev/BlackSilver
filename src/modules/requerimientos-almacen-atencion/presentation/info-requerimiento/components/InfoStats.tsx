@@ -41,7 +41,7 @@ export const InfoStats = ({ requerimiento }: InfoStatsProps) => {
                   color="indigo"
                   size="sm"
                 >
-                  {l.correlativo} {l.nombre ? `(${l.nombre})` : ""}
+                  {l.nombre}
                 </Badge>
               ))
             ) : (

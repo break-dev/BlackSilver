@@ -15,6 +15,7 @@ import {
 import { useGestionContratos } from "../hooks/useGestionContratos";
 import { NuevoContrato } from "./nuevo-contrato";
 import { useMemo } from "react";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface HistorialContratosProps {
   idConcesion: number;
@@ -40,7 +41,7 @@ export const HistorialContratos = ({
   const empresasConContratoActivo = useMemo(
     () =>
       contratos.reduce((acc, c) => {
-        if (c.estado === "Activo") acc.push(c.id_empresa);
+        if (c.estado == EstadoBase.Activo) acc.push(c.id_empresa);
         return acc;
       }, [] as number[]),
     [contratos],
@@ -140,7 +141,7 @@ export const HistorialContratos = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <Text className="text-sm font-bold text-white truncate">
-                        {c.nombre_comercial}
+                        {c.razon_social}
                       </Text>
                       {isActive ? (
                         <Badge color="indigo" size="sm" variant="light">

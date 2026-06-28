@@ -1,7 +1,8 @@
 import { Badge } from "@mantine/core";
+import type { Estado_PrestamoDetalle } from "../../../../shared/enums/prestamo-almacen/prestamo";
 
 interface Props {
-  estado: string;
+  estado: Estado_PrestamoDetalle;
 }
 
 export const PrestamoStatusBadge = ({ estado }: Props) => {

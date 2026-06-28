@@ -58,7 +58,10 @@ interface CabeceraCotizacionProps {
   onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: { id_empresa: number; razon_social: string }[];
   copiedCotizacion?: CopiedCotizacion | null;
-  onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
+  onIniciarCopiaCotizacion?: (
+    sourceIndex: number,
+    type: "all" | "general" | "delivery",
+  ) => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
 
@@ -132,7 +135,9 @@ export const CabeceraCotizacion = ({
   };
   const [globalAlmacen, setGlobalAlmacen] = useState<string | null>(null);
   const [globalMina, setGlobalMina] = useState<string | null>(null);
-  const [globalDestinoTipo, setGlobalDestinoTipo] = useState<"almacen" | "mina">("almacen");
+  const [globalDestinoTipo, setGlobalDestinoTipo] = useState<
+    "almacen" | "mina"
+  >("almacen");
 
   const [globalLugarRecojo, setGlobalLugarRecojo] = useState<string>("");
   const [globalDespacho, setGlobalDespacho] = useState<TipoDespachoCompra>(
@@ -153,7 +158,9 @@ export const CabeceraCotizacion = ({
           setGlobalMina(String(firstDetail.id_mina_destino));
           setGlobalDestinoTipo("mina");
         }
-        setGlobalDespacho(firstDetail.tipo_despacho || TipoDespachoCompra.Envio);
+        setGlobalDespacho(
+          firstDetail.tipo_despacho || TipoDespachoCompra.Envio,
+        );
         setGlobalLugarRecojo(firstDetail.lugar_recojo || "");
         setGlobalTiempo(firstDetail.tiempo_entrega ?? 1);
         setGlobalPeriodo(firstDetail.tiempo_entrega_periodo || Periodo.Semanal);
@@ -168,7 +175,8 @@ export const CabeceraCotizacion = ({
     if (globalDestinoTipo === "mina" && !globalMina) return;
 
     onUpdateGlobalLogistica(idx, {
-      id_almacen_recepcionista: globalDestinoTipo === "almacen" ? Number(globalAlmacen) : null,
+      id_almacen_recepcionista:
+        globalDestinoTipo === "almacen" ? Number(globalAlmacen) : null,
       id_mina_destino: globalDestinoTipo === "mina" ? Number(globalMina) : null,
       tipo_despacho: globalDespacho,
       lugar_recojo:
@@ -223,7 +231,13 @@ export const CabeceraCotizacion = ({
           </Text>
 
           {cot && (
-            <Menu shadow="md" width={240} trigger="click" position="bottom-start" zIndex={10001}>
+            <Menu
+              shadow="md"
+              width={240}
+              trigger="click"
+              position="bottom-start"
+              zIndex={10001}
+            >
               <Menu.Target>
                 <Tooltip label="Copiar datos" withArrow>
                   <ActionIcon
@@ -237,9 +251,13 @@ export const CabeceraCotizacion = ({
                 </Tooltip>
               </Menu.Target>
               <Menu.Dropdown className="bg-zinc-950 border-zinc-800 text-zinc-300">
-                <Menu.Label className="text-zinc-500 font-bold uppercase tracking-wider text-[9px] px-2 py-1.5">Opciones</Menu.Label>
+                <Menu.Label className="text-zinc-500 font-bold uppercase tracking-wider text-[9px] px-2 py-1.5">
+                  Opciones
+                </Menu.Label>
                 <Menu.Item
-                  leftSection={<DocumentDuplicateIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  leftSection={
+                    <DocumentDuplicateIcon className="w-3.5 h-3.5 text-pink-400" />
+                  }
                   className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
                   style={{ fontSize: "11px" }}
                   onClick={() => onIniciarCopiaCotizacion?.(idx, "all")}
@@ -247,7 +265,9 @@ export const CabeceraCotizacion = ({
                   Copiar cotización completa
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<ClipboardDocumentCheckIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  leftSection={
+                    <ClipboardDocumentCheckIcon className="w-3.5 h-3.5 text-pink-400" />
+                  }
                   className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
                   style={{ fontSize: "11px" }}
                   onClick={() => onIniciarCopiaCotizacion?.(idx, "general")}
@@ -255,7 +275,9 @@ export const CabeceraCotizacion = ({
                   Copiar solo gastos
                 </Menu.Item>
                 <Menu.Item
-                  leftSection={<TruckIcon className="w-3.5 h-3.5 text-pink-400" />}
+                  leftSection={
+                    <TruckIcon className="w-3.5 h-3.5 text-pink-400" />
+                  }
                   className="hover:bg-zinc-900 rounded-lg text-zinc-200 transition-colors py-1"
                   style={{ fontSize: "11px" }}
                   onClick={() => onIniciarCopiaCotizacion?.(idx, "delivery")}
@@ -505,7 +527,11 @@ export const CabeceraCotizacion = ({
 
                 {hasActivosFijos && (
                   <Stack gap={4}>
-                    <Text size="10px" fw={700} className="text-zinc-400 uppercase tracking-widest">
+                    <Text
+                      size="10px"
+                      fw={700}
+                      className="text-zinc-400 uppercase tracking-widest"
+                    >
                       Tipo de Destino
                     </Text>
                     <SegmentedControl
@@ -513,7 +539,9 @@ export const CabeceraCotizacion = ({
                       radius="md"
                       fullWidth
                       value={globalDestinoTipo}
-                      onChange={(val) => setGlobalDestinoTipo(val as "almacen" | "mina")}
+                      onChange={(val) =>
+                        setGlobalDestinoTipo(val as "almacen" | "mina")
+                      }
                       data={[
                         {
                           label: (
@@ -538,11 +566,15 @@ export const CabeceraCotizacion = ({
                         root: "bg-zinc-900 border border-zinc-800",
                         control: "border-none",
                         indicator: "bg-cyan-600",
-                        label: "text-zinc-400 data-[active]:text-white font-bold",
+                        label:
+                          "text-zinc-400 data-[active]:text-white font-bold",
                       }}
                     />
                     {globalDestinoTipo === "mina" && (
-                      <Text size="10px" className="text-amber-500/80 italic text-center px-2">
+                      <Text
+                        size="10px"
+                        className="text-amber-500/80 italic text-center px-2"
+                      >
                         * La mina se aplicará solo a los Activos Fijos.
                       </Text>
                     )}
@@ -603,8 +635,13 @@ export const CabeceraCotizacion = ({
                   onChange={(val) => {
                     const newDespacho = val as TipoDespachoCompra;
                     setGlobalDespacho(newDespacho);
-                    if (newDespacho === TipoDespachoCompra.Recojo && cot?.id_proveedor) {
-                      const proveedor = proveedores.find((p) => p.id_proveedor === cot.id_proveedor);
+                    if (
+                      newDespacho === TipoDespachoCompra.Recojo &&
+                      cot?.id_proveedor
+                    ) {
+                      const proveedor = proveedores.find(
+                        (p) => p.id_proveedor === cot.id_proveedor,
+                      );
                       setGlobalLugarRecojo(proveedor?.direccion || "");
                     }
                   }}
@@ -682,7 +719,11 @@ export const CabeceraCotizacion = ({
                   variant="gradient"
                   gradient={{ from: "cyan.6", to: "cyan.8" }}
                   onClick={handleApplyGlobalLogistica}
-                  disabled={globalDestinoTipo === "almacen" ? !globalAlmacen : !globalMina}
+                  disabled={
+                    globalDestinoTipo === "almacen"
+                      ? !globalAlmacen
+                      : !globalMina
+                  }
                   radius="xl"
                   size="xs"
                   className="font-bold shadow-lg shadow-cyan-900/20"
@@ -771,7 +812,6 @@ export const CabeceraCotizacion = ({
                     }
                     size="xs"
                     radius="lg"
-                    popoverProps={{ withinPortal: false }}
                   />
                 )}
 

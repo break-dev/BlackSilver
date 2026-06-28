@@ -1,4 +1,12 @@
-import { Button, Group, TextInput, Stack, Avatar, FileButton, Text } from "@mantine/core";
+import {
+  Button,
+  Group,
+  TextInput,
+  Stack,
+  Avatar,
+  FileButton,
+  Text,
+} from "@mantine/core";
 import { PhotoIcon, PencilIcon } from "@heroicons/react/24/outline";
 
 interface RegistroEmpresaProps {
@@ -6,10 +14,6 @@ interface RegistroEmpresaProps {
   setRuc: (val: string) => void;
   razonSocial: string;
   setRazonSocial: (val: string) => void;
-  nombreComercial: string;
-  setNombreComercial: (val: string) => void;
-  abreviatura: string;
-  setAbreviatura: (val: string) => void;
   logoFile: File | null;
   setLogoFile: (file: File | null) => void;
   error: string;
@@ -23,8 +27,6 @@ export const RegistroEmpresa = ({
   setRuc,
   razonSocial,
   setRazonSocial,
-  nombreComercial,
-  setNombreComercial,
   logoFile,
   setLogoFile,
   error,
@@ -46,7 +48,10 @@ export const RegistroEmpresa = ({
       {/* Selector de Logo Circular con Lápiz */}
       {/* Selector de Logo Circular con Efecto Hover Nítido */}
       <div className="flex flex-col items-center justify-center py-6">
-        <FileButton onChange={setLogoFile} accept="image/png,image/jpeg,image/jpg">
+        <FileButton
+          onChange={setLogoFile}
+          accept="image/png,image/jpeg,image/jpg"
+        >
           {(props) => (
             <div
               {...props}
@@ -65,7 +70,7 @@ export const RegistroEmpresa = ({
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-2 text-center">
                 <PencilIcon className="w-6 h-6 text-white mb-2 drop-shadow-md" />
                 <Text size="11px" fw={700} className="text-white leading-tight">
-                  {logoFile ? 'Cambiar imagen' : 'Subir imagen'}
+                  {logoFile ? "Cambiar imagen" : "Subir imagen"}
                 </Text>
               </div>
             </div>
@@ -98,20 +103,10 @@ export const RegistroEmpresa = ({
         onChange={(e) => setRazonSocial(e.currentTarget.value)}
       />
 
-      <TextInput
-        label="Nombre Comercial"
-        placeholder="Ej. Black Silver"
-        required
-        withAsterisk
-        disabled={loading}
-        radius="lg"
-        classNames={inputClasses}
-        value={nombreComercial}
-        onChange={(e) => setNombreComercial(e.currentTarget.value)}
-      />
-
       {error && (
-        <div className="text-red-500 text-sm font-medium px-1 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{error}</div>
+        <div className="text-red-500 text-sm font-medium px-1 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+          {error}
+        </div>
       )}
 
       <Group justify="flex-end" gap="md" mt="xl">

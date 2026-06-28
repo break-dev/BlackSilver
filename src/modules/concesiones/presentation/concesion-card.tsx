@@ -1,9 +1,4 @@
-import {
-  Badge,
-  Text,
-  Tooltip,
-  ActionIcon,
-} from "@mantine/core";
+import { Badge, Text, Tooltip, ActionIcon } from "@mantine/core";
 import {
   MapPinIcon,
   DocumentTextIcon,
@@ -38,22 +33,13 @@ export const ConcesionCard = ({
       {/* Header: badges + nombre + mineral */}
       <div className="pr-14">
         <div className="flex items-center gap-2 mb-1">
-          <Badge
-            size="xs"
-            variant="light"
-            color="indigo"
-            radius="sm"
-            className="font-bold border-indigo-500/20"
-          >
-            Cod. Concesión: {concesion.codigo_concesion}
-          </Badge>
           {concesion.codigo_reinfo && (
             <Badge
               size="xs"
               variant="light"
-              color="pink"
+              color="indigo"
               radius="sm"
-              className="font-bold border-pink-500/20"
+              className="font-bold border-indigo-500/20"
             >
               Cod. REINFO: {concesion.codigo_reinfo}
             </Badge>

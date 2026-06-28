@@ -21,7 +21,9 @@ interface RegistroCotizacionProps {
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
   esAuditableGlobal: boolean;
-  onProductosChange?: (prods: { id_producto: number; nombre: string }[]) => void;
+  onProductosChange?: (
+    prods: { id_producto: number; nombre: string }[],
+  ) => void;
 }
 
 export const RegistroCotizacion = forwardRef<
@@ -55,13 +57,13 @@ export const RegistroCotizacion = forwardRef<
       // Generar PDF de cotizaciones directamente desde los datos del response.
       if (data && data.length > 0) {
         const comp = data[0];
-        // path_logo ya viene como base64 data URL desde el backend
+        // url_logo ya viene como base64 data URL desde el backend
         const cotizacionesPDFData = comp.cotizaciones.map((cot) => ({
           cotizacion: cot,
           detalles: cot.detalles as RES_CotizacionDetalle[],
           empresas: cot.empresas.map((e) => ({
             razon_social: e.razon_social,
-            path_logo: e.path_logo ?? null,
+            url_logo: e.url_logo ?? null,
           })),
         }));
 

@@ -6,7 +6,7 @@ import type { RES_Empresa } from "../../../service/responses/empresa";
 import { AuxService } from "../../../service/auxiliar.service";
 
 export const useEmpresas = () => {
-  const { notify } = useNotify();
+  const { notifyError, notifySuccess } = useNotify();
 
   // Estados de la lista
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
@@ -24,15 +24,15 @@ export const useEmpresas = () => {
       if (result.success) {
         setEmpresas(result.data);
       } else {
-        notify({ type: "error", content: result.message });
+        notifyError(result.message);
       }
     } catch (error) {
-      notify({ type: "error", content: "Error al cargar las empresas" });
+      notifyError("Error al cargar las empresas");
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, [notifyError]);
 
   useEffect(() => {
     listar();
@@ -42,10 +42,7 @@ export const useEmpresas = () => {
     const q = busqueda.toLowerCase();
     return empresas.filter(
       (emp) =>
-        !q ||
-        emp.razon_social.toLowerCase().includes(q) ||
-        emp.nombre_comercial.toLowerCase().includes(q) ||
-        emp.ruc.includes(q),
+        !q || emp.razon_social.toLowerCase().includes(q) || emp.ruc.includes(q),
     );
   }, [empresas, busqueda]);
 
@@ -54,19 +51,18 @@ export const useEmpresas = () => {
       const result = await EmpresasService.actualizar_logo(id, file);
       if (result.success) {
         setEmpresas((prev) =>
-          prev.map((emp) => (emp.id_empresa === id ? result.data : emp)),
+          prev.map((emp) =>
+            emp.id_empresa === id ? { ...emp, url_logo: result.data } : emp,
+          ),
         );
-        notify({
-          type: "success",
-          content: "Logo de empresa actualizado correctamente",
-        });
+        notifySuccess("Logo de empresa actualizado correctamente");
         return true;
       } else {
-        notify({ type: "error", content: result.message });
+        notifyError(result.message);
         return false;
       }
     } catch (error) {
-      notify({ type: "error", content: "Error al actualizar el logo" });
+      notifyError("Error al actualizar el logo");
       console.error(error);
       return false;
     }

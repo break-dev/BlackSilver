@@ -54,7 +54,7 @@ export const EmpresaCard = ({ empresa, onUpdateLogo }: EmpresaCardProps) => {
             {(props) => (
               <div {...props} className="cursor-pointer relative">
                 <Avatar
-                  src={empresa.path_logo}
+                  src={empresa.url_logo}
                   size={80}
                   radius={100}
                   className="border-2 border-zinc-800 group-hover:border-indigo-500/40 transition-all duration-500 shadow-xl"
@@ -86,16 +86,9 @@ export const EmpresaCard = ({ empresa, onUpdateLogo }: EmpresaCardProps) => {
 
         <Stack gap={0} className="flex-1 min-w-0">
           <Text
-            size="md"
-            fw={800}
-            className="text-white group-hover:text-indigo-200 transition-colors line-clamp-1 leading-tight"
-          >
-            {empresa.nombre_comercial}
-          </Text>
-          <Text
-            size="xs"
-            fw={500}
-            className="text-zinc-500 line-clamp-2 italic leading-snug"
+            size="sm"
+            fw={700}
+            className="text-white group-hover:text-indigo-200 transition-colors leading-tight"
           >
             {empresa.razon_social}
           </Text>

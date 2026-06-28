@@ -5,10 +5,7 @@ export const Schema_RegistroEmpresa = z.object({
   razon_social: z
     .string()
     .min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombre_comercial: z
-    .string()
-    .min(3, "El nombre comercial debe tener al menos 3 caracteres"),
-  path_logo: z.string().optional(),
+  logo: z.string().optional(),
 });
 
 export type DTO_RegistroEmpresa = z.infer<typeof Schema_RegistroEmpresa>;

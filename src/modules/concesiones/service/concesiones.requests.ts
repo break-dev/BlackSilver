@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const Schema_CrearConcesion = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
-  codigo_concesion: z.string().min(1, "El código es requerido"),
   codigo_reinfo: z.string().optional().nullable(),
   ubigeo: z.string().optional().nullable(),
   tipo_mineral: z.string().min(1, "El tipo de mineral es requerido"),

@@ -15,7 +15,6 @@ export const useRegistroConcesion = (
 
   const initialValues: DTO_CrearConcesion = {
     nombre: "",
-    codigo_concesion: "",
     codigo_reinfo: "",
     ubigeo: "",
     tipo_mineral: "",

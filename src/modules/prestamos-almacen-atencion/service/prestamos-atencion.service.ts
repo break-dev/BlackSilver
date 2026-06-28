@@ -18,6 +18,7 @@ import type {
   RES_PrestamoReposicionRecepcionDetalle,
 } from "../../../service/responses/prestamos/prestamo-reposicion-recepcion";
 import type { RES_PrestamoEntregaRecepcion } from "../../../service/responses/prestamos/prestamo-entrega-recepcion";
+import type { Estado_PrestamoDetalle } from "../../../shared/enums/prestamo-almacen/prestamo";
 
 const path = "/prestamos-atencion";
 
@@ -87,7 +88,7 @@ export const PrestamosAtencionService = {
   cambiarEstadoDetalle: async (data: {
     id_prestamo_detalle?: number;
     ids_detalles?: number[];
-    nuevo_estado: string;
+    nuevo_estado: Estado_PrestamoDetalle;
     comentario?: string;
   }) => {
     const res = await api.post<IRespuesta<null>>(

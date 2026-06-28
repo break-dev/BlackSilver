@@ -88,28 +88,11 @@ export const GestionLabores = ({
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => index + 1,
-    },
-    {
-      accessor: "correlativo",
-      title: "Cod. Labor",
-      textAlign: "center",
-      width: 160,
-      render: (r) => (
-        <Badge
-          variant="light"
-          color={r.correlativo ? "indigo" : "gray"}
-          radius="md"
-          className="font-bold border border-zinc-800 py-3 mx-auto"
-        >
-          {r.correlativo || "No especificado"}
-        </Badge>
-      ),
     },
     {
       accessor: "nombre",
       title: "Labor",
-      width: 200,
+      width: 150,
       render: (r) => (
         <div className="flex flex-col gap-1.5 py-2">
           {r.nombre && (
@@ -165,7 +148,7 @@ export const GestionLabores = ({
     {
       accessor: "operacion",
       title: "Tipo / Operación",
-      width: 200,
+      width: 150,
       render: (r) => (
         <div className="flex flex-row gap-3 py-2">
           <Badge
@@ -176,7 +159,7 @@ export const GestionLabores = ({
           >
             {r.tipo_labor || "No especificado"}
           </Badge>
-          {r.es_de_produccion == 1 && (
+          {r.es_de_produccion == true && (
             <Badge
               color="pink.7"
               size="xs"
@@ -193,33 +176,25 @@ export const GestionLabores = ({
       accessor: "fecha_inicio",
       title: "Período Operativo",
       textAlign: "left",
-      width: 210,
+      width: 150,
       render: (r) => (
         <Group gap={8} wrap="nowrap" justify="flex-start">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
-              <Text
-                size="9px"
-                fw={900}
-                className="text-zinc-500 uppercase tracking-tighter w-12"
-              >
+              <Text size="11px" fw={600} className="text-zinc-500  w-12">
                 Desde:
               </Text>
-              <Text size="xs" fw={700} className="text-zinc-200">
+              <Text size="xs" fw={800} className="text-zinc-200">
                 {r.fecha_inicio
                   ? dayjs(r.fecha_inicio).format("DD MMM YYYY")
                   : "—"}
               </Text>
             </div>
             <div className="flex items-center gap-1.5">
-              <Text
-                size="9px"
-                fw={900}
-                className="text-zinc-500 uppercase tracking-tighter w-12"
-              >
+              <Text size="11px" fw={600} className="text-zinc-500 w-12">
                 Cierre Estimado:
               </Text>
-              <Text size="xs" fw={700} className="text-zinc-400">
+              <Text size="xs" fw={800} className="text-zinc-400">
                 {r.fecha_fin_estimada
                   ? dayjs(r.fecha_fin_estimada).format("DD MMM YYYY")
                   : "—"}
@@ -228,28 +203,23 @@ export const GestionLabores = ({
             {r.fecha_cierre && (
               <div className="flex items-center gap-1.5 mt-0.5 pt-0.5 border-t border-zinc-800/50">
                 <Text
-                  size="9px"
-                  fw={900}
-                  className="text-indigo-500 uppercase tracking-tighter w-12 text-right"
+                  size="11px"
+                  fw={600}
+                  className="text-indigo-500  w-12 text-right"
                 >
                   Cierre:
                 </Text>
-                <Text size="xs" fw={900} className="text-indigo-400">
+                <Text size="xs" fw={800} className="text-indigo-400">
                   {dayjs(r.fecha_cierre).format("DD MMM YYYY")}
                 </Text>
               </div>
             )}
             {!r.fecha_cierre && (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <Text
-                  size="9px"
-                  fw={900}
-                  c="bluew"
-                  className="uppercase tracking-tighter w-12"
-                >
+                <Text size="11px" fw={600} c="bluew" className=" w-12">
                   Estado:
                 </Text>
-                <Text size="xs" fw={700} className="italic" c={"teal"}>
+                <Text size="xs" fw={800} className="italic" c={"teal"}>
                   En curso
                 </Text>
               </div>
@@ -262,7 +232,7 @@ export const GestionLabores = ({
       accessor: "acciones",
       title: "Acciones",
       textAlign: "center",
-      width: 130,
+      width: 150,
       render: (r) => (
         <Group gap={6} justify="center" wrap="nowrap">
           {r.estado === EstadoBase.Activo && (

@@ -1,4 +1,5 @@
 import type { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
+import type { Estado_EntregaRequerimiento } from "../../../shared/enums/requerimiento-almacen/requerimiento-entrega";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 /**
@@ -13,7 +14,7 @@ export interface RES_EntregaRequerimiento {
   observacion: string | null;
   evidencias: IArchivo[] | null;
   created_at: string;
-  estado: string;
+  estado: Estado_EntregaRequerimiento;
   cantidad: number;
 }
 

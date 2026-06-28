@@ -1,3 +1,5 @@
+import type { EstadoActivoFijo } from "../../../shared/enums/activo-fijo";
+
 export interface RES_ActivoFijoResumen {
   id_activo: number;
   //
@@ -46,7 +48,7 @@ export interface RES_ActivoFijoResumen {
   //
   fecha_hora_ingreso: string;
   created_at: string;
-  estado: string;
+  estado: EstadoActivoFijo;
   id_empleado_responsable: number | null;
   empleado_responsable: string | null;
   serie_factura_compra: string | null;

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Stack,
   Group,
@@ -42,6 +43,33 @@ export const RegistroEmpleado = ({
     loadingCargos,
     handleSubmit,
   } = useRegistroEmpleado(onSuccess);
+
+  const cargosSelectData = useMemo(() => {
+    const grouped = new Map<string, { value: string; label: string }[]>();
+
+    cargos.forEach((c) => {
+      const area = areas.find((a) => a.id_area === c.id_area);
+      const groupName = area ? area.nombre : "Sin área asignada";
+
+      if (!grouped.has(groupName)) {
+        grouped.set(groupName, []);
+      }
+      grouped.get(groupName)!.push({
+        value: c.id_cargo.toString(),
+        label: c.nombre,
+      });
+    });
+
+    const result: { group: string; items: { value: string; label: string }[] }[] = [];
+    grouped.forEach((items, groupName) => {
+      result.push({
+        group: groupName,
+        items,
+      });
+    });
+
+    return result;
+  }, [cargos, areas]);
 
   const fieldClasses = {
     input:
@@ -171,8 +199,6 @@ export const RegistroEmpleado = ({
           leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
-          required
-          withAsterisk
           searchable
           disabled={loadingAreas || loading}
         />
@@ -181,14 +207,9 @@ export const RegistroEmpleado = ({
           placeholder={
             loadingCargos
               ? "Cargando cargos..."
-              : idArea
-                ? "Seleccione cargo"
-                : "Primero seleccione área"
+              : "Seleccione cargo"
           }
-          data={cargos.map((c) => ({
-            value: c.id_cargo.toString(),
-            label: c.nombre,
-          }))}
+          data={cargosSelectData}
           value={form.id_cargo === 0 ? null : form.id_cargo.toString()}
           onChange={(val) => setField("id_cargo", Number(val))}
           leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
@@ -196,7 +217,7 @@ export const RegistroEmpleado = ({
           radius="lg"
           required
           withAsterisk
-          disabled={!idArea || loadingCargos || loading}
+          disabled={loadingCargos || loading}
           searchable
         />
       </Group>

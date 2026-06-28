@@ -576,7 +576,8 @@ export const DetallePrestamo = ({
                           </ActionIcon>
                         </Tooltip>
 
-                        {d.estado === Estado_PrestamoDetalle.EsperandoAprobacion && (
+                        {d.estado ===
+                          Estado_PrestamoDetalle.EsperandoAprobacion && (
                           <Tooltip
                             label="Acción masiva"
                             position="top"
@@ -681,7 +682,9 @@ export const DetallePrestamo = ({
               color="green"
               radius="xl"
               loading={isProcessing}
-              onClick={() => handleCambiarEstado("Aprobado")}
+              onClick={() =>
+                handleCambiarEstado(Estado_PrestamoDetalle.Aprobado)
+              }
               className="px-8 shadow-green-500/20 shadow-lg font-bold"
             >
               Aprobar
@@ -752,7 +755,9 @@ export const DetallePrestamo = ({
               radius="xl"
               disabled={!comentarioAccion.trim()}
               loading={isProcessing}
-              onClick={() => handleCambiarEstado("Rechazado")}
+              onClick={() =>
+                handleCambiarEstado(Estado_PrestamoDetalle.Rechazado)
+              }
               className="px-8 shadow-red-500/20 shadow-lg font-bold"
             >
               Rechazar

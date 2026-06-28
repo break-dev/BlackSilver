@@ -1,11 +1,11 @@
 import { Badge, Text, Group } from "@mantine/core";
 import dayjs from "dayjs";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
-import type { RES_LoteMineralEnProduccionConsumo } from "../../service/produccion.responses";
+import type { RES_ConsumoProduccion } from "../../service/produccion.responses";
 import { CalendarIcon } from "@heroicons/react/24/outline";
 
 interface HistorialConsumosProduccionProps {
-  consumos: RES_LoteMineralEnProduccionConsumo[];
+  consumos: RES_ConsumoProduccion[];
 }
 
 export const HistorialConsumosProduccion = ({
@@ -21,7 +21,7 @@ export const HistorialConsumosProduccion = ({
       acc[fecha].push(consumo);
       return acc;
     },
-    {} as Record<string, RES_LoteMineralEnProduccionConsumo[]>
+    {} as Record<string, RES_ConsumoProduccion[]>,
   );
 
   const sortedDates = Object.keys(groupedByDate).sort().reverse();
@@ -47,13 +47,14 @@ export const HistorialConsumosProduccion = ({
               color="indigo"
               className="ml-auto font-semibold"
             >
-              {groupedByDate[fecha].length} producto{groupedByDate[fecha].length !== 1 ? "s" : ""}
+              {groupedByDate[fecha].length} producto
+              {groupedByDate[fecha].length !== 1 ? "s" : ""}
             </Badge>
           </div>
 
           {/* Consumos List */}
           <div className="divide-y divide-zinc-900">
-            {groupedByDate[fecha].map((consumo) => (
+            {groupedByDate[fecha].map((consumo: RES_ConsumoProduccion) => (
               <div
                 key={`${consumo.fecha_consumo}-${consumo.id_producto}`}
                 className="px-4 py-2.5 hover:bg-white/5 transition-colors duration-150"
@@ -69,7 +70,8 @@ export const HistorialConsumosProduccion = ({
                       size="sm"
                       className="font-bold font-mono"
                     >
-                      {formatNumber(consumo.total_consumido)} {consumo.unidad_base_abv}
+                      {formatNumber(consumo.total_consumido)}{" "}
+                      {consumo.unidad_base_abv}
                     </Badge>
                   </Group>
                 </Group>

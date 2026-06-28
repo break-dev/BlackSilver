@@ -16,7 +16,7 @@ import {
   ArrowsRightLeftIcon,
 } from "@heroicons/react/24/outline";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
-import type { RES_Cargo } from "../service/organigrama.responses";
+import type { RES_Cargo } from "../../../service/responses/organigrama";
 
 interface Props {
   areaNombre: string;

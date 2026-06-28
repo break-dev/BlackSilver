@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpleadosService } from "../service/empleados.service";
 import {
@@ -33,7 +33,7 @@ export const useRegistroEmpleado = (
   const [form, setForm] = useState<DTO_CrearEmpleado>(INITIAL_FORM);
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [areas, setAreas] = useState<RES_Area[]>([]);
-  const [cargos, setCargos] = useState<RES_Cargo[]>([]);
+  const [todosCargos, setTodosCargos] = useState<RES_Cargo[]>([]);
 
   const [idArea, setIdArea] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,61 +41,78 @@ export const useRegistroEmpleado = (
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [loadingCargos, setLoadingCargos] = useState(false);
 
-  const cargarEmpresas = useCallback(async () => {
-    setLoadingEmpresas(true);
-    try {
-      const resp = await AuxService.get_empresas();
-      if (resp.success) setEmpresas(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, []);
+  // Carga inicial: empresas, áreas y cargos de forma independiente para no bloquearse entre sí
+  const cargarCatalogos = useCallback(async () => {
+    const fetchEmpresas = async () => {
+      setLoadingEmpresas(true);
+      try {
+        const resp = await AuxService.get_empresas();
+        if (resp.success) setEmpresas(resp.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingEmpresas(false);
+      }
+    };
 
-  const cargarAreas = useCallback(async () => {
-    setLoadingAreas(true);
-    try {
-      const resp = await AuxService.get_areas();
-      if (resp.success) setAreas(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingAreas(false);
-    }
+    const fetchAreas = async () => {
+      setLoadingAreas(true);
+      try {
+        const resp = await AuxService.get_areas();
+        if (resp.success) setAreas(resp.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingAreas(false);
+      }
+    };
+
+    const fetchCargos = async () => {
+      setLoadingCargos(true);
+      try {
+        const resp = await AuxService.get_cargos();
+        if (resp.success) setTodosCargos(resp.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingCargos(false);
+      }
+    };
+
+    fetchEmpresas();
+    fetchAreas();
+    fetchCargos();
   }, []);
 
   useEffect(() => {
-    cargarEmpresas();
-    cargarAreas();
-  }, [cargarEmpresas, cargarAreas]);
+    cargarCatalogos();
+  }, [cargarCatalogos]);
 
-  const cargarCargos = useCallback(async (areaId: number) => {
-    setLoadingCargos(true);
-    try {
-      const resp = await AuxService.get_cargos({ id_area: areaId });
-      if (resp.success) setCargos(resp.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingCargos(false);
-    }
-  }, []);
+  // Filtrado en memoria: si hay un área seleccionada muestra cargos de ese área + cargos sin área. Si no, muestra todos.
+  const cargos = useMemo(() => {
+    const sinArea = todosCargos.filter((c) => c.id_area === null);
 
-  useEffect(() => {
-    if (idArea) {
-      cargarCargos(idArea);
-    } else {
-      setCargos([]);
-    }
-    setForm((prev) => ({ ...prev, id_cargo: 0 }));
-  }, [idArea, cargarCargos]);
+    if (!idArea) return todosCargos;
+
+    const delArea = todosCargos.filter((c) => c.id_area === idArea);
+    return [...delArea, ...sinArea];
+  }, [todosCargos, idArea]);
 
   const setField = <K extends keyof DTO_CrearEmpleado>(
     field: K,
     value: DTO_CrearEmpleado[K],
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSetIdArea = (value: number | null) => {
+    setIdArea(value);
+    // Limpiar cargo solo si el cargo actualmente seleccionado pertenece a un área
+    // (es decir, tiene id_area no null). Los cargos sin área se mantienen seleccionables.
+    const cargoActual = todosCargos.find((c) => c.id_cargo === form.id_cargo);
+    if (cargoActual && cargoActual.id_area !== null) {
+      setForm((prev) => ({ ...prev, id_cargo: 0 }));
+    }
   };
 
   const handleSubmit = async () => {
@@ -128,7 +145,7 @@ export const useRegistroEmpleado = (
     form,
     setField,
     idArea,
-    setIdArea,
+    setIdArea: handleSetIdArea,
     empresas,
     areas,
     cargos,

@@ -156,7 +156,7 @@ export const useDetallePrestamo = ({ idPrestamo, onSuccess }: Props) => {
   }, [idPrestamo, notifyError]);
 
   const handleCambiarEstado = useCallback(
-    async (nuevoEstado: string) => {
+    async (nuevoEstado: Estado_PrestamoDetalle) => {
       const ids = selectedItemId ? [selectedItemId] : idsParaAccionMasiva;
       if (ids.length === 0) return;
 

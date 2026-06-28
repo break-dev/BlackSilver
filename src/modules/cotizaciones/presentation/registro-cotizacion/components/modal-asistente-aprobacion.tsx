@@ -238,14 +238,14 @@ export const ModalAsistenteAprobacion = ({
       const comparativoData = resp.data[0];
 
       // --- AUTO-PRINT: FORMATO COTIZACIÓN (Todas las registradas) ---
-      // path_logo ya viene como base64 data URL desde el backend
+      // url_logo ya viene como base64 data URL desde el backend
       const cotizacionesPDFData = comparativoData.cotizaciones.map(
         (cot: RES_Cotizacion) => ({
           cotizacion: cot,
           detalles: cot.detalles,
           empresas: cot.empresas.map((e) => ({
             razon_social: e.razon_social,
-            path_logo: e.path_logo ?? null,
+            url_logo: e.url_logo ?? null,
           })),
         }),
       );

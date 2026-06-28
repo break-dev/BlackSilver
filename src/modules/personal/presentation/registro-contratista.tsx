@@ -168,7 +168,7 @@ export const RegistroContratista = ({
         }
         data={labores.map((l) => ({
           value: l.id_labor.toString(),
-          label: l.nombre ? `${l.correlativo} (${l.nombre})` : l.correlativo,
+          label: l.nombre,
         }))}
         value={form.ids_labor?.map((id) => id.toString()) || []}
         onChange={(vals) => setField("ids_labor", vals.map(Number))}

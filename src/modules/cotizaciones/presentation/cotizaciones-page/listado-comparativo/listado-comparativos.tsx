@@ -94,10 +94,10 @@ export const ListadoComparativos = ({
     const target = `Cotizacion_${cot.id_cotizacion}_${Date.now()}`;
     prepare(target);
 
-    // path_logo ya viene como base64 data URL desde el backend
+    // url_logo ya viene como base64 data URL desde el backend
     const empresasInfo = cot.empresas.map((e) => ({
       razon_social: e.razon_social,
-      path_logo: e.path_logo ?? null,
+      url_logo: e.url_logo ?? null,
     }));
 
     print(
@@ -299,25 +299,25 @@ export const ListadoComparativos = ({
         cotizacion={
           selectedCotIdParaAprobar
             ? comparativos
-              .flatMap((comp) => comp.cotizaciones)
-              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
-            null
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar) ||
+              null
             : null
         }
         detalles={
           selectedCotIdParaAprobar
             ? (comparativos
-              .flatMap((comp) => comp.cotizaciones)
-              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-              ?.detalles ?? [])
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.detalles ?? [])
             : []
         }
         empresas={
           selectedCotIdParaAprobar
             ? (comparativos
-              .flatMap((comp) => comp.cotizaciones)
-              .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
-              ?.empresas ?? [])
+                .flatMap((comp) => comp.cotizaciones)
+                .find((c) => c.id_cotizacion === selectedCotIdParaAprobar)
+                ?.empresas ?? [])
             : []
         }
         onSuccess={handleSuccessAprobacion}

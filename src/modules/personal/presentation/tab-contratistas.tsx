@@ -165,7 +165,7 @@ export const TabContratistas = ({
                           size="xs"
                           className="font-bold h-6 border border-cyan-500/10"
                         >
-                          {lab.correlativo}
+                          {lab.nombre}
                         </Badge>
                       ))
                     )}

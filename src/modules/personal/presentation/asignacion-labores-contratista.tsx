@@ -18,7 +18,6 @@ import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
 
-
 interface AsignacionLaboresContratistaProps {
   contratista: RES_ContratistaResumen;
   minas: RES_Mina[];
@@ -164,16 +163,8 @@ export const AsignacionLaboresContratista = ({
                         size="sm"
                         className="font-mono"
                       >
-                        {labor.correlativo}
+                        {labor.nombre}
                       </Badge>
-                      {labor.nombre && (
-                        <Text
-                          size="xs"
-                          className="text-zinc-400 mt-1 font-medium"
-                        >
-                          {labor.nombre}
-                        </Text>
-                      )}
                     </div>
                     {isChecked && (
                       <Badge variant="dot" color="indigo" size="xs">

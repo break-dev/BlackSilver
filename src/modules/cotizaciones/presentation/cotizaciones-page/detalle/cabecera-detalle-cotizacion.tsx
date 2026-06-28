@@ -36,7 +36,7 @@ interface CabeceraDetalleCotizacionProps {
   totalAntesIgv: number;
   totalDespuesIgv: number;
   observacion?: string | null;
-  estado: string;
+  estado: Estado_Cotizacion;
   idCotizacion: number;
   onApprove?: (id: number) => void;
   loading?: boolean;

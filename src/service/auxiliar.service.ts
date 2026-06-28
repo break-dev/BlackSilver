@@ -223,7 +223,6 @@ export const AuxService = {
    * Obtener catálogo de productos
    */
   get_productos: async (filters?: {
-    con_categorias_consumidoras?: boolean;
     tipo_bien_excluido?: TipoBien;
     tipo_bien?: TipoBien;
   }): Promise<IRespuesta<RES_Producto[]>> => {
@@ -372,6 +371,20 @@ export const AuxService = {
     return data;
   },
 
+  registrar_lote: async (nuevoLote: {
+    id_contratista: number;
+    id_mina: number;
+    id_labor: number;
+    descripcion?: string | null;
+    fecha_inicio_produccion?: string | null;
+  }): Promise<IRespuesta<RES_LoteMineral>> => {
+    const { data } = await api.post<IRespuesta<RES_LoteMineral>>(
+      "/lote-mineral",
+      nuevoLote,
+    );
+    return data;
+  },
+
   get_bancos: async (): Promise<IRespuesta<RES_Banco[]>> => {
     const { data } = await api.get<IRespuesta<RES_Banco[]>>(`${path}/bancos`);
     return data;
@@ -391,6 +404,7 @@ export const AuxService = {
   get_areas: async (filters?: {
     id_area?: number;
     estado?: EstadoBase;
+    con_cargos?: boolean;
   }): Promise<IRespuesta<RES_Area[]>> => {
     const { data } = await api.get<IRespuesta<RES_Area[]>>(`${path}/areas`, {
       params: filters,
@@ -402,6 +416,7 @@ export const AuxService = {
     id_cargo?: number;
     id_area?: number;
     estado?: EstadoBase;
+    con_area?: boolean;
   }): Promise<IRespuesta<RES_Cargo[]>> => {
     const { data } = await api.get<IRespuesta<RES_Cargo[]>>(`${path}/cargos`, {
       params: filters,

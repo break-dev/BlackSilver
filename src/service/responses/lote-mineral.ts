@@ -1,3 +1,5 @@
+import type { EstadoLoteMineral } from "../../shared/enums/lote-mineral";
+
 export interface RES_LoteMineral {
   id_lote_mineral: number;
   //
@@ -5,10 +7,14 @@ export interface RES_LoteMineral {
   mina: string;
   //
   id_labor: number;
-  labor: string | null;
-  labor_prefijo: string | null;
+  labor: string;
   //
-  correlativo: string;
-  codigo_interno: string | null;
-  fecha_inicio_produccion: string | null;
+  id_contratista: number;
+  contratista: string;
+  //
+  codigo: string;
+  descripcion: string | null;
+  fecha_inicio_produccion: string;
+  //
+  estado: EstadoLoteMineral;
 }

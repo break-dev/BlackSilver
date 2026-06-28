@@ -1,23 +1,23 @@
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 import { TipoMineral } from "../../../shared/enums/_generic/tipo-mineral";
 
 export interface RES_Concesion {
   id_concesion: number;
   nombre: string;
-  codigo_concesion: string;
   codigo_reinfo: string | null;
   ubigeo: string | null;
   tipo_mineral: TipoMineral | string;
-  estado: string;
+  estado: EstadoBase;
   contratos_activos: number;
 }
 
 export interface RES_Contrato {
   id_contrato: number;
   id_empresa: number;
-  nombre_comercial: string;
+  razon_social: string;
   ruc: string;
-  path_logo: string | null;
+  url_logo: string | null;
   fecha_inicio: string;
   fecha_fin: string | null;
-  estado: string;
+  estado: EstadoBase;
 }

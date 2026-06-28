@@ -1,3 +1,4 @@
+import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 import type { EstadoVencimientoProducto } from "../../../shared/enums/_generic/estado-vencimiento-producto";
 
 export interface RES_Lote {
@@ -6,9 +7,9 @@ export interface RES_Lote {
   id_almacen: number;
   id_unidad_medida: number;
   producto: string;
-  unidad_medida_base: string;
+  unidad_medida_base_abv: string;
   categoria: string | null;
-  unidad_medida: string;
+  unidad_medida_abv: string;
   descripcion: string | null;
   correlativo: string;
   stock_actual: number;
@@ -16,7 +17,7 @@ export interface RES_Lote {
   stock_actual_base: number;
   fecha_hora_ingreso: string;
   fecha_vencimiento: string | null;
-  estado: string;
+  estado: EstadoBase;
   es_perecible: boolean;
   es_auditable: boolean;
   stock_minimo_base: number;

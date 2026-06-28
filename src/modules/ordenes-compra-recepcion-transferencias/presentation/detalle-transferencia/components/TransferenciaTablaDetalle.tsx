@@ -6,13 +6,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { RES_OCTransferenciaDetalle } from "../../../../../service/responses/ordenes-compra/orden-compra-transferencia";
+import type { Estado_OCTransferencia } from "../../../../../shared/enums/orden-compra/orden-compra-transferencia";
 
 interface Props {
   detalles: RES_OCTransferenciaDetalle[];
   loading?: boolean;
   onOpenHistorial: () => void;
   onOpenNuevaRecepcion: () => void;
-  estado: string;
+  estado: Estado_OCTransferencia;
 }
 
 export const TransferenciaTablaDetalle = ({
@@ -94,7 +95,12 @@ export const TransferenciaTablaDetalle = ({
                 <td colSpan={5} className="px-6 py-10 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <Loader size="sm" color="indigo" type="dots" />
-                    <Text size="xs" fw={700} c="indigo.4" className="uppercase tracking-widest animate-pulse">
+                    <Text
+                      size="xs"
+                      fw={700}
+                      c="indigo.4"
+                      className="uppercase tracking-widest animate-pulse"
+                    >
                       Cargando detalles...
                     </Text>
                   </div>

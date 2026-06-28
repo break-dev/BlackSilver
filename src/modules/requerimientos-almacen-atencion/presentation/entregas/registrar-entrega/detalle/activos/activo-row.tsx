@@ -181,7 +181,7 @@ export const ActivoRow = ({
               placeholder="Lote Mineral"
               data={lotesMineral.map((lm) => ({
                 value: String(lm.id_lote_mineral),
-                label: lm.correlativo,
+                label: lm.codigo,
               }))}
               value={dest.id_lote_mineral ? String(dest.id_lote_mineral) : null}
               onChange={(val) =>

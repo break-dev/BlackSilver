@@ -1,9 +1,10 @@
+import type { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
+
 export interface RegistrarLoteMineralRequest {
   id_contratista: number;
   id_mina: number;
-  id_labor?: number | null;
-  // codigo_interno: generado en Producción, no se envía en el registro inicial
-  codigo_interno?: null;
+  id_labor: number;
   descripcion?: string | null;
-  inicio_produccion?: string | null;
+  fecha_inicio_produccion?: string | null;
+  estado_inicial: EstadoLoteMineral;
 }

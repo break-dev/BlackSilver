@@ -46,9 +46,7 @@ export const IniciarProduccion = ({
         }
         data={lotesPendientes.map((l) => ({
           value: String(l.id_lote_mineral),
-          label: `${l.correlativo} ${
-            l.codigo_interno ? `[${l.codigo_interno}]` : ""
-          } - Mina: ${l.mina}`,
+          label: `${l.codigo}  - Mina: ${l.mina}`,
         }))}
         value={selectedLoteId}
         onChange={setSelectedLoteId}

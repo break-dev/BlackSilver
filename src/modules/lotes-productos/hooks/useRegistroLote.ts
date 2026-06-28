@@ -114,6 +114,23 @@ export const useRegistroLote = ({
     }
   }, [sonUnidadesIdenticas]);
 
+  // Auto-calculate costoPorUnidad based on selected product and unit/content
+  useEffect(() => {
+    if (idProducto && productos.length > 0) {
+      const prod = productos.find((p) => p.id_producto === idProducto);
+      if (prod) {
+        const baseCost = prod.costo_promedio_base || 0;
+        if (sonUnidadesIdenticas) {
+          setCostoPorUnidad(baseCost);
+        } else {
+          setCostoPorUnidad(Number((baseCost * (contenidoPorPresentacion || 1)).toFixed(2)));
+        }
+      }
+    } else {
+      setCostoPorUnidad(null);
+    }
+  }, [idProducto, idUnidadMedida, sonUnidadesIdenticas, contenidoPorPresentacion, productos]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();

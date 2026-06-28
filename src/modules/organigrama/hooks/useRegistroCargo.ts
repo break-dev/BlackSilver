@@ -2,32 +2,30 @@ import { useState, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { OrganigramaService } from "../service/organigrama.service";
 import { Schema_RegistroCargo } from "../service/organigrama.requests";
-import type { RES_Cargo } from "../service/organigrama.responses";
+import type { RES_Cargo } from "../../../service/responses/organigrama";
 
 export const useRegistroCargo = (
   onSuccess: (c: RES_Cargo) => void,
   onClose: () => void,
-  defaultAreaId?: number,
+  defaultAreaId?: number | null,
 ) => {
-  const { notify } = useNotify();
+  const { notifySuccess } = useNotify();
   const [nombre, setNombre] = useState("");
-  const [idArea, setIdArea] = useState<string | null>(
-    defaultAreaId?.toString() || null,
-  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // idArea es controlado externamente desde la UI cuando se registra desde una tarjeta de área
+  const [idArea, setIdArea] = useState<number | null>(defaultAreaId ?? null);
+
   useEffect(() => {
-    if (defaultAreaId) {
-      setIdArea(defaultAreaId.toString());
-    }
+    setIdArea(defaultAreaId ?? null);
   }, [defaultAreaId]);
 
   const handleGuardar = async () => {
     setError("");
     const validation = Schema_RegistroCargo.safeParse({
       nombre,
-      id_area: idArea ? parseInt(idArea) : 0,
+      id_area: idArea,
     });
 
     if (!validation.success) {
@@ -39,7 +37,7 @@ export const useRegistroCargo = (
     try {
       const resp = await OrganigramaService.crear_cargo(validation.data);
       if (resp.success) {
-        notify({ type: "success", content: "Cargo creado" });
+        notifySuccess("Cargo creado correctamente");
         onSuccess(resp.data);
         onClose();
         setNombre("");

@@ -118,7 +118,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     modelo: "",
     serie_placa: "",
     numero_placa: "",
-    yearcito_modelo: new Date().getFullYear(),
+    yearcito_modelo: null,
     descripcion: "",
     especificaciones: [],
     fecha_hora_ingreso: null,
@@ -427,7 +427,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
           <Grid.Col span={4}>
             <NumberInput
               label="Año del Modelo"
-              value={form.yearcito_modelo || 0}
+              value={form.yearcito_modelo || undefined}
               onChange={(val) =>
                 setForm({ ...form, yearcito_modelo: Number(val) })
               }

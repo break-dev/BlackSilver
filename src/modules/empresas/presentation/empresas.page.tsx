@@ -1,9 +1,4 @@
-import {
-  Button,
-  TextInput,
-  Skeleton,
-  Text,
-} from "@mantine/core";
+import { Button, TextInput, Skeleton, Text } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -53,7 +48,8 @@ export const EmpresasPage = () => {
             radius="lg"
             size="sm"
             classNames={{
-              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
               label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             }}
           />
@@ -73,12 +69,15 @@ export const EmpresasPage = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4">
+            <div
+              key={i}
+              className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4"
+            >
               {/* Badge Skeleton */}
               <div className="flex justify-start">
                 <Skeleton height={18} width={90} radius="md" />
               </div>
-              
+
               {/* Content Skeleton (Horizontal) */}
               <div className="flex items-center gap-5">
                 <Skeleton height={80} width={80} circle />
@@ -105,10 +104,10 @@ export const EmpresasPage = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {empresasFiltradas.map((empresa) => (
-            <EmpresaCard 
-              key={empresa.id_empresa} 
-              empresa={empresa} 
-              onUpdateLogo={handleUpdateLogo} 
+            <EmpresaCard
+              key={empresa.id_empresa}
+              empresa={empresa}
+              onUpdateLogo={handleUpdateLogo}
             />
           ))}
         </div>
@@ -126,10 +125,6 @@ export const EmpresasPage = () => {
           setRuc={registro.setRuc}
           razonSocial={registro.razonSocial}
           setRazonSocial={registro.setRazonSocial}
-          nombreComercial={registro.nombreComercial}
-          setNombreComercial={registro.setNombreComercial}
-          abreviatura={registro.abreviatura}
-          setAbreviatura={registro.setAbreviatura}
           logoFile={registro.logoFile}
           setLogoFile={registro.setLogoFile}
           error={registro.error}

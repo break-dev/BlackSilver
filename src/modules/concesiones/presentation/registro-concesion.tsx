@@ -37,17 +37,6 @@ export const RegistroConcesion = ({
 
       <Group grow align="flex-start" gap="md">
         <TextInput
-          label="Código"
-          placeholder="Ej. COD-12345"
-          value={form.codigo_concesion}
-          onChange={(e) => setField("codigo_concesion", e.currentTarget.value)}
-          classNames={fieldClasses}
-          radius="lg"
-          required
-          withAsterisk
-          disabled={loading}
-        />
-        <TextInput
           label="Cod. REINFO"
           placeholder="Ej. REINFO-999"
           value={form.codigo_reinfo || ""}

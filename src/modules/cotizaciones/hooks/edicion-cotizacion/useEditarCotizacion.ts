@@ -26,7 +26,8 @@ export const useEditarCotizacion = (
   onSuccess: (data: RES_Comparativo[]) => void,
 ) => {
   const { notify } = useNotify();
-  const { maestros, loadingMaestros, agregarProveedorLocal } = useCotizacionMaestros();
+  const { maestros, loadingMaestros, agregarProveedorLocal } =
+    useCotizacionMaestros();
   const [loading, setLoading] = useState(false);
 
   // Mapear RES_Cotizacion a DTO_CotizacionRequest para el grid
@@ -182,9 +183,18 @@ export const useEditarCotizacion = (
               id_proveedor: cotizacionInicial.id_proveedor,
               razon_social: cotizacionInicial.proveedor,
               direccion: null,
-              ruc: cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Juridica ? cotizacionInicial.documento_proveedor : null,
-              dni: cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Natural ? cotizacionInicial.documento_proveedor : null,
-              tipo_entidad: (cotizacionInicial.tipo_entidad_proveedor as TipoEntidad) || TipoEntidad.Juridica,
+              ruc:
+                cotizacionInicial.tipo_entidad_proveedor ===
+                TipoEntidad.Juridica
+                  ? cotizacionInicial.documento_proveedor
+                  : null,
+              dni:
+                cotizacionInicial.tipo_entidad_proveedor === TipoEntidad.Natural
+                  ? cotizacionInicial.documento_proveedor
+                  : null,
+              tipo_entidad:
+                (cotizacionInicial.tipo_entidad_proveedor as TipoEntidad) ||
+                TipoEntidad.Juridica,
               para_mantenimiento: false,
             },
           ],
@@ -195,8 +205,7 @@ export const useEditarCotizacion = (
             id_empresa: e.id_empresa,
             ruc: "",
             razon_social: e.razon_social,
-            nombre_comercial: "",
-            path_logo: null,
+            url_logo: null,
           })),
     unidades:
       maestros.unidades.length > 0
