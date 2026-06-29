@@ -43,9 +43,7 @@ export const RegistroLoteMineral = ({
   const contratistasOpciones = useMemo(() => {
     return (contratistas || []).map((c: RES_Contratista) => {
       const id = (c.id_contratista ?? c.id)?.toString() ?? "";
-      const nombre =
-        c.nombre_completo ||
-        [c.nombre, c.apellido].filter(Boolean).join(" ").trim();
+      const nombre = c.nombre_completo;
       return { value: id, label: nombre || `Contratista #${id}` };
     });
   }, [contratistas]);

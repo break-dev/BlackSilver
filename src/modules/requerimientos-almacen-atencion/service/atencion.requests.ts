@@ -5,8 +5,8 @@ import { Premura } from "../../../shared/enums/_generic/premura";
 
 export interface DTO_CrearRequerimiento {
   id_empleado_solicitante?: number | null;
-  id_mina?: number | null;
-  id_labores?: number[] | null;
+  id_contratista_solicitante?: number | null;
+  id_labor?: number | null;
   id_almacen_destino: number;
   premura: Premura;
   fecha_entrega_requerida?: string | null;
@@ -41,8 +41,8 @@ export const Schema_CrearRequerimientoDetalle = z.object({
 
 export const Schema_CrearRequerimiento = z.object({
   id_empleado_solicitante: z.number().nullable().optional(),
-  id_mina: z.number().nullable().optional(),
-  id_labores: z.array(z.number()).nullable().optional(),
+  id_contratista_solicitante: z.number().nullable().optional(),
+  id_labor: z.number().nullable().optional(),
   id_almacen_destino: z.number().min(1, "Seleccione un almacén de destino"),
   premura: z.nativeEnum(Premura),
   es_auditable: z.boolean(),
@@ -61,7 +61,8 @@ export interface DTO_AtencionCambiarEstado {
 
 export interface DTO_RegistrarEntrega {
   id_requerimiento: number;
-  id_empleado_recibe: number;
+  id_empleado_recibe?: number | null;
+  id_contratista_recibe?: number | null;
   fecha_entrega: string;
   observacion?: string;
   evidencias?: File[];

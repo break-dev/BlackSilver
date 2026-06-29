@@ -30,8 +30,8 @@ export const InfoHeader = ({ requerimiento }: InfoHeaderProps) => {
       />
       <HeaderCard
         icon={MapPinIcon}
-        label="Mina"
-        value={requerimiento.mina}
+        label="Labor"
+        value={requerimiento.labor}
         color="amber"
       />
       <Paper

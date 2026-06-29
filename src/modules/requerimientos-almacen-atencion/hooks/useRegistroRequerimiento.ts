@@ -14,7 +14,6 @@ import type { RES_RequerimientoAlmacen } from "../../../service/responses/requer
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
-import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_Contratista } from "../../../service/responses/contratista";
@@ -37,15 +36,14 @@ export const useRegistroRequerimiento = ({
   const [submitting, setSubmitting] = useState(false);
   const [loadingProductos, setLoadingProductos] = useState(false);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
-  const [loadingMinas, setLoadingMinas] = useState(false);
+  const [loadingLabores, setLoadingLabores] = useState(false);
   const [loadingMinaData, setLoadingMinaData] = useState(false);
   const [loadingActivos, setLoadingActivos] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadingCatalogs = loadingProductos || loadingUnidades;
+  const loadingCatalogs = loadingProductos || loadingUnidades || loadingLabores;
 
   // Catálogos
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
   const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
   const [verContratistas, setVerContratistas] = useState(false);
@@ -59,9 +57,8 @@ export const useRegistroRequerimiento = ({
   const [idAlmacenDestino, setIdAlmacenDestino] = useState<number>(
     idAlmacenFijo || 0,
   );
-  const [idMina, setIdMina] = useState<number>(0);
+  const [idLabor, setIdLabor] = useState<number>(0);
   const [idEmpleadoSolicitante, setIdEmpleadoSolicitante] = useState<number>(0);
-  const [idLabores, setIdLabores] = useState<number[]>([]);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
     useState<Date | null>(null);
@@ -84,15 +81,17 @@ export const useRegistroRequerimiento = ({
     const loadCatalogs = async () => {
       setLoadingProductos(true);
       setLoadingUnidades(true);
+      setLoadingLabores(true);
       setLoadingMinaData(true);
       setLoadingActivos(true);
       try {
-        const [resProd, resUnid, resEmp, resAct, resCont] = await Promise.all([
+        const [resProd, resUnid, resEmp, resAct, resCont, resLab] = await Promise.all([
           AuxService.get_productos(),
           AuxService.get_unidades_medida(),
           AuxService.get_empleados(),
           AuxService.get_activos_disponibles(),
           AuxService.get_contratistas(),
+          AuxService.get_labores(),
         ]);
 
         if (resProd.success && resProd.data) setProductos(resProd.data);
@@ -100,11 +99,13 @@ export const useRegistroRequerimiento = ({
         if (resEmp.success && resEmp.data) setEmpleados(resEmp.data);
         if (resAct.success && resAct.data) setActivos(resAct.data);
         if (resCont.success && resCont.data) setContratistas(resCont.data);
+        if (resLab.success && resLab.data) setLabores(resLab.data);
       } catch (err) {
         console.error("Error loading catalogs", err);
       } finally {
         setLoadingProductos(false);
         setLoadingUnidades(false);
+        setLoadingLabores(false);
         setLoadingMinaData(false);
         setLoadingActivos(false);
       }
@@ -112,51 +113,6 @@ export const useRegistroRequerimiento = ({
 
     loadCatalogs();
   }, []);
-
-  // 2. Cargar minas cuando cambia almacén
-  useEffect(() => {
-    if (idAlmacenDestino > 0) {
-      const loadMinas = async () => {
-        setLoadingMinas(true);
-        try {
-          const res = await AuxService.get_minas({
-            id_almacen_abastece: idAlmacenDestino,
-          });
-          if (res.success) {
-            setMinas(res.data);
-          }
-        } finally {
-          setLoadingMinas(false);
-        }
-      };
-      loadMinas();
-    } else {
-      setMinas([]);
-      setIdMina(0);
-    }
-  }, [idAlmacenDestino]);
-
-  // 3. Cargar Labores al elegir Mina
-  useEffect(() => {
-    setIdLabores([]);
-    setLabores([]);
-
-    if (idMina > 0) {
-      const loadLabores = async () => {
-        setLoadingMinaData(true);
-        try {
-          const res = await AuxService.get_labores({ id_mina: idMina });
-          if (res.success) {
-            setLabores(res.data);
-          }
-        } finally {
-          setLoadingMinaData(false);
-        }
-      };
-
-      loadLabores();
-    }
-  }, [idMina]);
 
   // Cargar activos fijos disponibles
   useEffect(() => {
@@ -316,10 +272,11 @@ export const useRegistroRequerimiento = ({
 
     const dto: DTO_CrearRequerimiento = {
       id_empleado_solicitante:
-        idEmpleadoSolicitante > 0 ? idEmpleadoSolicitante : null,
-      id_mina: idMina > 0 ? idMina : null,
+        !verContratistas && idEmpleadoSolicitante > 0 ? idEmpleadoSolicitante : null,
+      id_contratista_solicitante:
+        verContratistas && idEmpleadoSolicitante > 0 ? idEmpleadoSolicitante : null,
+      id_labor: idLabor > 0 ? idLabor : null,
       id_almacen_destino: idAlmacenDestino,
-      id_labores: idLabores.length > 0 ? idLabores : null,
       premura,
       es_auditable: esAuditable,
       fecha_entrega_requerida: fechaEntregaRequerida
@@ -370,9 +327,9 @@ export const useRegistroRequerimiento = ({
     }
   }, [
     idEmpleadoSolicitante,
-    idMina,
+    verContratistas,
+    idLabor,
     idAlmacenDestino,
-    idLabores,
     premura,
     fechaEntregaRequerida,
     observacion,
@@ -386,7 +343,6 @@ export const useRegistroRequerimiento = ({
 
   return {
     state: {
-      minas,
       labores,
       productos,
       unidades,
@@ -395,16 +351,14 @@ export const useRegistroRequerimiento = ({
       setEvidencias,
       idAlmacenDestino,
       setIdAlmacenDestino,
-      idMina,
-      setIdMina,
+      idLabor,
+      setIdLabor,
       idEmpleadoSolicitante,
       setIdEmpleadoSolicitante,
       empleados,
       contratistas,
       verContratistas,
       setVerContratistas,
-      idLabores,
-      setIdLabores,
       premura,
       setPremura,
       fechaEntregaRequerida,
@@ -438,7 +392,7 @@ export const useRegistroRequerimiento = ({
     status: {
       submitting,
       loadingCatalogs,
-      loadingMinas,
+      loadingLabores,
       loadingMinaData,
       loadingActivos,
       error,

@@ -1,8 +1,6 @@
 export interface RES_Contratista {
   id?: number;
   id_contratista: number;
-  nombre: string;
-  apellido: string;
   nombre_completo?: string | null;
   dni: string;
   ruc: string | null;
@@ -11,4 +9,3 @@ export interface RES_Contratista {
   id_mina: number | null;
   mina: string | null;
 }
-

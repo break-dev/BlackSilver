@@ -109,9 +109,7 @@ export const RegistroConsumo = ({
     const fetchLabores = async () => {
       setLoadingLabores(true);
       try {
-        const resp = await AuxService.get_labores({
-          id_requerimiento: selectedDetail.id_requerimiento_almacen,
-        });
+        const resp = await AuxService.get_labores();
         if (resp.success && resp.data) {
           setLaboresRequerimiento(resp.data);
         }
@@ -504,7 +502,7 @@ export const RegistroConsumo = ({
                 />
               ) : (
                 <Select
-                  label="Lote de Mineral (Producción) *"
+                  label="Lote en Producción"
                   placeholder={loadingLotes ? "Cargando lotes..." : "Seleccione lote mineral..."}
                   data={lotesMineral.map((lm) => ({
                     value: String(lm.id_lote_mineral),

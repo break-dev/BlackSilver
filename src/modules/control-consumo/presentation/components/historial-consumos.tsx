@@ -64,7 +64,7 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                     </Text>
                     {(c.para_produccion === true || Number(c.para_produccion) === 1) && (
                       <Badge size="xs" color="teal" variant="light" className="font-semibold uppercase tracking-wider py-1 border border-current/15">
-                        Prod.: {c.correlativo_lote_mineral || "S/L"}
+                        Prod.: {c.codigo_lote_mineral || "S/L"}
                       </Badge>
                     )}
                     {c.labores_destinos && (

@@ -354,7 +354,6 @@ export const AuxService = {
   get_labores: async (filters?: {
     id_mina?: number;
     id_labor?: number;
-    id_requerimiento?: number;
     id_contratista_excluyente?: number;
   }): Promise<IRespuesta<RES_Labor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Labor[]>>(`${path}/labores`, {

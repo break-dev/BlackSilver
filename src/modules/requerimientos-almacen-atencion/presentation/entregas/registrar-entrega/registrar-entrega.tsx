@@ -11,7 +11,8 @@ interface RegistrarEntregaProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  idContratistaSolicitante: number ;
+  idContratistaSolicitante: number | null;
+  idEmpleadoSolicitante: number | null;
   onSuccess: (entregados: Record<number, number>) => void;
   onCancel: () => void;
 }
@@ -22,6 +23,7 @@ export const RegistrarEntrega = ({
   selectedItemsIds,
   detallesRequerimiento,
   idContratistaSolicitante,
+  idEmpleadoSolicitante,
   onSuccess,
   onCancel,
 }: RegistrarEntregaProps) => {
@@ -36,8 +38,13 @@ export const RegistrarEntrega = ({
     entregaCantidadesActivos,
     destinosMap,
     empleados,
+    contratistas,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
+    idContratistaRecibe,
+    setIdContratistaRecibe,
+    esContratistaRecibe,
+    setEsContratistaRecibe,
     observacion,
     setObservacion,
     evidencias,
@@ -56,6 +63,7 @@ export const RegistrarEntrega = ({
     selectedItemsIds,
     detallesRequerimiento,
     idContratistaSolicitante,
+    idEmpleadoSolicitante,
     onSuccess: (entregados) => {
       onSuccess(entregados);
     },
@@ -100,8 +108,13 @@ export const RegistrarEntrega = ({
     <Stack gap="lg" className="font-sans">
       <EntregaHeader
         empleados={empleados}
+        contratistas={contratistas}
         idEmpleadoRecibe={idEmpleadoRecibe}
         setIdEmpleadoRecibe={setIdEmpleadoRecibe}
+        idContratistaRecibe={idContratistaRecibe}
+        setIdContratistaRecibe={setIdContratistaRecibe}
+        esContratistaRecibe={esContratistaRecibe}
+        setEsContratistaRecibe={setEsContratistaRecibe}
         observacion={observacion}
         setObservacion={setObservacion}
         evidencias={evidencias}
@@ -159,7 +172,7 @@ export const RegistrarEntrega = ({
           radius="lg"
           leftSection={<ClipboardDocumentCheckIcon className="w-5 h-5" />}
           disabled={
-            !idEmpleadoRecibe || totalEntregaGeneralBase <= 0 || isProcessing
+            !(esContratistaRecibe ? idContratistaRecibe : idEmpleadoRecibe) || totalEntregaGeneralBase <= 0 || isProcessing
           }
           loading={isProcessing}
           onClick={handleConfirmar}

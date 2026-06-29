@@ -5,7 +5,6 @@ import type {
   Estado_RequerimientoDetalle,
 } from "../../../shared/enums/requerimiento-almacen/requerimiento";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
-import type { RES_Labor } from "../labor";
 
 /**
  * Representa un requerimiento en el resumen de atención
@@ -16,12 +15,13 @@ export interface RES_RequerimientoAlmacen {
   id_almacen_destino: number;
   almacen_destino: string;
   //
-  id_empleado_solicitante: number;
+  id_empleado_solicitante: number | null;
+  id_contratista_solicitante: number | null;
   solicitante: string;
-  responsable: string;
+  empleado_registro: string;
   //
-  id_mina: number;
-  mina: string;
+  id_labor: number;
+  labor: string;
   //
   correlativo: string;
   evidencias: IArchivo[] | null;
@@ -32,7 +32,6 @@ export interface RES_RequerimientoAlmacen {
   estado: Estado_Requerimiento;
   created_at: string;
   // Insertado por la api
-  labores?: RES_Labor[];
   detalles?: RES_DetalleRequerimiento[];
 }
 

@@ -8,7 +8,8 @@ import type { IArchivo } from "../../../shared/interfaces/archivo";
 export interface RES_EntregaRequerimiento {
   id_requerimiento_almacen_entrega: number;
   empleado_entrega: string;
-  empleado_recibe: string;
+  empleado_recibe: string | null;
+  contratista_recibe: string | null;
   correlativo: string;
   fecha_hora_entrega: string;
   observacion: string | null;

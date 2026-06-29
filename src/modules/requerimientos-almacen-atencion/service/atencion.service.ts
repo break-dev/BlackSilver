@@ -1,5 +1,6 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type {
   DTO_AtencionCambiarEstado,
   DTO_RegistrarEntrega,
@@ -24,8 +25,14 @@ export const AtencionService = {
         String(dto.id_empleado_solicitante),
       );
     }
-    if (dto.id_mina && dto.id_mina > 0) {
-      formData.append("id_mina", String(dto.id_mina));
+    if (dto.id_contratista_solicitante) {
+      formData.append(
+        "id_contratista_solicitante",
+        String(dto.id_contratista_solicitante),
+      );
+    }
+    if (dto.id_labor && dto.id_labor > 0) {
+      formData.append("id_labor", String(dto.id_labor));
     }
     formData.append("id_almacen_destino", String(dto.id_almacen_destino));
     formData.append("premura", dto.premura);
@@ -35,10 +42,6 @@ export const AtencionService = {
     }
     if (dto.observacion) {
       formData.append("observacion", dto.observacion);
-    }
-
-    if (dto.id_labores && dto.id_labores.length > 0) {
-      dto.id_labores.forEach((id) => formData.append("labores[]", String(id)));
     }
 
     dto.detalles.forEach((det, index) => {
@@ -105,7 +108,12 @@ export const AtencionService = {
     if (dto.evidencias && dto.evidencias.length > 0) {
       const formData = new FormData();
       formData.append("id_requerimiento", dto.id_requerimiento.toString());
-      formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      if (dto.id_empleado_recibe) {
+        formData.append("id_empleado_recibe", dto.id_empleado_recibe.toString());
+      }
+      if (dto.id_contratista_recibe) {
+        formData.append("id_contratista_recibe", dto.id_contratista_recibe.toString());
+      }
       formData.append("fecha_entrega", dto.fecha_entrega);
       if (dto.observacion) formData.append("observacion", dto.observacion);
 
@@ -180,6 +188,21 @@ export const AtencionService = {
     const res = await api.post<IRespuesta<null>>(
       `${path}/save-solicitud-logistica`,
       dto,
+    );
+    return res.data;
+  },
+
+  subirEvidencias: async (idRequerimiento: number, evidencias: File[]) => {
+    const formData = new FormData();
+    formData.append("id_requerimiento", String(idRequerimiento));
+    evidencias.forEach((file) => formData.append("evidencias[]", file));
+
+    const res = await api.post<IRespuesta<IArchivo[]>>(
+      `${path}/evidencias`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
     );
     return res.data;
   },

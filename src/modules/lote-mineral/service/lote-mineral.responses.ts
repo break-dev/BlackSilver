@@ -2,8 +2,7 @@ import type { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
 
 export interface LoteMineralResumen {
   id_lote_mineral: number;
-  correlativo: string;
-  codigo_interno: string | null;
+  codigo: string | null;
   fecha_inicio_produccion: string | null;
   descripcion: string | null;
   estado: EstadoLoteMineral;

@@ -104,7 +104,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
       (item) =>
         item.correlativo.toLowerCase().includes(q) ||
         item.solicitante.toLowerCase().includes(q) ||
-        item.mina.toLowerCase().includes(q),
+        item.labor.toLowerCase().includes(q),
     );
   }, [data, busqueda, en_modo_auditable]);
 

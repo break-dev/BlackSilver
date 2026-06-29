@@ -193,7 +193,8 @@ export const InfoActionModals = ({
           idAlmacen={idAlmacen}
           selectedItemsIds={selectedItemsIds}
           detallesRequerimiento={detalles}
-          idContratistaSolicitante={requerimiento.id_empleado_solicitante}
+          idContratistaSolicitante={requerimiento.id_contratista_solicitante}
+          idEmpleadoSolicitante={requerimiento.id_empleado_solicitante}
           onCancel={closeEntregaBatch}
           onSuccess={() => {
             closeEntregaBatch();

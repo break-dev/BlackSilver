@@ -70,15 +70,15 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
             </View>
 
             <View style={tw("flex-1")}>
-              {/* Mina */}
+              {/* Labor */}
               <Text
                 style={tw("text-[8pt] font-bold text-zinc-500 mb-1 uppercase")}
               >
-                Mina Origen
+                Labor
               </Text>
-              {req.mina ? (
+              {req.labor ? (
                 <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
-                  {req.mina}
+                  {req.labor}
                 </Text>
               ) : (
                 <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
@@ -130,20 +130,6 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
                   </Text>
                 </View>
               </View>
-            </View>
-
-            <View style={tw("w-1/3")}>
-              {/* labores asociadas */}
-              <Text
-                style={tw("text-[8pt] font-bold text-zinc-500 mb-1 uppercase")}
-              >
-                Labores
-              </Text>
-              <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
-                {req.labores && req.labores.length > 0
-                  ? req.labores.map((l) => l.nombre).join(", ")
-                  : "---"}
-              </Text>
             </View>
           </View>
 

@@ -29,7 +29,7 @@ export interface GroupedRequerimiento {
   correlativo_requerimiento: string | number;
   fecha_requerimiento: string;
   es_auditable: boolean | number;
-  empleado_solicitante: string;
+  solicitante: string;
   mina: string;
   almacen_destino: string;
   entregas: GroupedEntrega[];
@@ -315,7 +315,7 @@ export const CardRequerimiento = ({
               Solicitante:
             </span>
             <span className="text-zinc-300 font-semibold">
-              {req.empleado_solicitante}
+              {req.solicitante}
             </span>
           </div>
           <div>

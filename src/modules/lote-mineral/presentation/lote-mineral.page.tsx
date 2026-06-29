@@ -1,4 +1,4 @@
-import { Button, TextInput,Skeleton, Badge} from "@mantine/core";
+import { Button, TextInput, Skeleton, Badge } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -18,21 +18,21 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 
 export const LoteMineralPage = () => {
   useTitlePage("Lotes de Mineral");
-  const [openedCreate, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+  const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
   const [busqueda, setBusqueda] = useState("");
 
   const { data: response, isLoading, refetch, addLote } = useLotesMineral();
-  
+
   const lotesFiltrados = useMemo(() => {
     const lotesData = response?.data || [];
     if (!busqueda) return lotesData;
     const term = busqueda.toLowerCase();
     return lotesData.filter(
       (l: LoteMineralResumen) =>
-        l.correlativo.toLowerCase().includes(term) ||
-        (l.codigo_interno && l.codigo_interno.toLowerCase().includes(term)) ||
+        l.codigo?.toLowerCase().includes(term) ||
         l.contratista.toLowerCase().includes(term) ||
-        l.mina.toLowerCase().includes(term)
+        l.mina.toLowerCase().includes(term),
     );
   }, [response?.data, busqueda]);
 
@@ -126,7 +126,15 @@ export const LoteMineralPage = () => {
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="flex items-center justify-center size-8 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-inner group-hover:bg-indigo-500/20 transition-colors">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="size-4"
+                    >
                       <path d="M6 3h12l4 7-10 11L2 10l4-7z" />
                       <path d="M2 10h20" />
                       <path d="M12 21V10" />
@@ -134,26 +142,17 @@ export const LoteMineralPage = () => {
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    {lote.codigo_interno ? (
-                      <>
-                        <span className="text-zinc-100 font-bold text-base tracking-tight group-hover:text-indigo-300 transition-colors font-mono">
-                          {lote.codigo_interno}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-zinc-100 font-semibold text-base tracking-tight group-hover:text-indigo-300 transition-colors">
-                          {lote.correlativo}
-                        </span>
-                        <span className="text-zinc-500 text-[10px] mt-0.5 italic">
-                          Sin iniciar producción
-                        </span>
-                      </>
-                    )}
+                    <span className="text-zinc-100 font-bold text-sm tracking-tight group-hover:text-indigo-300 transition-colors font-mono">
+                      {lote.codigo}
+                    </span>
                   </div>
                 </div>
                 <Badge
-                  color={lote.estado === EstadoLoteMineral.Pendiente ? "violet" : "teal"}
+                  color={
+                    lote.estado === EstadoLoteMineral.Pendiente
+                      ? "violet"
+                      : "teal"
+                  }
                   variant="light"
                   size="xs"
                   radius="sm"
@@ -165,22 +164,36 @@ export const LoteMineralPage = () => {
 
               <div className="space-y-2 mt-2 flex-1 px-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-500 text-xs font-medium">Contratista</span>
-                  <span className="text-zinc-300 text-xs font-medium">{lote.contratista}</span>
+                  <span className="text-zinc-500 text-xs font-medium">
+                    Contratista
+                  </span>
+                  <span className="text-zinc-300 text-xs font-medium">
+                    {lote.contratista}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-500 text-xs font-medium">Mina</span>
-                  <span className="text-zinc-300 text-xs font-medium">{lote.mina}</span>
+                  <span className="text-zinc-500 text-xs font-medium">
+                    Mina
+                  </span>
+                  <span className="text-zinc-300 text-xs font-medium">
+                    {lote.mina}
+                  </span>
                 </div>
                 {lote.labor && (
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500 text-xs font-medium">Labor</span>
-                    <span className="text-zinc-300 text-xs font-medium">{lote.labor}</span>
+                    <span className="text-zinc-500 text-xs font-medium">
+                      Labor
+                    </span>
+                    <span className="text-zinc-300 text-xs font-medium">
+                      {lote.labor}
+                    </span>
                   </div>
                 )}
                 {lote.fecha_inicio_produccion && (
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500 text-xs font-medium">Inicio Producción</span>
+                    <span className="text-zinc-500 text-xs font-medium">
+                      Inicio Producción
+                    </span>
                     <span className="text-emerald-400 text-xs font-bold">
                       {dayjs(lote.fecha_inicio_produccion).format("DD/MM/YYYY")}
                     </span>
@@ -191,23 +204,32 @@ export const LoteMineralPage = () => {
               <div className="mt-4 pt-3 border-t border-zinc-800/40 flex flex-col gap-2 px-1">
                 <div className="flex items-center justify-between text-zinc-500">
                   <div className="flex items-center gap-1.5">
-                    <CalendarDaysIcon className="size-3.5 group-hover:text-indigo-400 transition-colors" strokeWidth={1.5} />
+                    <CalendarDaysIcon
+                      className="size-3.5 group-hover:text-indigo-400 transition-colors"
+                      strokeWidth={1.5}
+                    />
                     <span className="text-[11px] font-medium group-hover:text-zinc-400 transition-colors">
-                      Creado: {dayjs(lote.created_at).format("DD MMM YYYY, HH:mm")}
+                      Creado:{" "}
+                      {dayjs(lote.created_at).format("DD MMM YYYY, HH:mm")}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-indigo-500/5 border border-indigo-500/10 w-fit group-hover:bg-indigo-500/10 transition-colors">
-                  <UserIcon className="size-3 text-indigo-400" strokeWidth={2} />
+                  <UserIcon
+                    className="size-3 text-indigo-400"
+                    strokeWidth={2}
+                  />
                   <span className="text-[10px] font-semibold text-zinc-400">
-                    Registrado por: <span className="text-indigo-200 ml-0.5">{lote.empleado_registro}</span>
+                    Registrado por:{" "}
+                    <span className="text-indigo-200 ml-0.5">
+                      {lote.empleado_registro}
+                    </span>
                   </span>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
       )}
 
       {/* MODAL CREAR LOTE */}

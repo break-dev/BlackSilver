@@ -18,7 +18,8 @@ interface UseRegistrarEntregaBatchProps {
   idAlmacen: number;
   selectedItemsIds: number[];
   detallesRequerimiento: RES_DetalleRequerimiento[];
-  idContratistaSolicitante: number;
+  idContratistaSolicitante: number | null;
+  idEmpleadoSolicitante: number | null;
   onSuccess: (entregados: Record<number, number>) => void;
 }
 
@@ -34,6 +35,7 @@ export const useRegistrarEntregaBatch = ({
   selectedItemsIds,
   detallesRequerimiento,
   idContratistaSolicitante,
+  idEmpleadoSolicitante,
   onSuccess,
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
@@ -42,7 +44,9 @@ export const useRegistrarEntregaBatch = ({
 
   const [loading, setLoading] = useState(true);
   const [lotes, setLotes] = useState<RES_LoteDisponible[]>([]);
-  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>([]);
+  const [activosFijos, setActivosFijos] = useState<RES_ActivoFijoDisponible[]>(
+    [],
+  );
   const [allActivos, setAllActivos] = useState<RES_ActivoFijoDisponible[]>([]);
   const [lotesMineral, setLotesMineral] = useState<RES_LoteMineral[]>([]);
   const [entregaCantidadesActivos, setEntregaCantidadesActivos] = useState<
@@ -51,12 +55,20 @@ export const useRegistrarEntregaBatch = ({
   const [empleados, setEmpleados] = useState<
     { value: string; label: string }[]
   >([]);
+  const [contratistas, setContratistas] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   const [entregaCantidades, setEntregaCantidades] = useState<
     Record<number, Record<number, number>>
   >({});
-  const [destinosMap, setDestinosMap] = useState<Record<string, DestinoItem>>({});
+  const [destinosMap, setDestinosMap] = useState<Record<string, DestinoItem>>(
+    {},
+  );
   const [idEmpleadoRecibe, setIdEmpleadoRecibe] = useState<string | null>(null);
+  const [idContratistaRecibe, setIdContratistaRecibe] = useState<string | null>(null);
+  const [esContratistaRecibe, setEsContratistaRecibe] = useState(false);
+  const [hasAutoSelected, setHasAutoSelected] = useState(false);
   const [observacion, setObservacion] = useState("");
   const [evidencias, setEvidencias] = useState<File[]>([]);
   const [error, setError] = useState("");
@@ -118,25 +130,31 @@ export const useRegistrarEntregaBatch = ({
           return;
         }
 
-        const [resEmps, resLotes, resActivos, resAllActivos, resLotesMineral] = await Promise.all([
-          AuxService.get_empleados(),
-          idsConLote.length > 0
-            ? AuxService.get_lotes_disponibles(idAlmacen, idsConLote)
-            : Promise.resolve({ success: true, data: [] }),
-          idsActivoFijo.length > 0
-            ? AuxService.get_activos_disponibles({
-                id_almacen: idAlmacen,
-                ids_productos: idsActivoFijo,
-              })
-            : Promise.resolve({ success: true, data: [] }),
-          AuxService.get_activos_disponibles(),
-          AuxService.get_lotes_mineral(),
-        ]);
+        const [resEmps, resLotes, resActivos, resAllActivos, resLotesMineral, resContratistas] =
+          await Promise.all([
+            AuxService.get_empleados(),
+            idsConLote.length > 0
+              ? AuxService.get_lotes_disponibles(idAlmacen, idsConLote)
+              : Promise.resolve({ success: true, data: [] }),
+            idsActivoFijo.length > 0
+              ? AuxService.get_activos_disponibles({
+                  id_almacen: idAlmacen,
+                  ids_productos: idsActivoFijo,
+                })
+              : Promise.resolve({ success: true, data: [] }),
+            AuxService.get_activos_disponibles(),
+            AuxService.get_lotes_mineral(),
+            AuxService.get_contratistas(),
+          ]);
 
         if (cancelled) return;
 
-        const mineralBatches = resLotesMineral.success && resLotesMineral.data ? resLotesMineral.data : [];
-        const firstLoteMineralId = mineralBatches.length > 0 ? mineralBatches[0].id_lote_mineral : null;
+        const mineralBatches =
+          resLotesMineral.success && resLotesMineral.data
+            ? resLotesMineral.data
+            : [];
+        const firstLoteMineralId =
+          mineralBatches.length > 0 ? mineralBatches[0].id_lote_mineral : null;
         const initialDestinos: Record<string, DestinoItem> = {};
 
         if (resLotes.success) {
@@ -152,15 +170,17 @@ export const useRegistrarEntregaBatch = ({
           const initial: Record<number, Record<number, number>> = {};
           detallesConLote.forEach((d) => {
             initial[d.id_requerimiento_almacen_detalle] = {};
-            
-            const isMantenimiento = Boolean(d.para_mantenimiento) && Boolean(d.producto_para_mantenimiento);
+
+            const isMantenimiento =
+              Boolean(d.para_mantenimiento) &&
+              Boolean(d.producto_para_mantenimiento);
             const defaultActivoFijoId = d.id_activo_fijo_destino || null;
 
             castedLotes
               .filter((l) => l.id_producto === d.id_producto)
               .forEach((l) => {
                 initial[d.id_requerimiento_almacen_detalle][l.id_lote] = 0;
-                
+
                 const key = `${d.id_requerimiento_almacen_detalle}_lote_${l.id_lote}`;
                 if (isMantenimiento) {
                   initialDestinos[key] = {
@@ -182,19 +202,26 @@ export const useRegistrarEntregaBatch = ({
 
         if (resActivos.success) {
           setActivosFijos(resActivos.data);
-          
+
           // Initialize quantities per detail for activos fijos
           const initialActivos: Record<number, Record<number, number>> = {};
           detallesActivoFijo.forEach((d) => {
             initialActivos[d.id_requerimiento_almacen_detalle] = {};
-            
-            const isMantenimiento = Boolean(d.para_mantenimiento) && Boolean(d.producto_para_mantenimiento);
+
+            const isMantenimiento =
+              Boolean(d.para_mantenimiento) &&
+              Boolean(d.producto_para_mantenimiento);
             const defaultActivoFijoId = d.id_activo_fijo_destino || null;
 
             resActivos.data
-              .filter((a: RES_ActivoFijoDisponible) => a.id_producto === d.id_producto)
+              .filter(
+                (a: RES_ActivoFijoDisponible) =>
+                  a.id_producto === d.id_producto,
+              )
               .forEach((a: RES_ActivoFijoDisponible) => {
-                initialActivos[d.id_requerimiento_almacen_detalle][a.id_activo] = 0;
+                initialActivos[d.id_requerimiento_almacen_detalle][
+                  a.id_activo
+                ] = 0;
 
                 const key = `${d.id_requerimiento_almacen_detalle}_activo_${a.id_activo}`;
                 if (isMantenimiento) {
@@ -236,6 +263,15 @@ export const useRegistrarEntregaBatch = ({
             })),
           );
         }
+
+        if (resContratistas.success && resContratistas.data) {
+          setContratistas(
+            resContratistas.data.map((c) => ({
+              value: c.id_contratista.toString(),
+              label: c.nombre_completo ?? "",
+            })),
+          );
+        }
       } catch (err) {
         if (!cancelled) setError("Error al cargar datos necesarios");
         console.error(err);
@@ -259,15 +295,28 @@ export const useRegistrarEntregaBatch = ({
 
   // Auto-seleccionar receptor basado en el solicitante
   useEffect(() => {
-    if (idContratistaSolicitante && empleados.length > 0 && !idEmpleadoRecibe) {
-      const exists = empleados.some(
-        (e) => e.value === idContratistaSolicitante.toString(),
+    if (hasAutoSelected) return;
+
+    if (idContratistaSolicitante && contratistas.length > 0) {
+      const exists = contratistas.some(
+        (c) => c.value === idContratistaSolicitante.toString(),
       );
       if (exists) {
-        setIdEmpleadoRecibe(idContratistaSolicitante.toString());
+        setIdContratistaRecibe(idContratistaSolicitante.toString());
+        setEsContratistaRecibe(true);
+        setHasAutoSelected(true);
+      }
+    } else if (idEmpleadoSolicitante && empleados.length > 0) {
+      const exists = empleados.some(
+        (e) => e.value === idEmpleadoSolicitante.toString(),
+      );
+      if (exists) {
+        setIdEmpleadoRecibe(idEmpleadoSolicitante.toString());
+        setEsContratistaRecibe(false);
+        setHasAutoSelected(true);
       }
     }
-  }, [idContratistaSolicitante, empleados, idEmpleadoRecibe]);
+  }, [idContratistaSolicitante, idEmpleadoSolicitante, empleados, contratistas, hasAutoSelected]);
 
   const handleCantActivoChange = useCallback(
     (idDetalleReq: number, idActivo: number, val: number) => {
@@ -406,7 +455,8 @@ export const useRegistrarEntregaBatch = ({
             // Reset other fields if type changes
             ...(field === "tipo" && {
               id_activo_fijo_destino: null,
-              id_lote_mineral: value === "produccion" ? firstLoteMineralId : null,
+              id_lote_mineral:
+                value === "produccion" ? firstLoteMineralId : null,
             }),
           } as DestinoItem,
         };
@@ -452,7 +502,9 @@ export const useRegistrarEntregaBatch = ({
     let validationError = "";
 
     // Activos fijos
-    for (const [idDet, activosMap] of Object.entries(entregaCantidadesActivos)) {
+    for (const [idDet, activosMap] of Object.entries(
+      entregaCantidadesActivos,
+    )) {
       const idDetalleReq = Number(idDet);
       const detail = selectedDetalles.find(
         (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
@@ -537,8 +589,12 @@ export const useRegistrarEntregaBatch = ({
             cantidad_requerimiento: cant,
             para_mantenimiento: dest.tipo === "mantenimiento",
             para_produccion: dest.tipo === "produccion",
-            id_activo_fijo_destino: dest.tipo === "mantenimiento" ? dest.id_activo_fijo_destino : null,
-            id_lote_mineral: dest.tipo === "produccion" ? dest.id_lote_mineral : null,
+            id_activo_fijo_destino:
+              dest.tipo === "mantenimiento"
+                ? dest.id_activo_fijo_destino
+                : null,
+            id_lote_mineral:
+              dest.tipo === "produccion" ? dest.id_lote_mineral : null,
           });
         }
       });
@@ -574,8 +630,12 @@ export const useRegistrarEntregaBatch = ({
             cantidad_requerimiento: cReq,
             para_mantenimiento: dest.tipo === "mantenimiento",
             para_produccion: dest.tipo === "produccion",
-            id_activo_fijo_destino: dest.tipo === "mantenimiento" ? dest.id_activo_fijo_destino : null,
-            id_lote_mineral: dest.tipo === "produccion" ? dest.id_lote_mineral : null,
+            id_activo_fijo_destino:
+              dest.tipo === "mantenimiento"
+                ? dest.id_activo_fijo_destino
+                : null,
+            id_lote_mineral:
+              dest.tipo === "produccion" ? dest.id_lote_mineral : null,
           });
         }
       });
@@ -590,7 +650,8 @@ export const useRegistrarEntregaBatch = ({
     try {
       const res = await AtencionService.registrarEntrega({
         id_requerimiento: idRequerimiento,
-        id_empleado_recibe: Number(idEmpleadoRecibe),
+        id_empleado_recibe: !esContratistaRecibe && idEmpleadoRecibe ? Number(idEmpleadoRecibe) : null,
+        id_contratista_recibe: esContratistaRecibe && idContratistaRecibe ? Number(idContratistaRecibe) : null,
         fecha_entrega: dayjs().format("YYYY-MM-DD HH:mm:ss"),
         observacion,
         evidencias,
@@ -640,8 +701,13 @@ export const useRegistrarEntregaBatch = ({
     entregaCantidadesActivos,
     destinosMap,
     empleados,
+    contratistas,
     idEmpleadoRecibe,
     setIdEmpleadoRecibe,
+    idContratistaRecibe,
+    setIdContratistaRecibe,
+    esContratistaRecibe,
+    setEsContratistaRecibe,
     observacion,
     setObservacion,
     evidencias,

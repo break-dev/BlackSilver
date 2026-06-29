@@ -36,6 +36,9 @@ import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
 import { RegistroRequerimiento } from "./registrar-requerimiento/registro-requerimiento.tsx";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card.tsx";
+import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker.tsx";
+import { useNotify } from "../../../hooks/useNotify.ts";
+import { AtencionService } from "../service/atencion.service.ts";
 import { useImprimirRequerimiento } from "../hooks/useImprimirRequerimiento.tsx";
 import { usePrint } from "../../../hooks/usePrint.ts";
 import { RequerimientoPDF } from "./requerimiento-pdf.tsx";
@@ -48,6 +51,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const [openedGestion, { open: openGestion, close: closeGestion }] =
     useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedRequerimiento, setSelectedRequerimiento] = useState<RES_RequerimientoAlmacen | null>(null);
 
   const [openedRegistro, { open: openReg, close: closeReg }] =
     useDisclosure(false);
@@ -55,6 +59,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const [openedEvidencias, { open: openEvidencias, close: closeEvidencias }] =
     useDisclosure(false);
   const [evidenciasActuales, setEvidenciasActuales] = useState<IArchivo[]>([]);
+  const { notifySuccess, notifyError } = useNotify();
+  const [nuevasEvidencias, setNuevasEvidencias] = useState<File[]>([]);
+  const [subiendoEvidencias, setSubiendoEvidencias] = useState(false);
 
   const {
     idAlmacen,
@@ -110,16 +117,16 @@ export const RequerimientosAlmacenAtencionPage = () => {
         ),
       },
       {
-        accessor: "mina",
-        title: "Mina",
+        accessor: "Labor",
+        title: "Labor",
         width: 180,
         textAlign: "left",
         render: (item) => (
           <Group gap="xs" wrap="nowrap">
             <MapPinIcon className="w-5 h-5 text-zinc-500 shrink-0" />
-            {item.mina ? (
+            {item.labor ? (
               <Text size="sm" className="text-zinc-200">
-                {item.mina}
+                {item.labor}
               </Text>
             ) : (
               <Text size="xs" className="italic" c="dimmed">
@@ -226,7 +233,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
                   color="teal"
                   radius="md"
                   onClick={() => {
+                    setSelectedId(item.id_requerimiento);
                     setEvidenciasActuales(item.evidencias!);
+                    setNuevasEvidencias([]);
                     openEvidencias();
                   }}
                   className="shadow-sm hover:scale-105 transition-transform"
@@ -256,7 +265,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
                 color="indigo"
                 radius="md"
                 onClick={() => {
-                  setSelectedId(item.id_requerimiento);
+                  setSelectedRequerimiento(item);
                   openGestion();
                 }}
                 className="shadow-md hover:scale-105 transition-transform"
@@ -421,13 +430,15 @@ export const RequerimientosAlmacenAtencionPage = () => {
         opened={openedRegistro}
         close={closeReg}
         title={`${almacenes.find((a) => String(a.id_almacen) === idAlmacen)?.nombre} - Nuevo Requerimiento`}
-        size="80%"
+        size="65%"
       >
         <RegistroRequerimiento
           idAlmacenFijo={idAlmacen ? Number(idAlmacen) : undefined}
           onSuccess={(item, printTarget, printWin) => {
             closeReg();
             addRequirementLocal(item);
+            setSelectedRequerimiento(item);
+            openGestion();
             if (printTarget && printWin) {
               print(<RequerimientoPDF requerimiento={item} />, {
                 documentTitle: `Requerimiento_${item.correlativo}`,
@@ -441,32 +452,79 @@ export const RequerimientosAlmacenAtencionPage = () => {
 
       <ModalEstandar
         opened={openedEvidencias}
-        close={closeEvidencias}
+        close={() => {
+          closeEvidencias();
+          setNuevasEvidencias([]);
+        }}
         title="Evidencias del Requerimiento"
         size="lg"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {evidenciasActuales.map((archivo, index) => (
-            <ArchivoCard key={index} archivo={archivo} />
-          ))}
-        </div>
+        <Stack gap="md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {evidenciasActuales.map((archivo, index) => (
+              <ArchivoCard key={index} archivo={archivo} />
+            ))}
+          </div>
+
+          <div className="h-px bg-zinc-800 my-2" />
+
+          <MultiFilePicker
+            label="Subir más evidencias"
+            files={nuevasEvidencias}
+            onFilesChange={setNuevasEvidencias}
+          />
+
+          {nuevasEvidencias.length > 0 && (
+            <Group justify="flex-end">
+              <Button
+                size="xs"
+                radius="lg"
+                color="indigo"
+                loading={subiendoEvidencias}
+                onClick={async () => {
+                  if (!selectedId || nuevasEvidencias.length === 0) return;
+                  setSubiendoEvidencias(true);
+                  try {
+                    const res = await AtencionService.subirEvidencias(selectedId, nuevasEvidencias);
+                    if (res.success && res.data) {
+                      notifySuccess("Evidencias agregadas correctamente");
+                      setEvidenciasActuales(res.data);
+                      setNuevasEvidencias([]);
+                      updateRequirementLocal(selectedId, { evidencias: res.data });
+                    } else {
+                      notifyError(res.message || "Error al subir evidencias");
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    notifyError("Error al subir evidencias");
+                  } finally {
+                    setSubiendoEvidencias(false);
+                  }
+                }}
+              >
+                Guardar Nuevas Evidencias
+              </Button>
+            </Group>
+          )}
+        </Stack>
       </ModalEstandar>
 
       <ModalEstandar
         opened={openedGestion}
-        close={closeGestion}
+        close={() => {
+          closeGestion();
+          setSelectedRequerimiento(null);
+        }}
         title={`Atender Requerimiento de Almacén`}
         size="95%"
       >
-        {selectedId && (
+        {selectedRequerimiento && (
           <InfoRequerimiento
-            requerimiento={
-              filteredRecords.find((r) => r.id_requerimiento === selectedId)!
-            }
+            requerimiento={selectedRequerimiento}
             idAlmacen={Number(idAlmacen)}
             onSuccess={() => {
               // Actualizamos localmente el estado a 'En Proceso' para evitar re-fetch de la lista general
-              updateRequirementLocal(selectedId, {
+              updateRequirementLocal(selectedRequerimiento.id_requerimiento, {
                 estado: Estado_Requerimiento.EnDespacho,
               });
             }}

@@ -8,7 +8,6 @@ import {
   Table,
   Text,
   TextInput,
-  MultiSelect,
   Textarea,
   Loader,
   Checkbox,
@@ -74,7 +73,6 @@ export const RegistroRequerimiento = ({
 }: RegistroRequerimientoProps) => {
   const {
     state: {
-      minas,
       empleados,
       contratistas,
       verContratistas,
@@ -83,14 +81,12 @@ export const RegistroRequerimiento = ({
       productos,
       unidades,
       detalles,
-      idMina,
-      setIdMina,
+      idLabor,
+      setIdLabor,
       idEmpleadoSolicitante,
       setIdEmpleadoSolicitante,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
-      idLabores,
-      setIdLabores,
       premura,
       setPremura,
       observacion,
@@ -114,7 +110,7 @@ export const RegistroRequerimiento = ({
       activos,
       idAlmacenDestino,
     },
-    status: { submitting, error, loadingMinas, loadingMinaData },
+    status: { submitting, error, loadingLabores, loadingMinaData },
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
@@ -157,20 +153,20 @@ export const RegistroRequerimiento = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-8">
           <Select
-            label="Mina"
-            placeholder="Seleccione mina"
-            data={minas.map((m) => ({
-              value: String(m.id_mina),
-              label: m.nombre,
+            label="Labor (opc.)"
+            placeholder="Seleccione labor"
+            data={labores.map((l) => ({
+              value: String(l.id_labor),
+              label: l.nombre,
             }))}
-            value={idMina ? String(idMina) : null}
-            onChange={(val) => setIdMina(Number(val))}
+            value={idLabor ? String(idLabor) : null}
+            onChange={(val) => setIdLabor(Number(val))}
             classNames={inputClasses}
             radius="lg"
             searchable
             disabled={!idAlmacenDestino}
             leftSection={
-              loadingMinas ? (
+              loadingLabores ? (
                 <Loader size="xs" />
               ) : (
                 <MapPinIcon className="w-4 h-4 text-zinc-400" />
@@ -194,7 +190,7 @@ export const RegistroRequerimiento = ({
                 verContratistas
                   ? contratistas.map((r) => ({
                       value: String(r.id_contratista),
-                      label: `${r.nombre} ${r.apellido}`,
+                      label: r.nombre_completo ?? "",
                     }))
                   : empleados.map((r) => ({
                       value: String(r.id_empleado),
@@ -252,36 +248,6 @@ export const RegistroRequerimiento = ({
             radius="lg"
             minDate={new Date()}
           />
-
-          <div className="lg:col-span-3">
-            <MultiSelect
-              label="Labores Destino (opc.)"
-              placeholder="Asigne labores..."
-              description="Seleccione las labores donde se emplearán estos materiales"
-              data={labores.map((l) => ({
-                value: String(l.id_labor),
-                label: `${l.nombre}`,
-              }))}
-              value={idLabores.map(String)}
-              onChange={(vals) => setIdLabores(vals.map(Number))}
-              disabled={!idMina}
-              hidePickedOptions
-              searchable
-              leftSection={
-                <WrenchScrewdriverIcon className="w-4 h-4 text-zinc-400" />
-              }
-              radius="lg"
-              classNames={inputClasses}
-              styles={{
-                pill: {
-                  backgroundColor: "rgba(245, 158, 11, 0.15)",
-                  border: "1px solid rgba(245, 158, 11, 0.4)",
-                  color: "#fef3c7",
-                  fontWeight: 600,
-                },
-              }}
-            />
-          </div>
 
           <div className="lg:col-span-1">
             <Textarea

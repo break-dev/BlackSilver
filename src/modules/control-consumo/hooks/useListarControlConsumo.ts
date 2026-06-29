@@ -136,7 +136,7 @@ export const useListarControlConsumo = () => {
         String(item.correlativo_requerimiento).toLowerCase().includes(query) ||
         item.mina.toLowerCase().includes(query) ||
         item.almacen_destino.toLowerCase().includes(query) ||
-        item.empleado_solicitante.toLowerCase().includes(query),
+        item.solicitante.toLowerCase().includes(query),
     );
   }, [reporte, idMina, idAlmacen, busqueda, en_modo_auditable]);
 
