@@ -29,10 +29,6 @@ export const ModalEditarCotizacion = ({
     maestros,
     agregarProveedorLocal,
     updateGlobalLogistica,
-    copiedCotizacion,
-    iniciarCopiaCotizacion,
-    pegarCotizacion,
-    cancelarCopiaCotizacion,
   } = useEditarCotizacion(cotizacion, onSuccess);
 
   const productosParaMostrar = productos.map((p) => {
@@ -47,7 +43,6 @@ export const ModalEditarCotizacion = ({
       ...p,
       nombre:
         maestro?.nombre || originalDet?.producto || "Producto desconocido",
-      codigo: "",
       id_unidad_medida_base:
         maestro?.id_unidad_medida_base ||
         originalDet?.id_unidad_medida_base ||
@@ -86,10 +81,6 @@ export const ModalEditarCotizacion = ({
           onUpdateDetail={updateCotizacionDetail}
           onToggleNoCotiza={toggleCotizacionNoCotiza}
           onUpdateGlobalLogistica={updateGlobalLogistica}
-          copiedCotizacion={copiedCotizacion}
-          onIniciarCopiaCotizacion={iniciarCopiaCotizacion}
-          onPegarCotizacion={pegarCotizacion}
-          onCancelarCopiaCotizacion={cancelarCopiaCotizacion}
         />
       </div>
 

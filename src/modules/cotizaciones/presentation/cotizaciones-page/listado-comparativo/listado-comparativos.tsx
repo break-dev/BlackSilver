@@ -334,7 +334,7 @@ export const ListadoComparativos = ({
         onClose={() => setModalEditarOpened(false)}
         close={() => setModalEditarOpened(false)}
         title="Editar Cotización"
-        size="560px"
+        size="64%"
       >
         {selectedCotParaEditar && (
           <ModalEditarCotizacion

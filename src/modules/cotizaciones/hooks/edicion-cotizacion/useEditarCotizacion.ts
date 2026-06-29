@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useCotizacionMaestros } from "../shared/useCotizacionMaestros";
 import { useCotizacionHandlers } from "../shared/useCotizacionHandlers";
 import { CotizacionesService } from "../../service/cotizaciones.service";
@@ -90,29 +90,8 @@ export const useEditarCotizacion = (
     updateCotizacionDetail,
     toggleCotizacionNoCotiza,
     updateGlobalLogistica,
-    copySource,
-    iniciarCopia: _iniciarCopia,
-    cancelarCopia,
-    pegarCopia,
-    copiedCotizacion,
-    iniciarCopiaCotizacion,
-    pegarCotizacion,
-    cancelarCopiaCotizacion,
   } = useCotizacionHandlers(setProductos, setCotizaciones, maestros);
 
-  const iniciarCopia = useCallback(
-    (cotIndex: number, rowIndex: number, id_producto: number) => {
-      _iniciarCopia(cotIndex, rowIndex, id_producto, cotizaciones);
-    },
-    [_iniciarCopia, cotizaciones],
-  );
-
-  const _iniciarCopiaCotizacion = useCallback(
-    (sourceIndex: number, type: "all" | "general" | "delivery") => {
-      iniciarCopiaCotizacion(sourceIndex, type, cotizaciones);
-    },
-    [iniciarCopiaCotizacion, cotizaciones],
-  );
 
   const handleSave = async () => {
     const cot = cotizaciones[0];
@@ -184,13 +163,5 @@ export const useEditarCotizacion = (
     toggleCotizacionNoCotiza,
     updateGlobalLogistica,
     handleSave,
-    copySource,
-    iniciarCopia,
-    cancelarCopia,
-    pegarCopia,
-    copiedCotizacion,
-    iniciarCopiaCotizacion: _iniciarCopiaCotizacion,
-    pegarCotizacion,
-    cancelarCopiaCotizacion,
   };
 };
