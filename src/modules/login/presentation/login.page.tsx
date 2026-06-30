@@ -43,9 +43,8 @@ export const LoginPage = () => {
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8 overflow-hidden bg-black">
       {/* Background Video */}
       <div
-        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-          isVideoEnding ? "opacity-0" : "opacity-100"
-        }`}
+        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${isVideoEnding ? "opacity-0" : "opacity-100"
+          }`}
       >
         <video
           ref={videoRef}
@@ -99,12 +98,12 @@ export const LoginPage = () => {
               <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 flex items-center justify-center animate-float relative">
                 <img
                   src={BlackcitoSinPatitas}
-                  alt="Black Silver Logo"
+                  alt="Cupper & Hannia Logo"
                   className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)] relative z-10"
                 />
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-wide font-pacifico drop-shadow-md">
-                Black Silver
+                Cupper & Hannia
               </h1>
               <p className="text-[10px] sm:text-xs text-zinc-400 font-medium tracking-[0.2em] relative inline-block">
                 SISTEMA DE GESTIÓN MINERA
@@ -208,7 +207,7 @@ export const LoginPage = () => {
             {/* Footer */}
             <div className="mt-10 relative z-10">
               <p className="text-center text-[11px] text-zinc-500/70 font-medium">
-                &copy; {new Date().getFullYear()} Black Silver
+                &copy; {new Date().getFullYear()} Cupper & Hannia
                 <br />
                 Secure Authentication Gateway
               </p>

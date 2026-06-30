@@ -218,15 +218,15 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                             style={
                               isCupper
                                 ? {
-                                    width: 70,
-                                    height: 70,
-                                    objectFit: "contain",
-                                  }
+                                  width: 70,
+                                  height: 70,
+                                  objectFit: "contain",
+                                }
                                 : {
-                                    width: 110,
-                                    height: 40,
-                                    objectFit: "contain",
-                                  }
+                                  width: 110,
+                                  height: 40,
+                                  objectFit: "contain",
+                                }
                             }
                           />
                         );
@@ -245,7 +245,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                 <Text style={styles.companyName}>
                   {(empresas && empresas.length > 0
                     ? empresas.map((e) => e.razon_social).join(" - ")
-                    : "BLACK SILVER S.A.C."
+                    : "Cupper & Hannia S.A.C."
                   ).toUpperCase()}
                 </Text>
                 <Text style={{ fontSize: 7, color: "#64748b", marginTop: 2 }}>
@@ -341,7 +341,7 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                   (acc, det) => {
                     const lugar =
                       det.tipo_despacho === TipoDespachoCompra.Recojo &&
-                      det.lugar_recojo
+                        det.lugar_recojo
                         ? ` [Lugar: ${det.lugar_recojo}]`
                         : "";
                     const txtDias =
@@ -445,8 +445,8 @@ export const CotizacionPDF = ({ cotizaciones }: CotizacionPDFProps) => {
                   {symbol}{" "}
                   {formatNumber(
                     cotizacion.total_antes_igv -
-                      Number(cotizacion.costo_flete) -
-                      Number(cotizacion.otros_gastos),
+                    Number(cotizacion.costo_flete) -
+                    Number(cotizacion.otros_gastos),
                   )}
                 </Text>
               </View>

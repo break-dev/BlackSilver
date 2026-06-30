@@ -268,7 +268,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               (acc, det) => {
                 const lugar =
                   det.tipo_despacho === TipoDespachoCompra.Recojo &&
-                  det.lugar_recojo
+                    det.lugar_recojo
                     ? ` [Lugar: ${det.lugar_recojo}]`
                     : "";
                 const txtDias =
@@ -363,8 +363,8 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               {symbol}{" "}
               {formatNumber(
                 orden.total_antes_igv -
-                  Number(orden.costo_flete) -
-                  Number(orden.otros_gastos),
+                Number(orden.costo_flete) -
+                Number(orden.otros_gastos),
               )}
             </Text>
           </View>
@@ -454,7 +454,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Footer */}
         <View style={styles.footer}>
           <Text>
-            Este documento es una Orden de Compra oficial de Black Silver S.A.C.
+            Este documento es una Orden de Compra oficial de Cupper & Hannia S.A.C.
           </Text>
           <Text>
             Generado automáticamente el {dayjs().format("DD/MM/YYYY HH:mm:ss")}

@@ -93,7 +93,7 @@ export const RegistroEmpresa = ({
 
       <TextInput
         label="Razón Social"
-        placeholder="Ej. Black Silver S.A.C."
+        placeholder="Ej. Cupper & Hannia S.A.C."
         required
         withAsterisk
         disabled={loading}

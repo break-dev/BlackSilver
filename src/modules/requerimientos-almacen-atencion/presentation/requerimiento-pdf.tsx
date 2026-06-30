@@ -96,10 +96,9 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
               </Text>
               <Text
                 style={tw(
-                  `text-[10pt] font-bold ${
-                    req.fecha_entrega_requerida
-                      ? "text-zinc-900"
-                      : "text-zinc-500"
+                  `text-[10pt] font-bold ${req.fecha_entrega_requerida
+                    ? "text-zinc-900"
+                    : "text-zinc-500"
                   }`,
                 )}
               >
@@ -254,7 +253,7 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
             )}
           >
             <Text>
-              CONSORCIO MINERO BLACK SILVER SAC - RUC NRO: 20604004005
+              CONSORCIO MINERO Cupper & Hannia SAC - RUC NRO: 20604004005
             </Text>
             <Text>
               DIRECCION CAL.ASOC/ EL DORADO MZA. F1 A LOTE. 7 APV. EL DORADO

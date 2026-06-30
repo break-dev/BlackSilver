@@ -17,7 +17,7 @@ export const useUIStore = create<UIState>((set) => ({
   title: "",
   setTitle: (title: string) => {
     set({ title });
-    document.title = title ? `${title} | Black Silver` : "Black Silver";
+    document.title = title ? `${title} | Cupper & Hannia` : "Cupper & Hannia";
   },
   message: { type: "", content: "" },
   notify: (message: IMessage) => {

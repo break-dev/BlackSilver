@@ -52,7 +52,7 @@ export const Header = ({ onMenuToggle }: HeaderProps) => {
           className="text-sm font-bold text-white/85 tracking-wide 
           drop-shadow-md"
         >
-          {title ? title : "Black Silver"}
+          {title ? title : "Cupper & Hannia"}
         </span>
       </div>
 
