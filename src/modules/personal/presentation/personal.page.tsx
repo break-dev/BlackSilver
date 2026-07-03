@@ -12,7 +12,6 @@ import {
   WrenchScrewdriverIcon,
   MagnifyingGlassIcon,
   PlusIcon,
-  BuildingOfficeIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 
@@ -77,33 +76,9 @@ export const PersonalPage = () => {
 
             {activeTab === "empleados" ? (
               <Group grow className="flex-1 w-full" align="flex-end">
-                <Select
-                  label="Empresa"
-                  placeholder="Todas las empresas"
-                  data={empleadosCtrl.empresas.map((e: { id_empresa: number; nombre: string }) => ({
-                    value: e.id_empresa.toString(),
-                    label: e.nombre,
-                  }))}
-                  value={empleadosCtrl.idEmpresa?.toString() || null}
-                  onChange={(val: string | null) =>
-                    empleadosCtrl.setIdEmpresa(val ? Number(val) : null)
-                  }
-                  leftSection={
-                    <BuildingOfficeIcon className="w-4 h-4 text-zinc-400" />
-                  }
-                  radius="lg"
-                  size="sm"
-                  classNames={{
-                    label: "text-zinc-400 mb-1 font-medium",
-                    input:
-                      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all h-[38px]",
-                  }}
-                  searchable
-                  clearable
-                />
                 <TextInput
-                  label="Buscar registro"
-                  placeholder="Buscar por nombre, DNI o cargo..."
+                  label="Buscar empleado"
+                  placeholder="Buscar por nombre, DNI, cargo o área..."
                   leftSection={
                     <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
                   }
@@ -196,7 +171,7 @@ export const PersonalPage = () => {
         opened={openedRegEmp}
         close={closeRegEmp}
         title="Registrar Empleado"
-        size="md"
+        size="lg"
       >
         <RegistroEmpleado
           onSuccess={(nuevo) => {
@@ -211,7 +186,7 @@ export const PersonalPage = () => {
         opened={openedRegCon}
         close={closeRegCon}
         title="Registrar Contratista"
-        size="md"
+        size="lg"
       >
         <RegistroContratista
           onSuccess={(nuevo) => {

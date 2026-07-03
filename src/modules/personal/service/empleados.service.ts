@@ -11,27 +11,40 @@ import type {
   RES_EmpleadoResumen,
 } from "./empleados.responses";
 
+/**
+ * Construye un FormData a partir de un DTO.
+ * - Omite keys con valores `null` o `undefined`.
+ * - Serializa `boolean` como `"1"` / `"0"` para que Laravel los
+ *   acepte correctamente en sus reglas de validación `boolean`.
+ * - Conserva `File` tal cual.
+ */
+const buildFormData = (dto: Record<string, unknown>): FormData => {
+  const formData = new FormData();
+  Object.entries(dto).forEach(([key, value]) => {
+    if (value === null || value === undefined) return;
+    if (typeof value === "boolean") {
+      formData.append(key, value ? "1" : "0");
+      return;
+    }
+    formData.append(key, value instanceof File ? value : String(value));
+  });
+  return formData;
+};
+
 export class EmpleadosService {
   private static PATH = "/empleados";
 
-  public static get_empleados = async (
-    idEmpresa?: number,
-  ): Promise<IRespuesta<RES_EmpleadoResumen[]>> => {
-    const { data } = await api.get(this.PATH, {
-      params: { id_empresa: idEmpresa },
-    });
+  public static get_empleados = async (): Promise<
+    IRespuesta<RES_EmpleadoResumen[]>
+  > => {
+    const { data } = await api.get(this.PATH);
     return data;
   };
 
   public static crear_empleado = async (
     dto: DTO_CrearEmpleado,
   ): Promise<IRespuesta<RES_EmpleadoResumen>> => {
-    const formData = new FormData();
-    Object.entries(dto).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, value instanceof File ? value : String(value));
-      }
-    });
+    const formData = buildFormData(dto as unknown as Record<string, unknown>);
     const { data } = await api.post(this.PATH, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -59,7 +72,7 @@ export class ContratistasService {
   private static PATH = "/contratistas";
 
   public static get_contratistas = async (
-    idMina?: number,
+    idMina?: Number,
   ): Promise<IRespuesta<RES_ContratistaResumen[]>> => {
     const { data } = await api.get(this.PATH, {
       params: { id_mina: idMina },
@@ -70,12 +83,7 @@ export class ContratistasService {
   public static crear_contratista = async (
     dto: DTO_CrearContratista,
   ): Promise<IRespuesta<RES_ContratistaResumen>> => {
-    const formData = new FormData();
-    Object.entries(dto).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, value instanceof File ? value : String(value));
-      }
-    });
+    const formData = buildFormData(dto as unknown as Record<string, unknown>);
     const { data } = await api.post(this.PATH, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });

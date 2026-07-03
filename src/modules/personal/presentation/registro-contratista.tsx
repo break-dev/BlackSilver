@@ -15,16 +15,25 @@ import {
   MapPinIcon,
   PencilIcon,
   WrenchScrewdriverIcon,
+  UserCircleIcon,
+  PhoneIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroContratista } from "../hooks/useRegistroContratista";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import { Genero } from "../../../shared/enums/_generic/genero";
 
 interface RegistroContratistaProps {
   idMinaDefault?: number | null;
   onSuccess: (nuevo: RES_ContratistaResumen) => void;
   onCancel: () => void;
 }
+
+const GENERO_OPTIONS = [
+  { value: Genero.Femenino, label: "Femenino" },
+  { value: Genero.Masculino, label: "Masculino" },
+];
 
 export const RegistroContratista = ({
   idMinaDefault,
@@ -54,7 +63,7 @@ export const RegistroContratista = ({
   return (
     <Stack gap="md">
       {/* Selector de Foto Circular */}
-      <div className="flex flex-col items-center justify-center py-4">
+      <div className="flex flex-col items-center justify-center py-2">
         <FileButton
           onChange={(file) => setField("foto", file)}
           accept="image/png,image/jpeg,image/jpg"
@@ -63,11 +72,11 @@ export const RegistroContratista = ({
             <div
               {...props}
               className="relative cursor-pointer group rounded-full overflow-hidden border-2 border-indigo-500/30 bg-indigo-600/10 transition-all duration-300 hover:border-indigo-400 hover:bg-indigo-600/20"
-              style={{ width: 110, height: 110 }}
+              style={{ width: 100, height: 100 }}
             >
               <Avatar
                 src={photoPreview}
-                size={110}
+                size={100}
                 radius={100}
                 className="bg-transparent"
               >
@@ -94,6 +103,7 @@ export const RegistroContratista = ({
           leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
+          size="xs"
           required
           withAsterisk
           disabled={loading}
@@ -106,17 +116,18 @@ export const RegistroContratista = ({
           leftSection={<UserIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
+          size="xs"
           required
           withAsterisk
           disabled={loading}
         />
       </Group>
 
-      {/* DNI y Fecha de Nacimiento */}
+      {/* DNI, Fecha de Nacimiento y Género */}
       <Group grow align="flex-start" gap="md">
         <TextInput
           label="DNI"
-          placeholder="Ej. 12345678"
+          placeholder="12345678"
           value={form.dni || ""}
           onChange={(e) =>
             setField("dni", e.currentTarget.value.replace(/\D/g, ""))
@@ -124,6 +135,7 @@ export const RegistroContratista = ({
           leftSection={<IdentificationIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
+          size="xs"
           maxLength={8}
           disabled={loading}
         />
@@ -131,7 +143,71 @@ export const RegistroContratista = ({
           label="Fecha de Nacimiento"
           placeholder="Seleccione fecha"
           value={form.fecha_nacimiento || null}
-          onChange={(val: unknown) => setField("fecha_nacimiento", val)}
+          onChange={(val: unknown) =>
+            setField("fecha_nacimiento", val as string | null)
+          }
+          size="xs"
+          disabled={loading}
+        />
+        <Select
+          label="Género"
+          placeholder="Seleccione"
+          data={GENERO_OPTIONS}
+          value={form.genero ?? null}
+          onChange={(val) =>
+            setField("genero", val ? (val as Genero) : null)
+          }
+          leftSection={<UserCircleIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          size="xs"
+          clearable
+          disabled={loading}
+          comboboxProps={{ withinPortal: true }}
+        />
+      </Group>
+
+      {/* Dirección completa */}
+      <TextInput
+        label="Dirección"
+        placeholder="Ej. Av. Principal 123, Lima"
+        value={form.direccion || ""}
+        onChange={(e) => setField("direccion", e.currentTarget.value)}
+        leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+        classNames={fieldClasses}
+        radius="lg"
+        size="xs"
+        maxLength={255}
+        disabled={loading}
+      />
+
+      {/* Teléfono y Email */}
+      <Group grow align="flex-start" gap="md">
+        <TextInput
+          label="Teléfono"
+          placeholder="987654321"
+          value={form.telefono || ""}
+          onChange={(e) =>
+            setField("telefono", e.currentTarget.value.replace(/[^\d+\s]/g, ""))
+          }
+          leftSection={<PhoneIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          size="xs"
+          maxLength={32}
+          disabled={loading}
+        />
+        <TextInput
+          label="Email"
+          placeholder="ejemplo@correo.com"
+          value={form.email || ""}
+          onChange={(e) => setField("email", e.currentTarget.value)}
+          leftSection={<EnvelopeIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          size="xs"
+          maxLength={128}
+          type="email"
           disabled={loading}
         />
       </Group>
@@ -139,7 +215,7 @@ export const RegistroContratista = ({
       {/* Mina y Labores */}
       <Select
         label="Mina"
-        placeholder="Seleccione mina"
+        placeholder={loadingMinas ? "Cargando minas..." : "Seleccione mina"}
         data={minas.map((m) => ({
           value: m.id_mina.toString(),
           label: m.nombre,
@@ -151,10 +227,12 @@ export const RegistroContratista = ({
         leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
         classNames={fieldClasses}
         radius="lg"
+        size="xs"
         searchable
         required
         withAsterisk
         disabled={loadingMinas || loading}
+        comboboxProps={{ withinPortal: true }}
       />
 
       <MultiSelect
@@ -180,12 +258,14 @@ export const RegistroContratista = ({
           pill: "bg-purple-600 text-white",
         }}
         radius="lg"
+        size="xs"
         searchable
         clearable
         hidePickedOptions
         disabled={
           !form.id_mina || form.id_mina === 0 || loadingLabores || loading
         }
+        comboboxProps={{ withinPortal: true }}
       />
 
       {/* Acciones */}

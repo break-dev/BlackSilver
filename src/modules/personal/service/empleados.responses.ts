@@ -1,20 +1,29 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import type { Genero } from "../../../shared/enums/_generic/genero";
 
 export interface RES_EmpleadoResumen {
   id_empleado: number;
-  id_empresa: number;
-  empresa: string;
-  id_cargo: number;
-  cargo: string;
-  id_area: number;
-  area: string;
+  id_cargo: number | null;
+  cargo: string | null;
+  id_area: number | null;
+  area: string | null;
+  id_contrato_vigente: number | null;
+  id_empresa: number | null;
+  empresa: string | null;
+  empresa_url_logo: string | null;
+  qr_token: string;
   nombre: string;
   apellido: string;
+  genero: Genero | string | null;
   dni: string | null;
   ruc: string | null;
   carnet_extranjeria: string | null;
   pasaporte: string | null;
   fecha_nacimiento: string | null;
+  con_contrato: boolean;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
   url_foto: string | null;
   estado: EstadoBase;
 }
@@ -23,13 +32,18 @@ export interface RES_ContratistaResumen {
   id_contratista: number;
   id_mina: number;
   mina: string;
+  qr_token: string;
   nombre: string;
   apellido: string;
+  genero: Genero | string | null;
   dni: string | null;
   ruc: string | null;
   carnet_extranjeria: string | null;
   pasaporte: string | null;
   fecha_nacimiento: string | null;
+  direccion: string | null;
+  telefono: string | null;
+  email: string | null;
   url_foto: string | null;
   estado: EstadoBase;
   labores_asignadas: RES_LaborContratista[];
