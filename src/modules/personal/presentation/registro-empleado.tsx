@@ -416,8 +416,12 @@ export const RegistroEmpleado = ({
       >
         <FormularioContratoEmpleado
           idEmpleado={0}
-          onSuccess={() => {
+          onSuccess={(payload) => {
             cerrarModalContrato();
+            const data = payload as { empleado?: RES_EmpleadoResumen };
+            if (data?.empleado) {
+              onSuccess(data.empleado);
+            }
           }}
           onCancel={cerrarModalContrato}
           embedded

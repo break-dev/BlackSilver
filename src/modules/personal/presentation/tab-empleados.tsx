@@ -494,6 +494,9 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
           idEmpleado={modalContratoEmpleado.idEmpleado}
           opened={modalContratoEmpleado.abierto}
           close={cerrarModalContrato}
+          onSuccess={(payload) => {
+            onContratoCreado(payload as Parameters<typeof onContratoCreado>[0]);
+          }}
         />
       )}
 

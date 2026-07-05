@@ -250,7 +250,17 @@ export const useRegistroContratoEmpleado = (
 
   const handleAddEvidencia = (file: File | File[] | null) => {
     if (!file) return;
-    setEvidencias((prev) => [...prev, ...(Array.isArray(file) ? file : [file])]);
+    const list = Array.isArray(file) ? file : [file];
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    const tooLarge = list.find((f) => f.size > MAX_SIZE);
+    if (tooLarge) {
+      notify({
+        type: "error",
+        content: `El archivo "${tooLarge.name}" supera el límite máximo permitido.`,
+      });
+      return;
+    }
+    setEvidencias((prev) => [...prev, ...list]);
   };
 
   const handleRemoveEvidencia = (index: number) => {
@@ -263,6 +273,15 @@ export const useRegistroContratoEmpleado = (
     const validation = Schema_CrearContratoEmpleado.safeParse(form);
     if (!validation.success) {
       notify({ type: "info", content: validation.error.issues[0].message });
+      return;
+    }
+
+    const totalSize = evidencias.reduce((acc, f) => acc + f.size, 0);
+    if (totalSize > 8 * 1024 * 1024) {
+      notify({
+        type: "error",
+        content: "El total de archivos supera el límite máximo permitido.",
+      });
       return;
     }
 
@@ -330,5 +349,6 @@ export const useRegistroContratoEmpleado = (
     duracionDiasCalc,
     loading,
     handleSubmit,
+    setEvidencias,
   };
 };

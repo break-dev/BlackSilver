@@ -38,11 +38,11 @@ export const ModalContratoEmpleado = ({
       <FormularioContratoEmpleado
         idEmpleado={idEmpleado}
         contratoAnterior={contratoAnterior}
-        onSuccess={() => {
+        onSuccess={(payload) => {
           // El formulario del contrato, al confirmar, hace su submit interno
           // (POST /api/contratos-empleado). Aquí cerramos el modal y delegamos
           // al padre la actualización de la lista.
-          onSuccess?.();
+          onSuccess?.(payload as RES_EmpleadoConContrato);
           close();
         }}
         onCancel={close}

@@ -102,7 +102,7 @@ export class ContratistasService {
   private static PATH = "/contratistas";
 
   public static get_contratistas = async (
-    idMina?: Number,
+    idMina?: number,
   ): Promise<IRespuesta<RES_ContratistaResumen[]>> => {
     const { data } = await api.get(this.PATH, {
       params: { id_mina: idMina },

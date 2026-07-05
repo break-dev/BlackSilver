@@ -91,6 +91,16 @@ export const useRegistroEmpleado = (
     field: K,
     value: DTO_CrearEmpleado[K],
   ) => {
+    if (field === "foto" && (value as unknown) instanceof File) {
+      const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+      if (value.size > MAX_SIZE) {
+        notify({
+          type: "error",
+          content: `La imagen "${value.name}" supera el límite máximo permitido.`,
+        });
+        return;
+      }
+    }
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 

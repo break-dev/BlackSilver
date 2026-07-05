@@ -10,6 +10,7 @@ import {
   ReceiptRefundIcon,
   ShoppingCartIcon,
   CubeIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 
 // Asociacion de iconos a cada nivel de menú mediante
@@ -46,6 +47,13 @@ export const iconos_menu_navegacion = [
     submenus: [
       { submenu_path: "control-activos", icono: ClipboardDocumentListIcon },
       { submenu_path: "produccion", icono: CubeIcon },
+    ],
+  },
+  {
+    menu_path: "recursos-humanos",
+    icono: UserGroupIcon,
+    submenus: [
+      { submenu_path: "control-personal", icono: ClockIcon },
     ],
   },
 ];

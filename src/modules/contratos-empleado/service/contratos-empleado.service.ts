@@ -23,7 +23,12 @@ const buildFormData = (
 ): FormData => {
   const formData = new FormData();
   Object.entries(dto).forEach(([key, value]) => {
-    if (value === null || value === undefined) return;
+    if (key === "evidencias") return;
+    if (value === null || value === undefined || value === "") return;
+    if (value instanceof Date) {
+      formData.append(key, value.toISOString().split("T")[0]);
+      return;
+    }
     if (typeof value === "boolean") {
       formData.append(key, value ? "1" : "0");
       return;
@@ -93,8 +98,12 @@ export const ContratosEmpleadoService = {
 
     // Campos a nivel raíz (Laravel los lee como $request->input('empleado.*'))
     Object.entries(empleado).forEach(([key, value]) => {
-      if (value === null || value === undefined) return;
+      if (value === null || value === undefined || value === "") return;
       if (key === "foto") return; // foto va aparte
+      if (value instanceof Date) {
+        formData.append(`empleado[${key}]`, value.toISOString().split("T")[0]);
+        return;
+      }
       if (typeof value === "boolean") {
         formData.append(`empleado[${key}]`, value ? "1" : "0");
         return;
@@ -106,8 +115,12 @@ export const ContratosEmpleadoService = {
     });
 
     Object.entries(contrato).forEach(([key, value]) => {
-      if (value === null || value === undefined) return;
+      if (value === null || value === undefined || value === "") return;
       if (key === "evidencias") return;
+      if (value instanceof Date) {
+        formData.append(`contrato[${key}]`, value.toISOString().split("T")[0]);
+        return;
+      }
       if (typeof value === "boolean") {
         formData.append(`contrato[${key}]`, value ? "1" : "0");
         return;

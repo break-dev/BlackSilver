@@ -37,7 +37,7 @@ import {
 
 interface FormularioContratoEmpleadoProps {
   idEmpleado: number;
-  onSuccess?: () => void;
+  onSuccess?: (payload?: unknown) => void;
   onCancel?: () => void;
   embedded?: boolean;
   /**
@@ -107,7 +107,7 @@ export const FormularioContratoEmpleado = ({
     idMina,
     setIdMina,
     evidencias,
-    handleAddEvidencia,
+    setEvidencias,
     areas,
     cargosSelectData,
     minas,
@@ -124,9 +124,8 @@ export const FormularioContratoEmpleado = ({
     duracionDiasCalc,
     loading,
     handleSubmit,
-  } = useRegistroContratoEmpleado(idEmpleado, () => onSuccess?.());
+  } = useRegistroContratoEmpleado(idEmpleado, (payload) => onSuccess?.(payload));
 
-  const [, setEvidenciasLocal] = useState<File[]>([]);
   const [fechaFinError, setFechaFinError] = useState<string | null>(null);
   const [datosPrecargados, setDatosPrecargados] = useState(false);
 
@@ -218,7 +217,11 @@ export const FormularioContratoEmpleado = ({
   const handleFinal = async () => {
     // Si viene del form de empleado, usa el endpoint orquestador
     if (esEmbebidoConEmpleado) {
-      const validation = SchemaOrq(form);
+      // Forzar un id_empleado válido solo para pasar la validación.
+      // El endpoint orquestador ignora este campo (se borra abajo) y crea
+      // el empleado nuevo junto con el contrato.
+      const formParaValidar = { ...form, id_empleado: 1 };
+      const validation = SchemaOrq(formParaValidar);
       if (!validation.success) {
         notify({
           type: "info",
@@ -226,6 +229,15 @@ export const FormularioContratoEmpleado = ({
         });
         return;
       }
+      const totalSize = (fotoEmpleado ? fotoEmpleado.size : 0) + evidencias.reduce((acc, f) => acc + f.size, 0);
+      if (totalSize > 8 * 1024 * 1024) {
+        notify({
+          type: "error",
+          content: "El total de archivos supera el límite máximo permitido.",
+        });
+        return;
+      }
+
       setSubmitting(true);
       try {
         const empleadoPayload: Record<string, unknown> = {
@@ -249,7 +261,7 @@ export const FormularioContratoEmpleado = ({
           return;
         }
         notify({ type: "success", content: resp.message });
-        onSuccess?.();
+        onSuccess?.(resp.data);
       } catch (err) {
         console.error(err);
         notify({
@@ -568,10 +580,7 @@ export const FormularioContratoEmpleado = ({
       <Divider label="Evidencias (opcional)" labelPosition="left" />
       <MultiFilePicker
         files={evidencias}
-        onFilesChange={(files) => {
-          if (evidencias.length === 0) handleAddEvidencia(files);
-          else setEvidenciasLocal(files);
-        }}
+        onFilesChange={setEvidencias}
         accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
         multiple
         label="Adjuntar evidencias"
