@@ -13,10 +13,8 @@ import {
 } from "@mantine/core";
 import {
   CheckBadgeIcon,
-  XCircleIcon,
   CalendarIcon,
   CurrencyDollarIcon,
-  BriefcaseIcon,
   MapPinIcon,
   UserCircleIcon,
   ChevronDownIcon,
@@ -25,6 +23,7 @@ import {
   PlusIcon,
   ClockIcon,
   DocumentIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { useHistorialContratosEmpleado } from "../hooks/useHistorialContratosEmpleado";
@@ -214,140 +213,126 @@ export const ModalHistorialContratosEmpleado = ({
                   <Paper
                     key={c.id_contrato}
                     radius="xl"
-                    className={`border shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all group relative overflow-hidden p-0 shrink-0 ${esVigente
+                    className={`border shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all group relative overflow-hidden p-4 shrink-0 ${
+                      esVigente
                         ? "bg-teal-500/5 border-teal-500/30 hover:border-teal-500/50"
                         : "bg-zinc-900/30 border-zinc-800/80 hover:bg-zinc-900/50 hover:border-indigo-500/20"
-                      }`}
+                    }`}
                   >
                     {/* Highlight superior */}
                     <div
-                      className={`absolute top-0 left-0 w-full h-1 bg-linear-to-r ${esVigente
+                      className={`absolute top-0 left-0 w-full h-1 bg-linear-to-r ${
+                        esVigente
                           ? "from-teal-500/40 via-teal-500/60 to-teal-500/10"
                           : "from-zinc-500/20 via-indigo-500/30 to-indigo-500/5"
-                        } group-hover:opacity-100 transition-opacity`}
+                      } group-hover:opacity-100 transition-opacity`}
                     />
 
-                    <UnstyledButton
-                      className="w-full px-12 py-6"
-                      onClick={() => toggleExpand(c.id_contrato)}
-                    >
-                      <Group
-                        justify="space-between"
-                        align="center"
-                        wrap="nowrap"
-                        gap="md"
-                        className="pt-2"
+                      <UnstyledButton
+                        className="w-full"
+                        onClick={() => toggleExpand(c.id_contrato)}
                       >
-                        <Group
-                          gap="md"
-                          wrap="nowrap"
-                          className="shrink-0 flex-1 min-w-0 items-center"
-                        >
-                          <div
-                            className={`p-3 rounded-xl border shrink-0 ${esVigente
-                                ? "bg-teal-500/10 border-teal-500/20"
-                                : "bg-indigo-500/10 border-indigo-500/20"
+                        <Group justify="space-between" wrap="nowrap">
+                          <Group gap="md" wrap="nowrap" className="min-w-0 flex-1">
+                            <div
+                              className={`p-3 rounded-2xl border shrink-0 ${
+                                esVigente
+                                  ? "bg-teal-500/10 border-teal-500/20"
+                                  : "bg-indigo-500/10 border-indigo-500/20"
                               }`}
-                          >
-                            <DocumentIcon
-                              className={`w-5 h-5 ${esVigente
-                                  ? "text-teal-400"
-                                  : "text-indigo-400"
+                            >
+                              <DocumentIcon
+                                className={`w-6 h-6 ${
+                                  esVigente ? "text-teal-400" : "text-indigo-400"
                                 }`}
-                            />
-                          </div>
-                          <Stack gap={8} className="min-w-0 flex-1">
-                            <Group gap="xs" wrap="nowrap">
-                              <Text
-                                size="sm"
-                                fw={900}
-                                className="text-white truncate"
-                              >
-                                {c.cargo ?? "—"}
-                              </Text>
-                              <Badge
-                                variant="light"
-                                color={
-                                  c.tipo_contrato === "Planilla"
-                                    ? "indigo"
-                                    : "teal"
-                                }
-                                radius="sm"
-                                size="xs"
-                                className="font-bold"
-                              >
-                                {c.tipo_contrato === "Planilla"
-                                  ? "Planilla"
-                                  : "Jornada Diaria"}
-                              </Badge>
-                              {esVigente && (
+                              />
+                            </div>
+                            <Stack gap={1} className="min-w-0 flex-1">
+                              <Group gap="xs" wrap="nowrap" className="min-w-0">
+                                <Text
+                                  size="sm"
+                                  fw={900}
+                                  className="text-white truncate"
+                                >
+                                  {c.cargo ?? "—"}
+                                </Text>
                                 <Badge
                                   variant="light"
-                                  color="green"
+                                  color={
+                                    c.tipo_contrato === "Planilla"
+                                      ? "indigo"
+                                      : "teal"
+                                  }
                                   radius="sm"
                                   size="xs"
-                                  leftSection={
-                                    <CheckBadgeIcon className="w-3 h-3" />
-                                  }
                                   className="font-bold"
                                 >
-                                  Vigente
+                                  {c.tipo_contrato === "Planilla"
+                                    ? "Planilla"
+                                    : "Jornada Diaria"}
                                 </Badge>
-                              )}
-                            </Group>
-                            <Group
-                              gap="md"
-                              className="text-zinc-400"
-                              wrap="nowrap"
-                            >
-                              <Group gap={4} wrap="nowrap">
-                                <CalendarIcon className="w-3.5 h-3.5 text-indigo-400/70" />
-                                <Text
-                                  size="10px"
-                                  fw={700}
-                                  className="whitespace-nowrap"
-                                >
-                                  {formatDate(c.fecha_inicio)}
-                                  {c.por_tiempo_indefinido
-                                    ? " — Indefinido"
-                                    : c.fecha_fin
-                                      ? ` → ${formatDate(c.fecha_fin)} (${c.duracion_dias ?? 0} días)`
-                                      : ""}
-                                </Text>
-                              </Group>
-                              {sueldoMostrar && (
-                                <Group gap={4} wrap="nowrap">
-                                  <CurrencyDollarIcon className="w-3.5 h-3.5 text-emerald-400/70" />
-                                  <Text
-                                    size="10px"
-                                    fw={800}
-                                    className="text-emerald-400 font-mono whitespace-nowrap"
+                                {esVigente && (
+                                  <Badge
+                                    variant="light"
+                                    color="green"
+                                    radius="sm"
+                                    size="xs"
+                                    leftSection={
+                                      <CheckBadgeIcon className="w-3 h-3" />
+                                    }
+                                    className="font-bold"
                                   >
-                                    S/ {Number(sueldoMostrar).toFixed(2)}
-                                    {unidad}
+                                    Vigente
+                                  </Badge>
+                                )}
+                              </Group>
+
+                              <Group gap="md" className="text-zinc-400 flex-wrap">
+                                <Group gap={4} wrap="nowrap">
+                                  <CalendarIcon className="w-4 h-4 text-indigo-400/70" />
+                                  <Text
+                                    size="xs"
+                                    fw={600}
+                                    className="whitespace-nowrap"
+                                  >
+                                    {formatDate(c.fecha_inicio)}
+                                    {c.por_tiempo_indefinido
+                                      ? " — Indefinido"
+                                      : c.fecha_fin
+                                        ? ` → ${formatDate(c.fecha_fin)} (${c.duracion_dias ?? 0} días)`
+                                        : ""}
                                   </Text>
                                 </Group>
-                              )}
-                            </Group>
-                          </Stack>
-                        </Group>
+                                {sueldoMostrar && (
+                                  <Group gap={4} wrap="nowrap">
+                                    <CurrencyDollarIcon className="w-4 h-4 text-emerald-400/70" />
+                                    <Text
+                                      size="xs"
+                                      fw={800}
+                                      className="text-emerald-400 font-mono whitespace-nowrap"
+                                    >
+                                      S/ {Number(sueldoMostrar).toFixed(2)}
+                                      {unidad}
+                                    </Text>
+                                  </Group>
+                                )}
+                                {c.empresa && (
+                                  <Group gap={4} wrap="nowrap">
+                                    <BuildingOfficeIcon className="w-4 h-4 text-indigo-400/70" />
+                                    <Text
+                                      size="xs"
+                                      fw={700}
+                                      className="text-zinc-300 whitespace-nowrap"
+                                    >
+                                      {c.empresa}
+                                    </Text>
+                                  </Group>
+                                )}
+                              </Group>
+                            </Stack>
+                          </Group>
 
-                        <Group gap="md" wrap="nowrap" className="shrink-0">
-                          {!esVigente && (
-                            <Badge
-                              variant="light"
-                              color="gray"
-                              radius="sm"
-                              size="xs"
-                              leftSection={
-                                <XCircleIcon className="w-3 h-3" />
-                              }
-                              className="font-bold"
-                            >
-                              Finalizado
-                            </Badge>
-                          )}
-                          <div className="w-7 h-7 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0 border border-zinc-700/50 group-hover:bg-zinc-800/80 transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0 border border-zinc-700/50 group-hover:bg-zinc-800/80 transition-colors">
                             {expanded ? (
                               <ChevronUpIcon className="w-4 h-4 text-zinc-400" />
                             ) : (
@@ -355,58 +340,76 @@ export const ModalHistorialContratosEmpleado = ({
                             )}
                           </div>
                         </Group>
-                      </Group>
-                    </UnstyledButton>
+                      </UnstyledButton>
 
-                    <Collapse in={expanded}>
-                      <div className="px-6 pt-4 pb-5 border-t border-zinc-800/40">
-                        <Stack gap="md">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                            {/* Cargo */}
-                            <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40">
-                              <Group gap="xs" mb="xs">
-                                <BriefcaseIcon className="w-3.5 h-3.5 text-indigo-400" />
-                                <Text
-                                  size="9px"
-                                  fw={800}
-                                  c="zinc.5"
-                                  className="uppercase tracking-widest"
-                                >
-                                  Cargo
-                                </Text>
-                              </Group>
-                              <Text size="sm" fw={700} className="text-zinc-200">
-                                {c.cargo ?? "—"}
-                              </Text>
+                      <Collapse in={expanded}>
+                        <div className="mt-4 pt-4 border-t border-zinc-800/30">
+                          <Stack gap="md">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Almacén */}
+                              {c.almacen && (
+                                <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40">
+                                  <Group gap="xs" mb="xs">
+                                    <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                    <Text
+                                      size="9px"
+                                      fw={800}
+                                      c="zinc.5"
+                                      className="uppercase tracking-widest"
+                                    >
+                                      Almacén
+                                    </Text>
+                                  </Group>
+                                  <Text size="sm" fw={600} className="text-zinc-200">
+                                    {c.almacen}
+                                  </Text>
+                                </div>
+                              )}
+
+                              {/* Labor */}
+                              {c.labor && (
+                                <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40">
+                                  <Group gap="xs" mb="xs">
+                                    <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                    <Text
+                                      size="9px"
+                                      fw={800}
+                                      c="zinc.5"
+                                      className="uppercase tracking-widest"
+                                    >
+                                      Labor
+                                    </Text>
+                                  </Group>
+                                  <Text size="sm" fw={600} className="text-zinc-200">
+                                    {c.labor} {c.mina_nombre ? `(${c.mina_nombre})` : ""}
+                                  </Text>
+                                </div>
+                              )}
+
+                              {/* Fallback si no hay almacén ni labor */}
+                              {!c.almacen && !c.labor && (
+                                <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40 col-span-full">
+                                  <Group gap="xs" mb="xs">
+                                    <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                    <Text
+                                      size="9px"
+                                      fw={800}
+                                      c="zinc.5"
+                                      className="uppercase tracking-widest"
+                                    >
+                                      Lugar
+                                    </Text>
+                                  </Group>
+                                  <Text size="sm" fw={600} className="text-zinc-200">
+                                    —
+                                  </Text>
+                                </div>
+                              )}
                             </div>
 
-                            {/* Lugar: Almacén o Labor */}
-                            <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40">
-                              <Group gap="xs" mb="xs">
-                                <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />
-                                <Text
-                                  size="9px"
-                                  fw={800}
-                                  c="zinc.5"
-                                  className="uppercase tracking-widest"
-                                >
-                                  {c.almacen
-                                    ? "Almacén"
-                                    : c.labor
-                                      ? "Labor"
-                                      : "Lugar"}
-                                </Text>
-                              </Group>
-                              <Text size="sm" fw={600} className="text-zinc-200">
-                                {c.almacen ?? c.labor ?? "—"}
-                              </Text>
-                            </div>
-                          </div>
-
-                          {/* Cierre anticipado (si aplica) */}
-                          {tieneCierreAnticipado && (
-                            <div className="bg-amber-500/5 border border-amber-500/30 rounded-xl p-4">
-                              <Group gap="xs" mb="xs">
+                            {/* Cierre anticipado como badge */}
+                            {tieneCierreAnticipado && (
+                              <Group gap="xs">
                                 <ClockIcon className="w-3.5 h-3.5 text-amber-400" />
                                 <Text
                                   size="9px"
@@ -416,40 +419,45 @@ export const ModalHistorialContratosEmpleado = ({
                                 >
                                   Cierre
                                 </Text>
-                              </Group>
-                              <Text size="sm" fw={700} className="text-amber-200">
-                                {formatDate(c.fecha_fin_anticipada)}
-                              </Text>
-                            </div>
-                          )}
-
-                          {evidencias.length > 0 && (
-                            <div>
-                              <Group gap="xs" mb="xs" className="pl-1">
-                                <PaperClipIcon className="w-3.5 h-3.5 text-zinc-500" />
-                                <Text
-                                  size="9px"
-                                  fw={800}
-                                  c="zinc.4"
-                                  className="uppercase tracking-widest"
+                                <Badge
+                                  variant="light"
+                                  color="amber"
+                                  size="md"
+                                  radius="md"
+                                  className="font-mono font-bold"
                                 >
-                                  Evidencias ({evidencias.length})
-                                </Text>
+                                  {formatDate(c.fecha_fin_anticipada)}
+                                </Badge>
                               </Group>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {evidencias.map((ev, idx) => (
-                                  <ArchivoCard
-                                    key={`${c.id_contrato}-ev-${idx}`}
-                                    archivo={ev}
-                                  />
-                                ))}
+                            )}
+
+                            {evidencias.length > 0 && (
+                              <div>
+                                <Group gap="xs" mb="xs" className="pl-1">
+                                  <PaperClipIcon className="w-3.5 h-3.5 text-zinc-500" />
+                                  <Text
+                                    size="9px"
+                                    fw={800}
+                                    c="zinc.4"
+                                    className="uppercase tracking-widest"
+                                  >
+                                    Evidencias ({evidencias.length})
+                                  </Text>
+                                </Group>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                  {evidencias.map((ev, idx) => (
+                                    <ArchivoCard
+                                      key={`${c.id_contrato}-ev-${idx}`}
+                                      archivo={ev}
+                                    />
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </Stack>
-                      </div>
-                    </Collapse>
-                  </Paper>
+                            )}
+                          </Stack>
+                        </div>
+                      </Collapse>
+                    </Paper>
                 );
               })}
             </Stack>
@@ -469,4 +477,4 @@ export const ModalHistorialContratosEmpleado = ({
       )}
     </>
   );
-}
+};

@@ -26,6 +26,7 @@ import { RegistroEmpleado } from "./registro-empleado";
 import { RegistroContratista } from "./registro-contratista";
 import { AsignacionLaboresContratista } from "./asignacion-labores-contratista";
 import { useAsignacionLaboresContratista } from "../hooks/useAsignacionLaboresContratista";
+import { ModalFotocheck } from "./modal-fotocheck";
 
 export const PersonalPage = () => {
   useTitlePage("Trabajadores / Personal");
@@ -75,26 +76,45 @@ export const PersonalPage = () => {
             </Tabs.List>
 
             {activeTab === "empleados" ? (
-              <Group grow className="flex-1 w-full" align="flex-end">
-                <TextInput
-                  label="Buscar empleado"
-                  placeholder="Buscar por nombre, DNI, cargo o área..."
-                  leftSection={
-                    <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-                  }
-                  value={empleadosCtrl.busqueda}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    empleadosCtrl.setBusqueda(e.currentTarget.value)
-                  }
-                  radius="lg"
-                  size="sm"
-                  className="flex-1"
-                  classNames={{
-                    label: "text-zinc-400 mb-1 font-medium",
-                    input:
-                      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all h-[38px]",
-                  }}
-                />
+              <Group grow className="flex-1 w-full" align="flex-end" gap="sm">
+                <div className="w-full md:w-56 shrink-0">
+                  <Select
+                    label="Filtrar por Área"
+                    placeholder="Todas..."
+                    data={empleadosCtrl.areasUnicas}
+                    value={empleadosCtrl.filtroArea}
+                    onChange={empleadosCtrl.setFiltroArea}
+                    searchable
+                    clearable
+                    radius="lg"
+                    size="sm"
+                    classNames={{
+                      input: "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 transition-all h-[38px]",
+                      label: "text-zinc-400 mb-1 font-medium",
+                    }}
+                  />
+                </div>
+
+                <div className="flex-1 min-w-[200px]">
+                  <TextInput
+                    label="Buscar empleado"
+                    placeholder="Buscar por nombre, DNI, cargo o área..."
+                    leftSection={
+                      <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+                    }
+                    value={empleadosCtrl.busqueda}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      empleadosCtrl.setBusqueda(e.currentTarget.value)
+                    }
+                    radius="lg"
+                    size="sm"
+                    classNames={{
+                      label: "text-zinc-400 mb-1 font-medium",
+                      input:
+                        "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 transition-all h-[38px]",
+                    }}
+                  />
+                </div>
               </Group>
             ) : (
               <Group grow className="flex-1 w-full" align="flex-end">
@@ -220,6 +240,15 @@ export const PersonalPage = () => {
           />
         )}
       </ModalEstandar>
+
+      {/* Modal de fotocheck */}
+      {empleadosCtrl.modalFotocheckAbierto && (
+        <ModalFotocheck
+          opened={empleadosCtrl.modalFotocheckAbierto}
+          close={empleadosCtrl.cerrarModalFotocheck}
+          empleados={empleadosCtrl.empleadosSeleccionados}
+        />
+      )}
     </div>
   );
 };

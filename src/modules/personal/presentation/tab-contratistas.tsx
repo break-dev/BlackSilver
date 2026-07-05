@@ -14,6 +14,8 @@ import {
   MapPinIcon,
   UserGroupIcon,
   CakeIcon,
+  EnvelopeIcon,
+  PhoneIcon,
 } from "@heroicons/react/24/outline";
 
 import { type DataTableColumn } from "mantine-datatable";
@@ -107,7 +109,7 @@ export const TabContratistas = ({
                 {r.nombre} {r.apellido}
               </Text>
               <Text size="10px" className="text-zinc-500 font-mono truncate">
-                {r.dni || "---"}
+                DNI: {r.dni || "---"}
               </Text>
             </div>
           </Group>
@@ -188,6 +190,36 @@ export const TabContratistas = ({
           </div>
         );
       },
+    },
+    {
+      accessor: "contacto",
+      title: "Contacto",
+      width: 240,
+      render: (r) => (
+        <Stack gap={2}>
+          {r.email && (
+            <Group gap={4}>
+              <EnvelopeIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+              <Text size="xs" className="text-zinc-300 truncate max-w-[220px]">
+                {r.email}
+              </Text>
+            </Group>
+          )}
+          {r.telefono && (
+            <Group gap={4}>
+              <PhoneIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+              <Text size="xs" className="text-zinc-300 font-mono">
+                {r.telefono}
+              </Text>
+            </Group>
+          )}
+          {!r.email && !r.telefono && (
+            <Text size="xs" c="dimmed" fs="italic">
+              Sin contacto
+            </Text>
+          )}
+        </Stack>
+      ),
     },
     {
       accessor: "fecha_nacimiento",

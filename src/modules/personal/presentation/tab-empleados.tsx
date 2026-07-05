@@ -9,7 +9,6 @@ import {
   ActionIcon,
   Tooltip,
   Checkbox,
-  Button,
 } from "@mantine/core";
 import {
   PencilSquareIcon,
@@ -20,6 +19,7 @@ import {
   EnvelopeIcon,
   DocumentTextIcon,
   PlusIcon,
+  IdentificationIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -30,8 +30,6 @@ import { useNotify } from "../../../hooks/useNotify";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalContratoEmpleado } from "../../contratos-empleado/presentation/modal-contrato-empleado";
 import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presentation/modal-historial-contratos-empleado";
-import { ModalFotocheck } from "./modal-fotocheck";
-import { IdentificationIcon } from "@heroicons/react/24/outline";
 
 interface TabEmpleadosProps {
   controller: ReturnType<typeof useEmpleados>;
@@ -52,17 +50,12 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
     cerrarModalHistorial,
     modalHistorialContratos,
     onContratoCreado,
-    // Selección masiva
+    // Selección masiva (usada en la columna de checkbox)
     seleccionados,
-    empleadosSeleccionados,
     toggleSeleccion,
     toggleSeleccionarTodos,
-    limpiarSeleccion,
     todosVisiblesSeleccionados,
     algunosVisiblesSeleccionados,
-    modalFotocheckAbierto,
-    abrirModalFotocheck,
-    cerrarModalFotocheck,
   } = controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
@@ -77,33 +70,64 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
 
   const columns: DataTableColumn<RES_EmpleadoResumen>[] = [
     {
-      accessor: "seleccion",
-      title: (
-        <Checkbox
-          checked={todosVisiblesSeleccionados}
-          indeterminate={!todosVisiblesSeleccionados && algunosVisiblesSeleccionados}
-          onChange={toggleSeleccionarTodos}
-          size="sm"
-          color="indigo"
-        />
-      ),
-      textAlign: "center",
-      width: 50,
-      render: (r) => (
-        <Checkbox
-          checked={seleccionados.has(r.id_empleado)}
-          onChange={() => toggleSeleccion(r.id_empleado)}
-          size="sm"
-          color="indigo"
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-    },
-    {
       accessor: "index",
       title: "#",
       textAlign: "center",
       width: 50,
+    },
+    {
+      accessor: "seleccion",
+      title: (
+        <Group gap="4px" wrap="nowrap" align="center" justify="center">
+          <Checkbox
+            checked={todosVisiblesSeleccionados}
+            indeterminate={!todosVisiblesSeleccionados && algunosVisiblesSeleccionados}
+            onChange={toggleSeleccionarTodos}
+            size="xs"
+            color="indigo"
+          />
+          {seleccionados.size > 0 && (
+            <Tooltip label={`Fotocheck (${seleccionados.size})`}>
+              <ActionIcon
+                variant="filled"
+                color="indigo"
+                size="xs"
+                radius="md"
+                onClick={controller.abrirModalFotocheck}
+              >
+                <IdentificationIcon className="w-3.5 h-3.5 text-white" />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
+      ),
+      textAlign: "center",
+      width: 75,
+      render: (r) => (
+        <Group gap="4px" wrap="nowrap" align="center" justify="center">
+          <Checkbox
+            checked={seleccionados.has(r.id_empleado)}
+            onChange={() => toggleSeleccion(r.id_empleado)}
+            size="xs"
+            color="indigo"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <Tooltip label="Fotocheck">
+            <ActionIcon
+              variant="light"
+              color="indigo"
+              size="xs"
+              radius="md"
+              onClick={(e) => {
+                e.stopPropagation();
+                controller.abrirModalFotocheckIndividual(r);
+              }}
+            >
+              <IdentificationIcon className="w-3.5 h-3.5" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      ),
     },
     {
       accessor: "empleado",
@@ -150,11 +174,15 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
                 )}
               </FileButton>
             </div>
-            <div>
-              <Text size="sm" fw={500} className="text-zinc-200">
+            <div className="min-w-0 flex-1">
+              <Text
+                size="xs"
+                fw={700}
+                className="text-zinc-200 truncate leading-tight"
+              >
                 {r.nombre} {r.apellido}
               </Text>
-              <Text size="11px" className="text-zinc-500 font-mono">
+              <Text size="10px" className="text-zinc-500 font-mono truncate">
                 DNI: {r.dni || "---"}
               </Text>
             </div>
@@ -182,7 +210,11 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
         }
         return (
           <Stack gap={4}>
-            <Text size="sm" fw={700} className="text-zinc-100 leading-tight">
+            <Text
+              size="xs"
+              fw={700}
+              className="text-zinc-100 truncate leading-tight"
+            >
               {r.cargo ?? "—"}
             </Text>
             {r.area && (
@@ -253,15 +285,10 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
 
         if (!esEmpleadoConContrato) {
           return (
-            <Group gap={4} wrap="nowrap" justify="center">
-              <Badge
-                variant="light"
-                color="gray"
-                radius="md"
-                className="font-medium"
-              >
+            <Group justify="center">
+              <Text size="xs" c="dimmed" fs="italic">
                 No Aplica
-              </Badge>
+              </Text>
             </Group>
           );
         }
@@ -431,54 +458,7 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
         />
       )}
 
-      {/* Botón flotante de selección para fotocheck — Header del listado */}
-      {seleccionados.size > 0 && (
-        <Group
-          justify="space-between"
-          className="z-10 mx-auto px-4 py-2.5 rounded-2xl border border-indigo-500/40 bg-indigo-500/5 backdrop-blur-md"
-        >
-          <Group gap="sm">
-            <Badge
-              variant="light"
-              color="indigo"
-              size="md"
-              radius="md"
-              className="font-bold"
-            >
-              {seleccionados.size}{" "}
-              {seleccionados.size === 1 ? "seleccionado" : "seleccionados"}
-            </Badge>
-            <Button
-              variant="subtle"
-              size="xs"
-              color="gray"
-              onClick={limpiarSeleccion}
-              radius="md"
-            >
-              Limpiar
-            </Button>
-          </Group>
-          <Button
-            size="sm"
-            radius="lg"
-            color="indigo"
-            leftSection={<IdentificationIcon className="w-4 h-4" />}
-            onClick={abrirModalFotocheck}
-            className="font-bold shadow-lg shadow-indigo-900/30"
-          >
-            Generar Fotocheck
-          </Button>
-        </Group>
-      )}
-
-      {/* Modal de fotocheck */}
-      {modalFotocheckAbierto && (
-        <ModalFotocheck
-          opened={modalFotocheckAbierto}
-          close={cerrarModalFotocheck}
-          empleados={empleadosSeleccionados}
-        />
-      )}
+      {/* El botón de fotocheck y su modal están en personal.page.tsx, */}
 
       {/* Modal para ver historial de contratos */}
       {modalHistorialContratos && modalHistorialContratos.idEmpleado && (

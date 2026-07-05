@@ -6,6 +6,9 @@ export const useEmpleados = () => {
   const [empleados, setEmpleados] = useState<RES_EmpleadoResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroArea, setFiltroArea] = useState<string | null>(null);
+  const [filtroEmpresa, setFiltroEmpresa] = useState<string | null>(null);
+  const [empleadoIndividual, setEmpleadoIndividual] = useState<RES_EmpleadoResumen | null>(null);
   const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(
     null,
   );
@@ -57,8 +60,26 @@ export const useEmpleados = () => {
       );
     }
 
+    if (filtroArea) {
+      results = results.filter((e) => e.area === filtroArea);
+    }
+
+    if (filtroEmpresa) {
+      results = results.filter((e) => e.empresa === filtroEmpresa);
+    }
+
     return results;
-  }, [empleados, busqueda]);
+  }, [empleados, busqueda, filtroArea, filtroEmpresa]);
+
+  const areasUnicas = useMemo(() => {
+    const set = new Set(empleados.map((e) => e.area).filter(Boolean));
+    return Array.from(set) as string[];
+  }, [empleados]);
+
+  const empresasUnicas = useMemo(() => {
+    const set = new Set(empleados.map((e) => e.empresa).filter(Boolean));
+    return Array.from(set) as string[];
+  }, [empleados]);
 
   const pushNuevoEmpleado = (nuevo: RES_EmpleadoResumen) => {
     setEmpleados((prev) => [nuevo, ...prev]);
@@ -162,15 +183,21 @@ export const useEmpleados = () => {
     setModalFotocheckAbierto(true);
   }, [seleccionados.size]);
 
+  const abrirModalFotocheckIndividual = useCallback((emp: RES_EmpleadoResumen) => {
+    setEmpleadoIndividual(emp);
+    setModalFotocheckAbierto(true);
+  }, []);
+
   const cerrarModalFotocheck = useCallback(() => {
     setModalFotocheckAbierto(false);
+    setEmpleadoIndividual(null);
   }, []);
 
   // Empleados seleccionados como array (preserva el orden del listado filtrado)
-  const empleadosSeleccionados = useMemo(
-    () => filtrados.filter((e) => seleccionados.has(e.id_empleado)),
-    [filtrados, seleccionados],
-  );
+  const empleadosSeleccionados = useMemo(() => {
+    if (empleadoIndividual) return [empleadoIndividual];
+    return filtrados.filter((e) => seleccionados.has(e.id_empleado));
+  }, [filtrados, seleccionados, empleadoIndividual]);
 
   // Para el "todos seleccionados / indeterminado" del checkbox del header
   const todosVisiblesSeleccionados = useMemo(() => {
@@ -187,6 +214,12 @@ export const useEmpleados = () => {
     loading,
     busqueda,
     setBusqueda,
+    filtroArea,
+    setFiltroArea,
+    filtroEmpresa,
+    setFiltroEmpresa,
+    areasUnicas,
+    empresasUnicas,
     recargar: () => listar(),
     pushNuevoEmpleado,
     actualizarFoto,
@@ -210,6 +243,7 @@ export const useEmpleados = () => {
     algunosVisiblesSeleccionados,
     modalFotocheckAbierto,
     abrirModalFotocheck,
+    abrirModalFotocheckIndividual,
     cerrarModalFotocheck,
   };
 };
