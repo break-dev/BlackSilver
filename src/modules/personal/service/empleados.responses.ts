@@ -26,6 +26,17 @@ export interface RES_EmpleadoResumen {
   email: string | null;
   url_foto: string | null;
   estado: EstadoBase;
+  cantidad_cuentas_bancarias?: number;
+}
+
+export interface RES_CuentaBancariaEmpleado {
+  id_cuenta_bancaria: number;
+  banco: string;
+  banco_abv: string;
+  moneda: string;
+  numero_cuenta: string;
+  cci: string | null;
+  estado: EstadoBase | string;
 }
 
 export interface RES_ContratistaResumen {

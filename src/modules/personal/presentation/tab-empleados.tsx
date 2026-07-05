@@ -20,6 +20,7 @@ import {
   DocumentTextIcon,
   PlusIcon,
   IdentificationIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 
@@ -33,9 +34,10 @@ import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presen
 
 interface TabEmpleadosProps {
   controller: ReturnType<typeof useEmpleados>;
+  onOpenCuentas: (empleado: RES_EmpleadoResumen) => void;
 }
 
-export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
+export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
   const {
@@ -265,7 +267,8 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
     {
       accessor: "contrato",
       title: "Contrato",
-      width: 240,
+      width: 170,
+      textAlign: "center",
       render: (r) => {
         const tieneContratoVigente = r.id_contrato_vigente !== null;
         // Tolerante: backend puede devolver true / 1 / "1" / "true"
@@ -356,6 +359,42 @@ export const TabEmpleados = ({ controller }: TabEmpleadosProps) => {
                 }
               >
                 <DocumentTextIcon className="w-4 h-4" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        );
+      },
+    },
+    {
+      accessor: "cantidad_cuentas_bancarias",
+      title: "Cuentas",
+      width: 140,
+      render: (r) => {
+        const count = r.cantidad_cuentas_bancarias ?? 0;
+        return (
+          <Group gap={4} wrap="nowrap" justify="center">
+            <Badge
+              color={count > 0 ? "blue" : "gray"}
+              variant="light"
+              radius="md"
+              size="xs"
+              className="font-medium"
+            >
+              {count === 1 ? "1 cuenta" : `${count} cuentas`}
+            </Badge>
+            <Tooltip label="Gestionar Cuentas" withArrow position="top">
+              <ActionIcon
+                variant="subtle"
+                color="blue"
+                radius="md"
+                size="sm"
+                aria-label="Gestionar Cuentas"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenCuentas(r);
+                }}
+              >
+                <CreditCardIcon className="w-4 h-4" />
               </ActionIcon>
             </Tooltip>
           </Group>

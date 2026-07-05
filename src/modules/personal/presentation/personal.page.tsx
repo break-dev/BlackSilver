@@ -27,12 +27,15 @@ import { RegistroContratista } from "./registro-contratista";
 import { AsignacionLaboresContratista } from "./asignacion-labores-contratista";
 import { useAsignacionLaboresContratista } from "../hooks/useAsignacionLaboresContratista";
 import { ModalFotocheck } from "./modal-fotocheck";
+import { CuentasBancarias } from "./cuentas-bancarias/cuentas-bancarias";
+import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 
 export const PersonalPage = () => {
   useTitlePage("Trabajadores / Personal");
   const [activeTab, setActiveTab] = useState<string | null>("empleados");
 
   const empleadosCtrl = useEmpleados();
+  const [selectedEmpleadoCuentas, setSelectedEmpleadoCuentas] = useState<RES_EmpleadoResumen | null>(null);
   const contratistasCtrl = useContratistas();
   const asignacionCtrl = useAsignacionLaboresContratista(
     contratistasCtrl.actualizarContratistaEnLista,
@@ -175,7 +178,7 @@ export const PersonalPage = () => {
         </div>
 
         <Tabs.Panel value="empleados">
-          <TabEmpleados controller={empleadosCtrl} />
+          <TabEmpleados controller={empleadosCtrl} onOpenCuentas={setSelectedEmpleadoCuentas} />
         </Tabs.Panel>
 
         <Tabs.Panel value="contratistas">
@@ -249,6 +252,25 @@ export const PersonalPage = () => {
           empleados={empleadosCtrl.empleadosSeleccionados}
         />
       )}
+
+      {/* Modal: Gestión de Cuentas Bancarias */}
+      <ModalEstandar
+        opened={selectedEmpleadoCuentas !== null}
+        close={() => setSelectedEmpleadoCuentas(null)}
+        title={
+          selectedEmpleadoCuentas
+            ? `Cuentas Bancarias: ${selectedEmpleadoCuentas.nombre} ${selectedEmpleadoCuentas.apellido}`
+            : ""
+        }
+        size="xl"
+      >
+        {selectedEmpleadoCuentas && (
+          <CuentasBancarias
+            empleado={selectedEmpleadoCuentas}
+            onCuentaAddedGlobal={empleadosCtrl.recargar}
+          />
+        )}
+      </ModalEstandar>
     </div>
   );
 };

@@ -1,14 +1,17 @@
 import { api } from "../../../service/_api";
 import type { RES_Labor } from "../../../service/responses/labor";
+import type { RES_Banco } from "../../../service/responses/banco";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   DTO_AsignarLaboresContratista,
   DTO_CrearContratista,
   DTO_CrearEmpleado,
+  DTO_CrearCuentaBancariaEmpleado,
 } from "./empleados.requests";
 import type {
   RES_ContratistaResumen,
   RES_EmpleadoResumen,
+  RES_CuentaBancariaEmpleado,
 } from "./empleados.responses";
 
 /**
@@ -64,6 +67,33 @@ export class EmpleadosService {
         headers: { "Content-Type": "multipart/form-data" },
       },
     );
+    return data;
+  };
+
+  public static get_cuentas_bancarias = async (
+    idEmpleado: number,
+  ): Promise<IRespuesta<RES_CuentaBancariaEmpleado[]>> => {
+    const { data } = await api.get(`${this.PATH}/cuentas-bancarias/${idEmpleado}`);
+    return data;
+  };
+
+  public static crear_cuenta_bancaria = async (
+    payload: DTO_CrearCuentaBancariaEmpleado,
+  ): Promise<IRespuesta<RES_CuentaBancariaEmpleado>> => {
+    const { data } = await api.post(`${this.PATH}/cuentas-bancarias`, payload);
+    return data;
+  };
+
+  public static get_bancos = async (): Promise<IRespuesta<RES_Banco[]>> => {
+    const { data } = await api.get("/aux/bancos");
+    return data;
+  };
+
+  public static crear_banco = async (payload: {
+    nombre: string;
+    abreviatura: string;
+  }): Promise<IRespuesta<RES_Banco>> => {
+    const { data } = await api.post("/aux/bancos", payload);
     return data;
   };
 }
