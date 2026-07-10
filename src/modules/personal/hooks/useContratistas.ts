@@ -7,7 +7,14 @@ export const useContratistas = () => {
   const [contratistas, setContratistas] = useState<RES_ContratistaResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(null);
+  const [idActualizandoFoto, setIdActualizandoFoto] = useState<number | null>(
+    null,
+  );
+  // Selección masiva (fotocheck)
+  const [seleccionados, setSeleccionados] = useState<Set<number>>(
+    new Set(),
+  );
+  const [modalFotocheckAbierto, setModalFotocheckAbierto] = useState(false);
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -40,7 +47,7 @@ export const useContratistas = () => {
         (e) =>
           e.nombre.toLowerCase().includes(query) ||
           e.apellido.toLowerCase().includes(query) ||
-          e.dni?.includes(query)
+          e.dni?.includes(query),
       );
     }
 
@@ -60,11 +67,16 @@ export const useContratistas = () => {
   const actualizarFoto = async (idContratista: number, file: File) => {
     setIdActualizandoFoto(idContratista);
     try {
-      const resp = await ContratistasService.actualizar_foto(idContratista, file);
+      const resp = await ContratistasService.actualizar_foto(
+        idContratista,
+        file,
+      );
       if (resp.success) {
         setContratistas((prev) =>
           prev.map((e) =>
-            e.id_contratista === idContratista ? { ...e, url_foto: resp.data } : e,
+            e.id_contratista === idContratista
+              ? { ...e, url_foto: resp.data }
+              : e,
           ),
         );
         return true;
@@ -76,6 +88,70 @@ export const useContratistas = () => {
     }
     return false;
   };
+
+  // Selección masiva (fotocheck)
+  const toggleSeleccion = useCallback((idContratista: number) => {
+    setSeleccionados((prev) => {
+      const next = new Set(prev);
+      if (next.has(idContratista)) next.delete(idContratista);
+      else next.add(idContratista);
+      return next;
+    });
+  }, []);
+
+  const toggleSeleccionarTodos = useCallback(() => {
+    setSeleccionados((prev) => {
+      const visibles = filtrados.map((c) => c.id_contratista);
+      const todosVisiblesSeleccionados = visibles.every((id) =>
+        prev.has(id),
+      );
+      if (todosVisiblesSeleccionados) {
+        const next = new Set(prev);
+        visibles.forEach((id) => next.delete(id));
+        return next;
+      }
+      const next = new Set(prev);
+      visibles.forEach((id) => next.add(id));
+      return next;
+    });
+  }, [filtrados]);
+
+  const limpiarSeleccion = useCallback(() => {
+    setSeleccionados(new Set());
+  }, []);
+
+  const abrirModalFotocheck = useCallback(() => {
+    if (seleccionados.size === 0) return;
+    setModalFotocheckAbierto(true);
+  }, [seleccionados.size]);
+
+  const abrirModalFotocheckIndividual = useCallback(
+    (c: RES_ContratistaResumen) => {
+      setSeleccionados(new Set([c.id_contratista]));
+      setModalFotocheckAbierto(true);
+    },
+    [],
+  );
+
+  const cerrarModalFotocheck = useCallback(() => {
+    setModalFotocheckAbierto(false);
+  }, []);
+
+  // Lista de seleccionados como array (preserva el orden del listado filtrado)
+  const contratistasSeleccionados = useMemo(
+    () => filtrados.filter((c) => seleccionados.has(c.id_contratista)),
+    [filtrados, seleccionados],
+  );
+
+  const todosVisiblesSeleccionados = useMemo(() => {
+    if (filtrados.length === 0) return false;
+    return filtrados.every((c) => seleccionados.has(c.id_contratista));
+  }, [filtrados, seleccionados]);
+
+  const algunosVisiblesSeleccionados = useMemo(
+    () => filtrados.some((c) => seleccionados.has(c.id_contratista)),
+    [filtrados, seleccionados],
+  );
 
   const minasUnicas = useMemo(() => {
     const map = new Map<number, string>();
@@ -103,5 +179,18 @@ export const useContratistas = () => {
     actualizarFoto,
     actualizarContratistaEnLista,
     idActualizandoFoto,
+
+    // Selección masiva
+    seleccionados,
+    contratistasSeleccionados,
+    toggleSeleccion,
+    toggleSeleccionarTodos,
+    limpiarSeleccion,
+    todosVisiblesSeleccionados,
+    algunosVisiblesSeleccionados,
+    modalFotocheckAbierto,
+    abrirModalFotocheck,
+    abrirModalFotocheckIndividual,
+    cerrarModalFotocheck,
   };
 };

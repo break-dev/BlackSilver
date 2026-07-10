@@ -104,20 +104,21 @@ export const FormularioContratoEmpleado = ({
     setField,
     idArea,
     setIdArea,
-    idMina,
-    setIdMina,
     evidencias,
     setEvidencias,
     areas,
     cargosSelectData,
-    minas,
     empresasSelectData,
     almacenes,
     labores,
+    tipoLugar,
+    setTipoLugar,
+    lugarIdActual,
+    setLugarId,
     loadingAreas,
     loadingCargos,
-    loadingMinas,
     loadingAlmacenes,
+    loadingLabores,
     loadingEmpresas,
     tiposContratoOptions,
     periodosDuracionOptions,
@@ -175,17 +176,13 @@ export const FormularioContratoEmpleado = ({
       );
       // Almacén
       if (contratoAnterior.id_almacen) {
+        setTipoLugar("almacen");
         setField("id_almacen", contratoAnterior.id_almacen);
       }
-      // Labor (el form se setea al renderizar por su prop)
-      // Y si la labor tiene mina, setear la mina también
+      // Labor
       if (contratoAnterior.id_labor) {
-        // No podemos setear id_labor directamente al estado del form
-        // porque no está en el formState del hook. Lo setamos vía el useEffect del hook.
+        setTipoLugar("labor");
         setField("id_labor", contratoAnterior.id_labor);
-      }
-      if (contratoAnterior.id_mina_labor) {
-        setIdMina(contratoAnterior.id_mina_labor);
       }
       setDatosPrecargados(true);
     }
@@ -511,71 +508,89 @@ export const FormularioContratoEmpleado = ({
         icon={<ExclamationCircleIcon className="w-4 h-4" />}
         styles={{ message: { fontSize: "12px" } }}
       >
-        Debe seleccionar <strong>al menos uno</strong>: almacén o labor donde
-        prestará servicios el empleado.
+        Debe seleccionar <strong>al menos uno</strong>: indique el tipo de
+        lugar (almacén o labor) y luego el específico.
       </Alert>
       <Group grow align="flex-start" gap="md">
         <Select
-          label="Mina (opcional)"
-          placeholder={loadingMinas ? "Cargando..." : "Seleccione mina"}
-          data={minas.map((m) => ({
-            value: m.id_mina.toString(),
-            label: m.nombre,
-          }))}
-          value={idMina?.toString() || null}
-          onChange={(val) => setIdMina(val ? Number(val) : null)}
+          label="Tipo de lugar"
+          placeholder="Seleccione"
+          data={[
+            { value: "almacen", label: "Almacén" },
+            { value: "labor", label: "Labor" },
+          ]}
+          value={tipoLugar || null}
+          onChange={(val) =>
+            setTipoLugar(
+              (val as "" | "almacen" | "labor" | null) ?? "",
+            )
+          }
           leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
           size="xs"
-          searchable
+          required
+          withAsterisk
           comboboxProps={{ withinPortal: true }}
-          disabled={loadingMinas || submittingTotal}
+          disabled={submittingTotal}
         />
         <Select
-          label="Labor (opcional)"
+          label={
+            tipoLugar === "almacen"
+              ? "Almacén"
+              : tipoLugar === "labor"
+                ? "Labor"
+                : "Específico"
+          }
           placeholder={
-            !idMina ? "Primero seleccione mina" : "Seleccione labor"
+            tipoLugar === "almacen"
+              ? loadingAlmacenes
+                ? "Cargando almacenes..."
+                : "Seleccione almacén"
+              : tipoLugar === "labor"
+                ? loadingLabores
+                  ? "Cargando labores..."
+                  : "Seleccione labor"
+                : "Primero seleccione el tipo"
           }
-          data={labores.map((l) => ({
-            value: l.id_labor.toString(),
-            label: l.nombre,
-          }))}
-          value={form.id_labor ? String(form.id_labor) : null}
-          onChange={(val) =>
-            setField("id_labor", val ? Number(val) : null)
+          data={
+            tipoLugar === "almacen"
+              ? almacenes.map((a) => ({
+                  value: a.id_almacen.toString(),
+                  label: a.nombre,
+                }))
+              : tipoLugar === "labor"
+                ? labores.map((l) => ({
+                    value: l.id_labor.toString(),
+                    label: l.nombre,
+                  }))
+                : []
           }
-          leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+          value={lugarIdActual ? String(lugarIdActual) : null}
+          onChange={(val) => setLugarId(val ? Number(val) : null)}
+          leftSection={
+            tipoLugar === "almacen" ? (
+              <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
+            ) : (
+              <MapPinIcon className="w-4 h-4 text-zinc-500" />
+            )
+          }
           classNames={fieldClasses}
           radius="lg"
           size="xs"
+          required
+          withAsterisk
           searchable
+          clearable
           comboboxProps={{ withinPortal: true }}
-          disabled={!idMina || submittingTotal}
+          disabled={
+            !tipoLugar ||
+            (tipoLugar === "almacen" && loadingAlmacenes) ||
+            (tipoLugar === "labor" && loadingLabores) ||
+            submittingTotal
+          }
         />
       </Group>
-      <Select
-        label="Almacén (opcional)"
-        placeholder={
-          loadingAlmacenes ? "Cargando almacenes..." : "Seleccione almacén"
-        }
-        data={almacenes.map((a) => ({
-          value: a.id_almacen.toString(),
-          label: a.nombre,
-        }))}
-        value={form.id_almacen ? String(form.id_almacen) : null}
-        onChange={(val) =>
-          setField("id_almacen", val ? Number(val) : null)
-        }
-        leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
-        classNames={fieldClasses}
-        radius="lg"
-        size="xs"
-        searchable
-        clearable
-        comboboxProps={{ withinPortal: true }}
-        disabled={loadingAlmacenes || submittingTotal}
-      />
 
       <Divider label="Evidencias (opcional)" labelPosition="left" />
       <MultiFilePicker

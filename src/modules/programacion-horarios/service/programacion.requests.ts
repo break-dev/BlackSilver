@@ -14,6 +14,9 @@ export const Schema_AsignarHorario = z
       .string()
       .length(7, "Debe seleccionar 7 días")
       .regex(/^[01]{7}$/, "Patrón de días inválido"),
+    id_oficina: z.number().int().min(1).nullable().optional(),
+    id_almacen: z.number().int().min(1).nullable().optional(),
+    id_labor: z.number().int().min(1).nullable().optional(),
     empleados: z
       .array(z.number().int().min(1))
       .min(1, "Seleccione al menos un empleado"),
@@ -41,6 +44,17 @@ export const Schema_AsignarHorario = z
         code: z.ZodIssueCode.custom,
         path: ["dias_laborables"],
         message: "Debe marcar al menos un día laborable",
+      });
+    }
+
+    const lugaresIndicados = [data.id_oficina, data.id_almacen, data.id_labor].filter(
+      (v) => v != null,
+    );
+    if (lugaresIndicados.length !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["id_lugar"],
+        message: "Debe indicar exactamente un lugar de trabajo (almacén, labor u oficina).",
       });
     }
   });

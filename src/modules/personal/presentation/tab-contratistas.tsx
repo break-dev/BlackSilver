@@ -8,6 +8,7 @@ import {
   FileButton,
   Stack,
   Loader,
+  Checkbox,
 } from "@mantine/core";
 import {
   PencilSquareIcon,
@@ -16,6 +17,7 @@ import {
   CakeIcon,
   EnvelopeIcon,
   PhoneIcon,
+  IdentificationIcon,
 } from "@heroicons/react/24/outline";
 
 import { type DataTableColumn } from "mantine-datatable";
@@ -36,8 +38,19 @@ export const TabContratistas = ({
 }: TabContratistasProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
-  const { contratistas, loading, actualizarFoto, idActualizandoFoto } =
-    controller;
+  const {
+    contratistas,
+    loading,
+    actualizarFoto,
+    idActualizandoFoto,
+    seleccionados,
+    toggleSeleccion,
+    toggleSeleccionarTodos,
+    todosVisiblesSeleccionados,
+    algunosVisiblesSeleccionados,
+    abrirModalFotocheck,
+    abrirModalFotocheckIndividual,
+  } = controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
     if (!file) return;
@@ -56,6 +69,60 @@ export const TabContratistas = ({
       textAlign: "center",
       width: 50,
       render: (_, index) => index + 1,
+    },
+    {
+      accessor: "seleccion",
+      title: (
+        <Group gap="4px" wrap="nowrap" align="center" justify="center">
+          <Checkbox
+            checked={todosVisiblesSeleccionados}
+            indeterminate={!todosVisiblesSeleccionados && algunosVisiblesSeleccionados}
+            onChange={toggleSeleccionarTodos}
+            size="xs"
+            color="indigo"
+          />
+          {seleccionados.size > 0 && (
+            <Tooltip label={`Fotocheck (${seleccionados.size})`}>
+              <ActionIcon
+                variant="filled"
+                color="indigo"
+                size="xs"
+                radius="md"
+                onClick={abrirModalFotocheck}
+              >
+                <IdentificationIcon className="w-3.5 h-3.5 text-white" />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
+      ),
+      textAlign: "center",
+      width: 75,
+      render: (r) => (
+        <Group gap="4px" wrap="nowrap" align="center" justify="center">
+          <Checkbox
+            checked={seleccionados.has(r.id_contratista)}
+            onChange={() => toggleSeleccion(r.id_contratista)}
+            size="xs"
+            color="indigo"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <Tooltip label="Fotocheck">
+            <ActionIcon
+              variant="light"
+              color="indigo"
+              size="xs"
+              radius="md"
+              onClick={(e) => {
+                e.stopPropagation();
+                abrirModalFotocheckIndividual(r);
+              }}
+            >
+              <IdentificationIcon className="w-3.5 h-3.5" />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      ),
     },
     {
       accessor: "contratista",

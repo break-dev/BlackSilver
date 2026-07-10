@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Group,
@@ -7,6 +7,7 @@ import {
   Tooltip,
   Badge,
   Divider,
+  Select,
 } from "@mantine/core";
 import {
   PlusIcon,
@@ -15,6 +16,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ClockIcon,
+  MapPinIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useTurnos } from "../hooks/useTurnos";
@@ -24,6 +27,7 @@ import { ModalListadoTurnos } from "./modal-listado-turnos";
 import { ModalAsignarHorario } from "./modal-asignar-horario";
 import { GrillaSemanal } from "./grilla-semanal";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 
 export const ProgramacionHorariosPage = () => {
@@ -40,12 +44,58 @@ export const ProgramacionHorariosPage = () => {
     irSemanaSiguiente,
     irSemanaActual,
     recargar: recargarProgramaciones,
+    tipoLugarFiltro,
+    idLugarFiltro,
+    setTipoLugarYFiltro,
   } = useProgramaciones();
 
   const [openedRegistroTurno, setOpenedRegistroTurno] = useState(false);
   const [openedListadoTurnos, setOpenedListadoTurnos] = useState(false);
   const [openedAsignarHorario, setOpenedAsignarHorario] = useState(false);
   const [turnoEditar, setTurnoEditar] = useState<RES_TurnoLaboral | null>(null);
+
+  // Catálogos de lugares para el filtro.
+  const [almacenesOptions, setAlmacenesOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [laboresOptions, setLaboresOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    const cargar = async () => {
+      try {
+        const [alm, lab] = await Promise.all([
+          AuxService.get_almacenes({ es_principal: false }),
+          AuxService.get_labores(),
+        ]);
+        if (cancelado) return;
+        if (alm.success) {
+          const data = alm.data as Array<{
+            id_almacen: number;
+            nombre: string;
+            es_principal: number;
+          }>;
+          setAlmacenesOptions(
+            data.map((a) => ({ value: String(a.id_almacen), label: a.nombre })),
+          );
+        }
+        if (lab.success) {
+          const data = lab.data as Array<{ id_labor: number; nombre: string }>;
+          setLaboresOptions(
+            data.map((l) => ({ value: String(l.id_labor), label: l.nombre })),
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    void cargar();
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const handleNuevoTurno = () => {
     setTurnoEditar(null);
@@ -76,10 +126,42 @@ export const ProgramacionHorariosPage = () => {
 
   const turnosActivos = turnos.filter((t) => t.estado === "Activo").length;
 
+  const lugaresOptions =
+    tipoLugarFiltro === "almacen"
+      ? almacenesOptions
+      : tipoLugarFiltro === "labor"
+        ? laboresOptions
+        : [];
+
+  const fieldClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div className="flex flex-wrap items-center gap-3 justify-between bg-zinc-900/65 border border-zinc-800 rounded-[20px] px-4 py-3 backdrop-blur-md">
-        <Group gap="md" wrap="nowrap">
+    <div className="space-y-4 animate-fade-in">
+      <Group justify="flex-end" gap="sm">
+        <Badge
+          color="teal"
+          variant="light"
+          radius="md"
+          leftSection={<CalendarDaysIcon className="w-3 h-3" />}
+        >
+          Turnos: {turnosActivos} activos
+        </Badge>
+        <Badge
+          color="indigo"
+          variant="light"
+          radius="md"
+          leftSection={<CalendarDaysIcon className="w-3 h-3" />}
+        >
+          Programaciones: {programaciones.length}
+        </Badge>
+      </Group>
+
+      <div className="flex flex-col gap-3 bg-zinc-900/65 border border-zinc-800 rounded-[20px] px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center lg:justify-between">
+        <Group gap="md" wrap="nowrap" className="lg:flex-1">
           <Tooltip label="Ir a la semana actual" withArrow position="top">
             <Button
               variant="default"
@@ -143,28 +225,78 @@ export const ProgramacionHorariosPage = () => {
 
         <Divider
           orientation="vertical"
-          className="hidden md:block"
+          className="hidden lg:block"
+          color="var(--mantine-color-zinc-7)"
+        />
+
+        <Group gap="sm" wrap="nowrap" className="lg:flex-1 lg:justify-end">
+          <Select
+            placeholder="Tipo de lugar"
+            data={[
+              { value: "", label: "Todos" },
+              { value: "almacen", label: "Almacén" },
+              { value: "labor", label: "Labor" },
+            ]}
+            value={tipoLugarFiltro || null}
+            onChange={(val) =>
+              setTipoLugarYFiltro(
+                (val as "" | "almacen" | "labor" | null) ?? "",
+                null,
+              )
+            }
+            leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+            classNames={{
+              ...fieldClasses,
+              wrapper: "w-full sm:w-36",
+            }}
+            radius="lg"
+            size="xs"
+            comboboxProps={{ withinPortal: true }}
+            clearable
+          />
+          <Select
+            placeholder={
+              tipoLugarFiltro === ""
+                ? "Todos los lugares"
+                : tipoLugarFiltro === "almacen"
+                  ? "Seleccione almacén"
+                  : "Seleccione labor"
+            }
+            data={lugaresOptions}
+            value={idLugarFiltro ? String(idLugarFiltro) : null}
+            onChange={(val) =>
+              setTipoLugarYFiltro(
+                tipoLugarFiltro,
+                val ? Number(val) : null,
+              )
+            }
+            leftSection={
+              tipoLugarFiltro === "almacen" ? (
+                <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
+              ) : (
+                <MapPinIcon className="w-4 h-4 text-zinc-500" />
+              )
+            }
+            classNames={{
+              ...fieldClasses,
+              wrapper: "w-full sm:w-44",
+            }}
+            radius="lg"
+            size="xs"
+            searchable
+            comboboxProps={{ withinPortal: true }}
+            clearable
+            disabled={!tipoLugarFiltro}
+          />
+        </Group>
+
+        <Divider
+          orientation="vertical"
+          className="hidden lg:block"
           color="var(--mantine-color-zinc-7)"
         />
 
         <Group gap="sm" wrap="wrap">
-          <Badge
-            color="teal"
-            variant="light"
-            radius="md"
-            leftSection={<CalendarDaysIcon className="w-3 h-3" />}
-          >
-            Turnos: {turnosActivos} activos
-          </Badge>
-          <Badge
-            color="indigo"
-            variant="light"
-            radius="md"
-            leftSection={<CalendarDaysIcon className="w-3 h-3" />}
-          >
-            Programaciones: {programaciones.length}
-          </Badge>
-
           <Button
             leftSection={<PlusIcon className="w-4 h-4" />}
             onClick={handleNuevoTurno}
@@ -226,6 +358,7 @@ export const ProgramacionHorariosPage = () => {
         close={() => setOpenedAsignarHorario(false)}
         turnos={turnos.filter((t) => t.estado === "Activo")}
         onSuccess={handleSuccessAsignar}
+        onRegistrarTurnoClick={() => setOpenedRegistroTurno(true)}
       />
     </div>
   );

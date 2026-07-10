@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ProgramacionHorarioService } from "../service/programacion.service";
 import {
   Schema_AsignarHorario,
@@ -13,15 +13,19 @@ const initialForm = (): DTO_AsignarHorario => ({
   por_tiempo_indefinido: false,
   fecha_fin: null,
   dias_laborables: "0000000",
+  id_oficina: null,
+  id_almacen: null,
+  id_labor: null,
   empleados: [],
 });
 
 export const useAsignarHorario = (
   onSuccess?: (resultado: RES_ProgramacionAsignada) => void,
 ) => {
-  const { notifySuccess, notifyError } = useNotify();
+  const { notifySuccess, notifyError, notifyInfo } = useNotify();
   const [form, setForm] = useState<DTO_AsignarHorario>(initialForm());
   const [loading, setLoading] = useState(false);
+  const [tipoLugar, setTipoLugar] = useState<"" | "almacen" | "labor">("");
 
   const setField = <K extends keyof DTO_AsignarHorario>(
     field: K,
@@ -38,7 +42,35 @@ export const useAsignarHorario = (
     });
   };
 
-  const reset = () => setForm(initialForm());
+  const handleSetTipoLugar = (value: "" | "almacen" | "labor") => {
+    setTipoLugar(value);
+    // Garantizar exclusividad: limpiar los 3 campos al cambiar.
+    setForm((prev) => ({
+      ...prev,
+      id_oficina: null,
+      id_almacen: null,
+      id_labor: null,
+    }));
+  };
+
+  const handleSetLugarId = (id: number | null) => {
+    if (tipoLugar === "almacen") {
+      setField("id_almacen", id);
+    } else if (tipoLugar === "labor") {
+      setField("id_labor", id);
+    }
+  };
+
+  const lugarIdActual = useMemo<number | null>(() => {
+    if (tipoLugar === "almacen") return form.id_almacen ?? null;
+    if (tipoLugar === "labor") return form.id_labor ?? null;
+    return null;
+  }, [tipoLugar, form.id_almacen, form.id_labor]);
+
+  const reset = () => {
+    setForm(initialForm());
+    setTipoLugar("");
+  };
 
   const handleSubmit = async () => {
     const validation = Schema_AsignarHorario.safeParse(form);
@@ -57,9 +89,9 @@ export const useAsignarHorario = (
           const listaMotivos = resultado.rechazados.map((r) => r.motivo).join("\n");
           if (resultado.total_creados > 0) {
             notifySuccess(`Se asignó el horario a ${resultado.total_creados} empleado(s).`);
-            notifyError(`No se pudo asignar a ${resultado.total_rechazados} empleado(s):\n${listaMotivos}`);
+            notifyInfo(`No se pudo asignar a ${resultado.total_rechazados} empleado(s):\n${listaMotivos}`);
           } else {
-            notifyError(`No se pudo asignar el horario:\n${listaMotivos}`);
+            notifyInfo(`No se pudo asignar el horario:\n${listaMotivos}`);
           }
         } else {
           notifySuccess(resp.message ?? "Horario asignado correctamente");
@@ -68,7 +100,17 @@ export const useAsignarHorario = (
         reset();
         return resultado;
       }
-      notifyError(resp.message ?? "No se pudo asignar el horario");
+      const errorPayload = resp as unknown as {
+        errors?: {
+          rechazados?: Array<{ motivo: string }>;
+        };
+      };
+      if (errorPayload.errors?.rechazados && Array.isArray(errorPayload.errors.rechazados)) {
+        const listaMotivos = errorPayload.errors.rechazados.map((r) => r.motivo).join("\n");
+        notifyInfo(`No se pudo asignar el horario:\n${listaMotivos}`);
+      } else {
+        notifyError(resp.message ?? "No se pudo asignar el horario");
+      }
       return null;
     } catch (err) {
       console.error(err);
@@ -86,5 +128,9 @@ export const useAsignarHorario = (
     reset,
     loading,
     handleSubmit,
+    tipoLugar,
+    setTipoLugar: handleSetTipoLugar,
+    lugarIdActual,
+    setLugarId: handleSetLugarId,
   };
 };

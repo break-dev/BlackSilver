@@ -36,9 +36,21 @@ export const ProgramacionHorarioService = {
   get_grilla_semanal: async (
     fechaInicio: string,
     fechaFin: string,
+    filtros: {
+      id_almacen?: number | null;
+      id_labor?: number | null;
+      id_oficina?: number | null;
+    } = {},
   ): Promise<IRespuesta<RES_ProgramacionHorario[]>> => {
+    const params: Record<string, unknown> = {
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
+    };
+    if (filtros.id_almacen) params.id_almacen = filtros.id_almacen;
+    if (filtros.id_labor) params.id_labor = filtros.id_labor;
+    if (filtros.id_oficina) params.id_oficina = filtros.id_oficina;
     const { data } = await api.get("/programacion-horario/grilla-semanal", {
-      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin },
+      params,
     });
     return data;
   },
@@ -52,6 +64,9 @@ export const ProgramacionHorarioService = {
       por_tiempo_indefinido: dto.por_tiempo_indefinido ?? false,
       fecha_fin: dto.por_tiempo_indefinido ? null : dto.fecha_fin,
       dias_laborables: dto.dias_laborables,
+      id_oficina: dto.id_oficina ?? null,
+      id_almacen: dto.id_almacen ?? null,
+      id_labor: dto.id_labor ?? null,
       empleados: dto.empleados,
     };
     const { data } = await api.post("/programacion-horario/asignar", payload);
@@ -71,13 +86,18 @@ export const ProgramacionHorarioService = {
 
   get_empleados_elegibles: async (
     fechaFinProgramacion: string | null,
+    idLugar: number | null = null,
+    tipoLugar: "" | "almacen" | "labor" | null = null,
   ): Promise<IRespuesta<RES_EmpleadoElegible[]>> => {
-    const { data } = await api.get("/aux/empleados", {
-      params: {
-        solo_con_contrato_vigente: 1,
-        fecha_fin_programacion: fechaFinProgramacion ?? undefined,
-      },
-    });
+    const params: Record<string, unknown> = {
+      solo_con_contrato_vigente: 1,
+      fecha_fin_programacion: fechaFinProgramacion ?? undefined,
+    };
+    if (idLugar !== null && tipoLugar && tipoLugar !== "") {
+      params.id_lugar = idLugar;
+      params.tipo_lugar = tipoLugar;
+    }
+    const { data } = await api.get("/aux/empleados", { params });
     return data;
   },
 };

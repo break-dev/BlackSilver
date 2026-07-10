@@ -10,11 +10,30 @@ import { useNotify } from "../../../hooks/useNotify";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 import { TipoTurno } from "../service/tipo-turno";
 
+/**
+ * Calcula la duración en horas entre dos strings "HH:mm".
+ * Si `salida <= ingreso`, asume que la salida es al día siguiente.
+ * Devuelve 0 si alguno de los strings es inválido.
+ */
+const calcTotalHoras = (ingreso: string, salida: string): number => {
+  if (!ingreso || !salida) return 0;
+  const matchIn = /^(\d{1,2}):(\d{2})$/.exec(ingreso);
+  const matchOut = /^(\d{1,2}):(\d{2})$/.exec(salida);
+  if (!matchIn || !matchOut) return 0;
+  const minutosIn = Number(matchIn[1]) * 60 + Number(matchIn[2]);
+  const minutosOut = Number(matchOut[1]) * 60 + Number(matchOut[2]);
+  const diff = minutosOut <= minutosIn
+    ? 24 * 60 - minutosIn + minutosOut
+    : minutosOut - minutosIn;
+  return Math.round((diff / 60) * 100) / 100;
+};
+
 const initialForm = (): DTO_CrearTurno => ({
   tipo_turno: TipoTurno.Dia,
   hora_ingreso: "",
   hora_salida: "",
   minutos_tolerancia: null,
+  total_horas: 0,
   estado: "Activo",
 });
 
@@ -29,17 +48,34 @@ export const useRegistroTurno = (
     field: K,
     value: DTO_CrearTurno[K],
   ) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+
+      if (field === "hora_ingreso" || field === "hora_salida") {
+        next.total_horas = calcTotalHoras(
+          next.hora_ingreso ?? "",
+          next.hora_salida ?? "",
+        );
+      }
+
+      return next;
+    });
   };
 
   const reset = () => setForm(initialForm());
 
   const precargar = (turno: RES_TurnoLaboral) => {
+    const horaIngreso = (turno.hora_ingreso ?? "").slice(0, 5);
+    const horaSalida = (turno.hora_salida ?? "").slice(0, 5);
     setForm({
       tipo_turno: (turno.tipo_turno as DTO_CrearTurno["tipo_turno"]) ?? "Dia",
-      hora_ingreso: (turno.hora_ingreso ?? "").slice(0, 5),
-      hora_salida: (turno.hora_salida ?? "").slice(0, 5),
+      hora_ingreso: horaIngreso,
+      hora_salida: horaSalida,
       minutos_tolerancia: turno.minutos_tolerancia ?? null,
+      total_horas:
+        typeof turno.total_horas === "number"
+          ? turno.total_horas
+          : calcTotalHoras(horaIngreso, horaSalida),
       estado: (turno.estado as DTO_CrearTurno["estado"]) ?? "Activo",
     });
   };
@@ -77,6 +113,7 @@ export const useRegistroTurno = (
     if (form.hora_ingreso) payload.hora_ingreso = form.hora_ingreso;
     if (form.hora_salida) payload.hora_salida = form.hora_salida;
     payload.minutos_tolerancia = form.minutos_tolerancia ?? null;
+    payload.total_horas = form.total_horas;
 
     const validation = Schema_ActualizarTurno.safeParse(payload);
     if (!validation.success) {
@@ -115,5 +152,6 @@ export const useRegistroTurno = (
     loading,
     handleSubmitCrear,
     handleSubmitEditar,
+    calcTotalHoras,
   };
 };

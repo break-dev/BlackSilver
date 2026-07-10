@@ -25,6 +25,10 @@ export const Schema_CrearTurno = z.object({
     .nullable()
     .optional()
     .transform(numberTransform),
+  total_horas: z
+    .number()
+    .min(0)
+    .max(48),
   estado: z.enum(["Activo", "Inactivo"]).optional().default("Activo"),
 });
 
@@ -48,6 +52,7 @@ export const Schema_ActualizarTurno = z.object({
     .nullable()
     .optional()
     .transform(numberTransform),
+  total_horas: z.number().min(0).max(48).optional(),
 });
 
 export type DTO_ActualizarTurno = z.infer<typeof Schema_ActualizarTurno>;

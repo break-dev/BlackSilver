@@ -183,17 +183,6 @@ export const ModalHistorialContratosEmpleado = ({
               <Text size="sm" c="dimmed" fw={600}>
                 Este empleado no tiene contratos registrados aún.
               </Text>
-              <Button
-                size="sm"
-                radius="lg"
-                color="teal"
-                variant="light"
-                leftSection={<PlusIcon className="w-4 h-4" />}
-                onClick={() => setModalNuevoContratoAbierto(true)}
-                className="mt-2 font-bold border border-teal-500/20"
-              >
-                Crear primer contrato
-              </Button>
             </Stack>
           ) : (
             <Stack gap="md" className="pb-4">

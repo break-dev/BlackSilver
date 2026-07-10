@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { Group, Stack, Text, Avatar, Box } from "@mantine/core";
+import { Group, Stack, Text, Avatar, Box, Badge } from "@mantine/core";
 import {
   SunIcon,
   MoonIcon,
   CheckCircleIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import type { RES_ProgramacionHorario } from "../service/programacion.responses";
 
@@ -88,6 +89,17 @@ export const GrillaSemanal = ({
         grupo.celdas[i].push(prog);
       }
     }
+
+    // Ordenar las programaciones dentro de cada celda por hora de ingreso del turno
+    // (mañana → noche), de modo que la UI muestre el orden natural día arriba / noche abajo.
+    for (const grupo of mapa.values()) {
+      for (const celda of grupo.celdas) {
+        celda.sort((a, b) =>
+          (a.hora_ingreso ?? "").localeCompare(b.hora_ingreso ?? ""),
+        );
+      }
+    }
+
     return Array.from(mapa.values()).sort((a, b) =>
       a.nombre.localeCompare(b.nombre),
     );
@@ -108,7 +120,7 @@ export const GrillaSemanal = ({
         className="grid border-b border-zinc-800 bg-zinc-950/80"
         style={{ gridTemplateColumns: "240px repeat(7, minmax(0, 1fr))" }}
       >
-        <div className="px-4 py-3 text-zinc-400 text-xs font-bold uppercase tracking-wider border-r border-zinc-800">
+        <div className="px-4 py-3 text-zinc-400 text-xs font-bold uppercase tracking-wider border-r border-zinc-800 text-center flex items-center justify-center">
           Empleado
         </div>
         {dias.map((d, i) => {
@@ -145,11 +157,11 @@ export const GrillaSemanal = ({
               className="grid border-b border-zinc-800/60 last:border-b-0 bg-zinc-900/10 animate-pulse"
               style={{ gridTemplateColumns: "240px repeat(7, minmax(0, 1fr))" }}
             >
-              <div className="px-3 py-4 border-r border-zinc-800/60 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-zinc-800" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-3 bg-zinc-800 rounded w-3/4" />
-                  <div className="h-2 bg-zinc-800 rounded w-1/2" />
+              <div className="px-3 py-4 border-r border-zinc-800/60 flex items-center justify-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-zinc-800 shrink-0" />
+                <div className="space-y-1.5 w-24">
+                  <div className="h-3 bg-zinc-800 rounded w-full" />
+                  <div className="h-2 bg-zinc-800 rounded w-2/3" />
                 </div>
               </div>
               {Array.from({ length: 7 }).map((_, i) => (
@@ -183,7 +195,7 @@ export const GrillaSemanal = ({
               }`}
               style={{ gridTemplateColumns: "240px repeat(7, minmax(0, 1fr))" }}
             >
-              <div className="px-3 py-3 border-r border-zinc-800/60 flex items-center gap-2 min-w-0">
+              <div className="px-3 py-3 border-r border-zinc-800/60 flex items-center justify-center gap-2 min-w-0">
                 <Avatar
                   src={emp.url_foto ?? undefined}
                   size={32}
@@ -245,9 +257,14 @@ const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
   const hi = format12h(programacion.hora_ingreso);
   const hs = format12h(programacion.hora_salida);
   const tol = programacion.minutos_tolerancia ?? null;
+  const lugarTexto =
+    programacion.almacen_nombre ??
+    programacion.labor_nombre ??
+    programacion.oficina_nombre ??
+    null;
   return (
     <div
-      className={`w-full h-full p-1.5 rounded-lg border transition-all hover:scale-[1.02] flex flex-col justify-center items-center ${
+      className={`w-full h-full p-1.5 rounded-lg border transition-all hover:scale-[1.02] flex flex-col justify-center items-center gap-0.5 ${
         esNoche
           ? "bg-indigo-500/10 border-indigo-500/40 hover:border-indigo-400"
           : "bg-orange-500/10 border-orange-500/40 hover:border-orange-400"
@@ -267,8 +284,21 @@ const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
           {hi} - {hs}
         </Text>
       </Group>
+      {lugarTexto && (
+        <Badge
+          variant="light"
+          color="zinc"
+          size="xs"
+          radius="sm"
+          className="font-normal truncate max-w-full"
+          leftSection={<MapPinIcon className="w-2.5 h-2.5" />}
+          styles={{ root: { maxWidth: "100%" }, label: { fontSize: "9px", padding: "0 4px" } }}
+        >
+          {lugarTexto}
+        </Badge>
+      )}
       {tol != null && tol > 0 && (
-        <Text size="9px" className="text-zinc-400 text-center mt-0.5">
+        <Text size="9px" className="text-zinc-400 text-center">
           ±{tol}m
         </Text>
       )}

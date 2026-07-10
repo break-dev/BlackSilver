@@ -7,6 +7,7 @@ import {
   NumberInput,
   Alert,
   Divider,
+  Badge,
 } from "@mantine/core";
 import { TimeInput } from "@mantine/dates";
 import "@mantine/dates/styles.css";
@@ -153,6 +154,21 @@ export const ModalRegistroTurno = ({
             disabled={loading}
           />
         </Group>
+
+        {form.total_horas > 0 && (
+          <Group justify="center" mt={-8}>
+            <Badge
+              variant="light"
+              color="indigo"
+              radius="md"
+              size="lg"
+              className="font-bold border border-indigo-500/30"
+              leftSection={<ClockIcon className="w-3.5 h-3.5" />}
+            >
+              {form.total_horas.toFixed(2)} horas totales
+            </Badge>
+          </Group>
+        )}
 
         <NumberInput
           label="Minutos de tolerancia (opcional)"

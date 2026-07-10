@@ -33,6 +33,9 @@ export const useProgramaciones = () => {
   const [fechaReferencia, setFechaReferencia] = useState<Date>(new Date());
   const [programaciones, setProgramaciones] = useState<RES_ProgramacionHorario[]>([]);
   const [loading, setLoading] = useState(false);
+  // Filtros por lugar. "" = sin filtro, "almacen"/"labor" = tipo seleccionado.
+  const [tipoLugarFiltro, setTipoLugarFiltro] = useState<"" | "almacen" | "labor">("");
+  const [idLugarFiltro, setIdLugarFiltro] = useState<number | null>(null);
 
   const rango = useMemo<RangoSemana>(() => {
     const ini = inicioSemana(fechaReferencia);
@@ -45,12 +48,27 @@ export const useProgramaciones = () => {
 
   const cargar = useCallback(
     async (rangoParam?: RangoSemana) => {
+      if (tipoLugarFiltro !== "" && idLugarFiltro === null) {
+        setProgramaciones([]);
+        return;
+      }
       const r = rangoParam ?? rango;
       setLoading(true);
       try {
+        const filtros: {
+          id_almacen?: number | null;
+          id_labor?: number | null;
+          id_oficina?: number | null;
+        } = {};
+        if (tipoLugarFiltro === "almacen" && idLugarFiltro !== null) {
+          filtros.id_almacen = idLugarFiltro;
+        } else if (tipoLugarFiltro === "labor" && idLugarFiltro !== null) {
+          filtros.id_labor = idLugarFiltro;
+        }
         const resp = await ProgramacionHorarioService.get_grilla_semanal(
           r.fecha_inicio,
           r.fecha_fin,
+          filtros,
         );
         if (resp.success) {
           setProgramaciones(resp.data as RES_ProgramacionHorario[]);
@@ -62,7 +80,7 @@ export const useProgramaciones = () => {
         setLoading(false);
       }
     },
-    [rango, notifyError],
+    [rango, notifyError, tipoLugarFiltro, idLugarFiltro],
   );
 
   useEffect(() => {
@@ -85,6 +103,14 @@ export const useProgramaciones = () => {
 
   const recargar = () => void cargar();
 
+  const setTipoLugarYFiltro = (
+    tipo: "" | "almacen" | "labor",
+    id: number | null,
+  ) => {
+    setTipoLugarFiltro(tipo);
+    setIdLugarFiltro(id);
+  };
+
   return {
     rango,
     programaciones,
@@ -95,5 +121,8 @@ export const useProgramaciones = () => {
     irSemanaSiguiente,
     irSemanaActual,
     recargar,
+    tipoLugarFiltro,
+    idLugarFiltro,
+    setTipoLugarYFiltro,
   };
 };

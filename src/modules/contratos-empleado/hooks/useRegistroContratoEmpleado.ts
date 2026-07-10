@@ -5,10 +5,9 @@ import {
   Schema_CrearContratoEmpleado,
   type DTO_CrearContratoEmpleado,
 } from "../service/contratos-empleado.requests";
-import type { RES_ContratoEmpleado } from "../../../service/responses/contrato-empleado";
+import type { RES_EmpleadoConContrato } from "../../../service/responses/contrato-empleado";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Area, RES_Cargo } from "../../../service/responses/organigrama";
-import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Empresa } from "../../../service/responses/empresa";
 import { TipoContrato } from "../../../shared/enums/tipo-contrato";
@@ -80,7 +79,7 @@ const sugerirPeriodo = (
 
 export const useRegistroContratoEmpleado = (
   idEmpleado: number,
-  onSuccess?: (contrato: RES_ContratoEmpleado) => void,
+  onSuccess?: (payload: RES_EmpleadoConContrato) => void,
 ) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearContratoEmpleado>(() =>
@@ -90,43 +89,42 @@ export const useRegistroContratoEmpleado = (
   const [loading, setLoading] = useState(false);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [todosCargos, setTodosCargos] = useState<RES_Cargo[]>([]);
-  const [minas, setMinas] = useState<RES_Mina[]>([]);
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [idArea, setIdArea] = useState<number | null>(null);
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [loadingCargos, setLoadingCargos] = useState(false);
-  const [loadingMinas, setLoadingMinas] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
+  const [loadingLabores, setLoadingLabores] = useState(false);
   const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const [almacenes, setAlmacenes] = useState<
     { id_almacen: number; nombre: string; es_principal: number }[]
   >([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
 
-  // id_mina local (no parte del DTO del schema: es solo trigger para cargar labores)
-  const [idMinaLocal, setIdMinaLocal] = useState<number | null>(null);
+  // Tipo de lugar de trabajo seleccionado en la UI (no se envía al backend).
+  // "" = sin selección, "almacen" o "labor".
+  const [tipoLugar, setTipoLugar] = useState<"" | "almacen" | "labor">("");
 
   const cargarCatalogos = useCallback(async () => {
     setLoadingAreas(true);
     setLoadingCargos(true);
-    setLoadingMinas(true);
     setLoadingAlmacenes(true);
+    setLoadingLabores(true);
     setLoadingEmpresas(true);
     try {
-      const [areasRes, cargosRes, minasRes, almacenesRes, empresasRes] =
+      const [areasRes, cargosRes, almacenesRes, laboresRes, empresasRes] =
         await Promise.all([
           AuxService.get_areas().catch(() => ({ success: false, data: [] })),
           AuxService.get_cargos().catch(() => ({ success: false, data: [] })),
-          AuxService.get_minas().catch(() => ({ success: false, data: [] })),
           AuxService.get_almacenes({ es_principal: false }).catch(() => ({
             success: false,
             data: [],
           })),
+          AuxService.get_labores().catch(() => ({ success: false, data: [] })),
           AuxService.get_empresas().catch(() => ({ success: false, data: [] })),
         ]);
       if (areasRes.success) setAreas(areasRes.data as RES_Area[]);
       if (cargosRes.success) setTodosCargos(cargosRes.data as RES_Cargo[]);
-      if (minasRes.success) setMinas(minasRes.data as RES_Mina[]);
       if (almacenesRes.success) {
         const data = almacenesRes.data as Array<{
           id_almacen: number;
@@ -135,13 +133,13 @@ export const useRegistroContratoEmpleado = (
         }>;
         setAlmacenes(data);
       }
-      if (empresasRes.success)
-        setEmpresas(empresasRes.data as RES_Empresa[]);
+      if (laboresRes.success) setLabores(laboresRes.data as RES_Labor[]);
+      if (empresasRes.success) setEmpresas(empresasRes.data as RES_Empresa[]);
     } finally {
       setLoadingAreas(false);
       setLoadingCargos(false);
-      setLoadingMinas(false);
       setLoadingAlmacenes(false);
+      setLoadingLabores(false);
       setLoadingEmpresas(false);
     }
   }, []);
@@ -149,24 +147,6 @@ export const useRegistroContratoEmpleado = (
   useEffect(() => {
     cargarCatalogos();
   }, [cargarCatalogos]);
-
-  // Cargar labores cuando cambia idMinaLocal
-  useEffect(() => {
-    if (idMinaLocal && idMinaLocal > 0) {
-      AuxService.get_labores({ id_mina: idMinaLocal })
-        .then((res) => {
-          if (res.success) {
-            setLabores(res.data ?? []);
-          } else {
-            setLabores([]);
-          }
-        })
-        .catch(() => setLabores([]));
-    } else {
-      setLabores([]);
-      setForm((prev) => ({ ...prev, id_labor: null }));
-    }
-  }, [idMinaLocal]);
 
   // Filtrado de cargos en memoria
   const cargos = useMemo(() => {
@@ -243,10 +223,44 @@ export const useRegistroContratoEmpleado = (
     }
   };
 
-  const setIdMina = (v: number | null) => {
-    setIdMinaLocal(v);
-    setForm((prev) => ({ ...prev, id_labor: null }));
+  /**
+   * Cambia el tipo de lugar de trabajo. Garantiza exclusividad:
+   * al elegir "almacen" se limpia id_labor (y viceversa).
+   */
+  const handleSetTipoLugar = (value: "" | "almacen" | "labor") => {
+    setTipoLugar(value);
+    if (value === "almacen") {
+      setForm((prev) => ({ ...prev, id_labor: null }));
+    } else if (value === "labor") {
+      setForm((prev) => ({ ...prev, id_almacen: null }));
+    } else {
+      setForm((prev) => ({ ...prev, id_almacen: null, id_labor: null }));
+    }
   };
+
+  /**
+   * Cambia el id específico del lugar de trabajo según el tipo seleccionado.
+   * El frontend lo trata como un solo campo visual, pero internamente
+   * sigue usando `id_almacen` y `id_labor` por separado (compatibilidad DTO).
+   */
+  const handleSetLugarId = (id: number | null) => {
+    if (tipoLugar === "almacen") {
+      setField("id_almacen", id);
+    } else if (tipoLugar === "labor") {
+      setField("id_labor", id);
+    }
+  };
+
+  /** Valor actual del id específico del lugar (según tipo seleccionado). */
+  const lugarIdActual = useMemo<number | null>(() => {
+    if (tipoLugar === "almacen") {
+      return form.id_almacen ?? null;
+    }
+    if (tipoLugar === "labor") {
+      return form.id_labor ?? null;
+    }
+    return null;
+  }, [tipoLugar, form.id_almacen, form.id_labor]);
 
   const handleAddEvidencia = (file: File | File[] | null) => {
     if (!file) return;
@@ -293,20 +307,14 @@ export const useRegistroContratoEmpleado = (
       );
       if (resp.success) {
         notify({ type: "success", content: resp.message });
-        // El backend ahora devuelve `{ contrato, empleado }`.
-        // El contrato es lo que pasamos al callback.
-        const payload = resp.data as unknown as {
-          contrato?: RES_ContratoEmpleado;
-        };
-        if (payload?.contrato) {
-          onSuccess?.(payload.contrato);
-        } else {
-          onSuccess?.(resp.data as unknown as RES_ContratoEmpleado);
-        }
+        // El backend devuelve `{ contrato, empleado }`. Pasamos el payload
+        // completo para que el padre pueda actualizar la fila del empleado
+        // sin recargar toda la lista.
+        onSuccess?.(resp.data as RES_EmpleadoConContrato);
         setForm(initialForm(idEmpleado));
         setEvidencias([]);
         setIdArea(null);
-        setIdMinaLocal(null);
+        setTipoLugar("");
       } else {
         notify({ type: "error", content: resp.message });
       }
@@ -323,8 +331,6 @@ export const useRegistroContratoEmpleado = (
     setField,
     idArea,
     setIdArea: handleSetIdArea,
-    idMina: idMinaLocal,
-    setIdMina,
     setConContrato: (v: boolean) =>
       setField("por_tiempo_indefinido", v),
     evidencias,
@@ -334,15 +340,18 @@ export const useRegistroContratoEmpleado = (
     areas,
     cargos,
     cargosSelectData,
-    minas,
     empresas,
     empresasSelectData,
     almacenes,
     labores,
+    tipoLugar,
+    setTipoLugar: handleSetTipoLugar,
+    lugarIdActual,
+    setLugarId: handleSetLugarId,
     loadingAreas,
     loadingCargos,
-    loadingMinas,
     loadingAlmacenes,
+    loadingLabores,
     loadingEmpresas,
     tiposContratoOptions: TIPOS_CONTRATO_OPTIONS,
     periodosDuracionOptions: PERIODOS_DURACION,

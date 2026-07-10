@@ -16,6 +16,12 @@ export interface RES_ProgramacionHorario {
   hora_ingreso?: string;
   hora_salida?: string;
   minutos_tolerancia?: number | null;
+  id_oficina: number | null;
+  id_almacen: number | null;
+  id_labor: number | null;
+  almacen_nombre?: string | null;
+  labor_nombre?: string | null;
+  oficina_nombre?: string | null;
   fecha_inicio: string;
   por_tiempo_indefinido: boolean;
   fecha_fin: string | null;
@@ -45,4 +51,5 @@ export interface RES_EmpleadoElegible {
   contrato_indefinido?: boolean;
   contrato_fecha_fin?: string | null;
   puede_cubrir: boolean;
+  matchea_lugar?: boolean;
 }

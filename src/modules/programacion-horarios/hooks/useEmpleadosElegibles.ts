@@ -8,8 +8,15 @@ import { useNotify } from "../../../hooks/useNotify";
  * `puede_cubrir = false` para aquellos cuyo contrato culmina antes de la
  * `fechaFinProgramacion` indicada (o cuyo contrato no es por tiempo indefinido
  * y ya venció).
+ *
+ * Si se pasan `idLugar` y `tipoLugar`, el endpoint prioriza los empleados que
+ * YA tienen programaciones en ese lugar (campo `matchea_lugar`).
  */
-export const useEmpleadosElegibles = (fechaFinProgramacion: string | null) => {
+export const useEmpleadosElegibles = (
+  fechaFinProgramacion: string | null,
+  idLugar: number | null = null,
+  tipoLugar: "" | "almacen" | "labor" | null = null,
+) => {
   const { notifyError } = useNotify();
   const [empleados, setEmpleados] = useState<RES_EmpleadoElegible[]>([]);
   const [loading, setLoading] = useState(false);
@@ -19,6 +26,8 @@ export const useEmpleadosElegibles = (fechaFinProgramacion: string | null) => {
     try {
       const resp = await ProgramacionHorarioService.get_empleados_elegibles(
         fechaFinProgramacion,
+        idLugar,
+        tipoLugar,
       );
       if (resp.success) {
         setEmpleados(resp.data as RES_EmpleadoElegible[]);
@@ -29,7 +38,7 @@ export const useEmpleadosElegibles = (fechaFinProgramacion: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [fechaFinProgramacion, notifyError]);
+  }, [fechaFinProgramacion, idLugar, tipoLugar, notifyError]);
 
   useEffect(() => {
     void cargar();

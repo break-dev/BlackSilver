@@ -27,6 +27,7 @@ import { RegistroContratista } from "./registro-contratista";
 import { AsignacionLaboresContratista } from "./asignacion-labores-contratista";
 import { useAsignacionLaboresContratista } from "../hooks/useAsignacionLaboresContratista";
 import { ModalFotocheck } from "./modal-fotocheck";
+import { ModalFotocheckContratista } from "./modal-fotocheck-contratista";
 import { CuentasBancarias } from "./cuentas-bancarias/cuentas-bancarias";
 import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 
@@ -250,6 +251,15 @@ export const PersonalPage = () => {
           opened={empleadosCtrl.modalFotocheckAbierto}
           close={empleadosCtrl.cerrarModalFotocheck}
           empleados={empleadosCtrl.empleadosSeleccionados}
+        />
+      )}
+
+      {/* Modal de fotocheck de contratistas */}
+      {contratistasCtrl.modalFotocheckAbierto && (
+        <ModalFotocheckContratista
+          opened={contratistasCtrl.modalFotocheckAbierto}
+          close={contratistasCtrl.cerrarModalFotocheck}
+          contratistas={contratistasCtrl.contratistasSeleccionados}
         />
       )}
 

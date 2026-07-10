@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Stack,
   Group,
@@ -12,12 +12,17 @@ import {
   Badge,
   Checkbox,
   Avatar,
+  Tooltip,
+  ActionIcon,
 } from "@mantine/core";
 import {
   CalendarDaysIcon,
   UsersIcon,
   ClockIcon,
   CalendarIcon,
+  PlusIcon,
+  MapPinIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
@@ -32,6 +37,7 @@ interface ModalAsignarHorarioProps {
   close: () => void;
   turnos: RES_TurnoLaboral[];
   onSuccess?: () => void;
+  onRegistrarTurnoClick?: () => void;
 }
 
 const NOMBRES_DIAS = [
@@ -77,13 +83,24 @@ export const ModalAsignarHorario = ({
   close,
   turnos,
   onSuccess,
+  onRegistrarTurnoClick,
 }: ModalAsignarHorarioProps) => {
   const { notifyError } = useNotify();
-  const { form, setField, toggleDia, reset, loading, handleSubmit } =
-    useAsignarHorario(() => {
-      onSuccess?.();
-      close();
-    });
+  const {
+    form,
+    setField,
+    toggleDia,
+    reset,
+    loading,
+    handleSubmit,
+    tipoLugar,
+    setTipoLugar,
+    lugarIdActual,
+    setLugarId,
+  } = useAsignarHorario(() => {
+    onSuccess?.();
+    close();
+  });
 
   // Determinar fecha_fin para la consulta de elegibles.
   // Si es indefinido, se envía null (el backend aceptará siempre).
@@ -91,8 +108,61 @@ export const ModalAsignarHorario = ({
     ? null
     : toIso(form.fecha_fin) || null;
 
+  // Carga de catálogos auxiliares.
+  const [almacenesOptions, setAlmacenesOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+  const [laboresOptions, setLaboresOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    const cargar = async () => {
+      try {
+        const [alm, lab] = await Promise.all([
+          import("../../../service/auxiliar.service").then((m) =>
+            m.AuxService.get_almacenes({ es_principal: false }),
+          ),
+          import("../../../service/auxiliar.service").then((m) =>
+            m.AuxService.get_labores(),
+          ),
+        ]);
+        if (cancelado) return;
+        if (alm.success) {
+          const data = alm.data as Array<{
+            id_almacen: number;
+            nombre: string;
+            es_principal: number;
+          }>;
+          setAlmacenesOptions(
+            data.map((a) => ({ value: String(a.id_almacen), label: a.nombre })),
+          );
+        }
+        if (lab.success) {
+          const data = lab.data as Array<{ id_labor: number; nombre: string }>;
+          setLaboresOptions(
+            data.map((l) => ({ value: String(l.id_labor), label: l.nombre })),
+          );
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (opened) {
+      void cargar();
+    }
+    return () => {
+      cancelado = true;
+    };
+  }, [opened]);
+
+  // Hook de empleados: pasar id_lugar y tipo_lugar para que el backend priorice
+  // a los empleados con match.
   const { empleados, loading: loadingEmpleados } = useEmpleadosElegibles(
     opened ? fechaFinParaElegibles : null,
+    tipoLugar !== "" && lugarIdActual !== null ? lugarIdActual : null,
+    tipoLugar !== "" ? tipoLugar : null,
   );
 
   const empleadosOptions = useMemo(
@@ -146,29 +216,128 @@ export const ModalAsignarHorario = ({
       <Stack gap="md">
         <Divider label="Turno" labelPosition="left" />
 
-        <Select
-          label="Turno Laboral"
-          placeholder={
-            turnos.length === 0
-              ? "Cree primero un turno en 'Registrar Turnos'"
-              : "Seleccione un turno"
-          }
-          data={turnos.map((t) => ({
-            value: String(t.id),
-            label: `${t.tipo_turno} · ${format12h(t.hora_ingreso)} - ${format12h(t.hora_salida)}`,
-          }))}
-          value={form.id_turno_laboral > 0 ? String(form.id_turno_laboral) : null}
-          onChange={(v) => setField("id_turno_laboral", v ? Number(v) : 0)}
-          leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
-          classNames={fieldClasses}
-          radius="lg"
-          size="xs"
-          required
-          withAsterisk
-          searchable
-          comboboxProps={{ withinPortal: true }}
-          disabled={loading}
-        />
+        <Group align="flex-end" gap="xs">
+          <div style={{ flex: 1 }}>
+            <Select
+              label="Turno Laboral"
+              placeholder={
+                turnos.length === 0
+                  ? "Cree primero un turno en 'Registrar Turnos'"
+                  : "Seleccione un turno"
+              }
+              data={turnos.map((t) => ({
+                value: String(t.id),
+                label: `${t.tipo_turno} · ${format12h(t.hora_ingreso)} - ${format12h(t.hora_salida)}`,
+              }))}
+              value={form.id_turno_laboral > 0 ? String(form.id_turno_laboral) : null}
+              onChange={(v) => setField("id_turno_laboral", v ? Number(v) : 0)}
+              leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+              required
+              withAsterisk
+              searchable
+              comboboxProps={{ withinPortal: true }}
+              disabled={loading}
+            />
+          </div>
+          {onRegistrarTurnoClick && (
+            <Tooltip label="Registrar nuevo turno laboral">
+              <ActionIcon
+                color="indigo"
+                variant="filled"
+                size="30px"
+                radius="lg"
+                onClick={onRegistrarTurnoClick}
+                disabled={loading}
+              >
+                <PlusIcon className="w-5 h-5 text-white" />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
+
+        <Divider label="Lugar de trabajo" labelPosition="left" />
+
+        <Alert
+          variant="light"
+          color="indigo"
+          radius="md"
+          icon={<MapPinIcon className="w-4 h-4" />}
+          styles={{ message: { fontSize: "12px" } }}
+        >
+          Debe seleccionar <strong>exactamente uno</strong>: indique el tipo de
+          lugar (almacén o labor) y luego el específico. Los empleados ya
+          programados en ese lugar aparecerán arriba.
+        </Alert>
+
+        <Group grow align="flex-start" gap="md">
+          <Select
+            label="Tipo de lugar"
+            placeholder="Seleccione"
+            data={[
+              { value: "", label: "Todos" },
+              { value: "almacen", label: "Almacén" },
+              { value: "labor", label: "Labor" },
+            ]}
+            value={tipoLugar || null}
+            onChange={(val) =>
+              setTipoLugar(
+                (val as "" | "almacen" | "labor" | null) ?? "",
+              )
+            }
+            leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+            required
+            withAsterisk
+            comboboxProps={{ withinPortal: true }}
+            disabled={loading}
+          />
+          <Select
+            label={
+              tipoLugar === "almacen"
+                ? "Almacén"
+                : tipoLugar === "labor"
+                  ? "Labor"
+                  : "Específico"
+            }
+            placeholder={
+              tipoLugar === ""
+                ? "Primero seleccione el tipo"
+                : tipoLugar === "almacen"
+                  ? "Seleccione almacén"
+                  : "Seleccione labor"
+            }
+            data={
+              tipoLugar === "almacen"
+                ? almacenesOptions
+                : tipoLugar === "labor"
+                  ? laboresOptions
+                  : []
+            }
+            value={lugarIdActual ? String(lugarIdActual) : null}
+            onChange={(val) => setLugarId(val ? Number(val) : null)}
+            leftSection={
+              tipoLugar === "almacen" ? (
+                <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
+              ) : (
+                <MapPinIcon className="w-4 h-4 text-zinc-500" />
+              )
+            }
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+            required
+            withAsterisk
+            searchable
+            clearable
+            comboboxProps={{ withinPortal: true }}
+            disabled={!tipoLugar || loading}
+          />
+        </Group>
 
         <Divider label="Empleados" labelPosition="left" />
 

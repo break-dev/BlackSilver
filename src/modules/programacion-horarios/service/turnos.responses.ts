@@ -7,5 +7,6 @@ export interface RES_TurnoLaboral {
   hora_ingreso: string;
   hora_salida: string;
   minutos_tolerancia: number | null;
+  total_horas: number | null;
   estado: EstadoBase | string;
 }

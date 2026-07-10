@@ -5,6 +5,7 @@ import {
   MoonIcon,
   PencilSquareIcon,
   PowerIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import type { DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
@@ -130,6 +131,29 @@ export const ModalListadoTurnos = ({
         ),
     },
     {
+      accessor: "total_horas",
+      title: "Total Horas",
+      width: 130,
+      textAlign: "center",
+      render: (r) =>
+        r.total_horas != null ? (
+          <Badge
+            variant="light"
+            color="indigo"
+            radius="md"
+            size="sm"
+            className="font-medium"
+            leftSection={<ClockIcon className="w-3 h-3" />}
+          >
+            {Number(r.total_horas).toFixed(2)} h
+          </Badge>
+        ) : (
+          <Text size="xs" c="dimmed" fs="italic">
+            —
+          </Text>
+        ),
+    },
+    {
       accessor: "estado",
       title: "Estado",
       textAlign: "center",
@@ -192,7 +216,7 @@ export const ModalListadoTurnos = ({
       opened={opened}
       close={close}
       title="Turnos Laborales Registrados"
-      size="xl"
+      size={1100}
     >
       <Stack gap="md">
         <Text size="xs" c="dimmed">
