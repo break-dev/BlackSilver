@@ -165,7 +165,7 @@ export const ProgramacionHorariosPage = () => {
           <Tooltip label="Ir a la semana actual" withArrow position="top">
             <Button
               variant="default"
-              className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 h-[32px] px-3 font-semibold"
+              className="!bg-teal-950/30 hover:!bg-teal-900/50 !text-teal-400 !border-teal-800/60 h-[32px] px-3 font-semibold transition-all"
               radius="md"
               size="xs"
               onClick={irSemanaActual}
@@ -220,14 +220,9 @@ export const ProgramacionHorariosPage = () => {
             size="xs"
             w={110}
             radius="md"
+            className="hidden sm:block"
           />
         </Group>
-
-        <Divider
-          orientation="vertical"
-          className="hidden lg:block"
-          color="var(--mantine-color-zinc-7)"
-        />
 
         <Group gap="sm" wrap="nowrap" className="lg:flex-1 lg:justify-end">
           <Select
@@ -288,15 +283,14 @@ export const ProgramacionHorariosPage = () => {
             clearable
             disabled={!tipoLugarFiltro}
           />
-        </Group>
 
-        <Divider
-          orientation="vertical"
-          className="hidden lg:block"
-          color="var(--mantine-color-zinc-7)"
-        />
+          <Divider
+            orientation="vertical"
+            h={20}
+            className="hidden lg:block"
+            color="var(--mantine-color-zinc-7)"
+          />
 
-        <Group gap="sm" wrap="wrap">
           <Button
             leftSection={<PlusIcon className="w-4 h-4" />}
             onClick={handleNuevoTurno}
