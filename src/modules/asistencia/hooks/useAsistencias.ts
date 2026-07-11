@@ -1,0 +1,108 @@
+import { useCallback, useEffect, useState } from "react";
+import { AsistenciaService } from "../service/asistencia.service";
+import type { RES_Asistencia } from "../service/asistencia.responses";
+import type { useFiltrosAsistencia } from "./useFiltrosAsistencia";
+import { useNotify } from "../../../hooks/useNotify";
+
+type FiltrosHook = ReturnType<typeof useFiltrosAsistencia>;
+
+/**
+ * Hook para obtener el listado de asistencias del mes, reaccionando a los
+ * filtros activos. Devuelve también `asistenciasPorEmpleado` agrupado para
+ * el modo "Empleados" de la UI.
+ */
+export const useAsistencias = (filtros: FiltrosHook) => {
+  const { notifyError } = useNotify();
+  const [asistencias, setAsistencias] = useState<RES_Asistencia[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const cargar = useCallback(async () => {
+    if (!filtros.mes || !filtros.year) {
+      setAsistencias([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const resp = await AsistenciaService.get_asistencias(filtros.filtrosPayload);
+      if (resp.success) {
+        setAsistencias(resp.data as RES_Asistencia[]);
+      }
+    } catch (err) {
+      console.error(err);
+      notifyError("No se pudo cargar la lista de asistencia");
+    } finally {
+      setLoading(false);
+    }
+  }, [filtros.mes, filtros.year, filtros.filtrosPayload, notifyError]);
+
+  useEffect(() => {
+    void cargar();
+  }, [cargar]);
+
+  const asistenciasPorEmpleado = agruparPorEmpleado(asistencias);
+
+  return {
+    asistencias,
+    asistenciasPorEmpleado,
+    loading,
+    recargar: cargar,
+  };
+};
+
+function agruparPorEmpleado(asistencias: RES_Asistencia[]) {
+  const mapa = new Map<
+    number,
+    {
+      id_empleado: number;
+      empleado: string;
+      dni: string | null;
+      url_foto: string | null;
+      tipo_contrato: string | null;
+      sueldo_base: number | null;
+      salario_diario: number | null;
+      cargo_nombre?: string | null;
+      area_nombre?: string | null;
+      dias_trabajados: number;
+      jornada_total: number;
+      pago_total: number;
+      marcaciones: RES_Asistencia[];
+    }
+  >();
+
+  for (const a of asistencias) {
+    if (!mapa.has(a.id_empleado)) {
+      mapa.set(a.id_empleado, {
+        id_empleado: a.id_empleado,
+        empleado: `${a.nombre ?? ""} ${a.apellido ?? ""}`.trim(),
+        dni: a.dni,
+        url_foto: a.url_foto,
+        tipo_contrato: a.tipo_contrato,
+        sueldo_base: a.sueldo_base,
+        salario_diario: a.salario_diario,
+        cargo_nombre: a.cargo_nombre,
+        area_nombre: a.area_nombre,
+        dias_trabajados: 0,
+        jornada_total: 0,
+        pago_total: 0,
+        marcaciones: [],
+      });
+    }
+    const slot = mapa.get(a.id_empleado)!;
+    slot.marcaciones.push(a);
+    slot.jornada_total += Number(a.jornada_trabajada ?? 0);
+    slot.pago_total += Number(a.pago_dia ?? 0);
+    if (Number(a.jornada_trabajada ?? 0) > 0) {
+      slot.dias_trabajados += 1;
+    }
+  }
+
+  return Array.from(mapa.values()).map((e) => ({
+    ...e,
+    jornada_total: Math.round(e.jornada_total * 10000) / 10000,
+    pago_total: Math.round(e.pago_total * 100) / 100,
+    marcaciones: e.marcaciones.sort((x, y) =>
+      (x.fecha ?? "").localeCompare(y.fecha ?? ""),
+    ),
+  }));
+}

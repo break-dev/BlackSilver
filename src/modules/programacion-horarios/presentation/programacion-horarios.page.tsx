@@ -160,7 +160,7 @@ export const ProgramacionHorariosPage = () => {
         </Badge>
       </Group>
 
-      <div className="flex flex-col gap-3 bg-zinc-900/65 border border-zinc-800 rounded-[20px] px-4 py-3 backdrop-blur-md lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between pb-2">
         <Group gap="md" wrap="nowrap" className="lg:flex-1">
           <Tooltip label="Ir a la semana actual" withArrow position="top">
             <Button

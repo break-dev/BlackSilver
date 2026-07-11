@@ -52,6 +52,11 @@ interface FormularioContratoEmpleadoProps {
    * y remuneración editable). El usuario puede cambiar todo.
    */
   contratoAnterior?: import("../../../service/responses/contrato-empleado").RES_ContratoEmpleado;
+  /**
+   * Fecha mínima sugerida (YYYY-MM-DD) para el datepicker de fecha_inicio.
+   * Solo restricción visual en el calendario; el backend no la valida.
+   */
+  fechaInicioSugerida?: string;
 }
 
 const toNum = (v: unknown) => {
@@ -97,6 +102,7 @@ export const FormularioContratoEmpleado = ({
   formEmpleado,
   fotoEmpleado,
   contratoAnterior,
+  fechaInicioSugerida,
 }: FormularioContratoEmpleadoProps) => {
   const { notify } = useNotify();
   const {
@@ -189,6 +195,18 @@ export const FormularioContratoEmpleado = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contratoAnterior]);
 
+  // Auto-completar fecha_inicio con la fecha sugerida (un día después del
+  // contrato anterior). Se aplica al cargar los datos precargados del contrato anterior.
+  useEffect(() => {
+    if (
+      fechaInicioSugerida &&
+      datosPrecargados
+    ) {
+      setField("fecha_inicio", fechaInicioSugerida);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datosPrecargados, fechaInicioSugerida]);
+
   // Validación reactiva: fecha_fin debe ser >= fecha_inicio
   useEffect(() => {
     if (form.fecha_fin && form.fecha_inicio && form.fecha_fin < form.fecha_inicio) {
@@ -279,8 +297,7 @@ export const FormularioContratoEmpleado = ({
 
   return (
     <Stack gap="md">
-      <Divider label="Cargo y Empresa" labelPosition="left" />
-
+      {/* Fila 1: Área · Cargo · Tipo de Contrato */}
       <Group grow align="flex-start" gap="md">
         <Select
           label="Área"
@@ -317,28 +334,6 @@ export const FormularioContratoEmpleado = ({
           searchable
           comboboxProps={{ withinPortal: true }}
         />
-      </Group>
-
-      <Group grow align="flex-start" gap="md">
-        <Select
-          label="Empresa (opcional)"
-          placeholder={
-            loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
-          }
-          data={empresasSelectData}
-          value={form.id_empresa ? String(form.id_empresa) : null}
-          onChange={(val) =>
-            setField("id_empresa", val ? Number(val) : null)
-          }
-          leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
-          classNames={fieldClasses}
-          radius="lg"
-          size="xs"
-          searchable
-          clearable
-          comboboxProps={{ withinPortal: true }}
-          disabled={loadingEmpresas || submittingTotal}
-        />
         <Select
           label="Tipo de Contrato"
           placeholder="Seleccione"
@@ -360,8 +355,27 @@ export const FormularioContratoEmpleado = ({
         />
       </Group>
 
-      <Divider label="Remuneración" labelPosition="left" />
+      {/* Fila 2: Empresa · Remuneración (Sueldo Base o Salario Diario) */}
       <Group grow align="flex-start" gap="md">
+        <Select
+          label="Empresa (opcional)"
+          placeholder={
+            loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
+          }
+          data={empresasSelectData}
+          value={form.id_empresa ? String(form.id_empresa) : null}
+          onChange={(val) =>
+            setField("id_empresa", val ? Number(val) : null)
+          }
+          leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
+          classNames={fieldClasses}
+          radius="lg"
+          size="xs"
+          searchable
+          clearable
+          comboboxProps={{ withinPortal: true }}
+          disabled={submittingTotal}
+        />
         {esPlanilla && (
           <NumberInput
             label="Sueldo Base (S/)"
@@ -409,6 +423,11 @@ export const FormularioContratoEmpleado = ({
           onChange={(val) => setField("fecha_inicio", toIsoDate(val))}
           size="xs"
           disabled={submittingTotal}
+          minDate={
+            fechaInicioSugerida
+              ? new Date(`${fechaInicioSugerida}T00:00:00`)
+              : undefined
+          }
         />
         <CustomDatePicker
           label="Fecha de Fin"

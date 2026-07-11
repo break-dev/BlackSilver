@@ -34,6 +34,7 @@
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
     "@types/pluralize": "^0.0.33",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "animejs": "^4.3.6",
     "axios": "^1.13.5",
     "buffer": "^6.0.3",

@@ -44,6 +44,8 @@ import { LoteMineralPage } from "../../modules/lote-mineral/presentation/lote-mi
 import { MantenimientoPage } from "../../modules/mantenimiento-activos/presentation/mantenimiento.page.tsx";
 import { ProduccionMineralPage } from "../../modules/produccion-mineral/presentation/produccion.page.tsx";
 import ProgramacionHorariosPage from "../../modules/programacion-horarios/presentation/programacion-horarios.page.tsx";
+import MarcarAsistenciaPage from "../../modules/asistencia/presentation/marcar-asistencia.page.tsx";
+import AsistenciaPage from "../../modules/asistencia/presentation/asistencia.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -79,6 +81,9 @@ export const App = () => {
 
       {/* Ruta oculta de auditoría (Sin layout) */}
       <Route path="/modo-auditoria" element={<ModoAuditoriaPage />} />
+
+      {/* Ruta plana de marcar asistencia (Sin layout) */}
+      <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
 
       {/* Rutas protegidas */}
       <Route
@@ -205,6 +210,7 @@ export const App = () => {
               path="programacion-horarios"
               element={<ProgramacionHorariosPage />}
             />
+            <Route path="asistencia" element={<AsistenciaPage />} />
           </Route>
         </Route>
 

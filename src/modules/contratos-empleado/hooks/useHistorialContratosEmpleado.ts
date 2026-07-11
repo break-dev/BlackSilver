@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ContratosEmpleadoService } from "../service/contratos-empleado.service";
 import type { RES_ContratoEmpleado } from "../../../service/responses/contrato-empleado";
+import { EstadoContrato } from "../../../shared/enums/contrato/estado-contrato";
 
 export const useHistorialContratosEmpleado = (idEmpleado: number | null) => {
   const [contratos, setContratos] = useState<RES_ContratoEmpleado[]>([]);
@@ -39,13 +40,13 @@ export const useHistorialContratosEmpleado = (idEmpleado: number | null) => {
       setContratos((prev) => [contrato, ...prev]),
     /**
      * Devuelve el contrato más reciente del historial.
-     * Si existe un contrato Activo (vigente), devuelve ese.
+     * Si existe un contrato Vigente, devuelve ese.
      * Si no, devuelve el más reciente sin importar el estado.
      * Si no hay contratos, devuelve null.
      */
     getUltimoContrato: (): RES_ContratoEmpleado | null => {
       if (contratos.length === 0) return null;
-      const vigente = contratos.find((c) => c.estado === "Activo");
+      const vigente = contratos.find((c) => c.estado === EstadoContrato.Vigente);
       if (vigente) return vigente;
       return contratos[0] ?? null;
     },

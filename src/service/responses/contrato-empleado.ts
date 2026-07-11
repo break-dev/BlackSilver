@@ -1,4 +1,4 @@
-import type { EstadoBase } from "../../shared/enums/_generic/estado-base";
+import type { EstadoContrato } from "../../shared/enums/contrato/estado-contrato";
 import type { IArchivo } from "../../shared/interfaces/archivo";
 import type { RES_EmpleadoResumen } from "../../modules/personal/service/empleados.responses";
 
@@ -29,7 +29,7 @@ export interface RES_ContratoEmpleado {
   duracion_dias: number | null;
   fecha_fin_anticipada: string | null;
   created_at: string | null;
-  estado: EstadoBase;
+  estado: EstadoContrato | string;
 }
 
 export interface RES_EmpleadoConContrato {

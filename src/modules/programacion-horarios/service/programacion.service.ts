@@ -93,7 +93,7 @@ export const ProgramacionHorarioService = {
       solo_con_contrato_vigente: 1,
       fecha_fin_programacion: fechaFinProgramacion ?? undefined,
     };
-    if (idLugar !== null && tipoLugar && tipoLugar !== "") {
+    if (idLugar !== null && tipoLugar) {
       params.id_lugar = idLugar;
       params.tipo_lugar = tipoLugar;
     }
