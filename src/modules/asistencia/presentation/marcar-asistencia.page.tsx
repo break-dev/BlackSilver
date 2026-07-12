@@ -28,7 +28,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useNotify } from "../../../hooks/useNotify";
 import { AsistenciaService } from "../service/asistencia.service";
 import { useSessionTimeout } from "../hooks/useSessionTimeout";
@@ -86,12 +86,22 @@ export default function MarcarAsistenciaPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
-  const [exitConfirmed, setExitConfirmed] = useState(false);
 
   const scannerRef = useRef<{ stop: () => void } | null>(null);
 
   // Indica si hay un proceso en curso (entre paso 2 y paso 4).
   const procesoEnCurso = paso >= 2 && paso < 4 && sesion !== null;
+
+  const resetTodo = useCallback(() => {
+    setSesion(null);
+    setErrorMessage(null);
+    setPaso(1);
+    try {
+      scannerRef.current?.stop();
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   // Timeout de sesión: a los 60s sin actividad, pregunta; a los 90s cancela.
   const sessionTimeout = useSessionTimeout({
@@ -100,21 +110,10 @@ export default function MarcarAsistenciaPage() {
     onTimeout: () => {
       // Si el usuario está en un proceso, crear un marcaje incompleto.
       void notificarCancelacion("Tiempo agotado por inactividad");
+      resetTodo();
     },
     enabled: procesoEnCurso,
   });
-
-  const resetTodo = useCallback(() => {
-    setSesion(null);
-    setErrorMessage(null);
-    setPaso(1);
-    sessionTimeout.cancelTimeout();
-    try {
-      scannerRef.current?.stop();
-    } catch {
-      /* ignore */
-    }
-  }, [sessionTimeout]);
 
   /**
    * Notifica al backend que se canceló un proceso en curso (crea un marcaje
@@ -253,72 +252,65 @@ export default function MarcarAsistenciaPage() {
     [sesion, notifyError, sessionTimeout],
   );
 
-  const cancelarProceso = useCallback(
-    async (motivo?: string) => {
-      await notificarCancelacion(motivo ?? "Cancelado por el usuario");
+  const cancelarProceso = useCallback(() => {
+    if (procesoEnCurso) {
+      setShowExitModal(true);
+    } else {
       resetTodo();
-    },
-    [notificarCancelacion, resetTodo],
-  );
+    }
+  }, [procesoEnCurso, resetTodo]);
 
   // Detección de cierre de pestaña / refresh / navegación a otra URL.
   // Si hay un proceso en curso y el usuario intenta salir, mostramos un
-  // modal propio para que confirme. Si confirma, creamos un marcaje
-  // incompleto antes de que la página se cierre.
+  // aviso nativo del navegador. Si decide salir, el evento pagehide notificará al servidor.
   useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (exitConfirmed) {
-        // El usuario ya confirmó la salida, dejamos que se cierre.
-        return;
-      }
+    const handlerBeforeUnload = (e: BeforeUnloadEvent) => {
       if (procesoEnCurso) {
-        // Mostramos nuestro modal propio (best-effort; el navegador suele
-        // mostrar su propio diálogo después).
         e.preventDefault();
         e.returnValue = "";
-        setShowExitModal(true);
       }
     };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [procesoEnCurso, exitConfirmed]);
+
+    const handlerUnload = () => {
+      if (procesoEnCurso && sesion) {
+        const baseURL = api.defaults.baseURL || "";
+        const payload = JSON.stringify({
+          id_empleado: sesion.empleado.id_empleado,
+          llego_al_qr: paso >= 3,
+          id_sesion: sesion.id_sesion,
+          motivo: "Cierre de pestaña / F5",
+          evidencia_qr: sesion.evidencia_inicial ?? null,
+        });
+
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(`${baseURL}/asistencia-public/cancelar-proceso`, new Blob([payload], { type: "application/json" }));
+        } else {
+          void fetch(`${baseURL}/asistencia-public/cancelar-proceso`, {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+          });
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handlerBeforeUnload);
+    window.addEventListener("pagehide", handlerUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handlerBeforeUnload);
+      window.removeEventListener("pagehide", handlerUnload);
+    };
+  }, [procesoEnCurso, sesion, paso]);
 
   const confirmarSalida = useCallback(async () => {
     if (sesion) {
-      // Marcamos el proceso como cancelado ANTES de cerrar la pestaña.
-      // keepalive:true permite que la petición sobreviva al cierre.
-      try {
-        const baseURL = api.defaults.baseURL || "";
-        const resp = await fetch(`${baseURL}/asistencia-public/cancelar-proceso`, {
-          method: "POST",
-          keepalive: true,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id_empleado: sesion.empleado.id_empleado,
-            llego_al_qr: paso >= 3,
-            id_sesion: sesion.id_sesion,
-            motivo: "Cierre de pestaña",
-            evidencia_qr: sesion.evidencia_inicial ?? null,
-          }),
-        });
-        // Evitamos warnings de no-empty.
-        await resp.json().catch(() => null);
-      } catch (err) {
-        console.error(err);
-      }
+      await notificarCancelacion("Cancelado por el usuario");
     }
-    setExitConfirmed(true);
     setShowExitModal(false);
-    // Forzamos el cierre enviando un click a un link con target=_blank o
-    // usando location.replace a about:blank. Más simple: usamos un timeout
-    // muy corto para que el navegador reciba el OK del usuario.
-    setTimeout(() => {
-      window.close();
-      // Fallback: si window.close no funciona (caso típico en iframes),
-      // navegamos a about:blank.
-      window.location.href = "about:blank";
-    }, 100);
-  }, [sesion, paso]);
+    resetTodo();
+  }, [sesion, notificarCancelacion, resetTodo]);
 
   // Aseguramos detener el scanner al desmontar.
   // Capturamos scannerRef.current en una variable local al momento del effect
@@ -335,64 +327,116 @@ export default function MarcarAsistenciaPage() {
   }, []);
 
   return (
-    <Container size="md" py={60}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Card
-          withBorder
-          radius="xl"
-          p={32}
-          className="bg-zinc-900/40 backdrop-blur-md border-zinc-800 shadow-2xl shadow-indigo-900/10"
+    <div className="relative min-h-[85vh] w-full flex items-center justify-center py-10 overflow-hidden bg-zinc-950 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]">
+      {/* Glow blobs para un estilo glassmorphism ultra premium */}
+      <div className="absolute top-12 left-12 w-80 h-80 rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-12 right-12 w-96 h-96 rounded-full bg-cyan-600/10 blur-[140px] pointer-events-none animate-pulse" style={{ animationDelay: "2.5s" }} />
+
+      <Container size="sm" className="w-full z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
         >
-          <Stack gap="lg">
-            <Group justify="space-between" align="flex-start">
-              <Stack gap={4}>
-                <Title order={1} className="text-white" fz="2rem" fw={800}>
+          <Card
+            withBorder
+            radius="28px"
+            p={36}
+            className="bg-zinc-950/40 backdrop-blur-xl border-zinc-800/80 shadow-[0_25px_60px_rgba(0,0,0,0.5)] shadow-indigo-950/5 relative overflow-hidden"
+          >
+            {/* Línea de brillo en el borde superior estilo cristal */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-zinc-700/30 to-transparent" />
+
+            <Stack gap="xl">
+              <Stack gap="xs" align="center" className="mb-2">
+                <Title order={1} className="text-white tracking-tight text-center" fz="1.8rem" fw={900}>
                   Marcar Asistencia
                 </Title>
-                <Badge variant="light" color="indigo" size="sm" radius="sm">
-                  Paso {paso} de 4
-                </Badge>
               </Stack>
-            </Group>
 
-            {errorMessage && (
-              <Alert
-                color="red"
-                variant="light"
-                icon={<IconAlertCircle size={18} />}
-                radius="lg"
-              >
-                {errorMessage}
-              </Alert>
-            )}
+              {/* Riel visual interactivo de Pasos (Asistente) */}
+              <div className="flex items-center justify-between px-4 mb-6 relative select-none">
+                <div className="absolute top-[17px] left-6 right-6 h-[2px] bg-zinc-800/60 -translate-y-1/2 z-0 rounded-full" />
+                <div 
+                  className="absolute top-[17px] left-6 h-[2px] bg-gradient-to-r from-indigo-500 to-cyan-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500" 
+                  style={{ 
+                    width: paso === 1 ? "0%" : paso === 2 ? "33%" : paso === 3 ? "66%" : "90%" 
+                  }}
+                />
+                {[1, 2, 3, 4].map((s) => {
+                  const isCompleted = s < paso;
+                  const isActive = s === paso;
+                  return (
+                    <div key={s} className="z-10 flex flex-col items-center gap-1.5">
+                      <div 
+                        className={`w-[34px] h-[34px] rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 border ${
+                          isCompleted 
+                            ? "bg-indigo-600 border-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]" 
+                            : isActive
+                              ? "bg-zinc-950 border-cyan-400 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)] scale-110"
+                              : "bg-zinc-900 border-zinc-800/80 text-zinc-500"
+                        }`}
+                      >
+                        {isCompleted ? <IconCheck size={14} stroke={3} /> : s}
+                      </div>
+                      <span 
+                        className={`text-[9px] font-bold tracking-wider uppercase transition-colors duration-500 ${
+                          isActive ? "text-cyan-400" : "text-zinc-500"
+                        }`}
+                      >
+                        {s === 1 ? "Inicio" : s === 2 ? "Escanear" : s === 3 ? "Validar" : "Listo"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
 
-            {paso === 1 && <PasoIniciar onIniciar={handleIniciar} />}
-            {paso === 2 && (
-              <PasoQr
-                loading={loading}
-                scannerRef={scannerRef}
-                onDetect={handleQrDetectado}
-                onCancelar={() => cancelarProceso("Cancelado por el usuario")}
-              />
-            )}
-            {paso === 3 && sesion && (
-              <PasoValidar
-                sesion={sesion}
-                loading={loading}
-                onConfirmar={handleConfirmar}
-                onCancelar={() => cancelarProceso("Cancelado por el usuario")}
-              />
-            )}
-            {paso === 4 && sesion && (
-              <PasoConfirmado sesion={sesion} onReiniciar={resetTodo} />
-            )}
-          </Stack>
-        </Card>
-      </motion.div>
+              {errorMessage && (
+                <Alert
+                  color="red"
+                  variant="light"
+                  icon={<IconAlertCircle size={18} />}
+                  radius="lg"
+                  className="border border-red-900/30 bg-red-950/20 text-red-200"
+                >
+                  {errorMessage}
+                </Alert>
+              )}
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={paso}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                >
+                  {paso === 1 && <PasoIniciar onIniciar={handleIniciar} />}
+                  {paso === 2 && (
+                    <PasoQr
+                      loading={loading}
+                      scannerRef={scannerRef}
+                      onDetect={handleQrDetectado}
+                      onCancelar={cancelarProceso}
+                    />
+                  )}
+                  {paso === 3 && sesion && (
+                    <PasoValidar
+                      sesion={sesion}
+                      loading={loading}
+                      onConfirmar={handleConfirmar}
+                      onCancelar={cancelarProceso}
+                    />
+                  )}
+                  {paso === 4 && sesion && (
+                    <PasoConfirmado sesion={sesion} onReiniciar={resetTodo} />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </Stack>
+          </Card>
+        </motion.div>
+      </Container>
 
       {/* Modal "¿Sigues activo?" del session timeout */}
       <Modal
@@ -451,7 +495,7 @@ export default function MarcarAsistenciaPage() {
               className="!bg-zinc-800 !text-zinc-300 !border-zinc-700"
               radius="lg"
               size="xs"
-              onClick={() => cancelarProceso("Usuario salió del proceso")}
+              onClick={cancelarProceso}
             >
               Cancelar
             </Button>
@@ -518,38 +562,36 @@ export default function MarcarAsistenciaPage() {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </div>
   );
 }
 
 // ========== PASO 1: Iniciar ==========
 const PasoIniciar = ({ onIniciar }: { onIniciar: () => void }) => (
-  <Stack align="center" gap="lg" py="md">
-    <ThemeIcon
-      size={120}
-      radius={100}
-      variant="gradient"
-      gradient={{ from: "indigo.6", to: "cyan.6" }}
-      className="shadow-lg"
+  <Stack align="center" gap="xl" py="lg">
+    <div
+      className="w-32 h-32 rounded-[32px] bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-zinc-800 flex items-center justify-center shadow-[inset_0_4px_12px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)] backdrop-blur-md relative overflow-hidden group"
     >
-      <IconQrcode size={90} stroke={1.2} />
-    </ThemeIcon>
+      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <IconQrcode size={76} className="text-indigo-400 drop-shadow-[0_4px_10px_rgba(99,102,241,0.3)]" stroke={1.2} />
+    </div>
+
     <Stack align="center" gap="xs">
-      <Text c="zinc.4" ta="center" size="md" className="max-w-md">
-        Presiona el botón para iniciar el proceso de asistencia.
-        Se te pedirá capturar tu código QR.
+      <Text c="zinc.3" ta="center" size="sm" className="max-w-xs leading-relaxed font-medium">
+        Presiona el botón para escanear el código QR de tu fotocheck.
       </Text>
     </Stack>
+
     <Button
       size="lg"
       radius="xl"
       variant="gradient"
-      gradient={{ from: "indigo.6", to: "cyan.6" }}
+      gradient={{ from: "indigo.5", to: "cyan.5" }}
       leftSection={<IconQrcode size={20} />}
       onClick={onIniciar}
-      className="h-16 px-8 text-lg shadow-lg shadow-indigo-900/30 hover:scale-[1.02] transition-transform"
+      className="h-14 px-10 text-base font-bold text-white shadow-lg shadow-indigo-500/20 hover:scale-[1.02] hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
     >
-      Iniciar
+      Iniciar Lector QR
     </Button>
   </Stack>
 );
@@ -567,18 +609,19 @@ const PasoQr = ({
   onCancelar: () => void;
 }) => {
   return (
-    <Stack gap="md" align="center">
-      <Text c="zinc.3" ta="center" size="sm">
-        Apunta la cámara al código QR de tu fotocheck.
+    <Stack gap="lg" align="center" className="w-full">
+      <Text c="zinc.4" ta="center" size="sm" className="font-medium">
+        Coloca tu código QR frente a la cámara para escanearlo.
       </Text>
       <div
-        className="relative w-full max-w-[400px] aspect-square 
-          rounded-2xl overflow-hidden border-2 border-indigo-500/50
-          shadow-2xl shadow-indigo-900/30 bg-zinc-950"
+        className="relative w-full max-w-[340px] aspect-square 
+          rounded-[24px] overflow-hidden border-2 border-indigo-500/30
+          shadow-[0_20px_40px_rgba(0,0,0,0.6)] bg-zinc-950/80 backdrop-blur-md"
       >
         {loading ? (
-          <div className="flex items-center justify-center w-full h-full">
-            <Loader color="indigo" size="lg" />
+          <div className="flex flex-col gap-3 items-center justify-center w-full h-full">
+            <Loader color="indigo" size="md" />
+            <Text size="xs" c="indigo.3" className="animate-pulse">Procesando código QR...</Text>
           </div>
         ) : (
           <Scanner
@@ -604,14 +647,15 @@ const PasoQr = ({
             ref={scannerRef}
           />
         )}
-        <div className="absolute inset-0 pointer-events-none border-4 border-indigo-400/30 rounded-2xl" />
+        <div className="absolute inset-0 pointer-events-none border-8 border-indigo-500/10 rounded-[24px] z-10" />
       </div>
       <Button
         variant="default"
-        className="!bg-zinc-800 !text-zinc-300 !border-zinc-700"
-        radius="lg"
+        className="!bg-zinc-900/60 !text-zinc-300 !border-zinc-800/80 hover:!bg-zinc-800/80 transition-colors"
+        radius="xl"
         size="xs"
         onClick={onCancelar}
+        disabled={loading}
       >
         Cancelar
       </Button>
@@ -768,38 +812,43 @@ const PasoValidar = ({
         </Badge>
       </Group>
 
-      <Card withBorder radius="lg" p="md" className="bg-zinc-900/50 border-zinc-800">
-        <Group align="flex-start" wrap="wrap">
+      <Card withBorder radius="xl" p="md" className="bg-zinc-950/30 border-zinc-800/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]">
+        <Group align="center" wrap="wrap">
           <Avatar
             src={sesion.empleado.url_foto ?? undefined}
             size="xl"
             radius="xl"
+            className="border border-zinc-800 shadow-md"
           >
             {sesion.empleado.nombre_completo[0]?.toUpperCase()}
           </Avatar>
           <Stack gap={4} style={{ flex: 1 }}>
-            <Text fw={700} size="lg" className="text-white">
+            <Text fw={800} size="lg" className="text-white tracking-tight">
               {sesion.empleado.nombre_completo}
             </Text>
-            <Text size="sm" c="dimmed">
-              DNI: {sesion.empleado.dni ?? "-"}
+            <Text size="xs" c="zinc.5" fw={600}>
+              DNI: <span className="text-zinc-300">{sesion.empleado.dni ?? "-"}</span>
             </Text>
             <Group gap="xs" mt="xs">
-              {turno && (
+              {turno ? (
                 <>
-                  <Badge variant="light" color="indigo">
+                  <Badge variant="light" color="indigo" radius="md">
                     Turno: {turno.tipo_turno}
                   </Badge>
-                  <Badge variant="light" color="gray">
+                  <Badge variant="light" color="gray" radius="md">
                     {turno.hora_ingreso} - {turno.hora_salida}
                   </Badge>
-                  <Badge variant="light" color="teal">
+                  <Badge variant="light" color="teal" radius="md">
                     Tolerancia: {turno.minutos_tolerancia}m
                   </Badge>
                 </>
+              ) : (
+                <Badge variant="light" color="yellow" radius="md" className="border border-yellow-500/20 bg-yellow-950/20 text-yellow-400">
+                  Sin programación pendiente
+                </Badge>
               )}
               {sesion.programacion_vigente?.lugar_nombre && (
-                <Badge variant="light" color="cyan">
+                <Badge variant="light" color="cyan" radius="md">
                   {sesion.programacion_vigente.lugar_nombre}
                 </Badge>
               )}

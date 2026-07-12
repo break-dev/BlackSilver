@@ -37,6 +37,11 @@ export const useSessionTimeout = ({
     Math.ceil(warningMs / 1000),
   );
 
+  const onTimeoutRef = useRef(onTimeout);
+  useEffect(() => {
+    onTimeoutRef.current = onTimeout;
+  }, [onTimeout]);
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cancelledRef = useRef(false);
@@ -71,11 +76,11 @@ export const useSessionTimeout = ({
         setRemainingSeconds(remaining);
         if (remaining <= 0) {
           clearAll();
-          onTimeout();
+          onTimeoutRef.current();
         }
       }, 250);
     }, msBeforeWarning);
-  }, [timeoutMs, warningMs, onTimeout, enabled, clearAll]);
+  }, [timeoutMs, warningMs, enabled, clearAll]);
 
   const extend = useCallback(() => {
     resetTimer();

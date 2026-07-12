@@ -28,7 +28,7 @@ import { useAsistencias } from "../hooks/useAsistencias";
 import { MESES } from "../../../shared/variables/meses";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
-import type { RES_Asistencia } from "../service/asistencia.responses";
+import type { RES_Asistencia, RES_Marcaje } from "../service/asistencia.responses";
 
 const format12h = (timeStr: string | null | undefined) => {
   if (!timeStr) return "-";
@@ -274,6 +274,42 @@ const EmpleadoAsistenciaCard = ({
                 const tardanzaReal = getTardanzaMinutos(log);
                 const esTardanza = tardanzaReal > 0;
 
+                const tramos = (() => {
+                  if (!log || !log.marcajes) return [];
+                  const list: Array<{ ingreso: string; salida?: string; horas?: number }> = [];
+                  let currentIngreso: RES_Marcaje | null = null;
+
+                  const sortedMarcajes = [...log.marcajes].sort((a, b) =>
+                    a.fecha_hora.localeCompare(b.fecha_hora),
+                  );
+
+                  for (const m of sortedMarcajes) {
+                    if (m.tipo_marcaje === "Ingreso") {
+                      currentIngreso = m;
+                    } else if (m.tipo_marcaje === "Salida" && currentIngreso) {
+                      const hrs =
+                        dayjs(m.fecha_hora).diff(
+                          dayjs(currentIngreso.fecha_hora),
+                          "second",
+                        ) / 3600.0;
+                      list.push({
+                        ingreso: currentIngreso.fecha_hora,
+                        salida: m.fecha_hora,
+                        horas: hrs,
+                      });
+                      currentIngreso = null;
+                    }
+                  }
+
+                  if (currentIngreso) {
+                    list.push({
+                      ingreso: currentIngreso.fecha_hora,
+                    });
+                  }
+
+                  return list;
+                })();
+
                 return (
                   <Table.Td key={d}>
                     {valorJornada !== null && log ? (
@@ -285,12 +321,25 @@ const EmpleadoAsistenciaCard = ({
                                 Horario: {format12h(log.hora_ingreso)} - {format12h(log.hora_salida)}
                               </Text>
                             )}
-                            <Text size="10px">
-                              Ingreso: {format12h(log.fecha_hora_ingreso)}
-                            </Text>
-                            <Text size="10px">
-                              Salida: {format12h(log.fecha_hora_salida)}
-                            </Text>
+                             <Text size="10px">
+                               Ingreso: {format12h(log.fecha_hora_ingreso)}
+                             </Text>
+                             <Text size="10px">
+                               Salida: {format12h(log.fecha_hora_salida)}
+                             </Text>
+                             {tramos.length > 1 && (
+                               <div className="space-y-1 my-1 border-t border-zinc-800/80 pt-1">
+                                 <Text size="9px" fw={700} className="text-zinc-400 uppercase tracking-wider">
+                                   Detalle por tramos:
+                                 </Text>
+                                 {tramos.map((tr, idx) => (
+                                   <Text key={idx} size="10px" className="text-zinc-300">
+                                     Tramo {idx + 1}: {format12h(tr.ingreso)} - {tr.salida ? format12h(tr.salida) : "—"}
+                                     {tr.horas !== undefined ? ` (${tr.horas.toFixed(2)}h)` : ""}
+                                   </Text>
+                                 ))}
+                               </div>
+                             )}
                             {log.total_horas !== null && (
                               <Text size="10px">
                                 Horas trab.: {Number(log.total_horas).toFixed(2)} h
