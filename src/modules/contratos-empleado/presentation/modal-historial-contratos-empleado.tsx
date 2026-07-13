@@ -139,27 +139,28 @@ export const ModalHistorialContratosEmpleado = ({
     }
   };
 
-  // Calcula la fecha sugerida para el nuevo contrato en base al último.
-  //  - Si el último es Término Anticipado: usa fecha_fin_anticipada + 1 día.
-  //  - Si el último es Vigente/Finalizado y tiene fecha_fin: usa fecha_fin + 1 día.
-  //  - Si es indefinido o sin fecha_fin: retorna "" (sin restricción).
   const calcularFechaInicioSugerida = (
     c: RES_ContratoEmpleado | undefined,
   ): string => {
-    if (!c) return "";
+    const hoy = new Date();
+    const hoyLocalStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
 
-    let base: string | null = null;
-    if (c.estado === EstadoContrato.TerminoAnticipado && c.fecha_fin_anticipada) {
-      base = c.fecha_fin_anticipada;
-    } else if (c.estado !== EstadoContrato.TerminoAnticipado && c.fecha_fin) {
-      base = c.fecha_fin;
+    if (!c) return hoyLocalStr;
+
+    // Verificar si el último contrato sigue vigente hoy
+    const esVigenteHoy = c.estado === EstadoContrato.Vigente &&
+      (c.por_tiempo_indefinido || (c.fecha_fin && c.fecha_fin >= hoyLocalStr));
+
+    if (esVigenteHoy && c.fecha_fin) {
+      // Si sigue vigente hoy y tiene fecha de fin, sugerimos el día siguiente a su finalización
+      const [y, m, d] = c.fecha_fin.split("-").map(Number);
+      const fechaSiguiente = new Date(y, m - 1, d + 1);
+      return `${fechaSiguiente.getFullYear()}-${String(fechaSiguiente.getMonth() + 1).padStart(2, "0")}-${String(fechaSiguiente.getDate()).padStart(2, "0")}`;
     }
-    if (!base) return "";
 
-    // +1 día en zona local para evitar desfase por timezone con toISOString.
-    const [y, m, d] = base.split("-").map(Number);
-    const fecha = new Date(y, m - 1, d + 1);
-    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
+    // En cualquier otro caso (término anticipado, finalizado o vencido),
+    // sugerimos la fecha actual de hoy para que se active inmediatamente hoy.
+    return hoyLocalStr;
   };
 
   const ultimoContrato = getUltimoContrato();

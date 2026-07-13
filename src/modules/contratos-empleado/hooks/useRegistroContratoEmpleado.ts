@@ -33,8 +33,10 @@ const initialForm = (idEmpleado: number): DTO_CrearContratoEmpleado => ({
   tipo_contrato: TipoContrato.Planilla,
   sueldo_base: null,
   salario_diario: null,
-  // Por defecto, fecha de inicio = hoy (YYYY-MM-DD).
-  fecha_inicio: new Date().toISOString().split("T")[0],
+  fecha_inicio: (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })(),
   fecha_fin: "",
   por_tiempo_indefinido: false,
   duracion: null,

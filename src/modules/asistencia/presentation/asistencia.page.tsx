@@ -12,13 +12,11 @@ import {
   Divider,
   Tooltip,
   Table,
-  Collapse,
 } from "@mantine/core";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
-  PaperClipIcon,
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
@@ -26,9 +24,8 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useFiltrosAsistencia } from "../hooks/useFiltrosAsistencia";
 import { useAsistencias } from "../hooks/useAsistencias";
 import { MESES } from "../../../shared/variables/meses";
-import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
-import type { IArchivo } from "../../../shared/interfaces/archivo";
-import type { RES_Asistencia, RES_Marcaje } from "../service/asistencia.responses";
+import type { RES_Asistencia } from "../service/asistencia.responses";
+import { ModalDetalleAsistenciaDiaria } from "./modal-detalle-asistencia-diaria";
 
 const format12h = (timeStr: string | null | undefined) => {
   if (!timeStr) return "-";
@@ -46,24 +43,6 @@ const format12h = (timeStr: string | null | undefined) => {
   return timeStr;
 };
 
-const getTardanzaMinutos = (log: RES_Asistencia | undefined) => {
-  if (!log || log.minutos_tardanza === undefined || log.minutos_tardanza === null) return 0;
-  const raw = Number(log.minutos_tardanza);
-  // Si es negativo en datos históricos, significa tardanza (la fórmula vieja restaba límite - real)
-  if (raw < 0) return Math.abs(raw);
-  
-  // Si es positivo, verificamos que la marca sea realmente después del límite
-  if (raw > 0 && log.hora_ingreso && log.fecha_hora_ingreso) {
-    const entryTime = dayjs(log.fecha_hora_ingreso);
-    const limitTime = dayjs(entryTime.format("YYYY-MM-DD") + " " + log.hora_ingreso)
-      .add(Number(log.minutos_tolerancia ?? 0), "minute");
-    if (entryTime.isAfter(limitTime)) {
-      return raw;
-    }
-    return 0;
-  }
-  return raw;
-};
 
 interface EmpleadoAsistenciaCardProps {
   emp: {
@@ -92,63 +71,8 @@ const EmpleadoAsistenciaCard = ({
   yearVal,
   mesVal,
 }: EmpleadoAsistenciaCardProps) => {
-  const [opened, setOpened] = useState(false);
+  const [selectedDia, setSelectedDia] = useState<RES_Asistencia | null>(null);
   const esPlanilla = emp.tipo_contrato === "Planilla";
-
-  // Estructura agrupada de evidencias
-  interface EvidenciaGrupo {
-    fecha: string;
-    tipo_marcaje: "Ingreso" | "Salida";
-    archivos: IArchivo[];
-  }
-
-  // Agrupamos todas las evidencias por fecha y tipo de marcaje
-  const evidenciasAgrupadas = useMemo(() => {
-    const grupos: EvidenciaGrupo[] = [];
-    for (const log of emp.marcaciones) {
-      if (log.marcajes) {
-        for (const m of log.marcajes) {
-          if (m.evidencias) {
-            try {
-              const parsed =
-                typeof m.evidencias === "string"
-                  ? JSON.parse(m.evidencias)
-                  : m.evidencias;
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                const fechaFmt = dayjs(m.fecha_hora).format("DD/MM/YYYY");
-                const tipoFmt = m.tipo_marcaje ?? "Ingreso";
-
-                let grupo = grupos.find(
-                  (g) => g.fecha === fechaFmt && g.tipo_marcaje === tipoFmt,
-                );
-                if (!grupo) {
-                  grupo = {
-                    fecha: fechaFmt,
-                    tipo_marcaje: tipoFmt as "Ingreso" | "Salida",
-                    archivos: [],
-                  };
-                  grupos.push(grupo);
-                }
-                grupo.archivos.push(...(parsed as IArchivo[]));
-              }
-            } catch (e) {
-              console.error(e);
-            }
-          }
-        }
-      }
-    }
-    // Ordenar por fecha descendente
-    return grupos.sort((a, b) => {
-      const dateA = dayjs(a.fecha, "DD/MM/YYYY");
-      const dateB = dayjs(b.fecha, "DD/MM/YYYY");
-      return dateB.isBefore(dateA) ? -1 : 1;
-    });
-  }, [emp.marcaciones]);
-
-  const totalEvidencias = useMemo(() => {
-    return evidenciasAgrupadas.reduce((acc, g) => acc + g.archivos.length, 0);
-  }, [evidenciasAgrupadas]);
 
   return (
     <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md p-5 space-y-5">
@@ -215,10 +139,10 @@ const EmpleadoAsistenciaCard = ({
                 Sueldo Base
               </Text>
               <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                {emp.tipo_contrato === "Planilla" && emp.sueldo_base !== null
-                  ? `S/. ${emp.sueldo_base.toFixed(2)}`
-                  : emp.tipo_contrato === "JornadaDiaria" && emp.salario_diario !== null
-                    ? `S/. ${emp.salario_diario.toFixed(2)}`
+                {emp.tipo_contrato === "Planilla"
+                  ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
+                  : emp.tipo_contrato === "JornadaDiaria"
+                    ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
                     : "—"}
               </Text>
             </div>
@@ -271,92 +195,36 @@ const EmpleadoAsistenciaCard = ({
                 const log = emp.marcaciones.find((m) => m.fecha === fechaBuscada);
 
                 const valorJornada = log ? Number(log.jornada_trabajada) : null;
-                const tardanzaReal = getTardanzaMinutos(log);
-                const esTardanza = tardanzaReal > 0;
-
-                const tramos = (() => {
-                  if (!log || !log.marcajes) return [];
-                  const list: Array<{ ingreso: string; salida?: string; horas?: number }> = [];
-                  let currentIngreso: RES_Marcaje | null = null;
-
-                  const sortedMarcajes = [...log.marcajes].sort((a, b) =>
-                    a.fecha_hora.localeCompare(b.fecha_hora),
-                  );
-
-                  for (const m of sortedMarcajes) {
-                    if (m.tipo_marcaje === "Ingreso") {
-                      currentIngreso = m;
-                    } else if (m.tipo_marcaje === "Salida" && currentIngreso) {
-                      const hrs =
-                        dayjs(m.fecha_hora).diff(
-                          dayjs(currentIngreso.fecha_hora),
-                          "second",
-                        ) / 3600.0;
-                      list.push({
-                        ingreso: currentIngreso.fecha_hora,
-                        salida: m.fecha_hora,
-                        horas: hrs,
-                      });
-                      currentIngreso = null;
-                    }
-                  }
-
-                  if (currentIngreso) {
-                    list.push({
-                      ingreso: currentIngreso.fecha_hora,
-                    });
-                  }
-
-                  return list;
-                })();
 
                 return (
                   <Table.Td key={d}>
                     {valorJornada !== null && log ? (
                       <Tooltip
                         label={
-                          <Stack gap={4} p={4}>
+                          <Stack gap={2} p={2}>
                             {log.hora_ingreso && (
-                              <Text size="10px" fw={600} c="indigo.7">
-                                Horario: {format12h(log.hora_ingreso)} - {format12h(log.hora_salida)}
+                              <Text size="10px" fw={700} c="indigo.3">
+                                Turno: {format12h(log.hora_ingreso)} - {format12h(log.hora_salida)}
                               </Text>
                             )}
-                             <Text size="10px">
-                               Ingreso: {format12h(log.fecha_hora_ingreso)}
-                             </Text>
-                             <Text size="10px">
-                               Salida: {format12h(log.fecha_hora_salida)}
-                             </Text>
-                             {tramos.length > 1 && (
-                               <div className="space-y-1 my-1 border-t border-zinc-800/80 pt-1">
-                                 <Text size="9px" fw={700} className="text-zinc-400 uppercase tracking-wider">
-                                   Detalle por tramos:
-                                 </Text>
-                                 {tramos.map((tr, idx) => (
-                                   <Text key={idx} size="10px" className="text-zinc-300">
-                                     Tramo {idx + 1}: {format12h(tr.ingreso)} - {tr.salida ? format12h(tr.salida) : "—"}
-                                     {tr.horas !== undefined ? ` (${tr.horas.toFixed(2)}h)` : ""}
-                                   </Text>
-                                 ))}
-                               </div>
-                             )}
+                            <Text size="10px">
+                              Ingreso: <span className="font-bold text-rose-400">{format12h(log.fecha_hora_ingreso)}</span>
+                            </Text>
+                            <Text size="10px">
+                              Salida: <span className="font-bold text-rose-400">{format12h(log.fecha_hora_salida)}</span>
+                            </Text>
                             {log.total_horas !== null && (
                               <Text size="10px">
-                                Horas trab.: {Number(log.total_horas).toFixed(2)} h
+                                Horas: <span className="font-mono text-sky-400 font-bold">{Number(log.total_horas).toFixed(2)} h</span>
                               </Text>
                             )}
                             {log.lugar_nombre && (
-                              <Text size="10px" c="cyan.8">
-                                Lugar: {log.lugar_nombre} {log.lugar_tipo ? `(${log.lugar_tipo})` : ""}
+                              <Text size="10px" c="cyan.4">
+                                Lugar: {log.lugar_nombre}
                               </Text>
                             )}
-                            {log.minutos_tolerancia !== null && (
-                              <Text size="10px">
-                                Tolerancia: {log.minutos_tolerancia} min
-                              </Text>
-                            )}
-                            <Text size="10px" c={esTardanza ? "red.4" : "zinc.4"} fw={esTardanza ? 700 : 400}>
-                              Minutos Tardanza: {tardanzaReal} min
+                            <Text size="10px" c="zinc.5" fs="italic" mt={4}>
+                              Click para ver detalle y evidencias
                             </Text>
                           </Stack>
                         }
@@ -364,8 +232,9 @@ const EmpleadoAsistenciaCard = ({
                         position="top"
                       >
                         <span
-                          className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold cursor-default transition-all ${
-                            esPlanilla
+                          onClick={() => setSelectedDia(log)}
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                            log.tipo_contrato === "Planilla"
                               ? "bg-sky-950/40 text-sky-400 border border-sky-800/40 hover:bg-sky-900/60"
                               : "bg-amber-950/40 text-amber-400 border border-amber-800/40 hover:bg-amber-900/60"
                           }`}
@@ -384,54 +253,14 @@ const EmpleadoAsistenciaCard = ({
         </Table>
       </div>
 
-      {/* Sección Colapsable para Evidencias */}
-      {totalEvidencias > 0 && (
-        <div className="pt-2">
-          <Button
-            variant="subtle"
-            color="indigo"
-            size="xs"
-            leftSection={<PaperClipIcon className="w-4 h-4" />}
-            onClick={() => setOpened(!opened)}
-            className="hover:bg-indigo-500/10 font-bold px-2"
-          >
-            {opened ? "Ocultar Evidencias" : `Ver Evidencias (${totalEvidencias})`}
-          </Button>
-
-          <Collapse in={opened} mt="md">
-            <Stack gap="xl" className="p-4 bg-zinc-950/30 border border-zinc-800/60 rounded-2xl">
-              {evidenciasAgrupadas.map((grupo, gIdx) => (
-                <div key={gIdx} className="space-y-3">
-                  <Group gap="xs">
-                    <CalendarDaysIcon className="w-4 h-4 text-indigo-400" />
-                    <Text size="xs" fw={800} className="text-zinc-200">
-                      {grupo.fecha}
-                    </Text>
-                    <Divider orientation="vertical" h={12} className="border-zinc-850" />
-                    <Badge
-                      size="xs"
-                      color={grupo.tipo_marcaje === "Ingreso" ? "emerald" : "blue"}
-                      variant="light"
-                    >
-                      {grupo.tipo_marcaje}
-                    </Badge>
-                  </Group>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    {grupo.archivos.map((ev, idx) => (
-                      <ArchivoCard key={idx} archivo={ev} />
-                    ))}
-                  </div>
-
-                  {gIdx < evidenciasAgrupadas.length - 1 && (
-                    <Divider className="border-zinc-800/50 pt-2" />
-                  )}
-                </div>
-              ))}
-            </Stack>
-          </Collapse>
-        </div>
-      )}
+      <ModalDetalleAsistenciaDiaria
+        opened={selectedDia !== null}
+        onClose={() => setSelectedDia(null)}
+        selectedDia={selectedDia}
+        empleadoNombre={emp.empleado}
+        empleadoDni={emp.dni}
+        empleadoFoto={emp.url_foto}
+      />
     </div>
   );
 };
