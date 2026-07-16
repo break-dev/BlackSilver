@@ -1,18 +1,14 @@
-import { useState } from "react";
-import { Stack, Group, Badge, Text, Tooltip, ActionIcon } from "@mantine/core";
+import { Stack, Badge, Text } from "@mantine/core";
 import {
   SunIcon,
   MoonIcon,
-  PencilSquareIcon,
-  PowerIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import type { DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
-import { TurnoLaboralService } from "../service/turnos.service";
-import { useNotify } from "../../../hooks/useNotify";
+
 
 interface ModalListadoTurnosProps {
   opened: boolean;
@@ -40,30 +36,29 @@ export const ModalListadoTurnos = ({
   close,
   turnos,
   loading,
-  onEditar,
 }: ModalListadoTurnosProps) => {
-  const { notifySuccess, notifyError } = useNotify();
-  const [togglingId, setTogglingId] = useState<number | null>(null);
+  // const { notifySuccess, notifyError } = useNotify();
+  // const [togglingId, setTogglingId] = useState<number | null>(null);
 
-  const handleCambiarEstado = async (turno: RES_TurnoLaboral) => {
-    const nuevoEstado = turno.estado === "Activo" ? "Inactivo" : "Activo";
-    setTogglingId(turno.id);
-    try {
-      const resp = await TurnoLaboralService.cambiar_estado(turno.id, {
-        estado: nuevoEstado,
-      });
-      if (resp.success) {
-        notifySuccess(`Turno ${nuevoEstado === "Activo" ? "activado" : "desactivado"}`);
-      } else {
-        notifyError(resp.message ?? "No se pudo cambiar el estado");
-      }
-    } catch (err) {
-      console.error(err);
-      notifyError("Error inesperado al cambiar el estado del turno");
-    } finally {
-      setTogglingId(null);
-    }
-  };
+  // const handleCambiarEstado = async (turno: RES_TurnoLaboral) => {
+  //   const nuevoEstado = turno.estado === "Activo" ? "Inactivo" : "Activo";
+  //   setTogglingId(turno.id);
+  //   try {
+  //     const resp = await TurnoLaboralService.cambiar_estado(turno.id, {
+  //       estado: nuevoEstado,
+  //     });
+  //     if (resp.success) {
+  //       notifySuccess(`Turno ${nuevoEstado === "Activo" ? "activado" : "desactivado"}`);
+  //     } else {
+  //       notifyError(resp.message ?? "No se pudo cambiar el estado");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     notifyError("Error inesperado al cambiar el estado del turno");
+  //   } finally {
+  //     setTogglingId(null);
+  //   }
+  // };
 
   const columns: DataTableColumn<RES_TurnoLaboral>[] = [
     {
@@ -168,47 +163,47 @@ export const ModalListadoTurnos = ({
         </Badge>
       ),
     },
-    {
-      accessor: "acciones",
-      title: "Acciones",
-      textAlign: "center",
-      width: 110,
-      render: (r) => (
-        <Group gap={4} wrap="nowrap" justify="center">
-          <Tooltip label="Editar turno" withArrow position="top">
-            <ActionIcon
-              variant="subtle"
-              color="indigo"
-              radius="md"
-              size="sm"
-              aria-label="Editar"
-              onClick={() => onEditar(r)}
-            >
-              <PencilSquareIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip
-            label={r.estado === "Activo" ? "Desactivar" : "Activar"}
-            withArrow
-            position="top"
-          >
-            <ActionIcon
-              variant="subtle"
-              color={r.estado === "Activo" ? "red" : "green"}
-              radius="md"
-              size="sm"
-              aria-label="Cambiar estado"
-              loading={togglingId === r.id}
-              onClick={() => {
-                void handleCambiarEstado(r);
-              }}
-            >
-              <PowerIcon className="w-4 h-4" />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      ),
-    },
+    // {
+    //   accessor: "acciones",
+    //   title: "Acciones",
+    //   textAlign: "center",
+    //   width: 110,
+    //   render: (r) => (
+    //     <Group gap={4} wrap="nowrap" justify="center">
+    //       <Tooltip label="Editar turno" withArrow position="top">
+    //         <ActionIcon
+    //           variant="subtle"
+    //           color="indigo"
+    //           radius="md"
+    //           size="sm"
+    //           aria-label="Editar"
+    //           onClick={() => onEditar(r)}
+    //         >
+    //           <PencilSquareIcon className="w-4 h-4" />
+    //         </ActionIcon>
+    //       </Tooltip>
+    //       <Tooltip
+    //         label={r.estado === "Activo" ? "Desactivar" : "Activar"}
+    //         withArrow
+    //         position="top"
+    //       >
+    //         <ActionIcon
+    //           variant="subtle"
+    //           color={r.estado === "Activo" ? "red" : "green"}
+    //           radius="md"
+    //           size="sm"
+    //           aria-label="Cambiar estado"
+    //           loading={togglingId === r.id}
+    //           onClick={() => {
+    //             void handleCambiarEstado(r);
+    //           }}
+    //         >
+    //           <PowerIcon className="w-4 h-4" />
+    //         </ActionIcon>
+    //       </Tooltip>
+    //     </Group>
+    //   ),
+    // },
   ];
 
   return (
