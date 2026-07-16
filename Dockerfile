@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Compilar el proyecto Vite (genera la carpeta /app/dist)
-RUN npm run build
+RUN npx vite build
 
 # Stage 2: Production (servido con Nginx)
 FROM nginx:alpine
