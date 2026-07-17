@@ -1,6 +1,20 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+# Variables de entorno BUILD-TIME (Vite las congela en el bundle).
+# Se inyectan desde Coolify como Build Args distintos por environment (front / front-dev).
+ARG VITE_API_URL
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+
+ENV VITE_API_URL=$VITE_API_URL \
+    VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY \
+    VITE_REVERB_HOST=$VITE_REVERB_HOST \
+    VITE_REVERB_PORT=$VITE_REVERB_PORT \
+    VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+
 WORKDIR /app
 
 # Copiar archivos de dependencias para aprovechar la caché de Docker
