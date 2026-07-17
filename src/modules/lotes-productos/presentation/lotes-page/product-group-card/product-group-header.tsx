@@ -51,7 +51,8 @@ export const ProductGroupHeader = ({
                     className="bg-rose-500/20 border-2 border-rose-500/60 rounded-md py-1 px-2.5 w-fit animate-pulse flex items-center gap-1.5 shadow-[0_0_12px_rgba(249,115,22,0.4)] cursor-help"
                     onMouseEnter={() =>
                       angry(
-                        `¡Oye! El inventario de ${product.producto} está por debajo del límite de seguridad. ¡Se sugiere solicitar reabastecimiento urgente!`,
+                        `El inventario de ${product.producto} está por debajo del mínimo. Te sugiero reabastecerte pronto!`,
+                        { persistent: true },
                       )
                     }
                     onMouseLeave={close}

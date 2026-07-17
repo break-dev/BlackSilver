@@ -175,7 +175,8 @@ export const CotizacionesPage = () => {
               onClick={() => setOpenedProductos(true)}
               onMouseEnter={() =>
                 happy(
-                  "¡Añade productos al comparativo! Selecciona los ítems para tu cotización. ¡Blackcito está pendiente de ti!",
+                  "¡Añade productos al comparativo! Selecciona los ítems para tu cotización.",
+                  { persistent: true },
                 )
               }
               onMouseLeave={close}
