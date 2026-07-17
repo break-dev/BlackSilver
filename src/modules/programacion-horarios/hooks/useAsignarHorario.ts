@@ -44,21 +44,26 @@ export const useAsignarHorario = (
 
   const handleSetTipoLugar = (value: "" | "almacen" | "labor") => {
     setTipoLugar(value);
-    // Garantizar exclusividad: limpiar los 3 campos al cambiar.
+    // Garantizar exclusividad: limpiar los 3 campos al cambiar, y vaciar empleados.
     setForm((prev) => ({
       ...prev,
       id_oficina: null,
       id_almacen: null,
       id_labor: null,
+      empleados: [],
     }));
   };
 
   const handleSetLugarId = (id: number | null) => {
-    if (tipoLugar === "almacen") {
-      setField("id_almacen", id);
-    } else if (tipoLugar === "labor") {
-      setField("id_labor", id);
-    }
+    setForm((prev) => {
+      const next = { ...prev, empleados: [] };
+      if (tipoLugar === "almacen") {
+        next.id_almacen = id;
+      } else if (tipoLugar === "labor") {
+        next.id_labor = id;
+      }
+      return next;
+    });
   };
 
   const lugarIdActual = useMemo<number | null>(() => {

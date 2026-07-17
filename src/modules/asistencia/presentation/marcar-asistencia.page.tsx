@@ -26,6 +26,7 @@ import {
   IconLogin,
   IconLogout,
   IconTrash,
+  IconCalendar,
 } from "@tabler/icons-react";
 import { Scanner, type IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { motion, AnimatePresence } from "motion/react";
@@ -83,18 +84,26 @@ export default function MarcarAsistenciaPage() {
 
   const [paso, setPaso] = useState<Paso>(1);
   const [sesion, setSesion] = useState<SesionMarcaje | null>(null);
+  const [qrEscaneadoAt, setQrEscaneadoAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const scannerRef = useRef<{ stop: () => void } | null>(null);
 
   // Indica si hay un proceso en curso (entre paso 2 y paso 4).
-  const procesoEnCurso = paso >= 2 && paso < 4 && sesion !== null;
+  const procesoEnCurso = paso >= 2 && paso < 4;
 
   const resetTodo = useCallback(() => {
     setSesion(null);
     setErrorMessage(null);
+    setQrEscaneadoAt(null);
     setPaso(1);
     try {
       scannerRef.current?.stop();
@@ -205,6 +214,7 @@ export default function MarcarAsistenciaPage() {
             ...(resp.data as SesionMarcaje),
             evidencia_inicial: evidenciaQr,
           };
+          setQrEscaneadoAt(new Date());
           setSesion(sesionConQr);
           setPaso(3);
           sessionTimeout.resetTimer();
@@ -332,7 +342,7 @@ export default function MarcarAsistenciaPage() {
       <div className="absolute top-12 left-12 w-80 h-80 rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-12 right-12 w-96 h-96 rounded-full bg-cyan-600/10 blur-[140px] pointer-events-none animate-pulse" style={{ animationDelay: "2.5s" }} />
 
-      <Container size="sm" className="w-full z-10">
+      <Container className="w-full max-w-4xl z-10">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -350,8 +360,26 @@ export default function MarcarAsistenciaPage() {
             <Stack gap="xl">
               <Stack gap="xs" align="center" className="mb-2">
                 <Title order={1} className="text-white tracking-tight text-center" fz="1.8rem" fw={900}>
-                  Marcar Asistencia
+                  Registrar Asistencia
                 </Title>
+                <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-4 py-1.5 rounded-full shadow-inner mt-1">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                  <Text c="cyan.3" fw={700} size="sm" className="font-mono tracking-wider">
+                    {currentTime.toLocaleDateString("es-PE", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                    {" · "}
+                    {currentTime.toLocaleTimeString("es-PE", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true,
+                    })}
+                  </Text>
+                </div>
               </Stack>
 
               {/* Riel visual interactivo de Pasos (Asistente) */}
@@ -420,12 +448,13 @@ export default function MarcarAsistenciaPage() {
                       onCancelar={cancelarProceso}
                     />
                   )}
-                  {paso === 3 && sesion && (
+                  {paso === 3 && sesion && qrEscaneadoAt && (
                     <PasoValidar
                       sesion={sesion}
                       loading={loading}
                       onConfirmar={handleConfirmar}
                       onCancelar={cancelarProceso}
+                      qrEscaneadoAt={qrEscaneadoAt}
                     />
                   )}
                   {paso === 4 && sesion && (
@@ -569,16 +598,32 @@ export default function MarcarAsistenciaPage() {
 // ========== PASO 1: Iniciar ==========
 const PasoIniciar = ({ onIniciar }: { onIniciar: () => void }) => (
   <Stack align="center" gap="xl" py="lg">
+    <style>{`
+      @keyframes scan-laser {
+        0% { transform: translateY(-70px); }
+        50% { transform: translateY(70px); }
+        100% { transform: translateY(-70px); }
+      }
+      .animate-laser {
+        animation: scan-laser 2.5s infinite ease-in-out;
+      }
+    `}</style>
+    
     <div
-      className="w-32 h-32 rounded-[32px] bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-zinc-800 flex items-center justify-center shadow-[inset_0_4px_12px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)] backdrop-blur-md relative overflow-hidden group"
+      className="w-36 h-36 rounded-[36px] bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-zinc-800/80 flex items-center justify-center shadow-[inset_0_4px_12px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.4)] backdrop-blur-md relative overflow-hidden group"
     >
       <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <IconQrcode size={76} className="text-indigo-400 drop-shadow-[0_4px_10px_rgba(99,102,241,0.3)]" stroke={1.2} />
+      <IconQrcode size={84} className="text-indigo-400 drop-shadow-[0_4px_12px_rgba(99,102,241,0.4)]" stroke={1.1} />
+      {/* Línea Láser Animada */}
+      <div className="absolute left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_10px_#22d3ee] animate-laser z-20" />
     </div>
 
     <Stack align="center" gap="xs">
-      <Text c="zinc.3" ta="center" size="sm" className="max-w-xs leading-relaxed font-medium">
-        Presiona el botón para escanear el código QR de tu fotocheck.
+      <Title order={3} className="text-white text-center font-bold tracking-tight">
+        ¡Hola! Registrar asistencia
+      </Title>
+      <Text c="zinc.4" ta="center" size="sm" className="max-w-xs leading-relaxed font-medium">
+        Presiona el botón para escanear el código QR de tu fotocheck físico o digital.
       </Text>
     </Stack>
 
@@ -587,11 +632,11 @@ const PasoIniciar = ({ onIniciar }: { onIniciar: () => void }) => (
       radius="xl"
       variant="gradient"
       gradient={{ from: "indigo.5", to: "cyan.5" }}
-      leftSection={<IconQrcode size={20} />}
+      leftSection={<IconQrcode size={22} />}
       onClick={onIniciar}
-      className="h-14 px-10 text-base font-bold text-white shadow-lg shadow-indigo-500/20 hover:scale-[1.02] hover:shadow-indigo-500/30 active:scale-[0.98] transition-all"
+      className="h-14 px-12 text-base font-bold text-white shadow-lg shadow-indigo-500/25 hover:scale-[1.02] hover:shadow-indigo-500/35 active:scale-[0.98] transition-all"
     >
-      Iniciar Lector QR
+      Iniciar proceso
     </Button>
   </Stack>
 );
@@ -610,6 +655,16 @@ const PasoQr = ({
 }) => {
   return (
     <Stack gap="lg" align="center" className="w-full">
+      <style>{`
+        @keyframes scan-laser-qr {
+          0% { top: 10%; }
+          50% { top: 90%; }
+          100% { top: 10%; }
+        }
+        .animate-laser-qr {
+          animation: scan-laser-qr 2s infinite ease-in-out;
+        }
+      `}</style>
       <Text c="zinc.4" ta="center" size="sm" className="font-medium">
         Coloca tu código QR frente a la cámara para escanearlo.
       </Text>
@@ -621,31 +676,35 @@ const PasoQr = ({
         {loading ? (
           <div className="flex flex-col gap-3 items-center justify-center w-full h-full">
             <Loader color="indigo" size="md" />
-            <Text size="xs" c="indigo.3" className="animate-pulse">Procesando código QR...</Text>
+            <Text size="xs" c="indigo.3" className="animate-pulse">Procesando código...</Text>
           </div>
         ) : (
-          <Scanner
-            onScan={onDetect}
-            formats={["qr_code"]}
-            paused={loading}
-            sound
-            allowMultiple={false}
-            scanDelay={1500}
-            components={{
-              finder: true,
-              torch: false,
-              zoom: false,
-            }}
-            classNames={{
-              container: "w-full h-full object-cover",
-              video: "w-full h-full object-cover",
-            }}
-            onError={(err) => {
-              console.error("Scanner error:", err);
-            }}
-            // @ts-expect-error - el ref del Scanner expone stop() en runtime.
-            ref={scannerRef}
-          />
+          <>
+            <Scanner
+              onScan={onDetect}
+              formats={["qr_code"]}
+              paused={loading}
+              sound
+              allowMultiple={false}
+              scanDelay={1500}
+              components={{
+                finder: true,
+                torch: false,
+                zoom: false,
+              }}
+              classNames={{
+                container: "w-full h-full object-cover",
+                video: "w-full h-full object-cover",
+              }}
+              onError={(err) => {
+                console.error("Scanner error:", err);
+              }}
+              // @ts-expect-error - el ref del Scanner expone stop() en runtime.
+              ref={scannerRef}
+            />
+            {/* Línea láser de escaneo activa sobre la cámara */}
+            <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_8px_#818cf8] animate-laser-qr z-20 pointer-events-none" />
+          </>
         )}
         <div className="absolute inset-0 pointer-events-none border-8 border-indigo-500/10 rounded-[24px] z-10" />
       </div>
@@ -669,11 +728,13 @@ const PasoValidar = ({
   loading,
   onConfirmar,
   onCancelar,
+  qrEscaneadoAt,
 }: {
   sesion: SesionMarcaje;
   loading: boolean;
   onConfirmar: (evidencia_rostro: IArchivo | null) => void;
   onCancelar: () => void;
+  qrEscaneadoAt: Date;
 }) => {
   const esIngreso = sesion.siguiente_tipo_marcaje === "Ingreso";
   const turno = sesion.programacion_vigente?.turno ?? null;
@@ -808,210 +869,297 @@ const PasoValidar = ({
             )
           }
         >
-          {esIngreso ? "Marcando INGRESO" : "Marcando SALIDA"}
+          {esIngreso ? "INGRESO" : "SALIDA"}
         </Badge>
       </Group>
 
-      <Card withBorder radius="xl" p="md" className="bg-zinc-950/30 border-zinc-800/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]">
-        <Group align="center" wrap="wrap">
-          <Avatar
-            src={sesion.empleado.url_foto ?? undefined}
-            size="xl"
-            radius="xl"
-            className="border border-zinc-800 shadow-md"
-          >
-            {sesion.empleado.nombre_completo[0]?.toUpperCase()}
-          </Avatar>
-          <Stack gap={4} style={{ flex: 1 }}>
-            <Text fw={800} size="lg" className="text-white tracking-tight">
-              {sesion.empleado.nombre_completo}
-            </Text>
-            <Text size="xs" c="zinc.5" fw={600}>
-              DNI: <span className="text-zinc-300">{sesion.empleado.dni ?? "-"}</span>
-            </Text>
-            <Group gap="xs" mt="xs">
-              {turno ? (
-                <>
-                  <Badge variant="light" color="indigo" radius="md">
-                    Turno: {turno.tipo_turno}
-                  </Badge>
-                  <Badge variant="light" color="gray" radius="md">
-                    {turno.hora_ingreso} - {turno.hora_salida}
-                  </Badge>
-                  <Badge variant="light" color="teal" radius="md">
-                    Tolerancia: {turno.minutos_tolerancia}m
-                  </Badge>
-                </>
-              ) : (
-                <Badge variant="light" color="yellow" radius="md" className="border border-yellow-500/20 bg-yellow-950/20 text-yellow-400">
-                  Sin programación pendiente
-                </Badge>
-              )}
-              {sesion.programacion_vigente?.lugar_nombre && (
-                <Badge variant="light" color="cyan" radius="md">
-                  {sesion.programacion_vigente.lugar_nombre}
-                </Badge>
-              )}
-            </Group>
-          </Stack>
-        </Group>
-      </Card>
-
-      {/* Sub-paso 3.1: Botón para empezar a tomar la foto */}
-      {!mostrarCamara && !selfiePreview && (
-        <Button
-          size="md"
-          radius="xl"
-          variant="gradient"
-          gradient={{ from: "indigo.5", to: "cyan.5" }}
-          leftSection={<IconCamera size={18} />}
-          onClick={async () => {
-            setMostrarCamara(true);
-            await iniciarCamara();
-          }}
-          className="self-center w-full max-w-md h-12 mt-2 text-white shadow-lg hover:scale-[1.02] transition-transform font-bold"
-        >
-          Validar Asistencia (Tomar Foto)
-        </Button>
-      )}
-
-      {/* Sub-paso 3.2: Cámara activa para capturar selfie */}
-      {(mostrarCamara || selfiePreview) && (
-        <Card
-          withBorder
-          radius="lg"
-          p="md"
-          className="bg-zinc-900/50 border-zinc-800"
-        >
-          <Stack gap="sm">
-            <Group justify="space-between" align="center">
-              <Group gap="xs">
-                <IconCamera size={18} className="text-indigo-400" />
-                <Text size="sm" fw={600} className="text-zinc-200">
-                  Validación con foto del rostro
-                </Text>
-              </Group>
-              {!selfiePreview && !camaraActiva && (
-                <Button
-                  size="xs"
-                  radius="lg"
-                  variant="light"
-                  color="indigo"
-                  leftSection={<IconCamera size={14} />}
-                  onClick={iniciarCamara}
-                  disabled={loading || subiendo}
+      {/* Grid responsivo: Lado a Lado en pantallas medianas/grandes */}
+      <div className={mostrarCamara || selfiePreview ? "grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch" : "flex flex-col gap-4"}>
+        <div className={mostrarCamara || selfiePreview ? "md:col-span-6 flex flex-col justify-between" : "w-full"}>
+          <div className="space-y-4">
+            <Card withBorder radius="xl" p="md" className="bg-zinc-950/30 border-zinc-800/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]">
+              <Group align="center" wrap="wrap">
+                <Avatar
+                  src={sesion.empleado.url_foto ?? undefined}
+                  size="xl"
+                  radius="xl"
+                  className="border border-zinc-800 shadow-md"
                 >
-                  Activar cámara
-                </Button>
-              )}
-              {camaraActiva && !selfiePreview && (
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    radius="lg"
-                    variant="light"
-                    color="red"
-                    leftSection={<IconCameraOff size={14} />}
-                    onClick={() => {
-                      detenerCamara();
-                      setMostrarCamara(false);
-                    }}
-                  >
-                    Atrás
-                  </Button>
-                  <Button
-                    size="xs"
-                    radius="lg"
-                    color="indigo"
-                    onClick={capturarSelfie}
-                  >
-                    Capturar
-                  </Button>
-                </Group>
-              )}
-              {selfiePreview && (
-                <Group gap="xs">
-                  <Button
-                    size="xs"
-                    radius="lg"
-                    variant="light"
-                    color="red"
-                    leftSection={<IconTrash size={14} />}
-                    onClick={async () => {
-                      descartarSelfie();
-                      setMostrarCamara(true);
-                      await iniciarCamara();
-                    }}
-                    disabled={loading || subiendo}
-                  >
-                    Repetir
-                  </Button>
-                  <Badge color="teal" variant="light" leftSection={<IconCheck size={12} />}>
-                    Foto capturada
-                  </Badge>
-                </Group>
-              )}
-            </Group>
+                  {sesion.empleado.nombre_completo[0]?.toUpperCase()}
+                </Avatar>
+                <Stack gap={4} style={{ flex: 1 }}>
+                  <Text fw={800} size="lg" className="text-white tracking-tight">
+                    {sesion.empleado.nombre_completo}
+                  </Text>
+                  <Text size="xs" c="zinc.5" fw={600}>
+                    DNI: <span className="text-zinc-300">{sesion.empleado.dni ?? "-"}</span>
+                  </Text>
+                  <Group gap="xs" mt="xs" wrap="wrap">
+                    {turno ? (
+                      <>
+                        <Badge variant="light" color="indigo" radius="md">
+                          Turno: {turno.tipo_turno}
+                        </Badge>
+                        <Badge variant="light" color="gray" radius="md">
+                          {turno.hora_ingreso} - {turno.hora_salida}
+                        </Badge>
+                        <Badge variant="light" color="teal" radius="md">
+                          Tolerancia: {turno.minutos_tolerancia}m
+                        </Badge>
+                      </>
+                    ) : (
+                      <Badge variant="light" color="yellow" radius="md" className="border border-yellow-500/20 bg-yellow-950/20 text-yellow-400">
+                        Sin programación pendiente
+                      </Badge>
+                    )}
+                    {sesion.programacion_vigente?.lugar_nombre && (
+                      <Badge variant="light" color="cyan" radius="md">
+                        {sesion.programacion_vigente.lugar_nombre}
+                      </Badge>
+                    )}
+                  </Group>
+                </Stack>
+              </Group>
+            </Card>
 
-            <div className="relative w-full max-w-[320px] mx-auto aspect-square rounded-2xl overflow-hidden border-2 border-zinc-800 bg-zinc-950">
-              {selfiePreview ? (
-                <img
-                  src={selfiePreview}
-                  alt="Selfie de validación"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                  style={{ display: camaraActiva ? "block" : "none" }}
-                />
-              )}
-              {!camaraActiva && !selfiePreview && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Stack align="center" gap="xs">
-                    <IconCameraOff size={48} className="text-zinc-700" />
-                    <Text c="zinc.6" size="xs" ta="center">
-                      Cámara apagada
+            {/* Hora de Registro Oficial (congelada desde el escaneo del QR) */}
+            <Card withBorder radius="lg" p="sm" className="bg-indigo-950/10 border-indigo-500/10 shadow-sm mt-1">
+              <Group gap="md" justify="space-between" align="center" wrap="nowrap">
+                <Stack gap={2} style={{ flex: 1 }}>
+                  <Text size="10px" c="cyan.4" fw={700} className="uppercase tracking-wider">
+                    Fecha de Registro
+                  </Text>
+                  <Group gap={6} align="center">
+                    <IconCalendar size={14} className="text-zinc-400" />
+                    <Text size="xs" fw={600} className="text-zinc-200 capitalize">
+                      {qrEscaneadoAt.toLocaleDateString("es-PE", { weekday: 'long', day: 'numeric', month: 'long' })}
                     </Text>
-                  </Stack>
-                </div>
-              )}
-              {subiendo && (
-                <div className="absolute inset-0 bg-zinc-950/80 flex items-center justify-center">
-                  <Stack align="center" gap="xs">
-                    <Loader color="indigo" size="md" />
-                    <Text c="indigo.3" size="sm">
-                      Subiendo foto...
-                    </Text>
-                  </Stack>
-                </div>
-              )}
-            </div>
+                  </Group>
+                </Stack>
+                
+                <div className="h-8 w-px bg-zinc-800" />
 
-            {subioError && (
-              <Alert
-                color="yellow"
-                variant="light"
-                radius="md"
-                icon={<IconAlertCircle size={16} />}
-                styles={{ message: { fontSize: "12px" } }}
+                <Stack gap={2} style={{ flex: 1 }}>
+                  <Text size="10px" c="cyan.4" fw={700} className="uppercase tracking-wider">
+                    Hora de Registro
+                  </Text>
+                  <Group gap={6} align="center">
+                    <IconClock size={14} className="text-cyan-400" />
+                    <Text size="xs" fw={700} className="text-cyan-400 font-mono">
+                      {qrEscaneadoAt.toLocaleTimeString("es-PE", { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                    </Text>
+                  </Group>
+                </Stack>
+              </Group>
+            </Card>
+
+            {!mostrarCamara && !selfiePreview && (
+              <Button
+                size="md"
+                radius="xl"
+                variant="gradient"
+                gradient={{ from: "indigo.5", to: "cyan.5" }}
+                leftSection={<IconCamera size={18} />}
+                onClick={async () => {
+                  setMostrarCamara(true);
+                  await iniciarCamara();
+                }}
+                className="w-full h-12 text-white shadow-lg hover:scale-[1.02] transition-all font-bold"
               >
-                {subioError}
-              </Alert>
+                Validar Asistencia (Tomar Foto)
+              </Button>
             )}
+          </div>
 
-            <Text c="zinc.6" size="xs" ta="center">
-              La foto se guarda como evidencia (no se publica).
-            </Text>
-          </Stack>
-        </Card>
-      )}
+          {/* En desktop, mostramos los botones de confirmación/cancelación de esta columna */}
+          <div className="hidden md:flex justify-between items-center mt-6 gap-2">
+            <Button
+              variant="default"
+              className="!bg-zinc-800 !text-zinc-300 !border-zinc-700 h-12 px-6"
+              radius="lg"
+              size="sm"
+              onClick={() => {
+                detenerCamara();
+                onCancelar();
+              }}
+              disabled={loading || subiendo}
+            >
+              Cancelar
+            </Button>
+            <Button
+              leftSection={!loading && !subiendo && <IconCheck size={18} />}
+              loading={loading || subiendo}
+              onClick={selfiePreview ? handleConfirmarClick : undefined}
+              radius="lg"
+              size="md"
+              className="h-12 px-8 font-bold border-0 transition-all duration-300"
+              style={
+                selfiePreview
+                  ? {
+                      background: esIngreso
+                        ? "linear-gradient(to right, #10b981, #0d9488)"
+                        : "linear-gradient(to right, #f43f5e, #ea580c)",
+                      color: "#fff",
+                      cursor: "pointer",
+                      boxShadow: esIngreso
+                        ? "0 10px 15px -3px rgba(16, 185, 129, 0.2)"
+                        : "0 10px 15px -3px rgba(244, 63, 94, 0.2)",
+                    }
+                  : {
+                      backgroundColor: "#27272a",
+                      color: "#71717a",
+                      border: "1px solid #3f3f46",
+                      cursor: "not-allowed",
+                      opacity: 0.6,
+                    }
+              }
+            >
+              {esIngreso ? "Confirmar Ingreso" : "Confirmar Salida"}
+            </Button>
+          </div>
+        </div>
 
-      <Group justify="space-between" mt="sm">
+        {/* Cámara / Vista previa en la derecha */}
+        {(mostrarCamara || selfiePreview) && (
+          <div className="md:col-span-6">
+            <Card
+              withBorder
+              radius="xl"
+              p="md"
+              className="bg-zinc-950/20 border-white/5 h-full flex flex-col justify-between shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]"
+            >
+              <Stack gap="sm" className="h-full justify-between">
+                <Group justify="space-between" align="center" wrap="wrap">
+                  <Group gap="xs">
+                    <IconCamera size={18} className="text-indigo-400" />
+                    <Text size="xs" fw={700} c="dimmed" className="uppercase tracking-wider">
+                      Cámara
+                    </Text>
+                  </Group>
+                  {!selfiePreview && !camaraActiva && (
+                    <Button
+                      size="xs"
+                      radius="lg"
+                      variant="light"
+                      color="indigo"
+                      leftSection={<IconCamera size={14} />}
+                      onClick={iniciarCamara}
+                      disabled={loading || subiendo}
+                    >
+                      Activar cámara
+                    </Button>
+                  )}
+                  {camaraActiva && !selfiePreview && (
+                    <Group gap="xs">
+                      <Button
+                        size="xs"
+                        radius="lg"
+                        variant="light"
+                        color="red"
+                        leftSection={<IconCameraOff size={14} />}
+                        onClick={() => {
+                          detenerCamara();
+                          setMostrarCamara(false);
+                        }}
+                      >
+                        Atrás
+                      </Button>
+                      <Button
+                        size="xs"
+                        radius="lg"
+                        color="indigo"
+                        onClick={capturarSelfie}
+                      >
+                        Capturar
+                      </Button>
+                    </Group>
+                  )}
+                  {selfiePreview && (
+                    <Group gap="xs">
+                      <Button
+                        size="xs"
+                        radius="lg"
+                        variant="light"
+                        color="red"
+                        leftSection={<IconTrash size={14} />}
+                        onClick={async () => {
+                          descartarSelfie();
+                          setMostrarCamara(true);
+                          await iniciarCamara();
+                        }}
+                        disabled={loading || subiendo}
+                      >
+                        Repetir
+                      </Button>
+                      <Badge color="teal" variant="light" leftSection={<IconCheck size={12} />}>
+                        Capturada
+                      </Badge>
+                    </Group>
+                  )}
+                </Group>
+
+                <div className="relative w-full max-w-[240px] mx-auto aspect-square rounded-2xl overflow-hidden border border-white/5 bg-zinc-950 shadow-inner my-2">
+                  {selfiePreview ? (
+                    <img
+                      src={selfiePreview}
+                      alt="Selfie de validación"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                      style={{ display: camaraActiva ? "block" : "none" }}
+                    />
+                  )}
+                  {!camaraActiva && !selfiePreview && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Stack align="center" gap="xs">
+                        <IconCameraOff size={36} className="text-zinc-700" />
+                        <Text c="zinc.6" size="xs" ta="center">
+                          Apagada
+                        </Text>
+                      </Stack>
+                    </div>
+                  )}
+                  {subiendo && (
+                    <div className="absolute inset-0 bg-zinc-950/80 flex items-center justify-center">
+                      <Stack align="center" gap="xs">
+                        <Loader color="indigo" size="sm" />
+                        <Text c="indigo.3" size="xs">
+                          Subiendo...
+                        </Text>
+                      </Stack>
+                    </div>
+                  )}
+                </div>
+
+                {subioError && (
+                  <Alert
+                    color="yellow"
+                    variant="light"
+                    radius="md"
+                    icon={<IconAlertCircle size={16} />}
+                    styles={{ message: { fontSize: "12px" } }}
+                  >
+                    {subioError}
+                  </Alert>
+                )}
+
+                <Text c="zinc.6" size="10px" ta="center" className="italic">
+                  La foto se guarda como evidencia.
+                </Text>
+              </Stack>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* En mobile, mostramos los botones abajo de todo */}
+      <div className={mostrarCamara || selfiePreview ? "flex md:hidden justify-between items-center mt-2 w-full" : "hidden"}>
         <Button
           variant="default"
           className="!bg-zinc-800 !text-zinc-300 !border-zinc-700"
@@ -1026,23 +1174,36 @@ const PasoValidar = ({
           Cancelar
         </Button>
         <Button
-          leftSection={<IconCheck size={18} />}
+          leftSection={!loading && !subiendo && <IconCheck size={18} />}
           loading={loading || subiendo}
-          disabled={!selfiePreview || loading || subiendo}
-          onClick={handleConfirmarClick}
+          onClick={selfiePreview ? handleConfirmarClick : undefined}
           radius="lg"
-          size="md"
-          variant="gradient"
-          gradient={
-            esIngreso
-              ? { from: "teal.7", to: "teal.9" }
-              : { from: "orange.7", to: "orange.9" }
+          size="sm"
+          className="h-10 px-6 font-bold border-0 transition-all duration-300"
+          style={
+            selfiePreview
+              ? {
+                  background: esIngreso
+                    ? "linear-gradient(to right, #10b981, #0d9488)"
+                    : "linear-gradient(to right, #f43f5e, #ea580c)",
+                  color: "#fff",
+                  cursor: "pointer",
+                  boxShadow: esIngreso
+                    ? "0 10px 15px -3px rgba(16, 185, 129, 0.2)"
+                    : "0 10px 15px -3px rgba(244, 63, 94, 0.2)",
+                }
+              : {
+                  backgroundColor: "#27272a",
+                  color: "#71717a",
+                  border: "1px solid #3f3f46",
+                  cursor: "not-allowed",
+                  opacity: 0.6,
+                }
           }
-          className="h-12 px-6 font-bold shadow-lg"
         >
           {esIngreso ? "Confirmar Ingreso" : "Confirmar Salida"}
         </Button>
-      </Group>
+      </div>
     </Stack>
   );
 };
@@ -1088,7 +1249,7 @@ const PasoConfirmado = ({
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/30"
           onClick={onReiniciar}
         >
-          Nuevo Marcaje
+          Nuevo Registro
         </Button>
         <Button
           leftSection={<IconRefresh size={18} />}

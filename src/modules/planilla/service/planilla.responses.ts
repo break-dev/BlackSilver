@@ -1,0 +1,91 @@
+import type { TipoContrato } from "../../../shared/enums/tipo-contrato";
+
+/**
+ * Fila de asistencia agrupada para planilla.
+ */
+export interface RES_PlanillaAsistencia {
+  id: number;
+  id_empleado: number;
+  id_programacion_horario: number | null;
+  fecha_hora_ingreso: string | null;
+  fecha_hora_salida: string | null;
+  total_horas: number | null;
+  jornada_trabajada: number | null;
+  minutos_tardanza: number | null;
+  asistencia_es_manual: boolean;
+  asistencia_created_at: string;
+
+  // Datos del empleado
+  nombre: string;
+  apellido: string;
+  dni: string | null;
+  url_foto: string | null;
+  es_contratista: boolean | number;
+  id_contrato_vigente: number | null;
+  cargo_nombre?: string | null;
+  area_nombre?: string | null;
+
+  // Datos del contrato vigente al inicio del período
+  tipo_contrato: TipoContrato | string | null;
+  sueldo_base: number | null;
+  salario_diario: number | null;
+  contrato_indefinido: boolean;
+  contrato_fecha_inicio: string | null;
+  contrato_fecha_fin: string | null;
+
+  // Datos del turno (si la asistencia está vinculada a una programación)
+  tipo_turno: string | null;
+  hora_ingreso: string | null;
+  hora_salida: string | null;
+  minutos_tolerancia: number | null;
+  turno_total_horas: number | null;
+
+  // Lugar de la programación
+  lugar_nombre: string | null;
+  lugar_id: number | null;
+  lugar_tipo: "almacen" | "labor" | null;
+
+  // Fecha derivada
+  fecha: string;
+  dia_semana: string;
+
+  // Pago calculado por el backend
+  pago_dia: number;
+
+  // Marcaciones del día
+  marcajes: RES_PlanillaMarcaje[];
+}
+
+/**
+ * Marcaje asociado a una asistencia de planilla.
+ */
+export interface RES_PlanillaMarcaje {
+  id: number;
+  id_asistencia: number | null;
+  id_empleado: number | null;
+  id_programacion_horario: number | null;
+  id_empleado_registro: number | null;
+  tipo_marcaje: "Ingreso" | "Salida" | null;
+  fecha_hora: string;
+  evidencias: unknown[] | null;
+  es_manual: boolean;
+  qr_leido: boolean;
+  proceso_confirmado: boolean;
+  created_at: string;
+}
+
+/**
+ * Resumen de planilla por empleado.
+ */
+export interface RES_PlanillaEmpleado {
+  id_empleado: number;
+  empleado: string;
+  dni: string | null;
+  url_foto: string | null;
+  tipo_contrato: TipoContrato | string | null;
+  sueldo_base: number | null;
+  salario_diario: number | null;
+  dias_trabajados: number;
+  jornada_total: number;
+  pago_total: number;
+}

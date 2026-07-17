@@ -19,7 +19,6 @@ import {
   CalendarDaysIcon,
   UsersIcon,
   ClockIcon,
-  CalendarIcon,
   PlusIcon,
   MapPinIcon,
   BuildingOfficeIcon,
@@ -214,16 +213,14 @@ export const ModalAsignarHorario = ({
       size="xl"
     >
       <Stack gap="md">
-        <Divider label="Turno" labelPosition="left" />
-
         <Group align="flex-end" gap="xs">
           <div style={{ flex: 1 }}>
             <Select
-              label="Turno Laboral"
+              label="Horario"
               placeholder={
                 turnos.length === 0
-                  ? "Cree primero un turno en 'Registrar Turnos'"
-                  : "Seleccione un turno"
+                  ? "Cree primero un horario en 'Registrar Horarios'"
+                  : "Seleccione un horario"
               }
               data={turnos.map((t) => ({
                 value: String(t.id),
@@ -243,7 +240,7 @@ export const ModalAsignarHorario = ({
             />
           </div>
           {onRegistrarTurnoClick && (
-            <Tooltip label="Registrar nuevo turno laboral">
+            <Tooltip label="Registrar nuevo horario">
               <ActionIcon
                 color="indigo"
                 variant="filled"
@@ -258,26 +255,11 @@ export const ModalAsignarHorario = ({
           )}
         </Group>
 
-        <Divider label="Lugar de trabajo" labelPosition="left" />
-
-        <Alert
-          variant="light"
-          color="indigo"
-          radius="md"
-          icon={<MapPinIcon className="w-4 h-4" />}
-          styles={{ message: { fontSize: "12px" } }}
-        >
-          Debe seleccionar <strong>exactamente uno</strong>: indique el tipo de
-          lugar (almacén o labor) y luego el específico. Los empleados ya
-          programados en ese lugar aparecerán arriba.
-        </Alert>
-
         <Group grow align="flex-start" gap="md">
           <Select
             label="Tipo de lugar"
             placeholder="Seleccione"
             data={[
-              { value: "", label: "Todos" },
               { value: "almacen", label: "Almacén" },
               { value: "labor", label: "Labor" },
             ]}
@@ -339,89 +321,80 @@ export const ModalAsignarHorario = ({
           />
         </Group>
 
-        <Divider label="Empleados" labelPosition="left" />
+        <div>
+          <MultiSelect
+            label="Empleados Involucrados"
+            placeholder="Seleccione uno o varios empleados"
+            data={empleadosOptions}
+            value={form.empleados.map(String)}
+            onChange={(values) =>
+              setField(
+                "empleados",
+                values.map((v) => Number(v)),
+              )
+            }
+            searchable
+            clearable
+            maxDropdownHeight={320}
+            leftSection={<UsersIcon className="w-4 h-4 text-zinc-500" />}
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+            comboboxProps={{ withinPortal: true }}
+            disabled={loading || loadingEmpleados || !tipoLugar || !lugarIdActual}
+            renderOption={({ option, checked }) => {
+              const opt = option as unknown as {
+                puedeCubrir?: boolean;
+                fechaFinContrato?: string | null;
+                urlFoto?: string | null;
+                dni?: string | null;
+                label: string;
+              };
+              const node = (
+                <Group gap="sm" wrap="nowrap" className="w-full">
+                  <Avatar
+                    src={opt.urlFoto ?? undefined}
+                    size={26}
+                    radius="xl"
+                    color="indigo"
+                    variant="light"
+                  >
+                    {opt.label?.[0] ?? "?"}
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <Text size="xs" fw={600} className="text-zinc-200 truncate">
+                      {opt.label}
+                    </Text>
+                    <Group gap={6} wrap="nowrap">
+                      {opt.dni && (
+                        <Text size="10px" className="text-zinc-500 font-mono">
+                          DNI {opt.dni}
+                        </Text>
+                      )}
+                      {!opt.puedeCubrir && opt.fechaFinContrato && (
+                        <Text size="10px" className="text-amber-500 font-medium">
+                          • Culmina el {formatDMY(opt.fechaFinContrato)}
+                        </Text>
+                      )}
+                    </Group>
+                  </div>
+                  {!opt.puedeCubrir && (
+                    <Badge color="orange" variant="light" size="xs">
+                      Fuera de rango
+                    </Badge>
+                  )}
+                  {checked && <Badge color="indigo" variant="filled" size="xs">OK</Badge>}
+                </Group>
+              );
+              return node;
+            }}
+          />
+          <Text size="11px" className="pl-1 text-rose-400/90 font-medium" mt={4}>
+            Solo aparecen empleados con contrato vigente Activo.
+          </Text>
+        </div>
 
-        <Alert
-          variant="light"
-          color="indigo"
-          radius="md"
-          icon={<UsersIcon className="w-4 h-4" />}
-          styles={{ message: { fontSize: "12px" } }}
-        >
-          Solo aparecen empleados con <strong>contrato vigente Activo</strong>.
-        </Alert>
-
-        <MultiSelect
-          label="Empleados Involucrados"
-          placeholder="Seleccione uno o varios empleados"
-          data={empleadosOptions}
-          value={form.empleados.map(String)}
-          onChange={(values) =>
-            setField(
-              "empleados",
-              values.map((v) => Number(v)),
-            )
-          }
-          searchable
-          clearable
-          maxDropdownHeight={320}
-          leftSection={<UsersIcon className="w-4 h-4 text-zinc-500" />}
-          classNames={fieldClasses}
-          radius="lg"
-          size="xs"
-          comboboxProps={{ withinPortal: true }}
-          disabled={loading || loadingEmpleados}
-          renderOption={({ option, checked }) => {
-            const opt = option as unknown as {
-              puedeCubrir?: boolean;
-              fechaFinContrato?: string | null;
-              urlFoto?: string | null;
-              dni?: string | null;
-              label: string;
-            };
-            const node = (
-              <Group gap="sm" wrap="nowrap" className="w-full">
-                <Avatar
-                  src={opt.urlFoto ?? undefined}
-                  size={26}
-                  radius="xl"
-                  color="indigo"
-                  variant="light"
-                >
-                  {opt.label?.[0] ?? "?"}
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <Text size="xs" fw={600} className="text-zinc-200 truncate">
-                    {opt.label}
-                  </Text>
-                  <Group gap={6} wrap="nowrap">
-                    {opt.dni && (
-                      <Text size="10px" className="text-zinc-500 font-mono">
-                        DNI {opt.dni}
-                      </Text>
-                    )}
-                    {!opt.puedeCubrir && opt.fechaFinContrato && (
-                      <Text size="10px" className="text-amber-500 font-medium">
-                        • Culmina el {formatDMY(opt.fechaFinContrato)}
-                      </Text>
-                    )}
-                  </Group>
-                </div>
-                {!opt.puedeCubrir && (
-                  <Badge color="orange" variant="light" size="xs">
-                    Fuera de rango
-                  </Badge>
-                )}
-                {checked && <Badge color="indigo" variant="filled" size="xs">OK</Badge>}
-              </Group>
-            );
-            return node;
-          }}
-        />
-
-        <Divider label="Vigencia" labelPosition="left" />
-
-        <Group grow align="flex-start" gap="md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <CustomDatePicker
             label="Fecha de Inicio"
             placeholder="Seleccione fecha"
@@ -443,37 +416,26 @@ export const ModalAsignarHorario = ({
                 : undefined
             }
           />
-        </Group>
-
-        <div
-          className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all ${
-            form.por_tiempo_indefinido
-              ? "bg-indigo-500/10 border-indigo-500/40"
-              : "bg-zinc-900/50 border-zinc-800"
-          }`}
-        >
-          <div className="flex flex-col">
-            <Text size="sm" fw={700} className="text-zinc-200 flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-indigo-400" />
-              ¿Por tiempo indefinido?
-            </Text>
-            <Text size="11px" c="dimmed" className="leading-snug">
-              Si lo activa, no se solicitará fecha de fin.
-            </Text>
+          <div className="flex flex-col gap-1.5 h-full justify-end">
+            <span className="text-[11px] text-transparent select-none font-medium leading-normal">Spacer</span>
+            <div className="flex items-center h-[30px]">
+              <Switch
+                label="Por tiempo indefinido"
+                checked={form.por_tiempo_indefinido}
+                onChange={(e) => {
+                  const checked = e.currentTarget.checked;
+                  setField("por_tiempo_indefinido", checked);
+                  if (checked) {
+                    setField("fecha_fin", null);
+                  }
+                }}
+                color="indigo"
+                size="sm"
+                classNames={{ label: "text-zinc-300 font-medium" }}
+                disabled={loading}
+              />
+            </div>
           </div>
-          <Switch
-            checked={form.por_tiempo_indefinido}
-            onChange={(e) => {
-              const checked = e.currentTarget.checked;
-              setField("por_tiempo_indefinido", checked);
-              if (checked) {
-                setField("fecha_fin", null);
-              }
-            }}
-            color="indigo"
-            size="md"
-            disabled={loading}
-          />
         </div>
 
         <Divider
@@ -537,11 +499,10 @@ export const ModalAsignarHorario = ({
             return (
               <div
                 key={indice}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all cursor-pointer ${
-                  activo
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all cursor-pointer ${activo
                     ? "bg-indigo-500/15 border-indigo-500/50"
                     : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"
-                }`}
+                  }`}
               >
                 <Checkbox
                   checked={activo}

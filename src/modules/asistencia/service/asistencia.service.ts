@@ -5,12 +5,12 @@ import type {
   RES_ConfirmarAsistencia,
   RES_PlanillaEmpleado,
   RES_ResolverQR,
+  RES_IntentoFallidoAnonimo,
 } from "./asistencia.responses";
 import type {
   DTO_CancelarProceso,
   DTO_ConfirmarAsistencia,
   DTO_FiltrosAsistencia,
-  DTO_MarcajeManual,
   DTO_ResolverQR,
 } from "./asistencia.requests";
 
@@ -61,17 +61,11 @@ export const AsistenciaService = {
     return data;
   },
 
-  registrar_marcaje_manual: async (
-    dto: DTO_MarcajeManual,
-  ): Promise<IRespuesta<{ id_marcaje: number }>> => {
-    const payload = {
-      id_empleado: dto.id_empleado,
-      fecha_hora: dto.fecha_hora,
-      tipo_marcaje: dto.tipo_marcaje,
-      id_programacion_horario: dto.id_programacion_horario ?? null,
-      observaciones: dto.observaciones ?? null,
-    };
-    const { data } = await api.post("/asistencia/marcaje-manual", payload);
+  get_intentos_fallidos_anonimos: async (
+    mes: number,
+    year: number,
+  ): Promise<IRespuesta<RES_IntentoFallidoAnonimo[]>> => {
+    const { data } = await api.get("/asistencia/intentos-fallidos-anonimos", { params: { mes, year } });
     return data;
   },
 

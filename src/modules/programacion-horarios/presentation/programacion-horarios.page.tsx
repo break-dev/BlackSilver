@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Group,
-  Text,
   ActionIcon,
   Tooltip,
-  Badge,
   Divider,
   Select,
+  Popover,
 } from "@mantine/core";
+import { DatePicker } from "@mantine/dates";
+import "@mantine/dates/styles.css";
 import {
   PlusIcon,
   EyeIcon,
@@ -26,7 +27,6 @@ import { ModalRegistroTurno } from "./modal-registro-turno";
 import { ModalListadoTurnos } from "./modal-listado-turnos";
 import { ModalAsignarHorario } from "./modal-asignar-horario";
 import { GrillaSemanal } from "./grilla-semanal";
-import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 
@@ -49,10 +49,43 @@ export const ProgramacionHorariosPage = () => {
     setTipoLugarYFiltro,
   } = useProgramaciones();
 
+  const [popoverOpened, setPopoverOpened] = useState(false);
   const [openedRegistroTurno, setOpenedRegistroTurno] = useState(false);
   const [openedListadoTurnos, setOpenedListadoTurnos] = useState(false);
   const [openedAsignarHorario, setOpenedAsignarHorario] = useState(false);
   const [turnoEditar, setTurnoEditar] = useState<RES_TurnoLaboral | null>(null);
+
+  const formatRangoSemanal = (fechaInicioStr: string, fechaFinStr: string): string => {
+    if (!fechaInicioStr || !fechaFinStr) return "";
+    const mesesAbreviados = [
+      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+      "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+    ];
+
+    const [y1, m1, d1] = fechaInicioStr.split("-").map(Number);
+    const [y2, m2, d2] = fechaFinStr.split("-").map(Number);
+
+    const mes1 = mesesAbreviados[m1 - 1];
+    const mes2 = mesesAbreviados[m2 - 1];
+
+    if (y1 === y2) {
+      if (m1 === m2) {
+        return `${d1} - ${d2} ${mes1}, ${y1}`;
+      }
+      return `${d1} ${mes1} - ${d2} ${mes2}, ${y1}`;
+    }
+    return `${d1} ${mes1} ${y1} - ${d2} ${mes2} ${y2}`;
+  };
+
+  const datePickerStyles = {
+    calendarHeader: "text-white font-bold",
+    calendarHeaderControl: "text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors w-8 h-8 flex items-center justify-center",
+    calendarHeaderLevel: "hover:bg-zinc-800 rounded-md px-2 py-1 transition-colors text-white font-bold",
+    day: "text-zinc-300 hover:bg-zinc-800/80 hover:text-white rounded-md data-[selected]:bg-indigo-500 data-[selected]:text-white data-[today]:text-amber-400 font-medium",
+    month: "text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md",
+    year: "text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md",
+    weekday: "text-zinc-500 font-semibold text-xs uppercase tracking-wide text-center",
+  };
 
   // Catálogos de lugares para el filtro.
   const [almacenesOptions, setAlmacenesOptions] = useState<
@@ -116,15 +149,7 @@ export const ProgramacionHorariosPage = () => {
     void recargarTurnos();
   };
 
-  const formatMesAnio = (fecha: Date): string => {
-    const meses = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-    return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
-  };
 
-  const turnosActivos = turnos.filter((t) => t.estado === "Activo").length;
 
   const lugaresOptions =
     tipoLugarFiltro === "almacen"
@@ -141,24 +166,7 @@ export const ProgramacionHorariosPage = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <Group justify="flex-end" gap="sm">
-        <Badge
-          color="teal"
-          variant="light"
-          radius="md"
-          leftSection={<CalendarDaysIcon className="w-3 h-3" />}
-        >
-          Turnos: {turnosActivos} activos
-        </Badge>
-        <Badge
-          color="indigo"
-          variant="light"
-          radius="md"
-          leftSection={<CalendarDaysIcon className="w-3 h-3" />}
-        >
-          Programaciones: {programaciones.length}
-        </Badge>
-      </Group>
+
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between pb-2">
         <Group gap="md" wrap="nowrap" className="lg:flex-1">
@@ -201,27 +209,31 @@ export const ProgramacionHorariosPage = () => {
             </Tooltip>
           </Group>
 
-          <Text size="sm" fw={700} className="text-zinc-100 min-w-[100px] select-none text-center sm:text-left">
-            {formatMesAnio(fechaReferencia)}
-          </Text>
-
-          <Divider
-            orientation="vertical"
-            h={20}
-            color="var(--mantine-color-zinc-7)"
-            className="hidden sm:block"
-          />
-          <CustomDatePicker
-            value={fechaReferencia}
-            onChange={(val) => {
-              if (val) setFechaReferencia(val);
-            }}
-            placeholder="Ir a fecha..."
-            size="xs"
-            w={110}
-            radius="md"
-            className="hidden sm:block"
-          />
+          <Popover opened={popoverOpened} onChange={setPopoverOpened} position="bottom-start" withArrow trapFocus={false}>
+            <Popover.Target>
+              <Button
+                variant="default"
+                onClick={() => setPopoverOpened((o) => !o)}
+                leftSection={<CalendarDaysIcon className="w-4 h-4 text-teal-400" />}
+                className="!bg-zinc-900/50 hover:!bg-zinc-800/80 !text-zinc-200 !border-zinc-800/60 rounded-full h-[32px] px-4 font-semibold transition-all shadow-md text-xs"
+              >
+                {formatRangoSemanal(rango.fecha_inicio, rango.fecha_fin)}
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown className="bg-zinc-950 border-zinc-800 p-3 rounded-2xl shadow-xl" style={{ zIndex: 1000 }}>
+              <DatePicker
+                value={fechaReferencia}
+                onChange={(val) => {
+                  if (val) {
+                    setFechaReferencia(val as unknown as Date);
+                    setPopoverOpened(false);
+                  }
+                }}
+                locale="es"
+                classNames={datePickerStyles}
+              />
+            </Popover.Dropdown>
+          </Popover>
         </Group>
 
         <Group gap="sm" wrap="nowrap" className="lg:flex-1 lg:justify-end">

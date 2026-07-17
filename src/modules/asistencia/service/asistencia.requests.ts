@@ -32,24 +32,6 @@ export const Schema_FiltrosAsistencia = z.object({
 export type DTO_FiltrosAsistencia = z.infer<typeof Schema_FiltrosAsistencia>;
 
 /**
- * Body para registrar un marcaje manual desde el panel admin.
- */
-export const Schema_MarcajeManual = z.object({
-  id_empleado: z.number().int().min(1),
-  fecha_hora: z.string().min(1),
-  tipo_marcaje: z.enum(["Ingreso", "Salida"]),
-  id_programacion_horario: z.number().int().min(1).nullable().optional(),
-  observaciones: z
-    .string()
-    .max(500)
-    .nullable()
-    .optional()
-    .transform((v) => (v === "" || v === null || v === undefined ? null : v)),
-});
-
-export type DTO_MarcajeManual = z.infer<typeof Schema_MarcajeManual>;
-
-/**
  * Body del flujo /marcar-asistencia → resolver-qr.
  */
 export const Schema_ResolverQR = z.object({

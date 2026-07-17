@@ -215,8 +215,7 @@ export const ModalListadoTurnos = ({
     >
       <Stack gap="md">
         <Text size="xs" c="dimmed">
-          Aquí puede ver todos los turnos configurados. Desde esta vista también
-          puede editar o activar/desactivar cada turno.
+          Aquí puede ver todos los turnos configurados.
         </Text>
         {turnos.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center p-16 border border-dashed border-zinc-800 rounded-[24px] bg-zinc-900/10">

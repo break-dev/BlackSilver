@@ -1,10 +1,9 @@
 import { useMemo } from "react";
-import { Group, Stack, Text, Avatar, Box, Badge } from "@mantine/core";
+import { Group, Stack, Text, Avatar, Box } from "@mantine/core";
 import {
   SunIcon,
   MoonIcon,
   CheckCircleIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import type { RES_ProgramacionHorario } from "../service/programacion.responses";
 
@@ -190,9 +189,8 @@ export const GrillaSemanal = ({
           {empleadosAgrupados.map((emp, idx) => (
             <div
               key={emp.id_empleado}
-              className={`grid border-b border-zinc-800/60 last:border-b-0 ${
-                idx % 2 === 0 ? "bg-zinc-900/30" : "bg-transparent"
-              }`}
+              className={`grid border-b border-zinc-800/60 last:border-b-0 ${idx % 2 === 0 ? "bg-zinc-900/30" : "bg-transparent"
+                }`}
               style={{ gridTemplateColumns: "240px repeat(7, minmax(0, 1fr))" }}
             >
               <div className="px-3 py-3 border-r border-zinc-800/60 flex items-center justify-center gap-2 min-w-0">
@@ -245,10 +243,10 @@ const format12h = (timeStr: string | null | undefined): string => {
   if (parts.length < 2) return timeStr;
   let hour = parseInt(parts[0], 10);
   const min = parts[1];
-  const ampm = hour >= 12 ? "PM" : "AM";
+  const ampm = hour >= 12 ? "pm" : "am";
   hour = hour % 12;
   hour = hour ? hour : 12;
-  const hourStr = hour < 10 ? `0${hour}` : `${hour}`;
+  const hourStr = `${hour}`;
   return `${hourStr}:${min} ${ampm}`;
 };
 
@@ -264,42 +262,38 @@ const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
     null;
   return (
     <div
-      className={`w-full h-full p-1.5 rounded-lg border transition-all hover:scale-[1.02] flex flex-col justify-center items-center gap-0.5 ${
-        esNoche
-          ? "bg-indigo-500/10 border-indigo-500/40 hover:border-indigo-400"
-          : "bg-orange-500/10 border-orange-500/40 hover:border-orange-400"
-      }`}
+      className={`w-full p-2.5 rounded-r-[12px] rounded-l-[4px] border border-zinc-800/80 border-l-[4px] transition-all hover:scale-[1.03] flex flex-col justify-center items-start gap-1 shadow-sm pl-3.5 ${esNoche
+          ? "bg-indigo-950/15 border-l-indigo-500 hover:border-l-indigo-400"
+          : "bg-amber-950/15 border-l-amber-500 hover:border-l-amber-400"
+        }`}
     >
-      <Group gap={4} wrap="nowrap" justify="center">
+      <Group gap={4} wrap="nowrap">
         {esNoche ? (
-          <MoonIcon className="w-3 h-3 text-indigo-300 shrink-0" />
+          <MoonIcon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
         ) : (
-          <SunIcon className="w-3 h-3 text-orange-300 shrink-0" />
+          <SunIcon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
         )}
         <Text
-          size="9px"
+          size="10px"
           fw={700}
-          className={esNoche ? "text-indigo-100 font-mono text-center" : "text-orange-100 font-mono text-center"}
+          className={esNoche ? "text-indigo-300 font-mono" : "text-amber-300 font-mono"}
         >
           {hi} - {hs}
         </Text>
       </Group>
       {lugarTexto && (
-        <Badge
-          variant="light"
-          color="zinc"
-          size="xs"
-          radius="sm"
-          className="font-normal truncate max-w-full"
-          leftSection={<MapPinIcon className="w-2.5 h-2.5" />}
-          styles={{ root: { maxWidth: "100%" }, label: { fontSize: "9px", padding: "0 4px" } }}
+        <Text
+          size="9px"
+          fw={600}
+          className={`truncate max-w-full leading-none tracking-wide ${esNoche ? "text-indigo-200/80" : "text-amber-200/80"
+            }`}
         >
           {lugarTexto}
-        </Badge>
+        </Text>
       )}
       {tol != null && tol > 0 && (
-        <Text size="9px" className="text-zinc-400 text-center">
-          ±{tol}m
+        <Text size="8px" className="text-zinc-500 leading-none mt-0.5 font-medium">
+          || Tolerancia {tol}m
         </Text>
       )}
     </div>

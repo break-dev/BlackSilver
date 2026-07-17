@@ -46,6 +46,7 @@ import { ProduccionMineralPage } from "../../modules/produccion-mineral/presenta
 import ProgramacionHorariosPage from "../../modules/programacion-horarios/presentation/programacion-horarios.page.tsx";
 import MarcarAsistenciaPage from "../../modules/asistencia/presentation/marcar-asistencia.page.tsx";
 import AsistenciaPage from "../../modules/asistencia/presentation/asistencia.page.tsx";
+import PlanillaPage from "../../modules/planilla/presentation/planilla.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -201,16 +202,13 @@ export const App = () => {
               element={<ProduccionMineralPage />}
             />
           </Route>
-        </Route>
-
-        {/* Recursos Humanos */}
-        <Route path="/recursos-humanos" element={<GenericLayout />}>
           <Route path="control-personal" element={<GenericLayout />}>
             <Route
               path="programacion-horarios"
               element={<ProgramacionHorariosPage />}
             />
             <Route path="asistencia" element={<AsistenciaPage />} />
+            <Route path="planilla" element={<PlanillaPage />} />
           </Route>
         </Route>
 

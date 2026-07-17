@@ -79,15 +79,13 @@ export const ModalRegistroTurno = ({
     <ModalEstandar
       opened={opened}
       close={close}
-      title={turnoEditar ? "Editar Turno Laboral" : "Registrar Turno Laboral"}
+      title={turnoEditar ? "Editar Horario" : "Registrar Horario"}
       size="md"
       zIndex={zIndex}
     >
       <Stack gap="md">
-        <Divider label="Tipo y horarios" labelPosition="left" />
-
         <Select
-          label="Tipo de Turno"
+          label="Horario"
           placeholder="Seleccione"
           data={TIPOS_TURNO_OPTIONS}
           value={form.tipo_turno}
@@ -115,14 +113,11 @@ export const ModalRegistroTurno = ({
             placeholder="Seleccione hora"
             leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
             value={form.hora_ingreso || undefined}
-            onChange={(event) =>
-              setField(
-                "hora_ingreso",
-                event.currentTarget.value
-                  ? event.currentTarget.value.slice(0, 5)
-                  : "",
-              )
-            }
+            onChange={(event) => {
+              const val = event.currentTarget.value;
+              const formatted = val && val.includes(":") ? `${val.split(":")[0]}:00` : "";
+              setField("hora_ingreso", formatted);
+            }}
             onClick={() => refIngreso.current?.showPicker?.()}
             classNames={fieldClasses}
             radius="lg"
@@ -137,14 +132,11 @@ export const ModalRegistroTurno = ({
             placeholder="Seleccione hora"
             leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
             value={form.hora_salida || undefined}
-            onChange={(event) =>
-              setField(
-                "hora_salida",
-                event.currentTarget.value
-                  ? event.currentTarget.value.slice(0, 5)
-                  : "",
-              )
-            }
+            onChange={(event) => {
+              const val = event.currentTarget.value;
+              const formatted = val && val.includes(":") ? `${val.split(":")[0]}:00` : "";
+              setField("hora_salida", formatted);
+            }}
             onClick={() => refSalida.current?.showPicker?.()}
             classNames={fieldClasses}
             radius="lg"

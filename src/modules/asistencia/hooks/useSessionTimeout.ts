@@ -95,6 +95,7 @@ export const useSessionTimeout = ({
   useEffect(() => {
     if (!enabled) {
       clearAll();
+      setWarningVisible(false);
       return;
     }
     cancelledRef.current = false;

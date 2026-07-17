@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   Badge,
@@ -9,26 +9,33 @@ import {
   Stack,
   Text,
   TextInput,
-  Divider,
-  Tooltip,
   Table,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-  BriefcaseIcon,
+  ClockIcon,
+  MapPinIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  CheckIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useFiltrosAsistencia } from "../hooks/useFiltrosAsistencia";
 import { useAsistencias } from "../hooks/useAsistencias";
 import { MESES } from "../../../shared/variables/meses";
-import type { RES_Asistencia } from "../service/asistencia.responses";
+import type { RES_Asistencia, RES_IntentoFallidoAnonimo } from "../service/asistencia.responses";
 import { ModalDetalleAsistenciaDiaria } from "./modal-detalle-asistencia-diaria";
+import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
+import { AsistenciaService } from "../service/asistencia.service";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 const format12h = (timeStr: string | null | undefined) => {
-  if (!timeStr) return "-";
+  if (!timeStr) return "—";
   if (timeStr.includes("T") || timeStr.includes("-")) {
     return dayjs(timeStr).format("hh:mm A");
   }
@@ -43,225 +50,116 @@ const format12h = (timeStr: string | null | undefined) => {
   return timeStr;
 };
 
+const getMotivoCancelacion = (evidenciasStr: string | null) => {
+  if (!evidenciasStr) return "Desconocido / Cancelado por usuario";
+  try {
+    const list = JSON.parse(evidenciasStr);
+    if (Array.isArray(list)) {
+      const item = list.find((e: { tipo: string; motivo?: string }) => e.tipo === "cancelacion");
+      return item?.motivo || "Cancelado por usuario";
+    }
+  } catch {
+    // ignore
+  }
+  return "Cancelado por usuario";
+};
 
-interface EmpleadoAsistenciaCardProps {
-  emp: {
-    id_empleado: number;
-    empleado: string;
-    dni: string | null;
-    url_foto: string | null;
-    tipo_contrato: string | null;
-    sueldo_base: number | null;
-    salario_diario: number | null;
-    dias_trabajados: number;
-    jornada_total: number;
-    pago_total: number;
-    cargo_nombre?: string | null;
-    area_nombre?: string | null;
-    marcaciones: RES_Asistencia[];
-  };
-  dias: number[];
-  yearVal: number;
-  mesVal: number;
+interface ModalIntentosFallidosAnonimosProps {
+  opened: boolean;
+  onClose: () => void;
+  mes: number;
+  year: number;
 }
 
-const EmpleadoAsistenciaCard = ({
-  emp,
-  dias,
-  yearVal,
-  mesVal,
-}: EmpleadoAsistenciaCardProps) => {
-  const [selectedDia, setSelectedDia] = useState<RES_Asistencia | null>(null);
-  const esPlanilla = emp.tipo_contrato === "Planilla";
+const ModalIntentosFallidosAnonimos = ({
+  opened,
+  onClose,
+  mes,
+  year,
+}: ModalIntentosFallidosAnonimosProps) => {
+  const [loading, setLoading] = useState(false);
+  const [intentos, setIntentos] = useState<RES_IntentoFallidoAnonimo[]>([]);
+
+  useEffect(() => {
+    if (!opened) return;
+    let active = true;
+
+    // Diferimos el setState para evitar la advertencia de cascading renders sincrónicos en el render cycle
+    Promise.resolve().then(() => {
+      if (active) setLoading(true);
+    });
+
+    AsistenciaService.get_intentos_fallidos_anonimos(mes, year)
+      .then((resp) => {
+        if (active && resp.success) {
+          setIntentos(resp.data || []);
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [opened, mes, year]);
 
   return (
-    <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md p-5 space-y-5">
-      {/* Cabecera del Empleado */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-4">
-          <Avatar
-            src={emp.url_foto ?? undefined}
-            size="lg"
-            radius="xl"
-            className="border border-zinc-800"
+    <ModalEstandar
+      opened={opened}
+      close={onClose}
+      title="Intentos Fallidos"
+      size="lg"
+    >
+      {loading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader color="red" />
+        </div>
+      ) : intentos.length === 0 ? (
+        <div className="text-center p-12 text-zinc-550 italic">
+          No hay intentos fallidos registrados en este período.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table
+            verticalSpacing="xs"
+            classNames={{
+              table: "border-collapse min-w-[500px] text-zinc-300",
+              thead: "bg-zinc-950 text-zinc-400 border-b border-zinc-800",
+              th: "text-zinc-400 text-xs font-semibold p-2",
+              tr: "border-b border-zinc-850 hover:bg-zinc-850/40",
+              td: "p-2 text-xs",
+            }}
           >
-            {(emp.empleado[0] ?? "").toUpperCase()}
-          </Avatar>
-          <Stack gap={2}>
-            <div className="flex items-center gap-2">
-              <Text size="md" fw={900} className="text-white tracking-tight">
-                {emp.empleado}
-              </Text>
-              <Badge variant="outline" color={esPlanilla ? "indigo" : "teal"} size="xs">
-                {emp.tipo_contrato ?? "S/C"}
-              </Badge>
-            </div>
-            <Group gap="xs" wrap="wrap">
-              <Text size="xs" c="dimmed">
-                DNI: <span className="text-zinc-300 font-semibold">{emp.dni ?? "—"}</span>
-              </Text>
-              <Divider orientation="vertical" h={12} className="border-zinc-800" />
-              {emp.cargo_nombre && (
-                <Group gap={4} wrap="nowrap">
-                  <BriefcaseIcon className="w-3.5 h-3.5 text-zinc-500" />
-                  <Text size="xs" c="indigo.4" fw={600}>
-                    {emp.cargo_nombre} {emp.area_nombre ? `(${emp.area_nombre})` : ""}
-                  </Text>
-                </Group>
-              )}
-            </Group>
-          </Stack>
-        </div>
-
-        {/* Resumen mensual en badges */}
-        <div className="flex flex-wrap items-center gap-4 md:gap-6 w-full md:w-auto">
-          <div className="flex items-center gap-4 p-2 bg-zinc-950/40 rounded-xl border border-zinc-800/50 px-4">
-            <div className="flex flex-col items-center">
-              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                Días Trab.
-              </Text>
-              <Text size="xs" fw={900} className="text-indigo-400">
-                {emp.dias_trabajados}
-              </Text>
-            </div>
-            <div className="w-px h-6 bg-zinc-800/50" />
-            <div className="flex flex-col items-center">
-              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                Jor. Total
-              </Text>
-              <Text size="xs" fw={900} className="text-sky-400 font-mono">
-                {emp.jornada_total.toFixed(4)}
-              </Text>
-            </div>
-            <div className="w-px h-6 bg-zinc-800/50" />
-            <div className="flex flex-col items-center">
-              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                Sueldo Base
-              </Text>
-              <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                {emp.tipo_contrato === "Planilla"
-                  ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
-                  : emp.tipo_contrato === "JornadaDiaria"
-                    ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
-                    : "—"}
-              </Text>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end gap-1 ml-auto md:ml-0">
-            <Badge
-              variant="default"
-              radius="md"
-              size="lg"
-              className="h-9 px-6 border-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-rose-950/20"
-            >
-              <Text size="xs" fw={900} className="text-center font-mono">
-                S/. {emp.pago_total.toFixed(2)}
-              </Text>
-            </Badge>
-            <Text size="9px" c="zinc.5" fw={700} className="uppercase tracking-widest px-1">
-              Pago Diario Acum.
-            </Text>
-          </div>
-        </div>
-      </div>
-
-      {/* Grilla horizontal de días (1 al 31) */}
-      <div className="overflow-x-auto w-full border border-zinc-800/80 rounded-xl bg-zinc-950/40 p-2">
-        <Table
-          withTableBorder={false}
-          withColumnBorders={true}
-          classNames={{
-            table: "border-collapse min-w-[900px]",
-            th: "text-zinc-400 text-xs font-bold text-center border-zinc-800/50 bg-zinc-900/40 p-1.5",
-            td: "border-zinc-800/50 p-1 text-center align-middle",
-          }}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              {dias.map((d) => (
-                <Table.Th key={d} className="w-[30px] min-w-[30px]">
-                  {d}
-                </Table.Th>
-              ))}
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            <Table.Tr>
-              {dias.map((d) => {
-                const diaStr = String(d).padStart(2, "0");
-                const mesStr = String(mesVal).padStart(2, "0");
-                const fechaBuscada = `${yearVal}-${mesStr}-${diaStr}`;
-                const log = emp.marcaciones.find((m) => m.fecha === fechaBuscada);
-
-                const valorJornada = log ? Number(log.jornada_trabajada) : null;
-
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Fecha / Hora</Table.Th>
+                <Table.Th>Detalle / Motivo</Table.Th>
+                <Table.Th>Código QR Token</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {intentos.map((item) => {
+                const motivo = getMotivoCancelacion(item.evidencias);
                 return (
-                  <Table.Td key={d}>
-                    {valorJornada !== null && log ? (
-                      <Tooltip
-                        label={
-                          <Stack gap={2} p={2}>
-                            {log.hora_ingreso && (
-                              <Text size="10px" fw={700} c="indigo.3">
-                                Turno: {format12h(log.hora_ingreso)} - {format12h(log.hora_salida)}
-                              </Text>
-                            )}
-                            <Text size="10px">
-                              Ingreso: <span className="font-bold text-rose-400">{format12h(log.fecha_hora_ingreso)}</span>
-                            </Text>
-                            <Text size="10px">
-                              Salida: <span className="font-bold text-rose-400">{format12h(log.fecha_hora_salida)}</span>
-                            </Text>
-                            {log.total_horas !== null && (
-                              <Text size="10px">
-                                Horas: <span className="font-mono text-sky-400 font-bold">{Number(log.total_horas).toFixed(2)} h</span>
-                              </Text>
-                            )}
-                            {log.lugar_nombre && (
-                              <Text size="10px" c="cyan.4">
-                                Lugar: {log.lugar_nombre}
-                              </Text>
-                            )}
-                            <Text size="10px" c="zinc.5" fs="italic" mt={4}>
-                              Click para ver detalle y evidencias
-                            </Text>
-                          </Stack>
-                        }
-                        withArrow
-                        position="top"
-                      >
-                        <span
-                          onClick={() => setSelectedDia(log)}
-                          className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                            log.tipo_contrato === "Planilla"
-                              ? "bg-sky-950/40 text-sky-400 border border-sky-800/40 hover:bg-sky-900/60"
-                              : "bg-amber-950/40 text-amber-400 border border-amber-800/40 hover:bg-amber-900/60"
-                          }`}
-                        >
-                          {valorJornada.toString()}
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <span className="text-zinc-600/60">—</span>
-                    )}
-                  </Table.Td>
+                  <Table.Tr key={item.id}>
+                    <Table.Td className="font-mono text-zinc-400">
+                      {dayjs(item.fecha_hora).format("DD/MM/YYYY hh:mm A")}
+                    </Table.Td>
+                    <Table.Td className="text-red-400 font-medium">
+                      {motivo}
+                    </Table.Td>
+                    <Table.Td className="font-mono text-[10px] text-zinc-500">
+                      {item.qr_token || "—"}
+                    </Table.Td>
+                  </Table.Tr>
                 );
               })}
-            </Table.Tr>
-          </Table.Tbody>
-        </Table>
-      </div>
-
-      <ModalDetalleAsistenciaDiaria
-        opened={selectedDia !== null}
-        onClose={() => setSelectedDia(null)}
-        selectedDia={selectedDia}
-        empleadoNombre={emp.empleado}
-        empleadoDni={emp.dni}
-        empleadoFoto={emp.url_foto}
-      />
-    </div>
+            </Table.Tbody>
+          </Table>
+        </div>
+      )}
+    </ModalEstandar>
   );
 };
 
@@ -269,7 +167,9 @@ export const AsistenciaPage = () => {
   useTitlePage("Asistencia");
 
   const filtros = useFiltrosAsistencia();
-  const { asistenciasPorEmpleado, loading } = useAsistencias(filtros);
+  const { asistencias, loading } = useAsistencias(filtros);
+  const [selectedDia, setSelectedDia] = useState<RES_Asistencia | null>(null);
+  const [intentosFallidosOpened, setIntentosFallidosOpened] = useState(false);
 
   const aniosOptions = useMemo(
     () =>
@@ -280,119 +180,308 @@ export const AsistenciaPage = () => {
     [],
   );
 
+  // Filtrado local por la barra de búsqueda en la lista plana
+  const asistenciasFiltradas = useMemo(() => {
+    const query = (filtros.q ?? "").toLowerCase().trim();
+    if (!query) return asistencias;
+
+    return asistencias.filter((a) => {
+      const nomCompleto = `${a.nombre ?? ""} ${a.apellido ?? ""}`.toLowerCase();
+      const dni = (a.dni ?? "").toLowerCase();
+      return nomCompleto.includes(query) || dni.includes(query);
+    });
+  }, [asistencias, filtros.q]);
+
+  const columns = useMemo(
+    () => [
+      {
+        accessor: "index",
+        title: "#",
+        width: 50,
+      },
+      {
+        accessor: "empleado",
+        title: "Empleado",
+        render: (a: RES_Asistencia) => {
+          const empNombre = `${a.nombre ?? ""} ${a.apellido ?? ""}`.trim();
+          return (
+            <Group gap="sm">
+              <Avatar src={a.url_foto ?? undefined} size="sm" radius="xl" />
+              <Stack gap={1}>
+                <Text size="xs" fw={700} className="text-white">
+                  {empNombre}
+                </Text>
+                <Text size="9px" c="dimmed">
+                  DNI: {a.dni ?? "—"}
+                </Text>
+              </Stack>
+            </Group>
+          );
+        },
+      },
+      {
+        accessor: "tipo_contrato",
+        title: "Contrato",
+        render: (a: RES_Asistencia) => (
+          <Badge
+            variant="light"
+            color={a.tipo_contrato === "Planilla" ? "indigo" : "teal"}
+            size="xs"
+          >
+            {a.tipo_contrato ?? "S/C"}
+          </Badge>
+        ),
+      },
+      {
+        accessor: "fecha",
+        title: "Fecha",
+        render: (a: RES_Asistencia) => (
+          <Text size="xs" fw={600} className="text-zinc-300">
+            {dayjs(a.fecha).format("DD/MM/YYYY")}
+          </Text>
+        ),
+      },
+      {
+        accessor: "fecha_hora_ingreso",
+        title: "Ingreso / Intento",
+        render: (a: RES_Asistencia) => (
+          <Text size="xs" fw={700} className="text-rose-400 font-mono">
+            {format12h(a.fecha_hora_ingreso)}
+          </Text>
+        ),
+      },
+      {
+        accessor: "fecha_hora_salida",
+        title: "Salida",
+        render: (a: RES_Asistencia) => (
+          <Text size="xs" fw={700} className="text-rose-400 font-mono">
+            {format12h(a.fecha_hora_salida)}
+          </Text>
+        ),
+      },
+      {
+        accessor: "total_horas",
+        title: "Horas Trab.",
+        render: (a: RES_Asistencia) => (
+          a.total_horas !== null && Number(a.total_horas) > 0 ? (
+            <Group gap={4}>
+              <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <Text size="xs" fw={700} className="text-sky-400 font-mono">
+                {Number(a.total_horas).toFixed(2)} h
+              </Text>
+            </Group>
+          ) : (
+            <Text size="xs" c="dimmed">
+              —
+            </Text>
+          )
+        ),
+      },
+      {
+        accessor: "tardanza",
+        title: "Tardanza",
+        render: (a: RES_Asistencia) => (
+          a.minutos_tardanza !== null && Number(a.minutos_tardanza) > 0 ? (
+            <Badge color="red" variant="light" size="xs">
+              {a.minutos_tardanza} min
+            </Badge>
+          ) : (
+            <Text size="xs" className="text-zinc-500">
+              0 min
+            </Text>
+          )
+        ),
+      },
+      {
+        accessor: "lugar_nombre",
+        title: "Lugar",
+        render: (a: RES_Asistencia) => (
+          a.lugar_nombre ? (
+            <Group gap={4}>
+              <MapPinIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <Text size="xs" className="text-zinc-300">
+                {a.lugar_nombre}
+              </Text>
+            </Group>
+          ) : (
+            <Text size="xs" c="dimmed">
+              —
+            </Text>
+          )
+        ),
+      },
+      {
+        accessor: "estado",
+        title: "Estado",
+        render: (a: RES_Asistencia & { estado?: string }) => {
+          const est = a.estado ?? "Exitoso";
+          const isExitoso = est === "Exitoso";
+          return (
+            <Badge
+              color={isExitoso ? "green" : "red"}
+              variant="light"
+              size="xs"
+              leftSection={
+                isExitoso ? (
+                  <CheckIcon className="w-3 h-3 text-green-400 mr-0.5" />
+                ) : (
+                  <XCircleIcon className="w-3 h-3 text-red-400 mr-0.5" />
+                )
+              }
+            >
+              {est}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessor: "registro",
+        title: "Registro",
+        render: (a: RES_Asistencia) => (
+          <Badge
+            color={a.asistencia_es_manual ? "yellow" : "zinc"}
+            variant="outline"
+            size="xs"
+          >
+            {a.asistencia_es_manual ? "Manual" : "QR"}
+          </Badge>
+        ),
+      },
+      {
+        accessor: "acciones",
+        title: "Acciones",
+        textAlign: "center" as const,
+        render: (a: RES_Asistencia) => (
+          <Group justify="center">
+            <Tooltip label="Ver detalles y evidencias" withArrow position="top" radius="md">
+              <ActionIcon
+                variant="light"
+                color="indigo"
+                size="md"
+                radius="md"
+                onClick={() => setSelectedDia(a)}
+                className="bg-indigo-950/30 hover:bg-indigo-900/40 text-indigo-400 border border-indigo-900/30"
+              >
+                <EyeIcon className="w-4 h-4" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        ),
+      },
+    ],
+    [],
+  );
+
   const yearVal = Number(filtros.year) || dayjs().year();
-  const mesVal = Number(filtros.mes) || (dayjs().month() + 1);
-  const diasMes = dayjs(`${yearVal}-${mesVal}-01`).daysInMonth();
-  const dias = Array.from({ length: diasMes }, (_, i) => i + 1);
+  const mesVal = Number(filtros.mes) || dayjs().month() + 1;
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      {/* Filtros estilo Kardex */}
-      <div className="flex flex-col md:flex-row items-end gap-3 w-full pb-2">
-        <div className="w-full md:w-40">
-          <Select
-            label="Mes"
-            placeholder="Mes"
-            leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-500" />}
-            data={MESES}
-            value={filtros.mes}
-            onChange={(val) => filtros.setMes(val ?? "")}
-            allowDeselect={false}
-            radius="lg"
-            size="sm"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
-              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
+      {/* Filtros */}
+      <div className="flex flex-col sm:flex-row gap-4 items-end justify-between w-full pb-2">
+        <div className="flex flex-col sm:flex-row gap-3 flex-grow w-full">
+          <div className="w-full sm:w-40">
+            <Select
+              label="Mes"
+              placeholder="Mes"
+              leftSection={<CalendarDaysIcon className="w-4 h-4 text-zinc-500" />}
+              data={MESES}
+              value={filtros.mes}
+              onChange={(val) => filtros.setMes(val ?? "")}
+              allowDeselect={false}
+              radius="lg"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          <div className="w-full sm:w-32">
+            <Select
+              label="Año"
+              placeholder="Año"
+              data={aniosOptions}
+              value={filtros.year}
+              onChange={(val) => filtros.setYear(val ?? "")}
+              allowDeselect={false}
+              radius="lg"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 text-white",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+                dropdown: "bg-zinc-900 border-zinc-800",
+                option: "text-zinc-300 hover:bg-zinc-800",
+              }}
+            />
+          </div>
+
+          <div className="flex-grow min-w-[200px] w-full">
+            <TextInput
+              label="Búsqueda"
+              placeholder="Buscar por empleado o DNI..."
+              leftSection={
+                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
+              }
+              value={filtros.q}
+              onChange={(e) => filtros.setQ(e.currentTarget.value)}
+              radius="lg"
+              size="sm"
+              classNames={{
+                input:
+                  "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+                label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
+              }}
+            />
+          </div>
         </div>
 
-        <div className="w-full md:w-32">
-          <Select
-            label="Año"
-            placeholder="Año"
-            data={aniosOptions}
-            value={filtros.year}
-            onChange={(val) => filtros.setYear(val ?? "")}
-            allowDeselect={false}
-            radius="lg"
-            size="sm"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white",
-              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-              dropdown: "bg-zinc-900 border-zinc-800",
-              option: "text-zinc-300 hover:bg-zinc-800",
-            }}
-          />
-        </div>
-
-        <div className="flex-1 min-w-[200px] w-full">
-          <TextInput
-            label="Búsqueda"
-            placeholder="Buscar empleado por nombre o DNI..."
-            leftSection={
-              <MagnifyingGlassIcon className="w-4 h-4 text-zinc-400" />
-            }
-            value={filtros.q}
-            onChange={(e) => filtros.setQ(e.currentTarget.value)}
-            radius="lg"
-            size="sm"
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
-              label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
-            }}
-          />
-        </div>
-
-        <Divider orientation="vertical" h={36} className="hidden md:block" />
-
-        <Tooltip label="Próximamente" withArrow>
-          <Button
-            leftSection={<ArrowDownTrayIcon className="w-4 h-4" />}
-            radius="lg"
-            size="sm"
-            variant="default"
-            disabled
-            className="bg-zinc-800 text-zinc-500 border border-zinc-700 shrink-0 h-[36px] px-3 cursor-not-allowed"
-          >
-            Exportar
-          </Button>
-        </Tooltip>
+        <Button
+          leftSection={<ExclamationTriangleIcon className="w-4 h-4 text-white" />}
+          radius="lg"
+          size="sm"
+          onClick={() => setIntentosFallidosOpened(true)}
+          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-[38px] px-6 rounded-xl shrink-0 border-none shadow-md shadow-orange-950/20 w-full sm:w-auto"
+        >
+          Ver Intentos Fallidos
+        </Button>
       </div>
 
-      {/* Contenido principal agrupado por Empleado con vista de matriz horizontal */}
-      {loading ? (
-        <div className="flex items-center justify-center p-16">
-          <Loader color="indigo" />
-        </div>
-      ) : asistenciasPorEmpleado.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed border-zinc-800 rounded-2xl bg-zinc-900/20">
-          <CalendarDaysIcon className="w-12 h-12 text-zinc-600 mb-3" />
-          <Text className="text-zinc-400 font-bold text-lg">
-            Sin marcaciones en el período
-          </Text>
-          <Text className="text-zinc-500 text-sm mt-1">
-            Ajusta los filtros o espera a que los empleados marquen asistencia.
-          </Text>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {asistenciasPorEmpleado.map((emp) => (
-            <EmpleadoAsistenciaCard
-              key={emp.id_empleado}
-              emp={emp}
-              dias={dias}
-              yearVal={yearVal}
-              mesVal={mesVal}
-            />
-          ))}
-        </div>
-      )}
+      {/* Tabla Listado de Asistencias */}
+      <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden backdrop-blur-md">
+        <DataTableEstandar
+          idAccessor="id"
+          columns={columns}
+          records={asistenciasFiltradas}
+          loading={loading}
+          initialPageSize={25}
+        />
+      </div>
+
+      <ModalDetalleAsistenciaDiaria
+        opened={selectedDia !== null}
+        onClose={() => setSelectedDia(null)}
+        selectedDia={selectedDia}
+        empleadoNombre={
+          selectedDia
+            ? `${selectedDia.nombre ?? ""} ${selectedDia.apellido ?? ""}`.trim()
+            : ""
+        }
+        empleadoDni={selectedDia ? selectedDia.dni : ""}
+        empleadoFoto={selectedDia ? selectedDia.url_foto : ""}
+      />
+
+      <ModalIntentosFallidosAnonimos
+        opened={intentosFallidosOpened}
+        onClose={() => setIntentosFallidosOpened(false)}
+        mes={mesVal}
+        year={yearVal}
+      />
     </div>
   );
 };

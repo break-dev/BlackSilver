@@ -30,10 +30,10 @@ const calcTotalHoras = (ingreso: string, salida: string): number => {
 
 const initialForm = (): DTO_CrearTurno => ({
   tipo_turno: TipoTurno.Dia,
-  hora_ingreso: "",
-  hora_salida: "",
+  hora_ingreso: "08:00",
+  hora_salida: "17:00",
   minutos_tolerancia: null,
-  total_horas: 0,
+  total_horas: 9.0,
   estado: "Activo",
 });
 

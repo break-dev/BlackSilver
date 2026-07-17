@@ -49,12 +49,6 @@ export const ModalDetalleAsistenciaDiaria = ({
           : "Detalles de Asistencia"
       }
       size="lg"
-      centered
-      radius="lg"
-      classNames={{
-        content: "bg-zinc-950 border border-zinc-800 text-white",
-        header: "bg-zinc-950 text-white border-b border-zinc-800/80 pb-3",
-      }}
     >
       {selectedDia && (
         <Stack gap="md" className="pt-2">
@@ -62,7 +56,7 @@ export const ModalDetalleAsistenciaDiaria = ({
           <Group
             justify="space-between"
             align="center"
-            className="bg-zinc-900/40 p-4 border border-zinc-850 rounded-2xl"
+            className="bg-zinc-900/30 p-4 border border-white/5 rounded-2xl"
           >
             <Group gap="sm">
               <Avatar src={empleadoFoto ?? undefined} radius="xl" size="md" />
@@ -86,14 +80,14 @@ export const ModalDetalleAsistenciaDiaria = ({
 
           {/* Ficha Informativa del Contrato y Horario de ese día */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3 bg-zinc-900/30 border border-zinc-800/60 rounded-xl space-y-2">
+            <div className="p-4 bg-zinc-900/20 border border-white/5 rounded-2xl space-y-2">
               <Text
                 size="xs"
                 fw={700}
                 c="dimmed"
                 className="uppercase tracking-wider"
               >
-                Contrato del día
+                Información
               </Text>
               <div className="space-y-1">
                 {selectedDia.cargo_nombre && (
@@ -130,7 +124,7 @@ export const ModalDetalleAsistenciaDiaria = ({
               </div>
             </div>
 
-            <div className="p-3 bg-zinc-900/30 border border-zinc-800/60 rounded-xl space-y-2">
+            <div className="p-4 bg-zinc-900/20 border border-white/5 rounded-2xl space-y-2">
               <Text
                 size="xs"
                 fw={700}
@@ -163,7 +157,7 @@ export const ModalDetalleAsistenciaDiaria = ({
           </div>
 
           {/* Métricas consolidadas del día */}
-          <div className="grid grid-cols-3 gap-2 text-center bg-zinc-950 p-3 rounded-xl border border-zinc-850">
+          <div className="grid grid-cols-3 gap-2 text-center bg-zinc-900/30 p-3.5 rounded-2xl border border-white/5">
             <div>
               <Text size="9px" c="dimmed" className="uppercase font-semibold">
                 Horas Trab.
@@ -209,7 +203,7 @@ export const ModalDetalleAsistenciaDiaria = ({
               c="dimmed"
               className="uppercase tracking-wider"
             >
-              Marcajes y Fotos de Evidencia
+              Evidencias
             </Text>
             {selectedDia.marcajes && selectedDia.marcajes.length > 0 ? (
               <div className="space-y-3">
@@ -228,7 +222,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                   return (
                     <div
                       key={m.id}
-                      className="p-3 bg-zinc-900/25 border border-zinc-850 rounded-xl space-y-3"
+                      className="p-4 bg-zinc-900/10 border border-white/5 rounded-2xl space-y-3"
                     >
                       <Group justify="space-between" align="center">
                         <Group gap="xs">
@@ -236,7 +230,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                             color={m.tipo_marcaje === "Ingreso" ? "emerald" : "blue"}
                             variant="light"
                           >
-                            {m.tipo_marcaje ?? "Marcaje"}
+                            {m.tipo_marcaje ?? "Registro"}
                           </Badge>
                           <Text size="xs" fw={700} className="text-zinc-200 font-mono">
                             {format12h(m.fecha_hora)}
@@ -251,7 +245,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                         </Badge>
                       </Group>
 
-                      {/* Evidencias fotográficas del marcaje individual */}
+                      {/* Evidencias fotográficas del registro individual */}
                       {archivos.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                           {archivos.map((file, fIdx) => (
@@ -260,7 +254,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                         </div>
                       ) : (
                         <Text size="10px" c="zinc.6" className="italic">
-                          Sin fotos de evidencia para este marcaje
+                          Sin fotos de evidencia para este registro
                         </Text>
                       )}
                     </div>

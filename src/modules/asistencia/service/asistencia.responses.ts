@@ -154,3 +154,18 @@ export interface RES_ConfirmarAsistencia {
   jornada_trabajada: number;
   fecha: string;
 }
+
+/**
+ * Log de intento fallido anónimo.
+ */
+export interface RES_IntentoFallidoAnonimo {
+  id: number;
+  id_empleado: number | null;
+  id_programacion_horario: number | null;
+  fecha_hora: string;
+  tipo_marcaje: string | null;
+  proceso_confirmado: boolean;
+  qr_leido: boolean;
+  evidencias: string | null;
+  qr_token: string | null;
+}
