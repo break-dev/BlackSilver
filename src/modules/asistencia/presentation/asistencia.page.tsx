@@ -9,10 +9,12 @@ import {
   Stack,
   Text,
   TextInput,
-  Table,
   ActionIcon,
   Tooltip,
+  Popover,
 } from "@mantine/core";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
@@ -50,18 +52,55 @@ const format12h = (timeStr: string | null | undefined) => {
   return timeStr;
 };
 
-const getMotivoCancelacion = (evidenciasStr: string | null) => {
+interface IEvidenciaDetalle {
+  tipo: string;
+  motivo?: string;
+  qr_token?: string;
+}
+
+const getMotivoCancelacion = (evidenciasStr: string | unknown[] | null) => {
   if (!evidenciasStr) return "Desconocido / Cancelado por usuario";
   try {
-    const list = JSON.parse(evidenciasStr);
+    const list = typeof evidenciasStr === "string" ? JSON.parse(evidenciasStr) : evidenciasStr;
     if (Array.isArray(list)) {
-      const item = list.find((e: { tipo: string; motivo?: string }) => e.tipo === "cancelacion");
-      return item?.motivo || "Cancelado por usuario";
+      const errorItem = list.find((e: IEvidenciaDetalle) => e.tipo === "error_sistema");
+      if (errorItem) return errorItem.motivo || "Error de sistema";
+      const cancelItem = list.find((e: IEvidenciaDetalle) => e.tipo === "cancelacion");
+      if (cancelItem) return cancelItem.motivo || "Cancelado por usuario";
     }
   } catch {
     // ignore
   }
   return "Cancelado por usuario";
+};
+
+const getQrTokenFromEvidencias = (item: RES_IntentoFallidoAnonimo) => {
+  const evidenciasStr = item.evidencias;
+  if (evidenciasStr) {
+    try {
+      const list = typeof evidenciasStr === "string" ? JSON.parse(evidenciasStr) : evidenciasStr;
+      if (Array.isArray(list)) {
+        const found = list.find((e: IEvidenciaDetalle) => e.qr_token);
+        if (found?.qr_token) return found.qr_token;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return (item as RES_IntentoFallidoAnonimo & { empleado_qr_token?: string | null }).empleado_qr_token || "—";
+};
+
+const getArchivosFromEvidencias = (evidenciasStr: string | unknown[] | null): IArchivo[] => {
+  if (!evidenciasStr) return [];
+  try {
+    const list = typeof evidenciasStr === "string" ? JSON.parse(evidenciasStr) : evidenciasStr;
+    if (Array.isArray(list)) {
+      return list.filter((e: IArchivo) => e.url) as IArchivo[];
+    }
+  } catch {
+    // ignore
+  }
+  return [];
 };
 
 interface ModalIntentosFallidosAnonimosProps {
@@ -84,7 +123,6 @@ const ModalIntentosFallidosAnonimos = ({
     if (!opened) return;
     let active = true;
 
-    // Diferimos el setState para evitar la advertencia de cascading renders sincrónicos en el render cycle
     Promise.resolve().then(() => {
       if (active) setLoading(true);
     });
@@ -104,12 +142,112 @@ const ModalIntentosFallidosAnonimos = ({
     };
   }, [opened, mes, year]);
 
+  const columns = useMemo(
+    () => [
+      {
+        accessor: "index",
+        title: "#",
+        width: 50,
+      },
+      {
+        accessor: "fecha_hora",
+        title: "Fecha / Hora",
+        render: (item: RES_IntentoFallidoAnonimo) => (
+          <Group gap={4}>
+            <ClockIcon className="w-3.5 h-3.5 text-zinc-550" />
+            <Text size="xs" className="font-mono text-zinc-400">
+              {dayjs(item.fecha_hora).format("DD/MM/YYYY hh:mm A")}
+            </Text>
+          </Group>
+        ),
+      },
+      {
+        accessor: "empleado_nombre",
+        title: "Empleado",
+        render: (item: RES_IntentoFallidoAnonimo) => {
+          const typedItem = item as RES_IntentoFallidoAnonimo & { empleado_nombre?: string | null; empleado_url_foto?: string | null };
+          const empNombre = typedItem.empleado_nombre || "Anónimo";
+          const inicial = empNombre[0] ?? "?";
+          return (
+            <Group gap="sm">
+              <Avatar src={typedItem.empleado_url_foto ?? undefined} size="sm" radius="xl" color="indigo" variant="light">
+                {inicial}
+              </Avatar>
+              <Text size="xs" fw={700} className="text-zinc-300">
+                {empNombre}
+              </Text>
+            </Group>
+          );
+        },
+      },
+      {
+        accessor: "motivo",
+        title: "Motivo",
+        render: (item: RES_IntentoFallidoAnonimo) => {
+          const motivo = getMotivoCancelacion(item.evidencias);
+          return (
+            <Text size="xs" fw={600} className="text-red-400">
+              {motivo}
+            </Text>
+          );
+        },
+      },
+      {
+        accessor: "qr_token",
+        title: "Código QR Token",
+        render: (item: RES_IntentoFallidoAnonimo) => {
+          const token = getQrTokenFromEvidencias(item);
+          return token !== "—" ? (
+            <Badge color="pink" variant="light" size="xs" className="font-mono lowercase">
+              {token}
+            </Badge>
+          ) : (
+            <Text size="xs" c="dimmed">
+              —
+            </Text>
+          );
+        },
+      },
+      {
+        accessor: "evidencia",
+        title: "Evidencia",
+        textAlign: "center" as const,
+        render: (item: RES_IntentoFallidoAnonimo) => {
+          const archivos = getArchivosFromEvidencias(item.evidencias);
+          if (archivos.length === 0) return <Text size="xs" className="text-zinc-650">—</Text>;
+          return (
+            <Group justify="center">
+              <Popover width={320} position="bottom" withArrow shadow="md">
+                <Popover.Target>
+                  <ActionIcon variant="light" color="indigo" size="sm" radius="md">
+                    <EyeIcon className="w-3.5 h-3.5" />
+                  </ActionIcon>
+                </Popover.Target>
+                <Popover.Dropdown className="bg-zinc-900 border-zinc-800 p-2">
+                  <div className="space-y-2">
+                    <Text size="xs" fw={700} className="text-zinc-300 mb-1 text-left">
+                      Fotos de Evidencia:
+                    </Text>
+                    {archivos.map((file, fIdx) => (
+                      <ArchivoCard key={fIdx} archivo={file} />
+                    ))}
+                  </div>
+                </Popover.Dropdown>
+              </Popover>
+            </Group>
+          );
+        },
+      },
+    ],
+    []
+  );
+
   return (
     <ModalEstandar
       opened={opened}
       close={onClose}
       title="Intentos Fallidos"
-      size="lg"
+      size="75rem"
     >
       {loading ? (
         <div className="flex items-center justify-center p-12">
@@ -120,43 +258,14 @@ const ModalIntentosFallidosAnonimos = ({
           No hay intentos fallidos registrados en este período.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <Table
-            verticalSpacing="xs"
-            classNames={{
-              table: "border-collapse min-w-[500px] text-zinc-300",
-              thead: "bg-zinc-950 text-zinc-400 border-b border-zinc-800",
-              th: "text-zinc-400 text-xs font-semibold p-2",
-              tr: "border-b border-zinc-850 hover:bg-zinc-850/40",
-              td: "p-2 text-xs",
-            }}
-          >
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Fecha / Hora</Table.Th>
-                <Table.Th>Detalle / Motivo</Table.Th>
-                <Table.Th>Código QR Token</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {intentos.map((item) => {
-                const motivo = getMotivoCancelacion(item.evidencias);
-                return (
-                  <Table.Tr key={item.id}>
-                    <Table.Td className="font-mono text-zinc-400">
-                      {dayjs(item.fecha_hora).format("DD/MM/YYYY hh:mm A")}
-                    </Table.Td>
-                    <Table.Td className="text-red-400 font-medium">
-                      {motivo}
-                    </Table.Td>
-                    <Table.Td className="font-mono text-[10px] text-zinc-500">
-                      {item.qr_token || "—"}
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
+        <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden backdrop-blur-md">
+          <DataTableEstandar
+            idAccessor="id"
+            columns={columns}
+            records={intentos}
+            loading={loading}
+            initialPageSize={10}
+          />
         </div>
       )}
     </ModalEstandar>
@@ -180,7 +289,6 @@ export const AsistenciaPage = () => {
     [],
   );
 
-  // Filtrado local por la barra de búsqueda en la lista plana
   const asistenciasFiltradas = useMemo(() => {
     const query = (filtros.q ?? "").toLowerCase().trim();
     if (!query) return asistencias;
@@ -204,9 +312,12 @@ export const AsistenciaPage = () => {
         title: "Empleado",
         render: (a: RES_Asistencia) => {
           const empNombre = `${a.nombre ?? ""} ${a.apellido ?? ""}`.trim();
+          const inicial = a.nombre?.[0] ?? "?";
           return (
             <Group gap="sm">
-              <Avatar src={a.url_foto ?? undefined} size="sm" radius="xl" />
+              <Avatar src={a.url_foto ?? undefined} size="sm" radius="xl" color="indigo" variant="light">
+                {inicial}
+              </Avatar>
               <Stack gap={1}>
                 <Text size="xs" fw={700} className="text-white">
                   {empNombre}
@@ -265,7 +376,7 @@ export const AsistenciaPage = () => {
         render: (a: RES_Asistencia) => (
           a.total_horas !== null && Number(a.total_horas) > 0 ? (
             <Group gap={4}>
-              <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <ClockIcon className="w-3.5 h-3.5 text-zinc-555" />
               <Text size="xs" fw={700} className="text-sky-400 font-mono">
                 {Number(a.total_horas).toFixed(2)} h
               </Text>
@@ -298,7 +409,7 @@ export const AsistenciaPage = () => {
         render: (a: RES_Asistencia) => (
           a.lugar_nombre ? (
             <Group gap={4}>
-              <MapPinIcon className="w-3.5 h-3.5 text-zinc-500" />
+              <MapPinIcon className="w-3.5 h-3.5 text-zinc-555" />
               <Text size="xs" className="text-zinc-300">
                 {a.lugar_nombre}
               </Text>
@@ -377,7 +488,6 @@ export const AsistenciaPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in text-zinc-100">
-      {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-4 items-end justify-between w-full pb-2">
         <div className="flex flex-col sm:flex-row gap-3 flex-grow w-full">
           <div className="w-full sm:w-40">
@@ -452,7 +562,6 @@ export const AsistenciaPage = () => {
         </Button>
       </div>
 
-      {/* Tabla Listado de Asistencias */}
       <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden backdrop-blur-md">
         <DataTableEstandar
           idAccessor="id"
