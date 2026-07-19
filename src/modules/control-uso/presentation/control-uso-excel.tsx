@@ -187,9 +187,9 @@ export const buildControlUsoExcel = async (
           const mantFechaText = mantsActivo.length > 0 ? dayjs(mantsActivo[0].fecha_hora_mantenimiento).format("DD/MM/YYYY") : "";
           let mantLecturaText = "";
           if (mantsActivo.length > 0) {
-            if (type === 'vueltas') mantLecturaText = String(mantsActivo[0].vueltas_actuales || "-");
-            if (type === 'horometro') mantLecturaText = String(mantsActivo[0].horometro_actual || "-");
-            if (type === 'odometro') mantLecturaText = String(mantsActivo[0].odometro_actual || "-");
+            if (type === 'vueltas') mantLecturaText = String(mantsActivo[0].total_vueltas || "-");
+            if (type === 'horometro') mantLecturaText = String(mantsActivo[0].total_horas || "-");
+            if (type === 'odometro') mantLecturaText = String(mantsActivo[0].total_kilometros || "-");
           }
 
           if (type === 'vueltas') {

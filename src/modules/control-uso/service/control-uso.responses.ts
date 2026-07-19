@@ -68,11 +68,10 @@ export interface RES_MantenimientoReporte {
   id: number;
   id_activo_fijo: number;
   fecha_hora_mantenimiento: string;
-  tipo_control: string;
-  observacion: string;
-  horometro_actual: string | number | null;
-  odometro_actual: string | number | null;
-  vueltas_actuales: string | number | null;
+  observacion: string | null;
+  total_horas: number | null;
+  total_kilometros: number | null;
+  total_vueltas: number | null;
 }
 
 export interface RES_ReporteMensual {

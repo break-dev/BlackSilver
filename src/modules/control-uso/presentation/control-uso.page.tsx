@@ -97,6 +97,19 @@ export const ControlUsoPage = () => {
     return { value: String(y), label: String(y) };
   });
 
+  // Agrupar activos por producto para el Select con secciones
+  const activosAgrupados = Object.entries(
+    activos.reduce<Record<string, { value: string; label: string }[]>>((acc, a) => {
+      (acc[a.producto] ??= []).push({
+        value: String(a.id_activo),
+        label: a.correlativo,
+      });
+      return acc;
+    }, {}),
+  )
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([group, items]) => ({ group, items }));
+
   // Table columns definition (inspired by Lotes layout and styling patterns)
   const columns: DataTableColumn<RES_ControlUsoLog>[] = [
     {
@@ -411,10 +424,7 @@ export const ControlUsoPage = () => {
             placeholder={
               loadingActivos ? "Cargando activos..." : "Seleccione un activo..."
             }
-            data={activos.map((a) => ({
-              value: String(a.id_activo),
-              label: `${a.correlativo} - ${a.producto}`,
-            }))}
+            data={activosAgrupados}
             value={idActivoFijo}
             onChange={setIdActivoFijo}
             searchable
