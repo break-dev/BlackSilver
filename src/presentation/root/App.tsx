@@ -191,11 +191,11 @@ export const App = () => {
 
         <Route path="/operaciones" element={<GenericLayout />}>
           <Route path="control-activos" element={<GenericLayout />}>
-            <Route path="consumo" element={<ControlConsumoPage />} />
             <Route path="uso" element={<ControlUsoPage />} />
             <Route path="mantenimiento" element={<MantenimientoPage />} />
           </Route>
           <Route path="produccion" element={<GenericLayout />}>
+            <Route path="consumo" element={<ControlConsumoPage />} />
             <Route path="lote-mineral" element={<LoteMineralPage />} />
             <Route
               path="produccion-mineral"
