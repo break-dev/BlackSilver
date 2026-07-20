@@ -47,7 +47,7 @@ export const HomePage = () => {
       happy(
         `¡Qué bueno verte por aquí, ${usuario?.nombre || "Colega"}! ¿En qué te ayudo hoy?`,
         {
-          duration: 8000,
+          duration: 6000,
         },
       );
       sessionStorage.setItem("blackcito_saludo_inicial", "true");
