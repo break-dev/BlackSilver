@@ -25,6 +25,7 @@ import type { RES_Banco } from "./responses/banco";
 import type { RES_Area, RES_Cargo } from "./responses/organigrama";
 import type { RES_Rol } from "./responses/rol";
 import type { RES_Agencia } from "./responses/agencia";
+import type { RES_Oficina } from "./responses/oficina";
 
 const path = "/aux";
 
@@ -451,6 +452,20 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_Rol[]>>(
       `${path}/roles-disponibles`,
       { params: filters },
+    );
+    return data;
+  },
+
+  get_oficinas: async (filters?: {
+    id_cargo?: number | number[];
+    id_area?: number | number[];
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_Oficina[]>> => {
+    const { data } = await api.get<IRespuesta<RES_Oficina[]>>(
+      `${path}/oficinas`,
+      {
+        params: filters,
+      },
     );
     return data;
   },

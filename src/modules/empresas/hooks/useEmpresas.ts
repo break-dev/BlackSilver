@@ -3,18 +3,22 @@ import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
+import type { RES_Oficina } from "../../../service/responses/oficina";
 import { AuxService } from "../../../service/auxiliar.service";
 
 export const useEmpresas = () => {
   const { notifyError, notifySuccess } = useNotify();
 
-  // Estados de la lista
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
-  // Modales
   const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+
+  const [empresaParaOficina, setEmpresaParaOficina] =
+    useState<RES_Empresa | null>(null);
+  const [openedOficina, { open: openOficina, close: closeOficina }] =
     useDisclosure(false);
 
   const listar = useCallback(async () => {
@@ -69,7 +73,39 @@ export const useEmpresas = () => {
   };
 
   const onEmpresaCreada = (nueva: RES_Empresa) => {
-    setEmpresas((prev) => [nueva, ...prev]);
+    const nuevaConOficinas: RES_Empresa = { ...nueva, oficinas: [] };
+    setEmpresas((prev) => [nuevaConOficinas, ...prev]);
+  };
+
+  const onOpenOficinaModal = (empresa: RES_Empresa) => {
+    setEmpresaParaOficina(empresa);
+    openOficina();
+  };
+
+  const closeOficinaModal = () => {
+    closeOficina();
+    setEmpresaParaOficina(null);
+  };
+
+  const onOficinaCreada = (nueva: RES_Oficina) => {
+    if (!empresaParaOficina) return;
+
+    setEmpresas((prev) =>
+      prev.map((emp) => {
+        if (emp.id_empresa !== nueva.id_empresa) return emp;
+
+        let oficinasActualizadas = [...(emp.oficinas ?? []), nueva];
+
+        if (nueva.es_principal) {
+          oficinasActualizadas = oficinasActualizadas.map((o) => ({
+            ...o,
+            es_principal: o.id_oficina === nueva.id_oficina,
+          }));
+        }
+
+        return { ...emp, oficinas: oficinasActualizadas };
+      }),
+    );
   };
 
   return {
@@ -79,12 +115,16 @@ export const useEmpresas = () => {
     setBusqueda,
     empresasFiltradas,
 
-    // Modales
     openedCreate,
     openCreate,
     closeCreate,
 
-    // Handlers
+    empresaParaOficina,
+    openedOficina,
+    onOpenOficinaModal,
+    closeOficinaModal,
+    onOficinaCreada,
+
     onEmpresaCreada,
     handleUpdateLogo,
     recargar: listar,

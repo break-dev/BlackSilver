@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button, TextInput, Skeleton, Text } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
@@ -7,8 +8,10 @@ import {
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroEmpresa } from "./registro-empresa";
+import { RegistroOficina } from "./registro-oficina";
 import { useEmpresas } from "../hooks/useEmpresas";
 import { useRegistroEmpresa } from "../hooks/useRegistroEmpresa";
+import { useRegistroOficina } from "../hooks/useRegistroOficina";
 import { EmpresaCard } from "./empresa-card";
 
 export const EmpresasPage = () => {
@@ -22,6 +25,11 @@ export const EmpresasPage = () => {
     openedCreate,
     openCreate,
     closeCreate,
+    empresaParaOficina,
+    openedOficina,
+    onOpenOficinaModal,
+    closeOficinaModal,
+    onOficinaCreada,
     onEmpresaCreada,
     handleUpdateLogo,
   } = useEmpresas();
@@ -31,9 +39,19 @@ export const EmpresasPage = () => {
     onClose: closeCreate,
   });
 
+  const registroOficina = useRegistroOficina({
+    onSuccess: onOficinaCreada,
+    onClose: closeOficinaModal,
+  });
+
+  useEffect(() => {
+    if (empresaParaOficina) {
+      registroOficina.setIdEmpresa(empresaParaOficina.id_empresa);
+    }
+  }, [empresaParaOficina, registroOficina]);
+
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Search & Actions Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-end justify-between">
         <div className="flex flex-1 gap-4 w-full">
           <TextInput
@@ -65,7 +83,6 @@ export const EmpresasPage = () => {
         </Button>
       </div>
 
-      {/* Grid Content */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
@@ -73,12 +90,10 @@ export const EmpresasPage = () => {
               key={i}
               className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4"
             >
-              {/* Badge Skeleton */}
               <div className="flex justify-start">
                 <Skeleton height={18} width={90} radius="md" />
               </div>
 
-              {/* Content Skeleton (Horizontal) */}
               <div className="flex items-center gap-5">
                 <Skeleton height={80} width={80} circle />
                 <div className="flex-1 space-y-2">
@@ -108,12 +123,12 @@ export const EmpresasPage = () => {
               key={empresa.id_empresa}
               empresa={empresa}
               onUpdateLogo={handleUpdateLogo}
+              onAddOficina={onOpenOficinaModal}
             />
           ))}
         </div>
       )}
 
-      {/* Registration Modal */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
@@ -135,6 +150,33 @@ export const EmpresasPage = () => {
             registro.reset();
           }}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedOficina}
+        close={closeOficinaModal}
+        title="Registrar Oficina"
+        size="md"
+      >
+        {empresaParaOficina && (
+          <RegistroOficina
+            idEmpresa={registroOficina.idEmpresa ?? empresaParaOficina.id_empresa}
+            empresaNombre={empresaParaOficina.razon_social}
+            nombre={registroOficina.nombre}
+            setNombre={registroOficina.setNombre}
+            direccion={registroOficina.direccion}
+            setDireccion={registroOficina.setDireccion}
+            esPrincipal={registroOficina.esPrincipal}
+            setEsPrincipal={registroOficina.setEsPrincipal}
+            error={registroOficina.error}
+            loading={registroOficina.loading}
+            onSave={registroOficina.handleGuardar}
+            onCancel={() => {
+              closeOficinaModal();
+              registroOficina.reset();
+            }}
+          />
+        )}
       </ModalEstandar>
     </div>
   );
