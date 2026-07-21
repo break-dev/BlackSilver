@@ -201,11 +201,18 @@ export const ProductosPage = () => {
               Perecible
             </Badge>
           )}
-          {r.es_auditable == false && r.es_perecible == false && (
-            <Text size="xs" className="text-zinc-600 italic">
-              Ninguno
-            </Text>
+          {r.para_mantenimiento == true && (
+            <Badge color="blue" variant="light" size="xs">
+              Para Mantenimiento
+            </Badge>
           )}
+          {r.es_auditable == false &&
+            r.es_perecible == false &&
+            r.para_mantenimiento == false && (
+              <Text size="xs" className="text-zinc-600 italic">
+                Ninguno
+              </Text>
+            )}
         </div>
       ),
     },

@@ -73,6 +73,7 @@ export const CategoriasPage = () => {
               { value: TipoBien.Suministro, label: "Suministros" },
               { value: TipoBien.Repuesto, label: "Repuestos" },
               { value: TipoBien.EPP, label: "EPPs" },
+              { value: TipoBien.Otros, label: "Otros" },
               { value: "Servicio", label: "Servicios" },
             ]}
             value={filtroClasificacion || "all"}
@@ -128,6 +129,7 @@ export const CategoriasPage = () => {
             TipoBien.Suministro,
             TipoBien.Repuesto,
             TipoBien.EPP,
+            TipoBien.Otros,
             TipoProducto.Servicio,
           ].map((clasif) => {
             const grupo = categoriasFiltradas.filter((c) => {

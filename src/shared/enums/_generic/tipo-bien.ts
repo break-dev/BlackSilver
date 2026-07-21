@@ -5,4 +5,5 @@ export enum TipoBien {
   Suministro = "Suministro",
   Repuesto = "Repuesto",
   EPP = "EPP",
+  Otros = "Otros",
 }
