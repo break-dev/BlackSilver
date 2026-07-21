@@ -7,7 +7,7 @@ import {
   Image,
   Loader,
 } from "@mantine/core";
-import { IconEye, IconDownload } from "@tabler/icons-react";
+import { IconEye, IconDownload, IconTrash } from "@tabler/icons-react";
 import { getFileTypeConfig } from "../../../shared/variables/file-types";
 import { useDownloadFile } from "../../../hooks/useDownloadFile";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
@@ -16,12 +16,14 @@ interface ArchivoCardProps extends React.ComponentPropsWithoutRef<"div"> {
   archivo: IArchivo;
   onView?: (archivo: IArchivo) => void;
   onDownload?: (archivo: IArchivo) => void;
+  onRemove?: (archivo: IArchivo) => void;
 }
 
 export const ArchivoCard = ({
   archivo,
   onView,
   onDownload,
+  onRemove,
   className = "",
   ...props
 }: ArchivoCardProps) => {
@@ -133,6 +135,20 @@ export const ArchivoCard = ({
               )}
             </ActionIcon>
           </Tooltip>
+          {onRemove && (
+            <Tooltip label="Eliminar" position="top" radius="md">
+              <ActionIcon
+                variant="light"
+                color="red"
+                onClick={() => onRemove(archivo)}
+                radius="md"
+                size="md"
+                className="bg-red-500/10 hover:bg-red-500/20"
+              >
+                <IconTrash size={18} stroke={2} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Group>
       </Group>
 

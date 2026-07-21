@@ -1,18 +1,23 @@
 import { useEffect } from "react";
-import { Button, TextInput, Skeleton, Text } from "@mantine/core";
+import { Button, TextInput, Skeleton, Text, Stack, Group } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   Squares2X2Icon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
+import { IconUpload } from "@tabler/icons-react";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 import { RegistroEmpresa } from "./registro-empresa";
 import { RegistroOficina } from "./registro-oficina";
 import { useEmpresas } from "../hooks/useEmpresas";
 import { useRegistroEmpresa } from "../hooks/useRegistroEmpresa";
 import { useRegistroOficina } from "../hooks/useRegistroOficina";
 import { EmpresaCard } from "./empresa-card";
+import { useState } from "react";
 
 export const EmpresasPage = () => {
   useTitlePage("Empresas");
@@ -32,6 +37,13 @@ export const EmpresasPage = () => {
     onOficinaCreada,
     onEmpresaCreada,
     handleUpdateLogo,
+    handleRemoveLogo,
+    empresaParaDocumentos,
+    openedDocumentos,
+    onOpenDocumentosModal,
+    closeDocumentosModal,
+    handleAgregarDocumentos,
+    handleEliminarDocumento,
   } = useEmpresas();
 
   const registro = useRegistroEmpresa({
@@ -44,11 +56,29 @@ export const EmpresasPage = () => {
     onClose: closeOficinaModal,
   });
 
+  // Estado local para subir nuevos docs en el modal de documentos
+  const [nuevosDocumentos, setNuevosDocumentos] = useState<File[]>([]);
+  const [subiendoDocs, setSubiendoDocs] = useState(false);
+
+  const handleSubirDocumentos = async () => {
+    if (!empresaParaDocumentos || nuevosDocumentos.length === 0) return;
+    setSubiendoDocs(true);
+    const ok = await handleAgregarDocumentos(empresaParaDocumentos.id_empresa, nuevosDocumentos);
+    if (ok) setNuevosDocumentos([]);
+    setSubiendoDocs(false);
+  };
+
   useEffect(() => {
     if (empresaParaOficina) {
       registroOficina.setIdEmpresa(empresaParaOficina.id_empresa);
     }
   }, [empresaParaOficina, registroOficina]);
+
+  // Limpiar nuevos docs al cerrar el modal
+  const handleCloseDocumentos = () => {
+    setNuevosDocumentos([]);
+    closeDocumentosModal();
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -88,19 +118,16 @@ export const EmpresasPage = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-zinc-900/40 border border-zinc-800/60 rounded-[32px] p-5 space-y-4"
+              className="bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-4 space-y-3"
             >
-              <div className="flex justify-start">
-                <Skeleton height={18} width={90} radius="md" />
-              </div>
-
-              <div className="flex items-center gap-5">
-                <Skeleton height={80} width={80} circle />
+              <div className="flex items-center gap-3">
+                <Skeleton height={52} width={52} radius={12} />
                 <div className="flex-1 space-y-2">
-                  <Skeleton height={16} width="80%" radius="md" />
-                  <Skeleton height={12} width="50%" radius="md" />
+                  <Skeleton height={14} width="80%" radius="md" />
+                  <Skeleton height={10} width="40%" radius="md" />
                 </div>
               </div>
+              <Skeleton height={60} radius="md" />
             </div>
           ))}
         </div>
@@ -123,25 +150,32 @@ export const EmpresasPage = () => {
               key={empresa.id_empresa}
               empresa={empresa}
               onUpdateLogo={handleUpdateLogo}
+              onRemoveLogo={handleRemoveLogo}
               onAddOficina={onOpenOficinaModal}
+              onOpenDocumentos={onOpenDocumentosModal}
             />
           ))}
         </div>
       )}
 
+      {/* Modal: Registrar Empresa */}
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
         title="Registrar Empresa"
-        size="md"
+        size="30%"
       >
         <RegistroEmpresa
           ruc={registro.ruc}
           setRuc={registro.setRuc}
           razonSocial={registro.razonSocial}
           setRazonSocial={registro.setRazonSocial}
+          domicilioFiscal={registro.domicilioFiscal}
+          setDomicilioFiscal={registro.setDomicilioFiscal}
           logoFile={registro.logoFile}
           setLogoFile={registro.setLogoFile}
+          documentosFiles={registro.documentosFiles}
+          setDocumentosFiles={registro.setDocumentosFiles}
           error={registro.error}
           loading={registro.loading}
           onSave={registro.handleGuardar}
@@ -152,6 +186,7 @@ export const EmpresasPage = () => {
         />
       </ModalEstandar>
 
+      {/* Modal: Registrar Oficina */}
       <ModalEstandar
         opened={openedOficina}
         close={closeOficinaModal}
@@ -176,6 +211,71 @@ export const EmpresasPage = () => {
               registroOficina.reset();
             }}
           />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Documentos de Empresa */}
+      <ModalEstandar
+        opened={openedDocumentos}
+        close={handleCloseDocumentos}
+        title={`Documentos — ${empresaParaDocumentos?.razon_social ?? ""}`}
+        size="lg"
+      >
+        {empresaParaDocumentos && (
+          <Stack gap="md">
+            {/* Documentos existentes */}
+            {(empresaParaDocumentos.documentos?.length ?? 0) > 0 ? (
+              <div className="flex flex-col gap-2">
+                <Text size="xs" fw={700} className="text-zinc-400 uppercase tracking-wider">
+                  Archivos adjuntos ({empresaParaDocumentos.documentos.length})
+                </Text>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {empresaParaDocumentos.documentos.map((doc) => (
+                    <ArchivoCard
+                      key={doc.path_relativo}
+                      archivo={doc}
+                      onRemove={() =>
+                        handleEliminarDocumento(
+                          empresaParaDocumentos.id_empresa,
+                          doc.path_relativo,
+                        )
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 py-6 rounded-xl border border-dashed border-zinc-800/60">
+                <DocumentTextIcon className="w-8 h-8 text-zinc-700" />
+                <Text size="xs" c="zinc.6">Sin documentos adjuntos</Text>
+              </div>
+            )}
+
+            {/* Subir nuevos documentos */}
+            <MultiFilePicker
+              files={nuevosDocumentos}
+              onFilesChange={setNuevosDocumentos}
+              label="Agregar documentos"
+              description="PDF, imágenes, Word, Excel — máx. 10 MB por archivo"
+              accept="image/png,image/jpeg,image/jpg,application/pdf,.docx,.xlsx"
+              multiple
+            />
+
+            {nuevosDocumentos.length > 0 && (
+              <Group justify="flex-end">
+                <Button
+                  size="sm"
+                  radius="lg"
+                  loading={subiendoDocs}
+                  leftSection={<IconUpload size={16} />}
+                  onClick={handleSubirDocumentos}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white border-0"
+                >
+                  Subir {nuevosDocumentos.length} archivo{nuevosDocumentos.length > 1 ? "s" : ""}
+                </Button>
+              </Group>
+            )}
+          </Stack>
         )}
       </ModalEstandar>
     </div>

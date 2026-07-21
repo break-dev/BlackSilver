@@ -2,14 +2,13 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
-import type { RES_Empresa } from "../../../service/responses/empresa";
+import type { RES_EmpresaResumen } from "../service/empresas.responses";
 import type { RES_Oficina } from "../../../service/responses/oficina";
-import { AuxService } from "../../../service/auxiliar.service";
 
 export const useEmpresas = () => {
   const { notifyError, notifySuccess } = useNotify();
 
-  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
+  const [empresas, setEmpresas] = useState<RES_EmpresaResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
@@ -17,14 +16,20 @@ export const useEmpresas = () => {
     useDisclosure(false);
 
   const [empresaParaOficina, setEmpresaParaOficina] =
-    useState<RES_Empresa | null>(null);
+    useState<RES_EmpresaResumen | null>(null);
   const [openedOficina, { open: openOficina, close: closeOficina }] =
+    useDisclosure(false);
+
+  // Modal de documentos
+  const [empresaParaDocumentos, setEmpresaParaDocumentos] =
+    useState<RES_EmpresaResumen | null>(null);
+  const [openedDocumentos, { open: openDocumentos, close: closeDocumentos }] =
     useDisclosure(false);
 
   const listar = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await AuxService.get_empresas();
+      const result = await EmpresasService.get_empresas();
       if (result.success) {
         setEmpresas(result.data);
       } else {
@@ -72,12 +77,33 @@ export const useEmpresas = () => {
     }
   };
 
-  const onEmpresaCreada = (nueva: RES_Empresa) => {
-    const nuevaConOficinas: RES_Empresa = { ...nueva, oficinas: [] };
+  const handleRemoveLogo = async (id: number) => {
+    try {
+      const result = await EmpresasService.actualizar_logo(id, null as unknown as File);
+      if (result.success) {
+        setEmpresas((prev) =>
+          prev.map((emp) =>
+            emp.id_empresa === id ? { ...emp, url_logo: null } : emp,
+          ),
+        );
+        notifySuccess("Logo eliminado");
+        return true;
+      } else {
+        notifyError(result.message);
+        return false;
+      }
+    } catch {
+      notifyError("Error al eliminar el logo");
+      return false;
+    }
+  };
+
+  const onEmpresaCreada = (nueva: RES_EmpresaResumen) => {
+    const nuevaConOficinas: RES_EmpresaResumen = { ...nueva, oficinas: [] };
     setEmpresas((prev) => [nuevaConOficinas, ...prev]);
   };
 
-  const onOpenOficinaModal = (empresa: RES_Empresa) => {
+  const onOpenOficinaModal = (empresa: RES_EmpresaResumen) => {
     setEmpresaParaOficina(empresa);
     openOficina();
   };
@@ -85,6 +111,64 @@ export const useEmpresas = () => {
   const closeOficinaModal = () => {
     closeOficina();
     setEmpresaParaOficina(null);
+  };
+
+  const onOpenDocumentosModal = (empresa: RES_EmpresaResumen) => {
+    setEmpresaParaDocumentos(empresa);
+    openDocumentos();
+  };
+
+  const closeDocumentosModal = () => {
+    closeDocumentos();
+    setEmpresaParaDocumentos(null);
+  };
+
+  const handleAgregarDocumentos = async (id: number, archivos: File[]) => {
+    try {
+      const result = await EmpresasService.agregar_documentos(id, archivos);
+      if (result.success) {
+        setEmpresas((prev) =>
+          prev.map((emp) =>
+            emp.id_empresa === id ? { ...emp, documentos: result.data } : emp,
+          ),
+        );
+        setEmpresaParaDocumentos((prev) =>
+          prev && prev.id_empresa === id ? { ...prev, documentos: result.data } : prev,
+        );
+        notifySuccess("Documentos agregados correctamente");
+        return true;
+      } else {
+        notifyError(result.message);
+        return false;
+      }
+    } catch {
+      notifyError("Error al agregar documentos");
+      return false;
+    }
+  };
+
+  const handleEliminarDocumento = async (id: number, path_relativo: string) => {
+    try {
+      const result = await EmpresasService.eliminar_documento(id, path_relativo);
+      if (result.success) {
+        setEmpresas((prev) =>
+          prev.map((emp) =>
+            emp.id_empresa === id ? { ...emp, documentos: result.data } : emp,
+          ),
+        );
+        setEmpresaParaDocumentos((prev) =>
+          prev && prev.id_empresa === id ? { ...prev, documentos: result.data } : prev,
+        );
+        notifySuccess("Documento eliminado");
+        return true;
+      } else {
+        notifyError(result.message);
+        return false;
+      }
+    } catch {
+      notifyError("Error al eliminar documento");
+      return false;
+    }
   };
 
   const onOficinaCreada = (nueva: RES_Oficina) => {
@@ -125,8 +209,16 @@ export const useEmpresas = () => {
     closeOficinaModal,
     onOficinaCreada,
 
+    empresaParaDocumentos,
+    openedDocumentos,
+    onOpenDocumentosModal,
+    closeDocumentosModal,
+    handleAgregarDocumentos,
+    handleEliminarDocumento,
+
     onEmpresaCreada,
     handleUpdateLogo,
+    handleRemoveLogo,
     recargar: listar,
   };
 };

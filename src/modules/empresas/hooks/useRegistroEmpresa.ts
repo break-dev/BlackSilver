@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
-import type { RES_Empresa } from "../../../service/responses/empresa";
+import type { RES_EmpresaResumen } from "../service/empresas.responses";
 
 interface UseRegistroEmpresaProps {
-  onSuccess?: (nueva: RES_Empresa) => void;
+  onSuccess?: (nueva: RES_EmpresaResumen) => void;
   onClose: () => void;
 }
 
@@ -12,12 +12,13 @@ export const useRegistroEmpresa = ({
   onSuccess,
   onClose,
 }: UseRegistroEmpresaProps) => {
-  const { notify } = useNotify();
+  const { notifySuccess, notifyError } = useNotify();
 
-  // Estado del formulario
   const [ruc, setRuc] = useState("");
   const [razonSocial, setRazonSocial] = useState("");
+  const [domicilioFiscal, setDomicilioFiscal] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [documentosFiles, setDocumentosFiles] = useState<File[]>([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,9 @@ export const useRegistroEmpresa = ({
   const reset = useCallback(() => {
     setRuc("");
     setRazonSocial("");
+    setDomicilioFiscal("");
     setLogoFile(null);
+    setDocumentosFiles([]);
     setError("");
   }, []);
 
@@ -46,18 +49,23 @@ export const useRegistroEmpresa = ({
     formData.append("ruc", ruc);
     formData.append("razon_social", razonSocial);
 
-    if (logoFile) {
-      formData.append("url_logo", logoFile);
+    if (domicilioFiscal.trim()) {
+      formData.append("domicilio_fiscal", domicilioFiscal.trim());
     }
+
+    if (logoFile) {
+      formData.append("logo", logoFile);
+    }
+
+    documentosFiles.forEach((doc) => {
+      formData.append("documentos[]", doc);
+    });
 
     setLoading(true);
     try {
       const result = await EmpresasService.crear_empresa(formData);
       if (result.success) {
-        notify({
-          type: "success",
-          content: "Empresa registrada correctamente",
-        });
+        notifySuccess("Empresa registrada correctamente");
         onSuccess?.(result.data);
         onClose();
         reset();
@@ -65,7 +73,7 @@ export const useRegistroEmpresa = ({
         setError(result.message);
       }
     } catch (err) {
-      setError("Error inesperado al registrar la empresa");
+      notifyError("Error inesperado al registrar la empresa");
       console.error(err);
     } finally {
       setLoading(false);
@@ -77,8 +85,12 @@ export const useRegistroEmpresa = ({
     setRuc,
     razonSocial,
     setRazonSocial,
+    domicilioFiscal,
+    setDomicilioFiscal,
     logoFile,
     setLogoFile,
+    documentosFiles,
+    setDocumentosFiles,
     error,
     loading,
     handleGuardar,
