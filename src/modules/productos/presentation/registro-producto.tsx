@@ -273,7 +273,7 @@ export const RegistroProducto = ({
                 <TextInput
                   label={<LabelForm text="Prefijo (Activo Fijo)" />}
                   placeholder="Ej: SCOO"
-                  maxLength={4}
+                  maxLength={24}
                   value={form.prefijo || ""}
                   onChange={(e) =>
                     setField("prefijo", e.currentTarget.value.toUpperCase())
