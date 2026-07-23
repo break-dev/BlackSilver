@@ -1,5 +1,6 @@
 import type { EstadoActivoFijo, MovimientoActivoFijo } from "../../../shared/enums/activo-fijo";
 
+//
 export interface REQ_CrearActivo {
   id_producto: number;
   id_almacen?: number | null;
