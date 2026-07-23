@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react({
@@ -13,19 +12,20 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    chunkSizeWarningLimit: 5000, // Subir el límite de la advertencia a 5MB
+    target: "esnext",
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
-        // Divide dependencias pesadas en chunks independientes
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("exceljs")) return "vendor-exceljs";
-            if (id.includes("react") || id.includes("react-dom"))
-              return "vendor-react";
-            if (id.includes("lucide-react") || id.includes("@heroicons"))
-              return "vendor-icons";
-            return "vendor";
-          }
+        // Objeto explícito para evitar ciclos circulares entre chunks
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-mantine": [
+            "@mantine/core",
+            "@mantine/hooks",
+            "@mantine/dates",
+            "@mantine/notifications",
+          ],
         },
       },
     },

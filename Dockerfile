@@ -1,15 +1,16 @@
 # Stage 1: Build (React 19 + Vite)
-FROM node:20-alpine AS builder
+# Usamos node:20-slim (glibc) en lugar de alpine (musl) para transpilaciones pesadas
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Asigna 4GB de RAM a Node.js para transpilar a máxima velocidad
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 COPY package.json package-lock.json ./
 
-# Descarga acelerada: omite auditorías y comprobaciones innecesarias
+# Cachea la carpeta node_modules directamente para omitir la descomprensión en disco
 RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/app/node_modules \
     npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
@@ -26,8 +27,9 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_REVERB_PORT=$VITE_REVERB_PORT \
     VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 
-# Caché incremental de Vite + React Compiler
-RUN --mount=type=cache,target=/app/node_modules/.cache \
+# Ejecuta vite build usando el cache de node_modules y .vite
+RUN --mount=type=cache,target=/app/node_modules \
+    --mount=type=cache,target=/app/node_modules/.cache \
     --mount=type=cache,target=/app/node_modules/.vite \
     npx vite build
 
