@@ -3,10 +3,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Asigna 4GB de RAM a Node.js para transpilar a máxima velocidad
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 COPY package.json package-lock.json ./
 
-# Caché del directorio de descargas NPM
-RUN --mount=type=cache,target=/root/.npm npm ci
+# Descarga acelerada: omite auditorías y comprobaciones innecesarias
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --no-fund
 
 COPY . .
 
@@ -22,7 +26,7 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_REVERB_PORT=$VITE_REVERB_PORT \
     VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 
-# Caché dual para React 19 Compiler (.cache) y Vite (.vite)
+# Caché incremental de Vite + React Compiler
 RUN --mount=type=cache,target=/app/node_modules/.cache \
     --mount=type=cache,target=/app/node_modules/.vite \
     npx vite build

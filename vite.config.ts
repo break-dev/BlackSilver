@@ -14,5 +14,20 @@ export default defineConfig({
   ],
   build: {
     chunkSizeWarningLimit: 5000, // Subir el límite de la advertencia a 5MB
+    rollupOptions: {
+      output: {
+        // Divide dependencias pesadas en chunks independientes
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("exceljs")) return "vendor-exceljs";
+            if (id.includes("react") || id.includes("react-dom"))
+              return "vendor-react";
+            if (id.includes("lucide-react") || id.includes("@heroicons"))
+              return "vendor-icons";
+            return "vendor";
+          }
+        },
+      },
+    },
   },
 });
