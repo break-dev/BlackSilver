@@ -3,14 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Asigna 8GB de RAM a Node.js para empaquetar los 10,000+ módulos a máxima velocidad
-ENV NODE_OPTIONS="--max-old-space-size=8192"
-
 COPY package.json package-lock.json ./
 
-# Caché limpia de descargas NPM (sin volúmenes anidados sobre node_modules)
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --no-fund
+# Caché del directorio de descargas NPM
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 
@@ -26,7 +22,10 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_REVERB_PORT=$VITE_REVERB_PORT \
     VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 
-RUN npx vite build
+# Caché dual para React 19 Compiler (.cache) y Vite (.vite)
+RUN --mount=type=cache,target=/app/node_modules/.cache \
+    --mount=type=cache,target=/app/node_modules/.vite \
+    npx vite build
 
 # Stage 2: Producción con Nginx
 FROM nginx:alpine
