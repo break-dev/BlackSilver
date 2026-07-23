@@ -1,8 +1,15 @@
-# Stage 1: Build
+# Stage 1: Build (React 19 + Vite)
 FROM node:20-alpine AS builder
 
-# Variables de entorno BUILD-TIME (Vite las congela en el bundle).
-# Se inyectan desde Coolify como Build Args distintos por environment (front / front-dev).
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+# Caché del directorio de descargas NPM
+RUN --mount=type=cache,target=/root/.npm npm ci
+
+COPY . .
+
 ARG VITE_API_URL
 ARG VITE_REVERB_APP_KEY
 ARG VITE_REVERB_HOST
@@ -15,34 +22,30 @@ ENV VITE_API_URL=$VITE_API_URL \
     VITE_REVERB_PORT=$VITE_REVERB_PORT \
     VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
 
-WORKDIR /app
+# Caché dual para React 19 Compiler (.cache) y Vite (.vite)
+RUN --mount=type=cache,target=/app/node_modules/.cache \
+    --mount=type=cache,target=/app/node_modules/.vite \
+    npx vite build
 
-# Copiar archivos de dependencias para aprovechar la caché de Docker
-COPY package.json package-lock.json ./
-
-# Instalar dependencias usando npm ci (más rápido y limpio para CI/CD/Docker)
-RUN npm ci
-
-# Copiar el resto del código del frontend
-COPY . .
-
-# Compilar el proyecto Vite (genera la carpeta /app/dist)
-RUN npx vite build
-
-# Stage 2: Production (servido con Nginx)
+# Stage 2: Producción con Nginx
 FROM nginx:alpine
 
-# Configuración Nginx optimizada para SPA (React Router fallback)
 RUN echo 'server { \
     listen 80; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    gzip on; \
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml; \
+    location /assets/ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
     location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
         try_files $uri $uri/ /index.html; \
+        add_header Cache-Control "no-store, no-cache, must-revalidate"; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-# Copiar los archivos compilados del stage 1
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
