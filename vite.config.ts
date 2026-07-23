@@ -13,21 +13,7 @@ export default defineConfig({
   ],
   build: {
     target: "esnext",
-    cssCodeSplit: true,
-    chunkSizeWarningLimit: 3000,
-    rollupOptions: {
-      output: {
-        // Objeto explícito para evitar ciclos circulares entre chunks
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-mantine": [
-            "@mantine/core",
-            "@mantine/hooks",
-            "@mantine/dates",
-            "@mantine/notifications",
-          ],
-        },
-      },
-    },
+    sourcemap: false, // Desactiva generación de sourcemaps para liberar memoria RAM
+    chunkSizeWarningLimit: 5000,
   },
 });
