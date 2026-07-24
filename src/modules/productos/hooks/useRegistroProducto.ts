@@ -3,7 +3,9 @@ import { useNotify } from "../../../hooks/useNotify";
 import { ProductosService } from "../service/productos.service";
 import {
   Schema_CrearProducto,
+  Schema_ActualizarProducto,
   type DTO_CrearProducto,
+  type DTO_ActualizarProducto,
 } from "../service/productos.requests";
 import type { RES_ProductoResumen } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
@@ -30,10 +32,35 @@ const INITIAL_FORM: DTO_CrearProducto = {
   periodo_espera_vencimiento: null,
 };
 
-export const useRegistroProducto = (
-  productosExistentes: RES_ProductoResumen[],
-  onSuccess: (nuevo: RES_ProductoResumen) => void,
-) => {
+const productoToForm = (
+  producto: RES_ProductoResumen,
+): DTO_ActualizarProducto => ({
+  id_categoria: producto.id_categoria,
+  id_unidad_medida_base: producto.id_unidad_medida_base,
+  nombre: producto.nombre,
+  prefijo: producto.prefijo,
+  es_auditable: !!producto.es_auditable,
+  es_perecible: !!producto.es_perecible,
+  para_mantenimiento: !!producto.para_mantenimiento,
+  stock_minimo_base: Number(producto.stock_minimo_base ?? 0),
+  costo_promedio_base: Number(producto.costo_promedio_base ?? 0),
+  tiempo_espera_vencimiento: producto.tiempo_espera_vencimiento,
+  periodo_espera_vencimiento: producto.periodo_espera_vencimiento,
+});
+
+interface UseRegistroProductoProps {
+  productosExistentes: RES_ProductoResumen[];
+  onSuccess: (nuevo: RES_ProductoResumen) => void;
+  onEditSuccess?: (editado: RES_ProductoResumen) => void;
+  productoEdicion?: RES_ProductoResumen | null;
+}
+
+export const useRegistroProducto = ({
+  productosExistentes,
+  onSuccess,
+  onEditSuccess,
+  productoEdicion,
+}: UseRegistroProductoProps) => {
   const { notify } = useNotify();
   const [form, setForm] = useState<DTO_CrearProducto>(INITIAL_FORM);
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
@@ -77,6 +104,14 @@ export const useRegistroProducto = (
     cargarUnidades();
   }, [cargarCategorias, cargarUnidades]);
 
+  // Hidratar el formulario cuando se recibe un producto para editar
+  useEffect(() => {
+    if (productoEdicion) {
+      setForm(productoToForm(productoEdicion));
+      setCoincidencias([]);
+    }
+  }, [productoEdicion]);
+
   const setField = <K extends keyof DTO_CrearProducto>(
     field: K,
     value: DTO_CrearProducto[K],
@@ -108,11 +143,16 @@ export const useRegistroProducto = (
       return newForm;
     });
 
-    // Buscar coincidencias si el campo es el nombre
+    // Buscar coincidencias si el campo es el nombre (excluyendo el producto en edición)
     if (field === "nombre") {
       const query = String(value);
       if (query.length >= 3) {
-        const results = getCoincidencias(productosExistentes, query, {
+        const baseParaBuscar = productoEdicion
+          ? productosExistentes.filter(
+              (p) => p.id_producto !== productoEdicion.id_producto,
+            )
+          : productosExistentes;
+        const results = getCoincidencias(baseParaBuscar, query, {
           keys: ["nombre"],
           fuseThreshold: 0.3, // Más estricto para evitar ruido excesivo
         });
@@ -123,8 +163,11 @@ export const useRegistroProducto = (
     }
   };
 
+  const isEdit = !!productoEdicion;
+
   const handleSubmit = async () => {
-    const validation = Schema_CrearProducto.safeParse(form);
+    const schema = isEdit ? Schema_ActualizarProducto : Schema_CrearProducto;
+    const validation = schema.safeParse(form);
     if (!validation.success) {
       notify({ type: "error", content: validation.error.issues[0].message });
       return;
@@ -132,14 +175,31 @@ export const useRegistroProducto = (
 
     setLoading(true);
     try {
-      const resp = await ProductosService.crear_producto(validation.data);
-      if (resp.success) {
-        notify({ type: "success", content: resp.message });
-        onSuccess(resp.data);
-        setForm(INITIAL_FORM);
-        setCoincidencias([]);
+      if (isEdit && productoEdicion) {
+        const resp = await ProductosService.actualizar_producto(
+          productoEdicion.id_producto,
+          validation.data as DTO_ActualizarProducto,
+        );
+        if (resp.success) {
+          notify({ type: "success", content: resp.message });
+          onEditSuccess?.(resp.data);
+          setForm(INITIAL_FORM);
+          setCoincidencias([]);
+        } else {
+          notify({ type: "error", content: resp.message });
+        }
       } else {
-        notify({ type: "error", content: resp.message });
+        const resp = await ProductosService.crear_producto(
+          validation.data as DTO_CrearProducto,
+        );
+        if (resp.success) {
+          notify({ type: "success", content: resp.message });
+          onSuccess(resp.data);
+          setForm(INITIAL_FORM);
+          setCoincidencias([]);
+        } else {
+          notify({ type: "error", content: resp.message });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -160,5 +220,6 @@ export const useRegistroProducto = (
     loadingUnidades,
     cargarCategorias,
     handleSubmit,
+    isEdit,
   };
 };

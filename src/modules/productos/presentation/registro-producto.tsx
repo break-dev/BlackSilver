@@ -35,13 +35,17 @@ import { enPlural } from "../../../shared/functions/en-plural";
 interface RegistroProductoProps {
   productosExistentes: RES_ProductoResumen[];
   onSuccess: (nuevo: RES_ProductoResumen) => void;
+  onEditSuccess?: (editado: RES_ProductoResumen) => void;
   onCancel?: () => void;
+  productoEdicion?: RES_ProductoResumen | null;
 }
 
 export const RegistroProducto = ({
   productosExistentes,
   onSuccess,
+  onEditSuccess,
   onCancel,
+  productoEdicion,
 }: RegistroProductoProps) => {
   const {
     form,
@@ -54,7 +58,13 @@ export const RegistroProducto = ({
     loadingUnidades,
     cargarCategorias,
     handleSubmit,
-  } = useRegistroProducto(productosExistentes, onSuccess);
+    isEdit,
+  } = useRegistroProducto({
+    productosExistentes,
+    onSuccess,
+    onEditSuccess,
+    productoEdicion,
+  });
 
   const isActivoFijo = useMemo(() => {
     const cat = categorias.find((c) => c.id_categoria === form.id_categoria);
@@ -488,7 +498,7 @@ export const RegistroProducto = ({
             size="sm"
             className="bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 shadow-lg border-0"
           >
-            Registrar Producto
+            {isEdit ? "Guardar Cambios" : "Registrar Producto"}
           </Button>
         </Group>
 

@@ -9,12 +9,16 @@ import {
   ThemeIcon,
   ActionIcon,
   Tooltip,
+  Menu,
 } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   CubeIcon,
   ClockIcon,
+  EllipsisVerticalIcon,
+  PencilSquareIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { useDisclosure } from "@mantine/hooks";
@@ -39,11 +43,23 @@ dayjs.locale("es");
 export const ProductosPage = () => {
   useTitlePage("Catálogo de Productos");
 
-  const { productos, loading, busqueda, setBusqueda, pushNuevoProducto } =
-    useProductos();
+  const {
+    productos,
+    loading,
+    busqueda,
+    setBusqueda,
+    pushNuevoProducto,
+    actualizarProducto,
+    eliminarProducto,
+    eliminandoId,
+  } = useProductos();
 
   const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
     useDisclosure(false);
+  const [openedEdicion, { open: openEdicion, close: closeEdicion }] =
+    useDisclosure(false);
+  const [productoEnEdicion, setProductoEnEdicion] =
+    useState<RES_ProductoResumen | null>(null);
 
   const [openedHistory, { open: openHistory, close: closeHistory }] =
     useDisclosure(false);
@@ -65,13 +81,26 @@ export const ProductosPage = () => {
     }
   };
 
+  const handleOpenEdit = (r: RES_ProductoResumen) => {
+    setProductoEnEdicion(r);
+    openEdicion();
+  };
+
+  const handleCloseEdicion = () => {
+    setProductoEnEdicion(null);
+    closeEdicion();
+  };
+
+  const handleDelete = (r: RES_ProductoResumen) => {
+    void eliminarProducto(r.id_producto);
+  };
+
   const columns: DataTableColumn<RES_ProductoResumen>[] = [
     {
       accessor: "index",
       title: "#",
       textAlign: "center",
       width: 50,
-      render: (_, index) => index + 1,
     },
     {
       accessor: "producto",
@@ -230,37 +259,47 @@ export const ProductosPage = () => {
         </Badge>
       ),
     },
-    // {
-    //   accessor: "actions",
-    //   title: "",
-    //   width: 80,
-    //   textAlign: "right",
-    //   render: () => (
-    //     <Menu shadow="md" width={150} position="left">
-    //       <Menu.Target>
-    //         <ActionIcon variant="subtle" color="gray">
-    //           <EllipsisVerticalIcon className="w-5 h-5" />
-    //         </ActionIcon>
-    //       </Menu.Target>
-    //       <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
-    //         <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
-    //         <Menu.Item
-    //           leftSection={<PencilSquareIcon className="w-4 h-4" />}
-    //           className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
-    //         >
-    //           Editar
-    //         </Menu.Item>
-    //         <Menu.Item
-    //           leftSection={<TrashIcon className="w-4 h-4" />}
-    //           color="red"
-    //           className="hover:bg-red-900/20"
-    //         >
-    //           Eliminar
-    //         </Menu.Item>
-    //       </Menu.Dropdown>
-    //     </Menu>
-    //   ),
-    // },
+    {
+      accessor: "actions",
+      title: "",
+      width: 70,
+      textAlign: "right",
+      render: (r) => {
+        const estaEliminando = eliminandoId === r.id_producto;
+        return (
+          <Menu shadow="md" width={170} position="bottom-end" withArrow>
+            <Menu.Target>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                loading={estaEliminando}
+                aria-label="Abrir acciones del producto"
+              >
+                <EllipsisVerticalIcon className="w-5 h-5" />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown className="bg-zinc-900 border-zinc-800">
+              <Menu.Label className="text-zinc-500">Acciones</Menu.Label>
+              <Menu.Item
+                leftSection={<PencilSquareIcon className="w-4 h-4" />}
+                onClick={() => handleOpenEdit(r)}
+                className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              >
+                Editar
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<TrashIcon className="w-4 h-4" />}
+                color="red"
+                onClick={() => handleDelete(r)}
+                className="hover:bg-red-900/20"
+              >
+                Eliminar
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        );
+      },
+    },
   ];
 
   return (
@@ -329,6 +368,30 @@ export const ProductosPage = () => {
           }}
           onCancel={closeRegistro}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedEdicion}
+        close={handleCloseEdicion}
+        title={
+          productoEnEdicion ? `Editar: ${productoEnEdicion.nombre}` : "Editar Producto"
+        }
+        size="36rem"
+      >
+        {productoEnEdicion && (
+          <RegistroProducto
+            productosExistentes={productos}
+            productoEdicion={productoEnEdicion}
+            onSuccess={() => {
+              // En modo edición no se invoca este callback, pero se exige por tipado
+            }}
+            onEditSuccess={(editado) => {
+              actualizarProducto(editado);
+              handleCloseEdicion();
+            }}
+            onCancel={handleCloseEdicion}
+          />
+        )}
       </ModalEstandar>
     </div>
   );
