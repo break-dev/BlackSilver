@@ -163,7 +163,7 @@ export const EmpresasPage = () => {
         opened={openedCreate}
         close={closeCreate}
         title="Registrar Empresa"
-        size="30%"
+        size="sm"
       >
         <RegistroEmpresa
           ruc={registro.ruc}
