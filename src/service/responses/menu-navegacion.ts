@@ -16,4 +16,5 @@ export interface RES_Modulo {
   id_modulo: number;
   nombre: string;
   url: string;
+  tags?: string[];
 }
