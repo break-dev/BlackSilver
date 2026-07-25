@@ -21,6 +21,8 @@ export interface RES_EmpleadoResumen {
   pasaporte: string | null;
   fecha_nacimiento: string | null;
   con_contrato: boolean;
+  contrato_fecha_fin?: string | null;
+  contrato_por_tiempo_indefinido?: boolean | null;
   direccion: string | null;
   telefono: string | null;
   email: string | null;

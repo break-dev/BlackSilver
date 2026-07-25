@@ -68,21 +68,38 @@ export const PerfilPage = () => {
 
         {/* SECCIÓN LABORAL */}
         <ProfileSection title="Información Laboral">
-          <ProfileDataField
-            label="Empresa a la que Pertenece"
-            value={perfil?.empresa_nombre || (loading ? "" : "Sin asignar")}
-            loading={loading}
-          />
-          <ProfileDataField
-            label="Área o Departamento"
-            value={perfil?.nombre_area}
-            loading={loading}
-          />
-          <ProfileDataField
-            label="Cargo Desempeñado"
-            value={perfil?.nombre_cargo}
-            loading={loading}
-          />
+          {perfil?.es_contratista ? (
+            <>
+              <ProfileDataField
+                label="Tipo de Personal"
+                value="Contratista"
+                loading={loading}
+              />
+              <ProfileDataField
+                label="Mina Asignada"
+                value={perfil?.mina_nombre || (loading ? "" : "Sin asignar")}
+                loading={loading}
+              />
+            </>
+          ) : (
+            <>
+              <ProfileDataField
+                label="Empresa a la que Pertenece"
+                value={perfil?.empresa_nombre || (loading ? "" : "Sin asignar")}
+                loading={loading}
+              />
+              <ProfileDataField
+                label="Área o Departamento"
+                value={perfil?.nombre_area}
+                loading={loading}
+              />
+              <ProfileDataField
+                label="Cargo Desempeñado"
+                value={perfil?.nombre_cargo}
+                loading={loading}
+              />
+            </>
+          )}
           <ProfileDataField
             label="Nivel de Acceso (Rol)"
             value={perfil?.nombre_rol}

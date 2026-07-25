@@ -20,6 +20,7 @@ import type {
   RES_Area,
   RES_Cargo,
 } from "../../../service/responses/organigrama";
+import type { RES_Empresa } from "../../../service/responses/empresa";
 
 const INITIAL_FORM: DTO_CrearEmpleado = {
   nombre: "",
@@ -36,6 +37,7 @@ const INITIAL_FORM: DTO_CrearEmpleado = {
   email: "",
   foto: "",
   id_cargo: null,
+  id_empresa: null,
 };
 
 /**
@@ -53,26 +55,32 @@ export const useRegistroEmpleado = (
   const [form, setForm] = useState<DTO_CrearEmpleado>(INITIAL_FORM);
   const [areas, setAreas] = useState<RES_Area[]>([]);
   const [todosCargos, setTodosCargos] = useState<RES_Cargo[]>([]);
+  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
 
   const [idArea, setIdArea] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingAreas, setLoadingAreas] = useState(false);
   const [loadingCargos, setLoadingCargos] = useState(false);
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
   const [modalContratoAbierto, setModalContratoAbierto] = useState(false);
 
   const cargarCatalogos = useCallback(async () => {
     setLoadingAreas(true);
     setLoadingCargos(true);
+    setLoadingEmpresas(true);
     try {
-      const [areasRes, cargosRes] = await Promise.all([
+      const [areasRes, cargosRes, empresasRes] = await Promise.all([
         AuxService.get_areas().catch(() => ({ success: false, data: [] })),
         AuxService.get_cargos().catch(() => ({ success: false, data: [] })),
+        AuxService.get_empresas().catch(() => ({ success: false, data: [] })),
       ]);
       if (areasRes.success) setAreas(areasRes.data as RES_Area[]);
       if (cargosRes.success) setTodosCargos(cargosRes.data as RES_Cargo[]);
+      if (empresasRes.success) setEmpresas(empresasRes.data as RES_Empresa[]);
     } finally {
       setLoadingAreas(false);
       setLoadingCargos(false);
+      setLoadingEmpresas(false);
     }
   }, []);
 
@@ -104,9 +112,11 @@ export const useRegistroEmpleado = (
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSetIdArea = (value: number | null) => {
+  const handleSetIdArea = (value: number | null, keepCargo = false) => {
     setIdArea(value);
-    setForm((prev) => ({ ...prev, id_cargo: null }));
+    if (!keepCargo) {
+      setForm((prev) => ({ ...prev, id_cargo: null }));
+    }
   };
 
   const handleSetConContrato = (checked: boolean) => {
@@ -114,6 +124,7 @@ export const useRegistroEmpleado = (
       ...prev,
       con_contrato: checked,
       id_cargo: checked ? null : prev.id_cargo,
+      id_empresa: checked ? null : prev.id_empresa,
     }));
   };
 
@@ -225,10 +236,14 @@ export const useRegistroEmpleado = (
     abrirModalContrato,
     cerrarModalContrato,
     areas,
+    setAreas,
     cargos,
+    setTodosCargos,
+    empresas,
     loading,
     loadingAreas,
     loadingCargos,
+    loadingEmpresas,
     submitEmpleadoSinContrato,
     submitEmpleadoConContrato,
   };

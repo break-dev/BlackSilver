@@ -11,7 +11,9 @@ import {
   UnstyledButton,
   Divider,
   Tooltip,
+  Textarea,
 } from "@mantine/core";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import {
   CheckBadgeIcon,
   CalendarIcon,
@@ -79,7 +81,13 @@ export const ModalHistorialContratosEmpleado = ({
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
   const [modalNuevoContratoAbierto, setModalNuevoContratoAbierto] =
     useState(false);
-  const [finalizandoId, setFinalizandoId] = useState<number | null>(null);
+  const [modalFinalizarAbierto, setModalFinalizarAbierto] = useState(false);
+  const [contratoIdAFinalizar, setContratoIdAFinalizar] = useState<number | null>(null);
+  const [fechaFinAnticipada, setFechaFinAnticipada] = useState<Date | null>(
+    new Date()
+  );
+  const [motivoCierre, setMotivoCierre] = useState("");
+  const [submittingFinalizar, setSubmittingFinalizar] = useState(false);
 
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -112,18 +120,20 @@ export const ModalHistorialContratosEmpleado = ({
     setModalNuevoContratoAbierto(true);
   };
 
-  // Cierra anticipadamente el contrato (Vigente → Término Anticipado) usando
-  // la fecha de hoy como fecha_fin_anticipada. Una vez cerrado, el botón
-  // "Nuevo Contrato" se habilita automáticamente.
-  const handleFinalizar = async (idContrato: number) => {
-    setFinalizandoId(idContrato);
+  const handleConfirmarFinalizar = async () => {
+    if (!contratoIdAFinalizar || !fechaFinAnticipada || !motivoCierre.trim()) return;
+    setSubmittingFinalizar(true);
     try {
       const resp = await ContratosEmpleadoService.finalizar_anticipado(
-        idContrato,
-        dayjs().format("YYYY-MM-DD"),
+        contratoIdAFinalizar,
+        dayjs(fechaFinAnticipada).format("YYYY-MM-DD"),
+        motivoCierre.trim(),
       );
       if (resp.success) {
         notifySuccess("Contrato finalizado anticipadamente");
+        setModalFinalizarAbierto(false);
+        setContratoIdAFinalizar(null);
+        setMotivoCierre("");
         void reload();
         if (resp.data?.empleado) {
           onContratoCreado?.({ empleado: resp.data.empleado });
@@ -135,7 +145,7 @@ export const ModalHistorialContratosEmpleado = ({
       console.error(err);
       notifyError("Error al finalizar el contrato");
     } finally {
-      setFinalizandoId(null);
+      setSubmittingFinalizar(false);
     }
   };
 
@@ -404,10 +414,13 @@ export const ModalHistorialContratosEmpleado = ({
                                 color="orange"
                                 variant="light"
                                 leftSection={<XCircleIcon className="w-3.5 h-3.5" />}
-                                loading={finalizandoId === c.id_contrato}
+                                loading={contratoIdAFinalizar === c.id_contrato && submittingFinalizar}
                                 onClick={(ev) => {
                                   ev.stopPropagation();
-                                  void handleFinalizar(c.id_contrato);
+                                  setContratoIdAFinalizar(c.id_contrato);
+                                  setFechaFinAnticipada(new Date());
+                                  setMotivoCierre("");
+                                  setModalFinalizarAbierto(true);
                                 }}
                                 className="font-bold border border-orange-500/20"
                               >
@@ -491,29 +504,41 @@ export const ModalHistorialContratosEmpleado = ({
                               )}
                             </div>
 
-                            {/* Cierre anticipado como badge */}
+                            {/* Cierre anticipado */}
                             {tieneCierreAnticipado && (
-                              <Group gap="xs">
-                                <ClockIcon className="w-3.5 h-3.5 text-amber-400" />
-                                <Text
-                                  size="9px"
-                                  fw={800}
-                                  c="amber.4"
-                                  className="uppercase tracking-widest"
-                                >
-                                  Cierre
-                                </Text>
-                                <Badge
-                                  variant="light"
-                                  color="amber"
-                                  size="md"
-                                  radius="md"
-                                  className="font-mono font-bold"
-                                >
-                                  {formatDate(c.fecha_fin_anticipada)}
-                                </Badge>
-                              </Group>
-                            )}
+                               <Stack gap="xs">
+                                 <Group gap="xs">
+                                   <ClockIcon className="w-3.5 h-3.5 text-amber-400" />
+                                   <Text
+                                     size="9px"
+                                     fw={800}
+                                     c="amber.4"
+                                     className="uppercase tracking-widest"
+                                   >
+                                     Cierre
+                                   </Text>
+                                   <Badge
+                                     variant="light"
+                                     color="amber"
+                                     size="md"
+                                     radius="md"
+                                     className="font-mono font-bold"
+                                   >
+                                     {formatDate(c.fecha_fin_anticipada)}
+                                   </Badge>
+                                 </Group>
+                                 {c.motivo_cierre && (
+                                   <Group gap="xs" align="flex-start" className="pl-1">
+                                     <Text size="xs" fw={700} className="text-zinc-400">
+                                       Motivo de cierre:
+                                     </Text>
+                                     <Text size="xs" className="text-zinc-300 italic flex-1">
+                                       {c.motivo_cierre}
+                                     </Text>
+                                   </Group>
+                                 )}
+                               </Stack>
+                             )}
 
                             {evidencias.length > 0 && (
                               <div>
@@ -558,9 +583,59 @@ export const ModalHistorialContratosEmpleado = ({
           onSuccess={handleContratoCreado}
           contratoAnterior={ultimoContrato ?? undefined}
           fechaInicioSugerida={calcularFechaInicioSugerida(ultimoContrato ?? undefined)}
-          nombreEmpleado={nombreEmpleado}
         />
       )}
+      {/* Modal para finalizar contrato anticipadamente */}
+      <ModalEstandar
+        opened={modalFinalizarAbierto}
+        close={() => setModalFinalizarAbierto(false)}
+        title="Finalizar Contrato Anticipadamente"
+        size="md"
+      >
+        <Stack gap="md">
+          <CustomDatePicker
+            label="Fecha de Fin Anticipada"
+            value={fechaFinAnticipada}
+            onChange={(val) => setFechaFinAnticipada(val as Date | null)}
+            required
+            withAsterisk
+          />
+          <Textarea
+            label="Motivo de Cierre"
+            placeholder="Ej. Renuncia voluntaria, mutuo acuerdo, etc."
+            required
+            withAsterisk
+            minRows={3}
+            value={motivoCierre}
+            onChange={(e) => setMotivoCierre(e.currentTarget.value)}
+            classNames={{
+              input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
+              label: "text-zinc-300 font-medium mb-1 text-sm",
+            }}
+          />
+          <Group justify="flex-end" gap="sm" mt="md">
+            <Button
+              variant="subtle"
+              onClick={() => setModalFinalizarAbierto(false)}
+              disabled={submittingFinalizar}
+              radius="lg"
+              className="text-zinc-400 hover:text-white"
+            >
+              Cancelar
+            </Button>
+            <Button
+              color="orange"
+              onClick={handleConfirmarFinalizar}
+              loading={submittingFinalizar}
+              disabled={!fechaFinAnticipada || !motivoCierre.trim()}
+              radius="lg"
+              className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-950/20"
+            >
+              Confirmar Finalización
+            </Button>
+          </Group>
+        </Stack>
+      </ModalEstandar>
     </>
   );
 };

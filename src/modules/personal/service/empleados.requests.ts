@@ -74,6 +74,7 @@ export const Schema_CrearEmpleado = z
       }),
     foto: z.any().nullable().optional(),
     id_cargo: z.number().nullable().optional(),
+    id_empresa: z.number().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     // Si NO tiene contrato, id_cargo es obligatorio
@@ -82,6 +83,14 @@ export const Schema_CrearEmpleado = z
         code: z.ZodIssueCode.custom,
         path: ["id_cargo"],
         message: "Debe seleccionar un cargo",
+      });
+    }
+    // Si NO tiene contrato, id_empresa también es obligatorio
+    if (!data.con_contrato && (!data.id_empresa || data.id_empresa < 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["id_empresa"],
+        message: "Debe seleccionar una empresa",
       });
     }
   });

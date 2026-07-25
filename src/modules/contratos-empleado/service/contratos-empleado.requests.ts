@@ -27,7 +27,7 @@ export const Schema_CrearContratoEmpleado = z
   .object({
     id_empleado: z.number().min(1, "Empleado requerido"),
     id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
-    id_empresa: z.number().nullable().optional(),
+    id_empresa: z.number().min(1, "Debe seleccionar una empresa"),
     id_almacen: z.number().nullable().optional(),
     id_labor: z.number().nullable().optional(),
     id_oficina: z.number().nullable().optional(),

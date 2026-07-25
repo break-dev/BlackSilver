@@ -10,6 +10,7 @@ import {
   Text,
   Divider,
   Alert,
+  ActionIcon,
 } from "@mantine/core";
 import {
   BriefcaseIcon,
@@ -22,6 +23,7 @@ import {
   ClockIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroContratoEmpleado } from "../hooks/useRegistroContratoEmpleado";
 import { TipoContrato } from "../../../shared/enums/tipo-contrato";
@@ -34,6 +36,11 @@ import {
   Schema_CrearContratoEmpleado,
   type DTO_CrearContratoEmpleado,
 } from "../service/contratos-empleado.requests";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroArea } from "../../organigrama/presentation/registro-area";
+import { RegistroCargo } from "../../organigrama/presentation/registro-cargo";
+import { useRegistroArea } from "../../organigrama/hooks/useRegistroArea";
+import { useRegistroCargo } from "../../organigrama/hooks/useRegistroCargo";
 
 interface FormularioContratoEmpleadoProps {
   idEmpleado: number;
@@ -113,6 +120,9 @@ export const FormularioContratoEmpleado = ({
     evidencias,
     setEvidencias,
     areas,
+    setAreas,
+    cargos,
+    setTodosCargos,
     cargosSelectData,
     empresasSelectData,
     almacenes,
@@ -132,6 +142,31 @@ export const FormularioContratoEmpleado = ({
     loading,
     handleSubmit,
   } = useRegistroContratoEmpleado(idEmpleado, (payload) => onSuccess?.(payload));
+
+  const [openedAddArea, setOpenedAddArea] = useState(false);
+  const [openedAddCargo, setOpenedAddCargo] = useState(false);
+
+  const regArea = useRegistroArea(
+    (nuevaArea) => {
+      setAreas((prev) => [...prev, nuevaArea]);
+      setIdArea(nuevaArea.id_area);
+      setOpenedAddArea(false);
+    },
+    () => setOpenedAddArea(false)
+  );
+
+  const regCargo = useRegistroCargo(
+    (nuevoCargo) => {
+      setTodosCargos((prev) => [...prev, nuevoCargo]);
+      setField("id_cargo", nuevoCargo.id_cargo);
+      if (nuevoCargo.id_area) {
+        setIdArea(nuevoCargo.id_area);
+      }
+      setOpenedAddCargo(false);
+    },
+    () => setOpenedAddCargo(false),
+    idArea
+  );
 
   const [fechaFinError, setFechaFinError] = useState<string | null>(null);
   const [datosPrecargados, setDatosPrecargados] = useState(false);
@@ -299,41 +334,78 @@ export const FormularioContratoEmpleado = ({
     <Stack gap="md">
       {/* Fila 1: Área · Cargo · Tipo de Contrato */}
       <Group grow align="flex-start" gap="md">
-        <Select
-          label="Área"
-          placeholder={loadingAreas ? "Cargando áreas..." : "Seleccione área"}
-          data={areas.map((a) => ({
-            value: a.id_area.toString(),
-            label: a.nombre,
-          }))}
-          value={idArea?.toString() || null}
-          onChange={(val) => setIdArea(val ? Number(val) : null)}
-          leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
-          classNames={fieldClasses}
-          radius="lg"
-          size="xs"
-          searchable
-          disabled={loadingAreas || submittingTotal}
-          comboboxProps={{ withinPortal: true }}
-        />
-        <Select
-          label="Cargo"
-          placeholder={loadingCargos ? "Cargando..." : "Seleccione cargo"}
-          data={cargosSelectData}
-          value={
-            form.id_cargo && form.id_cargo > 0 ? String(form.id_cargo) : null
-          }
-          onChange={(val) => setField("id_cargo", val ? Number(val) : 0)}
-          leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
-          classNames={fieldClasses}
-          radius="lg"
-          size="xs"
-          required
-          withAsterisk
-          disabled={loadingCargos || submittingTotal}
-          searchable
-          comboboxProps={{ withinPortal: true }}
-        />
+        <div className="flex gap-2 items-end">
+          <Select
+            label="Área"
+            placeholder={loadingAreas ? "Cargando áreas..." : "Seleccione área"}
+            data={areas.map((a) => ({
+              value: a.id_area.toString(),
+              label: a.nombre,
+            }))}
+            value={idArea?.toString() || null}
+            onChange={(val) => setIdArea(val ? Number(val) : null)}
+            leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+            searchable
+            disabled={loadingAreas || submittingTotal}
+            comboboxProps={{ withinPortal: true }}
+            className="flex-1"
+          />
+          <ActionIcon
+            size="lg"
+            radius="xl"
+            variant="filled"
+            color="indigo"
+            className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+            onClick={() => setOpenedAddArea(true)}
+            disabled={submittingTotal}
+          >
+            <PlusIcon className="w-5 h-5 text-white" />
+          </ActionIcon>
+        </div>
+        <div className="flex gap-2 items-end">
+          <Select
+            label="Cargo"
+            placeholder={loadingCargos ? "Cargando..." : "Seleccione cargo"}
+            data={cargosSelectData}
+            value={
+              form.id_cargo && form.id_cargo > 0 ? String(form.id_cargo) : null
+            }
+            onChange={(val) => {
+              const cargoId = val ? Number(val) : 0;
+              setField("id_cargo", cargoId);
+              if (cargoId) {
+                const cargo = cargos.find((c) => c.id_cargo === cargoId);
+                if (cargo && cargo.id_area) {
+                  setIdArea(cargo.id_area);
+                }
+              }
+            }}
+            leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+            required
+            withAsterisk
+            disabled={loadingCargos || submittingTotal}
+            searchable
+            comboboxProps={{ withinPortal: true }}
+            className="flex-1"
+          />
+          <ActionIcon
+            size="lg"
+            radius="xl"
+            variant="filled"
+            color="indigo"
+            className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+            onClick={() => setOpenedAddCargo(true)}
+            disabled={submittingTotal}
+          >
+            <PlusIcon className="w-5 h-5 text-white" />
+          </ActionIcon>
+        </div>
         <Select
           label="Tipo de Contrato"
           placeholder="Seleccione"
@@ -358,21 +430,22 @@ export const FormularioContratoEmpleado = ({
       {/* Fila 2: Empresa · Remuneración (Sueldo Base o Salario Diario) */}
       <Group grow align="flex-start" gap="md">
         <Select
-          label="Empresa (opcional)"
+          label="Empresa"
           placeholder={
             loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
           }
           data={empresasSelectData}
           value={form.id_empresa ? String(form.id_empresa) : null}
           onChange={(val) =>
-            setField("id_empresa", val ? Number(val) : null)
+            setField("id_empresa", val ? Number(val) : 0)
           }
           leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
           classNames={fieldClasses}
           radius="lg"
           size="xs"
           searchable
-          clearable
+          required
+          withAsterisk
           comboboxProps={{ withinPortal: true }}
           disabled={submittingTotal}
         />
@@ -705,6 +778,48 @@ export const FormularioContratoEmpleado = ({
           </Button>
         </Group>
       )}
+      {/* Sub-modal: Registrar Área al vuelo */}
+      <ModalEstandar
+        opened={openedAddArea}
+        close={() => setOpenedAddArea(false)}
+        title="Registrar Nueva Área"
+        size="md"
+      >
+        <RegistroArea
+          nombre={regArea.nombre}
+          setNombre={regArea.setNombre}
+          cargos={regArea.cargos}
+          addCargo={regArea.addCargo}
+          removeCargo={regArea.removeCargo}
+          updateCargo={regArea.updateCargo}
+          loading={regArea.loading}
+          error={regArea.error}
+          onSave={regArea.handleGuardar}
+          onCancel={() => setOpenedAddArea(false)}
+        />
+      </ModalEstandar>
+
+      {/* Sub-modal: Registrar Cargo al vuelo */}
+      <ModalEstandar
+        opened={openedAddCargo}
+        close={() => setOpenedAddCargo(false)}
+        title="Registrar Nuevo Cargo"
+        size="md"
+      >
+        <RegistroCargo
+          nombre={regCargo.nombre}
+          setNombre={regCargo.setNombre}
+          loading={regCargo.loading}
+          error={regCargo.error}
+          onSave={regCargo.handleGuardar}
+          onCancel={() => setOpenedAddCargo(false)}
+          contextLabel={
+            idArea
+              ? `Área asociada: ${areas.find((a) => a.id_area === idArea)?.nombre || ""}`
+              : "Sin área asociada"
+          }
+        />
+      </ModalEstandar>
     </Stack>
   );
 };

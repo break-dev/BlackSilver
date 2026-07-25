@@ -26,7 +26,7 @@ const PERIODOS_DURACION = [
 const initialForm = (idEmpleado: number): DTO_CrearContratoEmpleado => ({
   id_empleado: idEmpleado,
   id_cargo: 0,
-  id_empresa: null,
+  id_empresa: 0,
   id_almacen: null,
   id_labor: null,
   id_oficina: null,
@@ -340,7 +340,9 @@ export const useRegistroContratoEmpleado = (
     handleRemoveEvidencia,
     handleClearEvidencias,
     areas,
+    setAreas,
     cargos,
+    setTodosCargos,
     cargosSelectData,
     empresas,
     empresasSelectData,

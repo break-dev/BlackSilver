@@ -18,7 +18,6 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   DocumentTextIcon,
-  PlusIcon,
   IdentificationIcon,
   CreditCardIcon,
 } from "@heroicons/react/24/outline";
@@ -45,7 +44,6 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
     loading,
     actualizarFoto,
     idActualizandoFoto,
-    abrirModalContrato,
     cerrarModalContrato,
     modalContratoEmpleado,
     abrirModalHistorial,
@@ -308,22 +306,22 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
                 Por Asignar
               </Badge>
               <Tooltip
-                label="Agregar contrato al empleado"
+                label="Ver historial de contratos"
                 withArrow
                 position="top"
                 transitionProps={{ duration: 150 }}
               >
                 <ActionIcon
                   variant="subtle"
-                  color="indigo"
+                  color="orange"
                   radius="md"
                   size="sm"
-                  aria-label="Agregar contrato"
+                  aria-label="Ver histórico de contratos"
                   onClick={() =>
-                    abrirModalContrato(r.id_empleado, nombreCompleto)
+                    abrirModalHistorial(r.id_empleado, nombreCompleto)
                   }
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <DocumentTextIcon className="w-4 h-4" />
                 </ActionIcon>
               </Tooltip>
             </Group>
@@ -331,17 +329,51 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
         }
 
         // Con Contrato: solo botón de ver historial
+        let badgeColor = "teal";
+        let badgeText = "Con Contrato";
+        let warningText = "";
+
+        if (esEmpleadoConContrato && tieneContratoVigente && !r.contrato_por_tiempo_indefinido && r.contrato_fecha_fin) {
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const fin = new Date(r.contrato_fecha_fin);
+          fin.setHours(0, 0, 0, 0);
+          const diffTime = fin.getTime() - hoy.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          if (diffDays < 0) {
+            badgeColor = "red";
+            badgeText = "Vencido";
+            warningText = `Venció hace ${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? "día" : "días"}`;
+          } else if (diffDays <= 5) {
+            badgeColor = "red";
+            badgeText = "Crítico";
+            warningText = `Vence en ${diffDays} ${diffDays === 1 ? "día" : "días"}`;
+          } else if (diffDays <= 30) {
+            badgeColor = "orange";
+            badgeText = "Por Vencer";
+            warningText = `Vence en ${diffDays} días`;
+          }
+        }
+
         return (
-          <Group gap={4} wrap="nowrap" justify="center">
-            <Badge
-              variant="light"
-              color="teal"
-              radius="md"
-              leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
-              className="font-medium"
-            >
-              Con Contrato
-            </Badge>
+          <Group gap={4} wrap="nowrap" justify="center" align="center">
+            <Stack gap={0} align="center">
+              <Badge
+                variant="light"
+                color={badgeColor}
+                radius="md"
+                leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
+                className="font-medium"
+              >
+                {badgeText}
+              </Badge>
+              {warningText && (
+                <Text size="10px" fw={700} c={badgeColor} className="mt-0.5 whitespace-nowrap">
+                  {warningText}
+                </Text>
+              )}
+            </Stack>
             <Tooltip
               label="Ver historial de contratos"
               withArrow
@@ -350,7 +382,7 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
             >
               <ActionIcon
                 variant="subtle"
-                color="teal"
+                color={badgeColor}
                 radius="md"
                 size="sm"
                 aria-label="Ver histórico de contratos"

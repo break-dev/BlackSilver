@@ -146,10 +146,11 @@ export const ContratosEmpleadoService = {
   finalizar_anticipado: async (
     idContrato: number,
     fechaFinAnticipada: string,
+    motivoCierre?: string,
   ): Promise<IRespuesta<{ empleado: RES_EmpleadoConContrato["empleado"] }>> => {
     const { data } = await api.post(
       `/contratos-empleado/${idContrato}/finalizar-anticipado`,
-      { fecha_fin_anticipada: fechaFinAnticipada },
+      { fecha_fin_anticipada: fechaFinAnticipada, motivo_cierre: motivoCierre },
     );
     return data;
   },

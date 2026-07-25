@@ -28,6 +28,7 @@ export interface RES_ContratoEmpleado {
   periodo_duracion: "diario" | "semanal" | "mensual" | "anual" | string | null;
   duracion_dias: number | null;
   fecha_fin_anticipada: string | null;
+  motivo_cierre?: string | null;
   created_at: string | null;
   estado: EstadoContrato | string;
 }

@@ -13,4 +13,6 @@ export interface RES_Perfil {
   nombre_cargo: string | null;
   nombre_area: string | null;
   empresa_nombre: string | null;
+  es_contratista?: boolean;
+  mina_nombre?: string | null;
 }

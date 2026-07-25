@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Stack,
   Group,
@@ -11,6 +11,7 @@ import {
   Text,
   Tooltip,
   Alert,
+  ActionIcon,
 } from "@mantine/core";
 import {
   UserIcon,
@@ -24,6 +25,7 @@ import {
   DocumentTextIcon,
   PlusIcon,
   CheckBadgeIcon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroEmpleado } from "../hooks/useRegistroEmpleado";
 import type { RES_EmpleadoResumen } from "../service/empleados.responses";
@@ -33,6 +35,10 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { FormularioContratoEmpleado } from "../../contratos-empleado/presentation/formulario-contrato";
 import type { DTO_CrearContratoEmpleado } from "../../contratos-empleado/service/contratos-empleado.requests";
 import { TipoContrato } from "../../../shared/enums/tipo-contrato";
+import { RegistroArea } from "../../organigrama/presentation/registro-area";
+import { RegistroCargo } from "../../organigrama/presentation/registro-cargo";
+import { useRegistroArea } from "../../organigrama/hooks/useRegistroArea";
+import { useRegistroCargo } from "../../organigrama/hooks/useRegistroCargo";
 
 interface RegistroEmpleadoProps {
   onSuccess: (nuevo: RES_EmpleadoResumen) => void;
@@ -58,12 +64,41 @@ export const RegistroEmpleado = ({
     cerrarModalContrato,
     modalContratoAbierto,
     areas,
+    setAreas,
     cargos,
+    setTodosCargos,
+    empresas,
     loading,
     loadingAreas,
     loadingCargos,
+    loadingEmpresas,
     submitEmpleadoSinContrato,
   } = useRegistroEmpleado(onSuccess);
+
+  const [openedAddArea, setOpenedAddArea] = useState(false);
+  const [openedAddCargo, setOpenedAddCargo] = useState(false);
+
+  const regArea = useRegistroArea(
+    (nuevaArea) => {
+      setAreas((prev) => [...prev, nuevaArea]);
+      setIdArea(nuevaArea.id_area);
+      setOpenedAddArea(false);
+    },
+    () => setOpenedAddArea(false)
+  );
+
+  const regCargo = useRegistroCargo(
+    (nuevoCargo) => {
+      setTodosCargos((prev) => [...prev, nuevoCargo]);
+      setField("id_cargo", nuevoCargo.id_cargo);
+      if (nuevoCargo.id_area) {
+        setIdArea(nuevoCargo.id_area, true);
+      }
+      setOpenedAddCargo(false);
+    },
+    () => setOpenedAddCargo(false),
+    idArea
+  );
 
   const photoPreview =
     form.foto instanceof File ? URL.createObjectURL(form.foto) : null;
@@ -311,11 +346,8 @@ export const RegistroEmpleado = ({
               mismo en un solo paso.
             </Alert>
             <Tooltip
-              label={
-                form.nombre && form.apellido
-                  ? ""
-                  : "Completa primero los datos del empleado"
-              }
+              label="Completa primero los datos del empleado"
+              disabled={!!(form.nombre && form.apellido)}
               withArrow
             >
               <Button
@@ -334,51 +366,111 @@ export const RegistroEmpleado = ({
             </Tooltip>
           </div>
         ) : (
-          <Group grow align="flex-start" gap="md">
+          <Stack gap="md">
+            <Group grow align="flex-start" gap="md">
+              <div className="flex gap-2 items-end">
+                <Select
+                  label="Área"
+                  placeholder={
+                    loadingAreas ? "Cargando áreas..." : "Seleccione área"
+                  }
+                  data={areas.map((a) => ({
+                    value: a.id_area.toString(),
+                    label: a.nombre,
+                  }))}
+                  value={idArea?.toString() || null}
+                  onChange={(val) => setIdArea(val ? Number(val) : null)}
+                  leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+                  classNames={fieldClasses}
+                  radius="lg"
+                  size="xs"
+                  searchable
+                  disabled={loadingAreas || loading}
+                  comboboxProps={{ withinPortal: true }}
+                  className="flex-1"
+                />
+                <ActionIcon
+                  size="lg"
+                  radius="xl"
+                  variant="filled"
+                  color="indigo"
+                  className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+                  onClick={() => setOpenedAddArea(true)}
+                  disabled={loading}
+                >
+                  <PlusIcon className="w-5 h-5 text-white" />
+                </ActionIcon>
+              </div>
+              <div className="flex gap-2 items-end">
+                <Select
+                  label="Cargo"
+                  placeholder={
+                    loadingCargos ? "Cargando cargos..." : "Seleccione cargo"
+                  }
+                  data={cargosSelectData}
+                  value={
+                    form.id_cargo && form.id_cargo > 0
+                      ? form.id_cargo.toString()
+                      : null
+                  }
+                  onChange={(val) => {
+                    const cargoId = val ? Number(val) : null;
+                    setField("id_cargo", cargoId);
+                    if (cargoId) {
+                      const cargo = cargos.find((c) => c.id_cargo === cargoId);
+                      if (cargo && cargo.id_area) {
+                        setIdArea(cargo.id_area, true);
+                      }
+                    }
+                  }}
+                  leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+                  classNames={fieldClasses}
+                  radius="lg"
+                  size="xs"
+                  required
+                  withAsterisk
+                  disabled={loadingCargos || loading}
+                  searchable
+                  comboboxProps={{ withinPortal: true }}
+                  className="flex-1"
+                />
+                <ActionIcon
+                  size="lg"
+                  radius="xl"
+                  variant="filled"
+                  color="indigo"
+                  className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+                  onClick={() => setOpenedAddCargo(true)}
+                  disabled={loading}
+                >
+                  <PlusIcon className="w-5 h-5 text-white" />
+                </ActionIcon>
+              </div>
+            </Group>
             <Select
-              label="Área"
+              label="Empresa"
               placeholder={
-                loadingAreas ? "Cargando áreas..." : "Seleccione área"
+                loadingEmpresas ? "Cargando empresas..." : "Seleccione empresa"
               }
-              data={areas.map((a) => ({
-                value: a.id_area.toString(),
-                label: a.nombre,
+              data={empresas.map((e) => ({
+                value: e.id_empresa.toString(),
+                label: e.razon_social,
               }))}
-              value={idArea?.toString() || null}
-              onChange={(val) => setIdArea(val ? Number(val) : null)}
-              leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
-              classNames={fieldClasses}
-              radius="lg"
-              size="xs"
-              searchable
-              disabled={loadingAreas || loading}
-              comboboxProps={{ withinPortal: true }}
-            />
-            <Select
-              label="Cargo"
-              placeholder={
-                loadingCargos ? "Cargando cargos..." : "Seleccione cargo"
-              }
-              data={cargosSelectData}
-              value={
-                form.id_cargo && form.id_cargo > 0
-                  ? form.id_cargo.toString()
-                  : null
-              }
+              value={form.id_empresa?.toString() || null}
               onChange={(val) =>
-                setField("id_cargo", val ? Number(val) : null)
+                setField("id_empresa", val ? Number(val) : null)
               }
-              leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+              leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
               classNames={fieldClasses}
               radius="lg"
               size="xs"
               required
               withAsterisk
-              disabled={loadingCargos || loading}
+              disabled={loadingEmpresas || loading}
               searchable
               comboboxProps={{ withinPortal: true }}
             />
-          </Group>
+          </Stack>
         )}
 
         {/* Acciones — siempre se muestra el botón Guardar */}
@@ -427,6 +519,49 @@ export const RegistroEmpleado = ({
           embedded
           formEmpleado={form}
           fotoEmpleado={fotoEmpleado}
+        />
+      </ModalEstandar>
+
+      {/* Sub-modal: Registrar Área al vuelo */}
+      <ModalEstandar
+        opened={openedAddArea}
+        close={() => setOpenedAddArea(false)}
+        title="Registrar Nueva Área"
+        size="md"
+      >
+        <RegistroArea
+          nombre={regArea.nombre}
+          setNombre={regArea.setNombre}
+          cargos={regArea.cargos}
+          addCargo={regArea.addCargo}
+          removeCargo={regArea.removeCargo}
+          updateCargo={regArea.updateCargo}
+          loading={regArea.loading}
+          error={regArea.error}
+          onSave={regArea.handleGuardar}
+          onCancel={() => setOpenedAddArea(false)}
+        />
+      </ModalEstandar>
+
+      {/* Sub-modal: Registrar Cargo al vuelo */}
+      <ModalEstandar
+        opened={openedAddCargo}
+        close={() => setOpenedAddCargo(false)}
+        title="Registrar Nuevo Cargo"
+        size="md"
+      >
+        <RegistroCargo
+          nombre={regCargo.nombre}
+          setNombre={regCargo.setNombre}
+          loading={regCargo.loading}
+          error={regCargo.error}
+          onSave={regCargo.handleGuardar}
+          onCancel={() => setOpenedAddCargo(false)}
+          contextLabel={
+            idArea
+              ? `Área asociada: ${areas.find((a) => a.id_area === idArea)?.nombre || ""}`
+              : "Sin área asociada"
+          }
         />
       </ModalEstandar>
     </>
