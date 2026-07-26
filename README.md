@@ -201,7 +201,7 @@ Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas 
 
 ---
 
-## 🎨 Guía Técnica de Estilos y Mantine v8 (ESTRICTO)
+## Guía Técnica de Estilos y Mantine v8 (ESTRICTO)
 
 Para evitar que la interfaz se vea inconsistente o "gigante", y asegurar que las IA utilicen la sintaxis correcta de Mantine v8, se deben seguir estas reglas sin excepción:
 
