@@ -45,16 +45,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Package artifact
-        run: |
-          mkdir -p out/frontend
-          cp -r dist/. out/frontend/
-          printf '{"sha":"%s","branch":"%s","built_at":"%s"}\n' \
-            "$GITHUB_SHA" "$GITHUB_REF_NAME" "$(date -u +%FT%TZ)" \
-            > out/frontend/commit.json
-          tar -C out -czf "frontend-${GITHUB_SHA}.tar.gz" frontend
-          (cd out && sha256sum "frontend-${GITHUB_SHA}.tar.gz" > "frontend-${GITHUB_SHA}.tar.gz.sha256")
-
       - name: Configure SSH
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -68,11 +58,8 @@ jobs:
           chmod 600 "$HOME/.ssh/deploy_key"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 644 "$HOME/.ssh/known_hosts"
-          ssh-keyscan -t ed25519 -H "${{ secrets.DEPLOY_HOST }}" 2>/dev/null \
-            | grep -F "$SSH_KNOWN_HOSTS" \
-            >> "$HOME/.ssh/known_hosts" || true
 
-      - name: Deploy
+      - name: Package and deploy
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
@@ -84,6 +71,17 @@ jobs:
           else
             target="front-dev"
           fi
+
+          tmpdir="$(mktemp -d)"
+          cp -r dist "$tmpdir/frontend"
+          printf '{"sha":"%s","branch":"%s","built_at":"%s"}\n' \
+            "$GITHUB_SHA" "$GITHUB_REF_NAME" "$(date -u +%FT%TZ)" \
+            > "$tmpdir/frontend/commit.json"
+
+          archive="$tmpdir/frontend-${GITHUB_SHA}.tar.gz"
+          (cd "$tmpdir" && tar -czf "$archive" frontend)
+          (cd "$tmpdir" && sha256sum "frontend-${GITHUB_SHA}.tar.gz" > "frontend-${GITHUB_SHA}.tar.gz.sha256")
+
           scp \
             -i "$HOME/.ssh/deploy_key" \
             -P "$DEPLOY_PORT" \
@@ -91,9 +89,10 @@ jobs:
             -o StrictHostKeyChecking=yes \
             -o IdentitiesOnly=yes \
             -o PubkeyAcceptedAlgorithms=+ssh-ed25519 \
-            "frontend-${GITHUB_SHA}.tar.gz" \
-            "frontend-${GITHUB_SHA}.tar.gz.sha256" \
+            "$archive" \
+            "$tmpdir/frontend-${GITHUB_SHA}.tar.gz.sha256" \
             "$DEPLOY_USER@$DEPLOY_HOST:/srv/blacksilver/incoming/${target}/"
+
           ssh \
             -i "$HOME/.ssh/deploy_key" \
             -p "$DEPLOY_PORT" \
@@ -103,3 +102,5 @@ jobs:
             -o PubkeyAcceptedAlgorithms=+ssh-ed25519 \
             "$DEPLOY_USER@$DEPLOY_HOST" \
             "sudo /usr/local/sbin/blacksilver-deploy front '$GITHUB_REF_NAME' '$GITHUB_SHA'"
+
+          rm -rf "$tmpdir"
