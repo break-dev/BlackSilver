@@ -83,8 +83,10 @@ jobs:
           set -euo pipefail
           if [ "$GITHUB_REF_NAME" = "main" ]; then
             target="front"
+            env_arg="prod"
           else
             target="front-dev"
+            env_arg="dev"
           fi
 
           tmpdir="$(mktemp -d)"
@@ -116,6 +118,6 @@ jobs:
             -o IdentitiesOnly=yes \
             -o PubkeyAcceptedAlgorithms=+ssh-ed25519 \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "sudo /usr/local/sbin/blacksilver-deploy front '$GITHUB_REF_NAME' '$GITHUB_SHA'"
+            "sudo /usr/local/sbin/blacksilver-deploy front '$env_arg' '$GITHUB_SHA'"
 
           rm -rf "$tmpdir"
