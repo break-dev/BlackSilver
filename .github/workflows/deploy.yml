@@ -52,10 +52,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.ssh"
+
           printf '%s' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/deploy_key"
-          printf '%s' "$DEPLOY_SSH_KEY" | head -n1 | grep -q '-----BEGIN' \
-            || { echo 'DEPLOY_SSH_KEY no parece una llave privada'; exit 1; }
           chmod 600 "$HOME/.ssh/deploy_key"
+
+          if ! head -n1 "$HOME/.ssh/deploy_key" | grep -qE '^-----BEGIN'; then
+            printf '\n-----END OPENSSH PRIVATE KEY-----\n' >> "$HOME/.ssh/deploy_key"
+            printf '-----BEGIN OPENSSH PRIVATE KEY-----\n%s' "$(cat "$HOME/.ssh/deploy_key")" \
+              > "$HOME/.ssh/deploy_key.new"
+            mv "$HOME/.ssh/deploy_key.new" "$HOME/.ssh/deploy_key"
+            chmod 600 "$HOME/.ssh/deploy_key"
+          fi
+
+          if ! ssh-keygen -y -f "$HOME/.ssh/deploy_key" >/dev/null 2>&1; then
+            echo "DEPLOY_SSH_KEY no es una llave privada válida"; exit 1
+          fi
+
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 644 "$HOME/.ssh/known_hosts"
 
