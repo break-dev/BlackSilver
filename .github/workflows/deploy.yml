@@ -88,13 +88,13 @@ jobs:
           fi
 
           tmpdir="$(mktemp -d)"
-          cp -r dist "$tmpdir/frontend"
+          cp -r dist "$tmpdir/dist"
           printf '{"sha":"%s","branch":"%s","built_at":"%s"}\n' \
             "$GITHUB_SHA" "$GITHUB_REF_NAME" "$(date -u +%FT%TZ)" \
-            > "$tmpdir/frontend/commit.json"
+            > "$tmpdir/dist/commit.json"
 
           archive="$tmpdir/frontend-${GITHUB_SHA}.tar.gz"
-          (cd "$tmpdir" && tar -czf "$archive" frontend)
+          (cd "$tmpdir" && tar -czf "$archive" dist)
           (cd "$tmpdir" && sha256sum "frontend-${GITHUB_SHA}.tar.gz" > "frontend-${GITHUB_SHA}.tar.gz.sha256")
 
           scp \
