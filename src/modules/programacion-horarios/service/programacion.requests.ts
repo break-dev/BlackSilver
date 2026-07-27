@@ -4,7 +4,10 @@ export const Schema_AsignarHorario = z
   .object({
     id_turno_laboral: z.number().int().min(1, "Seleccione un turno laboral"),
     fecha_inicio: z.string().min(1, "La fecha de inicio es obligatoria"),
-    por_tiempo_indefinido: z.boolean().optional().default(false),
+    por_tiempo_indefinido: z
+      .union([z.boolean(), z.number()])
+      .optional()
+      .transform((v) => Boolean(v)),
     fecha_fin: z
       .string()
       .nullable()

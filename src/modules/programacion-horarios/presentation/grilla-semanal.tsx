@@ -1,11 +1,14 @@
 import { useMemo } from "react";
-import { Group, Stack, Text, Avatar, Box } from "@mantine/core";
+import { Group, Stack, Text, Avatar, Box, Tooltip } from "@mantine/core";
 import {
   SunIcon,
   MoonIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
-import type { RES_ProgramacionHorario } from "../service/programacion.responses";
+import {
+  type RES_ProgramacionHorario,
+  lugarDiferenteContrato,
+} from "../service/programacion.responses";
 
 const NOMBRES_DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const NOMBRES_DIAS_LARGO = [
@@ -186,7 +189,8 @@ export const GrillaSemanal = ({
         </div>
       ) : (
         <Stack gap={0}>
-          {empleadosAgrupados.map((emp, idx) => (
+          {empleadosAgrupados.map((emp, idx) => {
+            return (
             <div
               key={emp.id_empleado}
               className={`grid border-b border-zinc-800/60 last:border-b-0 ${idx % 2 === 0 ? "bg-zinc-900/30" : "bg-transparent"
@@ -203,7 +207,7 @@ export const GrillaSemanal = ({
                 >
                   {emp.nombre?.[0] ?? "?"}
                 </Avatar>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <Text size="xs" fw={700} className="text-zinc-100 truncate leading-tight">
                     {emp.nombre}
                   </Text>
@@ -226,7 +230,8 @@ export const GrillaSemanal = ({
                 </div>
               ))}
             </div>
-          ))}
+            );
+          })}
         </Stack>
       )}
     </div>
@@ -291,8 +296,19 @@ const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
           {lugarTexto}
         </Text>
       )}
+      {lugarTexto && lugarDiferenteContrato(programacion) && (
+        <Tooltip
+          label="Lugar distinto al del contrato."
+          w={220}
+          withArrow
+        >
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-cyan-500/25 border border-cyan-400/50 text-white text-[9px] font-bold uppercase tracking-wider cursor-help">
+            Lugar distinto
+          </span>
+        </Tooltip>
+      )}
       {tol != null && tol > 0 && (
-        <Text size="8px" className="text-zinc-500 leading-none mt-0.5 font-medium">
+        <Text size="10px" className="text-zinc-500 leading-none mt-0.5 font-medium">
           || Tolerancia {tol}m
         </Text>
       )}

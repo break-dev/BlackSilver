@@ -87,7 +87,7 @@ export const ProgramacionHorarioService = {
   get_empleados_elegibles: async (
     fechaFinProgramacion: string | null,
     idLugar: number | null = null,
-    tipoLugar: "" | "almacen" | "labor" | null = null,
+    tipoLugar: "" | "almacen" | "labor" | "oficina" | null = null,
   ): Promise<IRespuesta<RES_EmpleadoElegible[]>> => {
     const params: Record<string, unknown> = {
       solo_con_contrato_vigente: 1,

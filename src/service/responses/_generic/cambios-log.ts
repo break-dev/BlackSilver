@@ -3,6 +3,7 @@
  */
 export interface RES_CambiosLog {
   id_empleado: number; // el que hizo el cambio
+  nombre_empleado?: string | null; // nombre de quien hizo el cambio, opcional
   motivo: string | null; // motivo del cambio, opcional
   update_at: string; // fecha y hora del cambio
   // Al editar

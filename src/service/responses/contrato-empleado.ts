@@ -1,6 +1,7 @@
 import type { EstadoContrato } from "../../shared/enums/contrato/estado-contrato";
 import type { IArchivo } from "../../shared/interfaces/archivo";
 import type { RES_EmpleadoResumen } from "../../modules/personal/service/empleados.responses";
+import type { RES_CambiosLog } from "./_generic/cambios-log";
 
 export interface RES_ContratoEmpleado {
   id_contrato: number;
@@ -29,6 +30,7 @@ export interface RES_ContratoEmpleado {
   duracion_dias: number | null;
   fecha_fin_anticipada: string | null;
   motivo_cierre?: string | null;
+  cambios_log?: RES_CambiosLog[] | null;
   created_at: string | null;
   estado: EstadoContrato | string;
 }

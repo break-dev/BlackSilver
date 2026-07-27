@@ -22,7 +22,6 @@ import {
   BanknotesIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroContratoEmpleado } from "../hooks/useRegistroContratoEmpleado";
@@ -136,6 +135,8 @@ export const FormularioContratoEmpleado = ({
     loadingAlmacenes,
     loadingLabores,
     loadingEmpresas,
+    loadingOficinas,
+    oficinas,
     tiposContratoOptions,
     periodosDuracionOptions,
     duracionDiasCalc,
@@ -516,21 +517,17 @@ export const FormularioContratoEmpleado = ({
         />
       </Group>
 
-      <div
-        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all ${
-          esIndefinido
-            ? "bg-indigo-500/10 border-indigo-500/40"
-            : "bg-zinc-900/50 border-zinc-800"
-        }`}
-      >
-        <div className="flex flex-col">
-          <Text size="sm" fw={700} className="text-zinc-200 flex items-center gap-2">
-            <DocumentTextIcon className="w-4 h-4 text-indigo-400" />
-            ¿Por tiempo indefinido?
-          </Text>
-          <Text size="11px" c="dimmed" className="leading-snug">
-            Si activa esta opción, no se solicitará duración ni fecha de fin.
-          </Text>
+      <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-zinc-800 bg-zinc-900/10">
+        <div className="flex gap-2.5 items-center">
+          <ClockIcon className="w-5 h-5 text-indigo-400" />
+          <Stack gap={0}>
+            <Text size="sm" fw={700} className="text-zinc-200">
+              Contrato Indefinido
+            </Text>
+            <Text size="11px" className="text-zinc-500">
+              Active esta opción si el contrato no tiene una fecha de vencimiento fija.
+            </Text>
+          </Stack>
         </div>
         <Switch
           checked={esIndefinido}
@@ -550,36 +547,35 @@ export const FormularioContratoEmpleado = ({
             placeholder="Ej. 3"
             hideControls
             value={form.duracion ?? ""}
-            onChange={(v) => setField("duracion", toNum(v))}
+            disabled
             leftSection={<CalendarIcon className="w-4 h-4 text-zinc-500" />}
-            classNames={fieldClasses}
+            classNames={{
+              ...fieldClasses,
+              input: `${fieldClasses.input} bg-zinc-950/50 text-zinc-400 cursor-not-allowed`,
+            }}
             radius="lg"
             size="xs"
-            min={1}
-            disabled={submittingTotal}
           />
           <Select
             label="Periodo"
             placeholder="Seleccione"
             data={periodosDuracionOptions}
             value={form.periodo_duracion ?? null}
-            onChange={(val) =>
-              setField(
-                "periodo_duracion",
-                val as "diario" | "semanal" | "mensual" | "anual" | null,
-              )
-            }
+            disabled
             leftSection={<CalendarIcon className="w-4 h-4 text-zinc-500" />}
-            classNames={fieldClasses}
+            classNames={{
+              ...fieldClasses,
+              input: `${fieldClasses.input} bg-zinc-950/50 text-zinc-400 cursor-not-allowed`,
+            }}
             radius="lg"
             size="xs"
             comboboxProps={{ withinPortal: true }}
-            disabled={submittingTotal}
           />
           <TextInput
             label="Duración (días)"
             value={duracionDiasCalc !== null ? `${duracionDiasCalc}` : ""}
             readOnly
+            disabled
             placeholder="Se calcula automático"
             leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
             classNames={{
@@ -593,16 +589,6 @@ export const FormularioContratoEmpleado = ({
       )}
 
       <Divider label="Lugar de trabajo" labelPosition="left" />
-      <Alert
-        variant="light"
-        color="indigo"
-        radius="md"
-        icon={<ExclamationCircleIcon className="w-4 h-4" />}
-        styles={{ message: { fontSize: "12px" } }}
-      >
-        Debe seleccionar <strong>al menos uno</strong>: indique el tipo de
-        lugar (almacén o labor) y luego el específico.
-      </Alert>
       <Group grow align="flex-start" gap="md">
         <Select
           label="Tipo de lugar"
@@ -610,11 +596,12 @@ export const FormularioContratoEmpleado = ({
           data={[
             { value: "almacen", label: "Almacén" },
             { value: "labor", label: "Labor" },
+            { value: "oficina", label: "Oficina" },
           ]}
           value={tipoLugar || null}
           onChange={(val) =>
             setTipoLugar(
-              (val as "" | "almacen" | "labor" | null) ?? "",
+              (val as "" | "almacen" | "labor" | "oficina" | null) ?? "",
             )
           }
           leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
@@ -632,7 +619,9 @@ export const FormularioContratoEmpleado = ({
               ? "Almacén"
               : tipoLugar === "labor"
                 ? "Labor"
-                : "Específico"
+                : tipoLugar === "oficina"
+                  ? "Oficina"
+                  : "Específico"
           }
           placeholder={
             tipoLugar === "almacen"
@@ -643,7 +632,11 @@ export const FormularioContratoEmpleado = ({
                 ? loadingLabores
                   ? "Cargando labores..."
                   : "Seleccione labor"
-                : "Primero seleccione el tipo"
+                : tipoLugar === "oficina"
+                  ? loadingOficinas
+                    ? "Cargando oficinas..."
+                    : "Seleccione oficina"
+                  : "Primero seleccione el tipo"
           }
           data={
             tipoLugar === "almacen"
@@ -656,12 +649,19 @@ export const FormularioContratoEmpleado = ({
                     value: l.id_labor.toString(),
                     label: l.nombre,
                   }))
-                : []
+                : tipoLugar === "oficina"
+                  ? oficinas.map((o) => ({
+                      value: o.id_oficina.toString(),
+                      label: o.nombre,
+                    }))
+                  : []
           }
           value={lugarIdActual ? String(lugarIdActual) : null}
           onChange={(val) => setLugarId(val ? Number(val) : null)}
           leftSection={
             tipoLugar === "almacen" ? (
+              <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
+            ) : tipoLugar === "oficina" ? (
               <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
             ) : (
               <MapPinIcon className="w-4 h-4 text-zinc-500" />
@@ -679,6 +679,7 @@ export const FormularioContratoEmpleado = ({
             !tipoLugar ||
             (tipoLugar === "almacen" && loadingAlmacenes) ||
             (tipoLugar === "labor" && loadingLabores) ||
+            (tipoLugar === "oficina" && loadingOficinas) ||
             submittingTotal
           }
         />

@@ -155,6 +155,27 @@ export const ContratosEmpleadoService = {
     return data;
   },
 
+  registrar_adenda: async (
+    idContrato: number,
+    motivo: string | null,
+    datosNuevos: Record<string, unknown>,
+    evidencias: File[] = [],
+  ): Promise<IRespuesta<{ contrato: RES_ContratoEmpleado; empleado: RES_EmpleadoConContrato["empleado"] }>> => {
+    const payload = {
+      motivo,
+      ...datosNuevos,
+    };
+    const formData = buildFormData(payload, evidencias);
+    const { data } = await api.post(
+      `/contratos-empleado/${idContrato}/adenda`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return data;
+  },
+
   get_tipos_contrato: async (): Promise<IRespuesta<OpcionCatalogo[]>> => {
     const { data } = await api.get("/aux/tipos-contrato");
     return data;

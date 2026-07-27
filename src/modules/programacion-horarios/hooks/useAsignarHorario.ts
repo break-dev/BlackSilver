@@ -19,13 +19,55 @@ const initialForm = (): DTO_AsignarHorario => ({
   empleados: [],
 });
 
+export type TipoLugarProgramacion = "" | "almacen" | "labor" | "oficina";
+
+export interface AsignarHorarioPrefill {
+  id_turno_laboral?: number;
+  fecha_inicio?: string;
+  por_tiempo_indefinido?: boolean | number;
+  fecha_fin?: string | null;
+  dias_laborables?: string;
+  id_oficina?: number | null;
+  id_almacen?: number | null;
+  id_labor?: number | null;
+  empleados?: number[];
+  tipo_lugar?: TipoLugarProgramacion;
+}
+
 export const useAsignarHorario = (
   onSuccess?: (resultado: RES_ProgramacionAsignada) => void,
+  prefill?: AsignarHorarioPrefill,
+  empleadosPreseleccionados?: number[],
 ) => {
   const { notifySuccess, notifyError, notifyInfo } = useNotify();
-  const [form, setForm] = useState<DTO_AsignarHorario>(initialForm());
+  const [form, setForm] = useState<DTO_AsignarHorario>(() => {
+    const base = initialForm();
+    if (!prefill) return base;
+    return {
+      ...base,
+      fecha_inicio: prefill.fecha_inicio ?? base.fecha_inicio,
+      por_tiempo_indefinido: prefill.por_tiempo_indefinido !== undefined
+        ? Boolean(prefill.por_tiempo_indefinido)
+        : base.por_tiempo_indefinido,
+      fecha_fin: prefill.fecha_fin ?? base.fecha_fin,
+      dias_laborables: prefill.dias_laborables ?? base.dias_laborables,
+      id_oficina: prefill.id_oficina ?? base.id_oficina,
+      id_almacen: prefill.id_almacen ?? base.id_almacen,
+      id_labor: prefill.id_labor ?? base.id_labor,
+      id_turno_laboral: prefill.id_turno_laboral ?? base.id_turno_laboral,
+      empleados: prefill.empleados ?? empleadosPreseleccionados ?? base.empleados,
+    };
+  });
   const [loading, setLoading] = useState(false);
-  const [tipoLugar, setTipoLugar] = useState<"" | "almacen" | "labor">("");
+  const [tipoLugar, setTipoLugar] = useState<TipoLugarProgramacion>(
+    () => {
+      if (prefill?.tipo_lugar) return prefill.tipo_lugar;
+      if (prefill?.id_almacen) return "almacen";
+      if (prefill?.id_labor) return "labor";
+      if (prefill?.id_oficina) return "oficina";
+      return "";
+    },
+  );
 
   const setField = <K extends keyof DTO_AsignarHorario>(
     field: K,
@@ -42,9 +84,8 @@ export const useAsignarHorario = (
     });
   };
 
-  const handleSetTipoLugar = (value: "" | "almacen" | "labor") => {
+  const handleSetTipoLugar = (value: TipoLugarProgramacion) => {
     setTipoLugar(value);
-    // Garantizar exclusividad: limpiar los 3 campos al cambiar, y vaciar empleados.
     setForm((prev) => ({
       ...prev,
       id_oficina: null,
@@ -56,12 +97,13 @@ export const useAsignarHorario = (
 
   const handleSetLugarId = (id: number | null) => {
     setForm((prev) => {
-      const next = { ...prev, empleados: [] };
-      if (tipoLugar === "almacen") {
-        next.id_almacen = id;
-      } else if (tipoLugar === "labor") {
-        next.id_labor = id;
-      }
+      const next: typeof prev = { ...prev, empleados: [] };
+      next.id_almacen = null;
+      next.id_labor = null;
+      next.id_oficina = null;
+      if (tipoLugar === "almacen") next.id_almacen = id;
+      else if (tipoLugar === "labor") next.id_labor = id;
+      else if (tipoLugar === "oficina") next.id_oficina = id;
       return next;
     });
   };
@@ -69,8 +111,9 @@ export const useAsignarHorario = (
   const lugarIdActual = useMemo<number | null>(() => {
     if (tipoLugar === "almacen") return form.id_almacen ?? null;
     if (tipoLugar === "labor") return form.id_labor ?? null;
+    if (tipoLugar === "oficina") return form.id_oficina ?? null;
     return null;
-  }, [tipoLugar, form.id_almacen, form.id_labor]);
+  }, [tipoLugar, form.id_almacen, form.id_labor, form.id_oficina]);
 
   const reset = () => {
     setForm(initialForm());

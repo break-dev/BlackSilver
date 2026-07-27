@@ -22,10 +22,14 @@ import {
   PlusIcon,
   MapPinIcon,
   BuildingOfficeIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import { useAsignarHorario } from "../hooks/useAsignarHorario";
+import {
+  useAsignarHorario,
+  type AsignarHorarioPrefill,
+} from "../hooks/useAsignarHorario";
 import { useEmpleadosElegibles } from "../hooks/useEmpleadosElegibles";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 import type { RES_EmpleadoElegible } from "../service/programacion.responses";
@@ -37,6 +41,20 @@ interface ModalAsignarHorarioProps {
   turnos: RES_TurnoLaboral[];
   onSuccess?: () => void;
   onRegistrarTurnoClick?: () => void;
+  /**
+   * Valores pre-rellenos al abrir el modal. Sirve para reasignaciones
+   * disparadas por la cascada de ContratosEmpleado.
+   */
+  prefill?: AsignarHorarioPrefill;
+  /**
+   * Si se pasa, el modal se abre en "modo reasignación" con un banner
+   * informativo y el empleado pre-seleccionado.
+   */
+  empleadoPreseleccionado?: number;
+  /**
+   * Mensaje personalizado para el banner (cuando viene de una cascada).
+   */
+  motivoReasignacion?: string;
 }
 
 const NOMBRES_DIAS = [
@@ -83,6 +101,9 @@ export const ModalAsignarHorario = ({
   turnos,
   onSuccess,
   onRegistrarTurnoClick,
+  prefill,
+  empleadoPreseleccionado,
+  motivoReasignacion,
 }: ModalAsignarHorarioProps) => {
   const { notifyError } = useNotify();
   const {
@@ -96,10 +117,14 @@ export const ModalAsignarHorario = ({
     setTipoLugar,
     lugarIdActual,
     setLugarId,
-  } = useAsignarHorario(() => {
-    onSuccess?.();
-    close();
-  });
+  } = useAsignarHorario(
+    () => {
+      onSuccess?.();
+      close();
+    },
+    prefill,
+    empleadoPreseleccionado ? [empleadoPreseleccionado] : undefined,
+  );
 
   // Determinar fecha_fin para la consulta de elegibles.
   // Si es indefinido, se envía null (el backend aceptará siempre).
@@ -114,17 +139,23 @@ export const ModalAsignarHorario = ({
   const [laboresOptions, setLaboresOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+  const [oficinasOptions, setOficinasOptions] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
 
   useEffect(() => {
     let cancelado = false;
     const cargar = async () => {
       try {
-        const [alm, lab] = await Promise.all([
+        const [alm, lab, ofi] = await Promise.all([
           import("../../../service/auxiliar.service").then((m) =>
             m.AuxService.get_almacenes({ es_principal: false }),
           ),
           import("../../../service/auxiliar.service").then((m) =>
             m.AuxService.get_labores(),
+          ),
+          import("../../../service/auxiliar.service").then((m) =>
+            m.AuxService.get_oficinas(),
           ),
         ]);
         if (cancelado) return;
@@ -142,6 +173,12 @@ export const ModalAsignarHorario = ({
           const data = lab.data as Array<{ id_labor: number; nombre: string }>;
           setLaboresOptions(
             data.map((l) => ({ value: String(l.id_labor), label: l.nombre })),
+          );
+        }
+        if (ofi.success) {
+          const data = ofi.data as Array<{ id_oficina: number; nombre: string }>;
+          setOficinasOptions(
+            data.map((o) => ({ value: String(o.id_oficina), label: o.nombre })),
           );
         }
       } catch (err) {
@@ -213,6 +250,24 @@ export const ModalAsignarHorario = ({
       size="xl"
     >
       <Stack gap="md">
+        {motivoReasignacion && (
+          <Alert
+            variant="light"
+            color="indigo"
+            icon={<ExclamationTriangleIcon className="w-5 h-5" />}
+            radius="lg"
+            className="bg-indigo-500/5 border-indigo-500/30"
+            classNames={{ message: "text-zinc-200 text-sm" }}
+          >
+            <strong>Reasignación por cambio de contrato.</strong>{" "}
+            {motivoReasignacion}
+            <br />
+            <span className="text-zinc-400 text-xs">
+              Se precargaron los datos del horario anterior. Verifica los
+              valores antes de guardar.
+            </span>
+          </Alert>
+        )}
         <Group align="flex-end" gap="xs">
           <div style={{ flex: 1 }}>
             <Select
@@ -262,11 +317,12 @@ export const ModalAsignarHorario = ({
             data={[
               { value: "almacen", label: "Almacén" },
               { value: "labor", label: "Labor" },
+              { value: "oficina", label: "Oficina" },
             ]}
             value={tipoLugar || null}
             onChange={(val) =>
               setTipoLugar(
-                (val as "" | "almacen" | "labor" | null) ?? "",
+                (val as "" | "almacen" | "labor" | "oficina" | null) ?? "",
               )
             }
             leftSection={<MapPinIcon className="w-4 h-4 text-zinc-500" />}
@@ -284,31 +340,31 @@ export const ModalAsignarHorario = ({
                 ? "Almacén"
                 : tipoLugar === "labor"
                   ? "Labor"
-                  : "Específico"
+                  : tipoLugar === "oficina"
+                    ? "Oficina"
+                    : "Específico"
             }
             placeholder={
               tipoLugar === ""
                 ? "Primero seleccione el tipo"
                 : tipoLugar === "almacen"
                   ? "Seleccione almacén"
-                  : "Seleccione labor"
+                  : tipoLugar === "labor"
+                    ? "Seleccione labor"
+                    : "Seleccione oficina"
             }
             data={
               tipoLugar === "almacen"
                 ? almacenesOptions
                 : tipoLugar === "labor"
                   ? laboresOptions
-                  : []
+                  : tipoLugar === "oficina"
+                    ? oficinasOptions
+                    : []
             }
             value={lugarIdActual ? String(lugarIdActual) : null}
             onChange={(val) => setLugarId(val ? Number(val) : null)}
-            leftSection={
-              tipoLugar === "almacen" ? (
-                <BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />
-              ) : (
-                <MapPinIcon className="w-4 h-4 text-zinc-500" />
-              )
-            }
+            leftSection={<BuildingOfficeIcon className="w-4 h-4 text-zinc-500" />}
             classNames={fieldClasses}
             radius="lg"
             size="xs"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Stack,
   Group,
@@ -17,15 +17,15 @@ import { CustomDatePicker } from "../../../presentation/utils/date-picker-input"
 import {
   CheckBadgeIcon,
   CalendarIcon,
+  ClockIcon,
   CurrencyDollarIcon,
+  DocumentIcon,
   MapPinIcon,
   UserCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   PaperClipIcon,
   PlusIcon,
-  ClockIcon,
-  DocumentIcon,
   BuildingOfficeIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -33,9 +33,15 @@ import dayjs from "dayjs";
 import { useHistorialContratosEmpleado } from "../hooks/useHistorialContratosEmpleado";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import { CambiosLogHistorial } from "../../../presentation/utils/cambios-log-historial";
+import { parseCambiosLog } from "../../../presentation/utils/parse-cambios-log";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
-import type { RES_ContratoEmpleado } from "../../../service/responses/contrato-empleado";
+import type { RES_ContratoEmpleado, RES_EmpleadoConContrato } from "../../../service/responses/contrato-empleado";
 import { ModalContratoEmpleado } from "./modal-contrato-empleado";
+import { ModalAdendaContrato } from "./modal-adenda-contrato";
+import { ModalAsignarHorario } from "../../programacion-horarios/presentation/modal-asignar-horario";
+import type { RES_TurnoLaboral } from "../../programacion-horarios/service/turnos.responses";
+import { TurnoLaboralService } from "../../programacion-horarios/service/turnos.service";
 import { EstadoContrato } from "../../../shared/enums/contrato/estado-contrato";
 import { ContratosEmpleadoService } from "../service/contratos-empleado.service";
 import { useNotify } from "../../../hooks/useNotify";
@@ -67,6 +73,8 @@ const parseEvidencias = (raw: unknown): IArchivo[] => {
   return [];
 };
 
+// parseCambiosLog se importa del helper puro en presentation/utils/parse-cambios-log
+
 export const ModalHistorialContratosEmpleado = ({
   idEmpleado,
   nombreEmpleado,
@@ -74,7 +82,7 @@ export const ModalHistorialContratosEmpleado = ({
   close,
   onContratoCreado,
 }: ModalHistorialContratosEmpleadoProps) => {
-  const { notifySuccess, notifyError } = useNotify();
+  const { notifySuccess, notifyError, notifyInfo } = useNotify();
   const { contratos, loading, reload, getUltimoContrato } =
     useHistorialContratosEmpleado(opened ? idEmpleado : null);
 
@@ -88,6 +96,48 @@ export const ModalHistorialContratosEmpleado = ({
   );
   const [motivoCierre, setMotivoCierre] = useState("");
   const [submittingFinalizar, setSubmittingFinalizar] = useState(false);
+  const [modalAdendaAbierto, setModalAdendaAbierto] = useState(false);
+  const [contratoAEditar, setContratoAEditar] = useState<RES_ContratoEmpleado | null>(null);
+
+  // Cascada Contrato → Programación de Horarios.
+  // Cuando el modal de Asignar Horario se abre desde una reasignación (adenda
+  // con cambio de snapshot, o finalización de contrato), recibe un prefill.
+  const [modalReasignarAbierto, setModalReasignarAbierto] = useState(false);
+  // Guardamos los datos para reasignar:
+  // - id_empleado pre-seleccionado
+  // - datos del horario previo (turno, días, lugar) como base
+  // - motivo: para el banner
+  const [reAsignData, setReAsignData] = useState<{
+    idEmpleado: number;
+    prefill: import("../../programacion-horarios/hooks/useAsignarHorario").AsignarHorarioPrefill;
+    motivo: string;
+  } | null>(null);
+
+  // Turnos laborales: necesarios para ModalAsignarHorario cuando se reabre
+  // por la cascada. Lo cargamos una sola vez al montar el modal.
+  const [turnosDisponibles, setTurnosDisponibles] = useState<RES_TurnoLaboral[]>([]);
+  useEffect(() => {
+    if (!opened) return;
+    let cancelado = false;
+    const cargar = async () => {
+      try {
+        const resp = await TurnoLaboralService.get_turnos();
+        if (cancelado) return;
+        if (resp.success) {
+          const data = (resp.data as RES_TurnoLaboral[]).filter(
+            (t) => t.estado === "Activo",
+          );
+          setTurnosDisponibles(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    void cargar();
+    return () => {
+      cancelado = true;
+    };
+  }, [opened]);
 
   const toggleExpand = (id: number) => {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -131,12 +181,36 @@ export const ModalHistorialContratosEmpleado = ({
       );
       if (resp.success) {
         notifySuccess("Contrato finalizado anticipadamente");
+        const data = resp.data as {
+          empleado?: RES_EmpleadoConContrato["empleado"];
+          programaciones_finalizadas?: { ids: number[]; total: number };
+        };
         setModalFinalizarAbierto(false);
         setContratoIdAFinalizar(null);
         setMotivoCierre("");
         void reload();
-        if (resp.data?.empleado) {
-          onContratoCreado?.({ empleado: resp.data.empleado });
+        if (data?.empleado) {
+          onContratoCreado?.({ empleado: data.empleado });
+        }
+
+        // CASCADA: si el backend cerró programaciones, ofrecer reasignar.
+        if (data?.programaciones_finalizadas && data.programaciones_finalizadas.total > 0) {
+          notifyInfo(
+            `Se cerraron ${data.programaciones_finalizadas.total} programaciones de horario. ` +
+              `Asigna un nuevo horario para que el empleado siga marcando asistencia.`,
+          );
+          // Preparar reasignación con datos básicos (fecha de hoy, lunes a viernes).
+          // Como no hay programación previa activa, no hay prefill detallado.
+          const hoy = new Date().toISOString().split("T")[0];
+          setReAsignData({
+            idEmpleado,
+            prefill: {
+              fecha_inicio: hoy,
+              dias_laborables: "0111110",
+            },
+            motivo: "El contrato fue finalizado anticipadamente. La programación de horario se cerró.",
+          });
+          setModalReasignarAbierto(true);
         }
       } else {
         notifyError(resp.message ?? "No se pudo finalizar el contrato");
@@ -286,6 +360,7 @@ export const ModalHistorialContratosEmpleado = ({
               {contratos.map((c, index) => {
                 const expanded = isExpanded(c.id_contrato, index);
                 const evidencias = parseEvidencias(c.evidencias);
+                const cambiosLog = parseCambiosLog(c.cambios_log);
                 const sueldoMostrar =
                   c.tipo_contrato === "Planilla"
                     ? c.sueldo_base
@@ -403,30 +478,54 @@ export const ModalHistorialContratosEmpleado = ({
                           </Group>
 
                           {c.estado === EstadoContrato.Vigente && (
-                            <Tooltip
-                              label="Cerrar anticipadamente"
-                              withArrow
-                              position="top"
-                            >
-                              <Button
-                                size="xs"
-                                radius="md"
-                                color="orange"
-                                variant="light"
-                                leftSection={<XCircleIcon className="w-3.5 h-3.5" />}
-                                loading={contratoIdAFinalizar === c.id_contrato && submittingFinalizar}
-                                onClick={(ev) => {
-                                  ev.stopPropagation();
-                                  setContratoIdAFinalizar(c.id_contrato);
-                                  setFechaFinAnticipada(new Date());
-                                  setMotivoCierre("");
-                                  setModalFinalizarAbierto(true);
-                                }}
-                                className="font-bold border border-orange-500/20"
+                            <Group gap="xs" wrap="nowrap">
+                              <Tooltip
+                                label="Registrar Adenda / Modificar Contrato"
+                                withArrow
+                                position="top"
                               >
-                                Finalizar
-                              </Button>
-                            </Tooltip>
+                                <Button
+                                  size="xs"
+                                  radius="md"
+                                  color="indigo"
+                                  variant="light"
+                                  leftSection={<DocumentIcon className="w-3.5 h-3.5" />}
+                                  onClick={(ev) => {
+                                    ev.stopPropagation();
+                                    setContratoAEditar(c);
+                                    setModalAdendaAbierto(true);
+                                  }}
+                                  className="font-bold border border-indigo-500/20"
+                                >
+                                  Adenda
+                                </Button>
+                              </Tooltip>
+
+                              <Tooltip
+                                label="Cerrar anticipadamente"
+                                withArrow
+                                position="top"
+                              >
+                                <Button
+                                  size="xs"
+                                  radius="md"
+                                  color="orange"
+                                  variant="light"
+                                  leftSection={<XCircleIcon className="w-3.5 h-3.5" />}
+                                  loading={contratoIdAFinalizar === c.id_contrato && submittingFinalizar}
+                                  onClick={(ev) => {
+                                    ev.stopPropagation();
+                                    setContratoIdAFinalizar(c.id_contrato);
+                                    setFechaFinAnticipada(new Date());
+                                    setMotivoCierre("");
+                                    setModalFinalizarAbierto(true);
+                                  }}
+                                  className="font-bold border border-orange-500/20"
+                                >
+                                  Finalizar
+                                </Button>
+                              </Tooltip>
+                            </Group>
                           )}
 
                           <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0 border border-zinc-700/50 group-hover:bg-zinc-800/80 transition-colors">
@@ -563,6 +662,14 @@ export const ModalHistorialContratosEmpleado = ({
                                 </div>
                               </div>
                             )}
+
+
+                            {/* Historial de Adendas — componente genérico reutilizable */}
+                            <CambiosLogHistorial
+                              cambiosLog={cambiosLog}
+                              titulo="Historial de Adendas"
+                              primeraExpandida={false}
+                            />
                           </Stack>
                         </div>
                       </Collapse>
@@ -636,6 +743,61 @@ export const ModalHistorialContratosEmpleado = ({
           </Group>
         </Stack>
       </ModalEstandar>
+
+      {/* Modal para registrar adenda */}
+      {modalAdendaAbierto && contratoAEditar && (
+        <ModalAdendaContrato
+          contrato={contratoAEditar}
+          nombreEmpleado={nombreEmpleado}
+          opened={modalAdendaAbierto}
+          close={() => {
+            setModalAdendaAbierto(false);
+            setContratoAEditar(null);
+          }}
+          onSuccess={(payload) => {
+            reload();
+            if (payload?.empleado) {
+              onContratoCreado?.({ empleado: payload.empleado });
+            } else {
+              onContratoCreado?.({});
+            }
+
+            // =====================================================================
+            // CASCADA: notificación amigable. Todo se ajustó automáticamente en backend.
+            // =====================================================================
+            const ajustadas =
+              (payload?.programaciones_ajustadas?.actualizadas ?? 0) +
+              (payload?.programaciones_ajustadas?.creadas ?? 0) +
+              (payload?.programaciones_ajustadas?.divididas ?? 0);
+
+            if (ajustadas > 0) {
+              notifySuccess(
+                "Adenda registrada correctamente. La programación de horario del trabajador se actualizó automáticamente con las nuevas condiciones.",
+              );
+            }
+          }}
+        />
+      )}
+
+      {/* Modal de reasignación de horario (cascada Contrato → Programación) */}
+      {modalReasignarAbierto && reAsignData && (
+        <ModalAsignarHorario
+          opened={modalReasignarAbierto}
+          close={() => {
+            setModalReasignarAbierto(false);
+            setReAsignData(null);
+          }}
+          turnos={turnosDisponibles}
+          onSuccess={() => {
+            notifySuccess("Horario reasignado correctamente");
+            setModalReasignarAbierto(false);
+            setReAsignData(null);
+          }}
+          prefill={reAsignData.prefill}
+          empleadoPreseleccionado={reAsignData.idEmpleado}
+          motivoReasignacion={reAsignData.motivo}
+        />
+      )}
     </>
   );
 };

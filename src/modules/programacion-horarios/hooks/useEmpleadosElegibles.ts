@@ -15,7 +15,7 @@ import { useNotify } from "../../../hooks/useNotify";
 export const useEmpleadosElegibles = (
   fechaFinProgramacion: string | null,
   idLugar: number | null = null,
-  tipoLugar: "" | "almacen" | "labor" | null = null,
+  tipoLugar: "" | "almacen" | "labor" | "oficina" | null = null,
 ) => {
   const { notifyError } = useNotify();
   const [empleados, setEmpleados] = useState<RES_EmpleadoElegible[]>([]);

@@ -10,6 +10,7 @@ import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Area, RES_Cargo } from "../../../service/responses/organigrama";
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Empresa } from "../../../service/responses/empresa";
+import type { RES_Oficina } from "../../../service/responses/oficina";
 import { TipoContrato } from "../../../shared/enums/tipo-contrato";
 
 const TIPOS_CONTRATO_OPTIONS = [
@@ -103,9 +104,9 @@ export const useRegistroContratoEmpleado = (
   >([]);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
 
-  // Tipo de lugar de trabajo seleccionado en la UI (no se envía al backend).
-  // "" = sin selección, "almacen" o "labor".
-  const [tipoLugar, setTipoLugar] = useState<"" | "almacen" | "labor">("");
+  const [tipoLugar, setTipoLugar] = useState<"" | "almacen" | "labor" | "oficina">("");
+  const [oficinas, setOficinas] = useState<RES_Oficina[]>([]);
+  const [loadingOficinas, setLoadingOficinas] = useState(false);
 
   const cargarCatalogos = useCallback(async () => {
     setLoadingAreas(true);
@@ -113,8 +114,9 @@ export const useRegistroContratoEmpleado = (
     setLoadingAlmacenes(true);
     setLoadingLabores(true);
     setLoadingEmpresas(true);
+    setLoadingOficinas(true);
     try {
-      const [areasRes, cargosRes, almacenesRes, laboresRes, empresasRes] =
+      const [areasRes, cargosRes, almacenesRes, laboresRes, empresasRes, oficinasRes] =
         await Promise.all([
           AuxService.get_areas().catch(() => ({ success: false, data: [] })),
           AuxService.get_cargos().catch(() => ({ success: false, data: [] })),
@@ -124,6 +126,7 @@ export const useRegistroContratoEmpleado = (
           })),
           AuxService.get_labores().catch(() => ({ success: false, data: [] })),
           AuxService.get_empresas().catch(() => ({ success: false, data: [] })),
+          AuxService.get_oficinas().catch(() => ({ success: false, data: [] })),
         ]);
       if (areasRes.success) setAreas(areasRes.data as RES_Area[]);
       if (cargosRes.success) setTodosCargos(cargosRes.data as RES_Cargo[]);
@@ -137,12 +140,14 @@ export const useRegistroContratoEmpleado = (
       }
       if (laboresRes.success) setLabores(laboresRes.data as RES_Labor[]);
       if (empresasRes.success) setEmpresas(empresasRes.data as RES_Empresa[]);
+      if (oficinasRes.success) setOficinas(oficinasRes.data as RES_Oficina[]);
     } finally {
       setLoadingAreas(false);
       setLoadingCargos(false);
       setLoadingAlmacenes(false);
       setLoadingLabores(false);
       setLoadingEmpresas(false);
+      setLoadingOficinas(false);
     }
   }, []);
 
@@ -229,27 +234,31 @@ export const useRegistroContratoEmpleado = (
    * Cambia el tipo de lugar de trabajo. Garantiza exclusividad:
    * al elegir "almacen" se limpia id_labor (y viceversa).
    */
-  const handleSetTipoLugar = (value: "" | "almacen" | "labor") => {
+  const handleSetTipoLugar = (value: "" | "almacen" | "labor" | "oficina") => {
     setTipoLugar(value);
     if (value === "almacen") {
-      setForm((prev) => ({ ...prev, id_labor: null }));
+      setForm((prev) => ({ ...prev, id_labor: null, id_oficina: null }));
     } else if (value === "labor") {
-      setForm((prev) => ({ ...prev, id_almacen: null }));
-    } else {
+      setForm((prev) => ({ ...prev, id_almacen: null, id_oficina: null }));
+    } else if (value === "oficina") {
       setForm((prev) => ({ ...prev, id_almacen: null, id_labor: null }));
+    } else {
+      setForm((prev) => ({ ...prev, id_almacen: null, id_labor: null, id_oficina: null }));
     }
   };
 
   /**
    * Cambia el id específico del lugar de trabajo según el tipo seleccionado.
    * El frontend lo trata como un solo campo visual, pero internamente
-   * sigue usando `id_almacen` y `id_labor` por separado (compatibilidad DTO).
+   * sigue usando `id_almacen`, `id_labor` y `id_oficina` por separado.
    */
   const handleSetLugarId = (id: number | null) => {
     if (tipoLugar === "almacen") {
       setField("id_almacen", id);
     } else if (tipoLugar === "labor") {
       setField("id_labor", id);
+    } else if (tipoLugar === "oficina") {
+      setField("id_oficina", id);
     }
   };
 
@@ -261,8 +270,11 @@ export const useRegistroContratoEmpleado = (
     if (tipoLugar === "labor") {
       return form.id_labor ?? null;
     }
+    if (tipoLugar === "oficina") {
+      return form.id_oficina ?? null;
+    }
     return null;
-  }, [tipoLugar, form.id_almacen, form.id_labor]);
+  }, [tipoLugar, form.id_almacen, form.id_labor, form.id_oficina]);
 
   const handleAddEvidencia = (file: File | File[] | null) => {
     if (!file) return;
@@ -357,6 +369,8 @@ export const useRegistroContratoEmpleado = (
     loadingAlmacenes,
     loadingLabores,
     loadingEmpresas,
+    loadingOficinas,
+    oficinas,
     tiposContratoOptions: TIPOS_CONTRATO_OPTIONS,
     periodosDuracionOptions: PERIODOS_DURACION,
     duracionDiasCalc,
