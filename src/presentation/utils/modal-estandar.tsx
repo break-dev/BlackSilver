@@ -33,7 +33,7 @@ export const ModalEstandar = ({
             />
             <span
               className="text-xl font-bold bg-linear-to-r from-white via-zinc-100 
-                to-zinc-400 bg-clip-text text-transparent tracking-tight leading-none"
+                to-zinc-400 bg-clip-text text-transparent tracking-tight leading-normal"
             >
               {title}
             </span>
@@ -55,7 +55,7 @@ export const ModalEstandar = ({
         content: "bg-zinc-950 border border-white/10 shadow-2xl shadow-black",
         header:
           "bg-zinc-950 text-white pt-5 pb-4 px-6 border-b border-white/10",
-        body: "bg-zinc-950 px-6 pt-6 pb-6",
+        body: "bg-zinc-950 px-6 pt-3 pb-6",
         close: `text-zinc-400 hover:text-white hover:bg-white/10 transition-all 
           duration-200 rounded-full w-8 h-8 flex items-center justify-center`,
         title: "text-xl font-bold text-white flex-1",
@@ -63,7 +63,7 @@ export const ModalEstandar = ({
       transitionProps={{ transition: "pop", duration: 250 }}
       {...props}
     >
-      <div className="pt-3">{children}</div>
+      <div className="">{children}</div>
     </Modal>
   );
 };

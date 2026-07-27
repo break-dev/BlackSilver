@@ -11,6 +11,6 @@ export interface RES_CuentaEmpresa {
   moneda: Moneda;
   numero_cuenta: string;
   cci: string | null;
-  es_para_detraccion: boolean;
+  es_para_detraccion: boolean | number;
   estado: EstadoBase;
 }
