@@ -13,6 +13,7 @@ import {
   Image,
 } from "@mantine/core";
 import {
+  BanknotesIcon,
   BuildingOffice2Icon,
   MapPinIcon,
   PlusIcon,
@@ -24,7 +25,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { RES_EmpresaResumen } from "../service/empresas.responses";
+import type { RES_CuentaEmpresa } from "../../../service/responses/cuenta-empresa";
 
 interface EmpresaCardProps {
   empresa: RES_EmpresaResumen;
@@ -32,6 +35,12 @@ interface EmpresaCardProps {
   onRemoveLogo: (id: number) => Promise<boolean>;
   onAddOficina: (empresa: RES_EmpresaResumen) => void;
   onOpenDocumentos: (empresa: RES_EmpresaResumen) => void;
+  onAddCuenta: () => void;
+  onEditCuenta: (cuenta: RES_CuentaEmpresa) => void;
+  onToggleEstadoCuenta: (
+    id_cuenta_bancaria: number,
+    estadoActual: EstadoBase,
+  ) => Promise<boolean>;
 }
 
 export const EmpresaCard = ({
@@ -40,6 +49,9 @@ export const EmpresaCard = ({
   onRemoveLogo,
   onAddOficina,
   onOpenDocumentos,
+  onAddCuenta,
+  onEditCuenta,
+  onToggleEstadoCuenta,
 }: EmpresaCardProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -206,7 +218,7 @@ export const EmpresaCard = ({
             {empresa.domicilio_fiscal && (
               <Group gap={4} mt={2}>
                 <HomeModernIcon className="w-3 h-3 text-zinc-500 shrink-0" />
-                <Text size="10px" className="text-zinc-500 truncate">
+                <Text size="11px" className="text-zinc-400 truncate">
                   {empresa.domicilio_fiscal}
                 </Text>
               </Group>
@@ -257,7 +269,7 @@ export const EmpresaCard = ({
                     {oficina.nombre}
                   </Text>
                   {oficina.direccion && (
-                    <Text size="9px" className="text-zinc-600 truncate max-w-[80px] shrink-0">
+                    <Text size="9px" className="text-zinc-600 truncate max-w-20 shrink-0">
                       {oficina.direccion}
                     </Text>
                   )}
@@ -271,7 +283,7 @@ export const EmpresaCard = ({
             </div>
           ) : (
             <div
-              className="flex items-center justify-center gap-2 py-2.5 
+              className="flex items-center justify-center gap-2 py-2.5
               rounded-lg border border-dashed border-zinc-800/50 bg-zinc-950/20
               cursor-pointer hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-colors group/add"
               onClick={() => onAddOficina(empresa)}
@@ -279,6 +291,114 @@ export const EmpresaCard = ({
               <PlusIcon className="w-3.5 h-3.5 text-zinc-600 group-hover/add:text-indigo-400 transition-colors" />
               <Text size="xs" className="text-zinc-600 group-hover/add:text-zinc-400 transition-colors">
                 Agregar primera oficina
+              </Text>
+            </div>
+          )}
+        </div>
+
+        {/* Sección Cuentas Bancarias */}
+        <div className="px-4 pb-4 pt-2 border-t border-zinc-800/40 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <Group gap={4}>
+              <BanknotesIcon className="w-3 h-3 text-zinc-500" />
+              <Text
+                size="10px"
+                fw={700}
+                className="text-zinc-500 uppercase tracking-wider"
+              >
+                Cuentas Bancarias ({empresa.cuentas_bancarias?.length ?? 0})
+              </Text>
+            </Group>
+            <Tooltip label="Agregar cuenta bancaria" position="left" withArrow>
+              <ActionIcon
+                variant="subtle"
+                color="indigo"
+                size="xs"
+                radius="md"
+                onClick={() => onAddCuenta()}
+                className="hover:bg-indigo-500/10"
+              >
+                <PlusIcon className="w-3.5 h-3.5" />
+              </ActionIcon>
+            </Tooltip>
+          </div>
+
+          {empresa.cuentas_bancarias && empresa.cuentas_bancarias.length > 0 ? (
+            <div className="flex flex-col gap-1 max-h-28 overflow-y-auto">
+              {empresa.cuentas_bancarias.map((cuenta) => (
+                <div
+                  key={cuenta.id_cuenta_bancaria}
+                  className="flex items-center gap-2 px-2.5 py-1.5
+                  rounded-lg bg-zinc-950/40 border border-zinc-800/40
+                  hover:border-indigo-500/20 transition-colors"
+                >
+                  <Badge
+                    variant="light"
+                    color={cuenta.moneda === Moneda.Soles ? "teal" : "indigo"}
+                    size="xs"
+                    radius="sm"
+                    className="shrink-0 font-mono"
+                  >
+                    {cuenta.moneda}
+                  </Badge>
+                  <Text size="xs" fw={600} className="text-zinc-300 truncate flex-1">
+                    {cuenta.banco_abv} · {cuenta.numero_cuenta}
+                  </Text>
+                  {cuenta.es_para_detraccion == true && (
+                    <Tooltip label="Cuenta para detracción" withArrow position="top">
+                      <StarIcon className="w-3 h-3 text-amber-400 shrink-0" />
+                    </Tooltip>
+                  )}
+                  {cuenta.estado === EstadoBase.Inactivo && (
+                    <Badge size="xs" radius="sm" variant="light" color="gray" className="shrink-0">
+                      Inactivo
+                    </Badge>
+                  )}
+                  <Tooltip label="Editar" withArrow position="top">
+                    <ActionIcon
+                      variant="subtle"
+                      color="indigo"
+                      size="xs"
+                      radius="md"
+                      onClick={() => onEditCuenta(cuenta)}
+                      className="hover:bg-indigo-500/10 shrink-0"
+                    >
+                      <PencilSquareIcon className="w-3 h-3" />
+                    </ActionIcon>
+                  </Tooltip>
+                  <Tooltip
+                    label={cuenta.estado === EstadoBase.Activo ? "Desactivar" : "Reactivar"}
+                    withArrow
+                    position="top"
+                  >
+                    <ActionIcon
+                      variant="subtle"
+                      color={cuenta.estado === EstadoBase.Activo ? "red" : "teal"}
+                      size="xs"
+                      radius="md"
+                      onClick={() => onToggleEstadoCuenta(cuenta.id_cuenta_bancaria, cuenta.estado)}
+                      className="hover:bg-zinc-800/50 shrink-0"
+                    >
+                      {cuenta.estado === EstadoBase.Activo ? (
+                        <XMarkIcon className="w-3 h-3" />
+                      ) : (
+                        <PlusIcon className="w-3 h-3" />
+                      )}
+                    </ActionIcon>
+                  </Tooltip>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className="flex items-center justify-center gap-2 py-2.5
+              rounded-lg border border-dashed border-zinc-800/50 bg-zinc-950/20
+              cursor-pointer hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-colors group/add"
+              onClick={() => onAddCuenta()}
+            >
+              <PlusIcon className="w-3.5 h-3.5 text-zinc-600 group-hover/add:text-indigo-400 transition-colors" />
+              <Text size="xs" className="text-zinc-600 group-hover/add:text-zinc-400 transition-colors">
+                Agregar primera cuenta bancaria
               </Text>
             </div>
           )}
