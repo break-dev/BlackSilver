@@ -149,11 +149,69 @@ Ganchos personalizados que proveen estado y lógica de comportamiento transversa
 #### 2. Componentes de UI Reutilizables (`/src/presentation/utils`)
 Componentes visuales puros y layouts genéricos de alta calidad Mantine v8.
 *   **`DataTableEstandar.tsx`**: Grilla maestra unificada para visualización de registros con ordenamiento, paginación reactiva, filtros y modo auditoría integrado.
-    *   **Props**: `idAccessor: string`, `columns: DataTableColumn[]`, `records: any[]`, `loading: boolean`, `initialPageSize?: number` (default `25`). Acepta y propaga cualquier prop extra de `mantine-datatable` (`minHeight`, `onRowClick`, `rowExpansion`, etc.).
+    *   **Props**: `idAccessor?: string`, `columns: DataTableColumn[]`, `records: any[]`, `loading: boolean`, `initialPageSize?: number` (default `25`). Acepta y propaga cualquier prop extra de `mantine-datatable` (`minHeight`, `onRowClick`, `rowExpansion`, etc.).
     *   **Indexado automático `#`**: declarar una columna con `accessor: "index"` y `title: "#"` hace que el componente calcule el número absoluto `(página - 1) * pageSize + index + 1` sin necesidad de un `render` manual.
     *   **Reset de página reactivo**: cuando cambia la referencia de `records` (ej. tras un refetch/filtro), vuelve automáticamente a `page=1`.
     *   **Estilo dark consistente**: `bg-zinc-900/50`, header `bg-zinc-900/80`, paginación `bg-zinc-900/50 border-t border-zinc-800`, `striped` + `highlightOnHover`.
     *   **Tipado flexible**: única excepción permitida al uso de `any` (ver regla §1), porque su API es genérica por diseño.
+    *   **Identificadores opcionales (auto-UUID)**: para tablas de solo lectura no es obligatorio declarar `id` / `accessor`. El componente los genera con `uuid` y los mantiene estables por instancia/referencia:
+        *   `idAccessor` omitido → se genera `dt-<uuid>` una sola vez al montar la tabla (con `useState(() => …)`).
+        *   `accessor` omitido en una columna → se asigna `c-<uuid>` (estable mientras la referencia de `columns` no cambie). **La columna debe traer `render` propio**, porque la librería no puede mapear el record sin accessor y la celda quedaría vacía.
+        *   `id` omitido en un grupo (raíz o anidado) → se asigna `g-<uuid>` (estable mientras la referencia de `columnGroups` no cambie). El `id` solo se usa como React key del `<th>`, así que un UUID es válido.
+        *   **Cuándo SÍ hay que pasar `idAccessor`**: si la tabla usa selección, expansión de filas, o cualquier feature que dependa de identificar records únicos. En esos casos el `idAccessor` debe apuntar al campo real del record (ej. `"id"`).
+    *   **Cabeceras agrupadas (multi-nivel) — `columnGroups?`**: prop opcional del tipo `DataTableColumnGroup[]` de `mantine-datatable`. Permite definir cabeceras que agrupan otras (estilo `<th colspan>` / `<th rowspan>`), con soporte para anidamiento recursivo (un grupo puede contener sub-grupos vía `groups: [...]`). Cada `title` se envuelve automáticamente en un layout centrado `text-xs font-bold uppercase tracking-wider text-zinc-100`.
+        *   Cuando se proporciona, el componente activa `withColumnBorders` en el `DataTable` (internamente).
+        *   **Caveat del library**: las columnas referenciadas en `groups[*].columns` (de forma recursiva) son las que aparecen en el cuerpo. Por eso toda columna que deba renderizarse en `<tbody>` debe estar referenciada desde algún grupo (incluso las que no quieras agrupar visualmente deben ir en un grupo "single-column").
+    *   **Ejemplo mínimo (sin IDs/accessors explícitos)**:
+        ```tsx
+        <DataTableEstandar
+          columns={[
+            { title: "Código",      render: r => r.codigo },
+            { title: "Fechas",      render: r => r.fechas },
+            { title: "NewAu",       render: r => r.new_au },
+            { title: "Promedio",    render: r => r.promedio },
+            { title: "NewAg",       render: r => r.new_ag },
+            { title: "Estado",      render: r => r.estado },
+            { title: "Acción",      render: r => r.accion },
+          ]}
+          columnGroups={[
+            { title: "LOTE",  columns: [<ref col 0>, <ref col 1>] },
+            {
+              title: "Leyes Consolidadas",
+              groups: [
+                { title: "NewAu", columns: [<ref col 2>, <ref col 3>, <ref col 4>] },
+                { title: "NewAg", columns: [<ref col 5>] },
+              ],
+            },
+            { title: "Cierre", columns: [<ref col 6>, <ref col 7>] },
+          ]}
+          records={records}
+          loading={loading}
+        />
+        ```
+    *   **Ejemplo con IDs explícitos (cuando se necesita selección o control total)**:
+        ```tsx
+        const columns: DataTableColumn<LeyRow>[] = [ /* ...con accessors explícitos... */ ];
+
+        <DataTableEstandar
+          idAccessor="id"
+          columns={columns}
+          columnGroups={[
+            { id: "lote",  title: "LOTE", columns: [columns[0], columns[1]] },
+            {
+              id: "leyes",
+              title: "Leyes Consolidadas",
+              groups: [
+                { id: "newAu", title: "NewAu", columns: [columns[2], columns[3]] },
+                { id: "newAg", title: "NewAg", columns: [columns[4], columns[5]] },
+              ],
+            },
+            { id: "cierre", title: "Cierre", columns: [columns[8], columns[9]] },
+          ]}
+          records={records}
+          loading={loading}
+        />
+        ```
 *   **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios. Extiende `Partial<ModalProps>` de Mantine v8, por lo que acepta cualquier prop adicional del `Modal` base (`size`, `zIndex`, `withCloseButton`, etc.).
     *   **Props estándar**:
         *   `opened: boolean` — estado de apertura del modal.
