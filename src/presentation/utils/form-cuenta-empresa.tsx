@@ -19,19 +19,19 @@ import type { RES_Banco } from "../../service/responses/banco";
 import type { RES_CuentaEmpresa } from "../../service/responses/cuenta-empresa";
 import { Schema_RegistroCuenta } from "../../modules/empresas/service/cuentas-empresa.requests";
 
-export interface FormRegistroCuentaProps {
+export interface FormCuentaEmpresaProps {
   id_empresa: number;
   onSuccess: (cuenta: RES_CuentaEmpresa) => void;
   onCancel?: () => void;
   monedaDefault?: Moneda;
 }
 
-export const FormRegistroCuenta = ({
+export const FormCuentaEmpresa = ({
   id_empresa,
   onSuccess,
   onCancel,
   monedaDefault = Moneda.Soles,
-}: FormRegistroCuentaProps) => {
+}: FormCuentaEmpresaProps) => {
   const { notifySuccess, notifyError } = useNotify();
   const [loading, setLoading] = useState(false);
   const [loadingBancos, setLoadingBancos] = useState(true);
@@ -78,13 +78,16 @@ export const FormRegistroCuenta = ({
     [bancos],
   );
 
-const handleBancoChange = (val: string | null) => {
+  const handleBancoChange = (val: string | null) => {
     setIdBanco(val);
     setError(null as string | null);
     const banco = bancos.find((b) => String(b.id_banco) === val);
     if (!banco) return;
     const nuevoEsBancoNacional = Boolean(banco.es_nacional);
-    if (esParaDetraccion && (!nuevoEsBancoNacional || moneda !== Moneda.Soles)) {
+    if (
+      esParaDetraccion &&
+      (!nuevoEsBancoNacional || moneda !== Moneda.Soles)
+    ) {
       setEsParaDetraccion(false);
     }
   };
