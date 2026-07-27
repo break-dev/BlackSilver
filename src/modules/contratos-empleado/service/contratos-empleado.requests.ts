@@ -126,16 +126,18 @@ export const Schema_CrearContratoEmpleado = z
       });
     }
 
-    // Al menos uno: id_almacen o id_labor
+    // Al menos uno: id_almacen, id_labor o id_oficina (exactamente uno, validado en backend)
     const almVal = typeof data.id_almacen === "string" ? Number(data.id_almacen) : data.id_almacen;
     const labVal = typeof data.id_labor === "string" ? Number(data.id_labor) : data.id_labor;
+    const ofVal = typeof data.id_oficina === "string" ? Number(data.id_oficina) : data.id_oficina;
     const sinAlmacen = almVal === null || almVal === undefined || Number(almVal) === 0;
     const sinLabor = labVal === null || labVal === undefined || Number(labVal) === 0;
-    if (sinAlmacen && sinLabor) {
+    const sinOficina = ofVal === null || ofVal === undefined || Number(ofVal) === 0;
+    if (sinAlmacen && sinLabor && sinOficina) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["id_almacen"],
-        message: "Seleccione al menos un almacén o labor",
+        message: "Seleccione al menos un almacén, labor u oficina",
       });
     }
   });
