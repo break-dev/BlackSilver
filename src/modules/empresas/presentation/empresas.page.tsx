@@ -11,7 +11,7 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
-import { FormRegistroCuenta } from "../../../presentation/utils/form-registro-cuenta";
+import { FormCuentaEmpresa } from "../../../presentation/utils/form-cuenta-empresa";
 import { RegistroEmpresa } from "./registro-empresa";
 import { RegistroOficina } from "./registro-oficina";
 import { EdicionCuenta } from "./edicion-cuenta";
@@ -335,9 +335,11 @@ export const EmpresasPage = () => {
         close={closeCrearCuentaModal}
         title={`Nueva Cuenta — ${empresaParaCuenta?.razon_social ?? ""}`}
         size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar el registro de la nueva cuenta bancaria y se perderán los datos ingresados."
       >
         {empresaParaCuenta && (
-          <FormRegistroCuenta
+          <FormCuentaEmpresa
             id_empresa={empresaParaCuenta.id_empresa}
             onSuccess={(cuenta) => {
               handleAgregarCuenta(cuenta);
@@ -354,6 +356,8 @@ export const EmpresasPage = () => {
         close={closeEditarCuentaModal}
         title="Editar Cuenta Bancaria"
         size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar los cambios no guardados de esta cuenta bancaria."
       >
         {cuentaParaEditar && (
           <EdicionCuenta

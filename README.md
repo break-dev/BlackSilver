@@ -149,8 +149,41 @@ Ganchos personalizados que proveen estado y lógica de comportamiento transversa
 #### 2. Componentes de UI Reutilizables (`/src/presentation/utils`)
 Componentes visuales puros y layouts genéricos de alta calidad Mantine v8.
 *   **`DataTableEstandar.tsx`**: Grilla maestra unificada para visualización de registros con ordenamiento, paginación reactiva, filtros y modo auditoría integrado.
-*   **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios.
+    *   **Props**: `idAccessor: string`, `columns: DataTableColumn[]`, `records: any[]`, `loading: boolean`, `initialPageSize?: number` (default `25`). Acepta y propaga cualquier prop extra de `mantine-datatable` (`minHeight`, `onRowClick`, `rowExpansion`, etc.).
+    *   **Indexado automático `#`**: declarar una columna con `accessor: "index"` y `title: "#"` hace que el componente calcule el número absoluto `(página - 1) * pageSize + index + 1` sin necesidad de un `render` manual.
+    *   **Reset de página reactivo**: cuando cambia la referencia de `records` (ej. tras un refetch/filtro), vuelve automáticamente a `page=1`.
+    *   **Estilo dark consistente**: `bg-zinc-900/50`, header `bg-zinc-900/80`, paginación `bg-zinc-900/50 border-t border-zinc-800`, `striped` + `highlightOnHover`.
+    *   **Tipado flexible**: única excepción permitida al uso de `any` (ver regla §1), porque su API es genérica por diseño.
+*   **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios. Extiende `Partial<ModalProps>` de Mantine v8, por lo que acepta cualquier prop adicional del `Modal` base (`size`, `zIndex`, `withCloseButton`, etc.).
+    *   **Props estándar**:
+        *   `opened: boolean` — estado de apertura del modal.
+        *   `close: () => void` — callback que el consumer controla para cerrar.
+        *   `title: React.ReactNode` — título con el layout premium (barra dorada lateral + gradiente).
+        *   `children: React.ReactNode` — contenido del modal.
+        *   `rightSection?: React.ReactNode` — slot opcional alineado a la derecha del header (ej. botón de ayuda, badge de estado).
+    *   **Confirmación al cerrar (opt-in, sin providers globales)**:
+        *   `validateClose?: boolean` — default `false`. Si es `true`, cualquier intento de cerrar (X del header, tecla `Escape`, click en el overlay) abre un diálogo de confirmación encima (estilo "warning dialog" diferenciado: icono `IconAlertCircle` en `ThemeIcon` con gradiente `red.6 → orange.6`, fondo `bg-zinc-900` con borde `yellow.500/30`, `radius="lg"`, sin barra dorada del modal base).
+        *   `closeConfirmationTitle?: string` — título del diálogo (solo texto). Default: `¿Cerrar sin guardar?`.
+        *   `closeConfirmationMessage?: React.ReactNode` — mensaje/cuerpo del diálogo (texto o JSX). Default genérico recordando que se perderán los cambios.
+        *   El botón **"Cancelar"** queda con foco automático (`data-autofocus`) para que `Enter` mantenga el modal padre abierto (acción segura por default).
+        *   "Sí, cerrar" en `color="red"` confirma; "Cancelar" simplemente descarta la confirmación.
+    *   **Ejemplo de uso**:
+        ```tsx
+        <ModalEstandar
+          opened={abierto}
+          close={() => setAbierto(false)}
+          title="Editar producto"
+          validateClose
+          closeConfirmationTitle="¿Abandonar edición?"
+          closeConfirmationMessage="Vas a descartar los cambios no guardados del producto."
+        >
+          {/* formulario */}
+        </ModalEstandar>
+        ```
 *   **`JsonScanner.tsx`**: Interfaz de escaneo de códigos de barra para ingreso masivo de ítems.
+    *   **Props**: `fields: string[]` (claves a extraer del JSON), `onScanned: (values) => void`, `isFiltering: boolean`, `onClearFilter: () => void`, `filteredCount?: number`.
+    *   **Funcionamiento**: input compacto (`radius="xl"`, `size="xs"`) que recibe texto crudo (pegado o desde lector USB/Bluetooth); el parsing lo hace el hook `useJsonScanner` (`parseQrFields`) tolerando corrupción. Tras una lectura exitosa se limpia el input a los 300 ms.
+    *   **Estado de filtro**: muestra un badge `indigo` con el conteo (`filteredCount`) cuando `isFiltering` es `true`, con botón `ActionIcon` (`color="red"`) para limpiar el filtro.
 *   **`date-picker-input.tsx`**: Selector de fechas unificado (`CustomDatePicker`) alineado al diseño de inputs ERP.
 *   **`form-marca.tsx` / `form-personal-externo.tsx`**: Formularios modulares auto-contenidos para creación rápida de catálogos en procesos concurrentes.
 *   **`archivo/` (`archivo-card.tsx`, `multifile-picker.tsx`)**: Utilidades visuales para visualización, carga drag & drop y borrado de documentos adjuntos.
