@@ -26,6 +26,8 @@ import type { RES_Area, RES_Cargo } from "./responses/organigrama";
 import type { RES_Rol } from "./responses/rol";
 import type { RES_Agencia } from "./responses/agencia";
 import type { RES_Oficina } from "./responses/oficina";
+import type { Moneda } from "../shared/enums/_generic/moneda";
+import type { RES_CuentaEmpresa } from "./responses/cuenta-empresa";
 
 const path = "/aux";
 
@@ -237,6 +239,40 @@ export const AuxService = {
     const { data } = await api.get<IRespuesta<RES_Empresa[]>>(
       `${path}/empresas`,
       { params: filters },
+    );
+    return data;
+  },
+
+  get_cuentas_empresa: async (filters?: {
+    id_empresa?: number | number[];
+    id_cuenta_bancaria?: number | number[];
+    estado?: EstadoBase;
+  }): Promise<IRespuesta<RES_CuentaEmpresa[]>> => {
+    const { data } = await api.get<IRespuesta<RES_CuentaEmpresa[]>>(
+      `${path}/cuentas-empresa`,
+      { params: filters },
+    );
+    return data;
+  },
+
+  crear_cuenta_empresa: async (nuevaCuenta: {
+    id_empresa: number;
+    id_banco: number;
+    moneda: Moneda;
+    numero_cuenta: string;
+    cci: string | null;
+    es_para_detraccion: boolean;
+  }): Promise<IRespuesta<RES_CuentaEmpresa>> => {
+    const { data } = await api.post<IRespuesta<RES_CuentaEmpresa>>(
+      `${path}/cuentas-empresa`,
+      {
+        id_empresa: nuevaCuenta.id_empresa,
+        id_banco: nuevaCuenta.id_banco,
+        moneda: nuevaCuenta.moneda,
+        numero_cuenta: nuevaCuenta.numero_cuenta,
+        cci: nuevaCuenta.cci,
+        es_para_detraccion: nuevaCuenta.es_para_detraccion,
+      },
     );
     return data;
   },
