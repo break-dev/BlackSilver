@@ -245,7 +245,47 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
 - **Calidad Visual**: Los componentes deben sentirse premium. Usa sombras de Tailwind (ej. `shadow-lg shadow-indigo-900/20`), efectos de cristal (`backdrop-blur`) y bordes sutiles.
 - **Badges**: Prefiere `variant="light"` o `variant="filled"`. Evita colores planos aburridos.
 
-### 4. Arquitectura de Estado y Notificaciones
+### 4. Paleta de Colores Válida (Mantine v8)
+
+Los siguientes son los **únicos** nombres de color válidos en el tema default de Mantine v8. Cualquier otro nombre (ej. `amber`, `gold`, `crimson`, `purple`, `navy`, `silver`) será **ignorado silenciosamente** y el componente renderizará sin color (monocromático/gris). Esto aplica a la prop `color` de componentes (`Switch`, `Button`, `Badge`, `Alert`, etc.) y a Style Props de color (`c`, `bg`, `borderColor`).
+
+Cada color tiene **10 niveles de tinte** numerados del `0` al `9`. El nivel **`6` es el default**. Para usar otro nivel, aplica la notación `color.nivel`, por ejemplo `teal.4` o `indigo.9`.
+
+| Color    | Uso sugerido                                              |
+| :------- | :-------------------------------------------------------- |
+| `dark`   | Negro puro, contrastes fuertes sobre fondos claros       |
+| `gray`   | Neutros, textos secundarios, disabled states              |
+| `red`    | Errores, alertas críticas, acciones destructivas          |
+| `pink`   | Acentos decorativos                                       |
+| `grape`  | Acentos decorativos                                       |
+| `violet` | Acentos decorativos                                       |
+| `indigo` | **Color primario del ERP** (botones principales, focus)   |
+| `blue`   | Información, links                                       |
+| `cyan`   | Información alternativa                                   |
+| `teal`   | Éxito, confirmaciones, monedas PEN                        |
+| `green`  | Éxito alternativo, validación                             |
+| `lime`   | Acentos positivos                                         |
+| `yellow` | **Detracción y advertencias** (reemplaza a "amber")       |
+| `orange` | Advertencias, llamadas a la atención                      |
+
+**Ejemplos correctos:**
+```tsx
+<Switch color="yellow" />
+<Badge color="teal.4" />
+<Button color="indigo">Guardar</Button>
+<Alert color="red" variant="filled" />
+```
+
+**Ejemplos incorrectos (no renderizan color):**
+```tsx
+<Switch color="amber" />      // Ignorado: usa "yellow" en su lugar
+<Button color="crimson" />    // Ignorado: no existe en el tema
+<Badge color="silver" />      // Ignorado: usa "gray.5" o "gray.6"
+```
+
+Ante cualquier duda, consultar la documentación oficial de Mantine v8: https://v8.mantine.dev
+
+### 5. Arquitectura de Estado y Notificaciones
 
 - **Notificaciones**: **PROHIBIDO** usar `@mantine/notifications` directamente. Debes usar el hook personalizado `useNotify()` del proyecto:
   ```tsx
@@ -254,7 +294,7 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   ```
 - **Manejo de Formularios**: El proyecto prefiere `useState` con una función `setField` y validación manual con `Zod` (`Schema.safeParse(form)`) en lugar de `useForm` de Mantine, a menos que el módulo ya use `useForm`.
 
-### 5. Reglas de DataTableEstandar (Índices automáticos de paginación)
+### 6. Reglas de DataTableEstandar (Índices automáticos de paginación)
 
 - **Índice Automático (#)**: **NUNCA** implementes un método `render` manual para la columna de numeración correlativa (`#`). Si necesitas mostrar el número de fila absoluto (que tiene en cuenta la página y el tamaño de página actual), define el objeto de la columna con el `accessor: "index"` de forma simple:
   ```tsx
@@ -267,7 +307,7 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   ```
   `DataTableEstandar` intercepta automáticamente esta clave y calcula el índice correspondiente. No ensucies la definición del módulo con funciones de render redundantes.
 
-### 5. Catálogo de Referencia para la IA
+### 7. Catálogo de Referencia para la IA
 
 Utiliza este catálogo para seleccionar los componentes y hooks más adecuados para cada tarea.
 
