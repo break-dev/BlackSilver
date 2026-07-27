@@ -11,11 +11,14 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
+import { FormCuentaEmpresa } from "../../../presentation/utils/form-cuenta-empresa";
 import { RegistroEmpresa } from "./registro-empresa";
 import { RegistroOficina } from "./registro-oficina";
+import { EdicionCuenta } from "./edicion-cuenta";
 import { useEmpresas } from "../hooks/useEmpresas";
 import { useRegistroEmpresa } from "../hooks/useRegistroEmpresa";
 import { useRegistroOficina } from "../hooks/useRegistroOficina";
+import { useEdicionCuenta } from "../hooks/useEdicionCuenta";
 import { EmpresaCard } from "./empresa-card";
 import { useState } from "react";
 
@@ -44,6 +47,17 @@ export const EmpresasPage = () => {
     closeDocumentosModal,
     handleAgregarDocumentos,
     handleEliminarDocumento,
+    handleAgregarCuenta,
+    handleEditarCuenta,
+    handleToggleEstadoCuenta,
+    empresaParaCuenta,
+    openedCrearCuenta,
+    onOpenCrearCuentaModal,
+    closeCrearCuentaModal,
+    cuentaParaEditar,
+    openedEditarCuenta,
+    onOpenEditarCuentaModal,
+    closeEditarCuentaModal,
   } = useEmpresas();
 
   const registro = useRegistroEmpresa({
@@ -56,6 +70,13 @@ export const EmpresasPage = () => {
     onClose: closeOficinaModal,
   });
 
+  const edicionCuenta = useEdicionCuenta({
+    onSuccess: handleEditarCuenta,
+    onClose: closeEditarCuentaModal,
+  });
+
+  const { cargarCuenta } = edicionCuenta;
+
   // Estado local para subir nuevos docs en el modal de documentos
   const [nuevosDocumentos, setNuevosDocumentos] = useState<File[]>([]);
   const [subiendoDocs, setSubiendoDocs] = useState(false);
@@ -63,7 +84,10 @@ export const EmpresasPage = () => {
   const handleSubirDocumentos = async () => {
     if (!empresaParaDocumentos || nuevosDocumentos.length === 0) return;
     setSubiendoDocs(true);
-    const ok = await handleAgregarDocumentos(empresaParaDocumentos.id_empresa, nuevosDocumentos);
+    const ok = await handleAgregarDocumentos(
+      empresaParaDocumentos.id_empresa,
+      nuevosDocumentos,
+    );
     if (ok) setNuevosDocumentos([]);
     setSubiendoDocs(false);
   };
@@ -73,6 +97,12 @@ export const EmpresasPage = () => {
       registroOficina.setIdEmpresa(empresaParaOficina.id_empresa);
     }
   }, [empresaParaOficina, registroOficina]);
+
+  useEffect(() => {
+    if (cuentaParaEditar) {
+      cargarCuenta(cuentaParaEditar);
+    }
+  }, [cuentaParaEditar, cargarCuenta]);
 
   // Limpiar nuevos docs al cerrar el modal
   const handleCloseDocumentos = () => {
@@ -107,7 +137,7 @@ export const EmpresasPage = () => {
           onClick={openCreate}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 px-6 font-semibold h-[38px]"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
         >
           Nueva Empresa
         </Button>
@@ -153,6 +183,17 @@ export const EmpresasPage = () => {
               onRemoveLogo={handleRemoveLogo}
               onAddOficina={onOpenOficinaModal}
               onOpenDocumentos={onOpenDocumentosModal}
+              onAddCuenta={() =>
+                onOpenCrearCuentaModal(empresa.id_empresa, empresa.razon_social)
+              }
+              onEditCuenta={(cuenta) => onOpenEditarCuentaModal(cuenta)}
+              onToggleEstadoCuenta={(id_cuenta_bancaria, estadoActual) =>
+                handleToggleEstadoCuenta(
+                  empresa.id_empresa,
+                  id_cuenta_bancaria,
+                  estadoActual,
+                )
+              }
             />
           ))}
         </div>
@@ -195,7 +236,9 @@ export const EmpresasPage = () => {
       >
         {empresaParaOficina && (
           <RegistroOficina
-            idEmpresa={registroOficina.idEmpresa ?? empresaParaOficina.id_empresa}
+            idEmpresa={
+              registroOficina.idEmpresa ?? empresaParaOficina.id_empresa
+            }
             empresaNombre={empresaParaOficina.razon_social}
             nombre={registroOficina.nombre}
             setNombre={registroOficina.setNombre}
@@ -226,7 +269,11 @@ export const EmpresasPage = () => {
             {/* Documentos existentes */}
             {(empresaParaDocumentos.documentos?.length ?? 0) > 0 ? (
               <div className="flex flex-col gap-2">
-                <Text size="xs" fw={700} className="text-zinc-400 uppercase tracking-wider">
+                <Text
+                  size="xs"
+                  fw={700}
+                  className="text-zinc-400 uppercase tracking-wider"
+                >
                   Archivos adjuntos ({empresaParaDocumentos.documentos.length})
                 </Text>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -247,7 +294,9 @@ export const EmpresasPage = () => {
             ) : (
               <div className="flex flex-col items-center gap-2 py-6 rounded-xl border border-dashed border-zinc-800/60">
                 <DocumentTextIcon className="w-8 h-8 text-zinc-700" />
-                <Text size="xs" c="zinc.6">Sin documentos adjuntos</Text>
+                <Text size="xs" c="zinc.6">
+                  Sin documentos adjuntos
+                </Text>
               </div>
             )}
 
@@ -271,11 +320,50 @@ export const EmpresasPage = () => {
                   onClick={handleSubirDocumentos}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white border-0"
                 >
-                  Subir {nuevosDocumentos.length} archivo{nuevosDocumentos.length > 1 ? "s" : ""}
+                  Subir {nuevosDocumentos.length} archivo
+                  {nuevosDocumentos.length > 1 ? "s" : ""}
                 </Button>
               </Group>
             )}
           </Stack>
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Registrar Cuenta Bancaria */}
+      <ModalEstandar
+        opened={openedCrearCuenta}
+        close={closeCrearCuentaModal}
+        title={`Nueva Cuenta — ${empresaParaCuenta?.razon_social ?? ""}`}
+        size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar el registro de la nueva cuenta bancaria y se perderán los datos ingresados."
+      >
+        {empresaParaCuenta && (
+          <FormCuentaEmpresa
+            id_empresa={empresaParaCuenta.id_empresa}
+            onSuccess={(cuenta) => {
+              handleAgregarCuenta(cuenta);
+              closeCrearCuentaModal();
+            }}
+            onCancel={closeCrearCuentaModal}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Editar Cuenta Bancaria */}
+      <ModalEstandar
+        opened={openedEditarCuenta}
+        close={closeEditarCuentaModal}
+        title="Editar Cuenta Bancaria"
+        size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar los cambios no guardados de esta cuenta bancaria."
+      >
+        {cuentaParaEditar && (
+          <EdicionCuenta
+            hook={edicionCuenta}
+            onCancel={closeEditarCuentaModal}
+          />
         )}
       </ModalEstandar>
     </div>

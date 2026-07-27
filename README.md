@@ -61,7 +61,7 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 
 - **Almacenes Puente**: En lugar de obligar al usuario a anular la Orden de Compra porque el proveedor la dejó en el lugar equivocado, el sistema permite recepcionar la mercadería en el Almacén Central y usar el módulo de **Transferencias de OC** para enviar la carga en un vehículo interno hacia su destino final. Esto mantiene el rastro de que la mercadería ya es propiedad de la empresa, pero está en "tránsito interno", salvaguardando la integridad del pago al proveedor y del inventario.
 
-## 📦 Módulos del Sistema
+## Módulos del Sistema
 
 ### Configuración y Operaciones
 
@@ -102,7 +102,7 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 
 ---
 
-## 🚀 Stack Tecnológico
+## Stack Tecnológico
 
 ### Core & Framework
 
@@ -131,59 +131,162 @@ En el mundo logístico real, los camiones de los proveedores no siempre llegan a
 
 ---
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ### `/src` - Directorios Globales
 
 #### 1. Hooks Globales (`/src/hooks`)
+
 Ganchos personalizados que proveen estado y lógica de comportamiento transversal en todo el ERP.
-*   **`useAuthUser.ts`**: Gestión de estado de sesión, inicio/cierre de sesión, y comprobación reactiva de permisos del usuario.
-*   **`useNotify.ts`**: Envoltorio de notificaciones nativas Mantine v8 unificado. Ofrece `notifySuccess` y `notifyError` asegurando la estética visual consistente.
-*   **`usePrint.ts` / `useDownloadFile.ts`**: Utilidades para descarga asíncrona de reportes y cola de impresión local.
-*   **`useExcel.ts`**: Manejo asíncrono y en segundo plano de generación de archivos de cálculo Excel.
-*   **`useJsonScanner.tsx`**: Hook integrado para el procesamiento e interpretación de datos capturados por hardware externo (lectores de código de barras).
-*   **`useMenuNav.ts`**: Administra la carga y filtrado de enlaces de navegación en base al rol autenticado.
-*   **`useTitlePage.ts`**: Mantiene sincronizado el título de la pestaña del navegador con el módulo activo.
-*   **`useBlackcito.ts`**: Gancho dinámico para el asistente animado del ERP (Blackcito).
+
+- **`useAuthUser.ts`**: Gestión de estado de sesión, inicio/cierre de sesión, y comprobación reactiva de permisos del usuario.
+- **`useNotify.ts`**: Envoltorio de notificaciones nativas Mantine v8 unificado. Ofrece `notifySuccess` y `notifyError` asegurando la estética visual consistente.
+- **`usePrint.ts` / `useDownloadFile.ts`**: Utilidades para descarga asíncrona de reportes y cola de impresión local.
+- **`useExcel.ts`**: Manejo asíncrono y en segundo plano de generación de archivos de cálculo Excel.
+- **`useJsonScanner.tsx`**: Hook integrado para el procesamiento e interpretación de datos capturados por hardware externo (lectores de código de barras).
+- **`useMenuNav.ts`**: Administra la carga y filtrado de enlaces de navegación en base al rol autenticado.
+- **`useTitlePage.ts`**: Mantiene sincronizado el título de la pestaña del navegador con el módulo activo.
+- **`useBlackcito.ts`**: Gancho dinámico para el asistente animado del ERP (Blackcito).
 
 #### 2. Componentes de UI Reutilizables (`/src/presentation/utils`)
+
 Componentes visuales puros y layouts genéricos de alta calidad Mantine v8.
-*   **`DataTableEstandar.tsx`**: Grilla maestra unificada para visualización de registros con ordenamiento, paginación reactiva, filtros y modo auditoría integrado.
-*   **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios.
-*   **`JsonScanner.tsx`**: Interfaz de escaneo de códigos de barra para ingreso masivo de ítems.
-*   **`date-picker-input.tsx`**: Selector de fechas unificado (`CustomDatePicker`) alineado al diseño de inputs ERP.
-*   **`form-marca.tsx` / `form-personal-externo.tsx`**: Formularios modulares auto-contenidos para creación rápida de catálogos en procesos concurrentes.
-*   **`archivo/` (`archivo-card.tsx`, `multifile-picker.tsx`)**: Utilidades visuales para visualización, carga drag & drop y borrado de documentos adjuntos.
-*   **`excel/` (`GlobalExcelPortal.tsx`)**: Portal flotante global que gestiona colas de exportación pesadas sin congelar el hilo principal.
-*   **`printer/` (`GlobalPrinterPortal.tsx`)**: Servicio global que administra la cola de impresión de documentos y vales físicos.
-*   **Plantillas PDF (`orden-compra-pdf.tsx`, `ticket-lote-pdf.tsx`, etc.)**: Generadores de comprobantes en el cliente estructurados mediante `@react-pdf/renderer`.
+
+- **`DataTableEstandar.tsx`**: Grilla maestra unificada para visualización de registros con ordenamiento, paginación reactiva, filtros y modo auditoría integrado.
+  - **Props**: `idAccessor?: string`, `columns: DataTableColumn[]`, `records: any[]`, `loading: boolean`, `initialPageSize?: number` (default `25`). Acepta y propaga cualquier prop extra de `mantine-datatable` (`minHeight`, `onRowClick`, `rowExpansion`, etc.).
+  - **Indexado automático `#`**: declarar una columna con `accessor: "index"` y `title: "#"` hace que el componente calcule el número absoluto `(página - 1) * pageSize + index + 1` sin necesidad de un `render` manual.
+  - **Reset de página reactivo**: cuando cambia la referencia de `records` (ej. tras un refetch/filtro), vuelve automáticamente a `page=1`.
+  - **Estilo dark consistente**: `bg-zinc-900/50`, header `bg-zinc-900/80`, paginación `bg-zinc-900/50 border-t border-zinc-800`, `striped` + `highlightOnHover`.
+  - **Tipado flexible**: única excepción permitida al uso de `any` (ver regla §1), porque su API es genérica por diseño.
+  - **Identificadores opcionales (auto-UUID)**: para tablas de solo lectura no es obligatorio declarar `id` / `accessor`. El componente los genera con `uuid` y los mantiene estables por instancia/referencia:
+    - `idAccessor` omitido → se genera `dt-<uuid>` una sola vez al montar la tabla (con `useState(() => …)`).
+    - `accessor` omitido en una columna → se asigna `c-<uuid>` (estable mientras la referencia de `columns` no cambie). **La columna debe traer `render` propio**, porque la librería no puede mapear el record sin accessor y la celda quedaría vacía.
+    - `id` omitido en un grupo (raíz o anidado) → se asigna `g-<uuid>` (estable mientras la referencia de `columnGroups` no cambie). El `id` solo se usa como React key del `<th>`, así que un UUID es válido.
+    - **Cuándo SÍ hay que pasar `idAccessor`**: si la tabla usa selección, expansión de filas, o cualquier feature que dependa de identificar records únicos. En esos casos el `idAccessor` debe apuntar al campo real del record (ej. `"id"`).
+  - **Cabeceras agrupadas (multi-nivel) — `columnGroups?`**: prop opcional del tipo `DataTableColumnGroup[]` de `mantine-datatable`. Permite definir cabeceras que agrupan otras (estilo `<th colspan>` / `<th rowspan>`), con soporte para anidamiento recursivo (un grupo puede contener sub-grupos vía `groups: [...]`). Cada `title` se envuelve automáticamente en un layout centrado `text-xs font-bold uppercase tracking-wider text-zinc-100`.
+    - Cuando se proporciona, el componente activa `withColumnBorders` en el `DataTable` (internamente).
+    - **Caveat del library**: las columnas referenciadas en `groups[*].columns` (de forma recursiva) son las que aparecen en el cuerpo. Por eso toda columna que deba renderizarse en `<tbody>` debe estar referenciada desde algún grupo (incluso las que no quieras agrupar visualmente deben ir en un grupo "single-column").
+  - **Ejemplo mínimo (sin IDs/accessors explícitos)**:
+    ```tsx
+    <DataTableEstandar
+      columns={[
+        { title: "Código",      render: r => r.codigo },
+        { title: "Fechas",      render: r => r.fechas },
+        { title: "NewAu",       render: r => r.new_au },
+        { title: "Promedio",    render: r => r.promedio },
+        { title: "NewAg",       render: r => r.new_ag },
+        { title: "Estado",      render: r => r.estado },
+        { title: "Acción",      render: r => r.accion },
+      ]}
+      columnGroups={[
+        { title: "LOTE",  columns: [<ref col 0>, <ref col 1>] },
+        {
+          title: "Leyes Consolidadas",
+          groups: [
+            { title: "NewAu", columns: [<ref col 2>, <ref col 3>, <ref col 4>] },
+            { title: "NewAg", columns: [<ref col 5>] },
+          ],
+        },
+        { title: "Cierre", columns: [<ref col 6>, <ref col 7>] },
+      ]}
+      records={records}
+      loading={loading}
+    />
+    ```
+  - **Ejemplo con IDs explícitos (cuando se necesita selección o control total)**:
+
+    ```tsx
+    const columns: DataTableColumn<LeyRow>[] = [
+      /* ...con accessors explícitos... */
+    ];
+
+    <DataTableEstandar
+      idAccessor="id"
+      columns={columns}
+      columnGroups={[
+        { id: "lote", title: "LOTE", columns: [columns[0], columns[1]] },
+        {
+          id: "leyes",
+          title: "Leyes Consolidadas",
+          groups: [
+            { id: "newAu", title: "NewAu", columns: [columns[2], columns[3]] },
+            { id: "newAg", title: "NewAg", columns: [columns[4], columns[5]] },
+          ],
+        },
+        { id: "cierre", title: "Cierre", columns: [columns[8], columns[9]] },
+      ]}
+      records={records}
+      loading={loading}
+    />;
+    ```
+
+- **`ModalEstandar.tsx`**: Componente contenedor para modales de edición o registro dinámico de formularios. Extiende `Partial<ModalProps>` de Mantine v8, por lo que acepta cualquier prop adicional del `Modal` base (`size`, `zIndex`, `withCloseButton`, etc.).
+  - **Props estándar**:
+    - `opened: boolean` — estado de apertura del modal.
+    - `close: () => void` — callback que el consumer controla para cerrar.
+    - `title: React.ReactNode` — título con el layout premium (barra dorada lateral + gradiente).
+    - `children: React.ReactNode` — contenido del modal.
+    - `rightSection?: React.ReactNode` — slot opcional alineado a la derecha del header (ej. botón de ayuda, badge de estado).
+  - **Confirmación al cerrar (opt-in, sin providers globales)**:
+    - `validateClose?: boolean` — default `false`. Si es `true`, cualquier intento de cerrar (X del header, tecla `Escape`, click en el overlay) abre un diálogo de confirmación encima (estilo "warning dialog" diferenciado: icono `IconAlertCircle` en `ThemeIcon` con gradiente `red.6 → orange.6`, fondo `bg-zinc-900` con borde `yellow.500/30`, `radius="lg"`, sin barra dorada del modal base).
+    - `closeConfirmationTitle?: string` — título del diálogo (solo texto). Default: `¿Cerrar sin guardar?`.
+    - `closeConfirmationMessage?: React.ReactNode` — mensaje/cuerpo del diálogo (texto o JSX). Default genérico recordando que se perderán los cambios.
+    - El botón **"Cancelar"** queda con foco automático (`data-autofocus`) para que `Enter` mantenga el modal padre abierto (acción segura por default).
+    - "Sí, cerrar" en `color="red"` confirma; "Cancelar" simplemente descarta la confirmación.
+  - **Ejemplo de uso**:
+    ```tsx
+    <ModalEstandar
+      opened={abierto}
+      close={() => setAbierto(false)}
+      title="Editar producto"
+      validateClose
+      closeConfirmationTitle="¿Abandonar edición?"
+      closeConfirmationMessage="Vas a descartar los cambios no guardados del producto."
+    >
+      {/* formulario */}
+    </ModalEstandar>
+    ```
+- **`JsonScanner.tsx`**: Interfaz de escaneo de códigos de barra para ingreso masivo de ítems.
+  - **Props**: `fields: string[]` (claves a extraer del JSON), `onScanned: (values) => void`, `isFiltering: boolean`, `onClearFilter: () => void`, `filteredCount?: number`.
+  - **Funcionamiento**: input compacto (`radius="xl"`, `size="xs"`) que recibe texto crudo (pegado o desde lector USB/Bluetooth); el parsing lo hace el hook `useJsonScanner` (`parseQrFields`) tolerando corrupción. Tras una lectura exitosa se limpia el input a los 300 ms.
+  - **Estado de filtro**: muestra un badge `indigo` con el conteo (`filteredCount`) cuando `isFiltering` es `true`, con botón `ActionIcon` (`color="red"`) para limpiar el filtro.
+- **`date-picker-input.tsx`**: Selector de fechas unificado (`CustomDatePicker`) alineado al diseño de inputs ERP.
+- **`form-marca.tsx` / `form-personal-externo.tsx`**: Formularios modulares auto-contenidos para creación rápida de catálogos en procesos concurrentes.
+- **`archivo/` (`archivo-card.tsx`, `multifile-picker.tsx`)**: Utilidades visuales para visualización, carga drag & drop y borrado de documentos adjuntos.
+- **`excel/` (`GlobalExcelPortal.tsx`)**: Portal flotante global que gestiona colas de exportación pesadas sin congelar el hilo principal.
+- **`printer/` (`GlobalPrinterPortal.tsx`)**: Servicio global que administra la cola de impresión de documentos y vales físicos.
+- **Plantillas PDF (`orden-compra-pdf.tsx`, `ticket-lote-pdf.tsx`, etc.)**: Generadores de comprobantes en el cliente estructurados mediante `@react-pdf/renderer`.
 
 #### 3. Capa de Servicios de Red (`/src/service`)
+
 Instancia de comunicación REST y servicios auxiliares con el backend.
-*   **`_api.ts`**: Interceptor maestro de Axios. Inyecta tokens Bearer JWT de forma automática y normaliza las respuestas en base a la interfaz de éxito o fallo corporativo.
-*   **`_socket.ts`**: Cliente WebSocket unificado (Laravel Echo + Pusher) para canalizar eventos en tiempo real como el cambio global del Modo Auditoría.
-*   **`auxiliar.service.ts`**: **Hub de Datos Maestros.** Cachea y provee catálogos compartidos de productos, lotes, marcas, personal y almacenes optimizando las llamadas de red.
-*   **`archivo.service.ts` / `menu-nav.service.ts`**: Gestión física de adjuntos y descarga de árbol de menús estructurados.
-*   **Subcarpeta `responses/`**: Contratos e interfaces TypeScript (`.ts`) que mapean al 100% de tipado estricto las respuestas HTTP devueltas por la API de Laravel módulo por módulo (ej. `activo-fijo.ts`, `lote-producto.ts`, `requerimiento-almacen.ts`).
+
+- **`_api.ts`**: Interceptor maestro de Axios. Inyecta tokens Bearer JWT de forma automática y normaliza las respuestas en base a la interfaz de éxito o fallo corporativo.
+- **`_socket.ts`**: Cliente WebSocket unificado (Laravel Echo + Pusher) para canalizar eventos en tiempo real como el cambio global del Modo Auditoría.
+- **`auxiliar.service.ts`**: **Hub de Datos Maestros.** Cachea y provee catálogos compartidos de productos, lotes, marcas, personal y almacenes optimizando las llamadas de red.
+- **`archivo.service.ts` / `menu-nav.service.ts`**: Gestión física de adjuntos y descarga de árbol de menús estructurados.
+- **Subcarpeta `responses/`**: Contratos e interfaces TypeScript (`.ts`) que mapean al 100% de tipado estricto las respuestas HTTP devueltas por la API de Laravel módulo por módulo (ej. `activo-fijo.ts`, `lote-producto.ts`, `requerimiento-almacen.ts`).
 
 #### 4. Recursos Compartidos (`/src/shared`)
+
 Estructura fundacional, tipos globales, constantes y algoritmos lógicos puros del ERP.
-*   **`enums/`**: Mapeo completo de Backed Enums de PHP a enums TypeScript, divididos de forma estricta (ej. `solicitud-reabastecimiento`, `orden-compra`, `requerimiento-almacen`).
-*   **`enums/_generic/`**: Enums base y transversales (`tipo-bien.ts`, `moneda.ts`, `premura.ts`, `periodo.ts`).
-*   **`interfaces/`**: Interfaces genéricas de formato de API (`_response.ts`) e información de archivos.
-*   **`variables/`**: Mapeadores y arrays estáticos de soporte visual (`meses.ts`, `monedas.ts`, `iconos-menu-navegacion.ts`).
-*   **`functions/` (Algoritmos Genéricos)**:
-    *   **`cn.ts`**: Combinador inteligente de clases Tailwind CSS (`tailwind-merge`).
-    *   **`en-plural.ts`**: Algoritmo avanzado de pluralización en español (excepciones de tildes y terminaciones).
-    *   **`formatNumber.ts`**: Formateador decimal de precisión financiera.
-    *   **`get-coincidencias.ts`**: Buscador difuso (Fuzzy Search con Fuse.js) y tokenizado por palabras (FlexSearch).
-    *   **`get-duracion-periodo.ts` / `get-nombre-periodo.ts`**: Estandarización y visualización matemática de lapsos temporales.
-    *   **`mm-to-pt.ts`**: Conversión estricta milímetros a puntos PDF.
-    *   **`get-url-barcode.ts`**: Genera la representación del código de barras en base64 para reportes PDF.
+
+- **`enums/`**: Mapeo completo de Backed Enums de PHP a enums TypeScript, divididos de forma estricta (ej. `solicitud-reabastecimiento`, `orden-compra`, `requerimiento-almacen`).
+- **`enums/_generic/`**: Enums base y transversales (`tipo-bien.ts`, `moneda.ts`, `premura.ts`, `periodo.ts`).
+- **`interfaces/`**: Interfaces genéricas de formato de API (`_response.ts`) e información de archivos.
+- **`variables/`**: Mapeadores y arrays estáticos de soporte visual (`meses.ts`, `monedas.ts`, `iconos-menu-navegacion.ts`).
+- **`functions/` (Algoritmos Genéricos)**:
+  - **`cn.ts`**: Combinador inteligente de clases Tailwind CSS (`tailwind-merge`).
+  - **`en-plural.ts`**: Algoritmo avanzado de pluralización en español (excepciones de tildes y terminaciones).
+  - **`formatNumber.ts`**: Formateador decimal de precisión financiera.
+  - **`get-coincidencias.ts`**: Buscador difuso (Fuzzy Search con Fuse.js) y tokenizado por palabras (FlexSearch).
+  - **`get-duracion-periodo.ts` / `get-nombre-periodo.ts`**: Estandarización y visualización matemática de lapsos temporales.
+  - **`mm-to-pt.ts`**: Conversión estricta milímetros a puntos PDF.
+  - **`get-url-barcode.ts`**: Genera la representación del código de barras en base64 para reportes PDF.
 
 ---
 
-## 🛠️ Reglas de Desarrollo y Calidad de Código
+## Reglas de Desarrollo y Calidad de Código
 
 Para mantener la salud del proyecto a largo plazo, se deben seguir estas reglas estrictas:
 
@@ -245,7 +348,49 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
 - **Calidad Visual**: Los componentes deben sentirse premium. Usa sombras de Tailwind (ej. `shadow-lg shadow-indigo-900/20`), efectos de cristal (`backdrop-blur`) y bordes sutiles.
 - **Badges**: Prefiere `variant="light"` o `variant="filled"`. Evita colores planos aburridos.
 
-### 4. Arquitectura de Estado y Notificaciones
+### 4. Paleta de Colores Válida (Mantine v8)
+
+Los siguientes son los **únicos** nombres de color válidos en el tema default de Mantine v8. Cualquier otro nombre (ej. `amber`, `gold`, `crimson`, `purple`, `navy`, `silver`) será **ignorado silenciosamente** y el componente renderizará sin color (monocromático/gris). Esto aplica a la prop `color` de componentes (`Switch`, `Button`, `Badge`, `Alert`, etc.) y a Style Props de color (`c`, `bg`, `borderColor`).
+
+Cada color tiene **10 niveles de tinte** numerados del `0` al `9`. El nivel **`6` es el default**. Para usar otro nivel, aplica la notación `color.nivel`, por ejemplo `teal.4` o `indigo.9`.
+
+| Color    | Uso sugerido                                            |
+| :------- | :------------------------------------------------------ |
+| `dark`   | Negro puro, contrastes fuertes sobre fondos claros      |
+| `gray`   | Neutros, textos secundarios, disabled states            |
+| `red`    | Errores, alertas críticas, acciones destructivas        |
+| `pink`   | Acentos decorativos                                     |
+| `grape`  | Acentos decorativos                                     |
+| `violet` | Acentos decorativos                                     |
+| `indigo` | **Color primario del ERP** (botones principales, focus) |
+| `blue`   | Información, links                                      |
+| `cyan`   | Información alternativa                                 |
+| `teal`   | Éxito, confirmaciones, monedas PEN                      |
+| `green`  | Éxito alternativo, validación                           |
+| `lime`   | Acentos positivos                                       |
+| `yellow` | **Detracción y advertencias** (reemplaza a "amber")     |
+| `orange` | Advertencias, llamadas a la atención                    |
+
+**Ejemplos correctos:**
+
+```tsx
+<Switch color="yellow" />
+<Badge color="teal.4" />
+<Button color="indigo">Guardar</Button>
+<Alert color="red" variant="filled" />
+```
+
+**Ejemplos incorrectos (no renderizan color):**
+
+```tsx
+<Switch color="amber" />      // Ignorado: usa "yellow" en su lugar
+<Button color="crimson" />    // Ignorado: no existe en el tema
+<Badge color="silver" />      // Ignorado: usa "gray.5" o "gray.6"
+```
+
+Ante cualquier duda, consultar la documentación oficial de Mantine v8: https://v8.mantine.dev
+
+### 5. Arquitectura de Estado y Notificaciones
 
 - **Notificaciones**: **PROHIBIDO** usar `@mantine/notifications` directamente. Debes usar el hook personalizado `useNotify()` del proyecto:
   ```tsx
@@ -254,7 +399,7 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   ```
 - **Manejo de Formularios**: El proyecto prefiere `useState` con una función `setField` y validación manual con `Zod` (`Schema.safeParse(form)`) en lugar de `useForm` de Mantine, a menos que el módulo ya use `useForm`.
 
-### 5. Reglas de DataTableEstandar (Índices automáticos de paginación)
+### 6. Reglas de DataTableEstandar (Índices automáticos de paginación)
 
 - **Índice Automático (#)**: **NUNCA** implementes un método `render` manual para la columna de numeración correlativa (`#`). Si necesitas mostrar el número de fila absoluto (que tiene en cuenta la página y el tamaño de página actual), define el objeto de la columna con el `accessor: "index"` de forma simple:
   ```tsx
@@ -267,7 +412,7 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
   ```
   `DataTableEstandar` intercepta automáticamente esta clave y calcula el índice correspondiente. No ensucies la definición del módulo con funciones de render redundantes.
 
-### 5. Catálogo de Referencia para la IA
+### 7. Catálogo de Referencia para la IA
 
 Utiliza este catálogo para seleccionar los componentes y hooks más adecuados para cada tarea.
 
@@ -299,7 +444,7 @@ Utiliza este catálogo para seleccionar los componentes y hooks más adecuados p
 
 ---
 
-## 🏛️ Arquitectura de Módulos
+## Arquitectura de Módulos
 
 ### Estructura de un Dominio (`/src/modules/`)
 
@@ -315,7 +460,7 @@ module-name/
 
 ---
 
-## ⚙️ Ejecución
+## Ejecución
 
 1. Configurar el archivo `.env`
 2. `npm install`
@@ -323,10 +468,13 @@ module-name/
 
 ---
 
-## 🤖 Comandos Obligatorios para IA
+## Comandos Obligatorios para IA
+
 > [!IMPORTANT]
 > Después de realizar cualquier cambio en el código del Frontend, es **OBLIGATORIO** ejecutar el siguiente comando para verificar la integridad de los tipos y el empaquetado:
+>
 > ```bash
 > npm run build
 > ```
+>
 > No confíes únicamente en `tsc --noEmit`. El proceso de build completo es la única garantía de que el código es correcto y está listo para producción.

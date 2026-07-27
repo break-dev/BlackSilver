@@ -4,6 +4,9 @@ import { useNotify } from "../../../hooks/useNotify";
 import { EmpresasService } from "../service/empresas.service";
 import type { RES_EmpresaResumen } from "../service/empresas.responses";
 import type { RES_Oficina } from "../../../service/responses/oficina";
+import type { RES_CuentaEmpresa } from "../../../service/responses/cuenta-empresa";
+import { useCuentasEmpresa } from "./useCuentasEmpresa";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 export const useEmpresas = () => {
   const { notifyError, notifySuccess } = useNotify();
@@ -25,6 +28,8 @@ export const useEmpresas = () => {
     useState<RES_EmpresaResumen | null>(null);
   const [openedDocumentos, { open: openDocumentos, close: closeDocumentos }] =
     useDisclosure(false);
+
+  const cuentasState = useCuentasEmpresa();
 
   const listar = useCallback(async () => {
     setLoading(true);
@@ -192,6 +197,59 @@ export const useEmpresas = () => {
     );
   };
 
+  const handleAgregarCuenta = (cuenta: RES_CuentaEmpresa) => {
+    setEmpresas((prev) =>
+      prev.map((emp) =>
+        emp.id_empresa === cuentasState.empresaParaCuenta?.id_empresa
+          ? { ...emp, cuentas_bancarias: [...(emp.cuentas_bancarias ?? []), cuenta] }
+          : emp,
+      ),
+    );
+  };
+
+  const handleEditarCuenta = (cuentaActualizada: RES_CuentaEmpresa) => {
+    setEmpresas((prev) =>
+      prev.map((emp) => ({
+        ...emp,
+        cuentas_bancarias: (emp.cuentas_bancarias ?? []).map((c) =>
+          c.id_cuenta_bancaria === cuentaActualizada.id_cuenta_bancaria
+            ? cuentaActualizada
+            : c,
+        ),
+      })),
+    );
+  };
+
+  const handleToggleEstadoCuenta = async (
+    id_empresa: number,
+    id_cuenta_bancaria: number,
+    estadoActual: EstadoBase,
+  ): Promise<boolean> => {
+    const nuevoEstado =
+      estadoActual === EstadoBase.Activo ? EstadoBase.Inactivo : EstadoBase.Activo;
+    const ok = await cuentasState.handleToggleEstadoCuenta(
+      id_cuenta_bancaria,
+      estadoActual,
+    );
+    if (ok) {
+      setEmpresas((prev) =>
+        prev.map((emp) =>
+          emp.id_empresa === id_empresa
+            ? {
+                ...emp,
+                cuentas_bancarias: (emp.cuentas_bancarias ?? []).map((c) =>
+                  c.id_cuenta_bancaria === id_cuenta_bancaria
+                    ? { ...c, estado: nuevoEstado }
+                    : c,
+                ),
+              }
+            : emp,
+        ),
+      );
+    }
+    return ok;
+  };
+
   return {
     empresas,
     loading,
@@ -220,5 +278,19 @@ export const useEmpresas = () => {
     handleUpdateLogo,
     handleRemoveLogo,
     recargar: listar,
+
+    handleAgregarCuenta,
+    handleEditarCuenta,
+    handleToggleEstadoCuenta,
+
+    empresaParaCuenta: cuentasState.empresaParaCuenta,
+    openedCrearCuenta: cuentasState.openedCrearCuenta,
+    onOpenCrearCuentaModal: cuentasState.onOpenCrearCuentaModal,
+    closeCrearCuentaModal: cuentasState.closeCrearCuentaModal,
+
+    cuentaParaEditar: cuentasState.cuentaParaEditar,
+    openedEditarCuenta: cuentasState.openedEditarCuenta,
+    onOpenEditarCuentaModal: cuentasState.onOpenEditarCuentaModal,
+    closeEditarCuentaModal: cuentasState.closeEditarCuentaModal,
   };
 };
