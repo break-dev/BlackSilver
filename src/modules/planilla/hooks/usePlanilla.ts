@@ -83,8 +83,6 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
       cargo_nombre?: string | null;
       area_nombre?: string | null;
       dias_trabajados: number;
-      horas_trabajadas_total: number;
-      horas_programadas_total: number;
       pago_total: number;
       tramos: PlanillaTramo[];
       marcaciones: RES_PlanillaAsistencia[];
@@ -104,8 +102,6 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
         cargo_nombre: a.cargo_nombre,
         area_nombre: a.area_nombre,
         dias_trabajados: 0,
-        horas_trabajadas_total: 0,
-        horas_programadas_total: 0,
         pago_total: 0,
         tramos: [],
         marcaciones: [],
@@ -113,8 +109,6 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
     }
     const slot = mapa.get(a.id_empleado)!;
     slot.marcaciones.push(a);
-    slot.horas_trabajadas_total += Number(a.total_horas ?? 0);
-    slot.horas_programadas_total += Number(a.turno_total_horas ?? 0);
 
     // Si el backend devolvió el desglose por turno, respetamos el pago
     // calculado tramo a tramo (útil cuando hay sueldos distintos en el mismo
@@ -142,17 +136,17 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
 
   return Array.from(mapa.values())
     .map((e) => {
-      // jornada_total del d\u00eda = \u03a3 horas_trabajadas / \u03a3 horas_programadas.
-      // Sumar las jornadas por turno duplicar\u00eda la base de horas_programadas.
-      const trabajadas = e.horas_trabajadas_total;
-      const programadas = e.horas_programadas_total;
-      const jornadaCalculada = programadas > 0
-        ? Math.round((trabajadas / programadas) * 10000) / 10000
-        : 0.0;
+      // jornada_total = Σ jornadas_trabajada de cada día del rango.
+      // Equivale a "días laborados equivalentes" del mes (1.5 + 1.0 = 2.50).
+      const jornadaCalculada = Math.round(
+        e.marcaciones.reduce(
+          (acc, a) => acc + Number(a.jornada_trabajada ?? 0),
+          0,
+        ) * 100,
+      ) / 100;
 
-      const { horas_trabajadas_total: _t, horas_programadas_total: _p, ...rest } = e;
       return {
-        ...rest,
+        ...e,
         jornada_total: jornadaCalculada,
         pago_total: Math.round(e.pago_total * 100) / 100,
         marcaciones: e.marcaciones.sort((x, y) =>
