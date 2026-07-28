@@ -1,5 +1,6 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 import { TipoMineral } from "../../../shared/enums/_generic/tipo-mineral";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 export interface RES_Concesion {
   id_concesion: number;
@@ -9,6 +10,7 @@ export interface RES_Concesion {
   tipo_mineral: TipoMineral | string;
   estado: EstadoBase;
   contratos_activos: number;
+  contratos: RES_Contrato[];
 }
 
 export interface RES_Contrato {
@@ -20,4 +22,5 @@ export interface RES_Contrato {
   fecha_inicio: string;
   fecha_fin: string | null;
   estado: EstadoBase;
+  evidencias: IArchivo[];
 }

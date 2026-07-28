@@ -1,38 +1,70 @@
-import { Select, Button, Text, Stack, Group, Box } from "@mantine/core";
-import {
-  DocumentTextIcon,
-} from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { Select, Button, Text, Stack, Group, Box, Divider } from "@mantine/core";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { useNuevoContrato } from "../hooks/useNuevoContrato";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
-import type { RES_Contrato } from "../service/concesiones.responses";
+import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
+import { AuxService } from "../../../service/auxiliar.service";
+import type { RES_Empresa } from "../../../service/responses/empresa";
+
 
 interface NuevoContratoProps {
   idConcesion: number;
   nombreConcesion: string;
   empresasConContratoActivo: number[];
-  onSuccess: (nuevo: RES_Contrato) => void;
+  onSubmit: (
+    idEmpresa: number,
+    fechaInicio: string,
+    fechaFin: string | null,
+    evidencias: File[],
+  ) => Promise<void>;
 }
 
 export const NuevoContrato = ({
   idConcesion,
   nombreConcesion,
   empresasConContratoActivo,
-  onSuccess,
+  onSubmit,
 }: NuevoContratoProps) => {
-  const { empresas, loading, loadingAccion, handleCrearContrato } =
-    useNuevoContrato(idConcesion, onSuccess);
+  const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
+  const [loadingEmpresas, setLoadingEmpresas] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
+  const [evidencias, setEvidencias] = useState<File[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    const cargar = async () => {
+      setLoadingEmpresas(true);
+      try {
+        const resp = await AuxService.get_empresas();
+        if (!cancelado && resp.success) setEmpresas(resp.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelado) setLoadingEmpresas(false);
+      }
+    };
+    cargar();
+    return () => {
+      cancelado = true;
+    };
+  }, [idConcesion]);
 
   const handleSubmit = async () => {
     if (!idEmpresa || !fechaInicio) return;
-    const fechaStr = dayjs(fechaInicio).format("YYYY-MM-DD");
-    await handleCrearContrato(parseInt(idEmpresa), fechaStr);
-    setIdEmpresa(null);
-    setFechaInicio(new Date());
+    setLoading(true);
+    try {
+      const fechaStr = dayjs(fechaInicio).format("YYYY-MM-DD");
+      await onSubmit(parseInt(idEmpresa), fechaStr, null, evidencias);
+      setIdEmpresa(null);
+      setFechaInicio(new Date());
+      setEvidencias([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const selectData = empresas.map((e) => ({
@@ -46,14 +78,13 @@ export const NuevoContrato = ({
       gap="md"
       className="bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/50"
     >
-      {/* Header con nombre de concesión */}
       <Group gap="sm" align="center">
         <Box className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
           <DocumentTextIcon className="w-4 h-4 text-indigo-400" />
         </Box>
         <Stack gap={0}>
           <Text size="xs" fw={700} className="text-zinc-300 uppercase tracking-wider">
-            Nuevo Contrato
+            Registrar Contrato
           </Text>
           <Text size="xs" className="text-zinc-500">
             {nombreConcesion}
@@ -61,11 +92,10 @@ export const NuevoContrato = ({
         </Stack>
       </Group>
 
-      {/* Grid de 2 columnas iguales */}
       <div className="grid grid-cols-2 gap-3">
         <Select
           label="Empresa"
-          placeholder={loading ? "Cargando..." : "Seleccione empresa"}
+          placeholder={loadingEmpresas ? "Cargando..." : "Seleccione empresa"}
           data={selectData}
           value={idEmpresa}
           onChange={setIdEmpresa}
@@ -73,7 +103,7 @@ export const NuevoContrato = ({
           size="sm"
           searchable
           required
-          disabled={loading}
+          disabled={loadingEmpresas}
           classNames={{
             input:
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
@@ -93,17 +123,27 @@ export const NuevoContrato = ({
         />
       </div>
 
-      {/* Botón abajo a la derecha */}
+      <Divider color="zinc.9" variant="dashed" my={2} />
+
+      <MultiFilePicker
+        files={evidencias}
+        onFilesChange={setEvidencias}
+        label="Evidencias"
+        description="Contratos firmados, actas u otros documentos de respaldo (opcional)"
+        accept="image/png,image/jpeg,image/jpg,application/pdf,.docx,.xlsx"
+        multiple
+      />
+
       <Group justify="flex-end">
         <Button
           onClick={handleSubmit}
-          loading={loadingAccion}
+          loading={loading}
           radius="lg"
           size="sm"
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
           disabled={!idEmpresa || !fechaInicio}
         >
-          Crear Contrato
+          Registrar Contrato
         </Button>
       </Group>
     </Stack>

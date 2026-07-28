@@ -15,6 +15,7 @@ export interface ProveedorResponse {
   correo: string | null;
   cantidad_cuentas_bancarias: number;
   estado: EstadoBase;
+  cuentas_bancarias?: CuentaBancariaResponse[];
 }
 
 export interface CuentaBancariaResponse {

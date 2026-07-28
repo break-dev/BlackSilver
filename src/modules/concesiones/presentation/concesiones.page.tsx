@@ -1,19 +1,20 @@
-import { Button, TextInput, Skeleton, Text } from "@mantine/core";
+import { Button, TextInput, Text } from "@mantine/core";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   Square3Stack3DIcon,
 } from "@heroicons/react/24/outline";
-import { useDisclosure } from "@mantine/hooks";
 import { useState } from "react";
 
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 
 import { useConcesiones } from "../hooks/useConcesiones";
+import { useNuevoContrato } from "../hooks/useNuevoContrato";
 import { RegistroConcesion } from "./registro-concesion";
-import { HistorialContratos } from "./historial-contratos";
-import { ConcesionCard } from "./concesion-card";
+import { ConcesionCard, ConcesionCardSkeleton } from "./concesion-card";
+import { NuevoContrato } from "./nuevo-contrato";
+import { EvidenciasModal } from "./evidencias-modal";
 
 export const ConcesionesPage = () => {
   useTitlePage("Concesiones");
@@ -24,15 +25,59 @@ export const ConcesionesPage = () => {
     busqueda,
     setBusqueda,
     pushNuevaConcesion,
-    actualizarContratosActivos,
+
+    openedRegistro,
+    openRegistro,
+    closeRegistro,
+
+    concesionParaContrato,
+    openedNuevoContrato,
+    openNuevoContratoModal,
+    closeNuevoContratoModal,
+    pushNuevoContrato,
+
+    contratoParaEvidencias,
+    openedEvidencias,
+    openEvidenciasModal,
+    closeEvidenciasModal,
+    handleSubirEvidencias,
+    handleEliminarEvidencia,
+
+    loadingIdContrato,
+    handleTerminarContrato,
   } = useConcesiones();
 
-  const [idSeleccionado, setIdSeleccionado] = useState<number | null>(null);
-  const [nombreSeleccionado, setNombreSeleccionado] = useState("");
-  const [openedContratos, { open: openContratos, close: closeContratos }] =
-    useDisclosure(false);
-  const [openedRegistro, { open: openRegistro, close: closeRegistro }] =
-    useDisclosure(false);
+  const { handleCrearContrato } = useNuevoContrato(
+    concesionParaContrato?.id_concesion ?? 0,
+    (nuevo) =>
+      pushNuevoContrato(concesionParaContrato?.id_concesion ?? 0, nuevo),
+  );
+
+  // Empresas con contrato activo dentro de la concesión seleccionada
+  const [empresasConContratoActivo, setEmpresasConContratoActivo] = useState<
+    number[]
+  >([]);
+
+  const onOpenNuevoContrato = (id_concesion: number) => {
+    const c = concesiones.find((x) => x.id_concesion === id_concesion);
+    if (!c) return;
+    setEmpresasConContratoActivo(
+      (c.contratos ?? [])
+        .filter((ct) => ct.estado === "Activo")
+        .map((ct) => ct.id_empresa),
+    );
+    openNuevoContratoModal(c);
+  };
+
+  const onSubmitContrato = async (
+    id_empresa: number,
+    fecha_inicio: string,
+    fecha_fin: string | null,
+    evidencias: File[],
+  ) => {
+    await handleCrearContrato(id_empresa, fecha_inicio, fecha_fin, evidencias);
+    closeNuevoContratoModal();
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -62,7 +107,7 @@ export const ConcesionesPage = () => {
           onClick={openRegistro}
           radius="lg"
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[38px] px-6 font-semibold"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-9.5 px-6 font-semibold"
         >
           Nueva Concesión
         </Button>
@@ -72,42 +117,11 @@ export const ConcesionesPage = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="flex flex-col bg-zinc-900/30 border border-zinc-800/60 rounded-2xl p-4 gap-3"
-            >
-              {/* Badges + estado */}
-              <div className="flex justify-between items-start">
-                <div className="space-y-2 flex-1">
-                  <div className="flex gap-2">
-                    <Skeleton height={18} width={120} radius="sm" />
-                    <Skeleton height={18} width={100} radius="sm" />
-                  </div>
-                  <Skeleton height={14} width="70%" radius="sm" />
-                  <Skeleton height={12} width="40%" radius="sm" />
-                </div>
-                <Skeleton height={18} width={50} radius="sm" />
-              </div>
-
-              {/* Location box */}
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-zinc-800/40 border border-zinc-800/60">
-                <Skeleton height={28} width={28} circle />
-                <div className="space-y-1 flex-1">
-                  <Skeleton height={8} width={60} radius="xs" />
-                  <Skeleton height={12} width={120} radius="xs" />
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-1 border-t border-zinc-800/50">
-                <Skeleton height={12} width={80} radius="xs" />
-                <Skeleton height={26} width={26} radius="md" />
-              </div>
-            </div>
+            <ConcesionCardSkeleton key={i} />
           ))}
         </div>
       ) : concesiones.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-[32px] border border-dashed border-zinc-800">
+        <div className="flex flex-col items-center justify-center py-20 bg-zinc-900/20 rounded-4xl border border-dashed border-zinc-800">
           <Square3Stack3DIcon className="w-12 h-12 text-zinc-700 mb-4" />
           <Text size="lg" fw={600} className="text-zinc-500">
             No se encontraron concesiones
@@ -122,38 +136,16 @@ export const ConcesionesPage = () => {
             <ConcesionCard
               key={concesion.id_concesion}
               concesion={concesion}
-              onOpenContratos={(c) => {
-                setIdSeleccionado(c.id_concesion);
-                setNombreSeleccionado(c.nombre);
-                openContratos();
-              }}
+              loadingIdContrato={loadingIdContrato}
+              onAddContrato={(c) => onOpenNuevoContrato(c.id_concesion)}
+              onOpenEvidencias={openEvidenciasModal}
+              onTerminarContrato={handleTerminarContrato}
             />
           ))}
         </div>
       )}
 
-      {/* Modal: Contratos */}
-      <ModalEstandar
-        opened={openedContratos}
-        close={closeContratos}
-        title="Contratos y Asignaciones"
-        size="lg"
-      >
-        {idSeleccionado && (
-          <HistorialContratos
-            idConcesion={idSeleccionado}
-            nombreConcesion={nombreSeleccionado}
-            onContratoCreado={() =>
-              actualizarContratosActivos(idSeleccionado, +1)
-            }
-            onContratoTerminado={() =>
-              actualizarContratosActivos(idSeleccionado, -1)
-            }
-          />
-        )}
-      </ModalEstandar>
-
-      {/* Modal: Registro */}
+      {/* Modal: Registrar Concesión */}
       <ModalEstandar
         opened={openedRegistro}
         close={closeRegistro}
@@ -162,14 +154,47 @@ export const ConcesionesPage = () => {
       >
         <RegistroConcesion
           onSuccess={(nueva) => {
-            pushNuevaConcesion(nueva);
+            pushNuevaConcesion({ ...nueva, contratos: [] });
             closeRegistro();
           }}
-          onCancel={() => {
-            closeRegistro();
-          }}
+          onCancel={closeRegistro}
         />
       </ModalEstandar>
+
+      {/* Modal: Registrar Contrato (solo registro, sin listado) */}
+      <ModalEstandar
+        opened={openedNuevoContrato}
+        close={closeNuevoContratoModal}
+        title={`Contrato — ${concesionParaContrato?.nombre ?? ""}`}
+        size="md"
+      >
+        {concesionParaContrato && (
+          <NuevoContrato
+            idConcesion={concesionParaContrato.id_concesion}
+            nombreConcesion={concesionParaContrato.nombre}
+            empresasConContratoActivo={empresasConContratoActivo}
+            onSubmit={onSubmitContrato}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Evidencias del Contrato */}
+      <EvidenciasModal
+        opened={openedEvidencias}
+        onClose={closeEvidenciasModal}
+        titulo={`Evidencias — ${contratoParaEvidencias?.razon_social ?? ""}`}
+        archivos={contratoParaEvidencias?.evidencias ?? []}
+        onSubir={(files) =>
+          contratoParaEvidencias
+            ? handleSubirEvidencias(contratoParaEvidencias.id_contrato, files)
+            : Promise.resolve(false)
+        }
+        onEliminar={(path) =>
+          contratoParaEvidencias
+            ? handleEliminarEvidencia(contratoParaEvidencias.id_contrato, path)
+            : Promise.resolve(false)
+        }
+      />
     </div>
   );
 };

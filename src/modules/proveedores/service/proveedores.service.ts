@@ -4,6 +4,7 @@ import type {
   CrearBancoRequest,
   CrearCuentaBancariaRequest,
   CrearProveedorRequest,
+  EditarCuentaBancariaRequest,
 } from "./proveedores.requests";
 import type {
   CuentaBancariaResponse,
@@ -53,6 +54,16 @@ export const ProveedoresService = {
     payload: CrearCuentaBancariaRequest,
   ): Promise<CuentaBancariaResponse> => {
     const { data } = await api.post("/proveedores/cuentas-bancarias", payload);
+    return data.data;
+  },
+  actualizarCuentaBancaria: async (
+    id: number,
+    payload: EditarCuentaBancariaRequest,
+  ): Promise<CuentaBancariaResponse> => {
+    const { data } = await api.put(
+      `/proveedores/cuentas-bancarias/${id}`,
+      payload,
+    );
     return data.data;
   },
 };

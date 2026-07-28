@@ -9,11 +9,11 @@ import {
 } from "@mantine/core";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
 import { useRegistroLabor } from "../../hooks/labores/useRegistroLabor";
-import type { RES_Labor } from "../../service/minas.responses";
+import type { RES_ResumenLabor } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
-  onSuccess: (labor: RES_Labor) => void;
+  onSuccess: (labor: RES_ResumenLabor) => void;
   onCancel: () => void;
 }
 

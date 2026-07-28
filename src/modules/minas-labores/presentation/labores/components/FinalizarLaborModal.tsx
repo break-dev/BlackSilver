@@ -6,12 +6,12 @@ import { useNotify } from "../../../../../hooks/useNotify";
 import { MinasService } from "../../../service/minas.service";
 import { CustomDatePicker } from "../../../../../presentation/utils/date-picker-input";
 import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
-import type { RES_Labor } from "../../../service/minas.responses";
+import type { RES_ResumenLabor } from "../../../service/minas.responses";
 
 interface FinalizarLaborModalProps {
-  labor: RES_Labor | null;
+  labor: RES_ResumenLabor | null;
   onClose: () => void;
-  onSuccess: (laborActualizada: RES_Labor) => void;
+  onSuccess: (laborActualizada: RES_ResumenLabor) => void;
 }
 
 export const FinalizarLaborModal = ({

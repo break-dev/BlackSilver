@@ -1,17 +1,28 @@
-import { Badge, Text, Group, Stack, ThemeIcon, Grid } from "@mantine/core";
+import {
+  Badge,
+  Text,
+  Group,
+  Stack,
+  ThemeIcon,
+  Grid,
+  ActionIcon,
+  Tooltip,
+} from "@mantine/core";
 import {
   IconCreditCard,
   IconCash,
   IconBuildingBank,
+  IconPencil,
 } from "@tabler/icons-react";
 import { MONEDAS } from "../../../../../shared/variables/monedas";
 import type { CuentaBancariaResponse } from "../../../service/clientes.responses";
 
 interface Props {
   cuenta: CuentaBancariaResponse;
+  onEdit?: (cuenta: CuentaBancariaResponse) => void;
 }
 
-export const CuentaBancaria = ({ cuenta }: Props) => {
+export const CuentaBancaria = ({ cuenta, onEdit }: Props) => {
   const isSoles = cuenta.moneda === MONEDAS.PEN.label;
 
   return (
@@ -75,7 +86,7 @@ export const CuentaBancaria = ({ cuenta }: Props) => {
         </Grid.Col>
 
         {/* CCI */}
-        <Grid.Col span={{ base: 6, sm: 4 }}>
+        <Grid.Col span={{ base: 6, sm: 3 }}>
           <Stack gap={2} align="center">
             <Text
               size="10px"
@@ -97,8 +108,8 @@ export const CuentaBancaria = ({ cuenta }: Props) => {
         </Grid.Col>
 
         {/* Tipo (Detracción) */}
-        <Grid.Col span={{ base: 12, sm: 2 }}>
-          <Stack gap={2} align="end">
+        <Grid.Col span={{ base: 8, sm: 2 }}>
+          <Stack gap={2} align="center">
             <Text
               size="10px"
               fw={700}
@@ -122,6 +133,26 @@ export const CuentaBancaria = ({ cuenta }: Props) => {
               </Badge>
             )}
           </Stack>
+        </Grid.Col>
+
+        {/* Acciones (Editar) */}
+        <Grid.Col span={{ base: 4, sm: 1 }}>
+          {onEdit ? (
+            <Group justify="flex-end" gap={6}>
+              <Tooltip label="Editar cuenta" withArrow position="left">
+                <ActionIcon
+                  variant="subtle"
+                  color="indigo"
+                  size="sm"
+                  radius="xl"
+                  onClick={() => onEdit(cuenta)}
+                  className="hover:bg-indigo-500/10"
+                >
+                  <IconPencil size={16} stroke={1.5} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          ) : null}
         </Grid.Col>
       </Grid>
     </div>
