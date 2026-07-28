@@ -63,8 +63,29 @@ export interface RES_PlanillaAsistencia {
   // Pago calculado por el backend
   pago_dia: number;
 
+  // Desglose por turno/programación (útil cuando el día tiene varios sueldos).
+  tramos_pago?: PlanillaTramoAsistencia[];
+
   // Marcaciones del día
   marcajes: RES_PlanillaMarcaje[];
+}
+
+/**
+ * Tramo de pago individualizado por turno/programación dentro de una asistencia.
+ * El backend lo devuelve cuando hay varias programaciones en el mismo día con
+ * sueldos distintos; cuando todos los turnos comparten el mismo sueldo, devuelve
+ * un único tramo con el pago sumado.
+ */
+export interface PlanillaTramoAsistencia {
+  id_programacion_horario: number;
+  turno_id: number;
+  horas_trabajadas: number;
+  horas_programadas: number;
+  jornada_trabajada: number;
+  pago: number;
+  tipo_contrato: string | null;
+  sueldo_base: number | null;
+  sueldo_diario: number | null;
 }
 
 /**

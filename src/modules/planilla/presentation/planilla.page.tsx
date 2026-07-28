@@ -23,7 +23,10 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useFiltrosPlanilla } from "../hooks/useFiltrosPlanilla";
 import { usePlanilla, formatearTramo, type PlanillaTramo } from "../hooks/usePlanilla";
 import { MESES } from "../../../shared/variables/meses";
-import type { RES_PlanillaAsistencia } from "../service/planilla.responses";
+import type {
+  RES_PlanillaAsistencia,
+  PlanillaTramoAsistencia,
+} from "../service/planilla.responses";
 
 
 interface EmpleadoAsistenciaCardProps {
@@ -249,19 +252,62 @@ const EmpleadoAsistenciaCard = ({
                         : false,
                     )
                   : false;
+                void fueraDeTolerancia; // (Quitado por requerimiento del usuario.)
+
+                // Si el día tiene jornada mixta con sueldos distintos,
+                // armamos un tooltip enriquecido con el desglose por turno.
+                const tieneTramosMixtos =
+                  !!log &&
+                  Array.isArray(log.tramos_pago) &&
+                  log.tramos_pago.length > 1;
+                const tooltipLabel = tieneTramosMixtos ? (
+                  <div className="space-y-1">
+                    <Text size="xs" fw={700}>
+                      Jornada mixta del día
+                    </Text>
+                    {log!.tramos_pago!.map((t: PlanillaTramoAsistencia, i: number) => {
+                      const tipoTxt = t.tipo_contrato ?? "\u2014";
+                      const sb =
+                        t.sueldo_base !== null
+                          ? `S/. ${t.sueldo_base.toFixed(2)}`
+                          : "";
+                      const sd =
+                        t.sueldo_diario !== null
+                          ? `S/. ${t.sueldo_diario.toFixed(2)}/día`
+                          : "";
+                      return (
+                        <div key={i} className="font-mono text-[10px]">
+                          Turno #{t.id_programacion_horario} · {tipoTxt}{" "}
+                          {sb || sd} · pago S/. {(t.pago ?? 0).toFixed(2)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null;
 
                 return (
                   <Table.Td key={d}>
                     {valorJornada !== null && log ? (
-                      <Tooltip
-                        label={
-                          fueraDeTolerancia
-                            ? "Marcaje fuera del horario programado (tolerancia)"
-                            : "Dentro del horario programado"
-                        }
-                        withArrow
-                        position="top"
-                      >
+                      tooltipLabel ? (
+                        <Tooltip
+                          label={tooltipLabel}
+                          multiline
+                          withArrow
+                          position="top"
+                        >
+                          <div className="relative inline-flex items-center justify-center">
+                            <span
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold ${
+                                tipoDelDia === "Planilla"
+                                  ? "bg-sky-950/40 text-sky-400 border border-sky-800/40"
+                                  : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
+                              }`}
+                            >
+                              {valorJornada.toFixed(2)}
+                            </span>
+                          </div>
+                        </Tooltip>
+                      ) : (
                         <div className="relative inline-flex items-center justify-center">
                           <span
                             className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold ${
@@ -272,14 +318,8 @@ const EmpleadoAsistenciaCard = ({
                           >
                             {valorJornada.toFixed(2)}
                           </span>
-                          {fueraDeTolerancia && (
-                            <ExclamationTriangleIcon
-                              className="absolute -top-1 -right-1 w-3 h-3 text-yellow-400"
-                              aria-label="Fuera de tolerancia"
-                            />
-                          )}
                         </div>
-                      </Tooltip>
+                      )
                     ) : (
                       <span className="text-zinc-600/60">—</span>
                     )}

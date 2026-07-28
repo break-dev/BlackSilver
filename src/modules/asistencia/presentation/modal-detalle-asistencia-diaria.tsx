@@ -1,9 +1,8 @@
-import { Avatar, Badge, Group, Stack, Text, Alert } from "@mantine/core";
+import { Avatar, Badge, Group, Stack, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
-import { IconAlertTriangle } from "@tabler/icons-react";
 import type { RES_Asistencia } from "../service/asistencia.responses";
 
 // Función utilitaria local para dar formato de 12 horas.
@@ -63,6 +62,9 @@ export const ModalDetalleAsistenciaDiaria = ({
   const huboFueraDeTolerancia =
     selectedDia?.marcajes?.some((m) => marcajeFueraDeTolerancia(m)) ?? false;
 
+  // (Badge de fuera de tolerancia oculto por requerimiento del usuario.)
+  void huboFueraDeTolerancia;
+
   return (
     <ModalEstandar
       opened={opened}
@@ -74,7 +76,7 @@ export const ModalDetalleAsistenciaDiaria = ({
       }
       size="lg"
     >
-      {selectedDia && (
+          {selectedDia && (
         <Stack gap="md" className="pt-2">
           {/* Cabecera del Empleado dentro del Modal */}
           <Group
@@ -101,21 +103,6 @@ export const ModalDetalleAsistenciaDiaria = ({
               {tipoEfectivo ?? "S/C"}
             </Badge>
           </Group>
-
-          {/* Alerta de fuera de tolerancia (si aplica) */}
-          {huboFueraDeTolerancia && (
-            <Alert
-              icon={<IconAlertTriangle className="w-4 h-4" />}
-              color="yellow"
-              variant="light"
-              radius="md"
-              title="Registro fuera del horario programado"
-            >
-              Uno o más registros de este día se hicieron fuera del horario
-              del turno. El pago se calcula igual, pero revisa si corresponde
-              ajuste manual.
-            </Alert>
-          )}
 
           {/* Ficha Informativa del Contrato y Horario de ese día */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -264,6 +251,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                     }
                   }
                   const fuera = marcajeFueraDeTolerancia(m);
+                  void fuera; // (Badge oculto por requerimiento del usuario.)
                   return (
                     <div
                       key={m.id}
@@ -280,11 +268,6 @@ export const ModalDetalleAsistenciaDiaria = ({
                           <Text size="xs" fw={700} className="text-zinc-200 font-mono">
                             {format12h(m.fecha_hora)}
                           </Text>
-                          {fuera && (
-                            <Badge color="yellow" variant="light" size="xs">
-                              Fuera de tolerancia
-                            </Badge>
-                          )}
                         </Group>
                         <Badge
                           color={m.es_manual ? "yellow" : "zinc"}

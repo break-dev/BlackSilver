@@ -10,6 +10,7 @@ import type { TipoContrato } from "../../../shared/enums/tipo-contrato";
  */
 export interface RES_Asistencia {
   id: number;
+  id_asistencia?: number;
   id_empleado: number;
   id_programacion_horario: number | null;
   fecha_hora_ingreso: string | null;
@@ -64,8 +65,31 @@ export interface RES_Asistencia {
   // Pago calculado por el backend
   pago_dia: number;
 
+  // Desglose por turno/programación (útil cuando el día tiene varios sueldos).
+  tramos_pago?: PlanillaTramoAsistencia[];
+
   // Marcaciones del día
   marcajes: RES_Marcaje[];
+}
+
+/**
+ * Tramo de pago individualizado por turno/programación dentro de una asistencia.
+ * El backend lo devuelve cuando hay varias programaciones en el mismo día con
+ * sueldos distintos; cuando todos los turnos comparten el mismo sueldo, devuelve
+ * un único tramo con el pago sumado.
+ */
+export interface PlanillaTramoAsistencia {
+  id_programacion_horario: number;
+  turno_id: number;
+  lugar_nombre?: string | null;
+  ancla_fecha?: string | null;
+  horas_trabajadas: number;
+  horas_programadas: number;
+  jornada_trabajada: number;
+  pago: number;
+  tipo_contrato: string | null;
+  sueldo_base: number | null;
+  sueldo_diario: number | null;
 }
 
 /**

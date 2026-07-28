@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { PlanillaService } from "../service/planilla.service";
-import type { RES_PlanillaAsistencia } from "../service/planilla.responses";
+import type {
+  RES_PlanillaAsistencia,
+  PlanillaTramoAsistencia,
+} from "../service/planilla.responses";
 import type { useFiltrosPlanilla } from "./useFiltrosPlanilla";
 import { useNotify } from "../../../hooks/useNotify";
 
@@ -13,6 +16,8 @@ type FiltrosHook = ReturnType<typeof useFiltrosPlanilla>;
  * programacion_sueldo_base, programacion_sueldo_diario).
  */
 export interface PlanillaTramo {
+  /** Clave estable para distinguir tramos del mismo día con sueldos distintos. */
+  clave?: string;
   fecha_desde: string;
   fecha_hasta: string;
   tipo_contrato: string;
@@ -78,7 +83,8 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
       cargo_nombre?: string | null;
       area_nombre?: string | null;
       dias_trabajados: number;
-      jornada_total: number;
+      horas_trabajadas_total: number;
+      horas_programadas_total: number;
       pago_total: number;
       tramos: PlanillaTramo[];
       marcaciones: RES_PlanillaAsistencia[];
@@ -98,7 +104,8 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
         cargo_nombre: a.cargo_nombre,
         area_nombre: a.area_nombre,
         dias_trabajados: 0,
-        jornada_total: 0,
+        horas_trabajadas_total: 0,
+        horas_programadas_total: 0,
         pago_total: 0,
         tramos: [],
         marcaciones: [],
@@ -106,8 +113,22 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
     }
     const slot = mapa.get(a.id_empleado)!;
     slot.marcaciones.push(a);
-    slot.jornada_total += Number(a.jornada_trabajada ?? 0);
-    slot.pago_total += Number(a.pago_dia ?? 0);
+    slot.horas_trabajadas_total += Number(a.total_horas ?? 0);
+    slot.horas_programadas_total += Number(a.turno_total_horas ?? 0);
+
+    // Si el backend devolvió el desglose por turno, respetamos el pago
+    // calculado tramo a tramo (útil cuando hay sueldos distintos en el mismo
+    // día). Si no hay desglose o solo hay un tramo, usamos pago_dia como antes.
+    if (Array.isArray(a.tramos_pago) && a.tramos_pago.length > 1) {
+      const pagoTramo = a.tramos_pago.reduce(
+        (acc: number, t: PlanillaTramoAsistencia) => acc + Number(t.pago ?? 0),
+        0,
+      );
+      slot.pago_total += pagoTramo;
+    } else {
+      slot.pago_total += Number(a.pago_dia ?? 0);
+    }
+
     if (Number(a.jornada_trabajada ?? 0) > 0) {
       slot.dias_trabajados += 1;
     }
@@ -120,14 +141,25 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
   }
 
   return Array.from(mapa.values())
-    .map((e) => ({
-      ...e,
-      jornada_total: Math.round(e.jornada_total * 10000) / 10000,
-      pago_total: Math.round(e.pago_total * 100) / 100,
-      marcaciones: e.marcaciones.sort((x, y) =>
-        (x.fecha ?? "").localeCompare(y.fecha ?? ""),
-      ),
-    }))
+    .map((e) => {
+      // jornada_total del d\u00eda = \u03a3 horas_trabajadas / \u03a3 horas_programadas.
+      // Sumar las jornadas por turno duplicar\u00eda la base de horas_programadas.
+      const trabajadas = e.horas_trabajadas_total;
+      const programadas = e.horas_programadas_total;
+      const jornadaCalculada = programadas > 0
+        ? Math.round((trabajadas / programadas) * 10000) / 10000
+        : 0.0;
+
+      const { horas_trabajadas_total: _t, horas_programadas_total: _p, ...rest } = e;
+      return {
+        ...rest,
+        jornada_total: jornadaCalculada,
+        pago_total: Math.round(e.pago_total * 100) / 100,
+        marcaciones: e.marcaciones.sort((x, y) =>
+          (x.fecha ?? "").localeCompare(y.fecha ?? ""),
+        ),
+      };
+    })
     .sort((a, b) => a.empleado.localeCompare(b.empleado));
 }
 
@@ -138,6 +170,10 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
  *
  * Si en el mes hubo un cambio de sueldo (adenda), aparecerán 2+ tramos.
  * Si el sueldo fue estable durante todo el mes, aparecerá 1 solo tramo.
+ *
+ * Si la asistencia expone `tramos_pago[]` con varios tramos de sueldo distinto
+ * en el mismo día (jornada mixta), cada sub-tramo se acumula con su propia
+ * clave de tramo (concatenando `id_programacion_horario` al nombre).
  */
 function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] {
   const ordenadas = [...marcaciones].sort((a, b) =>
@@ -148,6 +184,42 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
   for (const a of ordenadas) {
     const fecha = a.fecha;
     if (!fecha) continue;
+
+    // Jornada mixta: el backend devolvió varios tramos en el mismo día.
+    if (Array.isArray(a.tramos_pago) && a.tramos_pago.length > 1) {
+      for (const sub of a.tramos_pago) {
+        const tipo = sub.tipo_contrato ?? null;
+        const sueldo = sub.sueldo_base ?? null;
+        const salario = sub.sueldo_diario ?? null;
+        const pago = Number(sub.pago ?? 0);
+        const clave = `${a.id_programacion_horario ?? "0"}-${sub.id_programacion_horario}`;
+
+        const ultimo = tramos[tramos.length - 1];
+        if (
+          ultimo &&
+          ultimo.tipo_contrato === tipo &&
+          ultimo.sueldo_base === sueldo &&
+          ultimo.salario_diario === salario &&
+          ultimo.clave === clave
+        ) {
+          ultimo.fecha_hasta = fecha;
+          ultimo.dias += 1;
+          ultimo.pago_tramo += pago;
+        } else {
+          tramos.push({
+            clave,
+            fecha_desde: fecha,
+            fecha_hasta: fecha,
+            tipo_contrato: tipo ?? "—",
+            sueldo_base: sueldo,
+            salario_diario: salario,
+            dias: 1,
+            pago_tramo: pago,
+          });
+        }
+      }
+      continue;
+    }
 
     const tipo = (a.programacion_tipo_contrato ?? a.tipo_contrato) ?? null;
     const sueldo = a.programacion_sueldo_base ?? a.sueldo_base ?? null;
