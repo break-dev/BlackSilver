@@ -300,6 +300,12 @@ export const AsistenciaPage = () => {
     });
   }, [asistencias, filtros.q]);
 
+  // 1 fila por (empleado, día, id_programacion_horario). Si el empleado tuvo
+  // 2 turnos en el día, se muestran 2 filas naturalmente.
+  const registrosParaTabla = useMemo(() => {
+    return asistenciasFiltradas;
+  }, [asistenciasFiltradas]);
+
   const columns = useMemo(
     () => [
       {
@@ -566,7 +572,7 @@ export const AsistenciaPage = () => {
         <DataTableEstandar
           idAccessor="id"
           columns={columns}
-          records={asistenciasFiltradas}
+          records={registrosParaTabla}
           loading={loading}
           initialPageSize={25}
         />

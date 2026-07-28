@@ -3,11 +3,14 @@ import type { TipoContrato } from "../../../shared/enums/tipo-contrato";
 /**
  * Fila de asistencia agrupada (modo "Empleados" del admin).
  *
- * Una fila por (empleado, fecha). Incluye el contrato vigente del empleado
- * al inicio del período y todas sus marcaciones del día.
+ * Una fila por (empleado, fecha). Incluye los snapshots de la programación
+ * (tipo_contrato, sueldo_base, sueldo_diario) que aplican ESE día
+ * — NO el contrato vigente actual. Esto permite ver correctamente cambios
+ * de sueldo a mitad de mes.
  */
 export interface RES_Asistencia {
   id: number;
+  id_asistencia?: number;
   id_empleado: number;
   id_programacion_horario: number | null;
   fecha_hora_ingreso: string | null;
@@ -28,10 +31,17 @@ export interface RES_Asistencia {
   cargo_nombre?: string | null;
   area_nombre?: string | null;
 
-  // Datos del contrato vigente al inicio del período
+  // Snapshot de la programación del día (FUENTE para cálculo de pago).
+  programacion_tipo_contrato?: TipoContrato | string | null;
+  programacion_sueldo_base?: number | null;
+  programacion_sueldo_diario?: number | null;
+
+  // Datos efectivos usados para el cálculo (snapshot con fallback al contrato).
   tipo_contrato: TipoContrato | string | null;
   sueldo_base: number | null;
   salario_diario: number | null;
+
+  // Datos del contrato (referencial, no para cálculo).
   contrato_indefinido: boolean;
   contrato_fecha_inicio: string | null;
   contrato_fecha_fin: string | null;
@@ -43,10 +53,10 @@ export interface RES_Asistencia {
   minutos_tolerancia: number | null;
   turno_total_horas: number | null;
 
-  // Lugar de la programación
+  // Lugar de la programación (soporta almacen | labor | oficina)
   lugar_nombre: string | null;
   lugar_id: number | null;
-  lugar_tipo: "almacen" | "labor" | null;
+  lugar_tipo: "almacen" | "labor" | "oficina" | null;
 
   // Fecha derivada
   fecha: string;
@@ -55,8 +65,31 @@ export interface RES_Asistencia {
   // Pago calculado por el backend
   pago_dia: number;
 
+  // Desglose por turno/programación (útil cuando el día tiene varios sueldos).
+  tramos_pago?: PlanillaTramoAsistencia[];
+
   // Marcaciones del día
   marcajes: RES_Marcaje[];
+}
+
+/**
+ * Tramo de pago individualizado por turno/programación dentro de una asistencia.
+ * El backend lo devuelve cuando hay varias programaciones en el mismo día con
+ * sueldos distintos; cuando todos los turnos comparten el mismo sueldo, devuelve
+ * un único tramo con el pago sumado.
+ */
+export interface PlanillaTramoAsistencia {
+  id_programacion_horario: number;
+  turno_id: number;
+  lugar_nombre?: string | null;
+  ancla_fecha?: string | null;
+  horas_trabajadas: number;
+  horas_programadas: number;
+  jornada_trabajada: number;
+  pago: number;
+  tipo_contrato: string | null;
+  sueldo_base: number | null;
+  sueldo_diario: number | null;
 }
 
 /**
@@ -114,6 +147,11 @@ export interface RES_ResolverQR {
   id_sesion: string;
   siguiente_tipo_marcaje: "Ingreso" | "Salida";
   ultimo_marcaje_hoy: "Ingreso" | "Salida" | null;
+  /**
+   * true si la hora actual cae fuera de la ventana extendida del turno más
+   * cercano (con tolerancia). El frontend muestra una advertencia.
+   */
+  fuera_de_tolerancia: boolean;
   empleado: {
     id_empleado: number;
     nombre: string;

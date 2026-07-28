@@ -22,6 +22,18 @@ const format12h = (timeStr: string | null | undefined) => {
   return timeStr;
 };
 
+// Detecta si un marcaje cayó fuera de la tolerancia configurada del turno.
+const marcajeFueraDeTolerancia = (m: RES_Asistencia["marcajes"][number]): boolean => {
+  if (!Array.isArray(m.evidencias)) return false;
+  return m.evidencias.some(
+    (e) =>
+      typeof e === "object" &&
+      e !== null &&
+      "tipo" in e &&
+      (e as { tipo?: string }).tipo === "fuera_de_tolerancia",
+  );
+};
+
 interface ModalDetalleAsistenciaDiariaProps {
   opened: boolean;
   onClose: () => void;
@@ -39,6 +51,20 @@ export const ModalDetalleAsistenciaDiaria = ({
   empleadoDni,
   empleadoFoto,
 }: ModalDetalleAsistenciaDiariaProps) => {
+  // Sueldo snapshot del día (preferimos el snapshot de la programación sobre el contrato).
+  const sueldoBaseEfectivo =
+    selectedDia?.programacion_sueldo_base ?? selectedDia?.sueldo_base ?? null;
+  const salarioDiarioEfectivo =
+    selectedDia?.programacion_sueldo_diario ?? selectedDia?.salario_diario ?? null;
+  const tipoEfectivo =
+    selectedDia?.programacion_tipo_contrato ?? selectedDia?.tipo_contrato ?? null;
+
+  const huboFueraDeTolerancia =
+    selectedDia?.marcajes?.some((m) => marcajeFueraDeTolerancia(m)) ?? false;
+
+  // (Badge de fuera de tolerancia oculto por requerimiento del usuario.)
+  void huboFueraDeTolerancia;
+
   return (
     <ModalEstandar
       opened={opened}
@@ -50,7 +76,7 @@ export const ModalDetalleAsistenciaDiaria = ({
       }
       size="lg"
     >
-      {selectedDia && (
+          {selectedDia && (
         <Stack gap="md" className="pt-2">
           {/* Cabecera del Empleado dentro del Modal */}
           <Group
@@ -70,11 +96,11 @@ export const ModalDetalleAsistenciaDiaria = ({
               </Stack>
             </Group>
             <Badge
-              color={selectedDia.tipo_contrato === "Planilla" ? "indigo" : "teal"}
+              color={tipoEfectivo === "Planilla" ? "indigo" : "teal"}
               variant="light"
               radius="md"
             >
-              {selectedDia.tipo_contrato ?? "S/C"}
+              {tipoEfectivo ?? "S/C"}
             </Badge>
           </Group>
 
@@ -106,17 +132,17 @@ export const ModalDetalleAsistenciaDiaria = ({
                 <Text size="xs" className="text-zinc-300">
                   Sueldo/Tarifa:{" "}
                   <span className="font-mono text-cyan-400 font-bold">
-                    {selectedDia.tipo_contrato === "Planilla"
-                      ? (selectedDia.sueldo_base !== null
-                        ? `S/. ${selectedDia.sueldo_base.toFixed(2)} (Mes)`
-                        : selectedDia.salario_diario !== null
-                          ? `S/. ${selectedDia.salario_diario.toFixed(2)} (Mes)`
+                    {tipoEfectivo === "Planilla"
+                      ? (sueldoBaseEfectivo !== null
+                        ? `S/. ${sueldoBaseEfectivo.toFixed(2)} (Mes)`
+                        : salarioDiarioEfectivo !== null
+                          ? `S/. ${salarioDiarioEfectivo.toFixed(2)} (Mes)`
                           : "—")
-                      : selectedDia.tipo_contrato === "JornadaDiaria"
-                        ? (selectedDia.salario_diario !== null
-                          ? `S/. ${selectedDia.salario_diario.toFixed(2)} (Día)`
-                          : selectedDia.sueldo_base !== null
-                            ? `S/. ${selectedDia.sueldo_base.toFixed(2)} (Día)`
+                      : tipoEfectivo === "JornadaDiaria"
+                        ? (salarioDiarioEfectivo !== null
+                          ? `S/. ${salarioDiarioEfectivo.toFixed(2)} (Día)`
+                          : sueldoBaseEfectivo !== null
+                            ? `S/. ${sueldoBaseEfectivo.toFixed(2)} (Día)`
                             : "—")
                         : "—"}
                   </span>
@@ -144,6 +170,11 @@ export const ModalDetalleAsistenciaDiaria = ({
                   <Text size="xs" className="text-zinc-300">
                     Horario: {format12h(selectedDia.hora_ingreso)} -{" "}
                     {format12h(selectedDia.hora_salida)}
+                    {selectedDia.minutos_tolerancia !== null && (
+                      <span className="text-zinc-500">
+                        {" "}(tol. {selectedDia.minutos_tolerancia} min)
+                      </span>
+                    )}
                   </Text>
                 )}
                 {selectedDia.lugar_nombre && (
@@ -219,6 +250,8 @@ export const ModalDetalleAsistenciaDiaria = ({
                       /* ignore */
                     }
                   }
+                  const fuera = marcajeFueraDeTolerancia(m);
+                  void fuera; // (Badge oculto por requerimiento del usuario.)
                   return (
                     <div
                       key={m.id}

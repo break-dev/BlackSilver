@@ -18,6 +18,7 @@ export interface RES_ContratoEmpleado {
   id_mina_labor?: number | null;
   mina_nombre?: string | null;
   id_oficina: number | null;
+  oficina?: string | null;
   tipo_contrato: "Planilla" | "JornadaDiaria" | string;
   sueldo_base: string | number | null;
   salario_diario: string | number | null;

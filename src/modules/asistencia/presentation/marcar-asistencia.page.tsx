@@ -61,6 +61,11 @@ interface SesionMarcaje {
       total_horas: number | null;
     };
   } | null;
+  /**
+   * true si la hora actual cae fuera de la ventana extendida (con tolerancia)
+   * del turno más cercano. El frontend muestra una advertencia.
+   */
+  fuera_de_tolerancia: boolean;
   evidencia_inicial?: IArchivo | null;
 }
 
@@ -566,8 +571,8 @@ export default function MarcarAsistenciaPage() {
             ¿Salir sin completar?
           </Title>
           <Text c="zinc.4" ta="center" size="sm">
-            Tienes un proceso de marcaje en curso. Si sales ahora, se registrará
-            un marcaje incompleto para mantener la trazabilidad.
+            Tienes un proceso de registro en curso. Si sales ahora, se registrará
+            un registro incompleto para mantener la trazabilidad.
           </Text>
           <Group gap="sm" mt="sm">
             <Button
@@ -921,6 +926,22 @@ const PasoValidar = ({
                 </Stack>
               </Group>
             </Card>
+
+            {/* Advertencia si el marcaje cae fuera de la tolerancia del turno más cercano */}
+            {sesion.fuera_de_tolerancia && (
+              <Alert
+                variant="light"
+                color="yellow"
+                radius="md"
+                icon={<IconAlertCircle className="w-4 h-4" />}
+                title="Fuera del horario programado"
+                className="border border-yellow-500/30 bg-yellow-950/20"
+              >
+                Estás fuera del horario del turno programado (puede ser sobretiempo
+                o que hayas llegado antes de tu hora de ingreso).
+                El registro se guardará y contará como horas extras en tu jornada.
+              </Alert>
+            )}
 
             {/* Hora de Registro Oficial (congelada desde el escaneo del QR) */}
             <Card withBorder radius="lg" p="sm" className="bg-indigo-950/10 border-indigo-500/10 shadow-sm mt-1">

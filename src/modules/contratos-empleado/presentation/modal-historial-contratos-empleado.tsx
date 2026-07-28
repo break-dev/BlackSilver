@@ -582,8 +582,28 @@ export const ModalHistorialContratosEmpleado = ({
                                 </div>
                               )}
 
-                              {/* Fallback si no hay almacén ni labor */}
-                              {!c.almacen && !c.labor && (
+                              {/* Oficina */}
+                              {c.oficina && (
+                                <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40">
+                                  <Group gap="xs" mb="xs">
+                                    <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />
+                                    <Text
+                                      size="9px"
+                                      fw={800}
+                                      c="zinc.5"
+                                      className="uppercase tracking-widest"
+                                    >
+                                      Oficina
+                                    </Text>
+                                  </Group>
+                                  <Text size="sm" fw={600} className="text-zinc-200">
+                                    {c.oficina}
+                                  </Text>
+                                </div>
+                              )}
+
+                              {/* Fallback si no hay ningún lugar */}
+                              {!c.almacen && !c.labor && !c.oficina && (
                                 <div className="bg-zinc-950/40 rounded-xl p-4 border border-zinc-800/40 col-span-full">
                                   <Group gap="xs" mb="xs">
                                     <MapPinIcon className="w-3.5 h-3.5 text-indigo-400" />

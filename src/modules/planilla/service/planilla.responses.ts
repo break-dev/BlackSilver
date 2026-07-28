@@ -2,6 +2,10 @@ import type { TipoContrato } from "../../../shared/enums/tipo-contrato";
 
 /**
  * Fila de asistencia agrupada para planilla.
+ *
+ * Una fila por (empleado, fecha). El backend devuelve snapshots de la
+ * programación del día en `programacion_*`, y los valores efectivos (con
+ * fallback) en `tipo_contrato`, `sueldo_base`, `salario_diario`.
  */
 export interface RES_PlanillaAsistencia {
   id: number;
@@ -25,10 +29,17 @@ export interface RES_PlanillaAsistencia {
   cargo_nombre?: string | null;
   area_nombre?: string | null;
 
-  // Datos del contrato vigente al inicio del período
+  // Snapshot de la programación del día (FUENTE para cálculo).
+  programacion_tipo_contrato?: TipoContrato | string | null;
+  programacion_sueldo_base?: number | null;
+  programacion_sueldo_diario?: number | null;
+
+  // Datos efectivos usados para el cálculo.
   tipo_contrato: TipoContrato | string | null;
   sueldo_base: number | null;
   salario_diario: number | null;
+
+  // Datos del contrato (referencial).
   contrato_indefinido: boolean;
   contrato_fecha_inicio: string | null;
   contrato_fecha_fin: string | null;
@@ -40,10 +51,10 @@ export interface RES_PlanillaAsistencia {
   minutos_tolerancia: number | null;
   turno_total_horas: number | null;
 
-  // Lugar de la programación
+  // Lugar de la programación (soporta almacen | labor | oficina)
   lugar_nombre: string | null;
   lugar_id: number | null;
-  lugar_tipo: "almacen" | "labor" | null;
+  lugar_tipo: "almacen" | "labor" | "oficina" | null;
 
   // Fecha derivada
   fecha: string;
@@ -52,8 +63,29 @@ export interface RES_PlanillaAsistencia {
   // Pago calculado por el backend
   pago_dia: number;
 
+  // Desglose por turno/programación (útil cuando el día tiene varios sueldos).
+  tramos_pago?: PlanillaTramoAsistencia[];
+
   // Marcaciones del día
   marcajes: RES_PlanillaMarcaje[];
+}
+
+/**
+ * Tramo de pago individualizado por turno/programación dentro de una asistencia.
+ * El backend lo devuelve cuando hay varias programaciones en el mismo día con
+ * sueldos distintos; cuando todos los turnos comparten el mismo sueldo, devuelve
+ * un único tramo con el pago sumado.
+ */
+export interface PlanillaTramoAsistencia {
+  id_programacion_horario: number;
+  turno_id: number;
+  horas_trabajadas: number;
+  horas_programadas: number;
+  jornada_trabajada: number;
+  pago: number;
+  tipo_contrato: string | null;
+  sueldo_base: number | null;
+  sueldo_diario: number | null;
 }
 
 /**

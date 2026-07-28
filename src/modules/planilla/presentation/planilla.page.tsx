@@ -10,18 +10,23 @@ import {
   TextInput,
   Divider,
   Table,
+  Tooltip,
 } from "@mantine/core";
 import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
   BriefcaseIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useFiltrosPlanilla } from "../hooks/useFiltrosPlanilla";
-import { usePlanilla } from "../hooks/usePlanilla";
+import { usePlanilla, formatearTramo, type PlanillaTramo } from "../hooks/usePlanilla";
 import { MESES } from "../../../shared/variables/meses";
-import type { RES_PlanillaAsistencia } from "../service/planilla.responses";
+import type {
+  RES_PlanillaAsistencia,
+  PlanillaTramoAsistencia,
+} from "../service/planilla.responses";
 
 
 interface EmpleadoAsistenciaCardProps {
@@ -38,6 +43,7 @@ interface EmpleadoAsistenciaCardProps {
     pago_total: number;
     cargo_nombre?: string | null;
     area_nombre?: string | null;
+    tramos: PlanillaTramo[];
     marcaciones: RES_PlanillaAsistencia[];
   };
   dias: number[];
@@ -52,6 +58,9 @@ const EmpleadoAsistenciaCard = ({
   mesVal,
 }: EmpleadoAsistenciaCardProps) => {
   const esPlanilla = emp.tipo_contrato === "Planilla";
+
+  // Tramos del mes para el tooltip del sueldo.
+  const tramosTexto = emp.tramos.map(formatearTramo).join("\n");
 
   return (
     <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md p-5 space-y-5">
@@ -74,6 +83,36 @@ const EmpleadoAsistenciaCard = ({
               <Badge variant="outline" color={esPlanilla ? "indigo" : "teal"} size="xs">
                 {emp.tipo_contrato ?? "S/C"}
               </Badge>
+              {emp.tramos.length > 1 && (
+                <Tooltip
+                  label={
+                    <div className="space-y-1">
+                      <Text size="xs" fw={700}>
+                        Tramos del mes:
+                      </Text>
+                      {emp.tramos.map((t, i) => (
+                        <div key={i} className="font-mono text-[10px]">
+                          {formatearTramo(t)}
+                        </div>
+                      ))}
+                    </div>
+                  }
+                  multiline
+                  withArrow
+                  position="bottom"
+                  transitionProps={{ duration: 150 }}
+                >
+                  <Badge
+                    variant="light"
+                    color="yellow"
+                    size="xs"
+                    leftSection={<ExclamationTriangleIcon className="w-3 h-3" />}
+                    className="cursor-help"
+                  >
+                    {emp.tramos.length} tramos
+                  </Badge>
+                </Tooltip>
+              )}
             </div>
             <Group gap="xs" wrap="wrap">
               <Text size="xs" c="dimmed">
@@ -113,18 +152,41 @@ const EmpleadoAsistenciaCard = ({
               </Text>
             </div>
             <div className="w-px h-6 bg-zinc-800/50" />
-            <div className="flex flex-col items-center">
-              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                Sueldo Base
-              </Text>
-              <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                {emp.tipo_contrato === "Planilla"
-                  ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
-                  : emp.tipo_contrato === "JornadaDiaria"
-                    ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
-                    : "—"}
-              </Text>
-            </div>
+            {emp.tramos.length > 1 ? (
+              <Tooltip
+                label={tramosTexto || "Sin tramos"}
+                multiline
+                withArrow
+                position="bottom"
+                transitionProps={{ duration: 150 }}
+              >
+                <div className="flex flex-col items-center cursor-help">
+                  <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
+                    Sueldo Base
+                  </Text>
+                  <Text size="xs" fw={900} className="text-zinc-300 font-mono">
+                    {emp.tipo_contrato === "Planilla"
+                      ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
+                      : emp.tipo_contrato === "JornadaDiaria"
+                        ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
+                        : "—"}
+                  </Text>
+                </div>
+              </Tooltip>
+            ) : (
+              <div className="flex flex-col items-center">
+                <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
+                  Sueldo Base
+                </Text>
+                <Text size="xs" fw={900} className="text-zinc-300 font-mono">
+                  {emp.tipo_contrato === "Planilla"
+                    ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
+                    : emp.tipo_contrato === "JornadaDiaria"
+                      ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
+                      : "—"}
+                </Text>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col items-end gap-1 ml-auto md:ml-0">
@@ -174,19 +236,90 @@ const EmpleadoAsistenciaCard = ({
                 const log = emp.marcaciones.find((m) => m.fecha === fechaBuscada);
 
                 const valorJornada = log ? Number(log.jornada_trabajada) : null;
+                const tipoDelDia = log
+                  ? (log.programacion_tipo_contrato ?? log.tipo_contrato)
+                  : null;
+                const fueraDeTolerancia = log
+                  ? log.marcajes?.some((m) =>
+                      Array.isArray(m.evidencias)
+                        ? m.evidencias.some(
+                            (e) =>
+                              typeof e === "object" &&
+                              e !== null &&
+                              "tipo" in e &&
+                              (e as { tipo?: string }).tipo === "fuera_de_tolerancia",
+                          )
+                        : false,
+                    )
+                  : false;
+                void fueraDeTolerancia; // (Quitado por requerimiento del usuario.)
+
+                // Si el día tiene jornada mixta con sueldos distintos,
+                // armamos un tooltip enriquecido con el desglose por turno.
+                const tieneTramosMixtos =
+                  !!log &&
+                  Array.isArray(log.tramos_pago) &&
+                  log.tramos_pago.length > 1;
+                const tooltipLabel = tieneTramosMixtos ? (
+                  <div className="space-y-1">
+                    <Text size="xs" fw={700}>
+                      Jornada mixta del día
+                    </Text>
+                    {log!.tramos_pago!.map((t: PlanillaTramoAsistencia, i: number) => {
+                      const tipoTxt = t.tipo_contrato ?? "\u2014";
+                      const sb =
+                        t.sueldo_base !== null
+                          ? `S/. ${t.sueldo_base.toFixed(2)}`
+                          : "";
+                      const sd =
+                        t.sueldo_diario !== null
+                          ? `S/. ${t.sueldo_diario.toFixed(2)}/día`
+                          : "";
+                      return (
+                        <div key={i} className="font-mono text-[10px]">
+                          Turno #{t.id_programacion_horario} · {tipoTxt}{" "}
+                          {sb || sd} · pago S/. {(t.pago ?? 0).toFixed(2)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null;
 
                 return (
                   <Table.Td key={d}>
                     {valorJornada !== null && log ? (
-                      <span
-                        className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold ${
-                          log.tipo_contrato === "Planilla"
-                            ? "bg-sky-950/40 text-sky-400 border border-sky-800/40"
-                            : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
-                        }`}
-                      >
-                        {valorJornada.toFixed(2)}
-                      </span>
+                      tooltipLabel ? (
+                        <Tooltip
+                          label={tooltipLabel}
+                          multiline
+                          withArrow
+                          position="top"
+                        >
+                          <div className="relative inline-flex items-center justify-center">
+                            <span
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold ${
+                                tipoDelDia === "Planilla"
+                                  ? "bg-sky-950/40 text-sky-400 border border-sky-800/40"
+                                  : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
+                              }`}
+                            >
+                              {valorJornada.toFixed(2)}
+                            </span>
+                          </div>
+                        </Tooltip>
+                      ) : (
+                        <div className="relative inline-flex items-center justify-center">
+                          <span
+                            className={`inline-flex items-center justify-center w-8 h-8 rounded-md text-[10px] font-bold ${
+                              tipoDelDia === "Planilla"
+                                ? "bg-sky-950/40 text-sky-400 border border-sky-800/40"
+                                : "bg-amber-950/40 text-amber-400 border border-amber-800/40"
+                            }`}
+                          >
+                            {valorJornada.toFixed(2)}
+                          </span>
+                        </div>
+                      )
                     ) : (
                       <span className="text-zinc-600/60">—</span>
                     )}
@@ -308,7 +441,7 @@ export const PlanillaPage = () => {
         <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed border-zinc-855 rounded-2xl bg-zinc-900/10">
           <CalendarDaysIcon className="w-12 h-12 text-zinc-650 mb-3" />
           <Text className="text-zinc-400 font-bold text-lg">
-            Sin marcaciones en el período
+            Sin registros en el período
           </Text>
           <Text className="text-zinc-500 text-sm mt-1">
             Ajusta los filtros o espera a que los empleados marquen asistencia.

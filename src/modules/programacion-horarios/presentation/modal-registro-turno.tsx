@@ -114,7 +114,11 @@ export const ModalRegistroTurno = ({
             value={form.hora_ingreso || undefined}
             onChange={(event) => {
               const val = event.currentTarget.value;
-              const formatted = val && val.includes(":") ? `${val.split(":")[0]}:00` : "";
+              // Acepta HH:mm o HH:mm:ss. Si trae segundos, recortamos a HH:mm.
+              // Si no tiene formato válido, dejamos string vacío (la validación
+              // Zod mostrará el error al usuario al hacer submit).
+              const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+              const formatted = match ? `${match[1]}:${match[2]}` : "";
               setField("hora_ingreso", formatted);
             }}
             onClick={() => refIngreso.current?.showPicker?.()}
@@ -133,7 +137,8 @@ export const ModalRegistroTurno = ({
             value={form.hora_salida || undefined}
             onChange={(event) => {
               const val = event.currentTarget.value;
-              const formatted = val && val.includes(":") ? `${val.split(":")[0]}:00` : "";
+              const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+              const formatted = match ? `${match[1]}:${match[2]}` : "";
               setField("hora_salida", formatted);
             }}
             onClick={() => refSalida.current?.showPicker?.()}
