@@ -8,6 +8,7 @@ import {
   Avatar,
   FileButton,
   Text,
+  Switch,
 } from "@mantine/core";
 import {
   UserIcon,
@@ -18,6 +19,7 @@ import {
   UserCircleIcon,
   PhoneIcon,
   EnvelopeIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroContratista } from "../hooks/useRegistroContratista";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
@@ -43,6 +45,7 @@ export const RegistroContratista = ({
   const {
     form,
     setField,
+    setConContrato,
     minas,
     labores,
     loading,
@@ -267,6 +270,38 @@ export const RegistroContratista = ({
         }
         comboboxProps={{ withinPortal: true }}
       />
+
+      {/* Switch: ¿Tiene contrato? */}
+      <div
+        className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border transition-all ${
+          form.con_contrato
+            ? "bg-teal-500/10 border-teal-500/40"
+            : "bg-zinc-900/50 border-zinc-800"
+        }`}
+      >
+        <div className="flex flex-col">
+          <Text
+            size="sm"
+            fw={700}
+            className="text-zinc-200 flex items-center gap-2"
+          >
+            <DocumentTextIcon className="w-4 h-4 text-teal-400" />
+            ¿Tiene contrato?
+          </Text>
+          <Text size="11px" c="dimmed" className="leading-snug">
+            {form.con_contrato
+              ? "Se habilitará la opción para asignarle contrato."
+              : "Si no aplica por ahora, se registrará como sin contrato."}
+          </Text>
+        </div>
+        <Switch
+          checked={form.con_contrato === true}
+          onChange={(e) => setConContrato(e.currentTarget.checked)}
+          color="teal"
+          size="md"
+          disabled={loading}
+        />
+      </div>
 
       {/* Acciones */}
       <Group justify="flex-end" gap="md" mt="xl">

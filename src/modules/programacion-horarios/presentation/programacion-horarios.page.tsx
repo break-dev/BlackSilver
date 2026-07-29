@@ -54,6 +54,7 @@ export const ProgramacionHorariosPage = () => {
   const [openedListadoTurnos, setOpenedListadoTurnos] = useState(false);
   const [openedAsignarHorario, setOpenedAsignarHorario] = useState(false);
   const [turnoEditar, setTurnoEditar] = useState<RES_TurnoLaboral | null>(null);
+  const [turnoNuevoCreadoId, setTurnoNuevoCreadoId] = useState<number | null>(null);
 
   const formatRangoSemanal = (fechaInicioStr: string, fechaFinStr: string): string => {
     if (!fechaInicioStr || !fechaFinStr) return "";
@@ -140,8 +141,12 @@ export const ProgramacionHorariosPage = () => {
     setOpenedRegistroTurno(true);
   };
 
-  const handleSuccessTurno = () => {
+  const handleSuccessTurno = (nuevoTurno?: RES_TurnoLaboral) => {
     void recargarTurnos();
+    if (nuevoTurno?.id) {
+      // Guardar el id del turno recién creado para auto-seleccionarlo si el usuario abre Asignar Horario
+      setTurnoNuevoCreadoId(nuevoTurno.id);
+    }
   };
 
   const handleSuccessAsignar = () => {
@@ -365,6 +370,7 @@ export const ProgramacionHorariosPage = () => {
         turnos={turnos.filter((t) => t.estado === "Activo")}
         onSuccess={handleSuccessAsignar}
         onRegistrarTurnoClick={() => setOpenedRegistroTurno(true)}
+        turnoNuevoCreadoId={turnoNuevoCreadoId}
       />
     </div>
   );

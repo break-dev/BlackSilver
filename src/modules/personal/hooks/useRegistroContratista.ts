@@ -25,6 +25,7 @@ const INITIAL_FORM: DTO_CrearContratista = {
   email: "",
   foto: "",
   ids_labor: [],
+  con_contrato: false,
 };
 
 export const useRegistroContratista = (
@@ -115,6 +116,7 @@ export const useRegistroContratista = (
   return {
     form,
     setField,
+    setConContrato: (val: boolean) => setForm((prev) => ({ ...prev, con_contrato: val })),
     minas,
     labores,
     loading,

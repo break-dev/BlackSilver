@@ -15,7 +15,7 @@ interface ModalContratoEmpleadoProps {
    * Callback al guardar el contrato. El argumento es el payload del backend
    * `{ contrato, empleado }`. Útil para que el padre actualice la lista sin refresh.
    */
-  onSuccess?: (payload?: RES_EmpleadoConContrato) => void;
+  onSuccess?: (payload?: any) => void;
   /**
    * Contrato anterior del mismo empleado. Si se pasa, el form pre-rellena
    * los campos con los valores del anterior.

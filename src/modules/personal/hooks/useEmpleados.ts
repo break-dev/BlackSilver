@@ -238,7 +238,13 @@ export const useEmpleados = () => {
       try {
         const resp = await EmpleadosService.toggle_con_contrato(ids, conContrato);
         if (resp.success) {
-          await listar();
+          setEmpleados((prev) =>
+            prev.map((e) =>
+              ids.includes(e.id_empleado)
+                ? { ...e, con_contrato: conContrato }
+                : e,
+            ),
+          );
           setSeleccionados(new Set());
           return true;
         }

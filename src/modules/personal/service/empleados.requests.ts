@@ -157,6 +157,7 @@ export const Schema_CrearContratista = z.object({
   foto: z.any().nullable().optional(),
   id_mina: z.number().min(1, "Debe seleccionar una mina"),
   ids_labor: z.array(z.number()).optional().default([]),
+  con_contrato: z.boolean().optional().default(false),
 });
 
 export type DTO_CrearContratista = z.infer<typeof Schema_CrearContratista>;

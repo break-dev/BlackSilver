@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Group,
   Text,
@@ -41,6 +42,7 @@ export const TabContratistas = ({
   asignacion,
 }: TabContratistasProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const [loadingToggles, setLoadingToggles] = useState<Record<number, boolean>>({});
 
   const {
     contratistas,
@@ -304,6 +306,7 @@ export const TabContratistas = ({
         const nombreCompleto = `${r.nombre} ${r.apellido}`;
 
         if (!esContratistaConContrato) {
+          const isToggling = Boolean(loadingToggles[r.id_contratista]);
           return (
             <Group gap={4} wrap="nowrap" justify="center">
               <Badge variant="light" color="gray" radius="md" className="font-medium">
@@ -321,9 +324,16 @@ export const TabContratistas = ({
                   radius="md"
                   size="sm"
                   aria-label="Habilitar contrato"
+                  loading={isToggling}
+                  disabled={isToggling}
                   onClick={async () => {
-                    const ok = await toggleConContrato([r.id_contratista], true);
-                    if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                    setLoadingToggles((prev) => ({ ...prev, [r.id_contratista]: true }));
+                    try {
+                      const ok = await toggleConContrato([r.id_contratista], true);
+                      if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                    } finally {
+                      setLoadingToggles((prev) => ({ ...prev, [r.id_contratista]: false }));
+                    }
                   }}
                 >
                   <CheckBadgeIcon className="w-4 h-4 text-teal-400" />

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ProgramacionHorarioService } from "../service/programacion.service";
 import {
   Schema_AsignarHorario,
@@ -69,12 +69,15 @@ export const useAsignarHorario = (
     },
   );
 
-  const setField = <K extends keyof DTO_AsignarHorario>(
-    field: K,
-    value: DTO_AsignarHorario[K],
-  ) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const setField = useCallback(
+    <K extends keyof DTO_AsignarHorario>(
+      field: K,
+      value: DTO_AsignarHorario[K],
+    ) => {
+      setForm((prev) => ({ ...prev, [field]: value }));
+    },
+    [],
+  );
 
   const toggleDia = (indice: number) => {
     setForm((prev) => {

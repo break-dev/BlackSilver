@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Group,
   Text,
@@ -38,6 +39,7 @@ interface TabEmpleadosProps {
 
 export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const [loadingToggles, setLoadingToggles] = useState<Record<number, boolean>>({});
 
   const {
     empleados,
@@ -302,6 +304,7 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
         // 3) id_contrato_vigente!==null → "Con Contrato" + botón "Documento".
 
         if (!esEmpleadoConContrato) {
+          const isToggling = Boolean(loadingToggles[r.id_empleado]);
           return (
             <Group gap={4} wrap="nowrap" justify="center">
               <Badge variant="light" color="gray" radius="md" className="font-medium">
@@ -319,9 +322,16 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
                   radius="md"
                   size="sm"
                   aria-label="Habilitar contrato"
+                  loading={isToggling}
+                  disabled={isToggling}
                   onClick={async () => {
-                    const ok = await controller.toggleConContrato([r.id_empleado], true);
-                    if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                    setLoadingToggles((prev) => ({ ...prev, [r.id_empleado]: true }));
+                    try {
+                      const ok = await controller.toggleConContrato([r.id_empleado], true);
+                      if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                    } finally {
+                      setLoadingToggles((prev) => ({ ...prev, [r.id_empleado]: false }));
+                    }
                   }}
                 >
                   <CheckBadgeIcon className="w-4 h-4 text-teal-400" />

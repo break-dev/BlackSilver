@@ -41,20 +41,10 @@ interface ModalAsignarHorarioProps {
   turnos: RES_TurnoLaboral[];
   onSuccess?: () => void;
   onRegistrarTurnoClick?: () => void;
-  /**
-   * Valores pre-rellenos al abrir el modal. Sirve para reasignaciones
-   * disparadas por la cascada de ContratosEmpleado.
-   */
   prefill?: AsignarHorarioPrefill;
-  /**
-   * Si se pasa, el modal se abre en "modo reasignación" con un banner
-   * informativo y el empleado pre-seleccionado.
-   */
   empleadoPreseleccionado?: number;
-  /**
-   * Mensaje personalizado para el banner (cuando viene de una cascada).
-   */
   motivoReasignacion?: string;
+  turnoNuevoCreadoId?: number | null;
 }
 
 const NOMBRES_DIAS = [
@@ -104,6 +94,7 @@ export const ModalAsignarHorario = ({
   prefill,
   empleadoPreseleccionado,
   motivoReasignacion,
+  turnoNuevoCreadoId,
 }: ModalAsignarHorarioProps) => {
   const { notifyError } = useNotify();
   const {
@@ -125,6 +116,12 @@ export const ModalAsignarHorario = ({
     prefill,
     empleadoPreseleccionado ? [empleadoPreseleccionado] : undefined,
   );
+
+  useEffect(() => {
+    if (opened && turnoNuevoCreadoId && form.id_turno_laboral !== turnoNuevoCreadoId) {
+      setField("id_turno_laboral", turnoNuevoCreadoId);
+    }
+  }, [opened, turnoNuevoCreadoId, form.id_turno_laboral, setField]);
 
   // Determinar fecha_fin para la consulta de elegibles.
   // Si es indefinido, se envía null (el backend aceptará siempre).
@@ -193,12 +190,12 @@ export const ModalAsignarHorario = ({
     };
   }, [opened]);
 
-  // Hook de empleados: pasar id_lugar y tipo_lugar para que el backend priorice
-  // a los empleados con match.
+  // Hook de empleados: pasar fecha_fin (o null si es indefinido)
+  // Se le permite seleccionar cualquier empleado elegible independientemente del tipo de lugar.
   const { empleados, loading: loadingEmpleados } = useEmpleadosElegibles(
     opened ? fechaFinParaElegibles : null,
-    tipoLugar !== "" && lugarIdActual !== null ? lugarIdActual : null,
-    tipoLugar !== "" ? tipoLugar : null,
+    null,
+    null,
   );
 
   const empleadosOptions = useMemo(
@@ -215,6 +212,28 @@ export const ModalAsignarHorario = ({
       })),
     [empleados],
   );
+
+  // EFECTO: Si un empleado ya estaba seleccionado y su contrato expira antes de la fecha elegida
+  // (es decir, puede_cubrir cambia a false), se remueve de los seleccionados para evitar errores al guardar,
+  // aunque seguirá figurando como "Fuera de rango" al desplegar el selector.
+  const empleadosSeleccionadosStr = useMemo(
+    () => form.empleados.join(","),
+    [form.empleados],
+  );
+
+  useEffect(() => {
+    if (form.empleados.length === 0 || empleados.length === 0) return;
+    const idsValidos = new Set(
+      empleados.filter((e) => e.puede_cubrir).map((e) => e.id_empleado),
+    );
+    const empleadosFiltrados = form.empleados.filter((id) => idsValidos.has(id));
+
+    if (empleadosFiltrados.length !== form.empleados.length) {
+      setField("empleados", empleadosFiltrados);
+    }
+    // Usamos la representación string estable para evitar ciclos infinitos de re-renderizado
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empleados, empleadosSeleccionadosStr, setField]);
 
   const handleConfirmar = async () => {
     if (form.id_turno_laboral <= 0) {
@@ -377,6 +396,50 @@ export const ModalAsignarHorario = ({
           />
         </Group>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <CustomDatePicker
+            label="Fecha de Inicio"
+            placeholder="Seleccione fecha"
+            value={form.fecha_inicio || null}
+            onChange={(val) => setField("fecha_inicio", toIso(val))}
+            size="xs"
+            disabled={loading}
+          />
+          <CustomDatePicker
+            label="Fecha de Fin"
+            placeholder="Seleccione fecha"
+            value={form.fecha_fin || null}
+            onChange={(val) => setField("fecha_fin", toIso(val))}
+            size="xs"
+            disabled={form.por_tiempo_indefinido || loading}
+            minDate={
+              form.fecha_inicio
+                ? new Date(`${form.fecha_inicio}T00:00:00`)
+                : undefined
+            }
+          />
+          <div className="flex flex-col gap-1.5 h-full justify-end">
+            <span className="text-[11px] text-transparent select-none font-medium leading-normal">Spacer</span>
+            <div className="flex items-center h-[30px]">
+              <Switch
+                label="Por tiempo indefinido"
+                checked={form.por_tiempo_indefinido}
+                onChange={(e) => {
+                  const checked = e.currentTarget.checked;
+                  setField("por_tiempo_indefinido", checked);
+                  if (checked) {
+                    setField("fecha_fin", null);
+                  }
+                }}
+                color="indigo"
+                size="sm"
+                classNames={{ label: "text-zinc-300 font-medium" }}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+
         <div>
           <MultiSelect
             label="Empleados Involucrados"
@@ -397,7 +460,7 @@ export const ModalAsignarHorario = ({
             radius="lg"
             size="xs"
             comboboxProps={{ withinPortal: true }}
-            disabled={loading || loadingEmpleados || !tipoLugar || !lugarIdActual}
+            disabled={loading || loadingEmpleados}
             renderOption={({ option, checked }) => {
               const opt = option as unknown as {
                 puedeCubrir?: boolean;
@@ -448,50 +511,6 @@ export const ModalAsignarHorario = ({
           <Text size="11px" className="pl-1 text-rose-400/90 font-medium" mt={4}>
             Solo aparecen empleados con contrato vigente Activo.
           </Text>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <CustomDatePicker
-            label="Fecha de Inicio"
-            placeholder="Seleccione fecha"
-            value={form.fecha_inicio || null}
-            onChange={(val) => setField("fecha_inicio", toIso(val))}
-            size="xs"
-            disabled={loading}
-          />
-          <CustomDatePicker
-            label="Fecha de Fin"
-            placeholder="Seleccione fecha"
-            value={form.fecha_fin || null}
-            onChange={(val) => setField("fecha_fin", toIso(val))}
-            size="xs"
-            disabled={form.por_tiempo_indefinido || loading}
-            minDate={
-              form.fecha_inicio
-                ? new Date(`${form.fecha_inicio}T00:00:00`)
-                : undefined
-            }
-          />
-          <div className="flex flex-col gap-1.5 h-full justify-end">
-            <span className="text-[11px] text-transparent select-none font-medium leading-normal">Spacer</span>
-            <div className="flex items-center h-[30px]">
-              <Switch
-                label="Por tiempo indefinido"
-                checked={form.por_tiempo_indefinido}
-                onChange={(e) => {
-                  const checked = e.currentTarget.checked;
-                  setField("por_tiempo_indefinido", checked);
-                  if (checked) {
-                    setField("fecha_fin", null);
-                  }
-                }}
-                color="indigo"
-                size="sm"
-                classNames={{ label: "text-zinc-300 font-medium" }}
-                disabled={loading}
-              />
-            </div>
-          </div>
         </div>
 
         <Divider

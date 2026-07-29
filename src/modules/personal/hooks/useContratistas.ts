@@ -58,11 +58,16 @@ export const useContratistas = () => {
     setContratistas((prev) => [nuevo, ...prev]);
   };
 
-  const actualizarContratistaEnLista = (editado: RES_ContratistaResumen) => {
-    setContratistas((prev) =>
-      prev.map((e) => (e.id_contratista === editado.id_contratista ? editado : e)),
-    );
-  };
+  const actualizarContratistaEnLista = useCallback(
+    (editado: RES_ContratistaResumen) => {
+      setContratistas((prev) =>
+        prev.map((e) =>
+          e.id_contratista === editado.id_contratista ? editado : e,
+        ),
+      );
+    },
+    [],
+  );
 
   const actualizarFoto = async (idContratista: number, file: File) => {
     setIdActualizandoFoto(idContratista);
@@ -194,10 +199,17 @@ export const useContratistas = () => {
     setModalHistorialContratos(null);
   }, []);
 
-  const onContratoCreado = useCallback(() => {
-    cerrarModalContrato();
-    listar();
-  }, [cerrarModalContrato, listar]);
+  const onContratoCreado = useCallback(
+    (payload?: { empleado?: RES_ContratistaResumen }) => {
+      cerrarModalContrato();
+      if (payload?.empleado) {
+        actualizarContratistaEnLista(payload.empleado);
+        return;
+      }
+      void listar();
+    },
+    [cerrarModalContrato, actualizarContratistaEnLista, listar],
+  );
 
   return {
     minas: minasUnicas,
@@ -227,7 +239,13 @@ export const useContratistas = () => {
       try {
         const resp = await ContratistasService.toggle_con_contrato(ids, conContrato);
         if (resp.success) {
-          await listar();
+          setContratistas((prev) =>
+            prev.map((c) =>
+              ids.includes(c.id_contratista)
+                ? { ...c, con_contrato: conContrato }
+                : c,
+            ),
+          );
           setSeleccionados(new Set());
           return true;
         }
