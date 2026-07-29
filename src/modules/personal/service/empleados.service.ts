@@ -44,6 +44,17 @@ export class EmpleadosService {
     return data;
   };
 
+  public static toggle_con_contrato = async (
+    ids: number[],
+    conContrato: boolean,
+  ): Promise<IRespuesta<null>> => {
+    const { data } = await api.patch(`${this.PATH}/toggle-con-contrato`, {
+      ids,
+      con_contrato: conContrato,
+    });
+    return data;
+  };
+
   public static crear_empleado = async (
     dto: DTO_CrearEmpleado,
   ): Promise<IRespuesta<RES_EmpleadoResumen>> => {
@@ -108,6 +119,13 @@ export class ContratistasService {
       params: { id_mina: idMina },
     });
     return data;
+  };
+
+  public static toggle_con_contrato = async (
+    ids: number[],
+    conContrato: boolean,
+  ): Promise<IRespuesta<null>> => {
+    return EmpleadosService.toggle_con_contrato(ids, conContrato);
   };
 
   public static crear_contratista = async (

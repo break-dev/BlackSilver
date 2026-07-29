@@ -52,6 +52,8 @@ interface ModalHistorialContratosEmpleadoProps {
   opened: boolean;
   close: () => void;
   onContratoCreado?: (payload: { empleado?: unknown }) => void;
+  onCrearContratoClick?: () => void;
+  esContratista?: boolean;
 }
 
 const formatDate = (iso: string | null | undefined) => {
@@ -81,6 +83,8 @@ export const ModalHistorialContratosEmpleado = ({
   opened,
   close,
   onContratoCreado,
+  onCrearContratoClick,
+  esContratista = false,
 }: ModalHistorialContratosEmpleadoProps) => {
   const { notifySuccess, notifyError, notifyInfo } = useNotify();
   const { contratos, loading, reload, getUltimoContrato } =
@@ -167,6 +171,10 @@ export const ModalHistorialContratosEmpleado = ({
   // del historial para que el form pre-rellene los campos.
   const handleAbrirNuevoContrato = () => {
     if (vigenteIndefinido) return; // Doble seguridad: no abrir si hay vigente indefinido.
+    if (onCrearContratoClick) {
+      onCrearContratoClick();
+      return;
+    }
     setModalNuevoContratoAbierto(true);
   };
 
@@ -246,6 +254,8 @@ export const ModalHistorialContratosEmpleado = ({
     // sugerimos la fecha actual de hoy para que se active inmediatamente hoy.
     return hoyLocalStr;
   };
+
+
 
   const ultimoContrato = getUltimoContrato();
 
@@ -361,12 +371,19 @@ export const ModalHistorialContratosEmpleado = ({
                 const expanded = isExpanded(c.id_contrato, index);
                 const evidencias = parseEvidencias(c.evidencias);
                 const cambiosLog = parseCambiosLog(c.cambios_log);
-                const sueldoMostrar =
-                  c.tipo_contrato === "Planilla"
-                    ? c.sueldo_base
-                    : c.salario_diario;
-                const unidad =
-                  c.tipo_contrato === "Planilla" ? "" : " / día";
+                const esSueldoMensual =
+                  c.tipo_contrato === "Planilla" ||
+                  c.tipo_contrato === "PeriodoPrueba";
+                const sueldoMostrar = esSueldoMensual
+                  ? c.sueldo_base
+                  : c.salario_diario;
+                const unidad = esSueldoMensual ? "" : " / día";
+                const tipoContratoLabel =
+                  c.tipo_contrato === "PeriodoPrueba"
+                    ? "Periodo de Prueba"
+                    : c.tipo_contrato === "Planilla"
+                      ? "Planilla"
+                      : "Jornada Diaria";
                 const tieneCierreAnticipado = !!c.fecha_fin_anticipada;
                 const estadoBadge = contratoEstadoBadge(c.estado);
 
@@ -408,17 +425,17 @@ export const ModalHistorialContratosEmpleado = ({
                                 <Badge
                                   variant="light"
                                   color={
-                                    c.tipo_contrato === "Planilla"
-                                      ? "indigo"
-                                      : "teal"
+                                    c.tipo_contrato === "PeriodoPrueba"
+                                      ? "violet"
+                                      : c.tipo_contrato === "Planilla"
+                                        ? "indigo"
+                                        : "teal"
                                   }
                                   radius="sm"
                                   size="xs"
                                   className="font-bold"
                                 >
-                                  {c.tipo_contrato === "Planilla"
-                                    ? "Planilla"
-                                    : "Jornada Diaria"}
+                                  {tipoContratoLabel}
                                 </Badge>
                                 <Badge
                                   variant="light"
@@ -710,6 +727,7 @@ export const ModalHistorialContratosEmpleado = ({
           onSuccess={handleContratoCreado}
           contratoAnterior={ultimoContrato ?? undefined}
           fechaInicioSugerida={calcularFechaInicioSugerida(ultimoContrato ?? undefined)}
+          esContratista={esContratista}
         />
       )}
       {/* Modal para finalizar contrato anticipadamente */}

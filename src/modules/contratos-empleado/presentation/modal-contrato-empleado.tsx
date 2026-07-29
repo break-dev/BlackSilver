@@ -32,6 +32,7 @@ interface ModalContratoEmpleadoProps {
    * Se muestra en un Card destacado arriba del formulario.
    */
   nombreEmpleado?: string;
+  esContratista?: boolean;
 }
 
 export const ModalContratoEmpleado = ({
@@ -42,6 +43,7 @@ export const ModalContratoEmpleado = ({
   contratoAnterior,
   fechaInicioSugerida,
   nombreEmpleado,
+  esContratista = false,
 }: ModalContratoEmpleadoProps) => {
   return (
     <ModalEstandar
@@ -73,6 +75,7 @@ export const ModalContratoEmpleado = ({
         idEmpleado={idEmpleado}
         contratoAnterior={contratoAnterior}
         fechaInicioSugerida={fechaInicioSugerida}
+        esContratista={esContratista}
         onSuccess={(payload) => {
           // El formulario del contrato, al confirmar, hace su submit interno
           // (POST /api/contratos-empleado). Aquí cerramos el modal y delegamos

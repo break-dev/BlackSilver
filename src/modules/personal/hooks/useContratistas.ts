@@ -166,6 +166,39 @@ export const useContratistas = () => {
     }));
   }, [contratistas]);
 
+  const [modalContratoEmpleado, setModalContratoEmpleado] = useState<{
+    abierto: boolean;
+    idEmpleado: number | null;
+    nombre: string;
+  } | null>(null);
+
+  const [modalHistorialContratos, setModalHistorialContratos] = useState<{
+    abierto: boolean;
+    idEmpleado: number | null;
+    nombre: string;
+  } | null>(null);
+
+  const abrirModalContrato = useCallback((id: number, nombre: string) => {
+    setModalContratoEmpleado({ abierto: true, idEmpleado: id, nombre });
+  }, []);
+
+  const cerrarModalContrato = useCallback(() => {
+    setModalContratoEmpleado(null);
+  }, []);
+
+  const abrirModalHistorial = useCallback((id: number, nombre: string) => {
+    setModalHistorialContratos({ abierto: true, idEmpleado: id, nombre });
+  }, []);
+
+  const cerrarModalHistorial = useCallback(() => {
+    setModalHistorialContratos(null);
+  }, []);
+
+  const onContratoCreado = useCallback(() => {
+    cerrarModalContrato();
+    listar();
+  }, [cerrarModalContrato, listar]);
+
   return {
     minas: minasUnicas,
     idMina,
@@ -179,6 +212,30 @@ export const useContratistas = () => {
     actualizarFoto,
     actualizarContratistaEnLista,
     idActualizandoFoto,
+
+    // Modales de Contrato
+    modalContratoEmpleado,
+    abrirModalContrato,
+    cerrarModalContrato,
+    onContratoCreado,
+    modalHistorialContratos,
+    abrirModalHistorial,
+    cerrarModalHistorial,
+
+    // Toggle con_contrato
+    toggleConContrato: async (ids: number[], conContrato: boolean) => {
+      try {
+        const resp = await ContratistasService.toggle_con_contrato(ids, conContrato);
+        if (resp.success) {
+          await listar();
+          setSeleccionados(new Set());
+          return true;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      return false;
+    },
 
     // Selección masiva
     seleccionados,

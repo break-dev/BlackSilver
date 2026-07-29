@@ -87,17 +87,34 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
             color="indigo"
           />
           {seleccionados.size > 0 && (
-            <Tooltip label={`Fotocheck (${seleccionados.size})`}>
-              <ActionIcon
-                variant="filled"
-                color="indigo"
-                size="xs"
-                radius="md"
-                onClick={controller.abrirModalFotocheck}
-              >
-                <IdentificationIcon className="w-3.5 h-3.5 text-white" />
-              </ActionIcon>
-            </Tooltip>
+            <>
+              <Tooltip label={`Habilitar Contrato (${seleccionados.size})`}>
+                <ActionIcon
+                  variant="filled"
+                  color="teal"
+                  size="xs"
+                  radius="md"
+                  onClick={async () => {
+                    const ids = Array.from(seleccionados);
+                    const ok = await controller.toggleConContrato(ids, true);
+                    if (ok) notifySuccess("Contratos habilitados para los seleccionados");
+                  }}
+                >
+                  <CheckBadgeIcon className="w-3.5 h-3.5 text-white" />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={`Fotocheck (${seleccionados.size})`}>
+                <ActionIcon
+                  variant="filled"
+                  color="indigo"
+                  size="xs"
+                  radius="md"
+                  onClick={controller.abrirModalFotocheck}
+                >
+                  <IdentificationIcon className="w-3.5 h-3.5 text-white" />
+                </ActionIcon>
+              </Tooltip>
+            </>
           )}
         </Group>
       ),
@@ -286,10 +303,30 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
 
         if (!esEmpleadoConContrato) {
           return (
-            <Group justify="center">
-              <Text size="xs" c="dimmed" fs="italic">
+            <Group gap={4} wrap="nowrap" justify="center">
+              <Badge variant="light" color="gray" radius="md" className="font-medium">
                 No Aplica
-              </Text>
+              </Badge>
+              <Tooltip
+                label="Habilitar contrato"
+                withArrow
+                position="top"
+                transitionProps={{ duration: 150 }}
+              >
+                <ActionIcon
+                  variant="subtle"
+                  color="teal"
+                  radius="md"
+                  size="sm"
+                  aria-label="Habilitar contrato"
+                  onClick={async () => {
+                    const ok = await controller.toggleConContrato([r.id_empleado], true);
+                    if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                  }}
+                >
+                  <CheckBadgeIcon className="w-4 h-4 text-teal-400" />
+                </ActionIcon>
+              </Tooltip>
             </Group>
           );
         }

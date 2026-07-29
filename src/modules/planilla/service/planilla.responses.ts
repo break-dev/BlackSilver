@@ -28,6 +28,7 @@ export interface RES_PlanillaAsistencia {
   id_contrato_vigente: number | null;
   cargo_nombre?: string | null;
   area_nombre?: string | null;
+  mina_nombre?: string | null;
 
   // Snapshot de la programación del día (FUENTE para cálculo).
   programacion_tipo_contrato?: TipoContrato | string | null;

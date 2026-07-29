@@ -58,6 +58,10 @@ export interface RES_ContratistaResumen {
   telefono: string | null;
   email: string | null;
   url_foto: string | null;
+  con_contrato?: boolean | number | string | null;
+  id_contrato_vigente?: number | null;
+  contrato_fecha_fin?: string | null;
+  contrato_por_tiempo_indefinido?: boolean | null;
   estado: EstadoBase;
   labores_asignadas: RES_LaborContratista[];
   ids_labor_asignadas?: string | null;

@@ -43,6 +43,8 @@ interface EmpleadoAsistenciaCardProps {
     pago_total: number;
     cargo_nombre?: string | null;
     area_nombre?: string | null;
+    es_contratista?: boolean | number;
+    mina_nombre?: string | null;
     tramos: PlanillaTramo[];
     marcaciones: RES_PlanillaAsistencia[];
   };
@@ -57,10 +59,8 @@ const EmpleadoAsistenciaCard = ({
   yearVal,
   mesVal,
 }: EmpleadoAsistenciaCardProps) => {
-  const esPlanilla = emp.tipo_contrato === "Planilla";
 
-  // Tramos del mes para el tooltip del sueldo.
-  const tramosTexto = emp.tramos.map(formatearTramo).join("\n");
+  const esContratista = Boolean(emp.es_contratista);
 
   return (
     <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md p-5 space-y-5">
@@ -80,8 +80,22 @@ const EmpleadoAsistenciaCard = ({
               <Text size="md" fw={900} className="text-white tracking-tight">
                 {emp.empleado}
               </Text>
-              <Badge variant="outline" color={esPlanilla ? "indigo" : "teal"} size="xs">
-                {emp.tipo_contrato ?? "S/C"}
+              <Badge
+                variant="outline"
+                color={
+                  emp.tipo_contrato === "PeriodoPrueba"
+                    ? "violet"
+                    : emp.tipo_contrato === "Planilla"
+                      ? "indigo"
+                      : "teal"
+                }
+                size="xs"
+              >
+                {emp.tipo_contrato === "PeriodoPrueba"
+                  ? "Periodo de Prueba"
+                  : emp.tipo_contrato === "JornadaDiaria"
+                    ? "Jornada Diaria"
+                    : emp.tipo_contrato ?? "S/C"}
               </Badge>
               {emp.tramos.length > 1 && (
                 <Tooltip
@@ -106,7 +120,7 @@ const EmpleadoAsistenciaCard = ({
                     variant="light"
                     color="yellow"
                     size="xs"
-                    leftSection={<ExclamationTriangleIcon className="w-3 h-3" />}
+                    leftSection={<ExclamationTriangleIcon className="w-3.5 h-3.5" />}
                     className="cursor-help"
                   >
                     {emp.tramos.length} tramos
@@ -119,13 +133,22 @@ const EmpleadoAsistenciaCard = ({
                 DNI: <span className="text-zinc-300 font-semibold">{emp.dni ?? "—"}</span>
               </Text>
               <Divider orientation="vertical" h={12} className="border-zinc-800" />
-              {emp.cargo_nombre && (
+              {esContratista ? (
                 <Group gap={4} wrap="nowrap">
-                  <BriefcaseIcon className="w-3.5 h-3.5 text-zinc-500" />
-                  <Text size="xs" c="indigo.4" fw={600}>
-                    {emp.cargo_nombre} {emp.area_nombre ? `(${emp.area_nombre})` : ""}
+                  <BriefcaseIcon className="w-3.5 h-3.5 text-pink-400" />
+                  <Text size="xs" c="pink.4" fw={600}>
+                    Contratista de {emp.mina_nombre || "Mina"}
                   </Text>
                 </Group>
+              ) : (
+                emp.cargo_nombre && (
+                  <Group gap={4} wrap="nowrap">
+                    <BriefcaseIcon className="w-3.5 h-3.5 text-zinc-500" />
+                    <Text size="xs" c="indigo.4" fw={600}>
+                      {emp.cargo_nombre} {emp.area_nombre ? `(${emp.area_nombre})` : ""}
+                    </Text>
+                  </Group>
+                )
               )}
             </Group>
           </Stack>
@@ -152,41 +175,18 @@ const EmpleadoAsistenciaCard = ({
               </Text>
             </div>
             <div className="w-px h-6 bg-zinc-800/50" />
-            {emp.tramos.length > 1 ? (
-              <Tooltip
-                label={tramosTexto || "Sin tramos"}
-                multiline
-                withArrow
-                position="bottom"
-                transitionProps={{ duration: 150 }}
-              >
-                <div className="flex flex-col items-center cursor-help">
-                  <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                    Sueldo Base
-                  </Text>
-                  <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                    {emp.tipo_contrato === "Planilla"
-                      ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
-                      : emp.tipo_contrato === "JornadaDiaria"
-                        ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
-                        : "—"}
-                  </Text>
-                </div>
-              </Tooltip>
-            ) : (
-              <div className="flex flex-col items-center">
-                <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
-                  Sueldo Base
-                </Text>
-                <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                  {emp.tipo_contrato === "Planilla"
-                    ? (emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : "—")
-                    : emp.tipo_contrato === "JornadaDiaria"
-                      ? (emp.salario_diario !== null ? `S/. ${emp.salario_diario.toFixed(2)}` : emp.sueldo_base !== null ? `S/. ${emp.sueldo_base.toFixed(2)}` : "—")
-                      : "—"}
-                </Text>
-              </div>
-            )}
+            <div className="flex flex-col items-center">
+              <Text size="9px" fw={900} className="text-zinc-500 uppercase tracking-wider">
+                Sueldo / Tarifa
+              </Text>
+              <Text size="xs" fw={900} className="text-zinc-300 font-mono">
+                {emp.tipo_contrato === "Planilla" || emp.tipo_contrato === "PeriodoPrueba"
+                  ? (emp.sueldo_base !== null ? `S/. ${Number(emp.sueldo_base).toFixed(2)}` : emp.salario_diario !== null ? `S/. ${Number(emp.salario_diario).toFixed(2)}` : "—")
+                  : emp.tipo_contrato === "JornadaDiaria"
+                    ? (emp.salario_diario !== null ? `S/. ${Number(emp.salario_diario).toFixed(2)}/día` : emp.sueldo_base !== null ? `S/. ${Number(emp.sueldo_base).toFixed(2)}` : "—")
+                    : "—"}
+              </Text>
+            </div>
           </div>
 
           <div className="flex flex-col items-end gap-1 ml-auto md:ml-0">

@@ -63,6 +63,7 @@ interface FormularioContratoEmpleadoProps {
    * Solo restricción visual en el calendario; el backend no la valida.
    */
   fechaInicioSugerida?: string;
+  esContratista?: boolean;
 }
 
 const toNum = (v: unknown) => {
@@ -109,6 +110,7 @@ export const FormularioContratoEmpleado = ({
   fotoEmpleado,
   contratoAnterior,
   fechaInicioSugerida,
+  esContratista = false,
 }: FormularioContratoEmpleadoProps) => {
   const { notify } = useNotify();
   const {
@@ -186,17 +188,19 @@ export const FormularioContratoEmpleado = ({
       // Tipo de contrato
       if (
         contratoAnterior.tipo_contrato === "Planilla" ||
-        contratoAnterior.tipo_contrato === "JornadaDiaria"
+        contratoAnterior.tipo_contrato === "JornadaDiaria" ||
+        contratoAnterior.tipo_contrato === "PeriodoPrueba"
       ) {
         setField(
           "tipo_contrato",
-          contratoAnterior.tipo_contrato as
-            | "Planilla"
-            | "JornadaDiaria",
+          contratoAnterior.tipo_contrato as TipoContrato,
         );
       }
       // Remuneración según tipo
-      if (contratoAnterior.tipo_contrato === "Planilla") {
+      if (
+        contratoAnterior.tipo_contrato === "Planilla" ||
+        contratoAnterior.tipo_contrato === "PeriodoPrueba"
+      ) {
         if (contratoAnterior.sueldo_base !== null) {
           setField(
             "sueldo_base",
@@ -260,7 +264,10 @@ export const FormularioContratoEmpleado = ({
     label: "text-zinc-300 mb-1 font-medium",
   };
 
-  const esPlanilla = form.tipo_contrato === TipoContrato.Planilla;
+  const esSueldoMensual =
+    form.tipo_contrato === TipoContrato.Planilla ||
+    form.tipo_contrato === TipoContrato.PeriodoPrueba;
+  const esPlanilla = esSueldoMensual;
   const esJornada = form.tipo_contrato === TipoContrato.JornadaDiaria;
   const esIndefinido = !!form.por_tiempo_indefinido;
   const esEmbebidoConEmpleado = embedded && !!formEmpleado;
@@ -335,78 +342,82 @@ export const FormularioContratoEmpleado = ({
     <Stack gap="md">
       {/* Fila 1: Área · Cargo · Tipo de Contrato */}
       <Group grow align="flex-start" gap="md">
-        <div className="flex gap-2 items-end">
-          <Select
-            label="Área"
-            placeholder={loadingAreas ? "Cargando áreas..." : "Seleccione área"}
-            data={areas.map((a) => ({
-              value: a.id_area.toString(),
-              label: a.nombre,
-            }))}
-            value={idArea?.toString() || null}
-            onChange={(val) => setIdArea(val ? Number(val) : null)}
-            leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
-            classNames={fieldClasses}
-            radius="lg"
-            size="xs"
-            searchable
-            disabled={loadingAreas || submittingTotal}
-            comboboxProps={{ withinPortal: true }}
-            className="flex-1"
-          />
-          <ActionIcon
-            size="lg"
-            radius="xl"
-            variant="filled"
-            color="indigo"
-            className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
-            onClick={() => setOpenedAddArea(true)}
-            disabled={submittingTotal}
-          >
-            <PlusIcon className="w-5 h-5 text-white" />
-          </ActionIcon>
-        </div>
-        <div className="flex gap-2 items-end">
-          <Select
-            label="Cargo"
-            placeholder={loadingCargos ? "Cargando..." : "Seleccione cargo"}
-            data={cargosSelectData}
-            value={
-              form.id_cargo && form.id_cargo > 0 ? String(form.id_cargo) : null
-            }
-            onChange={(val) => {
-              const cargoId = val ? Number(val) : 0;
-              setField("id_cargo", cargoId);
-              if (cargoId) {
-                const cargo = cargos.find((c) => c.id_cargo === cargoId);
-                if (cargo && cargo.id_area) {
-                  setIdArea(cargo.id_area);
+        {!esContratista && (
+          <>
+            <div className="flex gap-2 items-end">
+              <Select
+                label="Área"
+                placeholder={loadingAreas ? "Cargando áreas..." : "Seleccione área"}
+                data={areas.map((a) => ({
+                  value: a.id_area.toString(),
+                  label: a.nombre,
+                }))}
+                value={idArea?.toString() || null}
+                onChange={(val) => setIdArea(val ? Number(val) : null)}
+                leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+                classNames={fieldClasses}
+                radius="lg"
+                size="xs"
+                searchable
+                disabled={loadingAreas || submittingTotal}
+                comboboxProps={{ withinPortal: true }}
+                className="flex-1"
+              />
+              <ActionIcon
+                size="lg"
+                radius="xl"
+                variant="filled"
+                color="indigo"
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+                onClick={() => setOpenedAddArea(true)}
+                disabled={submittingTotal}
+              >
+                <PlusIcon className="w-5 h-5 text-white" />
+              </ActionIcon>
+            </div>
+            <div className="flex gap-2 items-end">
+              <Select
+                label="Cargo"
+                placeholder={loadingCargos ? "Cargando..." : "Seleccione cargo"}
+                data={cargosSelectData}
+                value={
+                  form.id_cargo && form.id_cargo > 0 ? String(form.id_cargo) : null
                 }
-              }
-            }}
-            leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
-            classNames={fieldClasses}
-            radius="lg"
-            size="xs"
-            required
-            withAsterisk
-            disabled={loadingCargos || submittingTotal}
-            searchable
-            comboboxProps={{ withinPortal: true }}
-            className="flex-1"
-          />
-          <ActionIcon
-            size="lg"
-            radius="xl"
-            variant="filled"
-            color="indigo"
-            className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
-            onClick={() => setOpenedAddCargo(true)}
-            disabled={submittingTotal}
-          >
-            <PlusIcon className="w-5 h-5 text-white" />
-          </ActionIcon>
-        </div>
+                onChange={(val) => {
+                  const cargoId = val ? Number(val) : 0;
+                  setField("id_cargo", cargoId);
+                  if (cargoId) {
+                    const cargo = cargos.find((c) => c.id_cargo === cargoId);
+                    if (cargo && cargo.id_area) {
+                      setIdArea(cargo.id_area);
+                    }
+                  }
+                }}
+                leftSection={<BriefcaseIcon className="w-4 h-4 text-zinc-500" />}
+                classNames={fieldClasses}
+                radius="lg"
+                size="xs"
+                required
+                withAsterisk
+                disabled={loadingCargos || submittingTotal}
+                searchable
+                comboboxProps={{ withinPortal: true }}
+                className="flex-1"
+              />
+              <ActionIcon
+                size="lg"
+                radius="xl"
+                variant="filled"
+                color="indigo"
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+                onClick={() => setOpenedAddCargo(true)}
+                disabled={submittingTotal}
+              >
+                <PlusIcon className="w-5 h-5 text-white" />
+              </ActionIcon>
+            </div>
+          </>
+        )}
         <Select
           label="Tipo de Contrato"
           placeholder="Seleccione"
@@ -452,7 +463,7 @@ export const FormularioContratoEmpleado = ({
         />
         {esPlanilla && (
           <NumberInput
-            label="Sueldo Base (S/)"
+            label={form.tipo_contrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
             placeholder="Ej. 1500.00"
             decimalScale={2}
             fixedDecimalScale

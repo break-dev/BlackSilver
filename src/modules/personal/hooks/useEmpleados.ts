@@ -233,6 +233,21 @@ export const useEmpleados = () => {
     abrirModalHistorial,
     cerrarModalHistorial,
 
+    // Habilitar / Deshabilitar contrato
+    toggleConContrato: async (ids: number[], conContrato: boolean) => {
+      try {
+        const resp = await EmpleadosService.toggle_con_contrato(ids, conContrato);
+        if (resp.success) {
+          await listar();
+          setSeleccionados(new Set());
+          return true;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      return false;
+    },
+
     // Selección masiva
     seleccionados,
     empleadosSeleccionados,

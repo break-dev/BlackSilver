@@ -96,11 +96,21 @@ export const ModalDetalleAsistenciaDiaria = ({
               </Stack>
             </Group>
             <Badge
-              color={tipoEfectivo === "Planilla" ? "indigo" : "teal"}
+              color={
+                tipoEfectivo === "PeriodoPrueba"
+                  ? "violet"
+                  : tipoEfectivo === "Planilla"
+                    ? "indigo"
+                    : "teal"
+              }
               variant="light"
               radius="md"
             >
-              {tipoEfectivo ?? "S/C"}
+              {tipoEfectivo === "PeriodoPrueba"
+                ? "Periodo de Prueba"
+                : tipoEfectivo === "JornadaDiaria"
+                  ? "Jornada Diaria"
+                  : tipoEfectivo ?? "S/C"}
             </Badge>
           </Group>
 
@@ -132,7 +142,7 @@ export const ModalDetalleAsistenciaDiaria = ({
                 <Text size="xs" className="text-zinc-300">
                   Sueldo/Tarifa:{" "}
                   <span className="font-mono text-cyan-400 font-bold">
-                    {tipoEfectivo === "Planilla"
+                    {tipoEfectivo === "Planilla" || tipoEfectivo === "PeriodoPrueba"
                       ? (sueldoBaseEfectivo !== null
                         ? `S/. ${sueldoBaseEfectivo.toFixed(2)} (Mes)`
                         : salarioDiarioEfectivo !== null

@@ -6,7 +6,10 @@ import {
   type DataTableColumnGroup,
 } from "mantine-datatable";
 import clsx from "clsx";
-import { v4 as uuidv4 } from "uuid";
+const generateUUID = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 9);
 
 // Tipos flexibles: hacen `accessor` e `id` opcionales a nivel de API pública.
 // El componente asigna UUIDs automáticamente cuando faltan.
@@ -43,7 +46,7 @@ export const DataTableEstandar = ({
   // consumer no quiere declarar una prop que no le aporta nada.
   // Caveat: si se usa selección/expansión o row clicks que dependen del id,
   // el consumer DEBE pasar idAccessor apuntando al campo real del record.
-  const [generatedIdAccessor] = useState(() => `dt-${uuidv4()}`);
+  const [generatedIdAccessor] = useState(() => `dt-${generateUUID()}`);
   const finalIdAccessor = idAccessor ?? generatedIdAccessor;
 
   if (records !== prevRecords) {
@@ -63,7 +66,7 @@ export const DataTableEstandar = ({
   const columnsWithAccessors = useMemo(
     () =>
       columns.map((col) =>
-        col.accessor ? col : { ...col, accessor: `c-${uuidv4()}` },
+        col.accessor ? col : { ...col, accessor: `c-${generateUUID()}` },
       ),
     [columns],
   );
@@ -96,7 +99,7 @@ export const DataTableEstandar = ({
     if (!columnGroups || columnGroups.length === 0) return undefined;
     const enhance = (g: FlexibleGroup): DataTableColumnGroup<any> => ({
       ...g,
-      id: g.id ?? `g-${uuidv4()}`,
+      id: g.id ?? `g-${generateUUID()}`,
       title: (
         <div className="flex items-center justify-center gap-2 px-2 py-1">
           <span className="text-xs font-bold uppercase tracking-wider text-zinc-100">

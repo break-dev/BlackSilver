@@ -339,15 +339,26 @@ export const AsistenciaPage = () => {
       {
         accessor: "tipo_contrato",
         title: "Contrato",
-        render: (a: RES_Asistencia) => (
-          <Badge
-            variant="light"
-            color={a.tipo_contrato === "Planilla" ? "indigo" : "teal"}
-            size="xs"
-          >
-            {a.tipo_contrato ?? "S/C"}
-          </Badge>
-        ),
+        render: (a: RES_Asistencia) => {
+          const tc = a.tipo_contrato;
+          const label =
+            tc === "PeriodoPrueba"
+              ? "Periodo de Prueba"
+              : tc === "JornadaDiaria"
+                ? "Jornada Diaria"
+                : tc ?? "S/C";
+          const color =
+            tc === "PeriodoPrueba"
+              ? "violet"
+              : tc === "Planilla"
+                ? "indigo"
+                : "teal";
+          return (
+            <Badge variant="light" color={color} size="xs">
+              {label}
+            </Badge>
+          );
+        },
       },
       {
         accessor: "fecha",

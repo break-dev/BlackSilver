@@ -324,8 +324,6 @@ export const ModalAdendaContrato = ({
     [empresas],
   );
 
-  const esPlanilla = tipoContrato === TipoContrato.Planilla;
-  const esJornada = tipoContrato === TipoContrato.JornadaDiaria;
 
   // Auto-calculate dates duracion_dias
   useEffect(() => {
@@ -477,6 +475,12 @@ export const ModalAdendaContrato = ({
     label: "text-zinc-300 mb-1 font-medium",
   };
 
+  const esSueldoMensual =
+    tipoContrato === TipoContrato.Planilla ||
+    tipoContrato === TipoContrato.PeriodoPrueba;
+  const esPlanilla = esSueldoMensual;
+  const esJornada = tipoContrato === TipoContrato.JornadaDiaria;
+
   return (
     <>
       <ModalEstandar
@@ -606,6 +610,7 @@ export const ModalAdendaContrato = ({
               data={[
                 { value: TipoContrato.Planilla, label: "Planilla" },
                 { value: TipoContrato.JornadaDiaria, label: "Jornada Diaria" },
+                { value: TipoContrato.PeriodoPrueba, label: "Periodo de Prueba" },
               ]}
               value={tipoContrato}
               onChange={(val) => {
@@ -643,7 +648,7 @@ export const ModalAdendaContrato = ({
             />
             {esPlanilla && (
               <NumberInput
-                label="Sueldo Base (S/)"
+                label={tipoContrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
                 placeholder="Ej. 1500.00"
                 decimalScale={2}
                 fixedDecimalScale

@@ -82,6 +82,8 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
       salario_diario: number | null;
       cargo_nombre?: string | null;
       area_nombre?: string | null;
+      es_contratista?: boolean | number;
+      mina_nombre?: string | null;
       dias_trabajados: number;
       pago_total: number;
       tramos: PlanillaTramo[];
@@ -101,6 +103,8 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
         salario_diario: a.salario_diario,
         cargo_nombre: a.cargo_nombre,
         area_nombre: a.area_nombre,
+        es_contratista: a.es_contratista,
+        mina_nombre: a.mina_nombre,
         dias_trabajados: 0,
         pago_total: 0,
         tramos: [],
@@ -258,10 +262,22 @@ export const formatearTramo = (tramo: PlanillaTramo): string => {
   const hasta = dayjs(tramo.fecha_hasta).format("DD/MM");
   const dias = tramo.dias === 1 ? "1 día" : `${tramo.dias} días`;
   let monto = "—";
-  if (tramo.tipo_contrato === "Planilla" && tramo.sueldo_base !== null) {
-    monto = `S/. ${tramo.sueldo_base.toFixed(2)}`;
+  const esSueldoMensual =
+    tramo.tipo_contrato === "Planilla" ||
+    tramo.tipo_contrato === "PeriodoPrueba";
+
+  if (esSueldoMensual && tramo.sueldo_base !== null) {
+    monto = `S/. ${Number(tramo.sueldo_base).toFixed(2)}`;
   } else if (tramo.tipo_contrato === "JornadaDiaria" && tramo.salario_diario !== null) {
-    monto = `S/. ${tramo.salario_diario.toFixed(2)}/día`;
+    monto = `S/. ${Number(tramo.salario_diario).toFixed(2)}/día`;
   }
-  return `${desde} - ${hasta}: ${tramo.tipo_contrato} ${monto} (${dias})`;
+  const tipoLabel =
+    tramo.tipo_contrato === "PeriodoPrueba"
+      ? "Periodo de Prueba"
+      : tramo.tipo_contrato === "Planilla"
+        ? "Planilla"
+        : tramo.tipo_contrato === "JornadaDiaria"
+          ? "Jornada Diaria"
+          : tramo.tipo_contrato;
+  return `${desde} - ${hasta}: ${tipoLabel} ${monto} (${dias})`;
 };

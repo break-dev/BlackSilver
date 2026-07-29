@@ -18,6 +18,8 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   IdentificationIcon,
+  DocumentTextIcon,
+  CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 
 import { type DataTableColumn } from "mantine-datatable";
@@ -26,6 +28,8 @@ import { useContratistas } from "../hooks/useContratistas";
 import { useAsignacionLaboresContratista } from "../hooks/useAsignacionLaboresContratista";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import { ModalContratoEmpleado } from "../../contratos-empleado/presentation/modal-contrato-empleado";
+import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presentation/modal-historial-contratos-empleado";
 
 interface TabContratistasProps {
   controller: ReturnType<typeof useContratistas>;
@@ -50,6 +54,14 @@ export const TabContratistas = ({
     algunosVisiblesSeleccionados,
     abrirModalFotocheck,
     abrirModalFotocheckIndividual,
+    modalContratoEmpleado,
+    abrirModalContrato,
+    cerrarModalContrato,
+    onContratoCreado,
+    modalHistorialContratos,
+    abrirModalHistorial,
+    cerrarModalHistorial,
+    toggleConContrato,
   } = controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
@@ -82,17 +94,34 @@ export const TabContratistas = ({
             color="indigo"
           />
           {seleccionados.size > 0 && (
-            <Tooltip label={`Fotocheck (${seleccionados.size})`}>
-              <ActionIcon
-                variant="filled"
-                color="indigo"
-                size="xs"
-                radius="md"
-                onClick={abrirModalFotocheck}
-              >
-                <IdentificationIcon className="w-3.5 h-3.5 text-white" />
-              </ActionIcon>
-            </Tooltip>
+            <>
+              <Tooltip label={`Habilitar Contrato (${seleccionados.size})`}>
+                <ActionIcon
+                  variant="filled"
+                  color="teal"
+                  size="xs"
+                  radius="md"
+                  onClick={async () => {
+                    const ids = Array.from(seleccionados);
+                    const ok = await toggleConContrato(ids, true);
+                    if (ok) notifySuccess("Contratos habilitados para los seleccionados");
+                  }}
+                >
+                  <CheckBadgeIcon className="w-3.5 h-3.5 text-white" />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label={`Fotocheck (${seleccionados.size})`}>
+                <ActionIcon
+                  variant="filled"
+                  color="indigo"
+                  size="xs"
+                  radius="md"
+                  onClick={abrirModalFotocheck}
+                >
+                  <IdentificationIcon className="w-3.5 h-3.5 text-white" />
+                </ActionIcon>
+              </Tooltip>
+            </>
           )}
         </Group>
       ),
@@ -186,7 +215,7 @@ export const TabContratistas = ({
     {
       accessor: "operativo",
       title: "Mina y Labores",
-      width: 420,
+      width: 320,
       textAlign: "center",
       render: (r) => {
         const hasMina = r.id_mina && r.id_mina > 0;
@@ -259,15 +288,151 @@ export const TabContratistas = ({
       },
     },
     {
+      accessor: "contrato",
+      title: "Contrato",
+      width: 170,
+      textAlign: "center",
+      render: (r) => {
+        const tieneContratoVigente = r.id_contrato_vigente !== null && r.id_contrato_vigente !== undefined;
+        const conContratoRaw = r.con_contrato as unknown;
+        const esContratistaConContrato = Boolean(
+          conContratoRaw === true ||
+            conContratoRaw === 1 ||
+            conContratoRaw === "1" ||
+            conContratoRaw === "true",
+        );
+        const nombreCompleto = `${r.nombre} ${r.apellido}`;
+
+        if (!esContratistaConContrato) {
+          return (
+            <Group gap={4} wrap="nowrap" justify="center">
+              <Badge variant="light" color="gray" radius="md" className="font-medium">
+                No Aplica
+              </Badge>
+              <Tooltip
+                label="Habilitar contrato"
+                withArrow
+                position="top"
+                transitionProps={{ duration: 150 }}
+              >
+                <ActionIcon
+                  variant="subtle"
+                  color="teal"
+                  radius="md"
+                  size="sm"
+                  aria-label="Habilitar contrato"
+                  onClick={async () => {
+                    const ok = await toggleConContrato([r.id_contratista], true);
+                    if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                  }}
+                >
+                  <CheckBadgeIcon className="w-4 h-4 text-teal-400" />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          );
+        }
+
+        if (!tieneContratoVigente) {
+          return (
+            <Group gap={4} wrap="nowrap" justify="center">
+              <Badge
+                variant="light"
+                color="orange"
+                radius="md"
+                className="font-medium"
+              >
+                Por Asignar
+              </Badge>
+              <Tooltip
+                label="Ver historial de contratos"
+                withArrow
+                position="top"
+                transitionProps={{ duration: 150 }}
+              >
+                <ActionIcon
+                  variant="subtle"
+                  color="orange"
+                  radius="md"
+                  size="sm"
+                  aria-label="Ver histórico de contratos"
+                  onClick={() =>
+                    abrirModalHistorial(r.id_contratista, nombreCompleto)
+                  }
+                >
+                  <DocumentTextIcon className="w-4 h-4" />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          );
+        }
+
+        let badgeColor = "teal";
+        let badgeText = "Con Contrato";
+
+        if (esContratistaConContrato && tieneContratoVigente && !r.contrato_por_tiempo_indefinido && r.contrato_fecha_fin) {
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const fin = new Date(r.contrato_fecha_fin);
+          fin.setHours(0, 0, 0, 0);
+          const diffTime = fin.getTime() - hoy.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          if (diffDays < 0) {
+            badgeColor = "red";
+            badgeText = "Vencido";
+          } else if (diffDays <= 5) {
+            badgeColor = "red";
+            badgeText = "Crítico";
+          } else if (diffDays <= 30) {
+            badgeColor = "orange";
+            badgeText = "Por Vencer";
+          }
+        }
+
+        return (
+          <Group gap={4} wrap="nowrap" justify="center" align="center">
+            <Badge
+              variant="light"
+              color={badgeColor}
+              radius="md"
+              className="font-medium"
+            >
+              {badgeText}
+            </Badge>
+            <Tooltip
+              label="Ver historial de contratos"
+              withArrow
+              position="top"
+              transitionProps={{ duration: 150 }}
+            >
+              <ActionIcon
+                variant="subtle"
+                color="indigo"
+                radius="md"
+                size="sm"
+                aria-label="Ver histórico de contratos"
+                onClick={() =>
+                  abrirModalHistorial(r.id_contratista, nombreCompleto)
+                }
+              >
+                <DocumentTextIcon className="w-4 h-4 text-indigo-400" />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+        );
+      },
+    },
+    {
       accessor: "contacto",
       title: "Contacto",
-      width: 240,
+      width: 180,
       render: (r) => (
         <Stack gap={2}>
           {r.email && (
             <Group gap={4}>
               <EnvelopeIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-              <Text size="xs" className="text-zinc-300 truncate max-w-[220px]">
+              <Text size="xs" className="text-zinc-300 truncate max-w-[160px]">
                 {r.email}
               </Text>
             </Group>
@@ -290,13 +455,13 @@ export const TabContratistas = ({
     },
     {
       accessor: "fecha_nacimiento",
-      title: "Fecha de Nacimiento",
-      width: 160,
+      title: "F. Nacimiento",
+      width: 130,
       render: (r) => {
         if (!r.fecha_nacimiento) {
           return (
             <Text size="xs" c="dimmed" fs="italic">
-              No especificado
+              No registrado
             </Text>
           );
         }
@@ -368,6 +533,35 @@ export const TabContratistas = ({
           columns={columns}
           records={contratistas}
           loading={loading}
+        />
+      )}
+
+      {/* Modal Crear Contrato Contratista */}
+      {modalContratoEmpleado?.abierto && modalContratoEmpleado.idEmpleado && (
+        <ModalContratoEmpleado
+          opened={modalContratoEmpleado.abierto}
+          close={cerrarModalContrato}
+          idEmpleado={modalContratoEmpleado.idEmpleado}
+          nombreEmpleado={modalContratoEmpleado.nombre}
+          onSuccess={onContratoCreado}
+          esContratista={true}
+        />
+      )}
+
+      {/* Modal Historial Contratos Contratista */}
+      {modalHistorialContratos?.abierto && modalHistorialContratos.idEmpleado && (
+        <ModalHistorialContratosEmpleado
+          opened={modalHistorialContratos.abierto}
+          close={cerrarModalHistorial}
+          idEmpleado={modalHistorialContratos.idEmpleado}
+          nombreEmpleado={modalHistorialContratos.nombre}
+          onCrearContratoClick={() => {
+            const id = modalHistorialContratos.idEmpleado!;
+            const nombre = modalHistorialContratos.nombre;
+            cerrarModalHistorial();
+            abrirModalContrato(id, nombre);
+          }}
+          esContratista={true}
         />
       )}
     </>

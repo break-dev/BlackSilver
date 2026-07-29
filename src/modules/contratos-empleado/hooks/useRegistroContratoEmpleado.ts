@@ -16,6 +16,7 @@ import { TipoContrato } from "../../../shared/enums/tipo-contrato";
 const TIPOS_CONTRATO_OPTIONS = [
   { value: TipoContrato.Planilla, label: "Planilla" },
   { value: TipoContrato.JornadaDiaria, label: "Jornada Diaria" },
+  { value: TipoContrato.PeriodoPrueba, label: "Periodo de Prueba" },
 ];
 
 const PERIODOS_DURACION = [

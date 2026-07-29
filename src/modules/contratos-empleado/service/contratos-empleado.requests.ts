@@ -26,12 +26,12 @@ const numberTransform = (val: unknown) => {
 export const Schema_CrearContratoEmpleado = z
   .object({
     id_empleado: z.number().min(1, "Empleado requerido"),
-    id_cargo: z.number().min(1, "Debe seleccionar un cargo"),
+    id_cargo: z.number().nullable().optional(),
     id_empresa: z.number().min(1, "Debe seleccionar una empresa"),
     id_almacen: z.number().nullable().optional(),
     id_labor: z.number().nullable().optional(),
     id_oficina: z.number().nullable().optional(),
-    tipo_contrato: z.enum(["Planilla", "JornadaDiaria"]),
+    tipo_contrato: z.enum(["Planilla", "JornadaDiaria", "PeriodoPrueba"]),
     sueldo_base: z
       .number()
       .nullable()
@@ -60,13 +60,17 @@ export const Schema_CrearContratoEmpleado = z
   })
   .superRefine((data, ctx) => {
     const esPlanilla = data.tipo_contrato === "Planilla";
+    const esPeriodoPrueba = data.tipo_contrato === "PeriodoPrueba";
     const esJornada = data.tipo_contrato === "JornadaDiaria";
+    const exigeSueldoMensual = esPlanilla || esPeriodoPrueba;
 
-    if (esPlanilla && (data.sueldo_base === null || data.sueldo_base === undefined)) {
+    if (exigeSueldoMensual && (data.sueldo_base === null || data.sueldo_base === undefined)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["sueldo_base"],
-        message: "Debe especificar el sueldo base para Planilla",
+        message: esPeriodoPrueba
+          ? "Debe especificar el sueldo mensual para Periodo de Prueba"
+          : "Debe especificar el sueldo base para Planilla",
       });
     }
 
@@ -79,11 +83,11 @@ export const Schema_CrearContratoEmpleado = z
     }
 
     // Exclusividad sueldo_base vs salario_diario
-    if (esPlanilla && data.salario_diario !== null && data.salario_diario !== undefined) {
+    if (exigeSueldoMensual && data.salario_diario !== null && data.salario_diario !== undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["salario_diario"],
-        message: "Para Planilla, salario_diario debe ser vacío",
+        message: "Para este tipo de contrato, salario_diario debe ser vacío",
       });
     }
     if (esJornada && data.sueldo_base !== null && data.sueldo_base !== undefined) {
