@@ -11,7 +11,10 @@ import { type DataTableColumn } from "mantine-datatable";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { RegistroLabor } from "./registro-labor";
 import { useLabores } from "../../hooks/labores/useLabores";
-import type { RES_Labor, RES_ResumenMina } from "../../service/minas.responses";
+import type {
+  RES_ResumenLabor,
+  RES_ResumenMina,
+} from "../../service/minas.responses";
 import { FinalizarLaborModal } from "./components/FinalizarLaborModal";
 import {
   EmpresaLaborGroup,
@@ -46,15 +49,14 @@ export const GestionLabores = ({
   } = useLabores({ idMina: mina.id_mina, busqueda, closeCreate });
 
   // Estado para finalizar labor
-  const [laborAFinalizar, setLaborAFinalizar] = useState<RES_Labor | null>(
-    null,
-  );
+  const [laborAFinalizar, setLaborAFinalizar] =
+    useState<RES_ResumenLabor | null>(null);
 
-  const handleOpenFinalizar = (labor: RES_Labor) => {
+  const handleOpenFinalizar = (labor: RES_ResumenLabor) => {
     setLaborAFinalizar(labor);
   };
 
-  const handleFinishSuccess = (laborActualizada: RES_Labor) => {
+  const handleFinishSuccess = (laborActualizada: RES_ResumenLabor) => {
     handleLaborFinalizada(laborActualizada);
     if (onLaborFinalizada) onLaborFinalizada(mina.id_mina);
     setLaborAFinalizar(null);
@@ -82,7 +84,7 @@ export const GestionLabores = ({
     );
   }, [laboresFiltradas]);
 
-  const columns: DataTableColumn<RES_Labor>[] = [
+  const columns: DataTableColumn<RES_ResumenLabor>[] = [
     {
       accessor: "index",
       title: "#",
@@ -95,7 +97,7 @@ export const GestionLabores = ({
       width: 150,
       render: (r) => (
         <div className="flex flex-col gap-1.5 py-2">
-          {r.nombre && (
+          <Group gap="xs">
             <Text
               size="sm"
               fw={800}
@@ -103,7 +105,10 @@ export const GestionLabores = ({
             >
               {r.nombre}
             </Text>
-          )}
+            <Badge color="pink" variant="light" size="xs" radius="sm">
+              {r.prefijo}
+            </Badge>
+          </Group>
 
           {/* Detalles técnicos mejorados y más grandes */}
           {(r.veta || r.nivel || r.ancho || r.alto) && (
@@ -278,7 +283,7 @@ export const GestionLabores = ({
     },
   ];
 
-  const handleLocalLaborCreada = (nueva: RES_Labor) => {
+  const handleLocalLaborCreada = (nueva: RES_ResumenLabor) => {
     handleLaborCreada(nueva);
     if (onLaborCreada) onLaborCreada(mina.id_mina);
   };

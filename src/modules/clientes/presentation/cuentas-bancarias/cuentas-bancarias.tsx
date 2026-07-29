@@ -1,29 +1,70 @@
 import { useCuentasBancarias } from "../../hooks/useCuentasBancarias";
-import type { ClienteResponse } from "../../service/clientes.responses";
+import { useEdicionCuentaBancaria } from "../../hooks/useEdicionCuentaBancaria";
+import type {
+  ClienteResponse,
+  CuentaBancariaResponse,
+} from "../../service/clientes.responses";
 import {
   RegistroCuenta,
   type RegistroCuentaRef,
 } from "./components/registro-cuenta";
 import { CuentaBancaria } from "./components/cuenta-bancaria";
-import { useRef } from "react";
-import { Loader, Text } from "@mantine/core";
+import { EdicionCuentaBancaria } from "./components/edicion-cuenta";
+import { useEffect, useRef, useState } from "react";
+import { Text } from "@mantine/core";
 import { IconCreditCard } from "@tabler/icons-react";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 
 interface Props {
   cliente: ClienteResponse;
+  onCuentaActualizada?: (cuenta: CuentaBancariaResponse) => void;
+  onCuentaAgregada?: (cuenta: CuentaBancariaResponse) => void;
 }
 
-export const CuentasBancarias = ({ cliente }: Props) => {
-  const {
-    cuentas,
-    bancos,
-    setBancos,
-    loadingCuentas,
-    loadingBancos,
-    insertCuenta,
-  } = useCuentasBancarias(cliente.id_cliente);
+export const CuentasBancarias = ({
+  cliente,
+  onCuentaActualizada,
+  onCuentaAgregada,
+}: Props) => {
+  const { bancos, setBancos, loadingBancos } = useCuentasBancarias(
+    cliente.id_cliente,
+  );
 
   const regCuentaRef = useRef<RegistroCuentaRef>(null);
+
+  const [openEdit, setOpenEdit] = useState(false);
+  const [cuentaAEditar, setCuentaAEditar] =
+    useState<CuentaBancariaResponse | null>(null);
+
+  const cuentas = cliente.cuentas_bancarias ?? [];
+
+  const edicionCuenta = useEdicionCuentaBancaria({
+    onSuccess: (cuenta) => {
+      onCuentaActualizada?.(cuenta);
+    },
+    onClose: () => {
+      setOpenEdit(false);
+      setCuentaAEditar(null);
+    },
+  });
+
+  const { cargarCuenta } = edicionCuenta;
+
+  useEffect(() => {
+    if (cuentaAEditar) {
+      cargarCuenta(cuentaAEditar);
+    }
+  }, [cuentaAEditar, cargarCuenta]);
+
+  const handleOpenEdit = (cuenta: CuentaBancariaResponse) => {
+    setCuentaAEditar(cuenta);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setCuentaAEditar(null);
+  };
 
   return (
     <div className="group/modal flex flex-col gap-8">
@@ -33,7 +74,7 @@ export const CuentasBancarias = ({ cliente }: Props) => {
         idCliente={cliente.id_cliente}
         bancos={bancos}
         loadingBancos={loadingBancos}
-        onCuentaAdded={insertCuenta}
+        onCuentaAdded={(cuenta) => onCuentaAgregada?.(cuenta)}
         onBancoAdded={(b) => {
           setBancos((prev) => [...prev, b]);
           regCuentaRef.current?.autoSelectBanco(b.id_banco);
@@ -46,21 +87,14 @@ export const CuentasBancarias = ({ cliente }: Props) => {
           Cuentas Registradas
         </h3>
 
-        {loadingCuentas ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-zinc-900/20 rounded-xl border border-zinc-800/50">
-            <Loader color="indigo" type="bars" size="sm" />
-            <Text
-              size="xs"
-              mt="sm"
-              className="text-zinc-500 font-medium uppercase tracking-widest"
-            >
-              Cargando cuentas...
-            </Text>
-          </div>
-        ) : cuentas.length > 0 ? (
+        {cuentas.length > 0 ? (
           <div className="flex flex-col gap-3">
             {cuentas.map((cuenta) => (
-              <CuentaBancaria key={cuenta.id_cuenta_bancaria} cuenta={cuenta} />
+              <CuentaBancaria
+                key={cuenta.id_cuenta_bancaria}
+                cuenta={cuenta}
+                onEdit={handleOpenEdit}
+              />
             ))}
           </div>
         ) : (
@@ -76,6 +110,20 @@ export const CuentasBancarias = ({ cliente }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Modal: Edición de Cuenta Bancaria */}
+      <ModalEstandar
+        opened={openEdit}
+        close={handleCloseEdit}
+        title="Editar Cuenta Bancaria"
+        size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar los cambios no guardados de esta cuenta bancaria."
+      >
+        {cuentaAEditar && (
+          <EdicionCuentaBancaria hook={edicionCuenta} onCancel={handleCloseEdit} />
+        )}
+      </ModalEstandar>
     </div>
   );
 };

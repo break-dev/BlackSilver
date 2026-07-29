@@ -324,6 +324,9 @@ Mantine v8 utiliza **Style Props** (shorthands). NUNCA uses la propiedad `sx` (y
 | `justify`     | Alineación horizontal   | `justify="space-between"`         | `position`             |
 | `align`       | Alineación vertical     | `align="center"`                  | `alignItems`           |
 
+> [!IMPORTANT]
+> **`ActionIcon` y el tamaño del ícono**: la prop `size` controla `width`/`min-width`/`min-height`/`height` del botón vía CSS vars `--ai-size-{x}`, **pero NO** controla el tamaño del ícono hijo. Tamaños válidos: `xs`, `sm`, `md`, `lg`, `xl`, numérico (px→rem), o `input-sm`/`input-md`/`input-lg` para igualar inputs. **`size="sm"` deja los botones pequeños — no es bug, es el tamaño real.** Para acciones visibles en filas/listas usa `size="md"` o mayor, y define el tamaño del ícono manualmente (`className="w-4 h-4"` en Heroicons o `size={16}` en Tabler).
+
 ### 2. Reglas de Oro para Componentes de Formulario
 
 - **Look Dark & Premium**: Los inputs deben integrarse con el tema oscuro. Usa siempre un objeto de clases (ej. `fieldClasses`) para el prop `classNames`:

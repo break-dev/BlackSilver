@@ -2,17 +2,17 @@ import { Paper, Stack, Text } from "@mantine/core";
 import { BriefcaseIcon } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../../../presentation/utils/datatable-estandar";
-import type { RES_Labor } from "../../../service/minas.responses";
+import type { RES_ResumenLabor } from "../../../service/minas.responses";
 
 export interface GroupedLaborEmpresa {
   empresa: string;
-  labores: RES_Labor[];
+  labores: RES_ResumenLabor[];
   total_activas: number;
 }
 
 interface EmpresaLaborGroupProps {
   group: GroupedLaborEmpresa;
-  columns: DataTableColumn<RES_Labor>[];
+  columns: DataTableColumn<RES_ResumenLabor>[];
   loading: boolean;
 }
 

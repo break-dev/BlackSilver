@@ -1,5 +1,10 @@
 import { api } from "../../../service/_api";
-import type { CrearClienteRequest, CrearCuentaBancariaRequest } from "./clientes.requests";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
+import type {
+  CrearClienteRequest,
+  CrearCuentaBancariaRequest,
+  EditarCuentaBancariaRequest,
+} from "./clientes.requests";
 import type { ClienteResponse, CuentaBancariaResponse } from "./clientes.responses";
 
 export class ClientesService {
@@ -29,5 +34,22 @@ export class ClientesService {
   ): Promise<CuentaBancariaResponse> {
     const { data } = await api.post("/clientes/cuentas-bancarias", payload);
     return data.data;
+  }
+
+  static async actualizarCuentaBancaria(
+    id: number,
+    payload: EditarCuentaBancariaRequest
+  ): Promise<IRespuesta<CuentaBancariaResponse>> {
+    const { data } = await api.put<IRespuesta<CuentaBancariaResponse>>(
+      `/clientes/cuentas-bancarias/${id}`,
+      {
+        id_banco: payload.id_banco,
+        moneda: payload.moneda,
+        numero_cuenta: payload.numero_cuenta,
+        cci: payload.cci || null,
+        es_para_detraccion: payload.es_para_detraccion,
+      }
+    );
+    return data;
   }
 }

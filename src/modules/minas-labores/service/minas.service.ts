@@ -4,7 +4,7 @@ import type {
   RES_ConcesionItem,
   RES_EmpresaEjecutora,
   RES_HistorialResponsable,
-  RES_Labor,
+  RES_ResumenLabor,
   RES_ResumenMina,
   RES_TipoLabor,
 } from "./minas.responses";
@@ -100,7 +100,7 @@ export const MinasService = {
 
   // Labores
   getLabores: async (id_mina: number) => {
-    const res = await api.get<IRespuesta<RES_Labor[]>>(
+    const res = await api.get<IRespuesta<RES_ResumenLabor[]>>(
       `${BASE_MINAS}/labores`,
       {
         params: { id_mina },
@@ -117,7 +117,7 @@ export const MinasService = {
   },
 
   crearLabor: async (dto: DTO_CrearLabor) => {
-    const res = await api.post<IRespuesta<RES_Labor>>(
+    const res = await api.post<IRespuesta<RES_ResumenLabor>>(
       `${BASE_MINAS}/labores`,
       dto,
     );
@@ -125,7 +125,7 @@ export const MinasService = {
   },
 
   finalizarLabor: async (dto: { id_labor: number; fecha_cierre: string }) => {
-    const res = await api.post<IRespuesta<RES_Labor>>(
+    const res = await api.post<IRespuesta<RES_ResumenLabor>>(
       `${BASE_MINAS}/labores/finalizar`,
       dto,
     );

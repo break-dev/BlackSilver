@@ -1,18 +1,29 @@
-import { Badge, Text, Group, Stack, ThemeIcon, Grid } from "@mantine/core";
+import {
+  Badge,
+  Text,
+  Group,
+  Stack,
+  ThemeIcon,
+  Grid,
+  ActionIcon,
+  Tooltip,
+} from "@mantine/core";
 import {
   IconCreditCard,
   IconCash,
   IconBuildingBank,
+  IconPencil,
 } from "@tabler/icons-react";
-import { MONEDAS } from "../../../../../shared/variables/monedas";
+import { Moneda } from "../../../../../shared/enums/_generic/moneda";
 import type { CuentaBancariaResponse } from "../../../service/proveedores.responses";
 
 interface Props {
   cuenta: CuentaBancariaResponse;
+  onEdit?: (cuenta: CuentaBancariaResponse) => void;
 }
 
-export const CuentaBancaria = ({ cuenta }: Props) => {
-  const isSoles = cuenta.moneda === MONEDAS.PEN.label;
+export const CuentaBancaria = ({ cuenta, onEdit }: Props) => {
+  const isSoles = cuenta.moneda === Moneda.Soles;
 
   return (
     <div className="group p-4 bg-zinc-900/40 border border-zinc-800/60 rounded-xl hover:bg-zinc-800/40 hover:border-zinc-700/50 transition-all duration-200">
@@ -120,6 +131,20 @@ export const CuentaBancaria = ({ cuenta }: Props) => {
               >
                 Estándar
               </Badge>
+            )}
+            {onEdit && (
+              <Tooltip label="Editar cuenta" withArrow position="top">
+                <ActionIcon
+                  variant="subtle"
+                  color="indigo"
+                  radius="xl"
+                  size="sm"
+                  onClick={() => onEdit(cuenta)}
+                  className="hover:bg-indigo-500/10"
+                >
+                  <IconPencil size={14} stroke={1.5} />
+                </ActionIcon>
+              </Tooltip>
             )}
           </Stack>
         </Grid.Col>

@@ -6,13 +6,13 @@ import { MinasService } from "../../service/minas.service";
 import { Schema_CrearLabor } from "../../service/minas.requests";
 import type {
   RES_EmpresaEjecutora,
-  RES_Labor,
+  RES_ResumenLabor,
   RES_TipoLabor,
 } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
-  onSuccess: (nueva: RES_Labor) => void;
+  onSuccess: (nueva: RES_ResumenLabor) => void;
   onCancel: () => void;
 }
 

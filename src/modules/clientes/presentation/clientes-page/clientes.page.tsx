@@ -5,17 +5,65 @@ import { useClientes } from "../../hooks/useClientes";
 import { RegistroCliente } from "../registro-cliente/registro-cliente";
 import { CuentasBancarias } from "../cuentas-bancarias/cuentas-bancarias";
 import { useState } from "react";
-import type { ClienteResponse } from "../../service/clientes.responses";
+import type {
+  ClienteResponse,
+  CuentaBancariaResponse,
+} from "../../service/clientes.responses";
 import { Filtros } from "./components/filtros";
 import { Cliente } from "./components/cliente";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 
 export const ClientesPage = () => {
   useTitlePage("Clientes");
-  const { clientes, loading, insertCliente } = useClientes();
+  const { clientes, loading, insertCliente, updateCliente } = useClientes();
 
   const [openRegistro, setOpenRegistro] = useState(false);
-  const [selectedCliente, setSelectedCliente] = useState<ClienteResponse | null>(null);
+  const [selectedCliente, setSelectedCliente] =
+    useState<ClienteResponse | null>(null);
+
+  const actualizarCuentas = (
+    cliente: ClienteResponse,
+    cuentas: CuentaBancariaResponse[],
+  ): ClienteResponse => ({
+    ...cliente,
+    cuentas_bancarias: cuentas,
+    cantidad_cuentas_bancarias: cuentas.length,
+  });
+
+  const handleCuentaActualizada = (cuenta: CuentaBancariaResponse) => {
+    if (!selectedCliente) return;
+
+    const cuentasActualizadas = (
+      selectedCliente.cuentas_bancarias ?? []
+    ).map((c) =>
+      c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c,
+    );
+
+    const clienteActualizado = actualizarCuentas(
+      selectedCliente,
+      cuentasActualizadas,
+    );
+
+    updateCliente(clienteActualizado);
+    setSelectedCliente(clienteActualizado);
+  };
+
+  const handleCuentaAgregada = (cuenta: CuentaBancariaResponse) => {
+    if (!selectedCliente) return;
+
+    const cuentasActualizadas = [
+      cuenta,
+      ...(selectedCliente.cuentas_bancarias ?? []),
+    ];
+
+    const clienteActualizado = actualizarCuentas(
+      selectedCliente,
+      cuentasActualizadas,
+    );
+
+    updateCliente(clienteActualizado);
+    setSelectedCliente(clienteActualizado);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -57,7 +105,11 @@ export const ClientesPage = () => {
         size="xl"
       >
         {selectedCliente && (
-          <CuentasBancarias cliente={selectedCliente} />
+          <CuentasBancarias
+            cliente={selectedCliente}
+            onCuentaActualizada={handleCuentaActualizada}
+            onCuentaAgregada={handleCuentaAgregada}
+          />
         )}
       </ModalEstandar>
     </div>

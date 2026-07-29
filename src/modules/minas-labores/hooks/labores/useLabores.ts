@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNotify } from "../../../../hooks/useNotify";
 import { MinasService } from "../../service/minas.service";
-import type { RES_Labor } from "../../service/minas.responses";
+import type { RES_ResumenLabor } from "../../service/minas.responses";
 
 interface Props {
   idMina: number;
@@ -12,7 +12,7 @@ interface Props {
 export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
   const { notify } = useNotify();
 
-  const [labores, setLabores] = useState<RES_Labor[]>([]);
+  const [labores, setLabores] = useState<RES_ResumenLabor[]>([]);
   const [loading, setLoading] = useState(false);
 
   const cargar = useCallback(async () => {
@@ -47,13 +47,13 @@ export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
     );
   }, [labores, busqueda]);
 
-  const handleLaborCreada = (nueva: RES_Labor) => {
+  const handleLaborCreada = (nueva: RES_ResumenLabor) => {
     setLabores((prev) => [nueva, ...prev]);
     closeCreate();
     notify({ type: "success", content: "Labor creada correctamente" });
   };
 
-  const handleLaborFinalizada = (actualizada: RES_Labor) => {
+  const handleLaborFinalizada = (actualizada: RES_ResumenLabor) => {
     setLabores((prev) =>
       prev.map((l) => (l.id_labor === actualizada.id_labor ? actualizada : l)),
     );

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { ProveedoresService } from "../service/proveedores.service";
-import type { ProveedorResponse } from "../service/proveedores.responses";
+import type {
+  CuentaBancariaResponse,
+  ProveedorResponse,
+} from "../service/proveedores.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
 export const useProveedores = () => {
@@ -30,5 +33,39 @@ export const useProveedores = () => {
     setProveedores((prev) => [p, ...prev]);
   };
 
-  return { proveedores, loading, fetchProveedores, insertProveedor };
+  const updateProveedor = (id: number, cambios: Partial<ProveedorResponse>) => {
+    setProveedores((prev) =>
+      prev.map((p) => (p.id_proveedor === id ? { ...p, ...cambios } : p)),
+    );
+  };
+
+  const updateCuentaEnProveedor = (cuenta: CuentaBancariaResponse) => {
+    setProveedores((prev) =>
+      prev.map((p) => {
+        const cuentas = p.cuentas_bancarias ?? [];
+        const existe = cuentas.some(
+          (c) => c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria,
+        );
+        const nuevasCuentas = existe
+          ? cuentas.map((c) =>
+              c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c,
+            )
+          : [cuenta, ...cuentas];
+        return {
+          ...p,
+          cuentas_bancarias: nuevasCuentas,
+          cantidad_cuentas_bancarias: nuevasCuentas.length,
+        };
+      }),
+    );
+  };
+
+  return {
+    proveedores,
+    loading,
+    fetchProveedores,
+    insertProveedor,
+    updateProveedor,
+    updateCuentaEnProveedor,
+  };
 };

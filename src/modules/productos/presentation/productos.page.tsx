@@ -331,7 +331,7 @@ export const ProductosPage = () => {
             radius="lg"
             size="sm"
             loading={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-[38px]"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
           >
             Nuevo Producto
           </Button>
@@ -374,7 +374,9 @@ export const ProductosPage = () => {
         opened={openedEdicion}
         close={handleCloseEdicion}
         title={
-          productoEnEdicion ? `Editar: ${productoEnEdicion.nombre}` : "Editar Producto"
+          productoEnEdicion
+            ? `Editar: ${productoEnEdicion.nombre}`
+            : "Editar Producto"
         }
         size="36rem"
       >

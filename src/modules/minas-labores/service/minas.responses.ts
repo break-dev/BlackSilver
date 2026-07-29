@@ -49,13 +49,14 @@ export interface RES_EmpleadoDisponible {
 }
 
 // Labores — información completa de la labor
-export interface RES_Labor {
+export interface RES_ResumenLabor {
   id_labor: number;
   empresa: string;
   url_logo_empresa: string | null;
   tipo_labor: string;
   es_de_produccion: boolean;
   nombre: string;
+  prefijo: string;
   descripcion: string | null;
   tipo_sostenimiento: TipoSostenimiento;
   veta: string | null;

@@ -34,8 +34,10 @@ export const useNuevoContrato = (
   const handleCrearContrato = async (
     id_empresa: number,
     fecha_inicio: string,
+    fecha_fin: string | null,
+    evidencias: File[],
   ) => {
-    const data = { id_concesion, id_empresa, fecha_inicio, fecha_fin: null };
+    const data = { id_concesion, id_empresa, fecha_inicio, fecha_fin };
     const validation = Schema_CrearContrato.safeParse(data);
 
     if (!validation.success) {
@@ -45,7 +47,10 @@ export const useNuevoContrato = (
 
     setLoadingAccion(true);
     try {
-      const resp = await ConcesionesService.crear_contrato(validation.data);
+      const resp = await ConcesionesService.crear_contrato({
+        dto: validation.data,
+        evidencias,
+      });
       if (resp.success) {
         notify({ type: "success", content: resp.message });
         onSuccess(resp.data);
