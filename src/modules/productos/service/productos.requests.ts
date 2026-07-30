@@ -11,7 +11,7 @@ export const Schema_CrearProducto = z
       .string()
       .min(1, "El nombre es requerido")
       .max(128, "Máximo 128 caracteres"),
-    prefijo: z.string().max(4, "Máximo 4 caracteres").optional().nullable(),
+    prefijo: z.string().max(100, "Máximo 100 caracteres").optional().nullable(),
     es_auditable: z.boolean(),
     es_perecible: z.boolean(),
     para_mantenimiento: z.boolean(),
@@ -51,7 +51,7 @@ export const Schema_ActualizarProducto = z
       .string()
       .min(1, "El nombre es requerido")
       .max(128, "Máximo 128 caracteres"),
-    prefijo: z.string().max(24, "Máximo 24 caracteres").optional().nullable(),
+    prefijo: z.string().max(100, "Máximo 100 caracteres").optional().nullable(),
     es_auditable: z.boolean(),
     es_perecible: z.boolean(),
     para_mantenimiento: z.boolean(),
