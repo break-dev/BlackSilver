@@ -84,6 +84,17 @@ export const ProgramacionHorarioService = {
     return data;
   },
 
+  finalizar_programacion: async (
+    idProgramacion: number,
+    fechaFin: string,
+  ): Promise<IRespuesta<RES_ProgramacionHorario>> => {
+    const { data } = await api.post(
+      `/programacion-horario/${idProgramacion}/finalizar`,
+      { fecha_fin: fechaFin },
+    );
+    return data;
+  },
+
   get_empleados_elegibles: async (
     fechaFinProgramacion: string | null,
     idLugar: number | null = null,

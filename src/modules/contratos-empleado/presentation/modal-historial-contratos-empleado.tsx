@@ -33,6 +33,7 @@ import dayjs from "dayjs";
 import { useHistorialContratosEmpleado } from "../hooks/useHistorialContratosEmpleado";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 import { CambiosLogHistorial } from "../../../presentation/utils/cambios-log-historial";
 import { parseCambiosLog } from "../../../presentation/utils/parse-cambios-log";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
@@ -86,7 +87,7 @@ export const ModalHistorialContratosEmpleado = ({
   onCrearContratoClick,
   esContratista = false,
 }: ModalHistorialContratosEmpleadoProps) => {
-  const { notifySuccess, notifyError, notifyInfo } = useNotify();
+  const { notifySuccess, notifyError } = useNotify();
   const { contratos, loading, reload, getUltimoContrato } =
     useHistorialContratosEmpleado(opened ? idEmpleado : null);
 
@@ -178,6 +179,8 @@ export const ModalHistorialContratosEmpleado = ({
     setModalNuevoContratoAbierto(true);
   };
 
+  const [evidenciasFinalizar, setEvidenciasFinalizar] = useState<File[]>([]);
+
   const handleConfirmarFinalizar = async () => {
     if (!contratoIdAFinalizar || !fechaFinAnticipada || !motivoCierre.trim()) return;
     setSubmittingFinalizar(true);
@@ -186,39 +189,20 @@ export const ModalHistorialContratosEmpleado = ({
         contratoIdAFinalizar,
         dayjs(fechaFinAnticipada).format("YYYY-MM-DD"),
         motivoCierre.trim(),
+        evidenciasFinalizar,
       );
       if (resp.success) {
         notifySuccess("Contrato finalizado anticipadamente");
         const data = resp.data as {
           empleado?: RES_EmpleadoConContrato["empleado"];
-          programaciones_finalizadas?: { ids: number[]; total: number };
         };
         setModalFinalizarAbierto(false);
         setContratoIdAFinalizar(null);
         setMotivoCierre("");
+        setEvidenciasFinalizar([]);
         void reload();
         if (data?.empleado) {
           onContratoCreado?.({ empleado: data.empleado });
-        }
-
-        // CASCADA: si el backend cerró programaciones, ofrecer reasignar.
-        if (data?.programaciones_finalizadas && data.programaciones_finalizadas.total > 0) {
-          notifyInfo(
-            `Se cerraron ${data.programaciones_finalizadas.total} programaciones de horario. ` +
-              `Asigna un nuevo horario para que el empleado siga marcando asistencia.`,
-          );
-          // Preparar reasignación con datos básicos (fecha de hoy, lunes a viernes).
-          // Como no hay programación previa activa, no hay prefill detallado.
-          const hoy = new Date().toISOString().split("T")[0];
-          setReAsignData({
-            idEmpleado,
-            prefill: {
-              fecha_inicio: hoy,
-              dias_laborables: "0111110",
-            },
-            motivo: "El contrato fue finalizado anticipadamente. La programación de horario se cerró.",
-          });
-          setModalReasignarAbierto(true);
         }
       } else {
         notifyError(resp.message ?? "No se pudo finalizar el contrato");
@@ -757,6 +741,16 @@ export const ModalHistorialContratosEmpleado = ({
               input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 text-white placeholder:text-zinc-500",
               label: "text-zinc-300 font-medium mb-1 text-sm",
             }}
+          />
+
+          <Divider label="Evidencias (opcional)" labelPosition="left" />
+          <MultiFilePicker
+            files={evidenciasFinalizar}
+            onFilesChange={setEvidenciasFinalizar}
+            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+            multiple
+            label="Adjuntar evidencias al finalizar"
+            description="Documentos o imágenes de respaldo (acta de término, carta de renuncia, etc.)"
           />
           <Group justify="flex-end" gap="sm" mt="md">
             <Button

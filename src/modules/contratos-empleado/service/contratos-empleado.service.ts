@@ -147,7 +147,22 @@ export const ContratosEmpleadoService = {
     idContrato: number,
     fechaFinAnticipada: string,
     motivoCierre?: string,
+    evidencias: File[] = [],
   ): Promise<IRespuesta<{ empleado: RES_EmpleadoConContrato["empleado"] }>> => {
+    if (evidencias.length > 0) {
+      const formData = new FormData();
+      formData.append("fecha_fin_anticipada", fechaFinAnticipada);
+      if (motivoCierre) formData.append("motivo_cierre", motivoCierre);
+      evidencias.forEach((file) => formData.append("evidencias[]", file));
+
+      const { data } = await api.post(
+        `/contratos-empleado/${idContrato}/finalizar-anticipado`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      return data;
+    }
+
     const { data } = await api.post(
       `/contratos-empleado/${idContrato}/finalizar-anticipado`,
       { fecha_fin_anticipada: fechaFinAnticipada, motivo_cierre: motivoCierre },

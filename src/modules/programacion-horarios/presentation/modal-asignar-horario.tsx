@@ -14,6 +14,7 @@ import {
   Avatar,
   Tooltip,
   ActionIcon,
+  Popover,
 } from "@mantine/core";
 import {
   CalendarDaysIcon,
@@ -22,6 +23,7 @@ import {
   PlusIcon,
   MapPinIcon,
   BuildingOfficeIcon,
+  PencilIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -108,6 +110,8 @@ export const ModalAsignarHorario = ({
     setTipoLugar,
     lugarIdActual,
     setLugarId,
+    turnosEspecialesPorDia,
+    setTurnoEspecialDia,
   } = useAsignarHorario(
     () => {
       onSuccess?.();
@@ -571,31 +575,134 @@ export const ModalAsignarHorario = ({
           {NOMBRES_DIAS.map((nombre, indice) => {
             const arr = form.dias_laborables.split("");
             const activo = arr[indice] === "1";
+            const turnoEspecialId = turnosEspecialesPorDia[indice];
+            const esEspecial = activo && Boolean(turnoEspecialId);
+
+            // Obtener el turno que aplicará para este día
+            const idTurnoAplicable = turnoEspecialId || form.id_turno_laboral;
+            const turnoObj = turnos.find((t) => t.id === idTurnoAplicable);
+
             return (
               <div
                 key={indice}
-                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all cursor-pointer ${activo
-                    ? "bg-indigo-500/15 border-indigo-500/50"
+                className={`relative flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                  activo
+                    ? esEspecial
+                      ? "bg-amber-500/15 border-amber-500/60 shadow-sm shadow-amber-950/20"
+                      : "bg-indigo-500/15 border-indigo-500/50"
                     : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-700"
-                  }`}
+                }`}
               >
+                {/* Lápiz para personalizar turno del día si el día está activo */}
+                {activo && (
+                  <Popover
+                    position="top"
+                    withArrow
+                    shadow="md"
+                    trapFocus
+                    withinPortal
+                  >
+                    <Popover.Target>
+                      <Tooltip
+                        label={
+                          esEspecial
+                            ? `Turno personalizado: ${turnoObj?.tipo_turno ?? ""}`
+                            : "Personalizar horario para este día"
+                        }
+                        position="top"
+                        withArrow
+                      >
+                        <ActionIcon
+                          size="18px"
+                          radius="xl"
+                          variant={esEspecial ? "filled" : "subtle"}
+                          color={esEspecial ? "amber" : "gray"}
+                          className="absolute top-1 right-1 opacity-80 hover:opacity-100"
+                          disabled={loading}
+                        >
+                          <PencilIcon className="w-2.5 h-2.5" />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Popover.Target>
+
+                    <Popover.Dropdown className="bg-zinc-900 border border-zinc-700/80 p-3 rounded-xl w-64 shadow-2xl">
+                      <Stack gap="xs">
+                        <Text size="xs" fw={600} className="text-zinc-200">
+                          Horario para {nombre}
+                        </Text>
+                        <Select
+                          size="xs"
+                          radius="lg"
+                          classNames={fieldClasses}
+                          leftSection={<ClockIcon className="w-3.5 h-3.5 text-zinc-500" />}
+                          data={turnos.map((t) => ({
+                            value: String(t.id),
+                            label: `${t.tipo_turno} (${format12h(t.hora_ingreso)} - ${format12h(t.hora_salida)})`,
+                          }))}
+                          value={String(idTurnoAplicable > 0 ? idTurnoAplicable : "")}
+                          onChange={(val) => {
+                            if (!val) return;
+                            const numVal = Number(val);
+                            if (numVal === form.id_turno_laboral) {
+                              setTurnoEspecialDia(indice, null);
+                            } else {
+                              setTurnoEspecialDia(indice, numVal);
+                            }
+                          }}
+                          comboboxProps={{ withinPortal: true }}
+                        />
+                        {esEspecial && (
+                          <Button
+                            size="compact-xs"
+                            variant="subtle"
+                            color="gray"
+                            onClick={() => setTurnoEspecialDia(indice, null)}
+                          >
+                            Restablecer a general
+                          </Button>
+                        )}
+                      </Stack>
+                    </Popover.Dropdown>
+                  </Popover>
+                )}
+
                 <Checkbox
                   checked={activo}
                   onChange={() => toggleDia(indice)}
-                  color="indigo"
+                  color={esEspecial ? "amber" : "indigo"}
                   size="sm"
                   aria-label={nombre}
                   disabled={loading}
                 />
+
                 <Text
                   size="10px"
                   fw={600}
                   className={
-                    activo ? "text-indigo-300 uppercase tracking-wider" : "text-zinc-500 uppercase tracking-wider"
+                    activo
+                      ? esEspecial
+                        ? "text-amber-300 uppercase tracking-wider"
+                        : "text-indigo-300 uppercase tracking-wider"
+                      : "text-zinc-500 uppercase tracking-wider"
                   }
                 >
                   {nombre.slice(0, 3)}
                 </Text>
+
+                {/* Subtexto breve con horas o indicador especial */}
+                {activo && (
+                  <Text
+                    size="8px"
+                    fw={500}
+                    className={`truncate max-w-full font-mono ${
+                      esEspecial ? "text-amber-400/90 font-semibold" : "text-zinc-400"
+                    }`}
+                  >
+                    {turnoObj
+                      ? `${format12h(turnoObj.hora_ingreso).replace(/\s[AP]M/, "")}-${format12h(turnoObj.hora_salida).replace(/\s[AP]M/, "")}`
+                      : "Turno"}
+                  </Text>
+                )}
               </div>
             );
           })}

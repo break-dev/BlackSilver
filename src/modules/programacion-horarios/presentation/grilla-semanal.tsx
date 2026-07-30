@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { Group, Stack, Text, Avatar, Box, Tooltip } from "@mantine/core";
+import { Group, Stack, Text, Avatar, Box, Tooltip, ActionIcon } from "@mantine/core";
 import {
   SunIcon,
   MoonIcon,
   CheckCircleIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import {
   type RES_ProgramacionHorario,
@@ -26,6 +27,7 @@ interface GrillaSemanalProps {
   fechaFin: string;
   programaciones: RES_ProgramacionHorario[];
   loading?: boolean;
+  onFinalizarProgramacion?: (programacion: RES_ProgramacionHorario, fechaSeleccionada: string) => void;
 }
 
 interface EmpleadoAgrupado {
@@ -43,28 +45,26 @@ export const GrillaSemanal = ({
   fechaInicio,
   programaciones,
   loading,
+  onFinalizarProgramacion,
 }: GrillaSemanalProps) => {
   const dias = useMemo(() => {
     const inicio = new Date(`${fechaInicio}T00:00:00`);
-    const arr: { fecha: Date; label: string; nombre: string }[] = [];
+    const arr: { fecha: Date; label: string; nombre: string; dateStr: string }[] = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(inicio);
       d.setDate(d.getDate() + i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
       arr.push({
         fecha: d,
-        label: `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`,
+        label: `${day}/${m}`,
         nombre: NOMBRES_DIAS_LARGO[i],
+        dateStr: `${y}-${m}-${day}`,
       });
     }
     return arr;
   }, [fechaInicio]);
-
-  const toYmd = (d: Date) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  };
 
   const empleadosAgrupados: EmpleadoAgrupado[] = useMemo(() => {
     const mapa = new Map<number, EmpleadoAgrupado>();
@@ -81,7 +81,7 @@ export const GrillaSemanal = ({
       const grupo = mapa.get(id);
       if (!grupo) continue;
       for (let i = 0; i < 7; i++) {
-        const dateStr = toYmd(dias[i].fecha);
+        const dateStr = dias[i].dateStr;
         // Validar vigencia de la fecha en la programación
         if (prog.fecha_inicio && dateStr < prog.fecha_inicio) continue;
         if (!prog.por_tiempo_indefinido && prog.fecha_fin && dateStr > prog.fecha_fin) continue;
@@ -92,8 +92,6 @@ export const GrillaSemanal = ({
       }
     }
 
-    // Ordenar las programaciones dentro de cada celda por hora de ingreso del turno
-    // (mañana → noche), de modo que la UI muestre el orden natural día arriba / noche abajo.
     for (const grupo of mapa.values()) {
       for (const celda of grupo.celdas) {
         celda.sort((a, b) =>
@@ -221,7 +219,12 @@ export const GrillaSemanal = ({
                   {celda.length > 0 ? (
                     <Stack gap={4} className="w-full">
                       {celda.map((prog) => (
-                        <CeldaTurno key={prog.id} programacion={prog} />
+                        <CeldaTurno
+                          key={prog.id}
+                          programacion={prog}
+                          fechaDia={dias[i].dateStr}
+                          onFinalizar={() => onFinalizarProgramacion?.(prog, dias[i].dateStr)}
+                        />
                       ))}
                     </Stack>
                   ) : (
@@ -240,6 +243,8 @@ export const GrillaSemanal = ({
 
 interface CeldaTurnoProps {
   programacion: RES_ProgramacionHorario;
+  fechaDia?: string;
+  onFinalizar?: () => void;
 }
 
 const format12h = (timeStr: string | null | undefined): string => {
@@ -255,7 +260,7 @@ const format12h = (timeStr: string | null | undefined): string => {
   return `${hourStr}:${min} ${ampm}`;
 };
 
-const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
+const CeldaTurno = ({ programacion, onFinalizar }: CeldaTurnoProps) => {
   const esNoche = programacion.tipo_turno === "Noche";
   const hi = format12h(programacion.hora_ingreso);
   const hs = format12h(programacion.hora_salida);
@@ -267,12 +272,30 @@ const CeldaTurno = ({ programacion }: CeldaTurnoProps) => {
     null;
   return (
     <div
-      className={`w-full p-2.5 rounded-r-[12px] rounded-l-[4px] border border-zinc-800/80 border-l-[4px] transition-all hover:scale-[1.03] flex flex-col justify-center items-start gap-1 shadow-sm pl-3.5 ${esNoche
+      className={`group relative w-full p-2.5 rounded-r-[12px] rounded-l-[4px] border border-zinc-800/80 border-l-[4px] transition-all hover:scale-[1.03] flex flex-col justify-center items-start gap-1 shadow-sm pl-3.5 ${esNoche
           ? "bg-indigo-950/15 border-l-indigo-500 hover:border-l-indigo-400"
           : "bg-amber-950/15 border-l-amber-500 hover:border-l-amber-400"
         }`}
     >
-      <Group gap={4} wrap="nowrap">
+      {onFinalizar && (
+        <Tooltip label="Finalizar programación" position="top" withArrow>
+          <ActionIcon
+            size="18px"
+            radius="xl"
+            variant="subtle"
+            color="rose"
+            className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/80 hover:bg-rose-950/80"
+            onClick={(e) => {
+              e.stopPropagation();
+              onFinalizar();
+            }}
+          >
+            <CalendarDaysIcon className="w-3 h-3 text-rose-400" />
+          </ActionIcon>
+        </Tooltip>
+      )}
+
+      <Group gap={4} wrap="nowrap" className="pr-4">
         {esNoche ? (
           <MoonIcon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
         ) : (
