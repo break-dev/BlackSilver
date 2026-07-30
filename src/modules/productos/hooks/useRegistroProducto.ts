@@ -9,6 +9,7 @@ import {
 } from "../service/productos.requests";
 import type { RES_ProductoResumen } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import {
@@ -27,6 +28,7 @@ const INITIAL_FORM: DTO_CrearProducto = {
   es_perecible: false,
   para_mantenimiento: false,
   stock_minimo_base: 0,
+  moneda: Moneda.Soles,
   costo_promedio_base: 0,
   tiempo_espera_vencimiento: null,
   periodo_espera_vencimiento: null,
@@ -43,6 +45,7 @@ const productoToForm = (
   es_perecible: !!producto.es_perecible,
   para_mantenimiento: !!producto.para_mantenimiento,
   stock_minimo_base: Number(producto.stock_minimo_base ?? 0),
+  moneda: producto.moneda ?? Moneda.Soles,
   costo_promedio_base: Number(producto.costo_promedio_base ?? 0),
   tiempo_espera_vencimiento: producto.tiempo_espera_vencimiento,
   periodo_espera_vencimiento: producto.periodo_espera_vencimiento,
@@ -219,6 +222,7 @@ export const useRegistroProducto = ({
     loadingCategorias,
     loadingUnidades,
     cargarCategorias,
+    cargarUnidades,
     handleSubmit,
     isEdit,
   };

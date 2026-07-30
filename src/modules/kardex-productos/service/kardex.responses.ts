@@ -1,3 +1,4 @@
+import type { Moneda } from "../../../shared/enums/_generic/moneda";
 import type {
   Kardex_OrigenMovimiento,
   Kardex_TipoMovimiento,
@@ -41,9 +42,14 @@ export interface RES_MovimientoKardex {
   stock_resultante: number;
   stock_resultante_base: number;
   //
+  moneda: Moneda;
   costo_promedio_base: number;
-  costo_por_presentacion: number;
-  subtotal: number;
+  costo_promedio_por_presentacion: number;
+  subtotal_promedio: number;
+  // en soles, solo si se coloco el costo en el lote
+  costo_por_unidad_base: number | null;
+  costo_por_unidad: number | null;
+  subtotal: number | null;
   //
   created_at: string;
 }

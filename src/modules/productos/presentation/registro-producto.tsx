@@ -25,9 +25,11 @@ import { useRegistroProducto } from "../hooks/useRegistroProducto";
 import type { RES_ProductoResumen } from "../service/productos.responses";
 import { Periodo } from "../../../shared/enums/_generic/periodo";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 import { useDisclosure } from "@mantine/hooks";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { FormCategoria } from "../../../presentation/utils/form-categoria";
+import { FormUnidadMedida } from "../../../presentation/utils/form-unidad-medida";
 import { LabelForm } from "./components/label-form";
 import { useMemo } from "react";
 import { enPlural } from "../../../shared/functions/en-plural";
@@ -57,6 +59,7 @@ export const RegistroProducto = ({
     loadingCategorias,
     loadingUnidades,
     cargarCategorias,
+    cargarUnidades,
     handleSubmit,
     isEdit,
   } = useRegistroProducto({
@@ -85,6 +88,9 @@ export const RegistroProducto = ({
   const [focused, setFocused] = useDisclosure(false);
 
   const [openedAddCat, { open: openAddCat, close: closeAddCat }] =
+    useDisclosure(false);
+
+  const [openedAddUnidad, { open: openAddUnidad, close: closeAddUnidad }] =
     useDisclosure(false);
 
   return (
@@ -244,32 +250,52 @@ export const RegistroProducto = ({
 
         {/* Fila 2: Unidad y Stock */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Select
-            label={<LabelForm text="Unidad Medida" required />}
-            placeholder={loadingUnidades ? "Cargando..." : "Seleccione unidad"}
-            data={unidades.map((u) => ({
-              value: u.id_unidad_medida.toString(),
-              label: `${u.nombre} (${u.abreviatura})`,
-            }))}
-            value={
-              form.id_unidad_medida_base === 0
-                ? null
-                : form.id_unidad_medida_base.toString()
-            }
-            onChange={(val) => setField("id_unidad_medida_base", Number(val))}
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
-            }}
-            radius="lg"
-            searchable
-            clearable
-            comboboxProps={{
-              withinPortal: true,
-              transitionProps: { transition: "pop", duration: 200 },
-            }}
-            disabled={loadingUnidades || isActivoFijo}
-          />
+          <div className="flex flex-col gap-1.5">
+            <LabelForm text="Unidad Medida" required />
+            <div className="flex gap-2 items-center">
+              <Select
+                placeholder={
+                  loadingUnidades ? "Cargando..." : "Seleccione unidad"
+                }
+                data={unidades.map((u) => ({
+                  value: u.id_unidad_medida.toString(),
+                  label: `${u.nombre} (${u.abreviatura})`,
+                }))}
+                value={
+                  form.id_unidad_medida_base === 0
+                    ? null
+                    : form.id_unidad_medida_base.toString()
+                }
+                onChange={(val) =>
+                  setField("id_unidad_medida_base", Number(val))
+                }
+                classNames={{
+                  input:
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+                }}
+                radius="lg"
+                searchable
+                clearable
+                comboboxProps={{
+                  withinPortal: true,
+                  transitionProps: { transition: "pop", duration: 200 },
+                }}
+                disabled={loadingUnidades || isActivoFijo}
+                className="flex-1"
+              />
+              <ActionIcon
+                size={"lg"}
+                radius="lg"
+                variant="filled"
+                color="indigo"
+                className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                onClick={openAddUnidad}
+                disabled={isActivoFijo}
+              >
+                <PlusIcon className="w-5 h-5 text-white" />
+              </ActionIcon>
+            </div>
+          </div>
 
           <AnimatePresence mode="wait">
             {isActivoFijo ? (
@@ -333,7 +359,7 @@ export const RegistroProducto = ({
             }
             leftSection={
               <Text size="sm" fw={600} className="text-zinc-300">
-                S/.
+                {form.moneda === Moneda.Soles ? "S/." : "$"}
               </Text>
             }
             placeholder="0.00"
@@ -346,6 +372,29 @@ export const RegistroProducto = ({
             radius="lg"
             min={0}
             fixedDecimalScale
+          />
+
+          <Select
+            label={<LabelForm text="Moneda" required />}
+            placeholder="Seleccione"
+            data={[
+              { value: Moneda.Soles, label: "Soles (S/.)" },
+              { value: Moneda.Dolares, label: "Dólares ($)" },
+            ]}
+            value={form.moneda}
+            onChange={(val) =>
+              setField("moneda", (val ?? Moneda.Soles) as Moneda)
+            }
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+            }}
+            radius="lg"
+            allowDeselect={false}
+            comboboxProps={{
+              withinPortal: true,
+              transitionProps: { transition: "pop", duration: 200 },
+            }}
           />
         </div>
 
@@ -517,6 +566,24 @@ export const RegistroProducto = ({
               closeAddCat();
             }}
             onCancel={closeAddCat}
+          />
+        </ModalEstandar>
+
+        {/* MODAL CREAR UNIDAD DE MEDIDA */}
+        <ModalEstandar
+          opened={openedAddUnidad}
+          close={closeAddUnidad}
+          title="Nueva Unidad de Medida"
+          size="sm"
+          zIndex={1001}
+        >
+          <FormUnidadMedida
+            onSuccess={(nueva) => {
+              cargarUnidades();
+              setField("id_unidad_medida_base", nueva.id_unidad_medida);
+              closeAddUnidad();
+            }}
+            onCancel={closeAddUnidad}
           />
         </ModalEstandar>
       </Stack>

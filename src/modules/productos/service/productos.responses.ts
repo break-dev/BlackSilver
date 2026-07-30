@@ -1,4 +1,5 @@
 import type { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import type { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 
 export interface RES_LogCostoPromedio {
@@ -25,6 +26,7 @@ export interface RES_ProductoResumen {
   para_mantenimiento: boolean;
   //
   stock_minimo_base: number;
+  moneda: Moneda;
   costo_promedio_base: number;
   costo_promedio_base_log: RES_LogCostoPromedio[] | null;
   //

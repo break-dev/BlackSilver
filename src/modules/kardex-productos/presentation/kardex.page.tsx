@@ -28,6 +28,7 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { Kardex_TipoMovimiento } from "../../../shared/enums/kardex";
 import { MESES } from "../../../shared/variables/meses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 
 export const KardexProductosPage = () => {
   useTitlePage("Kardex de Inventario");
@@ -211,8 +212,8 @@ export const KardexProductosPage = () => {
       },
       {
         accessor: "costo",
-        title: "Costo",
-        width: 250,
+        title: "Costo Promedio",
+        width: 200,
         textAlign: "center",
         render: (r) => (
           <div className="flex flex-row items-center justify-center gap-3">
@@ -222,12 +223,13 @@ export const KardexProductosPage = () => {
                 <Text
                   size="9px"
                   fw={700}
-                  className="text-zinc-500 uppercase tracking-tighter"
+                  className="text-zinc-400 uppercase tracking-tighter"
                 >
                   Por {r.unidad_medida_base}
                 </Text>
-                <Text size="xs" fw={600} className="text-zinc-500 italic">
-                  S/. {formatNumber(r.costo_promedio_base)}
+                <Text size="xs" fw={600} className="text-zinc-300 italic">
+                  {r.moneda == Moneda.Soles ? "S/." : "$"}{" "}
+                  {formatNumber(r.costo_promedio_base)}
                 </Text>
               </div>
             )}
@@ -241,12 +243,13 @@ export const KardexProductosPage = () => {
                     <Text
                       size="9px"
                       fw={700}
-                      className="text-zinc-500 uppercase tracking-tighter"
+                      className="text-zinc-400 uppercase tracking-tighter"
                     >
                       Por {r.unidad_medida_lote}
                     </Text>
-                    <Text size="xs" fw={600} className="text-zinc-500 italic">
-                      S/. {formatNumber(r.costo_por_presentacion)}
+                    <Text size="xs" fw={600} className="text-zinc-300 italic">
+                      {r.moneda == Moneda.Soles ? "S/." : "$"}{" "}
+                      {formatNumber(r.costo_promedio_por_presentacion)}
                     </Text>
                   </div>
                 </>
@@ -266,7 +269,78 @@ export const KardexProductosPage = () => {
                 Subtotal
               </Text>
               <Text size="sm" fw={800} c="teal.5">
-                S/. {formatNumber(r.subtotal)}
+                {r.moneda == Moneda.Soles ? "S/." : "$"}{" "}
+                {formatNumber(r.subtotal_promedio)}
+              </Text>
+            </div>
+          </div>
+        ),
+      },
+      {
+        accessor: "costo_real",
+        title: "Costo Real",
+        width: 200,
+        textAlign: "center",
+        render: (r) => (
+          <div className="flex flex-row items-center justify-center gap-3">
+            {/* costo Unitario Base */}
+            {r.id_activo_fijo == null && (
+              <div className="flex flex-col items-center leading-tight">
+                <Text
+                  size="9px"
+                  fw={700}
+                  className="text-zinc-400 uppercase tracking-tighter"
+                >
+                  Por {r.unidad_medida_base}
+                </Text>
+                <Text size="xs" fw={600} className="text-zinc-300 italic">
+                  S/.
+                  {r.costo_por_unidad_base != null
+                    ? formatNumber(r.costo_por_unidad_base)
+                    : "---"}
+                </Text>
+              </div>
+            )}
+
+            {/* Precio Presentación */}
+            {r.id_unidad_medida_lote !== r.id_unidad_medida_base &&
+              r.id_activo_fijo == null && (
+                <>
+                  <div className="w-px h-6 bg-zinc-800/60" />
+                  <div className="flex flex-col items-center leading-tight">
+                    <Text
+                      size="9px"
+                      fw={700}
+                      className="text-zinc-400 uppercase tracking-tighter"
+                    >
+                      Por {r.unidad_medida_lote}
+                    </Text>
+                    <Text size="xs" fw={600} className="text-zinc-300 italic">
+                      S/.
+                      {r.costo_por_unidad != null
+                        ? formatNumber(r.costo_por_unidad)
+                        : "---"}
+                    </Text>
+                  </div>
+                </>
+              )}
+
+            {r.id_activo_fijo == null && (
+              <div className="w-px h-6 bg-indigo-500/20" />
+            )}
+            {/* Total Movimiento */}
+            <div className="flex flex-col items-center leading-tight">
+              <Text
+                size="9.5px"
+                fw={700}
+                c="yellow.2"
+                className="uppercase tracking-tighter"
+              >
+                Subtotal
+              </Text>
+              <Text size="sm" fw={800} c="teal.5">
+                S/.
+                {r.subtotal != null ? formatNumber(r.subtotal) : "---"}
               </Text>
             </div>
           </div>
@@ -390,7 +464,7 @@ export const KardexProductosPage = () => {
         </div>
 
         {/* Buscador */}
-        <div className="flex-1 min-w-[200px] w-full">
+        <div className="flex-1 min-w-50 w-full">
           <TextInput
             label="Búsqueda"
             placeholder="Producto, lote, glosa..."

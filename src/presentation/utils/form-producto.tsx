@@ -15,6 +15,7 @@ import { IconDeviceFloppy, IconExclamationCircle } from "@tabler/icons-react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { ModalEstandar } from "./modal-estandar";
 import { FormCategoria } from "./form-categoria";
+import { FormUnidadMedida } from "./form-unidad-medida";
 import { AuxService } from "../../service/auxiliar.service";
 import type { RES_Producto } from "../../service/responses/producto";
 import type { RES_UnidadMedida } from "../../service/responses/unidad-medida";
@@ -32,6 +33,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
   const [loadingMaestros, setLoadingMaestros] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openedAddCat, setOpenedAddCat] = useState(false);
+  const [openedAddUnidad, setOpenedAddUnidad] = useState(false);
 
   // Maestros
   const [categorias, setCategorias] = useState<RES_Categoria[]>([]);
@@ -47,6 +49,17 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
     }
   };
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
+
+  const fetchUnidades = async () => {
+    try {
+      const resUni = await AuxService.get_unidades_medida({ solo_base: true });
+      if (resUni.success) {
+        setUnidades(resUni.data);
+      }
+    } catch (err) {
+      console.error("Error al refrescar unidades de medida", err);
+    }
+  };
 
   // Form Fields
   const [idCategoria, setIdCategoria] = useState<string | null>(null);
@@ -77,12 +90,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
     const fetchMaestros = async () => {
       try {
         setLoadingMaestros(true);
-        const [resCat, resUni] = await Promise.all([
-          AuxService.get_categorias(),
-          AuxService.get_unidades_medida({ solo_base: true }),
-        ]);
-        if (resCat.success) setCategorias(resCat.data);
-        if (resUni.success) setUnidades(resUni.data);
+        await Promise.all([fetchCategorias(), fetchUnidades()]);
       } catch (err) {
         console.error(
           "Error al cargar maestros para el formulario de producto",
@@ -227,23 +235,36 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
           </div>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 6 }}>
-          <Select
-            label="Unidad de Medida Base"
-            placeholder="Seleccione"
-            searchable
-            withAsterisk
-            radius="xl"
-            data={unidades.map((u) => ({
-              value: String(u.id_unidad_medida),
-              label: `${u.nombre} (${u.abreviatura})`,
-            }))}
-            value={idUnidadMedidaBase}
-            onChange={(val) => {
-              setIdUnidadMedidaBase(val);
-              if (error) setError(null);
-            }}
-            classNames={inputClasses}
-          />
+          <div className="flex gap-2 items-end">
+            <Select
+              label="Unidad de Medida Base"
+              placeholder="Seleccione"
+              searchable
+              withAsterisk
+              radius="xl"
+              data={unidades.map((u) => ({
+                value: String(u.id_unidad_medida),
+                label: `${u.nombre} (${u.abreviatura})`,
+              }))}
+              value={idUnidadMedidaBase}
+              onChange={(val) => {
+                setIdUnidadMedidaBase(val);
+                if (error) setError(null);
+              }}
+              classNames={inputClasses}
+              className="flex-1"
+            />
+            <ActionIcon
+              size={"lg"}
+              radius="xl"
+              variant="filled"
+              color="indigo"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+              onClick={() => setOpenedAddUnidad(true)}
+            >
+              <PlusIcon className="w-5 h-5 text-white" />
+            </ActionIcon>
+          </div>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 8 }}>
           <TextInput
@@ -450,6 +471,23 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
             setIdCategoria(String(nuevaCat.id_categoria));
           }}
           onCancel={() => setOpenedAddCat(false)}
+        />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedAddUnidad}
+        close={() => setOpenedAddUnidad(false)}
+        title="Nueva Unidad de Medida"
+        size="sm"
+        zIndex={1001}
+      >
+        <FormUnidadMedida
+          onSuccess={async (nuevaUnidad) => {
+            setOpenedAddUnidad(false);
+            await fetchUnidades();
+            setIdUnidadMedidaBase(String(nuevaUnidad.id_unidad_medida));
+          }}
+          onCancel={() => setOpenedAddUnidad(false)}
         />
       </ModalEstandar>
     </form>
