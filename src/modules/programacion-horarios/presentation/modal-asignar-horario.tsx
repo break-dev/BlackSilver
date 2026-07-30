@@ -601,6 +601,7 @@ export const ModalAsignarHorario = ({
                     shadow="md"
                     trapFocus
                     withinPortal
+                    closeOnClickOutside={false}
                   >
                     <Popover.Target>
                       <Tooltip
@@ -649,7 +650,7 @@ export const ModalAsignarHorario = ({
                               setTurnoEspecialDia(indice, numVal);
                             }
                           }}
-                          comboboxProps={{ withinPortal: true }}
+                          comboboxProps={{ withinPortal: false }}
                         />
                         {esEspecial && (
                           <Button
