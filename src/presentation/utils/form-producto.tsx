@@ -101,8 +101,8 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
     if (!idUnidadMedidaBase) return "La unidad de medida es requerida";
     if (!nombre.trim()) return "El nombre es requerido";
     if (nombre.trim().length < 3) return "El nombre del producto es muy corto";
-    if (prefijo && prefijo.length > 4)
-      return "El prefijo no puede tener más de 4 caracteres";
+    if (prefijo && prefijo.length > 100)
+      return "El prefijo no puede tener más de 100 caracteres";
     if (esPerecible) {
       if (!tiempoEsperaVencimiento || Number(tiempoEsperaVencimiento) <= 0) {
         return "Debe indicar un tiempo de espera válido para productos perecibles";
@@ -264,7 +264,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
             label="Prefijo (opc)"
             placeholder="Ej. GRA"
             radius="xl"
-            maxLength={4}
+            maxLength={100}
             value={prefijo}
             onChange={(e) => {
               setPrefijo(
