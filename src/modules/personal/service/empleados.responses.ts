@@ -71,4 +71,7 @@ export interface RES_LaborContratista {
   id_labor_contratista: number;
   id_labor: number;
   nombre: string;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  estado: EstadoBase;
 }

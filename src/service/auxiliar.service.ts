@@ -129,6 +129,23 @@ export const AuxService = {
   },
 
   /**
+   * Crear una unidad de medida en el catálogo
+   */
+  crear_unidad_medida: async (nuevaUnidad: {
+    nombre: string;
+    abreviatura: string;
+  }): Promise<IRespuesta<RES_UnidadMedida>> => {
+    const { data } = await api.post<IRespuesta<RES_UnidadMedida>>(
+      `${path}/unidades-medida`,
+      {
+        nombre: nuevaUnidad.nombre,
+        abreviatura: nuevaUnidad.abreviatura,
+      },
+    );
+    return data;
+  },
+
+  /**
    * Obtener categorias
    */
   get_categorias: async (filters?: {

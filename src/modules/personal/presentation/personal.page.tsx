@@ -99,7 +99,7 @@ export const PersonalPage = () => {
                   />
                 </div>
 
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-50">
                   <TextInput
                     label="Buscar empleado"
                     placeholder="Buscar por nombre, DNI, cargo o área..."
@@ -172,7 +172,7 @@ export const PersonalPage = () => {
             onClick={activeTab === "empleados" ? openRegEmp : openRegCon}
             radius="lg"
             size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-[38px] px-8 mb-px"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-9.5 px-8 mb-px"
           >
             Nuevo {activeTab === "empleados" ? "Empleado" : "Contratista"}
           </Button>
@@ -224,7 +224,7 @@ export const PersonalPage = () => {
       <ModalEstandar
         opened={asignacionCtrl.opened}
         close={asignacionCtrl.cerrar}
-        title="Asignación de Mina y Labores"
+        title="Asignación de Labores"
         size="sm"
       >
         {asignacionCtrl.contratista && (
@@ -234,6 +234,7 @@ export const PersonalPage = () => {
             idMina={asignacionCtrl.idMina}
             onMinaChange={asignacionCtrl.onMinaChange}
             laboresDisponibles={asignacionCtrl.laboresDisponibles}
+            inactiveLaborInfo={asignacionCtrl.inactiveLaborInfo}
             seleccionados={asignacionCtrl.seleccionados}
             loading={asignacionCtrl.loading}
             loadingMinas={asignacionCtrl.loadingMinas}

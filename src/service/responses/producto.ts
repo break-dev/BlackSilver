@@ -1,3 +1,4 @@
+import type { Moneda } from "../../shared/enums/_generic/moneda";
 import type { TipoBien } from "../../shared/enums/_generic/tipo-bien";
 
 export interface RES_Producto {
@@ -21,6 +22,7 @@ export interface RES_Producto {
   para_mantenimiento: boolean;
   //
   prefijo: string | null;
+  moneda: Moneda;
   costo_promedio_base: number;
   //
   dias_espera_vencimiento: number | null;

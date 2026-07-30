@@ -19,6 +19,8 @@ import type {
  * - Omite keys con valores `null` o `undefined`.
  * - Serializa `boolean` como `"1"` / `"0"` para que Laravel los
  *   acepte correctamente en sus reglas de validación `boolean`.
+ * - Serializa arrays como `key[]=value` para que Laravel los
+ *   parsee como listas en sus reglas de validación `array`.
  * - Conserva `File` tal cual.
  */
 const buildFormData = (dto: Record<string, unknown>): FormData => {
@@ -27,6 +29,13 @@ const buildFormData = (dto: Record<string, unknown>): FormData => {
     if (value === null || value === undefined) return;
     if (typeof value === "boolean") {
       formData.append(key, value ? "1" : "0");
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item === null || item === undefined) return;
+        formData.append(`${key}[]`, String(item));
+      });
       return;
     }
     formData.append(key, value instanceof File ? value : String(value));

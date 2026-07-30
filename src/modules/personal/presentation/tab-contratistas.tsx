@@ -31,6 +31,7 @@ import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
 import { ModalContratoEmpleado } from "../../contratos-empleado/presentation/modal-contrato-empleado";
 import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presentation/modal-historial-contratos-empleado";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface TabContratistasProps {
   controller: ReturnType<typeof useContratistas>;
@@ -42,7 +43,9 @@ export const TabContratistas = ({
   asignacion,
 }: TabContratistasProps) => {
   const { notifySuccess, notifyError } = useNotify();
-  const [loadingToggles, setLoadingToggles] = useState<Record<number, boolean>>({});
+  const [loadingToggles, setLoadingToggles] = useState<Record<number, boolean>>(
+    {},
+  );
 
   const {
     contratistas,
@@ -90,7 +93,9 @@ export const TabContratistas = ({
         <Group gap="4px" wrap="nowrap" align="center" justify="center">
           <Checkbox
             checked={todosVisiblesSeleccionados}
-            indeterminate={!todosVisiblesSeleccionados && algunosVisiblesSeleccionados}
+            indeterminate={
+              !todosVisiblesSeleccionados && algunosVisiblesSeleccionados
+            }
             onChange={toggleSeleccionarTodos}
             size="xs"
             color="indigo"
@@ -106,7 +111,10 @@ export const TabContratistas = ({
                   onClick={async () => {
                     const ids = Array.from(seleccionados);
                     const ok = await toggleConContrato(ids, true);
-                    if (ok) notifySuccess("Contratos habilitados para los seleccionados");
+                    if (ok)
+                      notifySuccess(
+                        "Contratos habilitados para los seleccionados",
+                      );
                   }}
                 >
                   <CheckBadgeIcon className="w-3.5 h-3.5 text-white" />
@@ -221,18 +229,16 @@ export const TabContratistas = ({
       textAlign: "center",
       render: (r) => {
         const hasMina = r.id_mina && r.id_mina > 0;
-        const sinLabores = !r.labores_asignadas || r.labores_asignadas.length === 0;
+        const laboresActivas =
+          r.labores_asignadas?.filter(
+            (lab) => lab.estado === EstadoBase.Activo,
+          ) ?? [];
 
         return (
           <div className="flex flex-row justify-center">
             <Group gap="lg" wrap="nowrap" justify="center" align="center">
               {!hasMina ? (
-                <Text
-                  size="xs"
-                  c="dimmed"
-                  fs="italic"
-                  className="min-w-[130px]"
-                >
+                <Text size="xs" c="dimmed" fs="italic" className="min-w-32.5">
                   Sin asignar
                 </Text>
               ) : (
@@ -251,12 +257,12 @@ export const TabContratistas = ({
                   </Badge>
 
                   <Stack gap={4} align="center">
-                    {sinLabores ? (
+                    {laboresActivas.length == 0 ? (
                       <Text size="xs" c="dimmed" fs="italic">
                         Sin asignar
                       </Text>
                     ) : (
-                      r.labores_asignadas.map((lab, idx) => (
+                      laboresActivas.map((lab, idx) => (
                         <Badge
                           key={idx}
                           variant="light"
@@ -295,13 +301,14 @@ export const TabContratistas = ({
       width: 170,
       textAlign: "center",
       render: (r) => {
-        const tieneContratoVigente = r.id_contrato_vigente !== null && r.id_contrato_vigente !== undefined;
+        const tieneContratoVigente =
+          r.id_contrato_vigente !== null && r.id_contrato_vigente !== undefined;
         const conContratoRaw = r.con_contrato as unknown;
         const esContratistaConContrato = Boolean(
           conContratoRaw === true ||
-            conContratoRaw === 1 ||
-            conContratoRaw === "1" ||
-            conContratoRaw === "true",
+          conContratoRaw === 1 ||
+          conContratoRaw === "1" ||
+          conContratoRaw === "true",
         );
         const nombreCompleto = `${r.nombre} ${r.apellido}`;
 
@@ -309,7 +316,12 @@ export const TabContratistas = ({
           const isToggling = Boolean(loadingToggles[r.id_contratista]);
           return (
             <Group gap={4} wrap="nowrap" justify="center">
-              <Badge variant="light" color="gray" radius="md" className="font-medium">
+              <Badge
+                variant="light"
+                color="gray"
+                radius="md"
+                className="font-medium"
+              >
                 No Aplica
               </Badge>
               <Tooltip
@@ -327,12 +339,24 @@ export const TabContratistas = ({
                   loading={isToggling}
                   disabled={isToggling}
                   onClick={async () => {
-                    setLoadingToggles((prev) => ({ ...prev, [r.id_contratista]: true }));
+                    setLoadingToggles((prev) => ({
+                      ...prev,
+                      [r.id_contratista]: true,
+                    }));
                     try {
-                      const ok = await toggleConContrato([r.id_contratista], true);
-                      if (ok) notifySuccess(`Contrato habilitado para ${nombreCompleto}`);
+                      const ok = await toggleConContrato(
+                        [r.id_contratista],
+                        true,
+                      );
+                      if (ok)
+                        notifySuccess(
+                          `Contrato habilitado para ${nombreCompleto}`,
+                        );
                     } finally {
-                      setLoadingToggles((prev) => ({ ...prev, [r.id_contratista]: false }));
+                      setLoadingToggles((prev) => ({
+                        ...prev,
+                        [r.id_contratista]: false,
+                      }));
                     }
                   }}
                 >
@@ -380,7 +404,12 @@ export const TabContratistas = ({
         let badgeColor = "teal";
         let badgeText = "Con Contrato";
 
-        if (esContratistaConContrato && tieneContratoVigente && !r.contrato_por_tiempo_indefinido && r.contrato_fecha_fin) {
+        if (
+          esContratistaConContrato &&
+          tieneContratoVigente &&
+          !r.contrato_por_tiempo_indefinido &&
+          r.contrato_fecha_fin
+        ) {
           const hoy = new Date();
           hoy.setHours(0, 0, 0, 0);
           const fin = new Date(r.contrato_fecha_fin);
@@ -442,7 +471,7 @@ export const TabContratistas = ({
           {r.email && (
             <Group gap={4}>
               <EnvelopeIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-              <Text size="xs" className="text-zinc-300 truncate max-w-[160px]">
+              <Text size="xs" className="text-zinc-300 truncate max-w-40">
                 {r.email}
               </Text>
             </Group>
@@ -524,7 +553,7 @@ export const TabContratistas = ({
           </Text>
         </Stack>
       ) : contratistas.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-[32px] bg-zinc-900/10 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
           <UserGroupIcon className="w-12 h-12 text-zinc-700 mb-4" />
           <Text
             size="sm"
@@ -559,21 +588,22 @@ export const TabContratistas = ({
       )}
 
       {/* Modal Historial Contratos Contratista */}
-      {modalHistorialContratos?.abierto && modalHistorialContratos.idEmpleado && (
-        <ModalHistorialContratosEmpleado
-          opened={modalHistorialContratos.abierto}
-          close={cerrarModalHistorial}
-          idEmpleado={modalHistorialContratos.idEmpleado}
-          nombreEmpleado={modalHistorialContratos.nombre}
-          onCrearContratoClick={() => {
-            const id = modalHistorialContratos.idEmpleado!;
-            const nombre = modalHistorialContratos.nombre;
-            cerrarModalHistorial();
-            abrirModalContrato(id, nombre);
-          }}
-          esContratista={true}
-        />
-      )}
+      {modalHistorialContratos?.abierto &&
+        modalHistorialContratos.idEmpleado && (
+          <ModalHistorialContratosEmpleado
+            opened={modalHistorialContratos.abierto}
+            close={cerrarModalHistorial}
+            idEmpleado={modalHistorialContratos.idEmpleado}
+            nombreEmpleado={modalHistorialContratos.nombre}
+            onCrearContratoClick={() => {
+              const id = modalHistorialContratos.idEmpleado!;
+              const nombre = modalHistorialContratos.nombre;
+              cerrarModalHistorial();
+              abrirModalContrato(id, nombre);
+            }}
+            esContratista={true}
+          />
+        )}
     </>
   );
 };

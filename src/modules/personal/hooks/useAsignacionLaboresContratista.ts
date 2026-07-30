@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ContratistasService } from "../service/empleados.service";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import type { RES_Mina } from "../../../service/responses/mina";
 import type { RES_Labor } from "../../../service/responses/labor";
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 export const useAsignacionLaboresContratista = (
   onUpdateLocal: (editado: RES_ContratistaResumen) => void,
@@ -62,7 +63,9 @@ export const useAsignacionLaboresContratista = (
       cargarMinas();
 
       if (emp.labores_asignadas && emp.labores_asignadas.length > 0) {
-        const ids = emp.labores_asignadas.map((l) => l.id_labor);
+        const ids = emp.labores_asignadas
+          .filter((l) => l.estado === EstadoBase.Activo)
+          .map((l) => l.id_labor);
         setSeleccionados(ids);
       } else {
         setSeleccionados([]);
@@ -74,6 +77,26 @@ export const useAsignacionLaboresContratista = (
     },
     [cargarCatalogoLabores, cargarMinas],
   );
+
+  // Última asignación inactiva por id_labor (para mostrar el historial en línea).
+  // Se conservan en el modal para que el usuario sepa que fueron asignadas antes
+  // y pueda re-asignarlas si lo necesita.
+  const inactiveLaborInfo = useMemo(() => {
+    const map = new Map<
+      number,
+      { fecha_inicio: string; fecha_fin: string | null }
+    >();
+    if (!contratista?.labores_asignadas) return map;
+    contratista.labores_asignadas
+      .filter((l) => l.estado === EstadoBase.Inactivo)
+      .forEach((l) =>
+        map.set(l.id_labor, {
+          fecha_inicio: l.fecha_inicio,
+          fecha_fin: l.fecha_fin,
+        }),
+      );
+    return map;
+  }, [contratista]);
 
   const handleMinaChange = (val: number | null) => {
     setIdMina(val);
@@ -137,6 +160,7 @@ export const useAsignacionLaboresContratista = (
     idMina,
     onMinaChange: handleMinaChange,
     laboresDisponibles,
+    inactiveLaborInfo,
     seleccionados,
     loading,
     loadingMinas,
