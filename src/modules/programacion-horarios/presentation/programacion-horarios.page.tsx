@@ -26,9 +26,11 @@ import { useProgramaciones } from "../hooks/useProgramaciones";
 import { ModalRegistroTurno } from "./modal-registro-turno";
 import { ModalListadoTurnos } from "./modal-listado-turnos";
 import { ModalAsignarHorario } from "./modal-asignar-horario";
+import { ModalFinalizarProgramacion } from "./modal-finalizar-programacion";
 import { GrillaSemanal } from "./grilla-semanal";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
+import type { RES_ProgramacionAsignada, RES_ProgramacionHorario } from "../service/programacion.responses";
 
 export const ProgramacionHorariosPage = () => {
   useTitlePage("Programación de Horarios");
@@ -44,6 +46,7 @@ export const ProgramacionHorariosPage = () => {
     irSemanaSiguiente,
     irSemanaActual,
     recargar: recargarProgramaciones,
+    agregarOActualizarProgramaciones,
     tipoLugarFiltro,
     idLugarFiltro,
     setTipoLugarYFiltro,
@@ -53,8 +56,12 @@ export const ProgramacionHorariosPage = () => {
   const [openedRegistroTurno, setOpenedRegistroTurno] = useState(false);
   const [openedListadoTurnos, setOpenedListadoTurnos] = useState(false);
   const [openedAsignarHorario, setOpenedAsignarHorario] = useState(false);
+  const [openedFinalizar, setOpenedFinalizar] = useState(false);
+
   const [turnoEditar, setTurnoEditar] = useState<RES_TurnoLaboral | null>(null);
   const [turnoNuevoCreadoId, setTurnoNuevoCreadoId] = useState<number | null>(null);
+  const [programacionAFinalizar, setProgramacionAFinalizar] = useState<RES_ProgramacionHorario | null>(null);
+  const [fechaSugeridaFinalizar, setFechaSugeridaFinalizar] = useState<string | null>(null);
 
   const formatRangoSemanal = (fechaInicioStr: string, fechaFinStr: string): string => {
     if (!fechaInicioStr || !fechaFinStr) return "";
@@ -144,17 +151,29 @@ export const ProgramacionHorariosPage = () => {
   const handleSuccessTurno = (nuevoTurno?: RES_TurnoLaboral) => {
     void recargarTurnos();
     if (nuevoTurno?.id) {
-      // Guardar el id del turno recién creado para auto-seleccionarlo si el usuario abre Asignar Horario
       setTurnoNuevoCreadoId(nuevoTurno.id);
     }
   };
 
-  const handleSuccessAsignar = () => {
-    void recargarProgramaciones();
+  const handleSuccessAsignar = (resultado?: RES_ProgramacionAsignada) => {
+    if (resultado?.programaciones && resultado.programaciones.length > 0) {
+      // Insertar o actualizar únicamente las cards creadas sin recargar toda la vista
+      agregarOActualizarProgramaciones(resultado.programaciones);
+    } else {
+      void recargarProgramaciones();
+    }
     void recargarTurnos();
   };
 
+  const handleSolicitarFinalizar = (prog: RES_ProgramacionHorario, fechaSeleccionada: string) => {
+    setProgramacionAFinalizar(prog);
+    setFechaSugeridaFinalizar(fechaSeleccionada);
+    setOpenedFinalizar(true);
+  };
 
+  const handleSuccessFinalizar = (progActualizada: RES_ProgramacionHorario) => {
+    agregarOActualizarProgramaciones([progActualizada]);
+  };
 
   const lugaresOptions =
     tipoLugarFiltro === "almacen"
@@ -171,8 +190,6 @@ export const ProgramacionHorariosPage = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-
-
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between pb-2">
         <Group gap="md" wrap="nowrap" className="lg:flex-1">
           <Tooltip label="Ir a la semana actual" withArrow position="top">
@@ -346,6 +363,7 @@ export const ProgramacionHorariosPage = () => {
         fechaFin={rango.fecha_fin}
         programaciones={programaciones}
         loading={loadingProgramaciones}
+        onFinalizarProgramacion={handleSolicitarFinalizar}
       />
 
       <ModalRegistroTurno
@@ -371,6 +389,14 @@ export const ProgramacionHorariosPage = () => {
         onSuccess={handleSuccessAsignar}
         onRegistrarTurnoClick={() => setOpenedRegistroTurno(true)}
         turnoNuevoCreadoId={turnoNuevoCreadoId}
+      />
+
+      <ModalFinalizarProgramacion
+        opened={openedFinalizar}
+        close={() => setOpenedFinalizar(false)}
+        programacion={programacionAFinalizar}
+        fechaSugerida={fechaSugeridaFinalizar}
+        onSuccess={handleSuccessFinalizar}
       />
     </div>
   );

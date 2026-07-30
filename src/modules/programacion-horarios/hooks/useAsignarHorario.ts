@@ -69,6 +69,22 @@ export const useAsignarHorario = (
     },
   );
 
+  const [turnosEspecialesPorDia, setTurnosEspecialesPorDia] = useState<
+    Record<number, number>
+  >({});
+
+  const setTurnoEspecialDia = (indiceDia: number, idTurno: number | null) => {
+    setTurnosEspecialesPorDia((prev) => {
+      const next = { ...prev };
+      if (idTurno === null || idTurno <= 0) {
+        delete next[indiceDia];
+      } else {
+        next[indiceDia] = idTurno;
+      }
+      return next;
+    });
+  };
+
   const setField = useCallback(
     <K extends keyof DTO_AsignarHorario>(
       field: K,
@@ -82,7 +98,15 @@ export const useAsignarHorario = (
   const toggleDia = (indice: number) => {
     setForm((prev) => {
       const arr = prev.dias_laborables.split("");
-      arr[indice] = arr[indice] === "1" ? "0" : "1";
+      const nuevoEstado = arr[indice] === "1" ? "0" : "1";
+      arr[indice] = nuevoEstado;
+      if (nuevoEstado === "0") {
+        setTurnosEspecialesPorDia((tPrev) => {
+          const tNext = { ...tPrev };
+          delete tNext[indice];
+          return tNext;
+        });
+      }
       return { ...prev, dias_laborables: arr.join("") };
     });
   };
@@ -121,6 +145,7 @@ export const useAsignarHorario = (
   const reset = () => {
     setForm(initialForm());
     setTipoLugar("");
+    setTurnosEspecialesPorDia({});
   };
 
   const handleSubmit = async () => {
@@ -129,39 +154,86 @@ export const useAsignarHorario = (
       notifyError(validation.error.issues[0].message);
       return null;
     }
+
     setLoading(true);
     try {
-      const resp = await ProgramacionHorarioService.asignar_horario(
-        validation.data,
-      );
-      if (resp.success) {
-        const resultado = resp.data as RES_ProgramacionAsignada;
-        if (resultado.total_rechazados > 0) {
-          const listaMotivos = resultado.rechazados.map((r) => r.motivo).join("\n");
-          if (resultado.total_creados > 0) {
-            notifySuccess(`Se asignó el horario a ${resultado.total_creados} empleado(s).`);
-            notifyInfo(`No se pudo asignar a ${resultado.total_rechazados} empleado(s):\n${listaMotivos}`);
+      // Agrupar los días por ID de turno (Turno General vs Turnos Especiales por día)
+      const diasArr = form.dias_laborables.split("");
+      const gruposTurno: Record<number, string[]> = {};
+
+      diasArr.forEach((activo, idx) => {
+        if (activo === "1") {
+          const turnoId = turnosEspecialesPorDia[idx] ?? form.id_turno_laboral;
+          if (!gruposTurno[turnoId]) {
+            gruposTurno[turnoId] = ["0", "0", "0", "0", "0", "0", "0"];
+          }
+          gruposTurno[turnoId][idx] = "1";
+        }
+      });
+
+      const idsTurnos = Object.keys(gruposTurno).map(Number);
+
+      if (idsTurnos.length === 0) {
+        notifyError("Debe marcar al menos un día laborable");
+        setLoading(false);
+        return null;
+      }
+
+      let totalCreadosGlobal = 0;
+      let totalRechazadosGlobal = 0;
+      const rechazadosGlobal: Array<{ id_empleado: number; motivo: string }> = [];
+      let ultimoResultado: RES_ProgramacionAsignada | null = null;
+
+      for (const tId of idsTurnos) {
+        const payload: DTO_AsignarHorario = {
+          ...form,
+          id_turno_laboral: tId,
+          dias_laborables: gruposTurno[tId].join(""),
+        };
+
+        const resp = await ProgramacionHorarioService.asignar_horario(payload);
+        if (resp.success && resp.data) {
+          const res = resp.data as RES_ProgramacionAsignada;
+          totalCreadosGlobal += res.total_creados ?? 0;
+          totalRechazadosGlobal += res.total_rechazados ?? 0;
+          if (res.rechazados?.length) {
+            rechazadosGlobal.push(...res.rechazados);
+          }
+          ultimoResultado = res;
+        } else {
+          const errorPayload = resp as unknown as {
+            errors?: { rechazados?: Array<{ id_empleado: number; motivo: string }> };
+          };
+          if (errorPayload.errors?.rechazados) {
+            rechazadosGlobal.push(...errorPayload.errors.rechazados);
+            totalRechazadosGlobal += errorPayload.errors.rechazados.length;
+          }
+        }
+      }
+
+      if (totalCreadosGlobal > 0 || totalRechazadosGlobal > 0) {
+        if (totalRechazadosGlobal > 0) {
+          const listaMotivos = Array.from(new Set(rechazadosGlobal.map((r) => r.motivo))).join("\n");
+          if (totalCreadosGlobal > 0) {
+            notifySuccess(`Se asignó el horario a ${totalCreadosGlobal} registro(s).`);
+            notifyInfo(`No se pudo asignar a ${totalRechazadosGlobal} registro(s):\n${listaMotivos}`);
           } else {
             notifyInfo(`No se pudo asignar el horario:\n${listaMotivos}`);
           }
         } else {
-          notifySuccess(resp.message ?? "Horario asignado correctamente");
+          notifySuccess("Horario(s) asignado(s) correctamente");
         }
-        onSuccess?.(resultado);
+        onSuccess?.(ultimoResultado ?? {
+          total_creados: totalCreadosGlobal,
+          total_rechazados: totalRechazadosGlobal,
+          rechazados: rechazadosGlobal,
+          programaciones: [],
+        });
         reset();
-        return resultado;
+        return ultimoResultado;
       }
-      const errorPayload = resp as unknown as {
-        errors?: {
-          rechazados?: Array<{ motivo: string }>;
-        };
-      };
-      if (errorPayload.errors?.rechazados && Array.isArray(errorPayload.errors.rechazados)) {
-        const listaMotivos = errorPayload.errors.rechazados.map((r) => r.motivo).join("\n");
-        notifyInfo(`No se pudo asignar el horario:\n${listaMotivos}`);
-      } else {
-        notifyError(resp.message ?? "No se pudo asignar el horario");
-      }
+
+      notifyError("No se pudo asignar la programación.");
       return null;
     } catch (err) {
       console.error(err);
@@ -183,5 +255,7 @@ export const useAsignarHorario = (
     setTipoLugar: handleSetTipoLugar,
     lugarIdActual,
     setLugarId: handleSetLugarId,
+    turnosEspecialesPorDia,
+    setTurnoEspecialDia,
   };
 };

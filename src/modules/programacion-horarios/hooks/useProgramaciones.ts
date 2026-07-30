@@ -101,7 +101,19 @@ export const useProgramaciones = () => {
 
   const irSemanaActual = () => setFechaReferencia(new Date());
 
-  const recargar = () => void cargar();
+  const agregarOActualizarProgramaciones = useCallback((nuevas: RES_ProgramacionHorario[]) => {
+    if (!nuevas || nuevas.length === 0) return;
+    setProgramaciones((prev) => {
+      const mapa = new Map<number, RES_ProgramacionHorario>();
+      for (const p of prev) {
+        mapa.set(p.id, p);
+      }
+      for (const n of nuevas) {
+        mapa.set(n.id, n);
+      }
+      return Array.from(mapa.values());
+    });
+  }, []);
 
   const setTipoLugarYFiltro = (
     tipo: "" | "almacen" | "labor",
@@ -110,6 +122,8 @@ export const useProgramaciones = () => {
     setTipoLugarFiltro(tipo);
     setIdLugarFiltro(id);
   };
+
+  const recargar = useCallback(() => void cargar(), [cargar]);
 
   return {
     rango,
@@ -121,6 +135,7 @@ export const useProgramaciones = () => {
     irSemanaSiguiente,
     irSemanaActual,
     recargar,
+    agregarOActualizarProgramaciones,
     tipoLugarFiltro,
     idLugarFiltro,
     setTipoLugarYFiltro,
