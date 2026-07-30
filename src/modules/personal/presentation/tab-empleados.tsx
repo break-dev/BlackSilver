@@ -260,7 +260,7 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
           {r.email && (
             <Group gap={4}>
               <EnvelopeIcon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-              <Text size="xs" className="text-zinc-300 truncate max-w-[220px]">
+              <Text size="xs" className="text-zinc-300 truncate max-w-55">
                 {r.email}
               </Text>
             </Group>
@@ -541,7 +541,7 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
           </Text>
         </Stack>
       ) : empleados.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-[32px] bg-zinc-900/10 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center p-20 border border-dashed border-zinc-800 rounded-4xl bg-zinc-900/10 backdrop-blur-sm">
           <UserGroupIcon className="w-12 h-12 text-zinc-700 mb-4" />
           <Text
             size="sm"
@@ -555,13 +555,13 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
           </Text>
         </div>
       ) : (
-        <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-zinc-700/50">
+        <div className="bg-zinc-900/65 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-md transition-all duration-300 hover:border-zinc-700/50">
           <DataTableEstandar
             idAccessor="id_empleado"
             columns={columns}
             records={empleados}
             loading={loading}
-            initialPageSize={10}
+            initialPageSize={30}
             minHeight={0}
           />
         </div>
