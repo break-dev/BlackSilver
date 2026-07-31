@@ -492,7 +492,8 @@ export const useRegistrarEntregaBatch = ({
   }, [entregaCantidades, entregaCantidadesActivos]);
 
   const handleConfirmar = async () => {
-    if (!idEmpleadoRecibe) {
+    const receptorValido = esContratistaRecibe ? Boolean(idContratistaRecibe) : Boolean(idEmpleadoRecibe);
+    if (!receptorValido) {
       setError("Debe seleccionar quién recibe los materiales");
       return;
     }

@@ -40,6 +40,9 @@ export const AtencionService = {
     if (dto.fecha_entrega_requerida) {
       formData.append("fecha_entrega_requerida", dto.fecha_entrega_requerida);
     }
+    if (dto.created_at) {
+      formData.append("created_at", dto.created_at);
+    }
     if (dto.observacion) {
       formData.append("observacion", dto.observacion);
     }

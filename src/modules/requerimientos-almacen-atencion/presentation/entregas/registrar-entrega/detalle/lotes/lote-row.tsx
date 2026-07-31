@@ -150,10 +150,10 @@ export const LoteRow = ({
                   {lote.unidad_medida_lote_abv}
                 </Text>
               }
-              rightSectionWidth={60}
-              className="w-32"
+              rightSectionWidth={70}
+              className="w-36"
               classNames={{
-                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
+                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-14`,
               }}
             />
           )}
@@ -176,10 +176,10 @@ export const LoteRow = ({
                 {detalle_req.unidad_medida_base_abv}
               </Text>
             }
-            rightSectionWidth={60}
-            className="w-32"
+            rightSectionWidth={70}
+            className="w-36"
             classNames={{
-              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-12`,
+              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-14`,
             }}
           />
         </div>

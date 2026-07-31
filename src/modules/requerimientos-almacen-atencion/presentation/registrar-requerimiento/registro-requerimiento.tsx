@@ -85,6 +85,8 @@ export const RegistroRequerimiento = ({
       setIdLabor,
       idEmpleadoSolicitante,
       setIdEmpleadoSolicitante,
+      fechaSolicitud,
+      setFechaSolicitud,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       premura,
@@ -151,7 +153,7 @@ export const RegistroRequerimiento = ({
           title="Datos de la solicitud"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-6">
           <Select
             label="Labor (opc.)"
             placeholder="Seleccione labor"
@@ -241,28 +243,37 @@ export const RegistroRequerimiento = ({
           </div>
 
           <CustomDatePicker
+            label="Fecha de Solicitud"
+            placeholder="Seleccione fecha"
+            value={fechaSolicitud}
+            onChange={(val) => setFechaSolicitud(val as Date | null)}
+            radius="lg"
+          />
+
+          <CustomDatePicker
             label="Fecha de Entrega (opc.)"
             placeholder="Seleccione fecha"
             value={fechaEntregaRequerida}
             onChange={(val) => setFechaEntregaRequerida(val as Date | null)}
             radius="lg"
-            minDate={new Date()}
+            minDate={fechaSolicitud || undefined}
           />
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <Textarea
               label="Observaciones Generales"
               placeholder="Notas sobre el requerimiento completo..."
               value={observacion}
               onChange={(e) => setObservacion(e.target.value)}
               radius="lg"
+              minRows={2}
               classNames={inputClasses}
             />
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <MultiFilePicker
-              label="Evidencias "
+              label="Evidencias"
               files={evidencias}
               onFilesChange={setEvidencias}
             />

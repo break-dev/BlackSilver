@@ -178,7 +178,9 @@ export const HistorialEntregasRequerimiento = ({
                       fw={800}
                       className="text-zinc-200 truncate max-w-[200px] lg:max-w-[300px]"
                     >
-                      {h.empleado_recibe || h.contratista_recibe}
+                      {h.contratista_recibe
+                        ? `${h.contratista_recibe}`
+                        : h.empleado_recibe || "—"}
                     </Text>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-zinc-800/40 flex items-center justify-center shrink-0 border border-zinc-700/50 group-hover:bg-zinc-800/80 transition-colors">

@@ -60,6 +60,7 @@ export const useRegistroRequerimiento = ({
   const [idLabor, setIdLabor] = useState<number>(0);
   const [idEmpleadoSolicitante, setIdEmpleadoSolicitante] = useState<number>(0);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
+  const [fechaSolicitud, setFechaSolicitud] = useState<Date | null>(new Date());
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
     useState<Date | null>(null);
   const [observacion, setObservacion] = useState("");
@@ -279,6 +280,9 @@ export const useRegistroRequerimiento = ({
       id_almacen_destino: idAlmacenDestino,
       premura,
       es_auditable: esAuditable,
+      created_at: fechaSolicitud
+        ? dayjs(fechaSolicitud).format("YYYY-MM-DD HH:mm:ss")
+        : dayjs().format("YYYY-MM-DD HH:mm:ss"),
       fecha_entrega_requerida: fechaEntregaRequerida
         ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
         : dayjs().add(2, "days").format("YYYY-MM-DD"),
@@ -361,6 +365,8 @@ export const useRegistroRequerimiento = ({
       setVerContratistas,
       premura,
       setPremura,
+      fechaSolicitud,
+      setFechaSolicitud,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       observacion,
