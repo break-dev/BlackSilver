@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { PlanillaService } from "../service/planilla.service";
 import type {
@@ -7,6 +7,7 @@ import type {
 } from "../service/planilla.responses";
 import type { useFiltrosPlanilla } from "./useFiltrosPlanilla";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 type FiltrosHook = ReturnType<typeof useFiltrosPlanilla>;
 
@@ -22,9 +23,11 @@ export interface PlanillaTramo {
   fecha_hasta: string;
   tipo_contrato: string;
   sueldo_base: number | null;
+  sueldo_real: number | null;
   salario_diario: number | null;
   dias: number;
   pago_tramo: number;
+  pago_tramo_real: number;
 }
 
 /**
@@ -32,6 +35,7 @@ export interface PlanillaTramo {
  */
 export const usePlanilla = (filtros: FiltrosHook) => {
   const { notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const [asistencias, setAsistencias] = useState<RES_PlanillaAsistencia[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -59,10 +63,18 @@ export const usePlanilla = (filtros: FiltrosHook) => {
     void cargar();
   }, [cargar]);
 
-  const planillaPorEmpleado = agruparPorEmpleado(asistencias);
+  const asistenciasFiltradas = useMemo(() => {
+    if (!en_modo_auditable) return asistencias;
+    return asistencias.filter((a) => {
+      const tipo = a.programacion_tipo_contrato || a.tipo_contrato;
+      return tipo === "Planilla" || tipo === "PeriodoPrueba";
+    });
+  }, [asistencias, en_modo_auditable]);
+
+  const planillaPorEmpleado = agruparPorEmpleado(asistenciasFiltradas);
 
   return {
-    asistencias,
+    asistencias: asistenciasFiltradas,
     planillaPorEmpleado,
     loading,
     recargar: cargar,
@@ -79,6 +91,7 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
       url_foto: string | null;
       tipo_contrato: string | null;
       sueldo_base: number | null;
+      sueldo_real: number | null;
       salario_diario: number | null;
       cargo_nombre?: string | null;
       area_nombre?: string | null;
@@ -86,6 +99,7 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
       mina_nombre?: string | null;
       dias_trabajados: number;
       pago_total: number;
+      pago_total_real: number;
       tramos: PlanillaTramo[];
       marcaciones: RES_PlanillaAsistencia[];
     }
@@ -93,20 +107,24 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
 
   for (const a of asistencias) {
     if (!mapa.has(a.id_empleado)) {
+      const sBase = a.programacion_sueldo_base ?? a.sueldo_base ?? null;
+      const sReal = a.programacion_sueldo_real ?? a.sueldo_real ?? sBase;
       mapa.set(a.id_empleado, {
         id_empleado: a.id_empleado,
         empleado: `${a.nombre ?? ""} ${a.apellido ?? ""}`.trim(),
         dni: a.dni,
         url_foto: a.url_foto,
-        tipo_contrato: a.tipo_contrato,
-        sueldo_base: a.sueldo_base,
-        salario_diario: a.salario_diario,
+        tipo_contrato: a.programacion_tipo_contrato ?? a.tipo_contrato,
+        sueldo_base: sBase,
+        sueldo_real: sReal,
+        salario_diario: a.programacion_sueldo_diario ?? a.salario_diario,
         cargo_nombre: a.cargo_nombre,
         area_nombre: a.area_nombre,
         es_contratista: a.es_contratista,
         mina_nombre: a.mina_nombre,
         dias_trabajados: 0,
         pago_total: 0,
+        pago_total_real: 0,
         tramos: [],
         marcaciones: [],
       });
@@ -114,20 +132,40 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
     const slot = mapa.get(a.id_empleado)!;
     slot.marcaciones.push(a);
 
-    // Si el backend devolvió el desglose por turno, respetamos el pago
-    // calculado tramo a tramo (útil cuando hay sueldos distintos en el mismo
-    // día). Si no hay desglose o solo hay un tramo, usamos pago_dia como antes.
+    const jornada = Number(a.jornada_trabajada ?? 0);
+    const tipo = a.programacion_tipo_contrato ?? a.tipo_contrato;
+    const sueldoBaseEf = a.programacion_sueldo_base ?? a.sueldo_base ?? 0;
+    const sueldoRealEf = a.programacion_sueldo_real ?? a.sueldo_real ?? sueldoBaseEf;
+
     if (Array.isArray(a.tramos_pago) && a.tramos_pago.length > 1) {
       const pagoTramo = a.tramos_pago.reduce(
         (acc: number, t: PlanillaTramoAsistencia) => acc + Number(t.pago ?? 0),
         0,
       );
       slot.pago_total += pagoTramo;
+      // Pago real para tramos múltiples
+      if (tipo === "Planilla" || tipo === "PeriodoPrueba") {
+        const pagoTramoReal = a.tramos_pago.reduce((acc: number, t: PlanillaTramoAsistencia) => {
+          const tSueldoBase = t.sueldo_base ?? sueldoBaseEf;
+          const ratio = tSueldoBase > 0 ? sueldoRealEf / tSueldoBase : 1;
+          return acc + Number(t.pago ?? 0) * ratio;
+        }, 0);
+        slot.pago_total_real += pagoTramoReal;
+      } else {
+        slot.pago_total_real += pagoTramo;
+      }
     } else {
-      slot.pago_total += Number(a.pago_dia ?? 0);
+      const pagoBase = Number(a.pago_dia ?? 0);
+      slot.pago_total += pagoBase;
+      if (tipo === "Planilla" || tipo === "PeriodoPrueba") {
+        const tasaDiariaReal = sueldoRealEf / 30;
+        slot.pago_total_real += Math.round(jornada * tasaDiariaReal * 100) / 100;
+      } else {
+        slot.pago_total_real += pagoBase;
+      }
     }
 
-    if (Number(a.jornada_trabajada ?? 0) > 0) {
+    if (jornada > 0) {
       slot.dias_trabajados += 1;
     }
   }
@@ -140,8 +178,6 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
 
   return Array.from(mapa.values())
     .map((e) => {
-      // jornada_total = Σ jornadas_trabajada de cada día del rango.
-      // Equivale a "días laborados equivalentes" del mes (1.5 + 1.0 = 2.50).
       const jornadaCalculada = Math.round(
         e.marcaciones.reduce(
           (acc, a) => acc + Number(a.jornada_trabajada ?? 0),
@@ -153,6 +189,7 @@ function agruparPorEmpleado(asistencias: RES_PlanillaAsistencia[]) {
         ...e,
         jornada_total: jornadaCalculada,
         pago_total: Math.round(e.pago_total * 100) / 100,
+        pago_total_real: Math.round(e.pago_total_real * 100) / 100,
         marcaciones: e.marcaciones.sort((x, y) =>
           (x.fecha ?? "").localeCompare(y.fecha ?? ""),
         ),
@@ -188,8 +225,11 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
       for (const sub of a.tramos_pago) {
         const tipo = sub.tipo_contrato ?? null;
         const sueldo = sub.sueldo_base ?? null;
+        const sueldoReal = a.programacion_sueldo_real ?? a.sueldo_real ?? sueldo;
         const salario = sub.sueldo_diario ?? null;
         const pago = Number(sub.pago ?? 0);
+        const ratio = (sueldo && sueldo > 0) ? (sueldoReal ?? sueldo) / sueldo : 1;
+        const pagoReal = (tipo === "Planilla" || tipo === "PeriodoPrueba") ? pago * ratio : pago;
         const clave = `${a.id_programacion_horario ?? "0"}-${sub.id_programacion_horario}`;
 
         const ultimo = tramos[tramos.length - 1];
@@ -197,12 +237,14 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
           ultimo &&
           ultimo.tipo_contrato === tipo &&
           ultimo.sueldo_base === sueldo &&
+          ultimo.sueldo_real === sueldoReal &&
           ultimo.salario_diario === salario &&
           ultimo.clave === clave
         ) {
           ultimo.fecha_hasta = fecha;
           ultimo.dias += 1;
           ultimo.pago_tramo += pago;
+          ultimo.pago_tramo_real += pagoReal;
         } else {
           tramos.push({
             clave,
@@ -210,9 +252,11 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
             fecha_hasta: fecha,
             tipo_contrato: tipo ?? "—",
             sueldo_base: sueldo,
+            sueldo_real: sueldoReal,
             salario_diario: salario,
             dias: 1,
             pago_tramo: pago,
+            pago_tramo_real: pagoReal,
           });
         }
       }
@@ -221,28 +265,37 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
 
     const tipo = (a.programacion_tipo_contrato ?? a.tipo_contrato) ?? null;
     const sueldo = a.programacion_sueldo_base ?? a.sueldo_base ?? null;
+    const sueldoReal = a.programacion_sueldo_real ?? a.sueldo_real ?? sueldo;
     const salario = a.programacion_sueldo_diario ?? a.salario_diario ?? null;
+    const jornada = Number(a.jornada_trabajada ?? 0);
     const pago = Number(a.pago_dia ?? 0);
+    const pagoReal = (tipo === "Planilla" || tipo === "PeriodoPrueba")
+      ? Math.round(jornada * ((sueldoReal ?? 0) / 30) * 100) / 100
+      : pago;
 
     const ultimo = tramos[tramos.length - 1];
     if (
       ultimo &&
       ultimo.tipo_contrato === tipo &&
       ultimo.sueldo_base === sueldo &&
+      ultimo.sueldo_real === sueldoReal &&
       ultimo.salario_diario === salario
     ) {
       ultimo.fecha_hasta = fecha;
       ultimo.dias += 1;
       ultimo.pago_tramo += pago;
+      ultimo.pago_tramo_real += pagoReal;
     } else {
       tramos.push({
         fecha_desde: fecha,
         fecha_hasta: fecha,
         tipo_contrato: tipo ?? "—",
         sueldo_base: sueldo,
+        sueldo_real: sueldoReal,
         salario_diario: salario,
         dias: 1,
         pago_tramo: pago,
+        pago_tramo_real: pagoReal,
       });
     }
   }
@@ -250,6 +303,7 @@ function calcularTramos(marcaciones: RES_PlanillaAsistencia[]): PlanillaTramo[] 
   return tramos.map((t) => ({
     ...t,
     pago_tramo: Math.round(t.pago_tramo * 100) / 100,
+    pago_tramo_real: Math.round(t.pago_tramo_real * 100) / 100,
   }));
 }
 

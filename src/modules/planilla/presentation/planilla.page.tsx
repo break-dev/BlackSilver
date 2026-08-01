@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Avatar,
   Badge,
@@ -6,6 +6,7 @@ import {
   Loader,
   Select,
   Stack,
+  Switch,
   Text,
   TextInput,
   Divider,
@@ -23,6 +24,7 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useFiltrosPlanilla } from "../hooks/useFiltrosPlanilla";
 import { usePlanilla, formatearTramo, type PlanillaTramo } from "../hooks/usePlanilla";
 import { MESES } from "../../../shared/variables/meses";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import type {
   RES_PlanillaAsistencia,
   PlanillaTramoAsistencia,
@@ -37,10 +39,12 @@ interface EmpleadoAsistenciaCardProps {
     url_foto: string | null;
     tipo_contrato: string | null;
     sueldo_base: number | null;
+    sueldo_real: number | null;
     salario_diario: number | null;
     dias_trabajados: number;
     jornada_total: number;
     pago_total: number;
+    pago_total_real: number;
     cargo_nombre?: string | null;
     area_nombre?: string | null;
     es_contratista?: boolean | number;
@@ -59,8 +63,25 @@ const EmpleadoAsistenciaCard = ({
   yearVal,
   mesVal,
 }: EmpleadoAsistenciaCardProps) => {
-
+  const { en_modo_auditable } = useAuditoriaStore();
+  const [mostrarComparacion, setMostrarComparacion] = useState(false);
   const esContratista = Boolean(emp.es_contratista);
+
+  const esMensual = emp.tipo_contrato === "Planilla" || emp.tipo_contrato === "PeriodoPrueba";
+  const tieneDiferenciaSueldo =
+    esMensual &&
+    emp.sueldo_real !== null &&
+    emp.sueldo_base !== null &&
+    emp.sueldo_real !== emp.sueldo_base;
+
+  // Si estamos en modo auditoría, el sueldo a mostrar por defecto es el sueldo real
+  const sueldoAMostrar = en_modo_auditable
+    ? (esMensual ? emp.sueldo_real : emp.sueldo_base)
+    : emp.sueldo_base;
+
+  const pagoAMostrar = en_modo_auditable
+    ? (esMensual ? emp.pago_total_real : emp.pago_total)
+    : emp.pago_total;
 
   return (
     <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md p-5 space-y-5">
@@ -127,6 +148,23 @@ const EmpleadoAsistenciaCard = ({
                   </Badge>
                 </Tooltip>
               )}
+              {/* Check / Switch para comparar sueldos (solo visible si no está en modo auditoría y si los sueldos son distintos) */}
+              {!en_modo_auditable && tieneDiferenciaSueldo && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-950/40 border border-violet-500/30 rounded-xl backdrop-blur-sm transition-all hover:border-violet-500/50 shadow-sm">
+                  <Switch
+                    size="xs"
+                    color="violet"
+                    checked={mostrarComparacion}
+                    onChange={(event) => setMostrarComparacion(event.currentTarget.checked)}
+                    classNames={{
+                      track: "cursor-pointer",
+                    }}
+                  />
+                  <Text size="10px" fw={800} className="text-violet-300 cursor-pointer select-none tracking-tight">
+                    Comparar Sueldo Real
+                  </Text>
+                </div>
+              )}
             </div>
             <Group gap="xs" wrap="wrap">
               <Text size="xs" c="dimmed">
@@ -180,8 +218,8 @@ const EmpleadoAsistenciaCard = ({
                 Sueldo / Tarifa
               </Text>
               <Text size="xs" fw={900} className="text-zinc-300 font-mono">
-                {emp.tipo_contrato === "Planilla" || emp.tipo_contrato === "PeriodoPrueba"
-                  ? (emp.sueldo_base !== null ? `S/. ${Number(emp.sueldo_base).toFixed(2)}` : emp.salario_diario !== null ? `S/. ${Number(emp.salario_diario).toFixed(2)}` : "—")
+                {esMensual
+                  ? (sueldoAMostrar !== null ? `S/. ${Number(sueldoAMostrar).toFixed(2)}` : emp.salario_diario !== null ? `S/. ${Number(emp.salario_diario).toFixed(2)}` : "—")
                   : emp.tipo_contrato === "JornadaDiaria"
                     ? (emp.salario_diario !== null ? `S/. ${Number(emp.salario_diario).toFixed(2)}/día` : emp.sueldo_base !== null ? `S/. ${Number(emp.sueldo_base).toFixed(2)}` : "—")
                     : "—"}
@@ -197,7 +235,7 @@ const EmpleadoAsistenciaCard = ({
               className="h-9 px-6 border-0 bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-rose-950/20"
             >
               <Text size="xs" fw={900} className="text-center font-mono">
-                S/. {emp.pago_total.toFixed(2)}
+                S/. {pagoAMostrar.toFixed(2)}
               </Text>
             </Badge>
             <Text size="9px" c="zinc.5" fw={700} className="uppercase tracking-widest px-1">
@@ -206,6 +244,49 @@ const EmpleadoAsistenciaCard = ({
           </div>
         </div>
       </div>
+
+      {/* Ficha desplegable de comparativa Sueldo Real (cuando el switch está activo y no es modo auditoría) */}
+      {!en_modo_auditable && mostrarComparacion && tieneDiferenciaSueldo && (
+        <div className="flex flex-wrap justify-between items-center bg-gradient-to-r from-violet-950/40 via-purple-950/30 to-indigo-950/40 border border-violet-500/30 rounded-2xl p-3.5 px-5 animate-fade-in gap-4 shadow-inner">
+          <div className="flex items-center gap-2.5">
+            <Badge
+              variant="gradient"
+              gradient={{ from: "violet", to: "purple", deg: 135 }}
+              size="sm"
+              radius="md"
+              className="font-bold shadow-md shadow-violet-950/40"
+            >
+              Sueldo Real
+            </Badge>
+            <Text size="xs" fw={700} className="text-violet-200">
+              Cálculo basado en pago real contrato
+            </Text>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Text size="xs" className="text-zinc-400 font-medium">
+                Sueldo Real:
+              </Text>
+              <Text size="xs" fw={900} className="text-violet-300 font-mono">
+                S/. {Number(emp.sueldo_real).toFixed(2)}
+              </Text>
+            </div>
+            <div className="flex items-center gap-2">
+              <Text size="xs" className="text-zinc-400 font-medium">
+                Pago Real Acumulado:
+              </Text>
+              <Badge
+                variant="gradient"
+                gradient={{ from: "purple", to: "indigo", deg: 90 }}
+                size="lg"
+                className="font-mono text-white shadow-lg shadow-purple-950/40 px-4 h-7"
+              >
+                S/. {emp.pago_total_real.toFixed(2)}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grilla horizontal de días (1 al 31) */}
       <div className="overflow-x-auto w-full border border-zinc-800/80 rounded-xl bg-zinc-950/40 p-2">

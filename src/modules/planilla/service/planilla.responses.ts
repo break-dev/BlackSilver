@@ -33,11 +33,13 @@ export interface RES_PlanillaAsistencia {
   // Snapshot de la programación del día (FUENTE para cálculo).
   programacion_tipo_contrato?: TipoContrato | string | null;
   programacion_sueldo_base?: number | null;
+  programacion_sueldo_real?: number | null;
   programacion_sueldo_diario?: number | null;
 
   // Datos efectivos usados para el cálculo.
   tipo_contrato: TipoContrato | string | null;
   sueldo_base: number | null;
+  sueldo_real?: number | null;
   salario_diario: number | null;
 
   // Datos del contrato (referencial).
