@@ -34,11 +34,13 @@ export interface RES_Asistencia {
   // Snapshot de la programación del día (FUENTE para cálculo de pago).
   programacion_tipo_contrato?: TipoContrato | string | null;
   programacion_sueldo_base?: number | null;
+  programacion_sueldo_real?: number | null;
   programacion_sueldo_diario?: number | null;
 
   // Datos efectivos usados para el cálculo (snapshot con fallback al contrato).
   tipo_contrato: TipoContrato | string | null;
   sueldo_base: number | null;
+  sueldo_real?: number | null;
   salario_diario: number | null;
 
   // Datos del contrato (referencial, no para cálculo).

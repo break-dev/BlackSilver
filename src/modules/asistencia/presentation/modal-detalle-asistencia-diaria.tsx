@@ -5,6 +5,8 @@ import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type { RES_Asistencia } from "../service/asistencia.responses";
 
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+
 // Función utilitaria local para dar formato de 12 horas.
 const format12h = (timeStr: string | null | undefined) => {
   if (!timeStr) return "-";
@@ -51,9 +53,12 @@ export const ModalDetalleAsistenciaDiaria = ({
   empleadoDni,
   empleadoFoto,
 }: ModalDetalleAsistenciaDiariaProps) => {
+  const { en_modo_auditable } = useAuditoriaStore();
   // Sueldo snapshot del día (preferimos el snapshot de la programación sobre el contrato).
   const sueldoBaseEfectivo =
     selectedDia?.programacion_sueldo_base ?? selectedDia?.sueldo_base ?? null;
+  const sueldoRealEfectivo =
+    selectedDia?.programacion_sueldo_real ?? selectedDia?.sueldo_real ?? sueldoBaseEfectivo;
   const salarioDiarioEfectivo =
     selectedDia?.programacion_sueldo_diario ?? selectedDia?.salario_diario ?? null;
   const tipoEfectivo =
@@ -157,6 +162,14 @@ export const ModalDetalleAsistenciaDiaria = ({
                         : "—"}
                   </span>
                 </Text>
+                {(tipoEfectivo === "Planilla" || tipoEfectivo === "PeriodoPrueba") && !en_modo_auditable && sueldoRealEfectivo !== null && (
+                  <Text size="xs" className="text-zinc-300">
+                    Sueldo real:{" "}
+                    <span className="font-mono text-emerald-400 font-bold">
+                      S/. {sueldoRealEfectivo.toFixed(2)} (Mes)
+                    </span>
+                  </Text>
+                )}
               </div>
             </div>
 

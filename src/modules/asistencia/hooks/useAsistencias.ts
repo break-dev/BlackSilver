@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AsistenciaService } from "../service/asistencia.service";
 import type { RES_Asistencia } from "../service/asistencia.responses";
 import type { useFiltrosAsistencia } from "./useFiltrosAsistencia";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 type FiltrosHook = ReturnType<typeof useFiltrosAsistencia>;
 
@@ -13,6 +14,7 @@ type FiltrosHook = ReturnType<typeof useFiltrosAsistencia>;
  */
 export const useAsistencias = (filtros: FiltrosHook) => {
   const { notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const [asistencias, setAsistencias] = useState<RES_Asistencia[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,10 +42,18 @@ export const useAsistencias = (filtros: FiltrosHook) => {
     void cargar();
   }, [cargar]);
 
-  const asistenciasPorEmpleado = agruparPorEmpleado(asistencias);
+  const asistenciasFiltradas = useMemo(() => {
+    if (!en_modo_auditable) return asistencias;
+    return asistencias.filter((a) => {
+      const tipo = a.programacion_tipo_contrato || a.tipo_contrato;
+      return tipo === "Planilla" || tipo === "PeriodoPrueba";
+    });
+  }, [asistencias, en_modo_auditable]);
+
+  const asistenciasPorEmpleado = agruparPorEmpleado(asistenciasFiltradas);
 
   return {
-    asistencias,
+    asistencias: asistenciasFiltradas,
     asistenciasPorEmpleado,
     loading,
     recargar: cargar,
