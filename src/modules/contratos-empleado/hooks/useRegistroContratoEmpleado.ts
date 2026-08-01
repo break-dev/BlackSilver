@@ -34,6 +34,7 @@ const initialForm = (idEmpleado: number): DTO_CrearContratoEmpleado => ({
   id_oficina: null,
   tipo_contrato: TipoContrato.Planilla,
   sueldo_base: null,
+  sueldo_real: null,
   salario_diario: null,
   fecha_inicio: (() => {
     const d = new Date();
@@ -210,9 +211,16 @@ export const useRegistroContratoEmpleado = (
         const nuevoTipo = value as string;
         if (nuevoTipo === TipoContrato.JornadaDiaria) {
           next.sueldo_base = null;
+          next.sueldo_real = null;
         } else {
           next.salario_diario = null;
         }
+      }
+
+      // Si cambia sueldo_base, autocompletar sueldo_real si este aún no se ha modificado manualmente o está vacío
+      if (field === "sueldo_base") {
+        const nuevoBase = value as number | null;
+        next.sueldo_real = nuevoBase;
       }
 
       // Si cambió fecha_inicio o fecha_fin, autocalcular duracion y periodo_duracion
@@ -315,6 +323,12 @@ export const useRegistroContratoEmpleado = (
         form.tipo_contrato === TipoContrato.JornadaDiaria
           ? null
           : form.sueldo_base,
+      sueldo_real:
+        form.tipo_contrato === TipoContrato.JornadaDiaria
+          ? null
+          : form.sueldo_real !== null && form.sueldo_real !== undefined
+            ? form.sueldo_real
+            : form.sueldo_base,
       salario_diario:
         form.tipo_contrato === TipoContrato.JornadaDiaria
           ? form.salario_diario

@@ -14,6 +14,7 @@ export interface RES_ProgramacionHorario {
    */
   programacion_tipo_contrato?: string | null;
   programacion_sueldo_base?: string | number | null;
+  programacion_sueldo_real?: string | number | null;
   programacion_sueldo_diario?: string | number | null;
   /**
    * Valores ACTUALES del contrato (referenciados via JOIN).
@@ -21,6 +22,7 @@ export interface RES_ProgramacionHorario {
    */
   contrato_tipo_contrato?: string | null;
   contrato_sueldo_base?: string | number | null;
+  contrato_sueldo_real?: string | number | null;
   contrato_sueldo_diario?: string | number | null;
   contrato_fecha_inicio?: string | null;
   contrato_fecha_fin?: string | null;
@@ -122,6 +124,7 @@ export interface RES_EmpleadoElegible {
   id_contrato_vigente: number | null;
   id_cargo: number | null;
   contrato_estado?: string | null;
+  tipo_contrato_vigente?: string | null;
   contrato_indefinido?: boolean;
   contrato_fecha_fin?: string | null;
   puede_cubrir: boolean;

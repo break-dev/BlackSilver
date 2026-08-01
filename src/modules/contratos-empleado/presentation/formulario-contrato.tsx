@@ -30,6 +30,7 @@ import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-p
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import type { DTO_CrearEmpleado } from "../../personal/service/empleados.requests";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import { ContratosEmpleadoService } from "../service/contratos-empleado.service";
 import {
   Schema_CrearContratoEmpleado,
@@ -113,6 +114,7 @@ export const FormularioContratoEmpleado = ({
   esContratista = false,
 }: FormularioContratoEmpleadoProps) => {
   const { notify } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const {
     form,
     setField,
@@ -462,22 +464,41 @@ export const FormularioContratoEmpleado = ({
           disabled={submittingTotal}
         />
         {esPlanilla && (
-          <NumberInput
-            label={form.tipo_contrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
-            placeholder="Ej. 1500.00"
-            decimalScale={2}
-            fixedDecimalScale
-            hideControls
-            value={form.sueldo_base ?? ""}
-            onChange={(v) => setField("sueldo_base", toNum(v))}
-            leftSection={<CurrencyDollarIcon className="w-4 h-4 text-zinc-500" />}
-            classNames={fieldClasses}
-            radius="lg"
-            size="xs"
-            min={0}
-            disabled={submittingTotal}
-            withAsterisk
-          />
+          <>
+            <NumberInput
+              label={form.tipo_contrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
+              placeholder="Ej. 1500.00"
+              decimalScale={2}
+              fixedDecimalScale
+              hideControls
+              value={form.sueldo_base ?? ""}
+              onChange={(v) => setField("sueldo_base", toNum(v))}
+              leftSection={<CurrencyDollarIcon className="w-4 h-4 text-zinc-500" />}
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+              min={0}
+              disabled={submittingTotal}
+              withAsterisk
+            />
+            {!en_modo_auditable && (
+              <NumberInput
+                label="Sueldo Real (S/)"
+                placeholder="Ej. 1800.00"
+                decimalScale={2}
+                fixedDecimalScale
+                hideControls
+                value={form.sueldo_real ?? ""}
+                onChange={(v) => setField("sueldo_real", toNum(v))}
+                leftSection={<CurrencyDollarIcon className="w-4 h-4 text-emerald-500" />}
+                classNames={fieldClasses}
+                radius="lg"
+                size="xs"
+                min={0}
+                disabled={submittingTotal}
+              />
+            )}
+          </>
         )}
         {esJornada && (
           <NumberInput

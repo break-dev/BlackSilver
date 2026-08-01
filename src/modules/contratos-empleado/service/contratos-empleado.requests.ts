@@ -37,6 +37,11 @@ export const Schema_CrearContratoEmpleado = z
       .nullable()
       .optional()
       .transform(numberTransform),
+    sueldo_real: z
+      .number()
+      .nullable()
+      .optional()
+      .transform(numberTransform),
     salario_diario: z
       .number()
       .nullable()

@@ -36,6 +36,7 @@ import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 import { CambiosLogHistorial } from "../../../presentation/utils/cambios-log-historial";
 import { parseCambiosLog } from "../../../presentation/utils/parse-cambios-log";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type { RES_ContratoEmpleado, RES_EmpleadoConContrato } from "../../../service/responses/contrato-empleado";
 import { ModalContratoEmpleado } from "./modal-contrato-empleado";
@@ -88,6 +89,7 @@ export const ModalHistorialContratosEmpleado = ({
   esContratista = false,
 }: ModalHistorialContratosEmpleadoProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const { contratos, loading, reload, getUltimoContrato } =
     useHistorialContratosEmpleado(opened ? idEmpleado : null);
 
@@ -450,8 +452,8 @@ export const ModalHistorialContratosEmpleado = ({
                                   </Text>
                                 </Group>
                                 {sueldoMostrar && (
-                                  <Group gap={4} wrap="nowrap">
-                                    <CurrencyDollarIcon className="w-4 h-4 text-emerald-400/70" />
+                                  <Group gap={6} wrap="nowrap">
+                                    <CurrencyDollarIcon className="w-4 h-4 text-emerald-400/70 shrink-0" />
                                     <Text
                                       size="xs"
                                       fw={800}
@@ -460,6 +462,15 @@ export const ModalHistorialContratosEmpleado = ({
                                       S/ {Number(sueldoMostrar).toFixed(2)}
                                       {unidad}
                                     </Text>
+                                    {esSueldoMensual && !en_modo_auditable && c.sueldo_real !== null && c.sueldo_real !== undefined && c.sueldo_real !== "" && (
+                                      <Text
+                                        size="xs"
+                                        fw={700}
+                                        className="text-emerald-300/90 font-mono whitespace-nowrap"
+                                      >
+                                        (Sueldo real: S/ {Number(c.sueldo_real).toFixed(2)})
+                                      </Text>
+                                    )}
                                   </Group>
                                 )}
                                 {c.empresa && (

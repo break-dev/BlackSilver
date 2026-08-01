@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProgramacionHorarioService } from "../service/programacion.service";
 import type { RES_EmpleadoElegible } from "../service/programacion.responses";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 /**
  * Carga los empleados con contrato vigente Activo, y opcionalmente anota
@@ -18,6 +19,7 @@ export const useEmpleadosElegibles = (
   tipoLugar: "" | "almacen" | "labor" | "oficina" | null = null,
 ) => {
   const { notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
   const [empleados, setEmpleados] = useState<RES_EmpleadoElegible[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,5 +46,13 @@ export const useEmpleadosElegibles = (
     void cargar();
   }, [cargar]);
 
-  return { empleados, loading, recargar: cargar };
+  const empleadosFiltrados = useMemo(() => {
+    if (!en_modo_auditable) return empleados;
+    return empleados.filter((emp) => {
+      const tipo = emp.tipo_contrato_vigente;
+      return tipo === "Planilla" || tipo === "PeriodoPrueba";
+    });
+  }, [empleados, en_modo_auditable]);
+
+  return { empleados: empleadosFiltrados, loading, recargar: cargar };
 };

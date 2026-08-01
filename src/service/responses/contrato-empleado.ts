@@ -21,6 +21,7 @@ export interface RES_ContratoEmpleado {
   oficina?: string | null;
   tipo_contrato: "Planilla" | "JornadaDiaria" | string;
   sueldo_base: string | number | null;
+  sueldo_real: string | number | null;
   salario_diario: string | number | null;
   fecha_inicio: string;
   por_tiempo_indefinido: boolean;

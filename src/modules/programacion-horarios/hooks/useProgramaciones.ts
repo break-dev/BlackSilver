@@ -28,7 +28,10 @@ const finSemana = (inicio: Date): Date => {
   return d;
 };
 
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+
 export const useProgramaciones = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const { notifyError } = useNotify();
   const [fechaReferencia, setFechaReferencia] = useState<Date>(new Date());
   const [programaciones, setProgramaciones] = useState<RES_ProgramacionHorario[]>([]);
@@ -45,6 +48,17 @@ export const useProgramaciones = () => {
       fecha_fin: formatYmd(fin),
     };
   }, [fechaReferencia]);
+
+  const programacionesFiltradas = useMemo(() => {
+    if (!en_modo_auditable) return programaciones;
+    return programaciones.filter((p) => {
+      const tipo =
+        p.programacion_tipo_contrato ||
+        p.contrato_tipo_contrato ||
+        p.tipo_contrato;
+      return tipo === "Planilla" || tipo === "PeriodoPrueba";
+    });
+  }, [programaciones, en_modo_auditable]);
 
   const cargar = useCallback(
     async (rangoParam?: RangoSemana) => {
@@ -127,7 +141,7 @@ export const useProgramaciones = () => {
 
   return {
     rango,
-    programaciones,
+    programaciones: programacionesFiltradas,
     loading,
     fechaReferencia,
     setFechaReferencia,

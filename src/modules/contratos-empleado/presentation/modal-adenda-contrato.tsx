@@ -31,6 +31,7 @@ import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 import { useNotify } from "../../../hooks/useNotify";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import { ContratosEmpleadoService } from "../service/contratos-empleado.service";
 import type {
   RES_ContratoEmpleado,
@@ -79,6 +80,7 @@ function detectarCambios(
   form: {
     tipoContrato: string;
     sueldoBase: number | null;
+    sueldoReal: number | null;
     salarioDiario: number | null;
     idAlmacen: number | null;
     idLabor: number | null;
@@ -99,6 +101,13 @@ function detectarCambios(
       afectaSnapshot: true,
       afectaLugar: false,
       campoLabel: "Sueldo Base",
+    });
+  }
+  if (toNum(form.sueldoReal) !== toNum(contrato.sueldo_real)) {
+    cambios.push({
+      afectaSnapshot: true,
+      afectaLugar: false,
+      campoLabel: "Sueldo Real",
     });
   }
   if (toNum(form.salarioDiario) !== toNum(contrato.salario_diario)) {
@@ -172,6 +181,7 @@ export const ModalAdendaContrato = ({
   onSuccess,
 }: ModalAdendaContratoProps) => {
   const { notifySuccess, notifyError } = useNotify();
+  const { en_modo_auditable } = useAuditoriaStore();
 
   // Catalogs state
   const [areas, setAreas] = useState<RES_Area[]>([]);
@@ -191,6 +201,7 @@ export const ModalAdendaContrato = ({
   const [idEmpresa, setIdEmpresa] = useState<number>(contrato.id_empresa ?? 0);
   const [tipoContrato, setTipoContrato] = useState<string>(contrato.tipo_contrato);
   const [sueldoBase, setSueldoBase] = useState<number | null>(toNum(contrato.sueldo_base));
+  const [sueldoReal, setSueldoReal] = useState<number | null>(toNum(contrato.sueldo_real) ?? toNum(contrato.sueldo_base));
   const [salarioDiario, setSalarioDiario] = useState<number | null>(toNum(contrato.salario_diario));
   const [fechaInicio, setFechaInicio] = useState<string>(contrato.fecha_inicio);
   const [porTiempoIndefinido, setPorTiempoIndefinido] = useState<boolean>(contrato.por_tiempo_indefinido);
@@ -353,6 +364,7 @@ export const ModalAdendaContrato = ({
     if ((idEmpresa || null) !== (contrato.id_empresa ?? null)) return true;
     if (tipoContrato !== contrato.tipo_contrato) return true;
     if (toNum(sueldoBase) !== toNum(contrato.sueldo_base)) return true;
+    if (toNum(sueldoReal) !== toNum(contrato.sueldo_real)) return true;
     if (toNum(salarioDiario) !== toNum(contrato.salario_diario)) return true;
     if (fechaInicio !== contrato.fecha_inicio) return true;
     if (porTiempoIndefinido !== contrato.por_tiempo_indefinido) return true;
@@ -374,6 +386,7 @@ export const ModalAdendaContrato = ({
     idEmpresa, contrato.id_empresa,
     tipoContrato, contrato.tipo_contrato,
     sueldoBase, contrato.sueldo_base,
+    sueldoReal, contrato.sueldo_real,
     salarioDiario, contrato.salario_diario,
     fechaInicio, contrato.fecha_inicio,
     porTiempoIndefinido, contrato.por_tiempo_indefinido,
@@ -390,6 +403,7 @@ export const ModalAdendaContrato = ({
       detectarCambios(contrato, {
         tipoContrato,
         sueldoBase,
+        sueldoReal,
         salarioDiario,
         idAlmacen: tipoLugar === "almacen" ? idAlmacen : null,
         idLabor: tipoLugar === "labor" ? idLabor : null,
@@ -399,6 +413,7 @@ export const ModalAdendaContrato = ({
       contrato,
       tipoContrato,
       sueldoBase,
+      sueldoReal,
       salarioDiario,
       tipoLugar,
       idAlmacen,
@@ -423,6 +438,9 @@ export const ModalAdendaContrato = ({
         id_empresa: idEmpresa || 0,
         tipo_contrato: tipoContrato,
         sueldo_base: esPlanilla ? sueldoBase : null,
+        sueldo_real: esPlanilla
+          ? (sueldoReal !== null && sueldoReal !== undefined ? sueldoReal : sueldoBase)
+          : null,
         salario_diario: esJornada ? salarioDiario : null,
         fecha_inicio: fechaInicio,
         por_tiempo_indefinido: porTiempoIndefinido,
@@ -614,8 +632,10 @@ export const ModalAdendaContrato = ({
               ]}
               value={tipoContrato}
               onChange={(val) => {
-                setTipoContrato(val ?? TipoContrato.Planilla);
+                const nuevoTipo = val ?? TipoContrato.Planilla;
+                setTipoContrato(nuevoTipo);
                 setSueldoBase(null);
+                setSueldoReal(null);
                 setSalarioDiario(null);
               }}
               leftSection={<DocumentTextIcon className="w-4 h-4 text-zinc-500" />}
@@ -647,23 +667,45 @@ export const ModalAdendaContrato = ({
               comboboxProps={{ withinPortal: true }}
             />
             {esPlanilla && (
-              <NumberInput
-                label={tipoContrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
-                placeholder="Ej. 1500.00"
-                decimalScale={2}
-                fixedDecimalScale
-                hideControls
-                value={sueldoBase ?? ""}
-                onChange={(v) => setSueldoBase(toNum(v))}
-                leftSection={<CurrencyDollarIcon className="w-4 h-4 text-zinc-500" />}
-                classNames={fieldClasses}
-                radius="lg"
-                size="xs"
-                min={0}
-                disabled={submitting}
-                required
-                withAsterisk
-              />
+              <>
+                <NumberInput
+                  label={tipoContrato === TipoContrato.PeriodoPrueba ? "Sueldo Mensual (S/)" : "Sueldo Base (S/)"}
+                  placeholder="Ej. 1500.00"
+                  decimalScale={2}
+                  fixedDecimalScale
+                  hideControls
+                  value={sueldoBase ?? ""}
+                  onChange={(v) => {
+                    const num = toNum(v);
+                    setSueldoBase(num);
+                  }}
+                  leftSection={<CurrencyDollarIcon className="w-4 h-4 text-zinc-500" />}
+                  classNames={fieldClasses}
+                  radius="lg"
+                  size="xs"
+                  min={0}
+                  disabled={submitting}
+                  required
+                  withAsterisk
+                />
+                {!en_modo_auditable && (
+                  <NumberInput
+                    label="Sueldo Real (S/)"
+                    placeholder="Ej. 1800.00"
+                    decimalScale={2}
+                    fixedDecimalScale
+                    hideControls
+                    value={sueldoReal ?? ""}
+                    onChange={(v) => setSueldoReal(toNum(v))}
+                    leftSection={<CurrencyDollarIcon className="w-4 h-4 text-emerald-500" />}
+                    classNames={fieldClasses}
+                    radius="lg"
+                    size="xs"
+                    min={0}
+                    disabled={submitting}
+                  />
+                )}
+              </>
             )}
             {esJornada && (
               <NumberInput
