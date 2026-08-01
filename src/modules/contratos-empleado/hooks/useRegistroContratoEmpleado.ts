@@ -205,6 +205,16 @@ export const useRegistroContratoEmpleado = (
     setForm((prev) => {
       const next = { ...prev, [field]: value };
 
+      // Si cambia el tipo_contrato, limpiar el salario que no corresponde
+      if (field === "tipo_contrato") {
+        const nuevoTipo = value as string;
+        if (nuevoTipo === TipoContrato.JornadaDiaria) {
+          next.sueldo_base = null;
+        } else {
+          next.salario_diario = null;
+        }
+      }
+
       // Si cambió fecha_inicio o fecha_fin, autocalcular duracion y periodo_duracion
       if (field === "fecha_inicio" || field === "fecha_fin") {
         const inicio =
@@ -299,7 +309,19 @@ export const useRegistroContratoEmpleado = (
   const handleClearEvidencias = () => setEvidencias([]);
 
   const handleSubmit = async () => {
-    const validation = Schema_CrearContratoEmpleado.safeParse(form);
+    const payloadSanitizado = {
+      ...form,
+      sueldo_base:
+        form.tipo_contrato === TipoContrato.JornadaDiaria
+          ? null
+          : form.sueldo_base,
+      salario_diario:
+        form.tipo_contrato === TipoContrato.JornadaDiaria
+          ? form.salario_diario
+          : null,
+    };
+
+    const validation = Schema_CrearContratoEmpleado.safeParse(payloadSanitizado);
     if (!validation.success) {
       notify({ type: "info", content: validation.error.issues[0].message });
       return;

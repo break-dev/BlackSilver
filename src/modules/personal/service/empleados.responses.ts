@@ -23,6 +23,7 @@ export interface RES_EmpleadoResumen {
   con_contrato: boolean;
   contrato_fecha_fin?: string | null;
   contrato_por_tiempo_indefinido?: boolean | null;
+  tipo_contrato_vigente?: string | null;
   direccion: string | null;
   telefono: string | null;
   email: string | null;
@@ -62,6 +63,7 @@ export interface RES_ContratistaResumen {
   id_contrato_vigente?: number | null;
   contrato_fecha_fin?: string | null;
   contrato_por_tiempo_indefinido?: boolean | null;
+  tipo_contrato_vigente?: string | null;
   estado: EstadoBase;
   labores_asignadas: RES_LaborContratista[];
   ids_labor_asignadas?: string | null;

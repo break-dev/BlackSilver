@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { ContratistasService } from "../service/empleados.service";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
 
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+
 export const useContratistas = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const [idMina, setIdMina] = useState<number | null>(null);
   const [contratistas, setContratistas] = useState<RES_ContratistaResumen[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +38,16 @@ export const useContratistas = () => {
   const filtrados = useMemo(() => {
     let results = contratistas;
 
+    if (en_modo_auditable) {
+      results = results.filter((c) => {
+        if (!c.con_contrato || !c.id_contrato_vigente) {
+          return false;
+        }
+        const tipo = c.tipo_contrato_vigente;
+        return tipo === "Planilla" || tipo === "PeriodoPrueba";
+      });
+    }
+
     // Filtro por Mina Local
     if (idMina) {
       results = results.filter((e) => e.id_mina === idMina);
@@ -52,7 +65,7 @@ export const useContratistas = () => {
     }
 
     return results;
-  }, [contratistas, idMina, busqueda]);
+  }, [contratistas, idMina, busqueda, en_modo_auditable]);
 
   const pushNuevoContratista = (nuevo: RES_ContratistaResumen) => {
     setContratistas((prev) => [nuevo, ...prev]);

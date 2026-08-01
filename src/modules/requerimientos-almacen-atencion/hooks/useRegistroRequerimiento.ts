@@ -343,6 +343,7 @@ export const useRegistroRequerimiento = ({
     notifySuccess,
     prepare,
     productos,
+    fechaSolicitud,
   ]);
 
   return {

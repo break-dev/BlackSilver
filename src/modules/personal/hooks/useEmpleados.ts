@@ -2,7 +2,10 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { EmpleadosService } from "../service/empleados.service";
 import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
+
 export const useEmpleados = () => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const [empleados, setEmpleados] = useState<RES_EmpleadoResumen[]>([]);
   const [loading, setLoading] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -48,6 +51,16 @@ export const useEmpleados = () => {
   const filtrados = useMemo(() => {
     let results = empleados;
 
+    if (en_modo_auditable) {
+      results = results.filter((e) => {
+        if (!e.con_contrato || !e.id_contrato_vigente) {
+          return false;
+        }
+        const tipo = e.tipo_contrato_vigente;
+        return tipo === "Planilla" || tipo === "PeriodoPrueba";
+      });
+    }
+
     const query = busqueda.toLowerCase().trim();
     if (query) {
       results = results.filter(
@@ -69,7 +82,7 @@ export const useEmpleados = () => {
     }
 
     return results;
-  }, [empleados, busqueda, filtroArea, filtroEmpresa]);
+  }, [empleados, busqueda, filtroArea, filtroEmpresa, en_modo_auditable]);
 
   const areasUnicas = useMemo(() => {
     const set = new Set(empleados.map((e) => e.area).filter(Boolean));
