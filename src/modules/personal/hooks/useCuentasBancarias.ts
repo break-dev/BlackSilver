@@ -64,6 +64,13 @@ export const useCuentasBancarias = (idEmpleado: number | null) => {
     insertCuenta: (c: RES_CuentaBancariaEmpleado) => {
       setCuentas((prev) => [c, ...prev]);
     },
+    updateCuenta: (c: RES_CuentaBancariaEmpleado) => {
+      setCuentas((prev) =>
+        prev.map((item) =>
+          item.id_cuenta_bancaria === c.id_cuenta_bancaria ? c : item,
+        ),
+      );
+    },
     reloadCuentas: () => {
       if (idEmpleado) fetchCuentas(idEmpleado);
     },

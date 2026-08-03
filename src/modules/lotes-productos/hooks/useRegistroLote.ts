@@ -46,22 +46,22 @@ export const useRegistroLote = ({
   const [numeroFacturaCompra, setNumeroFacturaCompra] = useState("");
   const [costoPorUnidad, setCostoPorUnidad] = useState<number | null>(null);
 
+  const loadProductos = async () => {
+    setLoadingProductos(true);
+    try {
+      const res = await AuxService.get_productos({
+        tipo_bien_excluido: TipoBien.ActivoFijo,
+      });
+      if (res.success) setProductos(res.data);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoadingProductos(false);
+    }
+  };
+
   // Load catalogs
   useEffect(() => {
-    const loadProductos = async () => {
-      setLoadingProductos(true);
-      try {
-        const res = await AuxService.get_productos({
-          tipo_bien_excluido: TipoBien.ActivoFijo,
-        });
-        if (res.success) setProductos(res.data);
-      } catch (err) {
-        setError(String(err));
-      } finally {
-        setLoadingProductos(false);
-      }
-    };
-
     const loadUnidades = async () => {
       setLoadingUnidades(true);
       try {
@@ -228,5 +228,6 @@ export const useRegistroLote = ({
     },
 
     handleSubmit,
+    recargarProductos: loadProductos,
   };
 };

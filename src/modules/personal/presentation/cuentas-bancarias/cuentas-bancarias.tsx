@@ -1,11 +1,14 @@
 import { useCuentasBancarias } from "../../hooks/useCuentasBancarias";
+import { useEdicionCuentaBancariaEmpleado } from "../../hooks/useEdicionCuentaBancariaEmpleado";
 import type { RES_EmpleadoResumen, RES_CuentaBancariaEmpleado } from "../../service/empleados.responses";
 import {
   RegistroCuenta,
   type RegistroCuentaRef,
 } from "./components/registro-cuenta";
 import { CuentaBancaria } from "./components/cuenta-bancaria";
-import { useRef } from "react";
+import { EdicionCuentaBancariaEmpleadoComponent } from "./components/edicion-cuenta-empleado";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { useEffect, useRef, useState } from "react";
 import { Loader, Text } from "@mantine/core";
 import { IconCreditCard } from "@tabler/icons-react";
 
@@ -22,15 +25,47 @@ export const CuentasBancarias = ({ empleado, onCuentaAddedGlobal }: Props) => {
     loadingCuentas,
     loadingBancos,
     insertCuenta,
+    updateCuenta,
   } = useCuentasBancarias(empleado.id_empleado);
 
   const regCuentaRef = useRef<RegistroCuentaRef>(null);
+  const [cuentaAEditar, setCuentaAEditar] = useState<RES_CuentaBancariaEmpleado | null>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+
+  const edicion = useEdicionCuentaBancariaEmpleado({
+    onSuccess: (cuentaActualizada) => {
+      updateCuenta(cuentaActualizada);
+      if (onCuentaAddedGlobal) {
+        onCuentaAddedGlobal();
+      }
+    },
+    onClose: () => setOpenEdit(false),
+  });
+
+  useEffect(() => {
+    if (cuentaAEditar) {
+      edicion.cargarCuenta(cuentaAEditar);
+    } else {
+      edicion.reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cuentaAEditar]);
 
   const handleCuentaAdded = (nuevaCuenta: RES_CuentaBancariaEmpleado) => {
     insertCuenta(nuevaCuenta);
     if (onCuentaAddedGlobal) {
       onCuentaAddedGlobal();
     }
+  };
+
+  const handleOpenEdit = (cuenta: RES_CuentaBancariaEmpleado) => {
+    setCuentaAEditar(cuenta);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setCuentaAEditar(null);
   };
 
   return (
@@ -68,7 +103,11 @@ export const CuentasBancarias = ({ empleado, onCuentaAddedGlobal }: Props) => {
         ) : cuentas.length > 0 ? (
           <div className="flex flex-col gap-3">
             {cuentas.map((cuenta) => (
-              <CuentaBancaria key={cuenta.id_cuenta_bancaria} cuenta={cuenta} />
+              <CuentaBancaria
+                key={cuenta.id_cuenta_bancaria}
+                cuenta={cuenta}
+                onEdit={handleOpenEdit}
+              />
             ))}
           </div>
         ) : (
@@ -84,6 +123,23 @@ export const CuentasBancarias = ({ empleado, onCuentaAddedGlobal }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Modal: Edición de Cuenta Bancaria */}
+      <ModalEstandar
+        opened={openEdit}
+        close={handleCloseEdit}
+        title="Editar Cuenta Bancaria"
+        size="md"
+        validateClose
+        closeConfirmationMessage="Vas a descartar los cambios no guardados de esta cuenta bancaria."
+      >
+        {cuentaAEditar && (
+          <EdicionCuentaBancariaEmpleadoComponent
+            hook={edicion}
+            onCancel={handleCloseEdit}
+          />
+        )}
+      </ModalEstandar>
     </div>
   );
 };

@@ -34,8 +34,10 @@ export interface RES_EmpleadoResumen {
 
 export interface RES_CuentaBancariaEmpleado {
   id_cuenta_bancaria: number;
+  id_banco?: number;
   banco: string;
   banco_abv: string;
+  tipo_cuenta_bancaria?: string | null;
   moneda: string;
   numero_cuenta: string;
   cci: string | null;

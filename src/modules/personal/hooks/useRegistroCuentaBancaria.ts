@@ -7,6 +7,7 @@ import {
 } from "../service/empleados.requests";
 import type { RES_CuentaBancariaEmpleado } from "../service/empleados.responses";
 import type { RES_Banco } from "../../../service/responses/banco";
+import { TipoCuentaBank } from "../../../shared/enums/tipo-cuenta-bank";
 
 export const useRegistroCuentaBancaria = (
   idEmpleado: number | null,
@@ -19,6 +20,7 @@ export const useRegistroCuentaBancaria = (
 
   const [payload, setPayload] = useState<Omit<DTO_CrearCuentaBancariaEmpleado, "id_empleado">>({
     id_banco: 0,
+    tipo_cuenta_bancaria: TipoCuentaBank.CuentaSueldo,
     moneda: "Soles",
     numero_cuenta: "",
     cci: "",
@@ -71,6 +73,7 @@ export const useRegistroCuentaBancaria = (
         notifySuccess("Cuenta bancaria añadida");
         setPayload({
           id_banco: bancos.length > 0 ? bancos[0].id_banco : 0,
+          tipo_cuenta_bancaria: TipoCuentaBank.CuentaSueldo,
           moneda: "Soles",
           numero_cuenta: "",
           cci: "",

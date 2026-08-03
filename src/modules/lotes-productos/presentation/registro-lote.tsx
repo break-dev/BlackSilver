@@ -8,17 +8,24 @@ import {
   Paper,
   Divider,
   TextInput,
+  ActionIcon,
 } from "@mantine/core";
 import {
   ArchiveBoxIcon,
   ScaleIcon,
   InformationCircleIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
+import { useDisclosure } from "@mantine/hooks";
+import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { RegistroProducto } from "../../productos/presentation/registro-producto";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { useRegistroLote } from "../hooks/useRegistroLote";
 import type { RES_Lote } from "../service/lotes.responses";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
+
+import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface RegistroLoteProps {
   onSuccess: (lote: RES_Lote) => void;
@@ -33,6 +40,9 @@ export const RegistroLote = ({
   initialAlmacenId,
   almacenes,
 }: RegistroLoteProps) => {
+  const [openedAddProducto, { open: openAddProducto, close: closeAddProducto }] =
+    useDisclosure(false);
+
   const {
     idAlmacen,
     setIdAlmacen,
@@ -63,6 +73,7 @@ export const RegistroLote = ({
     catalogs,
     derived,
     handleSubmit,
+    recargarProductos,
   } = useRegistroLote({ initialAlmacenId, almacenes, onSuccess });
 
   const inputClasses = {
@@ -100,27 +111,44 @@ export const RegistroLote = ({
           }}
         />
 
-        <Select
-          label="Producto a ingresar"
-          placeholder="Buscar producto..."
-          data={catalogs.productos.map((p) => ({
-            value: String(p.id_producto),
-            label: p.nombre,
-          }))}
-          searchable
-          withAsterisk
-          disabled={loadingProductos}
-          value={idProducto ? String(idProducto) : null}
-          onChange={(val) => setIdProducto(Number(val))}
-          classNames={inputClasses}
-          radius="lg"
-          size="sm"
-          comboboxProps={{
-            withinPortal: true,
-            zIndex: 9999,
-            transitionProps: { transition: "pop", duration: 200 },
-          }}
-        />
+        <div className="flex flex-col gap-1">
+          <Text size="sm" className={inputClasses.label}>
+            Producto a ingresar <span className="text-red-500">*</span>
+          </Text>
+          <div className="flex gap-2 items-center">
+            <Select
+              placeholder="Buscar producto..."
+              data={catalogs.productos.map((p) => ({
+                value: String(p.id_producto),
+                label: p.nombre,
+              }))}
+              searchable
+              disabled={loadingProductos}
+              value={idProducto ? String(idProducto) : null}
+              onChange={(val) => setIdProducto(Number(val))}
+              classNames={inputClasses}
+              radius="lg"
+              size="sm"
+              comboboxProps={{
+                withinPortal: true,
+                zIndex: 9999,
+                transitionProps: { transition: "pop", duration: 200 },
+              }}
+              className="flex-1"
+            />
+            <ActionIcon
+              size="lg"
+              radius="lg"
+              variant="filled"
+              color="indigo"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors h-9"
+              onClick={openAddProducto}
+              title="Registrar nuevo producto"
+            >
+              <PlusIcon className="w-5 h-5 text-white" />
+            </ActionIcon>
+          </div>
+        </div>
 
         <Divider className="md:col-span-2 border-zinc-800/40 my-2" />
 
@@ -358,6 +386,46 @@ export const RegistroLote = ({
           Confirmar Registro
         </Button>
       </Group>
+
+      {/* MODAL CREAR PRODUCTO */}
+      <ModalEstandar
+        opened={openedAddProducto}
+        close={closeAddProducto}
+        title="Nuevo Producto"
+        size="lg"
+        zIndex={10001}
+      >
+        <RegistroProducto
+          productosExistentes={catalogs.productos.map((p) => ({
+            id_producto: p.id_producto,
+            nombre: p.nombre,
+            prefijo: p.prefijo,
+            id_categoria: p.id_categoria,
+            categoria: p.categoria,
+            clasificacion_bien: p.tipo_bien,
+            id_unidad_medida_base: p.id_unidad_medida_base,
+            unidad_medida_base: p.unidad_medida_base,
+            unidad_medida_base_abreviatura: p.unidad_medida_base_abv,
+            es_auditable: p.es_auditable,
+            es_perecible: p.es_perecible,
+            para_mantenimiento: p.para_mantenimiento,
+            stock_minimo_base: p.stock_minimo_base,
+            moneda: p.moneda,
+            costo_promedio_base: p.costo_promedio_base,
+            costo_promedio_base_log: null,
+            tiempo_espera_vencimiento: null,
+            periodo_espera_vencimiento: null,
+            dias_espera_vencimiento: p.dias_espera_vencimiento,
+            estado: EstadoBase.Activo,
+          }))}
+          onSuccess={(nuevo) => {
+            recargarProductos();
+            setIdProducto(nuevo.id_producto);
+            closeAddProducto();
+          }}
+          onCancel={closeAddProducto}
+        />
+      </ModalEstandar>
     </form>
   );
 };

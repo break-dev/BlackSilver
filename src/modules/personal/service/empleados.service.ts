@@ -7,6 +7,7 @@ import type {
   DTO_CrearContratista,
   DTO_CrearEmpleado,
   DTO_CrearCuentaBancariaEmpleado,
+  DTO_ActualizarCuentaBancariaEmpleado,
 } from "./empleados.requests";
 import type {
   RES_ContratistaResumen,
@@ -101,6 +102,17 @@ export class EmpleadosService {
     payload: DTO_CrearCuentaBancariaEmpleado,
   ): Promise<IRespuesta<RES_CuentaBancariaEmpleado>> => {
     const { data } = await api.post(`${this.PATH}/cuentas-bancarias`, payload);
+    return data;
+  };
+
+  public static actualizar_cuenta_bancaria = async (
+    idCuentaBancaria: number,
+    payload: DTO_ActualizarCuentaBancariaEmpleado,
+  ): Promise<IRespuesta<RES_CuentaBancariaEmpleado>> => {
+    const { data } = await api.put(
+      `${this.PATH}/cuentas-bancarias/${idCuentaBancaria}`,
+      payload,
+    );
     return data;
   };
 

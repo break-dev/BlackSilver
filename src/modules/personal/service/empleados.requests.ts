@@ -170,6 +170,7 @@ export interface DTO_AsignarLaboresContratista {
 export const Schema_CrearCuentaBancariaEmpleado = z.object({
   id_empleado: z.number().min(1, "Seleccione un empleado"),
   id_banco: z.number().min(1, "Seleccione un banco válido"),
+  tipo_cuenta_bancaria: z.string().optional().nullable(),
   moneda: z.string().min(1, "Seleccione una moneda"),
   numero_cuenta: z.string().min(1, "El número de cuenta es requerido"),
   cci: z.string().optional().nullable(),
@@ -177,6 +178,18 @@ export const Schema_CrearCuentaBancariaEmpleado = z.object({
 
 export type DTO_CrearCuentaBancariaEmpleado = z.infer<
   typeof Schema_CrearCuentaBancariaEmpleado
+>;
+
+export const Schema_ActualizarCuentaBancariaEmpleado = z.object({
+  id_banco: z.number().min(1, "Seleccione un banco válido"),
+  tipo_cuenta_bancaria: z.string().optional().nullable(),
+  moneda: z.string().min(1, "Seleccione una moneda"),
+  numero_cuenta: z.string().min(1, "El número de cuenta es requerido"),
+  cci: z.string().optional().nullable(),
+});
+
+export type DTO_ActualizarCuentaBancariaEmpleado = z.infer<
+  typeof Schema_ActualizarCuentaBancariaEmpleado
 >;
 
 export const Schema_CrearBanco = z.object({
