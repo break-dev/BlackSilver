@@ -273,7 +273,9 @@ export const AsignacionLaboresContratista = ({
                       {lab.nombre}
                     </Badge>
                     <Text size="xs" c="dimmed">
-                      {dayjs(lab.fecha_inicio).format("DD/MM/YYYY")}
+                      {lab.fecha_inicio
+                        ? dayjs(lab.fecha_inicio).format("DD/MM/YYYY")
+                        : "—"}
                       {lab.fecha_fin
                         ? ` → ${dayjs(lab.fecha_fin).format("DD/MM/YYYY")}`
                         : ""}
