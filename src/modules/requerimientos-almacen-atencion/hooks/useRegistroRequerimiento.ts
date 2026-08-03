@@ -46,7 +46,7 @@ export const useRegistroRequerimiento = ({
   // Catálogos
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
   const [contratistas, setContratistas] = useState<RES_Contratista[]>([]);
-  const [verContratistas, setVerContratistas] = useState(false);
+  const [verContratistas, setVerContratistas] = useState(true);
   const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [unidades, setUnidades] = useState<RES_UnidadMedida[]>([]);
@@ -149,6 +149,19 @@ export const useRegistroRequerimiento = ({
       setContenido(1);
     }
   }, [sonUnidadesIdenticas]);
+
+  // Auto-seleccionar contratista responsable al elegir una labor
+  useEffect(() => {
+    if (!idLabor || !verContratistas) return;
+    const responsable = contratistas.find((c) => {
+      if (!c.ids_labores_activas) return false;
+      const ids = c.ids_labores_activas.split(",").map(Number);
+      return ids.includes(idLabor);
+    });
+    if (responsable) {
+      setIdEmpleadoSolicitante(responsable.id_contratista);
+    }
+  }, [idLabor, contratistas, verContratistas]);
 
   // Auto-selección de unidad al elegir producto
   useEffect(() => {

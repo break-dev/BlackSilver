@@ -369,6 +369,7 @@ export const RegistroRequerimiento = ({
                   disabled={
                     productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo
                   }
+                  searchable
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
