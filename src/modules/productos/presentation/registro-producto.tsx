@@ -152,14 +152,16 @@ export const RegistroProducto = ({
             <Popover.Target>
               <TextInput
                 label={<LabelForm text="Nombre" required />}
-                placeholder="Ej: Dinamita 7/8 Famesa"
+                placeholder="Ej: DINAMITA 7/8 FAMESA"
                 value={form.nombre}
-                onChange={(e) => setField("nombre", e.currentTarget.value)}
+                onChange={(e) =>
+                  setField("nombre", e.currentTarget.value.toUpperCase())
+                }
                 onFocus={() => setFocused.open()}
                 onBlur={() => setFocused.close()}
                 classNames={{
                   input:
-                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+                    "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10 uppercase",
                 }}
                 radius="lg"
                 rightSection={

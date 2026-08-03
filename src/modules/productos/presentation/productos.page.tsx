@@ -178,7 +178,12 @@ export const ProductosPage = () => {
             <Text size="sm" fw={500} className="text-zinc-300">
               {formatNumber(r.stock_minimo_base)}
             </Text>
-            <Badge size="sm" className="text-zinc-500">
+            <Badge
+              size="sm"
+              variant="gradient"
+              gradient={{ from: "violet", to: "cyan", deg: 135 }}
+              className="text-white font-semibold"
+            >
               {enPlural(r.unidad_medida_base, r.stock_minimo_base)}
             </Badge>
           </div>
