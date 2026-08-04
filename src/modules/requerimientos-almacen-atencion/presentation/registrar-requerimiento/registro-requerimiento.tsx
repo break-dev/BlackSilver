@@ -103,6 +103,8 @@ export const RegistroRequerimiento = ({
       setCantidad,
       contenido,
       setContenido,
+      calculoInteligente,
+      setCalculoInteligente,
       comentarioItem,
       setComentarioItem,
       paraMantenimientoItem,
@@ -123,7 +125,6 @@ export const RegistroRequerimiento = ({
       agregarItem,
       eliminarItem,
       actualizarCantidadItem,
-      actualizarContenidoItem,
       handleSubmit,
     },
   } = useRegistroRequerimiento({ onSuccess, idAlmacenFijo });
@@ -339,7 +340,7 @@ export const RegistroRequerimiento = ({
         <div className="space-y-6">
           <div className="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
-              <div className="md:col-span-5">
+              <div className="md:col-span-3">
                 <Select
                   label="Producto"
                   placeholder="Seleccione producto"
@@ -350,6 +351,19 @@ export const RegistroRequerimiento = ({
                   value={idProducto ? String(idProducto) : null}
                   onChange={(val) => setIdProducto(Number(val))}
                   searchable
+                  classNames={inputClasses}
+                  radius="lg"
+                  size="sm"
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <NumberInput
+                  label={`Cantidad`}
+                  placeholder="0"
+                  value={cantidad}
+                  onChange={(val) => setCantidad(Number(val))}
+                  min={0}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -376,27 +390,48 @@ export const RegistroRequerimiento = ({
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
+                <div className="flex items-center justify-between mb-1.5 h-5">
+                  <Text
+                    component="label"
+                    fw={600}
+                    fz="sm"
+                    c="zinc.3"
+                    className="tracking-tight"
+                  >
+                    {calculoInteligente
+                      ? `${productoSeleccionado?.unidad_medida_base_abv || unidadAbbr} por ${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "pieza"}`
+                      : `${productoSeleccionado?.unidad_medida_base_abv || "---"} x ${unidadAbbr}`}
+                  </Text>
+                  {sonUnidadesIdenticas && (
+                    <Tooltip
+                      label="Cálculo inteligente: ingresa 'cantidad de ítems' y 'magnitud por ítem' por separado"
+                      position="top"
+                      withArrow
+                      multiline
+                      w={220}
+                    >
+                      <Checkbox
+                        size="xs"
+                        color="indigo"
+                        radius="sm"
+                        checked={calculoInteligente}
+                        onChange={(event) =>
+                          setCalculoInteligente(event.currentTarget.checked)
+                        }
+                        classNames={{
+                          input: "cursor-pointer",
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                </div>
                 <NumberInput
-                  label={`Cantidad`}
-                  placeholder="0"
-                  value={cantidad}
-                  onChange={(val) => setCantidad(Number(val))}
-                  min={0}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <NumberInput
-                  label={`${productoSeleccionado?.unidad_medida_base_abv || "---"} x ${unidadAbbr}`}
-                  placeholder="Ej: 10"
+                  placeholder={calculoInteligente ? "Ej: 70" : "Ej: 10"}
                   value={contenido}
                   onChange={(val) => setContenido(Number(val))}
-                  min={0.01}
-                  disabled={sonUnidadesIdenticas}
+                  min={calculoInteligente ? 0 : 0.01}
+                  disabled={sonUnidadesIdenticas && !calculoInteligente}
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -468,7 +503,7 @@ export const RegistroRequerimiento = ({
                 </div>
               </div>
 
-              <div className="md:col-span-2 self-start mt-[26px]">
+              <div className="md:col-span-2 self-start mt-6.5">
                 <Button
                   onClick={agregarItem}
                   disabled={!canAdd}
@@ -476,7 +511,7 @@ export const RegistroRequerimiento = ({
                   color="indigo"
                   size="sm"
                   fullWidth
-                  className="shadow-lg h-10 mb-[2px]"
+                  className="shadow-lg h-10 mb-0.5"
                   leftSection={<PlusIcon className="w-5 h-5 text-white" />}
                   radius="lg"
                 >
@@ -506,7 +541,9 @@ export const RegistroRequerimiento = ({
                         fw={700}
                         className="uppercase"
                       >
-                        En {unidadNombre ? enPlural(unidadNombre) : "---"}
+                        {calculoInteligente && sonUnidadesIdenticas
+                          ? `Cantidad (${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "piezas"})`
+                          : `En ${unidadNombre ? enPlural(unidadNombre) : "---"}`}
                       </Text>
                       <div className="flex items-baseline gap-1.5">
                         <Text
@@ -524,7 +561,13 @@ export const RegistroRequerimiento = ({
                           c="zinc.5"
                           className="uppercase tracking-wider"
                         >
-                          {unidadAbbr}
+                          {calculoInteligente && sonUnidadesIdenticas
+                            ? productoSeleccionado?.nombre
+                              ? enPlural(
+                                  productoSeleccionado.nombre.toLowerCase(),
+                                )
+                              : "pz"
+                            : unidadAbbr}
                         </Text>
                       </div>
                     </Stack>
@@ -538,10 +581,15 @@ export const RegistroRequerimiento = ({
                         fw={700}
                         className="uppercase"
                       >
-                        En{" "}
-                        {productoSeleccionado?.unidad_medida_base
-                          ? enPlural(productoSeleccionado?.unidad_medida_base)
-                          : "---"}
+                        {calculoInteligente && sonUnidadesIdenticas
+                          ? "Total"
+                          : `En ${
+                              productoSeleccionado?.unidad_medida_base
+                                ? enPlural(
+                                    productoSeleccionado?.unidad_medida_base,
+                                  )
+                                : "---"
+                            }`}
                       </Text>
                       <div className="flex items-baseline gap-1.5">
                         <Text
@@ -578,11 +626,11 @@ export const RegistroRequerimiento = ({
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
             <tr>
               <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[150px]">
+              <th className="px-4 py-3 text-left font-semibold min-w-37.5">
                 Producto
               </th>
-              <th className="px-4 py-3 text-center min-w-[300px]">Cantidad</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
+              <th className="px-4 py-3 text-center min-w-75">Cantidad</th>
+              <th className="px-4 py-3 text-left font-semibold min-w-55">
                 Comentario
               </th>
               <th className="px-4 py-3 text-center w-16"></th>
@@ -603,10 +651,26 @@ export const RegistroRequerimiento = ({
                 const prod = productos.find(
                   (p) => p.id_producto === det.id_producto,
                 );
-                const uni = unidades.find(
-                  (u) => u.id_unidad_medida === det.id_unidad_medida,
-                );
-                const conError = det.cantidad_solicitada <= 0;
+                /**
+                 * La tabla siempre refleja el TOTAL REAL en unidad base del
+                 * producto (cantidad_solicitada × contenido_por_presentacion),
+                 * que es lo que el usuario realmente quiere ver y confirmar.
+                 * Esto es crítico cuando se usó "Cálculo inteligente"
+                 * (ej. 11 guías × 70 cm = 770 cm), porque cantidad_solicitada
+                 * por sí sola muestra "11" que confunde.
+                 */
+                const totalBase =
+                  (det.cantidad_solicitada || 0) *
+                  (det.contenido_por_presentacion || 0);
+                const contenidoMayorAUno = det.contenido_por_presentacion > 1;
+                const conError = totalBase <= 0;
+                const onChangeTotalBase = (val: number | string) => {
+                  const nuevoBase = Number(val);
+                  const contenido = det.contenido_por_presentacion || 0;
+                  const nuevaCantidad =
+                    contenido > 0 ? nuevoBase / contenido : 0;
+                  actualizarCantidadItem(index, nuevaCantidad);
+                };
 
                 return (
                   <tr
@@ -621,89 +685,50 @@ export const RegistroRequerimiento = ({
                     </td>
                     <td className="px-4 py-3 text-center">
                       <Stack gap={4} align="center">
-                        <Group
-                          gap={8}
-                          justify="center"
-                          wrap="nowrap"
-                          className="w-fit"
+                        {/* Bloque único: TOTAL REAL en unidad base del producto */}
+                        <div
+                          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
                         >
-                          {/* Bloque Cantidad */}
-                          <div
-                            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
+                          <NumberInput
+                            variant="unstyled"
+                            value={totalBase}
+                            onChange={onChangeTotalBase}
+                            size="xs"
+                            hideControls
+                            classNames={{
+                              input: `w-fit min-w-[40px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`,
+                            }}
+                          />
+                          <Text
+                            size="9px"
+                            fw={900}
+                            className={`uppercase whitespace-nowrap ${conError ? "text-red-400" : "text-zinc-500"}`}
                           >
-                            <NumberInput
-                              variant="unstyled"
-                              value={det.cantidad_solicitada}
-                              onChange={(val) =>
-                                actualizarCantidadItem(index, Number(val))
-                              }
-                              size="xs"
-                              hideControls
-                              classNames={{
-                                input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`,
-                              }}
-                            />
-                            <Text
-                              size="9px"
-                              fw={900}
-                              className={`uppercase whitespace-nowrap ${conError ? "text-red-400" : "text-zinc-500"}`}
-                            >
-                              {uni?.abreviatura}
-                            </Text>
-                          </div>
+                            {prod?.unidad_medida_base_abv}
+                          </Text>
+                        </div>
 
-                          {uni?.id_unidad_medida !==
-                            prod?.id_unidad_medida_base && (
-                            <>
-                              {/* Bloque Contenido */}
-                              <div
-                                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${det.contenido_por_presentacion <= 0 ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
-                              >
-                                <NumberInput
-                                  variant="unstyled"
-                                  value={det.contenido_por_presentacion}
-                                  onChange={(val) =>
-                                    actualizarContenidoItem(index, Number(val))
-                                  }
-                                  size="xs"
-                                  hideControls
-                                  classNames={{
-                                    input: `w-fit min-w-[20px] max-w-[50px] text-center font-black text-xs h-5 bg-transparent ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-indigo-400"}`,
-                                  }}
-                                />
-                                <Text
-                                  size="9px"
-                                  fw={900}
-                                  className={`uppercase whitespace-nowrap ${det.contenido_por_presentacion <= 0 ? "text-red-400" : "text-zinc-500"}`}
-                                >
-                                  {prod?.unidad_medida_base_abv} x{" "}
-                                  {uni?.abreviatura}
-                                </Text>
-                              </div>
-                            </>
-                          )}
-                        </Group>
-
-                        {/* Total Bottom */}
-                        {uni?.id_unidad_medida !==
-                          prod?.id_unidad_medida_base && (
-                          <div className="flex items-center gap-1.5 group">
-                            <Text
-                              size="9px"
-                              fw={800}
-                              variant="gradient"
-                              gradient={{ from: "pink.4", to: "pink.6" }}
-                              className="uppercase tracking-widest"
-                            >
-                              Total:{" "}
-                              {formatNumber(
-                                det.cantidad_solicitada *
-                                  det.contenido_por_presentacion,
-                              )}{" "}
-                              {prod?.unidad_medida_base_abv}
-                            </Text>
-                            <div className="h-px w-8 bg-linear-to-r from-pink-500/50 to-transparent group-hover:w-12 transition-all" />
-                          </div>
+                        {/* Subtítulo con el desglose, sólo cuando hay multiplicación real */}
+                        {contenidoMayorAUno && (
+                          <Text
+                            size="9px"
+                            fw={700}
+                            c="zinc.5"
+                            className="lowercase tracking-wider"
+                          >
+                            {formatNumber(det.cantidad_solicitada)} x{" "}
+                            {formatNumber(det.contenido_por_presentacion)}{" "}
+                            <span className="uppercase">
+                              {enPlural(
+                                unidades.filter(
+                                  (u) =>
+                                    u.id_unidad_medida === det.id_unidad_medida,
+                                )?.[0]?.nombre,
+                                det.contenido_por_presentacion,
+                              )}
+                            </span>{" "}
+                            <span className="uppercase">C/U</span>
+                          </Text>
                         )}
                       </Stack>
                     </td>

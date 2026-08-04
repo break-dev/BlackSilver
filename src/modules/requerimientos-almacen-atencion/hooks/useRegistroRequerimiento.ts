@@ -70,6 +70,14 @@ export const useRegistroRequerimiento = ({
   const [idUnidadMedida, setIdUnidadMedida] = useState<number>(0);
   const [cantidad, setCantidad] = useState<number>(0);
   const [contenido, setContenido] = useState<number>(1);
+  /**
+   * Cálculo inteligente: cuando está activo, el campo `contenido` se interpreta
+   * como "magnitud por ítem" (ej. 70 cm por cada Guía) y se permite su edición
+   * incluso cuando la unidad del detalle coincide con la base del producto.
+   * Caso típico: 11 guías de 70 cm cada una = 770 cm sin que el usuario tenga
+   * que multiplicar a mano.
+   */
+  const [calculoInteligente, setCalculoInteligente] = useState<boolean>(false);
   const [comentarioItem, setComentarioItem] = useState("");
   const [paraMantenimientoItem, setParaMantenimientoItem] = useState(false);
   const [idActivoFijoDestino, setIdActivoFijoDestino] = useState<number>(0);
@@ -145,10 +153,29 @@ export const useRegistroRequerimiento = ({
       unidadSeleccionada.id_unidad_medida;
 
   useEffect(() => {
-    if (sonUnidadesIdenticas) {
+    /**
+     * Forzar contenido=1 solo cuando NO hay cálculo inteligente activo.
+     * Si el cálculo inteligente está activo y las unidades coinciden con la
+     * base del producto, el usuario es quien debe tipear la magnitud por ítem
+     * (ej. 70 cm por Guía) — el sistema no puede asumirla.
+     */
+    if (sonUnidadesIdenticas && !calculoInteligente) {
       setContenido(1);
     }
-  }, [sonUnidadesIdenticas]);
+  }, [sonUnidadesIdenticas, calculoInteligente]);
+
+  /**
+   * Al activar el checkbox de cálculo inteligente: si el contenido actual
+   * provenía del auto-fill (==1) y las unidades son idénticas a la base,
+   * lo reseteamos a 0 para forzar al usuario a ingresar la magnitud real
+   * por ítem. Sin esto, el input quedaría con un placeholder engañoso.
+   */
+  const activarCalculoInteligente = useCallback((checked: boolean) => {
+    setCalculoInteligente(checked);
+    if (checked && sonUnidadesIdenticas && contenido === 1) {
+      setContenido(0);
+    }
+  }, [sonUnidadesIdenticas, contenido]);
 
   // Auto-seleccionar contratista responsable al elegir una labor
   useEffect(() => {
@@ -175,6 +202,7 @@ export const useRegistroRequerimiento = ({
     setComentarioItem("");
     setParaMantenimientoItem(false);
     setIdActivoFijoDestino(0);
+    setCalculoInteligente(false);
   }, [idProducto, productos]);
 
   // Filtrar productos que ya están presentes en la lista de detalles
@@ -229,6 +257,7 @@ export const useRegistroRequerimiento = ({
     setIdUnidadMedida(0);
     setCantidad(0);
     setContenido(1);
+    setCalculoInteligente(false);
     setComentarioItem("");
     setParaMantenimientoItem(false);
     setIdActivoFijoDestino(0);
@@ -394,6 +423,8 @@ export const useRegistroRequerimiento = ({
       setCantidad,
       contenido,
       setContenido,
+      calculoInteligente,
+      setCalculoInteligente: activarCalculoInteligente,
       comentarioItem,
       setComentarioItem,
       paraMantenimientoItem,
@@ -406,7 +437,11 @@ export const useRegistroRequerimiento = ({
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
-      canAdd: idProducto && idUnidadMedida && cantidad > 0,
+      canAdd:
+        idProducto &&
+        idUnidadMedida &&
+        cantidad > 0 &&
+        contenido > 0,
       productosFiltrados,
     },
     status: {
