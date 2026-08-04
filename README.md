@@ -80,11 +80,71 @@ src/
 ## Servicios (`src/service`)
 
 - **`_api.ts`** — Axios con interceptor JWT. Inyecta `Bearer` automático, loguea request/response. En 401 limpia `auth`, `menu`, `perfil` y notifica "Sesión expirada".
-- **`_socket.ts`** — Laravel Echo + Pusher para eventos en tiempo real (ej. cambio global de Modo Auditoría).
+- **`_socket.ts`** — Laravel Echo + Pusher para eventos en tiempo real (ej. cambio global del Modo Auditoría).
 - **`auxiliar.service.ts`** — hub de catálogos compartidos (`get_productos`, `get_almacenes`, `get_marcas`, `get_empleados`, etc.).
 - **`archivo.service.ts`** — gestión de adjuntos.
 - **`menu-nav.service.ts`** — árbol de menús por rol.
 - **`responses/`** — interfaces TypeScript (`.ts`) que mapean al 100% las respuestas HTTP de la API, módulo por módulo.
+
+## Búsqueda tolerante en catálogos (`shared/functions/get-coincidencias.ts`)
+
+`getCoincidencias(list, query, options)` es la utilidad **obligatoria** para alimentar cualquier `Select` con `searchable` que muestre un catálogo (productos, unidades de medida, marcas, categorías, contratistas, etc.). Combina dos motores:
+
+- **Fuse.js** (distancia de caracteres, `fuseThreshold=0.4` por defecto) — captura errores ortográficos: escribir `"guas"` encuentra `Guía`; `"mtr"` encuentra `Metro`.
+- **FlexSearch** (tokenización forward) — captura orden de palabras: `"metro cuadrado"` encuentra `Metro cuadrado` aunque el usuario tipee las palabras al revés.
+- **Substring normalizado (fallback automático)** — si Fuse y FlexSearch no encuentran resultados (caso típico: queries muy cortas de 1-3 caracteres, donde el algoritmo Bitap de Fuse 7 puede fallar), se aplica un `includes()` con texto normalizado sin tildes, independientemente de cómo esté almacenado el nombre en la DB.
+
+Soporta listas de strings o de objetos mediante genéricos `<T>`. Normaliza tildes y mayúsculas por defecto (`useNormalization: true`).
+
+### Cómo usarla en un `Select` (patrón recomendado)
+
+```tsx
+import { getCoincidencias } from "../../../shared/functions/get-coincidencias";
+
+const [productoBusqueda, setProductoBusqueda] = useState("");
+
+// Memo para no recalcular en cada render. Si la query está vacía,
+// devolvemos la lista completa SIN invocar getCoincidencias (ahorra CPU).
+const productosVisibles = useMemo(() => {
+  const q = productoBusqueda.trim();
+  if (!q) return productosFiltrados;
+  return getCoincidencias(productosFiltrados, q, {
+    keys: ["nombre", "categoria"],
+    fuseThreshold: 0.4,
+  }).map((r) => r.item);
+}, [productosFiltrados, productoBusqueda]);
+
+<Select
+  label="Producto"
+  data={productosVisibles.map((p) => ({ value: String(p.id_producto), label: p.nombre }))}
+  value={idProducto ? String(idProducto) : null}
+  onChange={(val) => setIdProducto(Number(val))}
+  searchable
+  searchValue={productoBusqueda}
+  onSearchChange={setProductoBusqueda}
+  nothingFoundMessage="Sin coincidencias"
+  ...
+/>
+```
+
+El control `searchValue` / `onSearchChange` mantiene la query controlada por el hook (limpia al seleccionar, resetea al agregar el ítem a la lista, etc.). El helper ya está en uso en:
+
+- `form-categoria.tsx`, `form-marca.tsx`, `form-unidad-medida.tsx` (catálogos rápidos de creación).
+- `useNavbar` (search del sidebar).
+- `useProductos` (catálogo), `useRegistroProducto` (categorías + unidades), `useRegistroCategoria` (validación de duplicados).
+- `useRegistroRequerimiento` (productos y unidades de medida del formulario de requerimientos).
+
+### Cuándo usarla
+
+**Siempre** en `Select` con `searchable` cuyo `data` venga de un catálogo (productos, unidades, marcas, contratistas, empleados, áreas, cargos, bancos, agencias, categorías, lotes, minas, labores, oficinas, proveedores, clientes, activos fijos, roles, etc).
+
+**NO** usarla para:
+
+- Búsqueda dentro de un JSON crudo (usar `useJsonScanner`).
+- Filtrado binario exacto sobre un campo puntual (ej. `id` específico).
+- Listas muy pequeñas (< 10 ítems) donde el searchable nativo de Mantine basta.
+
+---
 
 ## Reglas de código
 
@@ -98,6 +158,7 @@ src/
 8. **Estilo dark premium**: inputs con `bg-zinc-900/50 border-zinc-800`, focus `border-zinc-300 ring-zinc-300`, `transition-all`. Sombras suaves (`shadow-lg shadow-indigo-900/20`), `backdrop-blur`, bordes sutiles. Badges `variant="light"` o `filled"`.
 9. **DataTable `#` automático**: usar `{accessor: "index", title: "#"}`. NUNCA implementar `render` para el número correlativo.
 10. **ActionIcon**: la prop `size` controla el botón, NO el ícono. Para íconos visibles en filas usar `size="md"` o mayor y definir el tamaño del ícono manualmente (`className="w-4 h-4"` en Heroicons o `size={16}` en Tabler).
+11. **Selects con `searchable` sobre catálogos**: usar SIEMPRE `getCoincidencias` (Fuse + FlexSearch) para filtrar `data`. Ver sección "Búsqueda tolerante en catálogos" más arriba. Patrón: `useMemo` con early-return cuando la query está vacía, `searchValue` + `onSearchChange` controlados, `nothingFoundMessage` para feedback cuando no hay coincidencias.
 
 ## Catálogo Mantine v8 (instalado)
 

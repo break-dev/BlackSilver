@@ -17,6 +17,7 @@ import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo
 import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_Contratista } from "../../../service/responses/contratista";
+import { getCoincidencias } from "../../../shared/functions/get-coincidencias";
 
 interface Props {
   onSuccess: (
@@ -205,6 +206,23 @@ export const useRegistroRequerimiento = ({
     setCalculoInteligente(false);
   }, [idProducto, productos]);
 
+  /**
+   * Búsqueda tolerante (fuzzy + por tokens) del catálogo de productos en el Select.
+   * Se aplica ENCIMA de `productosFiltrados` (que ya excluye productos ya
+   * agregados, salvo consumibles). Cuando `productoBusqueda` está vacío,
+   * devuelve la lista completa sin coste adicional.
+   *
+   * Permite al usuario escribir "gua", "guias", "guia 70cm" o con errores
+   * de tipeo y obtener coincidencias fiables.
+   */
+  const [productoBusqueda, setProductoBusqueda] = useState<string>("");
+
+  /**
+   * Búsqueda tolerante del catálogo de unidades de medida. Misma lógica:
+   * busca sobre `nombre` y `abreviatura` (ej. tipear "mtr" encuentra "Metro").
+   */
+  const [unidadBusqueda, setUnidadBusqueda] = useState<string>("");
+
   // Filtrar productos que ya están presentes en la lista de detalles
   const productosFiltrados = useMemo(() => {
     return productos.filter((p) => {
@@ -216,6 +234,34 @@ export const useRegistroRequerimiento = ({
       return !detalles.some((d) => d.id_producto === p.id_producto);
     });
   }, [productos, detalles]);
+
+  /**
+   * Lista de productos que se muestra en el Select tras aplicar la búsqueda
+   * tolerante. Si no hay query, devuelve la lista completa (filtrada por
+   * duplicados), sin invocar getCoincidencias.
+   */
+  const productosVisibles = useMemo(() => {
+    const q = productoBusqueda.trim();
+    if (!q) return productosFiltrados;
+    return getCoincidencias(productosFiltrados, q, {
+      keys: ["nombre", "categoria"],
+      fuseThreshold: 0.4,
+    }).map((r) => r.item);
+  }, [productosFiltrados, productoBusqueda]);
+
+  /**
+   * Lista de unidades de medida que se muestra en el Select tras la búsqueda
+   * tolerante. Busca tanto por nombre completo (ej. "Centímetro") como por
+   * abreviatura (ej. "cm").
+   */
+  const unidadesVisibles = useMemo(() => {
+    const q = unidadBusqueda.trim();
+    if (!q) return unidades;
+    return getCoincidencias(unidades, q, {
+      keys: ["nombre", "abreviatura"],
+      fuseThreshold: 0.4,
+    }).map((r) => r.item);
+  }, [unidades, unidadBusqueda]);
 
   // Agregar item a la lista
   const agregarItem = useCallback(() => {
@@ -261,6 +307,8 @@ export const useRegistroRequerimiento = ({
     setComentarioItem("");
     setParaMantenimientoItem(false);
     setIdActivoFijoDestino(0);
+    setProductoBusqueda("");
+    setUnidadBusqueda("");
   }, [
     idProducto,
     idUnidadMedida,
@@ -431,6 +479,10 @@ export const useRegistroRequerimiento = ({
       setParaMantenimientoItem,
       idActivoFijoDestino,
       setIdActivoFijoDestino,
+      productoBusqueda,
+      setProductoBusqueda,
+      unidadBusqueda,
+      setUnidadBusqueda,
       activos,
       detalles,
     },
@@ -443,6 +495,8 @@ export const useRegistroRequerimiento = ({
         cantidad > 0 &&
         contenido > 0,
       productosFiltrados,
+      productosVisibles,
+      unidadesVisibles,
     },
     status: {
       submitting,

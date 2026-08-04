@@ -111,6 +111,10 @@ export const RegistroRequerimiento = ({
       setParaMantenimientoItem,
       idActivoFijoDestino,
       setIdActivoFijoDestino,
+      productoBusqueda,
+      setProductoBusqueda,
+      unidadBusqueda,
+      setUnidadBusqueda,
       activos,
       idAlmacenDestino,
     },
@@ -119,7 +123,8 @@ export const RegistroRequerimiento = ({
       sonUnidadesIdenticas,
       productoSeleccionado,
       canAdd,
-      productosFiltrados,
+      productosVisibles,
+      unidadesVisibles,
     },
     actions: {
       agregarItem,
@@ -344,13 +349,20 @@ export const RegistroRequerimiento = ({
                 <Select
                   label="Producto"
                   placeholder="Seleccione producto"
-                  data={productosFiltrados.map((p: RES_Producto) => ({
+                  data={productosVisibles.map((p: RES_Producto) => ({
                     value: String(p.id_producto),
                     label: p.nombre,
                   }))}
                   value={idProducto ? String(idProducto) : null}
                   onChange={(val) => setIdProducto(Number(val))}
                   searchable
+                  searchValue={productoBusqueda}
+                  onSearchChange={setProductoBusqueda}
+                  // Desactivar el filtro interno de Mantine (substring case-
+                  // insensitive SIN normalización de tildes). El filtrado real
+                  // lo hace getCoincidencias() y se ve reflejado en `data`.
+                  filter={({ options }) => options}
+                  nothingFoundMessage="Sin coincidencias"
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
@@ -374,7 +386,7 @@ export const RegistroRequerimiento = ({
                 <Select
                   label="Unidad de Medida"
                   placeholder="Seleccione unidad"
-                  data={unidades.map((u: RES_UnidadMedida) => ({
+                  data={unidadesVisibles.map((u: RES_UnidadMedida) => ({
                     value: String(u.id_unidad_medida),
                     label: `${u.nombre} (${u.abreviatura})`,
                   }))}
@@ -384,6 +396,11 @@ export const RegistroRequerimiento = ({
                     productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo
                   }
                   searchable
+                  searchValue={unidadBusqueda}
+                  onSearchChange={setUnidadBusqueda}
+                  // Ver comentario en el Select de Producto más arriba.
+                  filter={({ options }) => options}
+                  nothingFoundMessage="Sin coincidencias"
                   classNames={inputClasses}
                   radius="lg"
                   size="sm"
