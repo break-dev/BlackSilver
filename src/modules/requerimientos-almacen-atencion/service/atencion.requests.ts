@@ -10,7 +10,7 @@ export interface DTO_CrearRequerimiento {
   id_almacen_destino: number;
   premura: Premura;
   fecha_entrega_requerida?: string | null;
-  created_at?: string | null;
+  fecha_solicitud?: string | null;
   observacion?: string | null;
   es_auditable: boolean;
   detalles: DTO_CrearRequerimientoDetalle[];

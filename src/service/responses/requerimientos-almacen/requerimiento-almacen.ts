@@ -29,6 +29,7 @@ export interface RES_RequerimientoAlmacen {
   es_auditable: boolean;
   premura: Premura;
   fecha_entrega_requerida: string | null;
+  fecha_solicitud: string | null;
   estado: Estado_Requerimiento;
   created_at: string;
   // Insertado por la api

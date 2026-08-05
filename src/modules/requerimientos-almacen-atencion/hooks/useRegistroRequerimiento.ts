@@ -370,9 +370,9 @@ export const useRegistroRequerimiento = ({
       id_almacen_destino: idAlmacenDestino,
       premura,
       es_auditable: esAuditable,
-      created_at: fechaSolicitud
-        ? dayjs(fechaSolicitud).format("YYYY-MM-DD HH:mm:ss")
-        : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      fecha_solicitud: fechaSolicitud
+        ? dayjs(fechaSolicitud).format("YYYY-MM-DD")
+        : null,
       fecha_entrega_requerida: fechaEntregaRequerida
         ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
         : dayjs().add(2, "days").format("YYYY-MM-DD"),

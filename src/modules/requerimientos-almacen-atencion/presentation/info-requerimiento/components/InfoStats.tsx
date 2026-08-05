@@ -23,6 +23,16 @@ export const InfoStats = ({ requerimiento }: InfoStatsProps) => {
         />
         <BadgeField label="Estado" value={requerimiento.estado} color="green" />
         <BadgeField
+          label="Fecha Solicitada"
+          value={
+            requerimiento.fecha_solicitud
+              ? dayjs(requerimiento.fecha_solicitud).format("DD/MM/YYYY")
+              : "No especificada"
+          }
+          icon={ClockIcon}
+          isMono
+        />
+        <BadgeField
           label="Fecha de Registro"
           value={dayjs(requerimiento.created_at).format("DD/MM/YYYY HH:mm")}
           icon={ClockIcon}
