@@ -13,8 +13,9 @@ const generateUUID = () =>
 
 // Tipos flexibles: hacen `accessor` e `id` opcionales a nivel de API pública.
 // El componente asigna UUIDs automáticamente cuando faltan.
-type FlexibleColumn = Omit<DataTableColumn<any>, "accessor"> & {
+type FlexibleColumn = Omit<DataTableColumn<any>, "accessor" | "id"> & {
   accessor?: string;
+  id?: string;
 };
 type FlexibleGroup = Omit<DataTableColumnGroup<any>, "id"> & { id?: string };
 
@@ -42,23 +43,30 @@ export const DataTableEstandar = ({
   const [prevRecords, setPrevRecords] = useState(records);
 
   // Genera un idAccessor estable por instancia si el consumer no lo provee.
-  // Útil cuando la tabla es de solo lectura (sin selección/expansión) y el
-  // consumer no quiere declarar una prop que no le aporta nada.
-  // Caveat: si se usa selección/expansión o row clicks que dependen del id,
-  // el consumer DEBE pasar idAccessor apuntando al campo real del record.
-  const [generatedIdAccessor] = useState(() => `dt-${generateUUID()}`);
-  const finalIdAccessor = idAccessor ?? generatedIdAccessor;
+  // Por defecto usamos "id" (campo estándar en los responses del proyecto).
+  // Caveat: si los records no tienen campo "id", el consumer DEBE pasar
+  // idAccessor apuntando al campo real.
+  const finalIdAccessor = idAccessor ?? "id";
 
   if (records !== prevRecords) {
     setPrevRecords(records);
     setPage(1);
   }
 
+  // Aseguramos que cada record tenga una clave única para React y para
+  // mantine-datatable (sino produce warning de "missing key").
+  const recordsWithId = useMemo(() => {
+    return records.map((r, idx) => ({
+      ...r,
+      [finalIdAccessor]: r[finalIdAccessor] ?? r.id ?? `row-${idx}`,
+    }));
+  }, [records, finalIdAccessor]);
+
   const pagedRecords = useMemo(() => {
     const from = (page - 1) * pageSize;
     const to = from + pageSize;
-    return records.slice(from, to);
-  }, [records, page, pageSize]);
+    return recordsWithId.slice(from, to);
+  }, [recordsWithId, page, pageSize]);
 
   // Asigna accessor UUID a columnas que no lo tengan (estable por referencia de columns).
   // Las columnas con accessor ausente deben traer `render` propio: la librería no
@@ -80,6 +88,7 @@ export const DataTableEstandar = ({
         if (col.accessor === "index") {
           return {
             ...col,
+            id: col.id ?? `col-${generateUUID()}`,
             render: (_record: any, index: number) => {
               const absoluteIndex = (page - 1) * pageSize + index + 1;
               return col.render
@@ -88,7 +97,7 @@ export const DataTableEstandar = ({
             },
           };
         }
-        return col;
+        return { ...col, id: col.id ?? `col-${generateUUID()}` };
       }),
     [columnsWithAccessors, page, pageSize],
   );
