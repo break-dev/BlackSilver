@@ -43,7 +43,7 @@ export const useRandomLinks = () => {
             title: modulo.nombre,
             desc: submenu.nombre,
             icon: icon,
-            url: modulo.url,
+            url: `/${modulo.path}`,
           });
         });
       });

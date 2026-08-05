@@ -3,10 +3,6 @@ import { PublicLayout } from "../layouts/public.layout.tsx";
 import { AuthLayout } from "../layouts/auth/auth.layout.tsx";
 import { ProtectedRoute } from "./protectedRoute.tsx";
 import { PublicRoute } from "./publicRoute.tsx";
-// import { PlaceholderPage } from "../pages/placeholder.page.tsx";
-// Layouts
-import { GenericLayout } from "../layouts/generic.layout.tsx";
-// Vistas
 import { LoginPage } from "../../modules/login/presentation/login.page.tsx";
 import { HomePage } from "../pages/home/home.page.tsx";
 import { ConcesionesPage } from "../../modules/concesiones/presentation/concesiones.page.tsx";
@@ -18,7 +14,6 @@ import { AlmacenesPage } from "../../modules/almacenes/presentation/almacenes.pa
 import { ProductosPage } from "../../modules/productos/presentation/productos.page.tsx";
 import OrganigramaPage from "../../modules/organigrama/presentation/organigrama.page.tsx";
 import { LotesPage } from "../../modules/lotes-productos/presentation/lotes-page/lotes.page.tsx";
-// import { RequerimientosAlmacenPage } from "../../modules/requerimientos-almacen/presentation/requerimientos-almacen.page.tsx";
 import { RequerimientosAlmacenAtencionPage } from "../../modules/requerimientos-almacen-atencion/presentation/atencion-requerimientos.page.tsx";
 import { KardexProductosPage } from "../../modules/kardex-productos/presentation/kardex.page.tsx";
 import { RolesPage } from "../../modules/roles/presentation/roles.page.tsx";
@@ -47,17 +42,16 @@ import ProgramacionHorariosPage from "../../modules/programacion-horarios/presen
 import MarcarAsistenciaPage from "../../modules/asistencia/presentation/marcar-asistencia.page.tsx";
 import AsistenciaPage from "../../modules/asistencia/presentation/asistencia.page.tsx";
 import PlanillaPage from "../../modules/planilla/presentation/planilla.page.tsx";
+import SystemPage from "../../modules/system/presentation/system.page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
 
   useEffect(() => {
-    // Escuchar el evento global de modo auditoría
     const channel = onSocketEvent(
       "global-audit-mode",
       "audit.mode.toggled",
       (data: { en_modo_auditable: boolean }) => {
-        console.log("[App] Evento de Auditoría recibido:", data);
         setModoAuditoria(data.en_modo_auditable);
       },
     );
@@ -80,10 +74,8 @@ export const App = () => {
         <Route path="/login" element={<LoginPage />} />
       </Route>
 
-      {/* Ruta oculta de auditoría (Sin layout) */}
+      {/* Rutas ocultas (sin layout) */}
       <Route path="/modo-auditoria" element={<ModoAuditoriaPage />} />
-
-      {/* Ruta plana de marcar asistencia (Sin layout) */}
       <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
 
       {/* Rutas protegidas */}
@@ -94,125 +86,51 @@ export const App = () => {
           </ProtectedRoute>
         }
       >
-        {/* Inicio */}
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<HomePage />} />
-
-        {/* Perfil */}
         <Route path="/perfil" element={<PerfilPage />} />
 
-        {/* Configuracion */}
-        <Route path="/configuracion" element={<GenericLayout />}>
-          {/* Empresas */}
-          <Route path="empresas" element={<GenericLayout />}>
-            <Route path="empresas" element={<EmpresasPage />} />
-            <Route path="almacenes" element={<AlmacenesPage />} />
-            <Route path="concesiones" element={<ConcesionesPage />} />
-            <Route path="minas" element={<MinasPage />} />
-          </Route>
-
-          {/* Personal */}
-          <Route path="personal" element={<GenericLayout />}>
-            <Route path="areas_cargos" element={<OrganigramaPage />} />
-            <Route path="trabajadores" element={<PersonalPage />} />
-          </Route>
-
-          {/* Usuarios */}
-          <Route path="usuarios" element={<GenericLayout />}>
-            <Route path="roles" element={<RolesPage />} />
-            <Route path="cuentas" element={<CuentasPage />} />
-          </Route>
-
-          {/* Socios Comerciales */}
-          <Route path="socios-comerciales" element={<GenericLayout />}>
-            <Route path="proveedores" element={<ProveedoresPage />} />
-            <Route path="clientes" element={<ClientesPage />} />
-          </Route>
-        </Route>
+        {/* Configuracion (rutas planas) */}
+        <Route path="/trabajadores" element={<PersonalPage />} />
+        <Route path="/areas-cargos" element={<OrganigramaPage />} />
+        <Route path="/empresas" element={<EmpresasPage />} />
+        <Route path="/almacenes" element={<AlmacenesPage />} />
+        <Route path="/concesiones" element={<ConcesionesPage />} />
+        <Route path="/minas" element={<MinasPage />} />
+        <Route path="/roles" element={<RolesPage />} />
+        <Route path="/cuentas" element={<CuentasPage />} />
+        <Route path="/proveedores" element={<ProveedoresPage />} />
+        <Route path="/clientes" element={<ClientesPage />} />
 
         {/* Logistica */}
-        <Route path="/logistica" element={<GenericLayout />}>
-          {/* Inventario */}
-          <Route path="inventario" element={<GenericLayout />}>
-            <Route path="categorias" element={<CategoriasPage />} />
-            {/* <Route
-              path="familias"
-              element={<PlaceholderPage titulo="Familias" />}
-            /> */}
-            <Route path="productos" element={<ProductosPage />} />
-            <Route path="activos" element={<ActivosFijosPage />} />
-            <Route path="lotes" element={<LotesPage />} />
-            <Route path="kardex" element={<KardexProductosPage />} />
-          </Route>
+        <Route path="/categorias" element={<CategoriasPage />} />
+        <Route path="/productos" element={<ProductosPage />} />
+        <Route path="/activos" element={<ActivosFijosPage />} />
+        <Route path="/lotes" element={<LotesPage />} />
+        <Route path="/kardex" element={<KardexProductosPage />} />
+        <Route path="/atencion-requerimientos" element={<RequerimientosAlmacenAtencionPage />} />
+        <Route path="/solicitudes" element={<SolicitudesReabastecimientoPage />} />
+        <Route path="/atencion-solicitudes" element={<SolicitudesReabastecimientoAtencionPage />} />
+        <Route path="/prestamos" element={<PrestamosAlmacenPage />} />
+        <Route path="/atencion-prestamos" element={<AtencionPrestamosPage />} />
+        <Route path="/cotizaciones" element={<CotizacionesPage />} />
+        <Route path="/ordenes-compra" element={<OrdenesCompraPage />} />
+        <Route path="/recepcion-transferencias" element={<RecepcionTransferenciasOCPage />} />
 
-          {/* Requerimientos de Almacen */}
-          <Route path="requerimiento_almacen" element={<GenericLayout />}>
-            {/* <Route
-              path="requerimientos"
-              element={<RequerimientosAlmacenPage />}
-            /> */}
-            <Route
-              path="atencion_requerimientos"
-              element={<RequerimientosAlmacenAtencionPage />}
-            />
-          </Route>
+        {/* Operaciones */}
+        <Route path="/uso" element={<ControlUsoPage />} />
+        <Route path="/mantenimiento" element={<MantenimientoPage />} />
+        <Route path="/consumo" element={<ControlConsumoPage />} />
+        <Route path="/lote-mineral" element={<LoteMineralPage />} />
+        <Route path="/produccion-mineral" element={<ProduccionMineralPage />} />
+        <Route path="/programacion-horarios" element={<ProgramacionHorariosPage />} />
+        <Route path="/asistencia" element={<AsistenciaPage />} />
+        <Route path="/planilla" element={<PlanillaPage />} />
 
-          {/* Solicitudes de Reabastecimiento */}
-          <Route path="solicitud_reabastecimiento" element={<GenericLayout />}>
-            <Route
-              path="solicitudes"
-              element={<SolicitudesReabastecimientoPage />}
-            />
-            <Route
-              path="atencion_solicitudes"
-              element={<SolicitudesReabastecimientoAtencionPage />}
-            />
-          </Route>
+        {/* System module (oculto, solo URL directa) */}
+        <Route path="/system" element={<SystemPage />} />
 
-          {/* Préstamos entre Almacenes */}
-          <Route path="prestamos_almacen" element={<GenericLayout />}>
-            <Route path="prestamos" element={<PrestamosAlmacenPage />} />
-            <Route
-              path="atencion_prestamos"
-              element={<AtencionPrestamosPage />}
-            />
-          </Route>
-
-          {/* Compras */}
-          <Route path="compras" element={<GenericLayout />}>
-            <Route path="cotizaciones" element={<CotizacionesPage />} />
-            <Route path="ordenes-compra" element={<OrdenesCompraPage />} />
-            <Route
-              path="recepcion-transferencias"
-              element={<RecepcionTransferenciasOCPage />}
-            />
-          </Route>
-        </Route>
-
-        <Route path="/operaciones" element={<GenericLayout />}>
-          <Route path="control-activos" element={<GenericLayout />}>
-            <Route path="uso" element={<ControlUsoPage />} />
-            <Route path="mantenimiento" element={<MantenimientoPage />} />
-          </Route>
-          <Route path="produccion" element={<GenericLayout />}>
-            <Route path="consumo" element={<ControlConsumoPage />} />
-            <Route path="lote-mineral" element={<LoteMineralPage />} />
-            <Route
-              path="produccion-mineral"
-              element={<ProduccionMineralPage />}
-            />
-          </Route>
-          <Route path="control-personal" element={<GenericLayout />}>
-            <Route
-              path="programacion-horarios"
-              element={<ProgramacionHorariosPage />}
-            />
-            <Route path="asistencia" element={<AsistenciaPage />} />
-            <Route path="planilla" element={<PlanillaPage />} />
-          </Route>
-        </Route>
-
-        {/* Redireccion */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Route>
     </Routes>
