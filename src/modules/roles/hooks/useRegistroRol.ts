@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { RolesService } from "../service/roles.service";
 import { Schema_RegistroRol } from "../service/roles.requests";
-import type { RES_Rol, RES_MenuEstructura } from "../service/roles.responses";
+import type {
+  RES_Rol,
+  RES_MenuEstructura,
+  RES_PermisoNodo,
+  RES_Modulo,
+} from "../service/roles.responses";
 
 interface UseRegistroRolProps {
   onSuccess?: (nuevo: RES_Rol) => void;
@@ -19,16 +24,14 @@ export const useRegistroRol = ({
 }: UseRegistroRolProps) => {
   const { notify } = useNotify();
 
-  // Estructura de permisos (Catálogo)
   const [estructura, setEstructura] = useState<RES_MenuEstructura[]>([]);
   const [loadingEstructura, setLoadingEstructura] = useState(false);
 
-  // Formulario
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [modulosSeleccionados, setModulosSeleccionados] = useState<number[]>(
-    [],
-  );
+  const [permisosSeleccionados, setPermisosSeleccionados] = useState<
+    RES_PermisoNodo[]
+  >([]);
 
   const [loadingPermisos, setLoadingPermisos] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -37,9 +40,7 @@ export const useRegistroRol = ({
     setLoadingEstructura(true);
     try {
       const result = await RolesService.get_estructura_permisos();
-      if (result.success) {
-        setEstructura(result.data);
-      }
+      if (result.success) setEstructura(result.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,9 +56,7 @@ export const useRegistroRol = ({
     setLoadingPermisos(true);
     try {
       const result = await RolesService.get_permisos_rol(id);
-      if (result.success) {
-        setModulosSeleccionados(result.data);
-      }
+      if (result.success) setPermisosSeleccionados(result.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -68,7 +67,7 @@ export const useRegistroRol = ({
   const reset = useCallback(() => {
     setNombre("");
     setDescripcion("");
-    setModulosSeleccionados([]);
+    setPermisosSeleccionados([]);
   }, []);
 
   useEffect(() => {
@@ -81,53 +80,53 @@ export const useRegistroRol = ({
     }
   }, [rolEdicion, cargarPermisosRol, reset]);
 
-  const handleToggleModulo = (idModulo: number) => {
-    setModulosSeleccionados((prev) =>
-      prev.includes(idModulo)
-        ? prev.filter((id) => id !== idModulo)
-        : [...prev, idModulo],
-    );
-  };
-
-  /**
-   * Toggle de todos los modulos de un submenu
-   */
-  const handleToggleSubmenu = (idsModulos: number[], isChecked: boolean) => {
-    setModulosSeleccionados((prev) => {
-      if (isChecked) {
-        // Añadir solo los que no están
-        const nuevas = idsModulos.filter((id) => !prev.includes(id));
-        return [...prev, ...nuevas];
-      } else {
-        // Quitar todos los de ese submenu
-        return prev.filter((id) => !idsModulos.includes(id));
-      }
+  const handleTogglePermiso = (
+    tipo: "menu" | "submenu" | "modulo",
+    id: number,
+  ) => {
+    setPermisosSeleccionados((prev) => {
+      const exists = prev.some((p) => p.tipo === tipo && p.id === id);
+      if (exists) return prev.filter((p) => !(p.tipo === tipo && p.id === id));
+      return [...prev, { tipo, id } as RES_PermisoNodo];
     });
   };
 
-  const handleGuardar = async () => {
-    const data = {
-      nombre,
-      descripcion,
-      modulos: modulosSeleccionados,
-    };
+  const handleToggleSubmenu = (
+    modulos: RES_Modulo[],
+    checked: boolean,
+  ) => {
+    setPermisosSeleccionados((prev) => {
+      const ids = modulos.map((m) => m.id);
+      const filtered = prev.filter(
+        (p) => !(p.tipo === "modulo" && ids.includes(p.id)),
+      );
+      if (!checked) return filtered;
+      const nuevas: RES_PermisoNodo[] = modulos
+        .filter(
+          (m) => !filtered.some((p) => p.tipo === "modulo" && p.id === m.id),
+        )
+        .map((m) => ({ tipo: "modulo", id: m.id }));
+      return [...filtered, ...nuevas];
+    });
+  };
 
+  const isChecked = (tipo: string, id: number) =>
+    permisosSeleccionados.some((p) => p.tipo === tipo && p.id === id);
+
+  const handleGuardar = async () => {
+    const data = { nombre, descripcion, permisos: permisosSeleccionados };
     const validation = Schema_RegistroRol.safeParse(data);
     if (!validation.success) {
-      notify({
-        type: "error",
-        content: validation.error.issues[0].message,
-      });
+      notify({ type: "error", content: validation.error.issues[0].message });
       return;
     }
 
     setSaving(true);
     try {
       if (rolEdicion) {
-        // MODO EDICIÓN: Solo actualiza permisos
         const result = await RolesService.actualizar_permisos_rol(
           rolEdicion.id,
-          modulosSeleccionados,
+          permisosSeleccionados,
         );
         if (result.success) {
           notify({
@@ -138,13 +137,9 @@ export const useRegistroRol = ({
           onClose();
           reset();
         } else {
-          notify({
-            type: "error",
-            content: result.message,
-          });
+          notify({ type: "error", content: result.message });
         }
       } else {
-        // MODO CREACIÓN
         const result = await RolesService.crear_rol(validation.data);
         if (result.success) {
           notify({
@@ -155,10 +150,7 @@ export const useRegistroRol = ({
           onClose();
           reset();
         } else {
-          notify({
-            type: "error",
-            content: result.message,
-          });
+          notify({ type: "error", content: result.message });
         }
       }
     } catch (err) {
@@ -180,9 +172,10 @@ export const useRegistroRol = ({
     setNombre,
     descripcion,
     setDescripcion,
-    modulosSeleccionados,
-    handleToggleModulo,
+    permisosSeleccionados,
+    handleTogglePermiso,
     handleToggleSubmenu,
+    isChecked,
     handleGuardar,
     saving,
     reset,

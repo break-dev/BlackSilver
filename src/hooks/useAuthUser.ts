@@ -23,25 +23,29 @@ export const useAuthUser = () => {
   }, [clearAuth, clearMenu, resetPerfil, navigate]);
 
   const isAuthorized = useMemo(() => {
-    // Rutas que siempre están permitidas
-    const universallyAllowed = ["/", "/home", "/perfil"];
+    // Rutas universalmente permitidas (incluye /system que es oculto por URL directa)
+    const universallyAllowed = ["/", "/home", "/perfil", "/system"];
     if (universallyAllowed.includes(location.pathname)) return true;
 
     // Si el menú aún no carga pero está autenticado, permitimos el paso inicial.
     if (!menu || menu.length === 0) return true;
 
-    // Aplanamos el menú para obtener todas las URLs autorizadas
+    // Aplanamos el menú para obtener todas las URLs autorizadas (path plano)
     const authorizedUrls: string[] = [];
     menu.forEach((menuItem) => {
+      if (menuItem.path) authorizedUrls.push(`/${menuItem.path}`);
       menuItem.submenus?.forEach((submenu) => {
+        if (submenu.path) authorizedUrls.push(`/${submenu.path}`);
         submenu.modulos?.forEach((modulo) => {
-          if (modulo.url) authorizedUrls.push(modulo.url);
+          if (modulo.path) authorizedUrls.push(`/${modulo.path}`);
         });
       });
     });
 
-    // Verificamos si la ruta actual está autorizada
-    return authorizedUrls.some((url) => location.pathname.startsWith(url));
+    return authorizedUrls.some(
+      (url) =>
+        location.pathname === url || location.pathname.startsWith(url + "/"),
+    );
   }, [location.pathname, menu]);
 
   return {

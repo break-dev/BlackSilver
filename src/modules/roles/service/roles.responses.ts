@@ -12,6 +12,7 @@ export interface RES_Modulo {
   id_submenu: number;
   nombre: string;
   path: string;
+  es_desplegable: boolean;
   estado: EstadoBase;
 }
 
@@ -20,6 +21,7 @@ export interface RES_Submenu {
   id_menu: number;
   nombre: string;
   path: string;
+  es_desplegable: boolean;
   estado: EstadoBase;
   modulos: RES_Modulo[];
 }
@@ -28,6 +30,12 @@ export interface RES_MenuEstructura {
   id: number;
   nombre: string;
   path: string;
+  es_desplegable: boolean;
   estado: EstadoBase;
   submenus: RES_Submenu[];
 }
+
+export type RES_PermisoNodo =
+  | { tipo: "menu"; id: number }
+  | { tipo: "submenu"; id: number }
+  | { tipo: "modulo"; id: number };

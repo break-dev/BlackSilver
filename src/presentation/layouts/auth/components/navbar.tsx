@@ -242,15 +242,16 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                     const ModuloIcon =
                       subIconData?.icono || menuIconData?.icono || CubeIcon;
 
-                    const isCurrentRoute = location.pathname === modulo.url;
+                    const moduloUrl = `/${modulo.path}`;
+                    const isCurrentRoute = location.pathname === moduloUrl;
 
                     return (
                       <motion.div
                         variants={itemVariants}
-                        key={modulo.id_modulo || modulo.url}
+                        key={modulo.id_modulo || modulo.path}
                       >
                         <Link
-                          to={modulo.url || "#"}
+                          to={moduloUrl}
                           onClick={handleClose}
                           className={`group flex flex-col p-3 rounded-2xl border transition-all duration-200 ${
                             isCurrentRoute
@@ -378,9 +379,46 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                         );
                         const MenuIcon = menuIconData?.icono || CubeIcon;
                         const isMenuExpanded = expanded === menuItem.nombre;
+                        const menuUrl = `/${menuItem.path}`;
+                        const isMenuActive = location.pathname === menuUrl;
 
+                        // Hoja: ruta directa (sin hijos) -> Link
+                        if (!menuItem.es_desplegable) {
+                          return (
+                            <motion.div
+                              variants={itemVariants}
+                              key={menuItem.id_menu || menuItem.nombre}
+                              className="space-y-1"
+                            >
+                              <Link
+                                to={menuUrl}
+                                onClick={handleClose}
+                                className={`group w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 ${
+                                  isMenuActive
+                                    ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] ring-1 ring-white/20"
+                                    : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <MenuIcon
+                                    className={`w-4 h-4 transition-colors ${
+                                      isMenuActive
+                                        ? "text-blue-400"
+                                        : "group-hover:text-blue-400"
+                                    }`}
+                                  />
+                                  <span className="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {menuItem.nombre || "Sin nombre"}
+                                  </span>
+                                </div>
+                                <ChevronRightIcon className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+                              </Link>
+                            </motion.div>
+                          );
+                        }
+
+                        // Contenedor: tiene hijos -> botón expandible
                         return (
-                          // Menú (Nivel 1)
                           <motion.div
                             variants={itemVariants}
                             key={menuItem.id_menu || menuItem.nombre}
@@ -393,12 +431,11 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                 );
                                 setExpandedSub(null);
                               }}
-                              className={`group w-full flex items-center justify-between px-4 py-3.5 
-                                rounded-2xl transition-all duration-300 ${
-                                  isMenuExpanded
-                                    ? "bg-white/5 text-white ring-1 ring-white/10"
-                                    : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
-                                }`}
+                              className={`group w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 ${
+                                isMenuExpanded
+                                  ? "bg-white/5 text-white ring-1 ring-white/10"
+                                  : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
+                              }`}
                             >
                               <div className="flex items-center gap-3">
                                 <MenuIcon
@@ -448,7 +485,46 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                           submenuIconData?.icono || CubeIcon;
                                         const isSubmenuExpanded =
                                           expandedSub === submenu.nombre;
+                                        const submenuUrl = `/${submenu.path}`;
+                                        const isSubmenuActive =
+                                          location.pathname === submenuUrl;
 
+                                        // Hoja: ruta directa (sin hijos) -> Link
+                                        if (!submenu.es_desplegable) {
+                                          return (
+                                            <div
+                                              key={
+                                                submenu.id_submenu ||
+                                                submenu.nombre
+                                              }
+                                              className="space-y-1"
+                                            >
+                                              <Link
+                                                to={submenuUrl}
+                                                onClick={handleClose}
+                                                className={`group w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-300 ${
+                                                  isSubmenuActive
+                                                    ? "text-blue-400 bg-blue-400/10 font-medium"
+                                                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/2"
+                                                }`}
+                                              >
+                                                <SubmenuIcon
+                                                  className={`w-3.5 h-3.5 shrink-0 ${
+                                                    isSubmenuActive
+                                                      ? "text-blue-400"
+                                                      : "group-hover:text-blue-400/70"
+                                                  }`}
+                                                />
+                                                <span className="text-[13px] font-medium tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
+                                                  {submenu.nombre ||
+                                                    "Sin nombre"}
+                                                </span>
+                                              </Link>
+                                            </div>
+                                          );
+                                        }
+
+                                        // Contenedor: tiene hijos -> botón expandible
                                         return (
                                           <div
                                             key={
@@ -457,7 +533,6 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                             }
                                             className="space-y-1"
                                           >
-                                            {/* Submenu header clickable */}
                                             <button
                                               onClick={() =>
                                                 setExpandedSub(
@@ -512,35 +587,41 @@ export const Navbar = ({ onClose }: NavbarProps) => {
                                                     submenu.modulos,
                                                   ) &&
                                                     submenu.modulos.map(
-                                                      (modulo) => (
-                                                        <Link
-                                                          key={
-                                                            modulo.id_modulo ||
-                                                            modulo.nombre
-                                                          }
-                                                          to={modulo.url || "#"}
-                                                          onClick={handleClose}
-                                                          className={`flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
-                                                            location.pathname ===
-                                                            modulo.url
-                                                              ? "text-blue-400 bg-blue-400/10 font-medium"
-                                                              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-                                                          }`}
-                                                        >
-                                                          <ArrowRightEndOnRectangleIcon
-                                                            className={`w-3.5 h-3.5 shrink-0 transition-colors ${
-                                                              location.pathname ===
-                                                              modulo.url
-                                                                ? "text-blue-400"
-                                                                : "text-zinc-500"
+                                                      (modulo) => {
+                                                        const moduloUrl = `/${modulo.path}`;
+                                                        const isModuloActive =
+                                                          location.pathname ===
+                                                          moduloUrl;
+                                                        return (
+                                                          <Link
+                                                            key={
+                                                              modulo.id_modulo ||
+                                                              modulo.nombre
+                                                            }
+                                                            to={moduloUrl}
+                                                            onClick={
+                                                              handleClose
+                                                            }
+                                                            className={`flex items-center gap-2.5 w-full text-left px-3 py-2 rounded-lg transition-all duration-200 ${
+                                                              isModuloActive
+                                                                ? "text-blue-400 bg-blue-400/10 font-medium"
+                                                                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
                                                             }`}
-                                                          />
-                                                          <span className="text-sm whitespace-nowrap overflow-hidden text-ellipsis block">
-                                                            {modulo.nombre ||
-                                                              "Sin nombre"}
-                                                          </span>
-                                                        </Link>
-                                                      ),
+                                                          >
+                                                            <ArrowRightEndOnRectangleIcon
+                                                              className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                                                                isModuloActive
+                                                                  ? "text-blue-400"
+                                                                  : "text-zinc-500"
+                                                              }`}
+                                                            />
+                                                            <span className="text-sm whitespace-nowrap overflow-hidden text-ellipsis block">
+                                                              {modulo.nombre ||
+                                                                "Sin nombre"}
+                                                            </span>
+                                                          </Link>
+                                                        );
+                                                      },
                                                     )}
                                                 </div>
                                               </div>

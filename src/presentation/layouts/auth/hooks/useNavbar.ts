@@ -12,6 +12,7 @@ export interface SearchableModuloItem {
   id_modulo: number;
   nombre: string;
   url: string;
+  path: string;
   menu_nombre: string;
   submenu_nombre: string;
   menu_path: string;
@@ -72,7 +73,11 @@ export const useNavbar = (onClose: () => void) => {
       const activeSub = mod.submenus.find(
         (sub: RES_Submenu) =>
           Array.isArray(sub.modulos) &&
-          sub.modulos.some((sec: RES_Modulo) => sec.url === location.pathname),
+          sub.modulos.some(
+            (sec: RES_Modulo) =>
+              location.pathname === `/${sec.path}` ||
+              location.pathname.startsWith(`/${sec.path}/`),
+          ),
       );
 
       if (activeSub) {
@@ -100,13 +105,14 @@ export const useNavbar = (onClose: () => void) => {
         if (!Array.isArray(submenu.modulos)) return;
         submenu.modulos.forEach((mod) => {
           const autoTags = getTagsParaModulo(
-            mod.url || mod.nombre || "",
+            mod.path || mod.nombre || "",
             mod.tags,
           );
           list.push({
             id_modulo: mod.id_modulo,
             nombre: mod.nombre,
-            url: mod.url,
+            url: `/${mod.path}`,
+            path: mod.path,
             menu_nombre: menuItem.nombre,
             submenu_nombre: submenu.nombre,
             menu_path: menuItem.path,
