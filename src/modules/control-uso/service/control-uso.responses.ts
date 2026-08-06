@@ -26,6 +26,8 @@ export interface RES_ControlUsoLog {
   mina: string | null;
   id_labor: number | null;
   labor: string | null;
+  id_lote_mineral?: number | null;
+  lote_mineral?: string | null;
   id_cliente: number | null;
   cliente: string | null;
   tipo_carga: string | null;

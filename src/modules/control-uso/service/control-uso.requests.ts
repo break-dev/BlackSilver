@@ -13,6 +13,7 @@ export interface REQ_RegistrarUso {
   es_para_mina?: boolean | null;
   id_mina?: number | null;
   id_labor?: number | null;
+  id_lote_mineral?: number | null;
   id_cliente?: number | null;
   tipo_carga?: string | null;
   observacion?: string | null;

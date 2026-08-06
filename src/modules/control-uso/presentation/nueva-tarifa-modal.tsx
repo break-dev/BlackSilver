@@ -26,6 +26,12 @@ interface Props {
 export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCancel }: Props) => {
   const { notifyError } = useNotify();
 
+  const fieldClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
   const [saving, setSaving] = useState(false);
   const [tipoControl, setTipoControl] = useState<string>(initialTipoControl || "horometro");
   const [precioUnitario, setPrecioUnitario] = useState<number | "">("");
@@ -122,6 +128,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
           value={tipoControl}
           onChange={(val) => setTipoControl(val || "horometro")}
           required
+          classNames={fieldClasses}
           radius="lg"
         />
 
@@ -135,6 +142,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
               onChange={setIdTipoMaterial}
               searchable
               clearable
+              classNames={fieldClasses}
               radius="lg"
               className="flex-1"
             />
@@ -161,6 +169,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
             onChange={(val) => setDistanciaMetros(val as number | "")}
             min={1}
             allowDecimal={false}
+            classNames={fieldClasses}
             radius="lg"
             description="Opcional: límite de distancia para esta tarifa"
           />
@@ -176,6 +185,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
           fixedDecimalScale={!esMaterialSaco}
           required={!esMaterialSaco}
           disabled={esMaterialSaco}
+          classNames={fieldClasses}
           radius="lg"
         />
 
@@ -184,6 +194,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
           placeholder="Ej. Tarifa Regular, Tarifa Nocturna, etc."
           value={descripcion}
           onChange={(e) => setDescripcion(e.currentTarget.value)}
+          classNames={fieldClasses}
           radius="lg"
         />
 
@@ -224,6 +235,7 @@ export const NuevaTarifaModal = ({ asset, initialTipoControl, onSuccess, onCance
                 handleCrearMaterial();
               }
             }}
+            classNames={fieldClasses}
             radius="lg"
             size="sm"
             autoFocus

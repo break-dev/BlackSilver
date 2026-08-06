@@ -28,7 +28,6 @@ import {
   Cog8ToothIcon,
   TruckIcon,
   CalendarDaysIcon,
-  ClockIcon,
   BanknotesIcon,
 } from "@heroicons/react/24/outline";
 import { type DataTableColumn } from "mantine-datatable";
@@ -71,10 +70,10 @@ export const ControlUsoPage = () => {
           const resp = await ControlUsoService.getReporteMensual(Number(mes), Number(anio));
           if (resp.success) {
             await buildControlUsoExcel(
-              workbook, 
-              resp.data.logs, 
-              resp.data.mantenimientos, 
-              Number(mes), 
+              workbook,
+              resp.data.logs,
+              resp.data.mantenimientos,
+              Number(mes),
               Number(anio),
               resp.data.empresa_logo
             );
@@ -122,9 +121,13 @@ export const ControlUsoPage = () => {
       accessor: "periodo",
       title: "Periodo de Uso",
       textAlign: "center",
-      width: 180,
+      width: 230,
       render: (r) => {
         const inicioDate = dayjs(r.fecha_hora_inicio_control);
+
+        const finDate = r.fecha_hora_fin_control
+          ? dayjs(r.fecha_hora_fin_control)
+          : null;
 
         return (
           <Group
@@ -138,7 +141,7 @@ export const ControlUsoPage = () => {
               <CalendarDaysIcon className="w-4 h-4 text-zinc-400" />
             </div>
 
-            {/* Inner Content holding Inicio */}
+            {/* Inner Content holding Inicio & Fin */}
             <Group gap="xs" wrap="nowrap" className="shrink-0">
               {/* Inicio Block */}
               <div className="flex flex-col items-start gap-0.5 min-w-[75px]">
@@ -161,6 +164,33 @@ export const ControlUsoPage = () => {
                   {inicioDate.format("HH:mm")}
                 </Text>
               </div>
+
+              {finDate && (
+                <>
+                  <div className="h-6 w-px bg-zinc-800 shrink-0" />
+                  {/* Fin Block */}
+                  <div className="flex flex-col items-start gap-0.5 min-w-[75px]">
+                    <Text
+                      size="8px"
+                      fw={900}
+                      className="text-zinc-500 uppercase tracking-widest leading-none"
+                    >
+                      Fin
+                    </Text>
+                    <Text size="11px" fw={800} className="text-zinc-200">
+                      {finDate.format("DD MMM YYYY")}
+                    </Text>
+                    <Text
+                      size="10px"
+                      c="dimmed"
+                      fw={700}
+                      className="tracking-tighter"
+                    >
+                      {finDate.format("HH:mm")}
+                    </Text>
+                  </div>
+                </>
+              )}
             </Group>
           </Group>
         );
@@ -169,59 +199,59 @@ export const ControlUsoPage = () => {
     {
       accessor: "lecturas",
       title: tipoControl === "horometro" ? "Horómetro" : tipoControl === "odometro" ? "Odómetro" : "Vueltas",
-      width: 180,
+      width: 160,
       render: (r) => (
-        <Group gap={8} wrap="nowrap">
-          <div className="p-1.5 bg-zinc-850/60 rounded-xl border border-zinc-800/80 shrink-0 shadow-sm flex items-center justify-center">
-            <ClockIcon className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="flex flex-col items-start gap-0.5">
-            {tipoControl === "vueltas" ? (
-              <div className="flex flex-col gap-1.5 mt-0.5 mb-0.5">
-                <Text size="11px" fw={700} className="text-zinc-200">
-                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                    Vueltas:
-                  </span>
-                  {formatNumber(r.cantidad_vueltas ?? 0)}
+        <div className="flex flex-col items-start gap-0.5 ml-2">
+          {tipoControl === "vueltas" ? (
+            <div className="flex flex-col gap-1 mt-0.5 mb-0.5">
+              <Text size="11px" fw={700} className="text-zinc-200">
+                <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                  Vueltas:
+                </span>
+                {formatNumber(r.cantidad_vueltas ?? 0)}
+              </Text>
+              {(r.horometro_inicio !== null || r.horometro_fin !== null) && (
+                <Text size="10px" c="dimmed" fw={600}>
+                  Horóm: {formatNumber(r.horometro_inicio ?? 0)} - {formatNumber(r.horometro_fin ?? 0)}
                 </Text>
-                {(r.tarifa_material || r.tarifa_distancia_metros || r.cantidad_sacos) && (
-                  <Group gap={4} wrap="wrap">
-                    {r.tarifa_distancia_metros && (
-                      <Badge size="xs" color="blue" variant="filled">
-                        {r.tarifa_distancia_metros} m.
-                      </Badge>
-                    )}
-                    {r.tarifa_material && (
-                      <Badge size="xs" color="pink" variant="filled">
-                        {r.tarifa_material}
-                      </Badge>
-                    )}
-                    {r.cantidad_sacos ? (
-                      <Badge size="xs" color="orange" variant="filled">
-                        {r.cantidad_sacos} sacos
-                      </Badge>
-                    ) : null}
-                  </Group>
-                )}
-              </div>
-            ) : (
-              <>
-                <Text size="11px" fw={700} className="text-zinc-200">
-                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                    Inicio:
-                  </span>
-                  {formatNumber(tipoControl === "horometro" ? (r.horometro_inicio ?? 0) : (r.odometro_inicio ?? 0))}
-                </Text>
-                <Text size="11px" fw={700} className="text-zinc-200">
-                  <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
-                    Fin:
-                  </span>
-                  {formatNumber(tipoControl === "horometro" ? (r.horometro_fin ?? 0) : (r.odometro_fin ?? 0))}
-                </Text>
-              </>
-            )}
-          </div>
-        </Group>
+              )}
+              {(r.tarifa_material || r.tarifa_distancia_metros || r.cantidad_sacos) && (
+                <Group gap={4} wrap="wrap">
+                  {r.tarifa_distancia_metros && (
+                    <Badge size="xs" color="blue" variant="filled">
+                      {r.tarifa_distancia_metros} m.
+                    </Badge>
+                  )}
+                  {r.tarifa_material && (
+                    <Badge size="xs" color="pink" variant="filled">
+                      {r.tarifa_material}
+                    </Badge>
+                  )}
+                  {r.cantidad_sacos ? (
+                    <Badge size="xs" color="orange" variant="filled">
+                      {r.cantidad_sacos} sacos
+                    </Badge>
+                  ) : null}
+                </Group>
+              )}
+            </div>
+          ) : (
+            <>
+              <Text size="11px" fw={700} className="text-zinc-200">
+                <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                  Inicio:
+                </span>
+                {formatNumber(tipoControl === "horometro" ? (r.horometro_inicio ?? 0) : (r.odometro_inicio ?? 0))}
+              </Text>
+              <Text size="11px" fw={700} className="text-zinc-200">
+                <span className="text-zinc-500 font-extrabold uppercase tracking-wider text-[9px] mr-1">
+                  Fin:
+                </span>
+                {formatNumber(tipoControl === "horometro" ? (r.horometro_fin ?? 0) : (r.odometro_fin ?? 0))}
+              </Text>
+            </>
+          )}
+        </div>
       ),
     },
     {
@@ -235,8 +265,8 @@ export const ControlUsoPage = () => {
           tipoControl === "vueltas"
             ? (r.cantidad_vueltas ?? 0)
             : tipoControl === "odometro"
-            ? (r.total_km ?? 0)
-            : (r.total_horas ?? 0)
+              ? (r.total_km ?? 0)
+              : (r.total_horas ?? 0)
         );
         const unit = tipoControl === "horometro" ? "hrs" : tipoControl === "odometro" ? "Km" : "vlts";
         return (
@@ -270,6 +300,12 @@ export const ControlUsoPage = () => {
                 <Text size="11px" c="zinc.400">
                   <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Labor:</span>
                   {r.labor}
+                </Text>
+              )}
+              {r.lote_mineral && (
+                <Text size="11px" c="amber.4">
+                  <span className="font-extrabold uppercase tracking-wider text-[9px] text-zinc-500 mr-1">Lote:</span>
+                  {r.lote_mineral}
                 </Text>
               )}
             </>

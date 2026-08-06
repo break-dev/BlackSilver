@@ -16,6 +16,7 @@ import {
   MoonIcon,
   ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
+import dayjs from "dayjs";
 import { useRegistroTurno } from "../hooks/useRegistroTurno";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 import { TipoTurno } from "../service/tipo-turno";
@@ -106,49 +107,70 @@ export const ModalRegistroTurno = ({
         />
 
         <Group grow align="flex-start" gap="md">
-          <TimeInput
-            ref={refIngreso}
-            label="Hora de Ingreso"
-            placeholder="Seleccione hora"
-            leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
-            value={form.hora_ingreso || undefined}
-            onChange={(event) => {
-              const val = event.currentTarget.value;
-              // Acepta HH:mm o HH:mm:ss. Si trae segundos, recortamos a HH:mm.
-              // Si no tiene formato válido, dejamos string vacío (la validación
-              // Zod mostrará el error al usuario al hacer submit).
-              const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
-              const formatted = match ? `${match[1]}:${match[2]}` : "";
-              setField("hora_ingreso", formatted);
-            }}
-            onClick={() => refIngreso.current?.showPicker?.()}
-            classNames={fieldClasses}
-            radius="lg"
-            size="xs"
-            required
-            withAsterisk
-            disabled={loading}
-          />
-          <TimeInput
-            ref={refSalida}
-            label="Hora de Salida"
-            placeholder="Seleccione hora"
-            leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
-            value={form.hora_salida || undefined}
-            onChange={(event) => {
-              const val = event.currentTarget.value;
-              const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
-              const formatted = match ? `${match[1]}:${match[2]}` : "";
-              setField("hora_salida", formatted);
-            }}
-            onClick={() => refSalida.current?.showPicker?.()}
-            classNames={fieldClasses}
-            radius="lg"
-            size="xs"
-            required
-            withAsterisk
-            disabled={loading}
-          />
+          <div>
+            <TimeInput
+              ref={refIngreso}
+              label="Hora de Ingreso"
+              placeholder="Seleccione hora"
+              leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
+              value={form.hora_ingreso || undefined}
+              onChange={(event) => {
+                const val = event.currentTarget.value;
+                const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+                const formatted = match ? `${match[1]}:${match[2]}` : "";
+                setField("hora_ingreso", formatted);
+              }}
+              onClick={() => refIngreso.current?.showPicker?.()}
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+              required
+              withAsterisk
+              disabled={loading}
+            />
+            {form.hora_ingreso && (
+              <span className="text-[10px] text-blue-400 font-bold mt-1 block ml-1">
+                ({dayjs(`2000-01-01 ${form.hora_ingreso}`).format("hh:mm A")})
+              </span>
+            )}
+          </div>
+
+          <div>
+            <TimeInput
+              ref={refSalida}
+              label="Hora de Salida"
+              placeholder="Seleccione hora"
+              leftSection={<ClockIcon className="w-4 h-4 text-zinc-500" />}
+              value={form.hora_salida || undefined}
+              onChange={(event) => {
+                const val = event.currentTarget.value;
+                const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+                const formatted = match ? `${match[1]}:${match[2]}` : "";
+                setField("hora_salida", formatted);
+              }}
+              onClick={() => refSalida.current?.showPicker?.()}
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+              required
+              withAsterisk
+              disabled={loading}
+            />
+            {form.hora_salida && (
+              <span className="text-[10px] text-blue-400 font-bold mt-1 block ml-1">
+                ({dayjs(`2000-01-01 ${form.hora_salida}`).format("hh:mm A")})
+                {form.hora_ingreso &&
+                  form.hora_salida &&
+                  dayjs(`2000-01-01 ${form.hora_salida}`).isBefore(
+                    dayjs(`2000-01-01 ${form.hora_ingreso}`)
+                  ) && (
+                    <span className="text-amber-400 font-bold ml-1">
+                      (Día siguiente)
+                    </span>
+                  )}
+              </span>
+            )}
+          </div>
         </Group>
 
         {form.total_horas > 0 && (

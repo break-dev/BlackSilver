@@ -15,7 +15,7 @@ import {
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { ControlUsoService } from "../service/control-uso.service";
 import { AuxService } from "../../../service/auxiliar.service";
@@ -25,9 +25,12 @@ import type { RES_ControlUsoLog, RES_Tarifa } from "../service/control-uso.respo
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import { Cog8ToothIcon, TruckIcon, ArrowPathRoundedSquareIcon, MapPinIcon, BriefcaseIcon, PlusIcon, QueueListIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
+import { TimeInput } from "@mantine/dates";
+import "@mantine/dates/styles.css";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { NuevaTarifaModal } from "./nueva-tarifa-modal";
+import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 
 interface Props {
   asset: RES_ActivoFijoDisponible;
@@ -45,6 +48,12 @@ export const RegistroUso = ({
   const { notifyError } = useNotify();
   const idActivoFijo = asset.id_activo;
 
+  const fieldClasses = {
+    input:
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+    label: "text-zinc-300 mb-1 font-medium",
+  };
+
   // Data states
   const [loadingData, setLoadingData] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,12 +61,14 @@ export const RegistroUso = ({
   const [tarifas, setTarifas] = useState<RES_Tarifa[]>([]);
   const [minas, setMinas] = useState<{ value: string; label: string }[]>([]);
   const [labores, setLabores] = useState<{ value: string; label: string }[]>([]);
+  const [lotesMineral, setLotesMineral] = useState<{ value: string; label: string }[]>([]);
   const [clientes, setClientes] = useState<{ value: string; label: string }[]>([]);
 
   // Form states
   const [esParaMina, setEsParaMina] = useState<boolean>(true);
   const [idMina, setIdMina] = useState<string | null>(null);
   const [idLabor, setIdLabor] = useState<string | null>(null);
+  const [idLoteMineral, setIdLoteMineral] = useState<string | null>(null);
   const [idCliente, setIdCliente] = useState<string | null>(null);
   const [tipoCarga, setTipoCarga] = useState<string | null>(null);
   const [idTarifa, setIdTarifa] = useState<string | null>(null);
@@ -65,10 +76,18 @@ export const RegistroUso = ({
   const [modalTarifaOpened, setModalTarifaOpened] = useState(false);
   const [modalHistorialOpened, setModalHistorialOpened] = useState(false);
 
-  const [lecturaInicio, setLecturaInicio] = useState<number | "">(0);
-  const [lecturaFin, setLecturaFin] = useState<number | "">(0);
+  // Estados de Fecha y Hora para Horómetro
+  const [fechaDia, setFechaDia] = useState<Date | null>(new Date());
+  const [horaInicioStr, setHoraInicioStr] = useState<string>("08:00");
+  const [horaFinStr, setHoraFinStr] = useState<string>("10:00");
+
+  const refInicio = useRef<HTMLInputElement>(null);
+  const refFin = useRef<HTMLInputElement>(null);
+
+  const [lecturaInicio, setLecturaInicio] = useState<number | "">("");
+  const [lecturaFin, setLecturaFin] = useState<number | "">("");
   const [cantidadVueltas, setCantidadVueltas] = useState<number | "">(0);
-  const [cantidadSacos, setCantidadSacos] = useState<number | "">("" );
+  const [cantidadSacos, setCantidadSacos] = useState<number | "">("");
   const [observacion, setObservacion] = useState("");
 
   const selectedTarifa = useMemo(() => {
@@ -93,7 +112,7 @@ export const RegistroUso = ({
         const respTarifas = await ControlUsoService.getTarifas(idActivoFijo);
         if (respTarifas.success) {
           setTarifas(respTarifas.data);
-          
+
           // Auto-select latest tarifa for the current control type
           const tarifasDeTipo = respTarifas.data.filter((t) => t.tipo_control === tipoControl);
           if (tarifasDeTipo.length > 0) {
@@ -123,12 +142,23 @@ export const RegistroUso = ({
           })));
         }
 
+        // Fetch Lotes Mineral (En Producción)
+        const respLotes = await AuxService.get_lotes_mineral();
+        if (respLotes.success) {
+          setLotesMineral(
+            respLotes.data.map((lm: { id_lote_mineral: string | number; codigo: string }) => ({
+              value: lm.id_lote_mineral.toString(),
+              label: lm.codigo,
+            }))
+          );
+        }
+
         // Lectura (Odometro o Horometro)
         if (tipoControl === "horometro") {
           const resp = await ControlUsoService.getUltimoHorometro(idActivoFijo);
           if (resp.success) {
-            setLecturaInicio(resp.data.ultimo_horometro);
-            setLecturaFin(0);
+            setLecturaInicio(resp.data.ultimo_horometro || "");
+            setLecturaFin("");
           }
         } else if (tipoControl === "odometro") {
           const resp = await ControlUsoService.getUltimoOdometro(idActivoFijo);
@@ -181,8 +211,24 @@ export const RegistroUso = ({
     if (tipoControl === "vueltas") {
       return Number(cantidadVueltas) || 0;
     }
+    if (tipoControl === "horometro") {
+      if (!fechaDia || !horaInicioStr || !horaFinStr) return 0;
+      const baseDate = dayjs(fechaDia).format("YYYY-MM-DD");
+      const dtInicio = dayjs(`${baseDate} ${horaInicioStr}`);
+      let dtFin = dayjs(`${baseDate} ${horaFinStr}`);
+      if (!dtInicio.isValid() || !dtFin.isValid()) return 0;
+      
+      // Si la hora de fin es menor o igual a la de inicio, asumimos que cruzó la medianoche (al día siguiente)
+      if (dtFin.isBefore(dtInicio) || dtFin.isSame(dtInicio)) {
+        dtFin = dtFin.add(1, "day");
+      }
+      
+      const diffSecs = dtFin.diff(dtInicio, "second");
+      if (diffSecs <= 0) return 0;
+      return Math.round((diffSecs / 3600) * 100) / 100;
+    }
     return Math.max(0, (Number(lecturaFin) || 0) - (Number(lecturaInicio) || 0));
-  }, [tipoControl, cantidadVueltas, lecturaInicio, lecturaFin]);
+  }, [tipoControl, cantidadVueltas, lecturaInicio, lecturaFin, fechaDia, horaInicioStr, horaFinStr]);
 
   const costoTotal = useMemo(() => {
     return totalUso * precioUnitario;
@@ -195,7 +241,34 @@ export const RegistroUso = ({
       return;
     }
 
-    if (tipoControl !== "vueltas" && (Number(lecturaFin) || 0) < (Number(lecturaInicio) || 0)) {
+    if (tipoControl === "horometro") {
+      if (!fechaDia) {
+        notifyError("Por favor seleccione la fecha del trabajo.");
+        return;
+      }
+      if (!horaInicioStr || !horaFinStr) {
+        notifyError("Por favor ingrese la hora de inicio y fin.");
+        return;
+      }
+      if (totalUso <= 0) {
+        notifyError("La hora de fin debe ser posterior a la hora de inicio.");
+        return;
+      }
+
+      // Validación opcional de lecturas de horómetro si ambas están presentes
+      if (
+        lecturaInicio !== "" &&
+        lecturaFin !== "" &&
+        Number(lecturaFin) <= Number(lecturaInicio)
+      ) {
+        notifyError(
+          "El horómetro final no puede ser menor o igual al horómetro inicial."
+        );
+        return;
+      }
+    }
+
+    if (tipoControl === "odometro" && (Number(lecturaFin) || 0) < (Number(lecturaInicio) || 0)) {
       notifyError(
         `La lectura final del ${labelLectura} no puede ser menor a la lectura inicial.`
       );
@@ -204,14 +277,32 @@ export const RegistroUso = ({
 
     setSaving(true);
     try {
-      const ahora = new Date();
+      let dtInicioStr = dayjs().format("YYYY-MM-DD HH:mm:ss");
+      let dtFinStr: string | null = null;
+
+      if (tipoControl === "horometro" && fechaDia) {
+        const baseDate = dayjs(fechaDia).format("YYYY-MM-DD");
+        const dtInicio = dayjs(`${baseDate} ${horaInicioStr}`);
+        let dtFin = dayjs(`${baseDate} ${horaFinStr}`);
+        
+        // Si cruza la medianoche, se le suma 1 día a la fecha fin
+        if (dtFin.isBefore(dtInicio) || dtFin.isSame(dtInicio)) {
+          dtFin = dtFin.add(1, "day");
+        }
+
+        dtInicioStr = dtInicio.format("YYYY-MM-DD HH:mm:ss");
+        dtFinStr = dtFin.format("YYYY-MM-DD HH:mm:ss");
+      } else {
+        dtInicioStr = dayjs().format("YYYY-MM-DD HH:mm:ss");
+      }
+
       const resp = await ControlUsoService.registrarUso({
         id_activo_fijo: idActivoFijo,
-        fecha_hora_inicio_control: dayjs(ahora).format("YYYY-MM-DD HH:mm:ss"),
-        fecha_hora_fin_control: null,
-        
-        horometro_inicio: tipoControl === "horometro" ? (Number(lecturaInicio) || 0) : undefined,
-        horometro_fin: tipoControl === "horometro" ? (Number(lecturaFin) || 0) : undefined,
+        fecha_hora_inicio_control: dtInicioStr,
+        fecha_hora_fin_control: dtFinStr,
+
+        horometro_inicio: (tipoControl === "horometro" || tipoControl === "vueltas") && lecturaInicio !== "" ? Number(lecturaInicio) : undefined,
+        horometro_fin: (tipoControl === "horometro" || tipoControl === "vueltas") && lecturaFin !== "" ? Number(lecturaFin) : undefined,
         odometro_inicio: tipoControl === "odometro" ? (Number(lecturaInicio) || 0) : undefined,
         odometro_fin: tipoControl === "odometro" ? (Number(lecturaFin) || 0) : undefined,
         cantidad_vueltas: tipoControl === "vueltas" ? (Number(cantidadVueltas) || 0) : undefined,
@@ -219,14 +310,15 @@ export const RegistroUso = ({
 
         precio_unitario: precioUnitario,
         id_tarifa: idTarifa ? Number(idTarifa) : undefined,
-        
+
         // Destino solo aplica para horómetro
         es_para_mina: tipoControl === "horometro" ? esParaMina : undefined,
         id_mina: tipoControl === "horometro" && esParaMina && idMina ? Number(idMina) : undefined,
         id_labor: tipoControl === "horometro" && esParaMina && idLabor ? Number(idLabor) : undefined,
+        id_lote_mineral: tipoControl === "horometro" && idLoteMineral ? Number(idLoteMineral) : undefined,
         id_cliente: tipoControl === "horometro" && !esParaMina && idCliente ? Number(idCliente) : undefined,
         tipo_carga: tipoControl === "horometro" ? (tipoCarga || undefined) : undefined,
-        
+
         observacion: observacion ? observacion.trim() : null,
       });
 
@@ -234,8 +326,9 @@ export const RegistroUso = ({
         const enhancedLog = { ...resp.data };
         if (idMina) enhancedLog.mina = minas.find((m) => m.value === String(idMina))?.label || null;
         if (idLabor) enhancedLog.labor = labores.find((l) => l.value === String(idLabor))?.label || null;
+        if (idLoteMineral) enhancedLog.lote_mineral = lotesMineral.find((lm) => lm.value === String(idLoteMineral))?.label || null;
         if (idCliente) enhancedLog.cliente = clientes.find((c) => c.value === String(idCliente))?.label || null;
-        
+
         if (tipoControl === "vueltas") {
           if (idTarifa) {
             const t = tarifas.find((tar) => tar.id === Number(idTarifa));
@@ -320,6 +413,7 @@ export const RegistroUso = ({
                   ].filter(Boolean).join(" "),
                 };
               })}
+            classNames={fieldClasses}
             value={idTarifa}
             onChange={setIdTarifa}
             searchable
@@ -354,8 +448,120 @@ export const RegistroUso = ({
         </Group>
       </SimpleGrid>
 
-      {/* Lecturas: Inicial / Final (horómetro u odómetro) o Cantidad de Vueltas */}
-      {tipoControl !== "vueltas" ? (
+      {/* Bloque Horas / Lecturas según tipoControl */}
+      {tipoControl === "horometro" ? (
+        <Stack gap="sm">
+          {/* Fila 1: Fecha del Trabajo ocupando el ancho completo de la fila */}
+          <CustomDatePicker
+            label="Fecha del Trabajo"
+            placeholder="Seleccione fecha"
+            value={fechaDia}
+            onChange={(val) => setFechaDia(val as Date | null)}
+            radius="lg"
+            size="xs"
+          />
+
+          {/* Fila 2: Hora Inicio y Hora Fin usando TimeInput de Mantine con size='xs' */}
+          <SimpleGrid cols={2} spacing="md">
+            <div>
+              <TimeInput
+                ref={refInicio}
+                label="Hora Inicio"
+                placeholder="08:00"
+                value={horaInicioStr}
+                onChange={(event) => {
+                  const val = event.currentTarget.value;
+                  const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+                  const formatted = match ? `${match[1]}:${match[2]}` : "";
+                  setHoraInicioStr(formatted);
+                }}
+                onClick={() => refInicio.current?.showPicker?.()}
+                classNames={fieldClasses}
+                size="xs"
+                radius="lg"
+                required
+              />
+              {horaInicioStr && (
+                <Text size="10px" c="blue.4" fw={700} mt={3} className="ml-1">
+                  ({dayjs(`2000-01-01 ${horaInicioStr}`).format("hh:mm A")})
+                </Text>
+              )}
+            </div>
+
+            <div>
+              <TimeInput
+                ref={refFin}
+                label="Hora Fin"
+                placeholder="10:00"
+                value={horaFinStr}
+                onChange={(event) => {
+                  const val = event.currentTarget.value;
+                  const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(val ?? "");
+                  const formatted = match ? `${match[1]}:${match[2]}` : "";
+                  setHoraFinStr(formatted);
+                }}
+                onClick={() => refFin.current?.showPicker?.()}
+                classNames={fieldClasses}
+                size="xs"
+                radius="lg"
+                required
+              />
+              {horaFinStr && (
+                <Text size="10px" c="blue.4" fw={700} mt={3} className="ml-1">
+                  ({dayjs(`2000-01-01 ${horaFinStr}`).format("hh:mm A")})
+                  {horaInicioStr && horaFinStr && dayjs(`2000-01-01 ${horaFinStr}`).isBefore(dayjs(`2000-01-01 ${horaInicioStr}`)) && (
+                    <span className="text-amber-400 font-bold ml-1">(Día siguiente)</span>
+                  )}
+                </Text>
+              )}
+            </div>
+          </SimpleGrid>
+
+          {/* Fila 3: Lote Mineral Opcional */}
+          <Select
+            label="Lote Mineral (Opcional)"
+            placeholder="Seleccione lote de mineral..."
+            data={lotesMineral}
+            value={idLoteMineral}
+            onChange={setIdLoteMineral}
+            searchable
+            clearable
+            classNames={fieldClasses}
+            radius="lg"
+            size="xs"
+          />
+
+          {/* Fila 4: Lecturas de Horómetro Opcionales */}
+          <SimpleGrid cols={2} spacing="md" className="mt-1 opacity-85">
+            <NumberInput
+              label="Horómetro Inicial (Opcional)"
+              placeholder="Ej: 1250.00"
+              value={lecturaInicio}
+              onChange={(val) => setLecturaInicio(val as number | "")}
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              classNames={fieldClasses}
+              size="xs"
+              radius="lg"
+              disabled={loadingData}
+            />
+            <NumberInput
+              label="Horómetro Final (Opcional)"
+              placeholder="Ej: 1252.00"
+              value={lecturaFin}
+              onChange={(val) => setLecturaFin(val as number | "")}
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              classNames={fieldClasses}
+              size="xs"
+              radius="lg"
+              disabled={loadingData}
+            />
+          </SimpleGrid>
+        </Stack>
+      ) : tipoControl === "odometro" ? (
         <SimpleGrid cols={2} spacing="md">
           <NumberInput
             label={`${labelLectura} Inicial`}
@@ -383,13 +589,14 @@ export const RegistroUso = ({
           />
         </SimpleGrid>
       ) : (
-        <SimpleGrid cols={1} spacing="md">
+        <Stack gap="md">
           <NumberInput
             label="Cantidad de Vueltas"
             value={cantidadVueltas}
             onChange={(val) => setCantidadVueltas(val as number | "")}
             min={0}
             required
+            classNames={fieldClasses}
             size="xs"
             radius="lg"
           />
@@ -402,12 +609,43 @@ export const RegistroUso = ({
               min={0}
               allowDecimal={false}
               required
+              classNames={fieldClasses}
               size="xs"
               radius="lg"
               description="Ingrese la cantidad de sacos transportados"
             />
           )}
-        </SimpleGrid>
+
+          {/* Horómetro Inicial y Final Opcionales para Control por Vueltas */}
+          <SimpleGrid cols={2} spacing="md" className="opacity-85">
+            <NumberInput
+              label="Horómetro Inicial (Opcional)"
+              placeholder="Ej: 1250.00"
+              value={lecturaInicio}
+              onChange={(val) => setLecturaInicio(val as number | "")}
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              classNames={fieldClasses}
+              size="xs"
+              radius="lg"
+              disabled={loadingData}
+            />
+            <NumberInput
+              label="Horómetro Final (Opcional)"
+              placeholder="Ej: 1252.00"
+              value={lecturaFin}
+              onChange={(val) => setLecturaFin(val as number | "")}
+              min={0}
+              decimalScale={2}
+              fixedDecimalScale
+              classNames={fieldClasses}
+              size="xs"
+              radius="lg"
+              disabled={loadingData}
+            />
+          </SimpleGrid>
+        </Stack>
       )}
 
       <Card
@@ -508,6 +746,7 @@ export const RegistroUso = ({
                   onChange={setIdMina}
                   searchable
                   required
+                  classNames={fieldClasses}
                   radius="lg"
                   size="xs"
                 />
@@ -520,6 +759,7 @@ export const RegistroUso = ({
                   searchable
                   clearable
                   disabled={!idMina}
+                  classNames={fieldClasses}
                   radius="lg"
                   size="xs"
                 />
@@ -533,6 +773,7 @@ export const RegistroUso = ({
                 onChange={setIdCliente}
                 searchable
                 required
+                classNames={fieldClasses}
                 radius="lg"
                 size="xs"
               />
@@ -550,6 +791,7 @@ export const RegistroUso = ({
             value={tipoCarga}
             onChange={setTipoCarga}
             clearable
+            classNames={fieldClasses}
             radius="lg"
             size="xs"
           />
@@ -561,6 +803,7 @@ export const RegistroUso = ({
         placeholder="Ingrese notas u observaciones..."
         value={observacion}
         onChange={(e) => setObservacion(e.target.value)}
+        classNames={fieldClasses}
         size="xs"
         radius="lg"
         minRows={2}
@@ -591,9 +834,8 @@ export const RegistroUso = ({
       <ModalEstandar
         opened={modalTarifaOpened}
         close={() => setModalTarifaOpened(false)}
-        title={`Tarifas por uso - ${
-          tipoControl.charAt(0).toUpperCase() + tipoControl.slice(1)
-        }`}
+        title={`Tarifas por uso - ${tipoControl.charAt(0).toUpperCase() + tipoControl.slice(1)
+          }`}
         size="sm"
       >
         <NuevaTarifaModal
@@ -622,9 +864,8 @@ export const RegistroUso = ({
       <ModalEstandar
         opened={modalHistorialOpened}
         close={() => setModalHistorialOpened(false)}
-        title={`Historial de Tarifas - ${
-          tipoControl.charAt(0).toUpperCase() + tipoControl.slice(1)
-        }`}
+        title={`Historial de Tarifas - ${tipoControl.charAt(0).toUpperCase() + tipoControl.slice(1)
+          }`}
         size="xl"
       >
         <div className="mt-2 h-[350px]">
@@ -660,32 +901,32 @@ export const RegistroUso = ({
               // Columna Distancia: solo en Vueltas
               ...(tipoControl === "vueltas"
                 ? [{
-                    accessor: "distancia_metros",
-                    title: "Distancia hasta",
-                    render: (record: typeof tarifas[0]) =>
-                      record.distancia_metros ? (
-                        <Badge size="xs" color="teal" variant="filled">
-                          {record.distancia_metros} m.
-                        </Badge>
-                      ) : (
-                        <span className="text-zinc-600 text-xs italic">—</span>
-                      ),
-                  }]
+                  accessor: "distancia_metros",
+                  title: "Distancia hasta",
+                  render: (record: typeof tarifas[0]) =>
+                    record.distancia_metros ? (
+                      <Badge size="xs" color="teal" variant="filled">
+                        {record.distancia_metros} m.
+                      </Badge>
+                    ) : (
+                      <span className="text-zinc-600 text-xs italic">—</span>
+                    ),
+                }]
                 : []),
               // Columna Material: solo en Vueltas
               ...(tipoControl === "vueltas"
                 ? [{
-                    accessor: "tipo_material",
-                    title: "Material",
-                    render: (record: typeof tarifas[0]) =>
-                      record.tipo_material ? (
-                        <Badge size="xs" color="pink" variant="filled">
-                          {record.tipo_material}
-                        </Badge>
-                      ) : (
-                        <span className="text-zinc-600 text-xs italic">—</span>
-                      ),
-                  }]
+                  accessor: "tipo_material",
+                  title: "Material",
+                  render: (record: typeof tarifas[0]) =>
+                    record.tipo_material ? (
+                      <Badge size="xs" color="pink" variant="filled">
+                        {record.tipo_material}
+                      </Badge>
+                    ) : (
+                      <span className="text-zinc-600 text-xs italic">—</span>
+                    ),
+                }]
                 : []),
               {
                 accessor: "descripcion",
