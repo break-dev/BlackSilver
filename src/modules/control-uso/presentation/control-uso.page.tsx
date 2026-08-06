@@ -8,7 +8,8 @@ import { RegistroUso } from "./registro-uso";
 import { useExcel } from "../../../hooks/useExcel";
 import { useNotify } from "../../../hooks/useNotify";
 import { ControlUsoService } from "../service/control-uso.service";
-import { buildControlUsoExcel } from "./control-uso-excel";
+import { buildControlHorasExcel } from "./excel-control-horas";
+import { buildControlVueltasExcel } from "./excel-control-vueltas";
 import { IconFileSpreadsheet } from "@tabler/icons-react";
 import {
   Button,
@@ -63,20 +64,21 @@ export const ControlUsoPage = () => {
   const { notifyError } = useNotify();
 
   const handleExportExcel = () => {
+    const mesNombre = MESES.find((m) => m.value === String(mes))?.label || String(mes);
+    const prefix = tipoControl === "horometro" ? "Control_Horas" : tipoControl === "vueltas" ? "Control_Vueltas" : "Control_Odometro";
+    const filename = `${prefix}_${mesNombre}_${anio}.xlsx`;
+
     generateExcel({
-      filename: `Control_Uso_${mes}_${anio}.xlsx`,
+      filename,
       builder: async (workbook) => {
         try {
           const resp = await ControlUsoService.getReporteMensual(Number(mes), Number(anio));
           if (resp.success) {
-            await buildControlUsoExcel(
-              workbook,
-              resp.data.logs,
-              resp.data.mantenimientos,
-              Number(mes),
-              Number(anio),
-              resp.data.empresa_logo
-            );
+            if (tipoControl === "horometro") {
+              await buildControlHorasExcel(workbook, resp.data.logs, Number(mes), Number(anio));
+            } else {
+              await buildControlVueltasExcel(workbook, resp.data.logs, Number(mes), Number(anio));
+            }
           } else {
             notifyError(resp.message || "Error al obtener datos para el reporte");
             throw new Error(resp.message);
@@ -285,7 +287,7 @@ export const ControlUsoPage = () => {
       accessor: "destino",
       title: "Destino / Trabajo",
       width: 250,
-      hidden: tipoControl !== "horometro",
+      hidden: tipoControl === "odometro",
       render: (r) => (
         <Stack gap={2} className="py-1">
           {r.es_para_mina ? (

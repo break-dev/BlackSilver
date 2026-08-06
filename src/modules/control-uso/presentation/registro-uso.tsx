@@ -311,10 +311,10 @@ export const RegistroUso = ({
         precio_unitario: precioUnitario,
         id_tarifa: idTarifa ? Number(idTarifa) : undefined,
 
-        // Destino solo aplica para horómetro
-        es_para_mina: tipoControl === "horometro" ? esParaMina : undefined,
-        id_mina: tipoControl === "horometro" && esParaMina && idMina ? Number(idMina) : undefined,
-        id_labor: tipoControl === "horometro" && esParaMina && idLabor ? Number(idLabor) : undefined,
+        // Destino (Mina / Labor) para Horómetro y Vueltas
+        es_para_mina: (tipoControl === "horometro" || tipoControl === "vueltas") ? (tipoControl === "vueltas" ? true : esParaMina) : undefined,
+        id_mina: (tipoControl === "horometro" || tipoControl === "vueltas") && idMina ? Number(idMina) : undefined,
+        id_labor: (tipoControl === "horometro" || tipoControl === "vueltas") && idLabor ? Number(idLabor) : undefined,
         id_lote_mineral: tipoControl === "horometro" && idLoteMineral ? Number(idLoteMineral) : undefined,
         id_cliente: tipoControl === "horometro" && !esParaMina && idCliente ? Number(idCliente) : undefined,
         tipo_carga: tipoControl === "horometro" ? (tipoCarga || undefined) : undefined,
@@ -590,6 +590,35 @@ export const RegistroUso = ({
         </SimpleGrid>
       ) : (
         <Stack gap="md">
+          {/* Mina y Labor para Control por Vueltas */}
+          <SimpleGrid cols={2} spacing="md">
+            <Select
+              label="Mina"
+              placeholder="Seleccione mina"
+              data={minas}
+              value={idMina}
+              onChange={setIdMina}
+              searchable
+              required
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+            />
+            <Select
+              label="Labor (Opcional)"
+              placeholder="Seleccione labor"
+              data={labores}
+              value={idLabor}
+              onChange={setIdLabor}
+              searchable
+              clearable
+              disabled={!idMina}
+              classNames={fieldClasses}
+              radius="lg"
+              size="xs"
+            />
+          </SimpleGrid>
+
           <NumberInput
             label="Cantidad de Vueltas"
             value={cantidadVueltas}
