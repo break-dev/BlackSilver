@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { MaestrosState, LoadingMaestrosState } from "./utils";
 import { AuxService } from "../../../../service/auxiliar.service";
 import type { RES_Proveedor } from "../../../../service/responses/proveedor";
+import type { RES_Producto } from "../../../../service/responses/producto";
 
 export const useCotizacionMaestros = () => {
   const [loadingMaestros, setLoadingMaestros] = useState<LoadingMaestrosState>({
@@ -29,10 +30,22 @@ export const useCotizacionMaestros = () => {
     }));
   }, []);
 
+  const agregarProductoLocal = useCallback((nuevo: RES_Producto) => {
+    setMaestros((prev) => {
+      // Evitar duplicados si ya existía
+      const existe = prev.catalogo.some((p) => p.id_producto === nuevo.id_producto);
+      if (existe) return prev;
+      return {
+        ...prev,
+        catalogo: [nuevo, ...prev.catalogo],
+      };
+    });
+  }, []);
+
   useEffect(() => {
     const cargarMaestro = async <K extends keyof MaestrosState>(
       key: K,
-      fetchFn: () => Promise<{ success: boolean; data: any }>,
+      fetchFn: () => Promise<{ success: boolean; data: MaestrosState[K] }>,
     ) => {
       try {
         setLoadingMaestros((prev) => ({ ...prev, [key]: true }));
@@ -56,5 +69,5 @@ export const useCotizacionMaestros = () => {
     cargarMaestro("minas", AuxService.get_minas);
   }, []);
 
-  return { maestros, loadingMaestros, agregarProveedorLocal };
+  return { maestros, loadingMaestros, agregarProveedorLocal, agregarProductoLocal };
 };

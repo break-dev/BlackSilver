@@ -17,7 +17,7 @@ export const useRegistroCotizacion = (
     printTarget?: string,
   ) => void,
 ) => {
-  const { maestros, loadingMaestros, agregarProveedorLocal } = useCotizacionMaestros();
+  const { maestros, loadingMaestros, agregarProveedorLocal, agregarProductoLocal } = useCotizacionMaestros();
   
   const {
     productos,
@@ -77,6 +77,7 @@ export const useRegistroCotizacion = (
     cotizaciones,
     maestros,
     agregarProveedorLocal,
+    agregarProductoLocal,
     loading,
     loadingMaestros,
     toggleProductoEnComparador,

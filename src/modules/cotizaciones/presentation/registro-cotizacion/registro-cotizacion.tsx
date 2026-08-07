@@ -94,6 +94,7 @@ export const RegistroCotizacion = forwardRef<
       handleSave,
       maestros,
       agregarProveedorLocal,
+      agregarProductoLocal,
       wizardAprobacionOpened,
       setWizardAprobacionOpened,
       wizardPayload,
@@ -217,6 +218,9 @@ export const RegistroCotizacion = forwardRef<
           catalogoProductos={maestros.catalogo}
           loading={loadingMaestros.catalogo}
           soloAuditables={esAuditableGlobal}
+          onProductoCreado={(nuevoProd) => {
+            agregarProductoLocal(nuevoProd);
+          }}
         />
 
         <ModalAsistenteAprobacion
