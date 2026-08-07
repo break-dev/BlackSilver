@@ -25,6 +25,7 @@ import { useRegistroContratista } from "../hooks/useRegistroContratista";
 import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { CustomDatePicker } from "../../../presentation/utils/date-picker-input";
 import { Genero } from "../../../shared/enums/_generic/genero";
+import dayjs from "dayjs";
 
 interface RegistroContratistaProps {
   idMinaDefault?: number | null;
@@ -146,11 +147,18 @@ export const RegistroContratista = ({
           label="Fecha de Nacimiento"
           placeholder="Seleccione fecha"
           value={form.fecha_nacimiento || null}
-          onChange={(val: unknown) =>
-            setField("fecha_nacimiento", val as string | null)
+          onChange={(val: Date | null) =>
+            setField(
+              "fecha_nacimiento",
+              val ? dayjs(val).format("YYYY-MM-DD") : null
+            )
           }
           size="xs"
           disabled={loading}
+          popoverProps={{
+            withinPortal: true,
+            zIndex: 10005,
+          }}
         />
         <Select
           label="Género"
@@ -166,7 +174,7 @@ export const RegistroContratista = ({
           size="xs"
           clearable
           disabled={loading}
-          comboboxProps={{ withinPortal: true }}
+          comboboxProps={{ withinPortal: true, zIndex: 10005 }}
         />
       </Group>
 
@@ -235,7 +243,7 @@ export const RegistroContratista = ({
         required
         withAsterisk
         disabled={loadingMinas || loading}
-        comboboxProps={{ withinPortal: true }}
+        comboboxProps={{ withinPortal: true, zIndex: 10005 }}
       />
 
       <MultiSelect
@@ -268,7 +276,7 @@ export const RegistroContratista = ({
         disabled={
           !form.id_mina || form.id_mina === 0 || loadingLabores || loading
         }
-        comboboxProps={{ withinPortal: true }}
+        comboboxProps={{ withinPortal: true, zIndex: 10005 }}
       />
 
       {/* Switch: ¿Tiene contrato? */}

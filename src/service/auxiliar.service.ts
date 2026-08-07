@@ -429,6 +429,22 @@ export const AuxService = {
     return data;
   },
 
+  /**
+   * Crear contratista (Auxiliar global)
+   */
+  crear_contratista: async (
+    formData: FormData,
+  ): Promise<IRespuesta<RES_Contratista>> => {
+    const { data } = await api.post<IRespuesta<RES_Contratista>>(
+      `${path}/contratistas`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return data;
+  },
+
   /**Obtener lotes de mineral */
   get_lotes_mineral: async (filters?: {
     id_lote_mineral?: number;
