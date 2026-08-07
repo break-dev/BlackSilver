@@ -234,15 +234,33 @@ export const DetalleSolicitud = ({
             >
               Historial de Entregas
             </Button>
-            <Button
-              variant="light"
-              color="orange"
-              size="xs"
-              leftSection={<HandRaisedIcon className="w-4 h-4" />}
-              onClick={openPrestamo}
+            <Tooltip
+              disabled={
+                !detalles.some(
+                  (d) =>
+                    d.estado === Estado_SolicitudDetalle.EsperandoAprobacion,
+                )
+              }
+              label="La solicitud debe estar aprobada para solicitar un préstamo entre almacenes"
+              position="top"
+              withArrow
             >
-              Solicitar Préstamo
-            </Button>
+              <span>
+                <Button
+                  variant="light"
+                  color="orange"
+                  size="xs"
+                  leftSection={<HandRaisedIcon className="w-4 h-4" />}
+                  onClick={openPrestamo}
+                  disabled={detalles.some(
+                    (d) =>
+                      d.estado === Estado_SolicitudDetalle.EsperandoAprobacion,
+                  )}
+                >
+                  Solicitar Préstamo
+                </Button>
+              </span>
+            </Tooltip>
             <Button
               color="indigo"
               size="xs"

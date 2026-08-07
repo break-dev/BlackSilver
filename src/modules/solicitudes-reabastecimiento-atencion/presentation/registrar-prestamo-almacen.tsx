@@ -452,7 +452,7 @@ export const RegistrarPrestamoAlmacen = ({
             <Table variant="unstyled" className="w-full text-zinc-300">
               <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] uppercase font-bold">
                 <tr>
-                  <th className="px-4 py-3 text-center min-w-37.5">
+                  <th className="px-4 py-3 text-left min-w-60">
                     Producto
                   </th>
                   <th className="px-4 py-3 text-center min-w-30">
@@ -480,12 +480,6 @@ export const RegistrarPrestamoAlmacen = ({
 
                     const pedidoTotalBase =
                       totalesPedidosBasePorProducto[item.id_producto] || 0;
-                    const stockDisponibleRestanteBase = Math.max(
-                      0,
-                      totalStockExternoBase - pedidoTotalBase,
-                    );
-                    const stockDisponibleRestante =
-                      stockDisponibleRestanteBase / divisor;
 
                     const cantidadPedida =
                       cantidades[item.id_solicitud_detalle] || 0;
@@ -529,43 +523,49 @@ export const RegistrarPrestamoAlmacen = ({
                         key={item.id_solicitud_detalle}
                         className="hover:bg-white/2 transition-colors"
                       >
-                        <td className="px-4 py-3 text-center">
-                          <Stack gap={3} align="center">
-                            <Text
-                              size="sm"
-                              fw={800}
-                              c="white"
-                              className="italic tracking-tight"
-                            >
-                              {item.producto}
-                            </Text>
-                            <Group gap={6} justify="center">
+                        <td className="px-4 py-3 text-left">
+                          <div className="flex items-center justify-between gap-4 py-1">
+                            {/* Nombre del Producto + Equivalencia */}
+                            <div className="flex flex-col justify-center gap-1 min-w-0 flex-1">
+                              <Text
+                                size="xs"
+                                fw={700}
+                                c="white"
+                                className="tracking-tight truncate"
+                              >
+                                {item.producto}
+                              </Text>
                               {item.unidad_medida_base_abv !==
                                 item.unidad_medida_sol_abv && (
                                 <Badge
                                   color="pink"
                                   variant="light"
                                   size="xs"
-                                  className="px-1.5 font-bold border border-pink-500/20"
+                                  className="px-1.5 font-bold border border-pink-500/20 w-fit"
                                 >
                                   1 {item.unidad_medida_sol_abv} ={" "}
                                   {item.contenido_por_presentacion}{" "}
                                   {item.unidad_medida_base_abv}
                                 </Badge>
                               )}
-                              <Text
-                                size="9px"
-                                c="zinc.5"
-                                className="uppercase font-bold bg-zinc-900/40 px-2 py-0.5 rounded-sm"
-                              >
-                                Pendiente:{" "}
-                                {formatNumber(
-                                  Math.max(0, pendienteReal - cantidadPedida),
-                                )}{" "}
-                                {item.unidad_medida_sol_abv}
-                              </Text>
-                            </Group>
-                          </Stack>
+                            </div>
+
+                            {/* Solicitado y Pendiente con puntitos sutiles a la derecha */}
+                            <div className="flex flex-col justify-center gap-1 text-[11px] shrink-0 border-l border-zinc-800/80 pl-3">
+                              <div className="flex items-center gap-1.5 text-zinc-400 font-normal">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400/80 inline-block shrink-0" />
+                                <span>
+                                  solicitado: <b className="text-zinc-200 font-medium">{formatNumber(item.cantidad_solicitada)}</b> {item.unidad_medida_sol_abv}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-zinc-400 font-normal">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80 inline-block shrink-0" />
+                                <span>
+                                  pendiente: <b className="text-zinc-200 font-medium">{formatNumber(Math.max(0, pendienteReal - cantidadPedida))}</b> {item.unidad_medida_sol_abv}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex flex-col items-center gap-1">
@@ -581,20 +581,22 @@ export const RegistrarPrestamoAlmacen = ({
                               >
                                 <NumberInput
                                   variant="unstyled"
+                                  decimalScale={2}
+                                  fixedDecimalScale={false}
                                   value={
-                                    cantidades[item.id_solicitud_detalle] || ""
+                                    cantidades[item.id_solicitud_detalle] ?? ""
                                   }
                                   onChange={(val) =>
                                     setCantidad(
                                       item.id_solicitud_detalle,
-                                      Number(val),
+                                      typeof val === "number" ? val : Number(val) || 0,
                                     )
                                   }
                                   size="xs"
                                   hideControls
                                   placeholder="0"
                                   classNames={{
-                                    input: `w-[35px] text-center font-black text-[10px] h-4 bg-transparent 
+                                    input: `w-[50px] text-center font-black text-[11px] h-5 bg-transparent 
                                     ${
                                       superaStockDisponible
                                         ? "text-red-400"
@@ -615,29 +617,33 @@ export const RegistrarPrestamoAlmacen = ({
                                 </Text>
                               </div>
 
-                              {/* Entrada Alternativa (Unidad Base) - SOLO SI SON DIFERENTES */}
+                              {/* Entrada Alternativa (Unidad Base) - Sincronizada Bidireccional */}
                               {item.unidad_medida_base_abv !==
                                 item.unidad_medida_sol_abv && (
                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-zinc-800/20 border border-zinc-800/40 hover:border-emerald-500/30 transition-all group/base">
                                   <NumberInput
                                     variant="unstyled"
+                                    decimalScale={2}
+                                    fixedDecimalScale={false}
                                     value={
-                                      Math.round(
-                                        cantidadPedida *
-                                          Number(
-                                            item.contenido_por_presentacion,
-                                          ),
-                                      ) || ""
+                                      cantidades[item.id_solicitud_detalle]
+                                        ? Number(
+                                            (
+                                              cantidades[item.id_solicitud_detalle] *
+                                              Number(item.contenido_por_presentacion || 1)
+                                            ).toFixed(2)
+                                          )
+                                        : ""
                                     }
                                     onChange={(val) => {
-                                      const baseVal = Number(val);
+                                      const baseVal = typeof val === "number" ? val : Number(val) || 0;
                                       const divisor =
                                         Number(
                                           item.contenido_por_presentacion,
                                         ) || 1;
                                       setCantidad(
                                         item.id_solicitud_detalle,
-                                        baseVal / divisor,
+                                        Number((baseVal / divisor).toFixed(4)),
                                       );
                                     }}
                                     size="xs"
@@ -645,7 +651,7 @@ export const RegistrarPrestamoAlmacen = ({
                                     placeholder="0"
                                     classNames={{
                                       input:
-                                        "w-[28px] text-center font-bold text-[9px] h-4 bg-transparent text-zinc-500 group-hover/base:text-emerald-400",
+                                        "w-[45px] text-center font-bold text-[10px] h-5 bg-transparent text-zinc-400 group-hover/base:text-emerald-400",
                                     }}
                                   />
                                   <Text
@@ -727,7 +733,7 @@ export const RegistrarPrestamoAlmacen = ({
                               <Badge
                                 variant="light"
                                 color={
-                                  stockDisponibleRestanteBase > 0
+                                  totalStockExternoBase > 0
                                     ? "indigo"
                                     : "red"
                                 }
@@ -735,7 +741,7 @@ export const RegistrarPrestamoAlmacen = ({
                                 radius="sm"
                                 className="font-bold px-1.5 py-1.5 border border-indigo-500/10"
                               >
-                                {formatNumber(stockDisponibleRestante)}{" "}
+                                {formatNumber(totalStockExternoBase / divisor)}{" "}
                                 {item.unidad_medida_sol_abv}
                               </Badge>
 
@@ -748,7 +754,7 @@ export const RegistrarPrestamoAlmacen = ({
                                   radius="sm"
                                   className="font-bold px-1.5 py-1.5 border border-pink-500/10 opacity-80"
                                 >
-                                  {formatNumber(stockDisponibleRestanteBase)}{" "}
+                                  {formatNumber(totalStockExternoBase)}{" "}
                                   {item.unidad_medida_base_abv}
                                 </Badge>
                               )}
