@@ -75,7 +75,7 @@ export const App = () => {
       </Route>
 
       {/* Rutas ocultas (sin layout) */}
-      <Route path="/modo-auditoria" element={<ModoAuditoriaPage />} />
+      <Route path="/about" element={<ModoAuditoriaPage />} />
       <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
 
       {/* Rutas protegidas */}
