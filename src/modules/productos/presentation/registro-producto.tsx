@@ -33,6 +33,7 @@ import { FormUnidadMedida } from "../../../presentation/utils/form-unidad-medida
 import { LabelForm } from "./components/label-form";
 import { useMemo } from "react";
 import { enPlural } from "../../../shared/functions/en-plural";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 interface RegistroProductoProps {
   productosExistentes: RES_ProductoResumen[];
@@ -49,6 +50,7 @@ export const RegistroProducto = ({
   onCancel,
   productoEdicion,
 }: RegistroProductoProps) => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const {
     form,
     setField,
@@ -410,22 +412,24 @@ export const RegistroProducto = ({
           </Text>
 
           <Group grow gap="xl" mt={"12px"}>
-            <Checkbox
-              label="Auditable"
-              description="Ocultar en auditoría."
-              checked={!!form.es_auditable}
-              onChange={(e) =>
-                setField("es_auditable", e.currentTarget.checked)
-              }
-              color="red"
-              radius="sm"
-              size="sm"
-              classNames={{
-                label:
-                  "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
-                description: "text-zinc-600 text-[11px] mt-0.5",
-              }}
-            />
+            {!en_modo_auditable && (
+              <Checkbox
+                label="Auditable"
+                description="Ocultar en auditoría."
+                checked={!!form.es_auditable}
+                onChange={(e) =>
+                  setField("es_auditable", e.currentTarget.checked)
+                }
+                color="red"
+                radius="sm"
+                size="sm"
+                classNames={{
+                  label:
+                    "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
+                  description: "text-zinc-600 text-[11px] mt-0.5",
+                }}
+              />
+            )}
 
             <Checkbox
               label="Perecible"

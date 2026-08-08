@@ -13,6 +13,7 @@ import { useBlackcito } from "../../../hooks/useBlackcito";
 
 import { useCotizaciones } from "../hooks/useCotizaciones";
 import { useTitlePage } from "../../../hooks/useTitlePage";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCotizacion } from "./registro-cotizacion/registro-cotizacion";
 import { CotizacionesFilter } from "./cotizaciones-page/cotizaciones-filter";
@@ -20,6 +21,7 @@ import { ListadoComparativos } from "./cotizaciones-page/listado-comparativo/lis
 
 export const CotizacionesPage = () => {
   useTitlePage("Cotizaciones");
+  const { en_modo_auditable } = useAuditoriaStore();
 
   const {
     comparativos,
@@ -153,16 +155,18 @@ export const CotizacionesPage = () => {
                     }}
                   />
                 )}
-                <Button
-                  variant={esAuditableGlobal ? "filled" : "light"}
-                  color="red"
-                  radius="xl"
-                  leftSection={<ShieldCheckIcon className="w-4 h-4" />}
-                  onClick={handleToggleAuditable}
-                  size="xs"
-                >
-                  {esAuditableGlobal ? "Modo Auditable Activo" : "Hacer Auditable"}
-                </Button>
+                {!en_modo_auditable && (
+                  <Button
+                    variant={esAuditableGlobal ? "filled" : "light"}
+                    color="red"
+                    radius="xl"
+                    leftSection={<ShieldCheckIcon className="w-4 h-4" />}
+                    onClick={handleToggleAuditable}
+                    size="xs"
+                  >
+                    {esAuditableGlobal ? "Modo Auditable Activo" : "Hacer Auditable"}
+                  </Button>
+                )}
                 <Divider orientation="vertical" color="zinc.8" h={20} />
               </>
             )}

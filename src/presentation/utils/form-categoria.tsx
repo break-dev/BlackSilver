@@ -26,6 +26,7 @@ import { IconDeviceFloppy, IconExclamationCircle } from "@tabler/icons-react";
 import { AuxService } from "../../service/auxiliar.service";
 import type { RES_Categoria } from "../../service/responses/categoria";
 import { useNotify } from "../../hooks/useNotify";
+import { useAuditoriaStore } from "../../stores/auditoria.store";
 import {
   getCoincidencias,
   type SearchResult,
@@ -37,6 +38,7 @@ export interface FormCategoriaProps {
 }
 
 export const FormCategoria = ({ onSuccess, onCancel }: FormCategoriaProps) => {
+  const { en_modo_auditable } = useAuditoriaStore();
   const { notifySuccess, notifyError } = useNotify();
   const [loading, setLoading] = useState(false);
   const [loadingMaestros, setLoadingMaestros] = useState(true);
@@ -500,7 +502,11 @@ export const FormCategoria = ({ onSuccess, onCancel }: FormCategoriaProps) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between transition-all duration-200">
+          <div
+            className={`p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between transition-all duration-200 ${
+              en_modo_auditable ? "md:col-span-2" : ""
+            }`}
+          >
             <div className="flex flex-col gap-1 pr-4">
               <Text size="sm" fw={600} className="text-indigo-200">
                 Consumible
@@ -523,24 +529,26 @@ export const FormCategoria = ({ onSuccess, onCancel }: FormCategoriaProps) => {
             />
           </div>
 
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between transition-all duration-200">
-            <div className="flex flex-col gap-1 pr-4">
-              <Text size="sm" fw={600} className="text-red-200">
-                Auditable
-              </Text>
-              <Text size="xs" className="text-red-100/70 leading-snug">
-                Ocultar en auditoría.
-              </Text>
+          {!en_modo_auditable && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between transition-all duration-200">
+              <div className="flex flex-col gap-1 pr-4">
+                <Text size="sm" fw={600} className="text-red-200">
+                  Auditable
+                </Text>
+                <Text size="xs" className="text-red-100/70 leading-snug">
+                  Ocultar en auditoría.
+                </Text>
+              </div>
+              <Switch
+                checked={esAuditable}
+                onChange={(e) => setEsAuditable(e.currentTarget.checked)}
+                disabled={loading}
+                color="red"
+                size="xs"
+                className="cursor-pointer"
+              />
             </div>
-            <Switch
-              checked={esAuditable}
-              onChange={(e) => setEsAuditable(e.currentTarget.checked)}
-              disabled={loading}
-              color="red"
-              size="xs"
-              className="cursor-pointer"
-            />
-          </div>
+          )}
         </div>
 
         {esConsumible && (
