@@ -33,6 +33,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/es";
 import type { RES_LoteMineralProduccion } from "../service/produccion.responses";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 dayjs.extend(relativeTime);
 dayjs.locale("es");
@@ -313,6 +314,7 @@ export const ProduccionMineralPage = () => {
           }}
         />
         <Group gap="xs" align="end" className="shrink-0">
+          <BotonRecargar onReload={fetchResumen} loading={loading} />
           <Button
             onClick={() => setRegisterModalOpen(true)}
             radius="lg"

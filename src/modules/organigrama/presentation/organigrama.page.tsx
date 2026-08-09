@@ -19,6 +19,7 @@ import {
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { useDisclosure } from "@mantine/hooks";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 import { useOrganigrama } from "../hooks/useOrganigrama";
 import { useRegistroArea } from "../hooks/useRegistroArea";
@@ -42,6 +43,7 @@ export const OrganigramaPage = () => {
     areasFiltradas,
     cargosSinAreaFiltrados,
     loading,
+    recargar,
     onAreaCreada,
     onCargoCreado,
     handleMoverCargo,
@@ -119,15 +121,18 @@ export const OrganigramaPage = () => {
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openArea}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
-        >
-          Nueva Área
-        </Button>
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={recargar} loading={loading} />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openArea}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
+          >
+            Nueva Área
+          </Button>
+        </div>
       </div>
 
       {loading ? (

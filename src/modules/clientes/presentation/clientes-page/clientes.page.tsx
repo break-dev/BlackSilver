@@ -15,7 +15,7 @@ import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 
 export const ClientesPage = () => {
   useTitlePage("Clientes");
-  const { clientes, loading, insertCliente, updateCliente } = useClientes();
+  const { clientes, loading, recargar, insertCliente, updateCliente } = useClientes();
 
   const [openRegistro, setOpenRegistro] = useState(false);
   const [selectedCliente, setSelectedCliente] =
@@ -68,7 +68,11 @@ export const ClientesPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <Stack gap="md">
-        <Filtros onOpenRegistro={() => setOpenRegistro(true)} />
+        <Filtros
+          onOpenRegistro={() => setOpenRegistro(true)}
+          onReload={recargar}
+          loading={loading}
+        />
 
         <Cliente
           clientes={clientes}

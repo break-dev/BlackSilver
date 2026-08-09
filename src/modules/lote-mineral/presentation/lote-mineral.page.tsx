@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { EstadoLoteMineral } from "../../../shared/enums/lote-mineral";
 import type { LoteMineralResumen } from "../service/lote-mineral.responses";
 import { useTitlePage } from "../../../hooks/useTitlePage";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const LoteMineralPage = () => {
   useTitlePage("Lotes de Mineral");
@@ -55,15 +56,18 @@ export const LoteMineralPage = () => {
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
-        <Button
-          leftSection={<PlusIcon className="size-5" />}
-          onClick={openCreate}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-bold h-[38px] transition-all"
-        >
-          Nuevo Lote
-        </Button>
+        <div className="flex items-end gap-2 shrink-0">
+          <BotonRecargar onReload={refetch} loading={isLoading} />
+          <Button
+            leftSection={<PlusIcon className="size-5" />}
+            onClick={openCreate}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-bold h-[38px] transition-all"
+          >
+            Nuevo Lote
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

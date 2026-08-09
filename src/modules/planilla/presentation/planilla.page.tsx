@@ -25,6 +25,7 @@ import { useFiltrosPlanilla } from "../hooks/useFiltrosPlanilla";
 import { usePlanilla, formatearTramo, type PlanillaTramo } from "../hooks/usePlanilla";
 import { MESES } from "../../../shared/variables/meses";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 import type {
   RES_PlanillaAsistencia,
   PlanillaTramoAsistencia,
@@ -419,7 +420,7 @@ export const PlanillaPage = () => {
   useTitlePage("Planilla");
 
   const filtros = useFiltrosPlanilla();
-  const { planillaPorEmpleado, loading } = usePlanilla(filtros);
+  const { planillaPorEmpleado, loading, recargar } = usePlanilla(filtros);
 
   const aniosOptions = useMemo(
     () =>
@@ -493,7 +494,7 @@ export const PlanillaPage = () => {
           />
         </div>
 
-        <div className="flex-1 min-w-[200px] w-full">
+        <div className="flex items-end gap-2 flex-1 min-w-[200px] w-full">
           <TextInput
             label="Búsqueda"
             placeholder="Buscar empleado por nombre o DNI..."
@@ -504,12 +505,14 @@ export const PlanillaPage = () => {
             onChange={(e) => filtros.setQ(e.currentTarget.value)}
             radius="lg"
             size="sm"
+            className="flex-1"
             classNames={{
               input:
                 "bg-zinc-950/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
               label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             }}
           />
+          <BotonRecargar onReload={recargar} loading={loading} />
         </div>
       </div>
 

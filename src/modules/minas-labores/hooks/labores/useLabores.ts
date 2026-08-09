@@ -62,6 +62,7 @@ export const useLabores = ({ idMina, busqueda, closeCreate }: Props) => {
   return {
     laboresFiltradas,
     loading,
+    recargar: cargar,
     handleLaborCreada,
     handleLaborFinalizada,
   };

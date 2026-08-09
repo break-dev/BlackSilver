@@ -20,6 +20,7 @@ export const ProveedoresPage = () => {
     loading,
     insertProveedor,
     updateProveedor,
+    recargar,
   } = useProveedores();
 
   const [openRegistro, setOpenRegistro] = useState(false);
@@ -71,7 +72,11 @@ export const ProveedoresPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <Stack gap="md">
-        <Filtros onOpenRegistro={() => setOpenRegistro(true)} />
+        <Filtros
+          onOpenRegistro={() => setOpenRegistro(true)}
+          onReload={recargar}
+          loading={loading}
+        />
 
         <Proveedor
           proveedores={proveedores}

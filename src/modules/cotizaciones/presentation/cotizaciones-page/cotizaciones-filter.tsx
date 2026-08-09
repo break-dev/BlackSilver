@@ -6,6 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { MESES } from "../../../../shared/variables/meses";
+import { BotonRecargar } from "../../../../presentation/utils/boton-recargar";
 
 interface CotizacionesFilterProps {
   busqueda: string;
@@ -14,6 +15,8 @@ interface CotizacionesFilterProps {
   mes: number;
   year: number;
   onCambiarPeriodo: (mes: number, year: number) => void;
+  onReload: () => void;
+  loading?: boolean;
 }
 
 const inputClasses = {
@@ -38,6 +41,8 @@ export const CotizacionesFilter = ({
   mes,
   year,
   onCambiarPeriodo,
+  onReload,
+  loading,
 }: CotizacionesFilterProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end w-full animate-fade-in">
@@ -86,15 +91,18 @@ export const CotizacionesFilter = ({
         />
       </div>
 
-      <Button
-        leftSection={<PlusIcon className="w-5 h-5" />}
-        onClick={openCreate}
-        radius="lg"
-        size="sm"
-        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold shrink-0"
-      >
-        Nueva Cotización
-      </Button>
+      <div className="flex gap-2 items-center shrink-0">
+        <BotonRecargar onReload={onReload} loading={loading} />
+        <Button
+          leftSection={<PlusIcon className="w-5 h-5" />}
+          onClick={openCreate}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 px-6 font-semibold shrink-0"
+        >
+          Nueva Cotización
+        </Button>
+      </div>
     </div>
   );
 };

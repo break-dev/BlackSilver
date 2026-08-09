@@ -29,6 +29,7 @@ import { Kardex_TipoMovimiento } from "../../../shared/enums/kardex";
 import { MESES } from "../../../shared/variables/meses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { Moneda } from "../../../shared/enums/_generic/moneda";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const KardexProductosPage = () => {
   useTitlePage("Kardex de Inventario");
@@ -53,6 +54,7 @@ export const KardexProductosPage = () => {
     loadingMovimientos,
     loadingAlmacenes,
     movimientos,
+    recargar,
     error,
   } = useKardex();
 
@@ -464,7 +466,7 @@ export const KardexProductosPage = () => {
         </div>
 
         {/* Buscador */}
-        <div className="flex-1 min-w-50 w-full">
+        <div className="flex-1 min-w-50 w-full flex items-end gap-2">
           <TextInput
             label="Búsqueda"
             placeholder="Producto, lote, glosa..."
@@ -476,12 +478,14 @@ export const KardexProductosPage = () => {
             disabled={!idAlmacen}
             radius="lg"
             size="sm"
+            className="flex-1"
             classNames={{
               input:
                 "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
               label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
             }}
           />
+          <BotonRecargar onReload={recargar} loading={loadingMovimientos} />
         </div>
 
         {/* Filtros Dinámicos */}

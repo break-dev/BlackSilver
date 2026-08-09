@@ -31,6 +31,7 @@ import { GrillaSemanal } from "./grilla-semanal";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_TurnoLaboral } from "../service/turnos.responses";
 import type { RES_ProgramacionAsignada, RES_ProgramacionHorario } from "../service/programacion.responses";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const ProgramacionHorariosPage = () => {
   useTitlePage("Programación de Horarios");
@@ -346,6 +347,13 @@ export const ProgramacionHorariosPage = () => {
           >
             Ver Turnos
           </Button>
+          <BotonRecargar
+            onReload={async () => {
+              await recargarProgramaciones();
+              await recargarTurnos();
+            }}
+            loading={loadingProgramaciones || loadingTurnos}
+          />
           <Button
             leftSection={<ClockIcon className="w-4 h-4" />}
             onClick={() => setOpenedAsignarHorario(true)}

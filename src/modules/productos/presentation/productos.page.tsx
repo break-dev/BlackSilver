@@ -35,6 +35,7 @@ import type {
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
@@ -48,6 +49,7 @@ export const ProductosPage = () => {
     loading,
     busqueda,
     setBusqueda,
+    recargar,
     pushNuevoProducto,
     actualizarProducto,
     eliminarProducto,
@@ -330,16 +332,18 @@ export const ProductosPage = () => {
               }}
             />
           </div>
-          <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            onClick={openRegistro}
-            radius="lg"
-            size="sm"
-            loading={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
-          >
-            Nuevo Producto
-          </Button>
+          <div className="flex gap-2 items-center shrink-0">
+            <BotonRecargar onReload={recargar} loading={loading} />
+            <Button
+              leftSection={<PlusIcon className="w-5 h-5" />}
+              onClick={openRegistro}
+              radius="lg"
+              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
+            >
+              Nuevo Producto
+            </Button>
+          </div>
         </div>
 
         <DataTableEstandar

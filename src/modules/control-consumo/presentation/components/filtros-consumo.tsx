@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import type { RES_Mina } from "../../../../service/responses/mina";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
 import { MESES } from "../../../../shared/variables/meses";
+import { BotonRecargar } from "../../../../presentation/utils/boton-recargar";
 
 interface FiltrosConsumoProps {
   idMina: string | null;
@@ -19,6 +20,8 @@ interface FiltrosConsumoProps {
   setAnio: (val: number) => void;
   busqueda: string;
   setBusqueda: (val: string) => void;
+  onReload?: () => void | Promise<void>;
+  loading?: boolean;
 }
 
 export const FiltrosConsumo = ({
@@ -36,6 +39,8 @@ export const FiltrosConsumo = ({
   setAnio,
   busqueda,
   setBusqueda,
+  onReload,
+  loading = false,
 }: FiltrosConsumoProps) => {
   const currentYear = new Date().getFullYear();
   const yearsList = Array.from({ length: 6 }, (_, i) => {
@@ -166,6 +171,10 @@ export const FiltrosConsumo = ({
           classNames={inputClasses}
         />
       </div>
+
+      {onReload && (
+        <BotonRecargar onReload={onReload} loading={loading} />
+      )}
     </div>
   );
 };

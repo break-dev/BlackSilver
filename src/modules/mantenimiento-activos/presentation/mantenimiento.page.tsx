@@ -28,6 +28,7 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import type { RES_Mantenimiento } from "../service/mantenimiento.responses";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 import { ArchivoCard } from "../../../presentation/utils/archivo/archivo-card";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const MantenimientoPage = () => {
   useTitlePage("Mantenimiento de Activos");
@@ -308,7 +309,8 @@ export const MantenimientoPage = () => {
         </div>
 
         {/* Botón Registrar */}
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2">
+          <BotonRecargar onReload={fetchMantenimientos} loading={loading} />
           <Button
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={() => setIsRegistrando(true)}

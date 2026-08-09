@@ -22,6 +22,8 @@ import { useEdicionCuenta } from "../hooks/useEdicionCuenta";
 import { EmpresaCard } from "./empresa-card";
 import { useState } from "react";
 
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
+
 export const EmpresasPage = () => {
   useTitlePage("Empresas");
 
@@ -30,6 +32,7 @@ export const EmpresasPage = () => {
     busqueda,
     setBusqueda,
     empresasFiltradas,
+    recargar,
     openedCreate,
     openCreate,
     closeCreate,
@@ -132,15 +135,18 @@ export const EmpresasPage = () => {
             }}
           />
         </div>
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openCreate}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
-        >
-          Nueva Empresa
-        </Button>
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={recargar} loading={loading} />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openCreate}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-900/20 shrink-0 px-6 font-semibold h-9.5"
+          >
+            Nueva Empresa
+          </Button>
+        </div>
       </div>
 
       {loading ? (

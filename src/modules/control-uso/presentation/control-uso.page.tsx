@@ -11,6 +11,7 @@ import { ControlUsoService } from "../service/control-uso.service";
 import { buildControlHorasExcel } from "./excel-control-horas";
 import { buildControlVueltasExcel } from "./excel-control-vueltas";
 import { IconFileSpreadsheet } from "@tabler/icons-react";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 import {
   Button,
   Group,
@@ -56,6 +57,7 @@ export const ControlUsoPage = () => {
     setIdActivoFijo,
     loadingActivos,
     pushNuevoLog,
+    recargar,
   } = useControlUso();
 
   const [opened, { open, close }] = useDisclosure(false);
@@ -532,6 +534,7 @@ export const ControlUsoPage = () => {
 
         {/* Botones de acción */}
         <div className="w-full md:w-auto flex items-center gap-2">
+          <BotonRecargar onReload={recargar} loading={loading} />
           <Button
             color="green.7"
             onClick={handleExportExcel}

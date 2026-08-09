@@ -43,6 +43,7 @@ import { useImprimirRequerimiento } from "../hooks/useImprimirRequerimiento.tsx"
 import { usePrint } from "../../../hooks/usePrint.ts";
 import { RequerimientoPDF } from "./requerimiento-pdf.tsx";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen.ts";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar.tsx";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   useTitlePage("Atención de Requerimientos");
@@ -74,6 +75,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
     setBusqueda,
     filteredRecords,
     loading,
+    recargar,
     almacenes,
     loadingAlmacenes,
     updateRequirementLocal,
@@ -400,17 +402,20 @@ export const RequerimientosAlmacenAtencionPage = () => {
             />
           </div>
 
-          {/* Botón Nuevo */}
-          <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            onClick={openReg}
-            radius="lg"
-            size="sm"
-            disabled={!idAlmacen}
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0"
-          >
-            Nuevo Requerimiento
-          </Button>
+          {/* Botones */}
+          <div className="flex gap-2 items-center shrink-0 w-full lg:w-auto">
+            <BotonRecargar onReload={recargar} loading={loading} />
+            <Button
+              leftSection={<PlusIcon className="w-5 h-5" />}
+              onClick={openReg}
+              radius="lg"
+              size="sm"
+              disabled={!idAlmacen}
+              className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0"
+            >
+              Nuevo Requerimiento
+            </Button>
+          </div>
         </div>
       </div>
 

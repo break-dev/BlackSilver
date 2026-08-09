@@ -29,6 +29,7 @@ import { DetalleTransferencia } from "./detalle-transferencia/detalle-transferen
 import type { RES_OCTransferencia } from "../../../service/responses/ordenes-compra/orden-compra-transferencia";
 import type { DataTableColumn } from "mantine-datatable";
 import { Estado_OCTransferencia } from "../../../shared/enums/orden-compra/orden-compra-transferencia";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const RecepcionTransferenciasOCPage = () => {
   useTitlePage("Recepción de Transferencias");
@@ -235,8 +236,8 @@ export const RecepcionTransferenciasOCPage = () => {
   return (
     <div className="space-y-8 animate-fade-in text-zinc-100">
       {/* Filtros de Selección */}
-      <div className="flex flex-col lg:flex-row justify-between gap-4 items-end">
-        <div className="flex flex-wrap gap-3 flex-1 w-full lg:w-auto">
+      <div className="flex flex-col lg:flex-row gap-4 items-end">
+        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           <div className="w-full sm:w-72">
             <Select
               label="Almacén de Recepción"
@@ -301,20 +302,23 @@ export const RecepcionTransferenciasOCPage = () => {
             />
           </div>
 
-          <div className="flex-1 min-w-[200px] w-full">
-            <TextInput
-              label="Búsqueda"
-              placeholder="Transferencia, OC o empleado..."
-              leftSection={
-                <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
-              }
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.currentTarget.value)}
-              disabled={!selectedAlmacenId}
-              radius="lg"
-              size="sm"
-              classNames={inputClasses}
-            />
+        <div className="flex items-end gap-2 flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[200px]">
+              <TextInput
+                label="Búsqueda"
+                placeholder="Transferencia, OC o empleado..."
+                leftSection={
+                  <MagnifyingGlassIcon className="w-4 h-4 text-zinc-500" />
+                }
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.currentTarget.value)}
+                disabled={!selectedAlmacenId}
+                radius="lg"
+                size="sm"
+                classNames={inputClasses}
+              />
+            </div>
+            <BotonRecargar onReload={refrescarLista} loading={loading} />
           </div>
         </div>
       </div>

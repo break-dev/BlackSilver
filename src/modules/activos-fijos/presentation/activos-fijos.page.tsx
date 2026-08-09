@@ -19,6 +19,7 @@ import type { RES_ActivoFijoResumen } from "../service/activos.responses";
 
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 // Components
 import { RegistroActivo } from "./registro-activo/registro-activo";
@@ -45,6 +46,7 @@ export const ActivosFijosPage = () => {
     idMina,
     setIdMina,
     refresh,
+    recargar,
     addActivo,
   } = useActivosMain();
 
@@ -156,19 +158,22 @@ export const ActivosFijosPage = () => {
           />
         </div>
 
-        {/* Botón Nuevo */}
-        <Tooltip label="Registrar Nuevo Activo">
-          <ActionIcon
-            onClick={openCreate}
-            variant="filled"
-            color="indigo.6"
-            size={38}
-            radius="lg"
-            className="shadow-lg shadow-indigo-900/20"
-          >
-            <PlusIcon className="w-5 h-5" />
-          </ActionIcon>
-        </Tooltip>
+        {/* Botón Recargar y Nuevo */}
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={recargar} loading={loading} />
+          <Tooltip label="Registrar Nuevo Activo">
+            <ActionIcon
+              onClick={openCreate}
+              variant="filled"
+              color="indigo.6"
+              size={38}
+              radius="lg"
+              className="shadow-lg shadow-indigo-900/20"
+            >
+              <PlusIcon className="w-5 h-5" />
+            </ActionIcon>
+          </Tooltip>
+        </div>
       </div>
 
       {loading ? (

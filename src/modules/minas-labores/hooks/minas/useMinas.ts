@@ -199,6 +199,7 @@ export const useMinas = () => {
     selectedMina,
 
     // Handlers
+    recargar: cargarMinas,
     handleMinaCreada,
     handleOpenEmpresas,
     handleOpenResponsables,

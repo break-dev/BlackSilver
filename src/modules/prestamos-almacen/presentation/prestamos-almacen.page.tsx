@@ -35,6 +35,7 @@ import { MESES } from "../../../shared/variables/meses";
 import { Estado_Prestamo } from "../../../shared/enums/prestamo-almacen/prestamo";
 import { getEstadoPrestamoColor } from "./utils/prestamos-render";
 import { useTitlePage } from "../../../hooks/useTitlePage";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 import dayjs from "dayjs";
 import type {
   RES_Prestamo,
@@ -106,6 +107,7 @@ export const PrestamosAlmacenPage = () => {
   const {
     groupedByAlmacen,
     loading,
+    recargar,
     mes,
     setMes,
     yearcito,
@@ -361,6 +363,7 @@ export const PrestamosAlmacenPage = () => {
             }}
           />
         </div>
+        <BotonRecargar onReload={recargar} loading={loading} />
       </div>
 
       {/* Contenido agrupado */}

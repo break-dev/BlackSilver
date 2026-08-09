@@ -8,6 +8,7 @@ import { IconFileSpreadsheet } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { MESES } from "../../../../shared/variables/meses";
 import { Estado_OrdenCompra } from "../../../../shared/enums/orden-compra/orden-compra";
+import { BotonRecargar } from "../../../../presentation/utils/boton-recargar";
 
 interface FiltrosProps {
   mes: string;
@@ -20,6 +21,8 @@ interface FiltrosProps {
   setEstadoFilter: (val: string | null) => void;
   handleExportExcel: () => void;
   isGeneratingExcel: boolean;
+  onReload?: () => void;
+  loading?: boolean;
 }
 
 export const Filtros = ({
@@ -33,6 +36,8 @@ export const Filtros = ({
   setEstadoFilter,
   handleExportExcel,
   isGeneratingExcel,
+  onReload,
+  loading,
 }: FiltrosProps) => {
   const commonClasses = {
     input:
@@ -118,8 +123,9 @@ export const Filtros = ({
         />
       </div>
 
-      {/* Exportar a Excel */}
-      <div className="w-full sm:w-auto mt-2 sm:mt-0">
+      {/* Exportar a Excel y Recargar */}
+      <div className="w-full sm:w-auto mt-2 sm:mt-0 flex gap-2 items-center">
+        <BotonRecargar onReload={onReload} loading={loading} />
         <Button
           onClick={handleExportExcel}
           loading={isGeneratingExcel}

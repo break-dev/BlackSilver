@@ -31,6 +31,8 @@ import { ModalFotocheckContratista } from "./modal-fotocheck-contratista";
 import { CuentasBancarias } from "./cuentas-bancarias/cuentas-bancarias";
 import type { RES_EmpleadoResumen } from "../service/empleados.responses";
 
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
+
 export const PersonalPage = () => {
   useTitlePage("Trabajadores / Personal");
   const [activeTab, setActiveTab] = useState<string | null>("empleados");
@@ -167,15 +169,29 @@ export const PersonalPage = () => {
             )}
           </div>
 
-          <Button
-            leftSection={<PlusIcon className="w-5 h-5" />}
-            onClick={activeTab === "empleados" ? openRegEmp : openRegCon}
-            radius="lg"
-            size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-9.5 px-8 mb-px"
-          >
-            Nuevo {activeTab === "empleados" ? "Empleado" : "Contratista"}
-          </Button>
+          <div className="flex gap-2 items-center shrink-0 mb-px">
+            <BotonRecargar
+              onReload={
+                activeTab === "empleados"
+                  ? empleadosCtrl.recargar
+                  : contratistasCtrl.recargar
+              }
+              loading={
+                activeTab === "empleados"
+                  ? empleadosCtrl.loading
+                  : contratistasCtrl.loading
+              }
+            />
+            <Button
+              leftSection={<PlusIcon className="w-5 h-5" />}
+              onClick={activeTab === "empleados" ? openRegEmp : openRegCon}
+              radius="lg"
+              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-9.5 px-8"
+            >
+              Nuevo {activeTab === "empleados" ? "Empleado" : "Contratista"}
+            </Button>
+          </div>
         </div>
 
         <Tabs.Panel value="empleados">

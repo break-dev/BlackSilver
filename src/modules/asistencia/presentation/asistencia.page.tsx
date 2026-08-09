@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   Avatar,
   Badge,
@@ -35,6 +35,7 @@ import { ModalDetalleAsistenciaDiaria } from "./modal-detalle-asistencia-diaria"
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { AsistenciaService } from "../service/asistencia.service";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 const format12h = (timeStr: string | null | undefined) => {
   if (!timeStr) return "—";
@@ -118,6 +119,11 @@ const ModalIntentosFallidosAnonimos = ({
 }: ModalIntentosFallidosAnonimosProps) => {
   const [loading, setLoading] = useState(false);
   const [intentos, setIntentos] = useState<RES_IntentoFallidoAnonimo[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const recargar = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     if (!opened) return;
@@ -140,7 +146,7 @@ const ModalIntentosFallidosAnonimos = ({
     return () => {
       active = false;
     };
-  }, [opened, mes, year]);
+  }, [opened, mes, year, refreshKey]);
 
   const columns = useMemo(
     () => [
@@ -248,6 +254,7 @@ const ModalIntentosFallidosAnonimos = ({
       close={onClose}
       title="Intentos Fallidos"
       size="75rem"
+      rightSection={<BotonRecargar onReload={recargar} loading={loading} />}
     >
       {loading ? (
         <div className="flex items-center justify-center p-12">
@@ -276,7 +283,7 @@ export const AsistenciaPage = () => {
   useTitlePage("Asistencia");
 
   const filtros = useFiltrosAsistencia();
-  const { asistencias, loading } = useAsistencias(filtros);
+  const { asistencias, loading, recargar } = useAsistencias(filtros);
   const [selectedDia, setSelectedDia] = useState<RES_Asistencia | null>(null);
   const [intentosFallidosOpened, setIntentosFallidosOpened] = useState(false);
 
@@ -568,15 +575,18 @@ export const AsistenciaPage = () => {
           </div>
         </div>
 
-        <Button
-          leftSection={<ExclamationTriangleIcon className="w-4 h-4 text-white" />}
-          radius="lg"
-          size="sm"
-          onClick={() => setIntentosFallidosOpened(true)}
-          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-[38px] px-6 rounded-xl shrink-0 border-none shadow-md shadow-orange-950/20 w-full sm:w-auto"
-        >
-          Ver Intentos Fallidos
-        </Button>
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={recargar} loading={loading} />
+          <Button
+            leftSection={<ExclamationTriangleIcon className="w-4 h-4 text-white" />}
+            radius="lg"
+            size="sm"
+            onClick={() => setIntentosFallidosOpened(true)}
+            className="bg-orange-600 hover:bg-orange-700 text-white font-semibold h-[38px] px-6 rounded-xl shrink-0 border-none shadow-md shadow-orange-950/20 w-full sm:w-auto"
+          >
+            Ver Intentos Fallidos
+          </Button>
+        </div>
       </div>
 
       <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden backdrop-blur-md">

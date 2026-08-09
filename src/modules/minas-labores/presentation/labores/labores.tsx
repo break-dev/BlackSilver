@@ -31,6 +31,7 @@ interface Props {
   openCreate: () => void;
   openedCreate: boolean;
   closeCreate: () => void;
+  onRecargarRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export const GestionLabores = ({
@@ -40,13 +41,19 @@ export const GestionLabores = ({
   busqueda,
   openedCreate,
   closeCreate,
+  onRecargarRef,
 }: Props) => {
   const {
     laboresFiltradas,
     loading,
+    recargar,
     handleLaborCreada,
     handleLaborFinalizada,
   } = useLabores({ idMina: mina.id_mina, busqueda, closeCreate });
+
+  if (onRecargarRef) {
+    onRecargarRef.current = recargar;
+  }
 
   // Estado para finalizar labor
   const [laborAFinalizar, setLaborAFinalizar] =

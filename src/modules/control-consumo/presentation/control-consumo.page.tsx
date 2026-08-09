@@ -35,6 +35,7 @@ export const ControlConsumoPage = () => {
     loadingAlmacenes,
     activos,
     agregarConsumoLocal,
+    recargar,
   } = useListarControlConsumo();
 
   // Modal State
@@ -111,6 +112,8 @@ export const ControlConsumoPage = () => {
         setAnio={setAnio}
         busqueda={busqueda}
         setBusqueda={setBusqueda}
+        onReload={recargar}
+        loading={loading}
       />
 
       {/* Grouped Content Body */}

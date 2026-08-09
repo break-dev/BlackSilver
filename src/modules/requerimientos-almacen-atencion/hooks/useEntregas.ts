@@ -47,8 +47,8 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
       if (resp.success) {
         setAlmacenes(resp.data);
         // Solo auto-elegimos si no hay uno ya seleccionado
-        if (resp.data.length > 0 && !idAlmacen) {
-          setIdAlmacen(String(resp.data[0].id_almacen));
+        if (resp.data.length > 0) {
+          setIdAlmacen((prev) => prev ?? String(resp.data[0].id_almacen));
         }
         return resp.data;
       }
@@ -64,7 +64,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
 
   useEffect(() => {
     obtenerAlmacenesAutorizados();
-  }, []);
+  }, [obtenerAlmacenesAutorizados]);
 
   // -- Lógica de Carga de Datos --
   const loadData = useCallback(async () => {
@@ -145,6 +145,7 @@ export const useEntregas = ({ setError: externalSetError }: IUseHook) => {
 
     // Métodos
     loadData,
+    recargar: loadData,
     obtenerAlmacenesAutorizados,
     updateRequirementLocal,
     addRequirementLocal,

@@ -17,6 +17,7 @@ export const useOrganigrama = () => {
 
   // Cargar áreas con cargos y cargos sin área por separado
   const cargarDatos = useCallback(async () => {
+    setLoading(true);
     try {
       const [respAreas, respCargosSinArea] = await Promise.all([
         OrganigramaService.get_areas(true),
@@ -27,17 +28,14 @@ export const useOrganigrama = () => {
       if (respCargosSinArea.success) setCargosSinArea(respCargosSinArea.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   // Carga inicial
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await cargarDatos();
-      setLoading(false);
-    };
-    init();
+    cargarDatos();
   }, [cargarDatos]);
 
   // Filtrado de áreas en base a la búsqueda

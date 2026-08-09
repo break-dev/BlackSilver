@@ -21,6 +21,7 @@ export const useCategoriasPage = () => {
     closeCreate,
     onCategoriaGuardada,
     categorias,
+    recargar,
   } = useCategorias();
 
   const registro = useRegistroCategoria({
@@ -46,6 +47,7 @@ export const useCategoriasPage = () => {
     closeCreate,
     onCategoriaGuardada,
     categorias,
+    recargar,
 
     // useRegistroCategoria
     registro,

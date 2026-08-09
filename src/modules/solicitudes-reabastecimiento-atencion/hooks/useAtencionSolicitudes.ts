@@ -104,6 +104,7 @@ export const useAtencionSolicitudes = () => {
     busqueda,
     setBusqueda,
     refresh: loadSolicitudes,
+    recargar: loadSolicitudes,
     updateSolicitudLocal,
   };
 };

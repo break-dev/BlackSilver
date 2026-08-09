@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LotesService } from "../service/lotes.service";
 import type { RES_Lote } from "../service/lotes.responses";
@@ -56,35 +56,36 @@ export const useLotesPage = () => {
     loadAlmacenes();
   }, [setTitle, initialAlmacenId]);
 
+  const recargarLotes = useCallback(async () => {
+    if (!idAlmacen) {
+      setLotes([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await LotesService.listarResumenLotes(Number(idAlmacen));
+      if (result.success) {
+        setLotes(result.data);
+        setBusqueda("");
+        setFiltroCategoria(null);
+        setFiltroProducto(null);
+        setSelectedLotes([]);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [idAlmacen]);
+
   // Load lotes when warehouse changes
   useEffect(() => {
-    const loadLotes = async () => {
-      if (!idAlmacen) {
-        setLotes([]);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const result = await LotesService.listarResumenLotes(Number(idAlmacen));
-        if (result.success) {
-          setLotes(result.data);
-          setBusqueda("");
-          setFiltroCategoria(null);
-          setFiltroProducto(null);
-          setSelectedLotes([]);
-        } else {
-          setError(result.message);
-        }
-      } catch (err) {
-        setError(String(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadLotes();
-  }, [idAlmacen]);
+    recargarLotes();
+  }, [recargarLotes]);
 
   // Derived Data (Filtros)
   const categoriasUnicas = useMemo(() => {
@@ -146,6 +147,7 @@ export const useLotesPage = () => {
     almacenes,
     records: filteredRecords,
     loading,
+    recargar: recargarLotes,
     loadingAlmacenes,
     error,
     idAlmacen,

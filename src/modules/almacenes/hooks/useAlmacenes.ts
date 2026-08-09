@@ -119,6 +119,7 @@ export const useAlmacenes = () => {
     setAlmacenes,
     busqueda,
     setBusqueda,
+    recargar: listar,
     almacenesFiltrados,
     handleChildMessage,
 

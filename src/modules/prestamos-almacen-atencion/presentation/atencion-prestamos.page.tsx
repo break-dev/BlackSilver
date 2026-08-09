@@ -28,6 +28,7 @@ import { DataTableEstandar } from "../../../presentation/utils/datatable-estanda
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { MESES } from "../../../shared/variables/meses";
 import { DetallePrestamo } from "./detalle-prestamo";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 const ESTADO_COLORS: Record<string, string> = {
   Generado: "green",
@@ -249,7 +250,7 @@ export const AtencionPrestamosPage = () => {
             />
           </div>
 
-          <div className="flex-1 min-w-[200px] w-full">
+          <div className="flex-1 min-w-[200px] w-full flex items-end gap-2">
             <TextInput
               label="Búsqueda"
               placeholder="Buscar por código, solicitante..."
@@ -263,11 +264,13 @@ export const AtencionPrestamosPage = () => {
               disabled={!idAlmacen}
               radius="lg"
               size="sm"
+              className="flex-1"
               classNames={{
                 input: "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
                 label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
               }}
             />
+            <BotonRecargar onReload={cargarPrestamos} loading={loading} />
           </div>
         </div>
       </div>

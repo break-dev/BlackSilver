@@ -67,5 +67,6 @@ export const useProveedores = () => {
     insertProveedor,
     updateProveedor,
     updateCuentaEnProveedor,
+    recargar: fetchProveedores,
   };
 };

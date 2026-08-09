@@ -72,6 +72,7 @@ export const usePrestamosAlmacen = () => {
     prestamos: filteredRecords,
     groupedByAlmacen,
     loading,
+    recargar: handleFetchPrestamos,
     mes,
     setMes,
     yearcito,

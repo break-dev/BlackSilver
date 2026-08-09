@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { ActivosService } from "../service/activos.service";
 import type { RES_ActivoFijoResumen } from "../service/activos.responses";
 import { useNotify } from "../../../hooks/useNotify";
@@ -16,7 +16,7 @@ export const useActivosMain = () => {
   const [idAlmacen, setIdAlmacen] = useState<string | null>(null);
   const [idMina, setIdMina] = useState<string | null>(null);
 
-  const fetchActivos = async (showLoading = true) => {
+  const fetchActivos = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const res = await ActivosService.getActivos();
@@ -27,11 +27,11 @@ export const useActivosMain = () => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [notifyError]);
 
   useEffect(() => {
     fetchActivos();
-  }, []);
+  }, [fetchActivos]);
 
   const activosFiltrados = useMemo(() => {
     return activos.filter((a) => {
@@ -89,6 +89,7 @@ export const useActivosMain = () => {
     idMina,
     setIdMina,
     refresh: (showLoading?: boolean) => fetchActivos(showLoading),
+    recargar: () => fetchActivos(true),
     addActivo,
   };
 };

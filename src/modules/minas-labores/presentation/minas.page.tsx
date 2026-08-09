@@ -16,7 +16,7 @@ import {
   BuildingOffice2Icon,
   InboxStackIcon,
 } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useMinas } from "../hooks/minas/useMinas";
@@ -26,8 +26,10 @@ import { EmpresasEjecutoras } from "./empresas-ejecutoras/empresas-ejecutoras";
 import { HistorialResponsables } from "./responsables/historial-responsables";
 import { GestionLabores } from "./labores/labores";
 
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
+
 export const MinasPage = () => {
-  useTitlePage("Minas y Labores");
+  useTitlePage("Minas & Labores");
 
   const {
     concesiones,
@@ -35,6 +37,7 @@ export const MinasPage = () => {
     loading,
     busqueda,
     setBusqueda,
+    recargar,
     openedCreate,
     openCreate,
     closeCreate,
@@ -60,6 +63,8 @@ export const MinasPage = () => {
   const [openedCreateLabor, { open: openCreateLabor, close: closeCreateLabor }] =
     useDisclosure(false);
 
+  const refRecargarLabores = useRef<(() => void) | null>(null);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header — igual que Empresas / Almacenes */}
@@ -81,15 +86,18 @@ export const MinasPage = () => {
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openCreate}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
-        >
-          Nueva Mina
-        </Button>
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={recargar} loading={loading} />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openCreate}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
+          >
+            Nueva Mina
+          </Button>
+        </div>
       </div>
 
       {/* Grid de tarjetas */}
@@ -384,7 +392,7 @@ export const MinasPage = () => {
         }
         size="90%"
         rightSection={
-          <div className="flex items-center gap-3 mr-4">
+          <div className="flex items-center gap-2 mr-4">
             <TextInput
               placeholder="Buscar labor..."
               leftSection={
@@ -398,6 +406,11 @@ export const MinasPage = () => {
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500",
+              }}
+            />
+            <BotonRecargar
+              onReload={() => {
+                if (refRecargarLabores.current) refRecargarLabores.current();
               }}
             />
             <Button
@@ -422,6 +435,7 @@ export const MinasPage = () => {
             openCreate={openCreateLabor}
             openedCreate={openedCreateLabor}
             closeCreate={closeCreateLabor}
+            onRecargarRef={refRecargarLabores}
           />
         )}
       </ModalEstandar>

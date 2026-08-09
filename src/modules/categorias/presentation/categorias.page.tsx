@@ -11,6 +11,7 @@ import { useCategoriasColumns } from "../hooks/useCategoriasColumns";
 import { CategoriaGroupCard } from "./components/categoria-group-card";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { TipoProducto } from "../../../shared/enums/_generic/tipo-producto";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 // Styling configuration for inputs
 const INPUT_CLASSES = {
@@ -38,6 +39,7 @@ export const CategoriasPage = () => {
     closeCreate,
     categorias,
     registro,
+    recargar,
   } = useCategoriasPage();
 
   // Dynamic columns generator hook
@@ -88,7 +90,8 @@ export const CategoriasPage = () => {
 
 
 
-        <div className="shrink-0 w-full md:w-auto">
+        <div className="shrink-0 w-full md:w-auto flex items-center gap-2">
+          <BotonRecargar onReload={recargar} loading={loading} />
           <Button
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openCreate}

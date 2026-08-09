@@ -26,7 +26,7 @@ export const CotizacionesPage = () => {
   const {
     comparativos,
     loading,
-    //fetchCotizaciones,
+    fetchCotizaciones,
     updateCotizacionLocal,
     busqueda,
     setBusqueda,
@@ -74,6 +74,8 @@ export const CotizacionesPage = () => {
         mes={mes}
         year={year}
         onCambiarPeriodo={cambiarPeriodo}
+        onReload={fetchCotizaciones}
+        loading={loading}
       />
 
       {loading ? (

@@ -53,6 +53,7 @@ export const useClientes = () => {
     clientes,
     loading,
     fetchClientes,
+    recargar: fetchClientes,
     insertCliente,
     updateCliente,
   };

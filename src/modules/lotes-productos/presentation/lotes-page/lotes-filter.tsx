@@ -14,10 +14,13 @@ import {
   PlusIcon,
   PrinterIcon,
 } from "@heroicons/react/24/outline";
+import { BotonRecargar } from "../../../../presentation/utils/boton-recargar";
 
 interface LotesFilterProps {
   almacenes: { id_almacen: number; nombre: string }[];
   loadingAlmacenes?: boolean;
+  loading?: boolean;
+  onReload?: () => void;
   idAlmacen: string | null;
   setIdAlmacen: (val: string | null) => void;
   busqueda: string;
@@ -40,6 +43,8 @@ interface LotesFilterProps {
 export const LotesFilter = ({
   almacenes,
   loadingAlmacenes = false,
+  loading = false,
+  onReload,
   idAlmacen,
   setIdAlmacen,
   busqueda,
@@ -189,7 +194,8 @@ export const LotesFilter = ({
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2">
+          <BotonRecargar onReload={onReload} loading={loading} />
           <Button
             leftSection={<PlusIcon className="w-5 h-5" />}
             onClick={openCreate}

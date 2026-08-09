@@ -30,6 +30,7 @@ import { MESES } from "../../../shared/variables/meses.ts";
 import { useDisclosure } from "@mantine/hooks";
 import { Premura } from "../../../shared/enums/_generic/premura.ts";
 import { Estado_Solicitud } from "../../../shared/enums/solicitud-reabastecimiento/solicitud.ts";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar.tsx";
 
 export const SolicitudesReabastecimientoAtencionPage = () => {
   const setTitle = useUIStore((state) => state.setTitle);
@@ -51,6 +52,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
     setYearcito,
     busqueda,
     setBusqueda,
+    recargar,
     updateSolicitudLocal,
   } = useAtencionSolicitudes();
 
@@ -275,7 +277,7 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
             />
           </div>
 
-          <div className="flex-1 min-w-[200px] w-full">
+          <div className="flex-1 min-w-[200px] w-full flex items-end gap-2">
             <TextInput
               label="Búsqueda"
               placeholder="Buscar por código u observacion..."
@@ -284,15 +286,16 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
               }
               value={busqueda}
               onChange={(e) => setBusqueda(e.currentTarget.value)}
-              disabled={!idAlmacen}
               radius="lg"
               size="sm"
+              className="flex-1"
               classNames={{
                 input:
                   "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
                 label: "text-zinc-400 text-xs font-semibold mb-1 ml-1",
               }}
             />
+            <BotonRecargar onReload={recargar} loading={loading} />
           </div>
         </div>
       </div>

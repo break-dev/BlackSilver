@@ -25,6 +25,7 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useCuentas } from "../hooks/useCuentas";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { RegistroCuenta } from "./registro-cuenta";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 export const CuentasPage = () => {
   useTitlePage("Usuarios y Cuentas");
@@ -71,18 +72,21 @@ export const CuentasPage = () => {
               "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
           }}
         />
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={() => {
-            setSelectedCuenta(null);
-            openCreate();
-          }}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
-        >
-          Nueva Cuenta
-        </Button>
+        <div className="flex gap-2 items-center shrink-0">
+          <BotonRecargar onReload={refresh} loading={loading} />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={() => {
+              setSelectedCuenta(null);
+              openCreate();
+            }}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
+          >
+            Nueva Cuenta
+          </Button>
+        </div>
       </div>
 
       {/* Grid de Cards */}

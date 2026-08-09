@@ -172,5 +172,6 @@ export const useKardex = () => {
 
     // Métodos Manuales (si se requieren)
     loadMovimientos,
+    recargar: loadMovimientos,
   };
 };

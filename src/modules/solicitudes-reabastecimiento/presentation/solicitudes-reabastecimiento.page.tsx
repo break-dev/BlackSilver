@@ -35,6 +35,7 @@ import type {
   RES_Solicitud,
   RES_SolicitudDetalle,
 } from "../../../service/responses/solicitudes-reabastecimiento/solicitud";
+import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;
@@ -48,7 +49,7 @@ export const SolicitudesReabastecimientoPage = () => {
     filteredRecords,
     loading,
     filters: { mes, setMes, yearcito, setYearcito, search, setSearch },
-    actions: { addRecord, verDetalles, verTrazabilidad },
+    actions: { listar, addRecord, verDetalles, verTrazabilidad },
     ui: {
       selectedReq,
       detalles,
@@ -270,15 +271,18 @@ export const SolicitudesReabastecimientoPage = () => {
           </div>
         </div>
 
-        <Button
-          leftSection={<PlusIcon className="w-5 h-5" />}
-          onClick={openReg}
-          radius="lg"
-          size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0 h-[38px]"
-        >
-          Nueva Solicitud
-        </Button>
+        <div className="flex gap-2 items-center shrink-0 w-full lg:w-auto">
+          <BotonRecargar onReload={listar} loading={loading} />
+          <Button
+            leftSection={<PlusIcon className="w-5 h-5" />}
+            onClick={openReg}
+            radius="lg"
+            size="sm"
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0 h-[38px]"
+          >
+            Nueva Solicitud
+          </Button>
+        </div>
       </div>
 
       {/* Tabla de Resultados */}

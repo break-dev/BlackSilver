@@ -25,6 +25,7 @@ export const LotesPage = () => {
     almacenes,
     records,
     loading,
+    recargar,
     loadingAlmacenes,
     idAlmacen,
     setIdAlmacen,
@@ -99,6 +100,8 @@ export const LotesPage = () => {
       <LotesFilter
         almacenes={almacenes}
         loadingAlmacenes={loadingAlmacenes}
+        loading={loading}
+        onReload={recargar}
         idAlmacen={idAlmacen}
         setIdAlmacen={setIdAlmacen}
         busqueda={busqueda}
