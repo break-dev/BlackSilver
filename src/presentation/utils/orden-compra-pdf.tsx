@@ -14,149 +14,165 @@ import type {
   RES_OrdenCompraDetalle,
 } from "../../service/responses/ordenes-compra/orden-compra";
 import { TipoDespachoCompra } from "../../shared/enums/_generic/tipo-despacho-compra";
+import {
+  darkenHex,
+  getPdfAccent,
+  lightenHex,
+} from "./pdf/pdf-theme";
 
 interface OrdenCompraPDFProps {
   orden: RES_OrdenCompra;
   detalles: RES_OrdenCompraDetalle[];
+  colorPredominante?: string | null;
 }
 
-const styles = StyleSheet.create({
-  page: {
-    paddingTop: 20,
-    paddingBottom: 40,
-    paddingHorizontal: 30,
-    fontSize: 9,
-    color: "#18181b",
-    fontFamily: "Helvetica",
-  },
-  logoContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0fdf4",
-    paddingBottom: 10,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#16a34a", // verde-600 (acento de OC)
-    paddingBottom: 8,
-  },
-  companyName: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: "#18181b",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: "#16a34a",
-    textAlign: "right",
-  },
-  documentNumber: {
-    fontSize: 12,
-    fontWeight: 700,
-    textAlign: "right",
-    marginTop: 2,
-  },
-  sectionTitle: {
-    fontSize: 8,
-    fontWeight: 700,
-    color: "#3f6212", // lime-900 para contraste
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    borderLeftWidth: 3,
-    borderLeftColor: "#16a34a",
-    paddingLeft: 6,
-    marginBottom: 6,
-    marginTop: 10,
-  },
-  row: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0fdf4",
-    paddingVertical: 6,
-    alignItems: "center",
-  },
-  tableHeader: {
-    backgroundColor: "#064e3b", // emerald-900
-    color: "#ffffff",
-    fontWeight: 700,
-    borderRadius: 2,
-  },
-  col0: { width: "5%", textAlign: "center" },
-  col1: { width: "10%", textAlign: "center" },
-  col2: { width: "10%", textAlign: "center" },
-  col3: { width: "45%", textAlign: "left", paddingLeft: 8 },
-  col4: { width: "15%", textAlign: "right", paddingRight: 8 },
-  col5: { width: "15%", textAlign: "right", paddingRight: 8 },
-  totalsContainer: {
-    marginTop: 15,
-    alignSelf: "flex-end",
-    width: "35%",
-    backgroundColor: "#f0fdf4", // suave verde
-    padding: 10,
-    borderRadius: 4,
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 2,
-  },
-  totalLabel: {
-    fontWeight: 700,
-    color: "#14532d",
-  },
-  grandTotal: {
-    marginTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: "#16a34a",
-    paddingTop: 6,
-    fontSize: 11,
-    color: "#14532d",
-    fontWeight: 700,
-  },
-  signatureSection: {
-    marginTop: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  signatureBox: {
-    width: "30%",
-    alignItems: "center",
-  },
-  signatureLine: {
-    borderTopWidth: 1,
-    borderTopColor: "#14532d",
-    width: "100%",
-    marginBottom: 4,
-  },
-  signatureName: { fontSize: 8, fontWeight: 700, textAlign: "center" },
-  signatureRole: {
-    fontSize: 8,
-    color: "#166534",
-    textAlign: "center",
-    textTransform: "uppercase",
-  },
-  footer: {
-    position: "absolute",
-    bottom: 20,
-    left: 30,
-    right: 30,
-    textAlign: "center",
-    color: "#166534",
-    fontSize: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#f0fdf4",
-    paddingTop: 8,
-  },
-});
+export const OrdenCompraPDF = ({
+  orden,
+  detalles,
+  colorPredominante,
+}: OrdenCompraPDFProps) => {
+  const accent = getPdfAccent(colorPredominante);
+  const accentDark = darkenHex(accent, 0.3);
+  const accentVeryDark = darkenHex(accent, 0.45);
+  const accentSoft = lightenHex(accent, 0.55);
 
-export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
+  const styles = StyleSheet.create({
+    page: {
+      paddingTop: 20,
+      paddingBottom: 40,
+      paddingHorizontal: 30,
+      fontSize: 9,
+      color: "#18181b",
+      fontFamily: "Helvetica",
+    },
+    logoContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: accentSoft,
+      paddingBottom: 10,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: accent,
+      paddingBottom: 8,
+    },
+    companyName: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: "#18181b",
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: 700,
+      color: accent,
+      textAlign: "right",
+    },
+    documentNumber: {
+      fontSize: 12,
+      fontWeight: 700,
+      textAlign: "right",
+      marginTop: 2,
+    },
+    sectionTitle: {
+      fontSize: 8,
+      fontWeight: 700,
+      color: accentVeryDark,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      borderLeftWidth: 3,
+      borderLeftColor: accent,
+      paddingLeft: 6,
+      marginBottom: 6,
+      marginTop: 10,
+    },
+    row: {
+      flexDirection: "row",
+      borderBottomWidth: 1,
+      borderBottomColor: accentSoft,
+      paddingVertical: 6,
+      alignItems: "center",
+    },
+    tableHeader: {
+      backgroundColor: accentVeryDark,
+      color: "#ffffff",
+      fontWeight: 700,
+      borderRadius: 2,
+    },
+    col0: { width: "5%", textAlign: "center" },
+    col1: { width: "10%", textAlign: "center" },
+    col2: { width: "10%", textAlign: "center" },
+    col3: { width: "45%", textAlign: "left", paddingLeft: 8 },
+    col4: { width: "15%", textAlign: "right", paddingRight: 8 },
+    col5: { width: "15%", textAlign: "right", paddingRight: 8 },
+    totalsContainer: {
+      marginTop: 15,
+      alignSelf: "flex-end",
+      width: "35%",
+      backgroundColor: accentSoft,
+      padding: 10,
+      borderRadius: 4,
+    },
+    totalRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: 2,
+    },
+    totalLabel: {
+      fontWeight: 700,
+      color: accentVeryDark,
+    },
+    grandTotal: {
+      marginTop: 6,
+      borderTopWidth: 1,
+      borderTopColor: accent,
+      paddingTop: 6,
+      fontSize: 11,
+      color: accentVeryDark,
+      fontWeight: 700,
+    },
+    signatureSection: {
+      marginTop: 40,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    signatureBox: {
+      width: "30%",
+      alignItems: "center",
+    },
+    signatureLine: {
+      borderTopWidth: 1,
+      borderTopColor: accentVeryDark,
+      width: "100%",
+      marginBottom: 4,
+    },
+    signatureName: { fontSize: 8, fontWeight: 700, textAlign: "center" },
+    signatureRole: {
+      fontSize: 8,
+      color: accentDark,
+      textAlign: "center",
+      textTransform: "uppercase",
+    },
+    footer: {
+      position: "absolute",
+      bottom: 20,
+      left: 30,
+      right: 30,
+      textAlign: "center",
+      color: accentDark,
+      fontSize: 8,
+      borderTopWidth: 1,
+      borderTopColor: accentSoft,
+      paddingTop: 8,
+    },
+  });
+
+
   const symbol =
     Object.values(MONEDAS).find((m) => m.label === orden.moneda)?.symbol ??
     "S/";
@@ -177,7 +193,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
                     : { width: 110, height: 40, objectFit: "contain" }
                 }
               />
-              <Text style={{ fontSize: 8, color: "#166534" }}>
+              <Text style={{ fontSize: 8, color: accentDark }}>
                 Documento Oficial de Orden de Compra
               </Text>
             </View>
@@ -187,7 +203,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1.5 }}>
-            <Text style={{ fontSize: 8, color: "#166534", marginBottom: 2 }}>
+            <Text style={{ fontSize: 8, color: accentDark, marginBottom: 2 }}>
               EMITIR FACTURA A NOMBRE DE:
             </Text>
             <Text style={styles.companyName}>
@@ -213,7 +229,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View
             style={{
               flex: 1,
-              backgroundColor: "#f0fdf4",
+              backgroundColor: accentSoft,
               padding: 8,
               borderRadius: 4,
             }}
@@ -223,7 +239,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               {orden.proveedor}
             </Text>
             {orden.documento_proveedor && (
-              <Text style={{ fontSize: 8, color: "#166534", marginTop: 2 }}>
+              <Text style={{ fontSize: 8, color: accentDark, marginTop: 2 }}>
                 RUC / Doc: {orden.documento_proveedor}
               </Text>
             )}
@@ -231,7 +247,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
           <View
             style={{
               flex: 1,
-              backgroundColor: "#f0fdf4",
+              backgroundColor: accentSoft,
               padding: 8,
               borderRadius: 4,
             }}
@@ -408,7 +424,7 @@ export const OrdenCompraPDF = ({ orden, detalles }: OrdenCompraPDFProps) => {
               style={{
                 fontSize: 8,
                 fontStyle: "italic",
-                color: "#166534",
+                color: accentDark,
                 paddingLeft: 6,
               }}
             >

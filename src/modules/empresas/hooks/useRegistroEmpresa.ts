@@ -18,6 +18,9 @@ export const useRegistroEmpresa = ({
   const [razonSocial, setRazonSocial] = useState("");
   const [domicilioFiscal, setDomicilioFiscal] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [colorPredominante, setColorPredominante] = useState<string | null>(
+    null,
+  );
   const [documentosFiles, setDocumentosFiles] = useState<File[]>([]);
 
   const [error, setError] = useState("");
@@ -28,6 +31,7 @@ export const useRegistroEmpresa = ({
     setRazonSocial("");
     setDomicilioFiscal("");
     setLogoFile(null);
+    setColorPredominante(null);
     setDocumentosFiles([]);
     setError("");
   }, []);
@@ -55,6 +59,10 @@ export const useRegistroEmpresa = ({
 
     if (logoFile) {
       formData.append("logo", logoFile);
+    }
+
+    if (colorPredominante) {
+      formData.append("color_predominante", colorPredominante);
     }
 
     documentosFiles.forEach((doc) => {
@@ -89,6 +97,8 @@ export const useRegistroEmpresa = ({
     setDomicilioFiscal,
     logoFile,
     setLogoFile,
+    colorPredominante,
+    setColorPredominante,
     documentosFiles,
     setDocumentosFiles,
     error,

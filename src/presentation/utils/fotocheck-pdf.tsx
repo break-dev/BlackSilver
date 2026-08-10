@@ -1,6 +1,7 @@
 import { Document, Page, View, Text, Image } from "@react-pdf/renderer";
 import { createTw } from "react-pdf-tailwind";
 import { useAuthStore } from "../../stores/auth.store";
+import { getPdfAccent } from "./pdf/pdf-theme";
 
 const tw = createTw({});
 
@@ -12,6 +13,7 @@ export interface FotocheckData {
   area?: string | null;
   empresa?: string | null;
   empresaUrlLogo?: string | null;
+  empresaColorPredominante?: string | null;
   mina?: string | null;
   labor?: string | null;
   urlFoto?: string | null;
@@ -64,6 +66,13 @@ const FotocheckCard = ({ data }: { data: FotocheckData }) => {
   const logoSrc = resolveImageSrc(data.empresaUrlLogo);
   const fotoSrc = resolveImageSrc(data.urlFoto);
 
+  // Color del banner: solo dinámico para empleados con color_predominante;
+  // contratistas o sin empresa mantienen el gris/carbón original.
+  const bannerColor =
+    data.tipo === "empleado" && data.empresaColorPredominante
+      ? getPdfAccent(data.empresaColorPredominante)
+      : "#37404c";
+
   return (
     <Page
       size={[pageW, pageH]}
@@ -74,7 +83,7 @@ const FotocheckCard = ({ data }: { data: FotocheckData }) => {
         style={{
           width: "100%",
           height: pageH * 0.18,
-          backgroundColor: "#37404c",
+          backgroundColor: bannerColor,
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
@@ -88,7 +97,7 @@ const FotocheckCard = ({ data }: { data: FotocheckData }) => {
             left: 0,
             right: 0,
             height: 4,
-            backgroundColor: "#2e3640",
+            backgroundColor: bannerColor,
           }}
         />
       </View>
@@ -219,7 +228,7 @@ const FotocheckCard = ({ data }: { data: FotocheckData }) => {
           left: 0,
           right: 0,
           height: 6,
-          backgroundColor: "#37404c",
+          backgroundColor: bannerColor,
         }}
       />
     </Page>

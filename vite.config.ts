@@ -11,6 +11,9 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: ["colorthief"],
+  },
   build: {
     target: "esnext",
     sourcemap: false, // Desactiva generación de sourcemaps para liberar memoria RAM

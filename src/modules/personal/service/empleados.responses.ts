@@ -11,6 +11,7 @@ export interface RES_EmpleadoResumen {
   id_empresa: number | null;
   empresa: string | null;
   empresa_url_logo: string | null;
+  color_predominante_empresa: string | null;
   qr_token: string;
   nombre: string;
   apellido: string;

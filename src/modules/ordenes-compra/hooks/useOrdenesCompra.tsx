@@ -83,9 +83,16 @@ export const useOrdenesCompraPage = () => {
           orden.id_orden_compra,
         );
         if (res.success) {
-          print(<OrdenCompraPDF orden={orden} detalles={res.data} />, {
-            documentTitle: `OC - ${orden.correlativo}`,
-          });
+          print(
+            <OrdenCompraPDF
+              orden={orden}
+              detalles={res.data}
+              colorPredominante={orden.color_predominante_empresa}
+            />,
+            {
+              documentTitle: `OC - ${orden.correlativo}`,
+            },
+          );
         } else {
           notify({ type: "error", content: res.message });
         }

@@ -14,87 +14,60 @@ interface UseFotocheckContratistaArgs {
   contratistas: RES_ContratistaResumen[];
 }
 
-const obtenerUrlAbsoluta = (url: string | null | undefined): string | null => {
-  if (!url) return null;
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("data:")
-  ) {
-    return url;
-  }
-  const apiBase = import.meta.env.VITE_API_URL || "";
-  const base = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
-  const path = url.startsWith("/") ? url : "/" + url;
-  return `${base}${path}`;
-};
-
-const obtenerPathRelativo = (url: string | null | undefined): string | null => {
-  if (!url) return null;
-  const storageIndex = url.indexOf("/storage/");
-  if (storageIndex !== -1) {
-    return url.substring(storageIndex + "/storage/".length);
-  }
-  return null;
-};
-
 const getBase64ImageWithAuth = async (
   url: string | null | undefined,
 ): Promise<string | null> => {
   if (!url) return null;
+  if (url.startsWith("data:")) return url;
 
-  if (url.startsWith("data:")) {
-    return url;
-  }
+  const blobToDataUrl = (blob: Blob): Promise<string | null> =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string) ?? null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
 
-  const pathRelativo = obtenerPathRelativo(url);
-  if (!pathRelativo) {
-    try {
-      const fullUrl = obtenerUrlAbsoluta(url);
-      if (!fullUrl) return null;
-      const res = await fetch(fullUrl);
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      if (blob && blob.type.startsWith("image/")) {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(blob);
-        });
+  try {
+    let blob: Blob | null = null;
+    if (url.includes("/storage/")) {
+      // Imagen del storage local: probar varios paths porque Laravel puede
+      // tener el archivo bajo storage/, public/ o storage/app/public/.
+      const pathRelativo = url.substring(
+        url.indexOf("/storage/") + "/storage/".length,
+      );
+      const candidates = [
+        pathRelativo,
+        `storage/${pathRelativo}`,
+        `public/${pathRelativo}`,
+        `storage/app/public/${pathRelativo}`,
+      ];
+      for (const path of candidates) {
+        try {
+          const b = await ArchivoService.descargarArchivo(path, "imagen");
+          if (b && b.type.startsWith("image/")) {
+            blob = b;
+            break;
+          }
+        } catch {
+          // intentar el siguiente
+        }
       }
-      return null;
-    } catch {
-      return null;
+    } else if (url.startsWith("http://") || url.startsWith("https://")) {
+      // URL externa (CDN, S3, etc.): pasar por el proxy del backend para
+      // evitar el preflight CORS en el navegador.
+      blob = await ArchivoService.descargarExterno(url);
     }
-  }
 
-  const pathsToTry = [
-    `storage/${pathRelativo}`,
-    `public/${pathRelativo}`,
-    pathRelativo,
-    `storage/app/public/${pathRelativo}`,
-    `public/storage/${pathRelativo}`,
-  ];
-
-  for (const path of pathsToTry) {
-    try {
-      const blob = await ArchivoService.descargarArchivo(path, "imagen");
-      if (blob && blob.type.startsWith("image/")) {
-        return await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = () => resolve(null);
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch {
-      // continuar
+    if (blob && blob.type.startsWith("image/")) {
+      return await blobToDataUrl(blob);
     }
+    return null;
+  } catch {
+    return null;
   }
-
-  return null;
 };
+
 
 /**
  * Hook para generar y descargar fotochecks de CONTRATISTAS en PDF

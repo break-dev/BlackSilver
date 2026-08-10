@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Avatar,
   FileButton,
@@ -11,6 +11,9 @@ import {
   Group,
   Modal,
   Image,
+  Popover,
+  ColorInput,
+  Button,
 } from "@mantine/core";
 import {
   BanknotesIcon,
@@ -23,16 +26,103 @@ import {
   EyeIcon,
   PencilSquareIcon,
   XMarkIcon,
+  SwatchIcon,
 } from "@heroicons/react/24/outline";
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 import { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { RES_EmpresaResumen } from "../service/empresas.responses";
 import type { RES_CuentaEmpresa } from "../../../service/responses/cuenta-empresa";
+import { ArchivoService } from "../../../service/archivo.service";
+
+const obtenerUrlAbsoluta = (url: string): string => {
+  if (
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("data:") ||
+    url.startsWith("blob:")
+  ) {
+    return url;
+  }
+  const apiBase = import.meta.env.VITE_API_URL || "";
+  const base = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
+  const path = url.startsWith("/") ? url : "/" + url;
+  return `${base}${path}`;
+};
+
+/**
+ * Convierte un Blob a data URL (base64) sin restricciones de CORS.
+ */
+const blobToDataUrl = (blob: Blob): Promise<string | null> =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string) ?? null);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(blob);
+  });
+
+/**
+ * Extrae el path relativo a /storage/ desde una URL completa.
+ */
+const obtenerPathRelativo = (url: string): string | null => {
+  const idx = url.indexOf("/storage/");
+  if (idx !== -1) return url.substring(idx + "/storage/".length);
+  return null;
+};
+
+const descargarLogoComoBlob = async (url: string): Promise<string | null> => {
+  if (!url) return null;
+  if (url.startsWith("data:")) return url;
+
+  const pathRelativo = obtenerPathRelativo(url);
+  if (pathRelativo) {
+    const pathsToTry = [
+      pathRelativo,
+      `storage/${pathRelativo}`,
+      `public/${pathRelativo}`,
+      `storage/app/public/${pathRelativo}`,
+      `public/storage/${pathRelativo}`,
+    ];
+    for (const path of pathsToTry) {
+      try {
+        const blob = await ArchivoService.descargarArchivo(path, "imagen");
+        if (blob && blob.type.startsWith("image/")) {
+          // Devolvemos DATA URL (no blob URL) para evitar problemas de
+          // revocación y para que colorthief pueda leer los píxeles
+          // sin restricciones de CORS (el origen data: es local).
+          return await blobToDataUrl(blob);
+        }
+      } catch {
+        // continuar al siguiente
+      }
+    }
+  }
+
+  // Fallback: fetch directo sin auth
+  try {
+    const fullUrl = obtenerUrlAbsoluta(url);
+    const res = await fetch(fullUrl);
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.type.startsWith("image/")) {
+        return await blobToDataUrl(blob);
+      }
+    }
+  } catch {
+    // no se pudo descargar
+  }
+
+  return null;
+};
+
 
 interface EmpresaCardProps {
   empresa: RES_EmpresaResumen;
   onUpdateLogo: (id: number, file: File) => Promise<boolean>;
   onRemoveLogo: (id: number) => Promise<boolean>;
+  onUpdateColorPredominante: (
+    id: number,
+    color: string | null,
+  ) => Promise<boolean>;
   onAddOficina: (empresa: RES_EmpresaResumen) => void;
   onOpenDocumentos: (empresa: RES_EmpresaResumen) => void;
   onAddCuenta: () => void;
@@ -47,6 +137,7 @@ export const EmpresaCard = ({
   empresa,
   onUpdateLogo,
   onRemoveLogo,
+  onUpdateColorPredominante,
   onAddOficina,
   onOpenDocumentos,
   onAddCuenta,
@@ -56,6 +147,78 @@ export const EmpresaCard = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [logoPreviewOpen, setLogoPreviewOpen] = useState(false);
+
+  const [colorPopoverOpen, setColorPopoverOpen] = useState(false);
+  const [colorDraft, setColorDraft] = useState<string | null>(
+    empresa.color_predominante ?? null,
+  );
+  const [savingColor, setSavingColor] = useState(false);
+  const [extrayendoColor, setExtrayendoColor] = useState(false);
+  const colorthiefRef = useRef<typeof import("colorthief") | null>(null);
+
+  // Sincroniza el draft si cambia el color desde fuera (registro nuevo, refetch, etc.)
+  useEffect(() => {
+    setColorDraft(empresa.color_predominante ?? null);
+  }, [empresa.color_predominante]);
+
+  // Blob URL para extraer color del logo actual sin re-subir nada.
+  const logoPreview = useMemo(() => {
+    return empresa.url_logo ? empresa.url_logo : null;
+  }, [empresa.url_logo]);
+
+  const extraerColorDelLogo = async () => {
+    if (!logoPreview) {
+      setColorDraft(null);
+      return;
+    }
+    setExtrayendoColor(true);
+    try {
+      const dataUrl = await descargarLogoComoBlob(logoPreview);
+      if (!dataUrl) {
+        console.warn("[color_predominante] no se pudo descargar el logo");
+        return;
+      }
+
+      const mod = await import("colorthief");
+      colorthiefRef.current = mod;
+      const img = new globalThis.Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () =>
+          reject(new Error("No se pudo cargar el logo para extraer color"));
+        img.src = dataUrl;
+        setTimeout(() => {
+          if (!img.complete) reject(new Error("Timeout cargando logo"));
+        }, 5000);
+      });
+      const color = await mod.getColor(img);
+      if (color) {
+        setColorDraft(color.hex());
+      } else {
+        console.warn(
+          "[color_predominante] colorthief no devolvió color para el logo",
+        );
+      }
+    } catch (err) {
+      console.warn("[color_predominante] no se pudo extraer del logo:", err);
+    } finally {
+      setExtrayendoColor(false);
+    }
+  };
+
+
+  const guardarColor = async () => {
+    setSavingColor(true);
+    try {
+      const ok = await onUpdateColorPredominante(
+        empresa.id_empresa,
+        colorDraft,
+      );
+      if (ok) setColorPopoverOpen(false);
+    } finally {
+      setSavingColor(false);
+    }
+  };
 
   const handleFileChange = async (file: File | null) => {
     if (!file) return;
@@ -145,6 +308,91 @@ export const EmpresaCard = ({
                     </Tooltip>
                   )}
                 </FileButton>
+
+                {/* Botón de color predominante */}
+                <Popover
+                  opened={colorPopoverOpen}
+                  onChange={setColorPopoverOpen}
+                  position="bottom-end"
+                  withArrow
+                  shadow="lg"
+                  width={280}
+                >
+                  <Popover.Target>
+                    <Tooltip
+                      label={
+                        empresa.color_predominante
+                          ? "Editar color predominante"
+                          : "Asignar color predominante"
+                      }
+                      position="top"
+                      withArrow
+                    >
+                      <ActionIcon
+                        size="xs"
+                        radius="md"
+                        variant="filled"
+                        color="teal"
+                        onClick={() => setColorPopoverOpen((v) => !v)}
+                        className="shadow-lg shadow-teal-900/40 bg-teal-600 hover:bg-teal-500"
+                      >
+                        <SwatchIcon className="w-3 h-3" />
+                      </ActionIcon>
+                    </Tooltip>
+                  </Popover.Target>
+                  <Popover.Dropdown className="bg-zinc-950 border border-zinc-800 p-3">
+                    <Stack gap="xs">
+                      <Text size="xs" fw={700} className="text-zinc-400 uppercase tracking-wider">
+                        Color Predominante
+                      </Text>
+                      <ColorInput
+                        size="xs"
+                        radius="md"
+                        format="hex"
+                        fixOnBlur
+                        value={colorDraft ?? ""}
+                        onChange={(hex) => setColorDraft(hex || null)}
+                        placeholder="#52525b"
+                        disabled={savingColor}
+                        swatches={[
+                          "#52525b",
+                          "#71717a",
+                          "#18181b",
+                          "#0c4a6e",
+                          "#0e7490",
+                          "#166534",
+                          "#14532d",
+                          "#854d0e",
+                          "#7c2d12",
+                          "#7f1d1d",
+                          "#6b21a8",
+                          "#9d174d",
+                          "#1e293b",
+                        ]}
+                      />
+                      <Group gap="xs" justify="space-between">
+                        <Button
+                          size="xs"
+                          variant="subtle"
+                          color="indigo"
+                          onClick={extraerColorDelLogo}
+                          disabled={!tieneImagen || savingColor || extrayendoColor}
+                          loading={extrayendoColor}
+                        >
+                          Extraer del logo
+                        </Button>
+                        <Button
+                          size="xs"
+                          color="indigo"
+                          onClick={guardarColor}
+                          loading={savingColor}
+                        >
+                          Guardar
+                        </Button>
+                      </Group>
+                    </Stack>
+                  </Popover.Dropdown>
+                </Popover>
 
                 {tieneImagen && (
                   <Tooltip label="Quitar logo" position="top" withArrow>

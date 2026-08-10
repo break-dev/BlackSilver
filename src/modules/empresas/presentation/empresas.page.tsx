@@ -44,6 +44,7 @@ export const EmpresasPage = () => {
     onEmpresaCreada,
     handleUpdateLogo,
     handleRemoveLogo,
+    handleUpdateColorPredominante,
     empresaParaDocumentos,
     openedDocumentos,
     onOpenDocumentosModal,
@@ -187,6 +188,7 @@ export const EmpresasPage = () => {
               empresa={empresa}
               onUpdateLogo={handleUpdateLogo}
               onRemoveLogo={handleRemoveLogo}
+              onUpdateColorPredominante={handleUpdateColorPredominante}
               onAddOficina={onOpenOficinaModal}
               onOpenDocumentos={onOpenDocumentosModal}
               onAddCuenta={() =>
@@ -221,6 +223,8 @@ export const EmpresasPage = () => {
           setDomicilioFiscal={registro.setDomicilioFiscal}
           logoFile={registro.logoFile}
           setLogoFile={registro.setLogoFile}
+          colorPredominante={registro.colorPredominante}
+          setColorPredominante={registro.setColorPredominante}
           documentosFiles={registro.documentosFiles}
           setDocumentosFiles={registro.setDocumentosFiles}
           error={registro.error}

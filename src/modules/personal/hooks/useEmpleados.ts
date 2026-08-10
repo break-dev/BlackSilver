@@ -206,11 +206,18 @@ export const useEmpleados = () => {
     setEmpleadoIndividual(null);
   }, []);
 
-  // Empleados seleccionados como array (preserva el orden del listado filtrado)
+  // Empleados seleccionados como array (preserva el orden del listado filtrado).
+  // En modo individual, busca el empleado actualizado en `empleados` (el array
+  // reactivo) para reflejar cambios de foto sin recargar la página.
   const empleadosSeleccionados = useMemo(() => {
-    if (empleadoIndividual) return [empleadoIndividual];
+    if (empleadoIndividual) {
+      const actualizado = empleados.find(
+        (e) => e.id_empleado === empleadoIndividual.id_empleado,
+      );
+      return [actualizado ?? empleadoIndividual];
+    }
     return filtrados.filter((e) => seleccionados.has(e.id_empleado));
-  }, [filtrados, seleccionados, empleadoIndividual]);
+  }, [filtrados, seleccionados, empleadoIndividual, empleados]);
 
   // Para el "todos seleccionados / indeterminado" del checkbox del header
   const todosVisiblesSeleccionados = useMemo(() => {

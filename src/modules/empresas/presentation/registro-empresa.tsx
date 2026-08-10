@@ -7,8 +7,10 @@ import {
   FileButton,
   Text,
   Divider,
+  ColorInput,
 } from "@mantine/core";
 import { PhotoIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
 
 interface RegistroEmpresaProps {
@@ -20,6 +22,8 @@ interface RegistroEmpresaProps {
   setDomicilioFiscal: (val: string) => void;
   logoFile: File | null;
   setLogoFile: (file: File | null) => void;
+  colorPredominante: string | null;
+  setColorPredominante: (val: string | null) => void;
   documentosFiles: File[];
   setDocumentosFiles: (files: File[]) => void;
   error: string;
@@ -37,6 +41,8 @@ export const RegistroEmpresa = ({
   setDomicilioFiscal,
   logoFile,
   setLogoFile,
+  colorPredominante,
+  setColorPredominante,
   documentosFiles,
   setDocumentosFiles,
   error,
@@ -45,12 +51,70 @@ export const RegistroEmpresa = ({
   onCancel,
 }: RegistroEmpresaProps) => {
   const inputClasses = {
-    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
+    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300
     focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
     label: "text-zinc-300 mb-1 font-medium",
   };
 
-  const logoPreview = logoFile ? URL.createObjectURL(logoFile) : null;
+  // Importante: useMemo para que el blob URL no se regenere en cada render
+  // y dispare el useEffect múltiples veces.
+  const logoPreview = useMemo(() => {
+    return logoFile ? URL.createObjectURL(logoFile) : null;
+  }, [logoFile]);
+
+  // Liberar el blob URL cuando cambia el logo o se desmonta.
+  useEffect(() => {
+    return () => {
+      if (logoPreview) URL.revokeObjectURL(logoPreview);
+    };
+  }, [logoPreview]);
+
+  const [extrayendoColor, setExtrayendoColor] = useState(false);
+  const colorthiefRef = useRef<typeof import("colorthief") | null>(null);
+
+  useEffect(() => {
+    if (!logoPreview) return;
+    let activo = true;
+    setExtrayendoColor(true);
+
+    (async () => {
+      try {
+        const mod = await import("colorthief");
+        colorthiefRef.current = mod;
+        const img = new Image();
+        // No usar crossOrigin con blob URLs (no soportan CORS) — causa onload nunca disparado.
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () =>
+            reject(new Error("No se pudo cargar la imagen del logo"));
+          img.src = logoPreview;
+          // Timeout de seguridad: si la imagen no carga en 5s, fallar.
+          setTimeout(() => {
+            if (!img.complete) {
+              reject(new Error("Timeout cargando imagen del logo"));
+            }
+          }, 5000);
+        });
+        if (!activo) return;
+        const color = await mod.getColor(img);
+        if (activo && color) {
+          const hex = color.hex();
+          console.info("[color_predominante] extraído del logo:", hex);
+          setColorPredominante(hex);
+        } else if (activo && !color) {
+          console.warn("[color_predominante] colorthief no devolvió color");
+        }
+      } catch (err) {
+        console.warn("[color_predominante] no se pudo extraer:", err);
+      } finally {
+        if (activo) setExtrayendoColor(false);
+      }
+    })();
+
+    return () => {
+      activo = false;
+    };
+  }, [logoPreview, setColorPredominante]);
 
   return (
     <Stack gap="md">
@@ -127,6 +191,41 @@ export const RegistroEmpresa = ({
         classNames={inputClasses}
         value={domicilioFiscal}
         onChange={(e) => setDomicilioFiscal(e.currentTarget.value)}
+      />
+
+      <ColorInput
+        label="Color"
+        description={
+          logoFile
+            ? extrayendoColor
+              ? "Extrayendo del logo..."
+              : "Sugerido automáticamente desde el logo. Puedes ajustarlo."
+            : "Opcional. Define el color en los PDF emitidos por esta empresa."
+        }
+        placeholder="#52525b"
+        format="hex"
+        fixOnBlur
+        disabled={loading}
+        radius="lg"
+        size="xs"
+        value={colorPredominante ?? ""}
+        onChange={(hex) => setColorPredominante(hex || null)}
+        classNames={inputClasses}
+        swatches={[
+          "#52525b",
+          "#71717a",
+          "#18181b",
+          "#0c4a6e",
+          "#0e7490",
+          "#166534",
+          "#14532d",
+          "#854d0e",
+          "#7c2d12",
+          "#7f1d1d",
+          "#6b21a8",
+          "#9d174d",
+          "#1e293b",
+        ]}
       />
 
       <Divider color="zinc.9" variant="dashed" my={4} />

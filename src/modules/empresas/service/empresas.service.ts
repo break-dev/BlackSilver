@@ -64,4 +64,15 @@ export class EmpresasService {
     );
     return response;
   };
+
+  public static actualizar_color_predominante = async (
+    id_empresa: number,
+    color: string | null,
+  ): Promise<IRespuesta<string | null>> => {
+    const { data: response } = await api.patch(
+      `${this.PATH}/${id_empresa}/color-predominante`,
+      { color_predominante: color },
+    );
+    return response;
+  };
 }

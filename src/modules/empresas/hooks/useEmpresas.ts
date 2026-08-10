@@ -103,6 +103,33 @@ export const useEmpresas = () => {
     }
   };
 
+  const handleUpdateColorPredominante = async (
+    id: number,
+    color: string | null,
+  ): Promise<boolean> => {
+    try {
+      const result = await EmpresasService.actualizar_color_predominante(
+        id,
+        color,
+      );
+      if (result.success) {
+        setEmpresas((prev) =>
+          prev.map((emp) =>
+            emp.id_empresa === id ? { ...emp, color_predominante: color } : emp,
+          ),
+        );
+        notifySuccess("Color predominante actualizado");
+        return true;
+      }
+      notifyError(result.message);
+      return false;
+    } catch (error) {
+      notifyError("Error al actualizar el color predominante");
+      console.error(error);
+      return false;
+    }
+  };
+
   const onEmpresaCreada = (nueva: RES_EmpresaResumen) => {
     const nuevaConOficinas: RES_EmpresaResumen = { ...nueva, oficinas: [] };
     setEmpresas((prev) => [nuevaConOficinas, ...prev]);
@@ -277,6 +304,7 @@ export const useEmpresas = () => {
     onEmpresaCreada,
     handleUpdateLogo,
     handleRemoveLogo,
+    handleUpdateColorPredominante,
     recargar: listar,
 
     handleAgregarCuenta,

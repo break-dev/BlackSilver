@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#3b82f6", // blue-500 (acento de cotización)
+    borderBottomColor: "#52525b", // zinc-600 (acento neutro de cotización)
     paddingBottom: 8,
   },
   companyName: {
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   documentType: {
     fontSize: 18,
     fontWeight: 700,
-    color: "#3b82f6",
+    color: "#52525b",
     textAlign: "right",
   },
   documentNumber: {
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
     borderLeftWidth: 3,
-    borderLeftColor: "#3b82f6",
+    borderLeftColor: "#52525b",
     paddingLeft: 6,
     marginBottom: 6,
     marginTop: 10,
@@ -127,10 +127,10 @@ const styles = StyleSheet.create({
   grandTotal: {
     marginTop: 6,
     borderTopWidth: 1,
-    borderTopColor: "#3b82f6",
+    borderTopColor: "#52525b",
     paddingTop: 6,
     fontSize: 11,
-    color: "#1e3a8a",
+    color: "#27272a",
     fontWeight: 700,
   },
   signatureSection: {

@@ -19,6 +19,7 @@ export interface RES_OrdenCompra {
   empresa: string;
   empresa_ruc: string;
   empresa_logo: string | null;
+  color_predominante_empresa: string | null;
   //
   id_proveedor: number;
   proveedor: string;
