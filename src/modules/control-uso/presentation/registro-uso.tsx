@@ -241,6 +241,16 @@ export const RegistroUso = ({
       return;
     }
 
+    if (tipoControl === "vueltas" && !idMina) {
+      notifyError("La mina es obligatoria para registrar un control por vueltas.");
+      return;
+    }
+
+    if (tipoControl === "vueltas" && !idLabor) {
+      notifyError("La labor es obligatoria para registrar un control por vueltas.");
+      return;
+    }
+
     if (tipoControl === "horometro") {
       if (!fechaDia) {
         notifyError("Por favor seleccione la fecha del trabajo.");
@@ -605,7 +615,7 @@ export const RegistroUso = ({
               size="xs"
             />
             <Select
-              label="Labor (Opcional)"
+              label={tipoControl === "vueltas" ? "Labor" : "Labor (Opcional)"}
               placeholder="Seleccione labor"
               data={labores}
               value={idLabor}
@@ -780,7 +790,7 @@ export const RegistroUso = ({
                   size="xs"
                 />
                 <Select
-                  label="Labor (Opcional)"
+label="Labor (Opcional)"
                   placeholder="Seleccione labor"
                   data={labores}
                   value={idLabor}
