@@ -118,6 +118,7 @@ export const useLotesPage = () => {
         !busqueda ||
         l.producto.toLowerCase().includes(q) ||
         l.correlativo.toLowerCase().includes(q) ||
+        (l.correlativo_auditoria ?? "").toLowerCase().includes(q) ||
         (l.categoria || "").toLowerCase().includes(q);
       return matchCategoria && matchProducto && matchBusqueda;
     });

@@ -12,6 +12,9 @@ export interface RES_Lote {
   unidad_medida_abv: string;
   descripcion: string | null;
   correlativo: string;
+  numero_correlativo: number;
+  correlativo_auditoria: string | null;
+  numero_correlativo_auditoria: number | null;
   stock_actual: number;
   contenido_por_presentacion: number;
   stock_actual_base: number;

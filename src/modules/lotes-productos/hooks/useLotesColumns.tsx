@@ -13,6 +13,7 @@ import { type DataTableColumn } from "mantine-datatable";
 import type { RES_Lote } from "../service/lotes.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
+import { useAuditoriaStore } from "../../../stores/auditoria.store";
 
 interface UseLotesColumnsProps {
   onPrint: (lote: RES_Lote) => void;
@@ -23,6 +24,7 @@ export const useLotesColumns = ({
   onPrint,
   onEditAjuste,
 }: UseLotesColumnsProps) => {
+  const { en_modo_auditable } = useAuditoriaStore();
   return useMemo(() => {
     const columns: DataTableColumn<RES_Lote>[] = [
       {
@@ -59,7 +61,9 @@ export const useLotesColumns = ({
             radius="md"
             className="font-bold border border-indigo-500/20 py-3 mx-auto"
           >
-            {record.correlativo}
+            {en_modo_auditable && record.correlativo_auditoria
+              ? record.correlativo_auditoria
+              : record.correlativo}
           </Badge>
         ),
       },
@@ -329,5 +333,5 @@ export const useLotesColumns = ({
     ];
 
     return columns;
-  }, [onPrint, onEditAjuste]);
+  }, [onPrint, onEditAjuste, en_modo_auditable]);
 };
