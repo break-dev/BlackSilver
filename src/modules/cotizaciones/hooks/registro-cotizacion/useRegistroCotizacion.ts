@@ -5,6 +5,7 @@ import { useCotizacionMaestros } from "../shared/useCotizacionMaestros";
 import { useCotizacionGrid } from "../shared/useCotizacionGrid";
 import { useCotizacionHandlers } from "../shared/useCotizacionHandlers";
 import { useCotizacionPersistence } from "./useCotizacionPersistence";
+import { Moneda } from "../../../../shared/enums/_generic/moneda";
 import type { MaestrosState } from "../shared/utils";
 
 export { type MaestrosState };
@@ -16,7 +17,9 @@ export const useRegistroCotizacion = (
     currentMaestros: MaestrosState,
     printTarget?: string,
   ) => void,
+  monedaFiltro: Moneda | null = null,
 ) => {
+  const defaultMonedaCotizacion: Moneda = monedaFiltro ?? Moneda.Soles;
   const { maestros, loadingMaestros, agregarProveedorLocal, agregarProductoLocal } = useCotizacionMaestros();
   
   const {
@@ -29,7 +32,7 @@ export const useRegistroCotizacion = (
     eliminarCotizacion,
     eliminarFilaProducto,
     limpiarComparativo,
-  } = useCotizacionGrid(maestros);
+  } = useCotizacionGrid(maestros, defaultMonedaCotizacion);
 
   const {
     updateCotizacionHeader,

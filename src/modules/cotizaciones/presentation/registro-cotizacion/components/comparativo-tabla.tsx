@@ -1,6 +1,14 @@
 import { useMemo } from "react";
-import { Table, Text, Skeleton, Tooltip, ActionIcon, Badge, Stack } from "@mantine/core";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  Table,
+  Text,
+  Skeleton,
+  Tooltip,
+  ActionIcon,
+  Badge,
+  Stack,
+} from "@mantine/core";
+import { DocumentDuplicateIcon,  TrashIcon } from "@heroicons/react/24/outline";
 
 import type {
   DTO_CotizacionRequest,
@@ -18,6 +26,7 @@ import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
 import type { RES_Empresa } from "../../../../../service/responses/empresa";
 import type { CopiedCotizacion } from "../../../hooks/shared/useCotizacionHandlers";
 import type { LoadingMaestrosState } from "../../../hooks/shared/utils";
+import { Moneda } from "../../../../../shared/enums/_generic/moneda";
 
 interface ComparativoTablaProps {
   productos: (
@@ -39,7 +48,10 @@ interface ComparativoTablaProps {
   onAgregarProveedorLocal?: (nuevo: RES_Proveedor) => void;
   empresas: RES_Empresa[];
   copiedCotizacion?: CopiedCotizacion | null;
-  onIniciarCopiaCotizacion?: (sourceIndex: number, type: "all" | "general" | "delivery") => void;
+  onIniciarCopiaCotizacion?: (
+    sourceIndex: number,
+    type: "all" | "general" | "delivery",
+  ) => void;
   onPegarCotizacion?: (targetIndex: number) => void;
   onCancelarCopiaCotizacion?: () => void;
   loadingMaestros?: LoadingMaestrosState;
@@ -82,6 +94,7 @@ interface ComparativoTablaProps {
   ) => void;
   onCancelarCopia?: () => void;
   onPegarCopia?: (targetCotIndex: number, targetRowIndex: number) => void;
+  monedaFiltro?: Moneda | null;
 }
 
 export const ComparativoTabla = ({
@@ -109,6 +122,7 @@ export const ComparativoTabla = ({
   onIniciarCopia,
   onCancelarCopia,
   onPegarCopia,
+  monedaFiltro,
 }: ComparativoTablaProps) => {
   const numCotizaciones = cotizaciones.length;
   const numSkeletons = Math.max(0, 4 - numCotizaciones);
@@ -191,9 +205,10 @@ export const ComparativoTabla = ({
                     color="indigo"
                     size="xs"
                     radius="sm"
-                    className="font-bold border border-indigo-500/20 bg-indigo-500/10 text-indigo-400"
+                    className="font-bold border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 self-start"
                   >
-                    {productos.length} {productos.length === 1 ? "item" : "items"}
+                    {productos.length}{" "}
+                    {productos.length === 1 ? "item" : "items"}
                   </Badge>
                 )}
               </Stack>
@@ -229,6 +244,7 @@ export const ComparativoTabla = ({
                   minas={minas}
                   hasActivosFijos={hasActivosFijos}
                   onUpdateGlobalLogistica={onUpdateGlobalLogistica}
+                  monedaFiltro={monedaFiltro}
                 />
               </Table.Th>
             ))}
@@ -253,6 +269,7 @@ export const ComparativoTabla = ({
                   unidadesMedida={unidadesMedida}
                   onUpdateHeader={onUpdateHeader}
                   onRemoveCotizacion={onRemoveCotizacion}
+                  monedaFiltro={monedaFiltro}
                 />
               </Table.Th>
             ))}
@@ -275,7 +292,7 @@ export const ComparativoTabla = ({
                 <Table.Td
                   key={`sk-cell-empty-prod-${colIdx}`}
                   style={{ width: 400, minWidth: 400, maxWidth: 400 }}
-                  className="p-4 align-top"
+                  className=""
                 >
                   <CeldaDetalle
                     cotIdx={colIdx}
@@ -296,7 +313,7 @@ export const ComparativoTabla = ({
               <Table.Tr
                 key={`${prod?.id_producto}-${pIdx}`}
                 id={prod ? `producto-fila-${prod.id_producto}` : undefined}
-                className="border-b border-zinc-900 hover:bg-zinc-900/10 transition-colors"
+                className=" transition-colors"
               >
                 {/* Columna fija del producto */}
                 <Table.Td
@@ -308,14 +325,14 @@ export const ComparativoTabla = ({
                       <Text
                         size="xs"
                         fw={700}
-                        className="text-zinc-200 text-center"
+                        className="text-zinc-200 text-left"
                       >
                         {prod.nombre}
                       </Text>
                       <div className="flex gap-2">
                         {onDuplicarFila && (
                           <Tooltip
-                            label="Agregar otro destino"
+                            label="Repetir producto"
                             position="bottom"
                           >
                             <ActionIcon
@@ -326,7 +343,7 @@ export const ComparativoTabla = ({
                               onClick={() => onDuplicarFila(pIdx)}
                               className="bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400"
                             >
-                              <PlusIcon className="w-4 h-4" />
+                              <DocumentDuplicateIcon className="w-4 h-4" />
                             </ActionIcon>
                           </Tooltip>
                         )}

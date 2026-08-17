@@ -148,10 +148,12 @@ export const useCotizacionHandlers = (
               upd.contenido_por_presentacion = 1;
             }
 
-            // Sugerir precio si está vacío o es 0
+            // Sugerir precio solo si está vacío/0 Y la moneda del producto coincide
+            // con la moneda de la cotización-columna.
+            const monedasCoinciden = cot.moneda === maestro.moneda;
             const esSugerido =
-              !upd.precio_unitario ||
-              upd.precio_unitario === 0;
+              (!upd.precio_unitario || upd.precio_unitario === 0) &&
+              monedasCoinciden;
 
             if (esSugerido) {
               upd.precio_unitario = Number(
@@ -169,10 +171,11 @@ export const useCotizacionHandlers = (
           );
 
           if (maestro) {
-            // Recalcular precio sugerido si es 0 o vacío
+            // Recalcular precio sugerido solo si está vacío/0 Y las monedas coinciden.
+            const monedasCoinciden = cot.moneda === maestro.moneda;
             const esSugerido =
-              !upd.precio_unitario ||
-              upd.precio_unitario === 0;
+              (!upd.precio_unitario || upd.precio_unitario === 0) &&
+              monedasCoinciden;
 
             if (esSugerido) {
               upd.precio_unitario = Number(

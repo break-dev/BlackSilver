@@ -3,9 +3,13 @@ import type { DTO_ProductoComparativo, DTO_CotizacionRequest } from "../../servi
 import { TipoEntidad } from "../../../../shared/enums/_generic/tipo-entidad";
 import { MetodoPago } from "../../../../shared/enums/_generic/metodo-pago";
 import { Estado_Cotizacion } from "../../../../shared/enums/cotizacion/cotizacion";
+import { Moneda } from "../../../../shared/enums/_generic/moneda";
 import { detalleVacio, recalcularTotales, type MaestrosState } from "./utils";
 
-export const useCotizacionGrid = (maestros: MaestrosState) => {
+export const useCotizacionGrid = (
+  maestros: MaestrosState,
+  defaultMonedaCotizacion: Moneda = Moneda.Soles,
+) => {
   const [productos, setProductos] = useState<DTO_ProductoComparativo[]>([]);
   const [cotizaciones, setCotizaciones] = useState<DTO_CotizacionRequest[]>([]);
 
@@ -47,11 +51,21 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
 
           const costoBase = maestro?.costo_promedio_base || 0;
 
+          // Solo auto-rellenar precio si TODAS las cotizaciones-columna existentes
+          // tienen la misma moneda que el producto. Si difieren, no autocompleta en
+          // ninguna (consistencia visual; el usuario tipea manualmente).
+          const monedasCot = cotizaciones.map((c) => c.moneda);
+          const monedasCoinciden =
+            monedasCot.length === 0 ||
+            monedasCot.every((m) => m === maestro?.moneda);
+
           setCotizaciones((prevCots) =>
             prevCots.map((cot) => {
               const nuevoDetalle = detalleVacio(id_producto, idUnidadBase);
-              nuevoDetalle.precio_unitario = costoBase;
-              nuevoDetalle.precio_unitario_base = costoBase;
+              if (monedasCoinciden) {
+                nuevoDetalle.precio_unitario = costoBase;
+                nuevoDetalle.precio_unitario_base = costoBase;
+              }
 
               const nuevaCot = {
                 ...cot,
@@ -76,8 +90,8 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
         id_proveedor: 0,
         tipo_entidad_proveedor: TipoEntidad.Juridica,
         empresas_ids: [],
-        moneda: "Soles",
-        tipo_cambio_venta_referencial: 1,
+        moneda: defaultMonedaCotizacion,
+        tipo_cambio_venta_referencial: defaultMonedaCotizacion === Moneda.Soles ? 1 : undefined,
         metodo_pago: MetodoPago.Contado,
         fecha_vencimiento_pago: null,
         costo_flete: 0,
@@ -98,8 +112,11 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
             p.id_producto,
             maestro?.id_unidad_medida_base || 1,
           );
-          det.precio_unitario = costoBase;
-          det.precio_unitario_base = costoBase;
+          // Solo auto-rellenar si la moneda de la nueva cotización coincide con la del producto.
+          if (defaultMonedaCotizacion === maestro?.moneda) {
+            det.precio_unitario = costoBase;
+            det.precio_unitario_base = costoBase;
+          }
           return det;
         }),
       };
@@ -108,7 +125,7 @@ export const useCotizacionGrid = (maestros: MaestrosState) => {
 
       return [...prev, nuevaCot];
     });
-  }, [productos, maestros.catalogo]);
+  }, [productos, maestros.catalogo, defaultMonedaCotizacion]);
 
   const eliminarCotizacion = useCallback((index: number) => {
     setCotizaciones((prev) => prev.filter((_, i) => i !== index));

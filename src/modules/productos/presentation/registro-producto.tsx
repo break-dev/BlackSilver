@@ -351,6 +351,29 @@ export const RegistroProducto = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select
+            label={<LabelForm text="Moneda" required />}
+            placeholder="Seleccione"
+            data={[
+              { value: Moneda.Soles, label: "Soles (S/.)" },
+              { value: Moneda.Dolares, label: "Dólares ($)" },
+            ]}
+            value={form.moneda}
+            onChange={(val) =>
+              setField("moneda", (val ?? Moneda.Soles) as Moneda)
+            }
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
+            }}
+            radius="lg"
+            allowDeselect={false}
+            comboboxProps={{
+              withinPortal: true,
+              transitionProps: { transition: "pop", duration: 200 },
+            }}
+          />
+
           <NumberInput
             label={
               <LabelForm
@@ -377,29 +400,6 @@ export const RegistroProducto = ({
             min={0}
             fixedDecimalScale
           />
-
-          <Select
-            label={<LabelForm text="Moneda" required />}
-            placeholder="Seleccione"
-            data={[
-              { value: Moneda.Soles, label: "Soles (S/.)" },
-              { value: Moneda.Dolares, label: "Dólares ($)" },
-            ]}
-            value={form.moneda}
-            onChange={(val) =>
-              setField("moneda", (val ?? Moneda.Soles) as Moneda)
-            }
-            classNames={{
-              input:
-                "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 h-10",
-            }}
-            radius="lg"
-            allowDeselect={false}
-            comboboxProps={{
-              withinPortal: true,
-              transitionProps: { transition: "pop", duration: 200 },
-            }}
-          />
         </div>
 
         <div className="border border-zinc-800/80 rounded-2xl p-5 space-y-6 mt-2 bg-zinc-950/20">
@@ -415,7 +415,7 @@ export const RegistroProducto = ({
             {!en_modo_auditable && (
               <Checkbox
                 label="Auditable"
-                description="Ocultar en auditoría."
+                description="Ocultar en las auditorías."
                 checked={!!form.es_auditable}
                 onChange={(e) =>
                   setField("es_auditable", e.currentTarget.checked)
@@ -426,14 +426,14 @@ export const RegistroProducto = ({
                 classNames={{
                   label:
                     "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
-                  description: "text-zinc-600 text-[11px] mt-0.5",
+                  description: "text-zinc-400 text-[11px] mt-0.5",
                 }}
               />
             )}
 
             <Checkbox
               label="Perecible"
-              description="Habilita campos de vencimiento estimado"
+              description="Habilita campos de vencimiento"
               checked={!!form.es_perecible}
               onChange={(e) =>
                 setField("es_perecible", e.currentTarget.checked)
@@ -444,7 +444,7 @@ export const RegistroProducto = ({
               classNames={{
                 label:
                   "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
-                description: "text-zinc-600 text-[11px] mt-0.5",
+                description: "text-zinc-400 text-[11px] mt-0.5",
               }}
               disabled={isActivoFijo}
             />
@@ -462,7 +462,7 @@ export const RegistroProducto = ({
               classNames={{
                 label:
                   "text-zinc-300 text-[13px] font-medium leading-none mt-0.5",
-                description: "text-zinc-600 text-[11px] mt-0.5",
+                description: "text-zinc-400 text-[11px] mt-0.5",
               }}
             />
           </Group>

@@ -201,19 +201,17 @@ export const CeldaDetalle = ({
               </>
             ) : !copySource ? (
               <Tooltip label="Copiar datos">
-                <ActionIcon
-                  variant="filled"
-                  color="indigo"
-                  size="xs"
-                  radius="sm"
+                <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     onIniciarCopia?.(cotIdx, rowIndex, prod.id_producto);
                   }}
-                  className="opacity-0 group-hover/celda:opacity-100 transition-opacity shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md shadow-sm opacity-0 group-hover/celda:opacity-100 transition-opacity"
                 >
                   <DocumentDuplicateIcon className="w-3.5 h-3.5" />
-                </ActionIcon>
+                  <span>Copiar</span>
+                </button>
               </Tooltip>
             ) : null}
           </>
@@ -222,10 +220,12 @@ export const CeldaDetalle = ({
 
       {/* Switch de Inhabilitación (Ubicación Original) */}
       {!isReadOnlyNoCotiza && (
-        <div className="absolute top-1.5 right-2 z-20">
+        <div className="absolute top-1.5 right-2 z-20 ">
           <Tooltip
             label={
-              det.no_cotiza ? "Cotizar este producto" : "No cotizar este producto"
+              det.no_cotiza
+                ? "Cotizar este producto"
+                : "No cotizar este producto"
             }
             position="left"
           >
@@ -256,9 +256,7 @@ export const CeldaDetalle = ({
           <Select
             label="Und. de Medida"
             placeholder={
-              loadingMaestros?.unidades
-                ? "Cargando..."
-                : "Seleccione unidad..."
+              loadingMaestros?.unidades ? "Cargando..." : "Seleccione unidad..."
             }
             disabled={loadingMaestros?.unidades}
             data={unidadesMedida}
@@ -323,16 +321,18 @@ export const CeldaDetalle = ({
             classNames={inputStyles}
             placeholder="0.00"
             decimalScale={2}
-            rightSection={isCheapest ? (
-              <Badge 
-                color="orange.6" 
-                variant="filled" 
-                size="xs" 
-                className="mr-1 animate-pulse shadow-md font-black uppercase tracking-tighter"
-              >
-                MEJOR
-              </Badge>
-            ) : null}
+            rightSection={
+              isCheapest ? (
+                <Badge
+                  color="orange.6"
+                  variant="filled"
+                  size="xs"
+                  className="mr-1 animate-pulse shadow-md font-black uppercase tracking-tighter"
+                >
+                  MEJOR
+                </Badge>
+              ) : null
+            }
             rightSectionWidth={isCheapest ? 60 : 0}
           />
         </Group>
@@ -438,24 +438,50 @@ export const CeldaDetalle = ({
 
                   {prod.tipo_bien === TipoBien.ActivoFijo && (
                     <Stack gap={4}>
-                      <Text size="10px" fw={700} className="text-zinc-400 uppercase tracking-widest">
+                      <Text
+                        size="10px"
+                        fw={700}
+                        className="text-zinc-400 uppercase tracking-widest"
+                      >
                         Tipo de Destino
                       </Text>
                       <SegmentedControl
                         size="xs"
                         radius="md"
                         fullWidth
-                        value={det.id_mina_destino !== null ? "mina" : "almacen"}
+                        value={
+                          det.id_mina_destino !== null ? "mina" : "almacen"
+                        }
                         onChange={(val) => {
                           if (val === "almacen") {
-                            onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", null);
+                            onUpdateDetail(
+                              cotIdx,
+                              rowIndex,
+                              "id_mina_destino",
+                              null,
+                            );
                             if (det.id_almacen_recepcionista === null) {
-                              onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", 0);
+                              onUpdateDetail(
+                                cotIdx,
+                                rowIndex,
+                                "id_almacen_recepcionista",
+                                0,
+                              );
                             }
                           } else {
-                            onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", null);
+                            onUpdateDetail(
+                              cotIdx,
+                              rowIndex,
+                              "id_almacen_recepcionista",
+                              null,
+                            );
                             if (det.id_mina_destino === null) {
-                              onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", 0);
+                              onUpdateDetail(
+                                cotIdx,
+                                rowIndex,
+                                "id_mina_destino",
+                                0,
+                              );
                             }
                           }
                         }}
@@ -483,7 +509,8 @@ export const CeldaDetalle = ({
                           root: "bg-zinc-900 border border-zinc-800",
                           control: "border-none",
                           indicator: "bg-cyan-600",
-                          label: "text-zinc-400 data-[active]:text-white font-bold",
+                          label:
+                            "text-zinc-400 data-[active]:text-white font-bold",
                         }}
                       />
                     </Stack>
@@ -507,7 +534,8 @@ export const CeldaDetalle = ({
                         label: a.es_principal ? `${a.nombre} ★` : a.nombre,
                       }))}
                       value={
-                        det.id_almacen_recepcionista === 0 || !det.id_almacen_recepcionista
+                        det.id_almacen_recepcionista === 0 ||
+                        !det.id_almacen_recepcionista
                           ? null
                           : String(det.id_almacen_recepcionista)
                       }
@@ -519,7 +547,12 @@ export const CeldaDetalle = ({
                           Number(val),
                         );
                         // Asegurar que mina sea null
-                        onUpdateDetail(cotIdx, rowIndex, "id_mina_destino", null);
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "id_mina_destino",
+                          null,
+                        );
                       }}
                       size="xs"
                       radius="lg"
@@ -557,7 +590,12 @@ export const CeldaDetalle = ({
                           Number(val),
                         );
                         // Asegurar que almacen sea null
-                        onUpdateDetail(cotIdx, rowIndex, "id_almacen_recepcionista", null);
+                        onUpdateDetail(
+                          cotIdx,
+                          rowIndex,
+                          "id_almacen_recepcionista",
+                          null,
+                        );
                       }}
                       size="xs"
                       radius="lg"

@@ -380,7 +380,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           </div>
 
           {/* Búsqueda */}
-          <div className="flex-1 min-w-[200px] w-full">
+          <div className="flex-1 min-w-50 w-full">
             <TextInput
               label="Búsqueda"
               placeholder="Buscar por código, solicitante o mina..."
