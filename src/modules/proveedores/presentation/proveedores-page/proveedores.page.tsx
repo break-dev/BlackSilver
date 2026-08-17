@@ -1,36 +1,59 @@
-import { Stack } from "@mantine/core";
+import { Button, rem, Tabs, TextInput } from "@mantine/core";
+import {
+  IconBuilding,
+  IconFlame,
+  IconPlus,
+  IconSearch,
+} from "@tabler/icons-react";
+import { useState } from "react";
 
 import { useTitlePage } from "../../../../hooks/useTitlePage";
 import { useProveedores } from "../../hooks/useProveedores";
 import { RegistroProveedor } from "../registro-proveedor/registro-proveedor";
+import { RegistroProveedorCarbon } from "../registro-proveedor-carbon/registro-proveedor-carbon";
 import { CuentasBancarias } from "../cuentas-bancarias/cuentas-bancarias";
-import { useState } from "react";
+import { PersonalExternoProveedor } from "../personal-externo-proveedor/personal-externo-proveedor";
 import type {
   CuentaBancariaResponse,
   ProveedorResponse,
 } from "../../service/proveedores.responses";
-import { Filtros } from "./components/filtros";
 import { Proveedor } from "./components/proveedor";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import { BotonRecargar } from "../../../../presentation/utils/boton-recargar";
+
+type ModoProveedor = "logistica" | "carbon";
 
 export const ProveedoresPage = () => {
   useTitlePage("Proveedores");
+  const [modo, setModo] = useState<ModoProveedor>("logistica");
+  const modoCarbon = modo === "carbon";
+
   const {
     proveedores,
     loading,
     insertProveedor,
     updateProveedor,
     recargar,
-  } = useProveedores();
+  } = useProveedores(modoCarbon);
 
   const [openRegistro, setOpenRegistro] = useState(false);
   const [selectedProveedor, setSelectedProveedor] =
     useState<ProveedorResponse | null>(null);
+  const [proveedorPersonal, setProveedorPersonal] =
+    useState<ProveedorResponse | null>(null);
+  const [busqueda, setBusqueda] = useState("");
 
   const proveedorEnGestion =
     selectedProveedor
       ? (proveedores.find((p) => p.id_proveedor === selectedProveedor.id_proveedor) ??
         selectedProveedor)
+      : null;
+
+  const proveedorPersonalEnGestion =
+    proveedorPersonal
+      ? (proveedores.find(
+          (p) => p.id_proveedor === proveedorPersonal.id_proveedor,
+        ) ?? proveedorPersonal)
       : null;
 
   const actualizarCuentas = (
@@ -69,36 +92,114 @@ export const ProveedoresPage = () => {
     );
   };
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <Stack gap="md">
-        <Filtros
-          onOpenRegistro={() => setOpenRegistro(true)}
-          onReload={recargar}
-          loading={loading}
-        />
+  const iconStyle = { width: rem(18), height: rem(18) };
 
-        <Proveedor
-          proveedores={proveedores}
-          loading={loading}
-          onOpenCuentas={(p) => setSelectedProveedor(p)}
-        />
-      </Stack>
+  return (
+    <div className="animate-fade-in space-y-6">
+      <Tabs
+        value={modo}
+        onChange={(v) => setModo((v as ModoProveedor) ?? "logistica")}
+        variant="pills"
+        color="pink"
+        classNames={{
+          root: "space-y-6",
+          list: "bg-zinc-950/80 p-0 rounded-[20px] border border-zinc-800 w-fit shrink-0 overflow-hidden gap-0",
+          tab: "rounded-none px-8 py-3 transition-all duration-300 data-[active]:bg-pink-600! data-[active]:text-white text-zinc-400 hover:text-zinc-200 font-bold",
+        }}
+      >
+        <div className="flex flex-col lg:flex-row gap-4 items-end justify-between">
+          <div className="flex flex-col md:flex-row items-end gap-4 flex-1 w-full">
+            <Tabs.List>
+              <Tabs.Tab
+                value="logistica"
+                leftSection={<IconBuilding style={iconStyle} />}
+              >
+                Logistica
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="carbon"
+                leftSection={<IconFlame style={iconStyle} />}
+              >
+                Carbon
+              </Tabs.Tab>
+            </Tabs.List>
+
+            <TextInput
+              label="Buscar Proveedor"
+              placeholder="Buscar por razon social, RUC o DNI..."
+              leftSection={<IconSearch size={16} className="text-zinc-400" />}
+              radius="lg"
+              size="sm"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.currentTarget.value)}
+              className="flex-1 min-w-50"
+              classNames={{
+                label: "text-zinc-400 mb-1 font-medium",
+                input:
+                  "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all h-[38px]",
+              }}
+            />
+          </div>
+
+          <div className="flex gap-2 items-center shrink-0 mb-px">
+            <BotonRecargar onReload={recargar} loading={loading} />
+            <Button
+              leftSection={<IconPlus size={18} />}
+              radius="lg"
+              size="sm"
+              onClick={() => setOpenRegistro(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 h-9.5 px-8"
+            >
+              {modoCarbon ? "Nuevo Proveedor de Carbon" : "Nuevo Proveedor"}
+            </Button>
+          </div>
+        </div>
+
+        <Tabs.Panel value="logistica">
+          <Proveedor
+            proveedores={proveedores}
+            loading={loading}
+            modoCarbon={false}
+            onOpenCuentas={(p) => setSelectedProveedor(p)}
+            onOpenPersonal={(p) => setProveedorPersonal(p)}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="carbon">
+          <Proveedor
+            proveedores={proveedores}
+            loading={loading}
+            modoCarbon={true}
+            onOpenCuentas={(p) => setSelectedProveedor(p)}
+            onOpenPersonal={(p) => setProveedorPersonal(p)}
+          />
+        </Tabs.Panel>
+      </Tabs>
 
       {/* Modal: Registro de Proveedor */}
       <ModalEstandar
         opened={openRegistro}
         close={() => setOpenRegistro(false)}
-        title="Nuevo Proveedor"
+        title={modoCarbon ? "Nuevo Proveedor de Carbon" : "Nuevo Proveedor"}
         size="lg"
       >
-        <RegistroProveedor
-          onCancel={() => setOpenRegistro(false)}
-          onSuccess={(p) => {
-            insertProveedor(p);
-            setOpenRegistro(false);
-          }}
-        />
+        {modoCarbon ? (
+          <RegistroProveedorCarbon
+            onCancel={() => setOpenRegistro(false)}
+            onSuccess={(p) => {
+              insertProveedor(p);
+              setOpenRegistro(false);
+            }}
+          />
+        ) : (
+          <RegistroProveedor
+            onCancel={() => setOpenRegistro(false)}
+            onSuccess={(p) => {
+              insertProveedor(p);
+              setOpenRegistro(false);
+            }}
+          />
+        )}
       </ModalEstandar>
 
       {/* Modal: Gestión de Cuentas Bancarias */}
@@ -117,6 +218,24 @@ export const ProveedoresPage = () => {
             proveedor={proveedorEnGestion}
             onCuentaActualizada={handleCuentaActualizada}
             onCuentaAgregada={handleCuentaAgregada}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Personal Externo del proveedor (disponible en ambos modos) */}
+      <ModalEstandar
+        opened={!!proveedorPersonal}
+        close={() => setProveedorPersonal(null)}
+        title={
+          proveedorPersonalEnGestion
+            ? `Personal externo: ${proveedorPersonalEnGestion.razon_social}`
+            : ""
+        }
+        size="lg"
+      >
+        {proveedorPersonalEnGestion && (
+          <PersonalExternoProveedor
+            proveedor={proveedorPersonalEnGestion}
           />
         )}
       </ModalEstandar>

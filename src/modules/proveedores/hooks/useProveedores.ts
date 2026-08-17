@@ -6,7 +6,7 @@ import type {
 } from "../service/proveedores.responses";
 import { useNotify } from "../../../hooks/useNotify";
 
-export const useProveedores = () => {
+export const useProveedores = (paraCarbon?: boolean) => {
   const [proveedores, setProveedores] = useState<ProveedorResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const { notifyError } = useNotify();
@@ -14,7 +14,9 @@ export const useProveedores = () => {
   const fetchProveedores = async () => {
     setLoading(true);
     try {
-      const data = await ProveedoresService.getProveedores();
+      const data = await ProveedoresService.getProveedores({
+        para_carbon: paraCarbon,
+      });
       setProveedores(data);
     } catch (e) {
       console.error(e);
@@ -27,7 +29,7 @@ export const useProveedores = () => {
   useEffect(() => {
     fetchProveedores();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [paraCarbon]);
 
   const insertProveedor = (p: ProveedorResponse) => {
     setProveedores((prev) => [p, ...prev]);

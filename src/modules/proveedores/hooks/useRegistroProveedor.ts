@@ -19,12 +19,16 @@ export const useRegistroProveedor = (
     tipo_entidad: TipoEntidad.Juridica,
     para_mantenimiento: false,
     para_transporte: false,
+    para_carbon: false,
     dni: "",
     ruc: "",
     razon_social: "",
     direccion: "",
     telefono: "",
     correo: "",
+    id_departamento: undefined,
+    id_provincia: undefined,
+    id_distrito: undefined,
   });
 
   const handleChange = <K extends keyof CrearProveedorRequest>(
@@ -65,12 +69,16 @@ export const useRegistroProveedor = (
         tipo_entidad: TipoEntidad.Juridica,
         para_mantenimiento: false,
         para_transporte: false,
+        para_carbon: false,
         dni: "",
         ruc: "",
         razon_social: "",
         direccion: "",
         telefono: "",
         correo: "",
+        id_departamento: undefined,
+        id_provincia: undefined,
+        id_distrito: undefined,
       });
       onSuccess(created);
     } catch (e) {

@@ -3,12 +3,18 @@ import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { BotonRecargar } from "../../../../../presentation/utils/boton-recargar";
 
 interface Props {
+  modoCarbon: boolean;
   onOpenRegistro: () => void;
   onReload?: () => void;
   loading?: boolean;
 }
 
-export const Filtros = ({ onOpenRegistro, onReload, loading }: Props) => {
+export const Filtros = ({
+  modoCarbon,
+  onOpenRegistro,
+  onReload,
+  loading,
+}: Props) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end justify-between">
       <TextInput
@@ -33,7 +39,7 @@ export const Filtros = ({ onOpenRegistro, onReload, loading }: Props) => {
           className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 shrink-0 px-6 font-semibold"
           onClick={onOpenRegistro}
         >
-          Nuevo Proveedor
+          {modoCarbon ? "Nuevo Proveedor de Carbon" : "Nuevo Proveedor"}
         </Button>
       </div>
     </div>

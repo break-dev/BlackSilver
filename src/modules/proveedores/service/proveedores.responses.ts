@@ -7,14 +7,21 @@ export interface ProveedorResponse {
   tipo_entidad: TipoEntidad;
   para_mantenimiento: boolean;
   para_transporte: boolean;
+  para_carbon: boolean;
+  id_departamento: number | null;
+  id_provincia: number | null;
+  id_distrito: number | null;
+  departamento_nombre: string | null;
+  provincia_nombre: string | null;
+  distrito_nombre: string | null;
   dni: string | null;
   ruc: string | null;
   razon_social: string;
   direccion: string | null;
   telefono: string | null;
   correo: string | null;
-  cantidad_cuentas_bancarias: number;
   estado: EstadoBase;
+  cantidad_cuentas_bancarias: number;
   cuentas_bancarias?: CuentaBancariaResponse[];
 }
 
@@ -23,7 +30,7 @@ export interface CuentaBancariaResponse {
   banco_abv: string;
   banco: string;
   id_banco: number;
-  moneda: Moneda; // MONEDAS
+  moneda: Moneda;
   numero_cuenta: string;
   cci: string | null;
   es_para_detraccion: boolean;
