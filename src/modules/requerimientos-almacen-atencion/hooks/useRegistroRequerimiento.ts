@@ -64,7 +64,28 @@ export const useRegistroRequerimiento = ({
   const [fechaSolicitud, setFechaSolicitud] = useState<Date | null>(new Date());
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
     useState<Date | null>(null);
+  /**
+   * Bandera que indica si el usuario modificó manualmente la fecha de entrega
+   * requerida. Si es false, al cambiar `fechaSolicitud` se autocompleta la
+   * fecha de entrega con el mismo valor.
+   */
+  const [fechaEntregaManual, setFechaEntregaManual] = useState<boolean>(false);
   const [observacion, setObservacion] = useState("");
+
+  // Autocompletar fecha de entrega con fecha de solicitud (solo si el usuario
+  // no la modificó manualmente)
+  useEffect(() => {
+    if (fechaEntregaManual) return;
+    setFechaEntregaRequerida(fechaSolicitud);
+  }, [fechaSolicitud, fechaEntregaManual]);
+
+  const actualizarFechaEntrega = useCallback(
+    (val: Date | null) => {
+      setFechaEntregaRequerida(val);
+      if (val) setFechaEntregaManual(true);
+    },
+    [],
+  );
 
   // Estado Formulario Detalle (Item actual)
   const [idProducto, setIdProducto] = useState<number>(0);
@@ -97,7 +118,7 @@ export const useRegistroRequerimiento = ({
       try {
         const [resProd, resUnid, resEmp, resAct, resCont, resLab] = await Promise.all([
           AuxService.get_productos(),
-          AuxService.get_unidades_medida(),
+          AuxService.get_unidades_medida({ incluir_conversiones: true }),
           AuxService.get_empleados(),
           AuxService.get_activos_disponibles(),
           AuxService.get_contratistas(),
@@ -153,30 +174,136 @@ export const useRegistroRequerimiento = ({
     productoSeleccionado.id_unidad_medida_base ===
       unidadSeleccionada.id_unidad_medida;
 
-  useEffect(() => {
-    /**
-     * Forzar contenido=1 solo cuando NO hay cálculo inteligente activo.
-     * Si el cálculo inteligente está activo y las unidades coinciden con la
-     * base del producto, el usuario es quien debe tipear la magnitud por ítem
-     * (ej. 70 cm por Guía) — el sistema no puede asumirla.
-     */
-    if (sonUnidadesIdenticas && !calculoInteligente) {
-      setContenido(1);
-    }
-  }, [sonUnidadesIdenticas, calculoInteligente]);
+  /**
+   * Factor de conversión auto-completado desde la tabla de conversiones.
+   * - Si las unidades son idénticas: retorna 1 (implícito, no requiere lookup).
+   * - Si las unidades son diferentes y existe la conversión: retorna el
+   *   "cuántas unidades base hay en 1 unidad de detalle" (p. ej. 1 Metro
+   *   = 100 Centímetros).
+   * - Si no existe conversión: retorna `null` (el usuario debe tipear el factor).
+   *
+   * IMPORTANTE: la API modela la conversión como "1 destino (B) = factor
+   * origens (A)" (ver `ConversionUnidadMedida::$fillable` y el SQL en
+   * `UnidadesMedidaData::get_unidades`). En la respuesta, la unidad
+   * consultada aparece como `id_unidad_origen` y la relacionada como
+   * `id_unidad_destino`. Como el formulario necesita
+   * "1 detalle = X base", hay que invertir el factor cuando la unidad
+   * del detalle es el origen y la base es el destino.
+   */
+  const conversionAutomatica = useMemo<number | null>(() => {
+    if (!productoSeleccionado || !idUnidadMedida) return null;
+    if (sonUnidadesIdenticas) return 1;
+
+    const unidadDetalle = unidades.find(
+      (u) => u.id_unidad_medida === idUnidadMedida,
+    );
+    if (!unidadDetalle?.conversiones) return null;
+
+    const conv = unidadDetalle.conversiones.find(
+      (c) => c.id_unidad_destino === productoSeleccionado.id_unidad_medida_base,
+    );
+    if (!conv) return null;
+
+    const factorOrigenesPorDestino = Number(conv.factor_conversion);
+    if (!factorOrigenesPorDestino || factorOrigenesPorDestino <= 0) return null;
+
+    // "1 destino = factor origens"  =>  "1 origen = 1/factor destinos".
+    return 1 / factorOrigenesPorDestino;
+  }, [idUnidadMedida, productoSeleccionado, unidades, sonUnidadesIdenticas]);
 
   /**
-   * Al activar el checkbox de cálculo inteligente: si el contenido actual
-   * provenía del auto-fill (==1) y las unidades son idénticas a la base,
-   * lo reseteamos a 0 para forzar al usuario a ingresar la magnitud real
-   * por ítem. Sin esto, el input quedaría con un placeholder engañoso.
+   * El input de `contenido` debe estar bloqueado cuando:
+   * - Smart calc está OFF y (unidades idénticas o hay conversión automática).
+   * En esos casos, el sistema ya conoce el factor y no debe permitir al
+   * usuario manipularlo manualmente.
+   * Cuando smart calc está ON, el campo se desbloquea para que el usuario
+   * tipee la magnitud por ítem (en unidad base o en unidad del detalle).
    */
-  const activarCalculoInteligente = useCallback((checked: boolean) => {
-    setCalculoInteligente(checked);
-    if (checked && sonUnidadesIdenticas && contenido === 1) {
+  const contenidoBloqueado =
+    !calculoInteligente &&
+    (sonUnidadesIdenticas ||
+      (Boolean(productoSeleccionado) && conversionAutomatica !== null));
+
+  /**
+   * El checkbox de cálculo inteligente solo se muestra cuando es viable:
+   * - Unidades idénticas (factor = 1 implícito), o
+   * - Unidades diferentes con conversión automática conocida.
+   * Si no hay conversión, el usuario debe trabajar con el flujo estándar
+   * (cantidad en unidad del detalle × factor de conversión).
+   */
+  const calculoInteligenteDisponible =
+    sonUnidadesIdenticas ||
+    (Boolean(productoSeleccionado) && conversionAutomatica !== null);
+
+  useEffect(() => {
+    /**
+     * Auto-completar `contenido` cuando cambia la unidad del detalle o el
+     * producto seleccionado. Reglas:
+     * - Unidades idénticas + smart calc OFF: contenido = 1.
+     * - Unidades idénticas + smart calc ON: no tocar (usuario tipea magnitud).
+     * - Unidades diferentes + smart calc OFF + auto conversión: contenido = factor.
+     * - Unidades diferentes + smart calc OFF + sin conversión: contenido = 0.
+     * - Unidades diferentes + smart calc ON: contenido = 0 (el usuario
+     *   tipea la magnitud por ítem en la unidad del detalle).
+     * Si el smart calc quedó activo pero la nueva unidad no soporta este modo
+     * (no hay conversión automática), se desactiva para mantener el estado
+     * coherente con la UI.
+     *
+     * `calculoInteligente` se lee intencionalmente fuera de las deps: añadirla
+     * provocaría que al togglear el smart calc se sobreescriba el valor que el
+     * usuario acaba de tipear como magnitud por ítem.
+     */
+    if (!idProducto || !idUnidadMedida) return;
+
+    if (sonUnidadesIdenticas) {
+      if (!calculoInteligente) {
+        setContenido(1);
+      }
+      return;
+    }
+
+    // Unidades diferentes: el smart calc requiere una conversión automática
+    if (calculoInteligente && conversionAutomatica === null) {
+      setCalculoInteligente(false);
+      setContenido(0);
+      return;
+    }
+
+    if (calculoInteligente) {
+      // Magnitud por ítem en la unidad del detalle: usuario tipea
+      setContenido(0);
+    } else if (conversionAutomatica !== null) {
+      setContenido(conversionAutomatica);
+    } else {
       setContenido(0);
     }
-  }, [sonUnidadesIdenticas, contenido]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    idProducto,
+    idUnidadMedida,
+    sonUnidadesIdenticas,
+    conversionAutomatica,
+  ]);
+
+  /**
+   * Handler del checkbox de cálculo inteligente. Al activarlo, vacía el campo
+   * para que el usuario tipee la magnitud por ítem. Al desactivarlo, restaura
+   * el valor auto-completado (factor de conversión o 1 si las unidades son
+   * idénticas).
+   */
+  const activarCalculoInteligente = useCallback(
+    (checked: boolean) => {
+      setCalculoInteligente(checked);
+      if (checked) {
+        setContenido(0);
+      } else if (sonUnidadesIdenticas) {
+        setContenido(1);
+      } else if (conversionAutomatica !== null) {
+        setContenido(conversionAutomatica);
+      }
+    },
+    [sonUnidadesIdenticas, conversionAutomatica],
+  );
 
   // Auto-seleccionar contratista responsable al elegir una labor
   useEffect(() => {
@@ -224,16 +351,12 @@ export const useRegistroRequerimiento = ({
   const [unidadBusqueda, setUnidadBusqueda] = useState<string>("");
 
   // Filtrar productos que ya están presentes en la lista de detalles
+  // Permitimos el mismo producto en múltiples filas siempre que la
+  // unidad de medida del detalle sea distinta. La validación final de
+  // duplicado (producto + unidad) se hace en `agregarItem`.
   const productosFiltrados = useMemo(() => {
-    return productos.filter((p) => {
-      // Los productos consumibles pueden agregarse múltiples veces
-      // mientras tengan destinos diferentes aún disponibles
-      if (p.es_consumible) return true;
-
-      // Los productos regulares solo se agregan una vez
-      return !detalles.some((d) => d.id_producto === p.id_producto);
-    });
-  }, [productos, detalles]);
+    return productos;
+  }, [productos]);
 
   /**
    * Lista de productos que se muestra en el Select tras aplicar la búsqueda
@@ -270,6 +393,22 @@ export const useRegistroRequerimiento = ({
       return;
     }
 
+    // Validar duplicado: no se permite el mismo producto con la misma
+    // unidad de medida. Sí se permite si la unidad difiere.
+    const duplicado = detalles.find(
+      (d) =>
+        d.id_producto === idProducto &&
+        d.id_unidad_medida === idUnidadMedida,
+    );
+    if (duplicado) {
+      const prod = productos.find((p) => p.id_producto === idProducto);
+      const unidad = unidades.find((u) => u.id_unidad_medida === idUnidadMedida);
+      notifyError(
+        `"${prod?.nombre ?? "El producto"}" ya fue agregado con la unidad "${unidad?.nombre ?? "seleccionada"}". Cambie la unidad para agregarlo de nuevo.`,
+      );
+      return;
+    }
+
     if (paraMantenimientoItem && !idActivoFijoDestino) {
       notifyError("Debe seleccionar el equipo destino para mantenimiento");
       return;
@@ -283,11 +422,32 @@ export const useRegistroRequerimiento = ({
         : `Para el mantenimiento de Equipo #${idActivoFijoDestino}`;
     }
 
+    // El cálculo inteligente se admite cuando el campo `contenido` puede
+    // interpretarse como "magnitud por ítem" (no como factor de conversión).
+    // Esto es viable si:
+    // - Las unidades son idénticas (factor = 1 implícito), o
+    // - Las unidades son diferentes pero existe una conversión automática
+    //   conocida (`conversionAutomatica`); en ese caso `contenido` es la
+    //   magnitud por ítem en la unidad del detalle y el sistema la convierte
+    //   a la unidad base multiplicando por el factor.
+    //
+    // En cualquier caso `contenido_por_presentacion` enviado al backend
+    // debe ser el FACTOR real (base por detalle). En smart calc con
+    // unidades idénticas el factor es 1; con unidades distintas es el
+    // valor auto-completado desde la tabla de conversiones.
+    const usaMagnitud =
+      calculoInteligente &&
+      (sonUnidadesIdenticas === true || conversionAutomatica !== null);
+    const cantidadSolicitadaFinal = usaMagnitud ? cantidad * contenido : cantidad;
+    const contenidoPorPresentacionFinal = usaMagnitud
+      ? conversionAutomatica ?? 1
+      : contenido;
+
     const nuevoItem: DTO_CrearRequerimientoDetalle = {
       id_producto: idProducto,
       id_unidad_medida: idUnidadMedida,
-      cantidad_solicitada: cantidad,
-      contenido_por_presentacion: contenido,
+      cantidad_solicitada: cantidadSolicitadaFinal,
+      contenido_por_presentacion: contenidoPorPresentacionFinal,
       comentario: finalComentario,
       para_mantenimiento: paraMantenimientoItem,
       id_activo_fijo_destino:
@@ -295,6 +455,18 @@ export const useRegistroRequerimiento = ({
           ? idActivoFijoDestino
           : null,
     };
+
+    if (usaMagnitud) {
+      nuevoItem.con_magnitud = 1;
+      nuevoItem.cantidad_items = cantidad;
+      nuevoItem.valor_magnitud = contenido;
+      // Si las unidades son idénticas, `valor_magnitud` ya está en la unidad
+      // base. Si son diferentes, hay que multiplicar por el factor de
+      // conversión base/detalle para obtener la magnitud en unidad base.
+      // `conversionAutomatica` es 1 cuando las unidades son idénticas y el
+      // factor calculado cuando difieren, así que siempre aplica.
+      nuevoItem.valor_magnitud_base = contenido * (conversionAutomatica ?? 1);
+    }
 
     setDetalles((prev) => [...prev, nuevoItem]);
 
@@ -319,6 +491,12 @@ export const useRegistroRequerimiento = ({
     idActivoFijoDestino,
     activos,
     notifyError,
+    detalles,
+    productos,
+    unidades,
+    calculoInteligente,
+    sonUnidadesIdenticas,
+    conversionAutomatica,
   ]);
 
   const eliminarItem = useCallback((index: number) => {
@@ -344,6 +522,145 @@ export const useRegistroRequerimiento = ({
         const nvaLista = [...prev];
         if (nvaLista[index]) {
           nvaLista[index].contenido_por_presentacion = nvoContenido;
+        }
+        return nvaLista;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Actualiza la cantidad de ítems de un ítem del modelo "magnitud por
+   * ítem". Mantiene la magnitud fija y propaga el cambio al resto:
+   * - `cantidad_solicitada` = nuevos_items × valor_magnitud
+   * - `valor_magnitud_base` se mantiene (la magnitud en base no cambia)
+   * - `contenido_por_presentacion` se conserva con el factor real
+   *   (derivado del par `valor_magnitud_base` / `valor_magnitud`).
+   */
+  const actualizarCantidadItems = useCallback(
+    (index: number, nuevosItems: number) => {
+      setDetalles((prev) => {
+        const nvaLista = [...prev];
+        const det = nvaLista[index];
+        if (!det) return prev;
+        const mag = det.valor_magnitud ?? 0;
+        const magBase = det.valor_magnitud_base ?? 0;
+        const factor = mag > 0 ? magBase / mag : 1;
+        det.cantidad_items = nuevosItems;
+        det.cantidad_solicitada = nuevosItems * mag;
+        det.contenido_por_presentacion = factor;
+        return nvaLista;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Actualiza la magnitud por ítem (en la unidad del detalle). Mantiene los
+   * ítems fijos y propaga el cambio al resto:
+   * - `valor_magnitud_base` = nueva_magnitud × factor (factor constante)
+   * - `cantidad_solicitada` = items × nueva_magnitud
+   * - `contenido_por_presentacion` se conserva con el mismo factor.
+   */
+  const actualizarValorMagnitud = useCallback(
+    (index: number, nuevaMagnitud: number) => {
+      setDetalles((prev) => {
+        const nvaLista = [...prev];
+        const det = nvaLista[index];
+        if (!det) return prev;
+        const items = det.cantidad_items ?? 0;
+        const magActual = det.valor_magnitud ?? 0;
+        const magBaseActual = det.valor_magnitud_base ?? 0;
+        // El factor de conversión base/detalle es invariante; lo derivamos
+        // del par anterior para que el cambio de magnitud lo respete.
+        const factor =
+          magActual > 0 ? magBaseActual / magActual : 1;
+        det.valor_magnitud = nuevaMagnitud;
+        det.valor_magnitud_base = nuevaMagnitud * factor;
+        det.cantidad_solicitada = items * nuevaMagnitud;
+        det.contenido_por_presentacion = factor;
+        return nvaLista;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Actualiza la cantidad en la unidad del detalle (modelo clásico). El
+   * factor de conversión se preserva, así que el total en base se actualiza
+   * automáticamente.
+   */
+  const actualizarCantidadDetalleItem = useCallback(
+    (index: number, nuevaCantidad: number) => {
+      setDetalles((prev) => {
+        const nvaLista = [...prev];
+        const det = nvaLista[index];
+        if (!det) return prev;
+        det.cantidad_solicitada = nuevaCantidad;
+        return nvaLista;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Actualiza el factor de conversión (contenido_por_presentacion) en el
+   * modelo clásico. La cantidad en la unidad del detalle se preserva, así
+   * que el total en base se recalcula automáticamente.
+   */
+  const actualizarFactorItem = useCallback(
+    (index: number, nuevoFactor: number) => {
+      setDetalles((prev) => {
+        const nvaLista = [...prev];
+        const det = nvaLista[index];
+        if (!det) return prev;
+        det.contenido_por_presentacion = nuevoFactor;
+        return nvaLista;
+      });
+    },
+    [],
+  );
+
+  /**
+   * Ajusta un ítem del detalle para que su TOTAL en la unidad base del
+   * producto sea `nuevoTotalBase`. Maneja correctamente los dos modelos:
+   *
+   * 1) Modelo clásico (sin smart calc o smart calc con unidades idénticas):
+   *    se modifica `cantidad_solicitada` para que
+   *    `cantidad_solicitada × contenido_por_presentacion` dé el nuevo total.
+   *
+   * 2) Modelo "magnitud por ítem con unidades diferentes": se modifica
+   *    `valor_magnitud_base` (manteniendo `cantidad_items` fija) y se
+   *    recalcula `valor_magnitud` en la unidad del detalle usando el mismo
+   *    factor de conversión que tenía el ítem. `cantidad_solicitada` se
+   *    actualiza como `cantidad_items × valor_magnitud` y
+   *    `contenido_por_presentacion` se mantiene con el factor real.
+   */
+  const actualizarTotalBaseItem = useCallback(
+    (index: number, nuevoTotalBase: number) => {
+      setDetalles((prev) => {
+        const nvaLista = [...prev];
+        const det = nvaLista[index];
+        if (!det) return prev;
+
+        const items = det.cantidad_items ?? 0;
+        const magBase = det.valor_magnitud_base ?? 0;
+        const magDet = det.valor_magnitud ?? 0;
+
+        if (items > 0 && magBase > 0) {
+          // Modelo magnitud por ítem
+          const nuevaMagBase = nuevoTotalBase / items;
+          // El factor base/detalle es constante: magBase / magDet.
+          const factor = magDet > 0 ? magBase / magDet : 1;
+          det.valor_magnitud_base = nuevaMagBase;
+          det.valor_magnitud = factor > 0 ? nuevaMagBase / factor : nuevaMagBase;
+          det.cantidad_solicitada = items * det.valor_magnitud;
+          det.contenido_por_presentacion = factor;
+        } else {
+          // Modelo clásico
+          const contenido = det.contenido_por_presentacion || 0;
+          det.cantidad_solicitada =
+            contenido > 0 ? nuevoTotalBase / contenido : 0;
         }
         return nvaLista;
       });
@@ -459,7 +776,7 @@ export const useRegistroRequerimiento = ({
       fechaSolicitud,
       setFechaSolicitud,
       fechaEntregaRequerida,
-      setFechaEntregaRequerida,
+      setFechaEntregaRequerida: actualizarFechaEntrega,
       observacion,
       setObservacion,
       // Item
@@ -489,6 +806,9 @@ export const useRegistroRequerimiento = ({
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
+      conversionAutomatica,
+      contenidoBloqueado,
+      calculoInteligenteDisponible,
       canAdd:
         idProducto &&
         idUnidadMedida &&
@@ -511,6 +831,11 @@ export const useRegistroRequerimiento = ({
       eliminarItem,
       actualizarCantidadItem,
       actualizarContenidoItem,
+      actualizarCantidadItems,
+      actualizarValorMagnitud,
+      actualizarCantidadDetalleItem,
+      actualizarFactorItem,
+      actualizarTotalBaseItem,
       handleSubmit,
     },
   };

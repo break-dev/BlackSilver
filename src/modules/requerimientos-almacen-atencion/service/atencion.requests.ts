@@ -25,6 +25,11 @@ export interface DTO_CrearRequerimientoDetalle {
   comentario?: string | null;
   id_activo_fijo_destino?: number | null;
   para_mantenimiento?: boolean;
+  // Campos para cálculo inteligente con magnitud (cuando ambas unidades son universales)
+  con_magnitud?: boolean | number;
+  cantidad_items?: number;
+  valor_magnitud?: number;
+  valor_magnitud_base?: number;
 }
 
 // Zod schemas for validation
@@ -38,6 +43,10 @@ export const Schema_CrearRequerimientoDetalle = z.object({
   comentario: z.string().nullable().optional(),
   id_activo_fijo_destino: z.number().nullable().optional(),
   para_mantenimiento: z.boolean().optional(),
+  con_magnitud: z.union([z.boolean(), z.number()]).optional(),
+  cantidad_items: z.number().optional(),
+  valor_magnitud: z.number().optional(),
+  valor_magnitud_base: z.number().optional(),
 });
 
 export const Schema_CrearRequerimiento = z.object({

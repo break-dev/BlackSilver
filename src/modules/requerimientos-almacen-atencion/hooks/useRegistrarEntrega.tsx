@@ -6,14 +6,23 @@ import type { DTO_RegistrarEntregaDetalle } from "../service/atencion.requests";
 import { useAuthUser } from "../../../hooks/useAuthUser";
 import type { RES_LoteDisponible } from "../../../service/responses/lote-producto";
 import type { RES_Empleado } from "../../../service/responses/empleado";
-import type { RES_DetalleRequerimiento } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
 import type { RES_LoteMineral } from "../../../service/responses/lote-mineral";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { useNotify } from "../../../hooks/useNotify";
+import { usePrint } from "../../../hooks/usePrint";
+import {
+  SalidaAlmacenPDF,
+  type SalidaAlmacenItem,
+} from "../presentation/salida-almacen-pdf";
 
 interface UseRegistrarEntregaBatchProps {
+  requerimiento: RES_RequerimientoAlmacen;
   idRequerimiento: number;
   idAlmacen: number;
   selectedItemsIds: number[];
@@ -30,6 +39,7 @@ export interface DestinoItem {
 }
 
 export const useRegistrarEntregaBatch = ({
+  requerimiento,
   idRequerimiento,
   idAlmacen,
   selectedItemsIds,
@@ -40,6 +50,7 @@ export const useRegistrarEntregaBatch = ({
 }: UseRegistrarEntregaBatchProps) => {
   const authUser = useAuthUser();
   const { notifySuccess, notifyError } = useNotify();
+  const { prepare, print } = usePrint();
   const loggedEmployeeId = authUser.usuario?.id_empleado;
 
   const [loading, setLoading] = useState(true);
@@ -668,6 +679,67 @@ export const useRegistrarEntregaBatch = ({
           entregados[id] = (entregados[id] || 0) + ent.cantidad_base;
         });
 
+        // Construir items para los PDFs de Salida de Almacén
+        const itemsPdf = buildSalidaItems();
+        const itemsAuditable = itemsPdf.filter((i) => i.es_auditable);
+        const itemsNormal = itemsPdf.filter((i) => !i.es_auditable);
+
+        const receptorNombre = esContratistaRecibe
+          ? contratistas.find((c) => c.value === idContratistaRecibe)?.label ||
+            ""
+          : empleados.find((e) => e.value === idEmpleadoRecibe)?.label || "";
+        const almaceneroNombre = authUser.usuario
+          ? `${authUser.usuario.nombre} ${authUser.usuario.apellido}`.trim()
+          : "";
+        const evidenciasNombres = evidencias.map((f) => f.name);
+        const fechaHora = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        const correlativoBase = requerimiento.correlativo;
+
+        const baseProps = {
+          correlativo_requerimiento: correlativoBase,
+          almacen: requerimiento.almacen_destino,
+          solicitante: requerimiento.solicitante,
+          receptor: receptorNombre,
+          almacenero: almaceneroNombre,
+          observacion,
+          evidencias_nombres: evidenciasNombres,
+          fecha_hora: fechaHora,
+        };
+
+        // PDF normal (sin auditables) - sólo si hay items
+        if (itemsNormal.length > 0) {
+          const target = `SalidaAlmacen_${idRequerimiento}_${Date.now()}`;
+          prepare(target);
+          print(
+            <SalidaAlmacenPDF
+              {...baseProps}
+              tipo="normal"
+              items={itemsNormal}
+            />,
+            {
+              documentTitle: `Salida_Almacen_${correlativoBase}`,
+              target,
+            },
+          );
+        }
+
+        // PDF auditables - sólo si hay auditables
+        if (itemsAuditable.length > 0) {
+          const target = `SalidaAlmacenAuditable_${idRequerimiento}_${Date.now()}`;
+          prepare(target);
+          print(
+            <SalidaAlmacenPDF
+              {...baseProps}
+              tipo="auditable"
+              items={itemsAuditable}
+            />,
+            {
+              documentTitle: `Salida_Almacen_Auditable_${correlativoBase}`,
+              target,
+            },
+          );
+        }
+
         onSuccess(entregados);
       } else {
         notifyError(res.message || "Error al registrar entrega batch");
@@ -689,6 +761,116 @@ export const useRegistrarEntregaBatch = ({
     });
     return agrupado;
   }, [activosFijos]);
+
+  /**
+   * Construye la lista de items para los PDFs de "Salida de Almacén"
+   * a partir de la selección actual. Junta los items con lote, los
+   * activos fijos y sus respectivos destinos.
+   */
+  const buildSalidaItems = useCallback((): SalidaAlmacenItem[] => {
+    const items: SalidaAlmacenItem[] = [];
+
+    const resolveDestinoDetalle = (
+      dest: DestinoItem,
+    ): string | null => {
+      if (dest.tipo === "mantenimiento" && dest.id_activo_fijo_destino) {
+        const d = allActivos.find(
+          (a) => a.id_activo === dest.id_activo_fijo_destino,
+        );
+        return d
+          ? `${d.correlativo} - ${d.producto}`
+          : `Activo #${dest.id_activo_fijo_destino}`;
+      }
+      if (dest.tipo === "produccion" && dest.id_lote_mineral) {
+        const d = lotesMineral.find(
+          (l) => l.id_lote_mineral === dest.id_lote_mineral,
+        );
+        return d
+          ? d.descripcion || d.codigo || `Lote #${dest.id_lote_mineral}`
+          : `Lote #${dest.id_lote_mineral}`;
+      }
+      return null;
+    };
+
+    // Activos fijos
+    Object.entries(entregaCantidadesActivos).forEach(([idDet, activosMap]) => {
+      const idDetalleReq = Number(idDet);
+      const detail = selectedDetalles.find(
+        (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+      );
+      if (!detail) return;
+
+      Object.entries(activosMap).forEach(([idAct, cant]) => {
+        if (cant <= 0) return;
+        const numIdAct = Number(idAct);
+        const activo = activosFijos.find((a) => a.id_activo === numIdAct);
+        const key = `${idDetalleReq}_activo_${numIdAct}`;
+        const dest = destinosMap[key] || { tipo: "" };
+
+        items.push({
+          id_detalle: idDetalleReq,
+          producto: detail.producto,
+          unidad_medida_abv: detail.unidad_medida_req_abv,
+          unidad_medida_base_abv: detail.unidad_medida_base_abv,
+          cantidad: cant,
+          cantidad_base: cant,
+          lote_correlativo: null,
+          activo_correlativo: activo?.correlativo ?? null,
+          destino_tipo: dest.tipo === "" ? null : dest.tipo,
+          destino_detalle: resolveDestinoDetalle(dest),
+          comentario: detail.comentario ?? null,
+          es_auditable: Boolean(detail.es_auditable),
+        });
+      });
+    });
+
+    // Productos con lote
+    Object.entries(entregaCantidades).forEach(([idDet, lotesMap]) => {
+      const idDetalleReq = Number(idDet);
+      const detail = selectedDetalles.find(
+        (d) => d.id_requerimiento_almacen_detalle === idDetalleReq,
+      );
+      if (!detail) return;
+
+      Object.entries(lotesMap).forEach(([idLot, cant]) => {
+        if (cant <= 0) return;
+        const numIdLot = Number(idLot);
+        const lote = lotes.find((l) => l.id_lote === numIdLot);
+        if (!lote) return;
+        const key = `${idDetalleReq}_lote_${numIdLot}`;
+        const dest = destinosMap[key] || { tipo: "" };
+
+        const cReq =
+          detail.equivReq && detail.equivReq > 0 ? cant / detail.equivReq : cant;
+
+        items.push({
+          id_detalle: idDetalleReq,
+          producto: detail.producto,
+          unidad_medida_abv: detail.unidad_medida_req_abv,
+          unidad_medida_base_abv: detail.unidad_medida_base_abv,
+          cantidad: cReq,
+          cantidad_base: cant,
+          lote_correlativo: lote.correlativo ?? null,
+          activo_correlativo: null,
+          destino_tipo: dest.tipo === "" ? null : dest.tipo,
+          destino_detalle: resolveDestinoDetalle(dest),
+          comentario: detail.comentario ?? null,
+          es_auditable: Boolean(detail.es_auditable),
+        });
+      });
+    });
+
+    return items;
+  }, [
+    selectedDetalles,
+    entregaCantidades,
+    entregaCantidadesActivos,
+    lotes,
+    activosFijos,
+    allActivos,
+    lotesMineral,
+    destinosMap,
+  ]);
 
   return {
     loading,

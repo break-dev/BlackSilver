@@ -73,6 +73,31 @@ export const AtencionService = {
           String(det.id_activo_fijo_destino),
         );
       }
+      // Campos de cálculo inteligente con magnitud
+      if (det.con_magnitud !== undefined) {
+        formData.append(
+          `detalles[${index}][con_magnitud]`,
+          String(det.con_magnitud ? 1 : 0),
+        );
+      }
+      if (det.cantidad_items !== undefined) {
+        formData.append(
+          `detalles[${index}][cantidad_items]`,
+          String(det.cantidad_items),
+        );
+      }
+      if (det.valor_magnitud !== undefined) {
+        formData.append(
+          `detalles[${index}][valor_magnitud]`,
+          String(det.valor_magnitud),
+        );
+      }
+      if (det.valor_magnitud_base !== undefined) {
+        formData.append(
+          `detalles[${index}][valor_magnitud_base]`,
+          String(det.valor_magnitud_base),
+        );
+      }
     });
 
     if (dto.evidencias) {

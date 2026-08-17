@@ -20,6 +20,7 @@ import {
 import { Estado_RequerimientoDetalle } from "../../../../../shared/enums/requerimiento-almacen/requerimiento";
 import { formatNumber } from "../../../../../shared/functions/formatNumber";
 import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
+import { enPlural } from "../../../../../shared/functions/en-plural";
 
 interface InfoItemsTableProps {
   detalles: DetalleRequerimientoExtendido[];
@@ -299,33 +300,73 @@ export const InfoItemsTable = ({
                       })()}
                     </Stack>
                   </td>
-                  <td className="px-6 py-4 text-center flex flex-row gap-0.5 justify-center items-center">
-                    <Badge
-                      variant="filled"
-                      color="cyan.7"
-                      radius="sm"
-                      size="sm"
-                      className="font-black px-4"
-                    >
-                      {formatNumber(item.cantidad_solicitada)}{" "}
-                      {item.unidad_medida_req_abv}
-                    </Badge>
-                    {item.id_unidad_medida_base !==
-                      item.id_unidad_medida_req && (
-                      <>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex flex-row gap-0.5 justify-center items-center flex-wrap">
+                      {/* Si el detalle se creó con cálculo inteligente por
+                          magnitud, mostramos el desglose items × magnitud
+                          como badges independientes. */}
+                      {Number(item.con_magnitud) === 1 &&
+                        item.cantidad_items !== null &&
+                        item.cantidad_items !== undefined &&
+                        item.valor_magnitud !== null &&
+                        item.valor_magnitud !== undefined && (
+                          <div className="flex flex-col items-center justify-center">
+                            <Badge
+                              variant="filled"
+                              color="violet"
+                              radius="sm"
+                              size="sm"
+                              className="font-black px-4"
+                            >
+                              {formatNumber(item.cantidad_items)}{" "}
+                              {enPlural(item.producto, item.cantidad_items)}
+                            </Badge>
+                            <Badge
+                              variant="filled"
+                              color="zinc"
+                              radius="sm"
+                              size="sm"
+                              className="font-black px-4"
+                            >
+                              × {formatNumber(item.valor_magnitud)}{" "}
+                              {item.unidad_medida_req_abv}{" "}
+                              <span className="lowercase">c/u</span>
+                            </Badge>
+                          </div>
+                        )}
+
+                      {/* Cantidad total en la unidad del detalle */}
+                      <div className="flex flex-col items-center justify-center">
                         <Badge
                           variant="filled"
-                          color="zinc"
+                          color="cyan.7"
                           radius="sm"
                           size="sm"
                           className="font-black px-4"
                         >
-                          {formatNumber(item.contenido_por_presentacion)}{" "}
-                          {item.unidad_medida_base_abv}{" "}
-                          <span className="lowercase">x</span>{" "}
+                          {formatNumber(item.cantidad_solicitada)}{" "}
                           {item.unidad_medida_req_abv}
                         </Badge>
-
+                        {item.id_unidad_medida_base !==
+                          item.id_unidad_medida_req && (
+                          <Badge
+                            variant="filled"
+                            color="zinc"
+                            radius="sm"
+                            size="sm"
+                            className="font-black px-4"
+                          >
+                            {formatNumber(item.contenido_por_presentacion)}{" "}
+                            {item.unidad_medida_base_abv}{" "}
+                            <span className="lowercase">x</span>{" "}
+                            {item.unidad_medida_req_abv}
+                          </Badge>
+                        )}
+                      </div>
+                      {/* Si la unidad del detalle difiere de la base,
+                          añadimos el factor y el total en unidad base. */}
+                      {item.id_unidad_medida_base !==
+                        item.id_unidad_medida_req && (
                         <Badge
                           variant="filled"
                           color="pink"
@@ -335,8 +376,8 @@ export const InfoItemsTable = ({
                           {formatNumber(item.cantidad_solicitada_base)}{" "}
                           {item.unidad_medida_base_abv}
                         </Badge>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-col gap-1.5 w-full">
