@@ -147,7 +147,7 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                       </Tooltip>
                     )}
 
-                    {c.labores_destinos && (
+                    {c.labor && (
                       <Badge
                         size="xs"
                         color="grape"
@@ -155,7 +155,7 @@ export const HistorialConsumos = ({ record }: HistorialConsumosProps) => {
                         className="font-semibold uppercase tracking-wider py-1 border border-current/15"
                       >
                         <MapPinIcon className="w-3 h-3 mr-1" />
-                        Labores: {c.labores_destinos}
+                        Labor: {c.labor}
                       </Badge>
                     )}
 

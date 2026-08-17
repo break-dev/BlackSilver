@@ -4,7 +4,6 @@ import { MESES } from "../../../shared/variables/meses";
 import type {
   RES_Consumo,
   RES_ResumenEntregasReq,
-  OrigenCostoUnitario,
 } from "../service/control-consumo.responses";
 
 const COLOR_HEADER_BG = "FF1E3A8A";
@@ -15,14 +14,6 @@ const COLOR_COST = "FFF0FDF4";
 const COLOR_AUDITABLE_BG = "FFFEE2E2";
 const COLOR_AUDITABLE_TEXT = "FF991B1B";
 const COLOR_TOTAL_BG = "FFE2E8F0";
-
-const ORIGEN_COSTO_LABEL: Record<OrigenCostoUnitario, string> = {
-  snapshot_detalle: "Snapshot Detalle",
-  lote_promedio: "Lote Promedio",
-  lote_compra: "Lote Compra",
-  oc_detalle: "OC Detalle",
-  sin_costo: "Sin Costo",
-};
 
 const HEADERS: Array<{ key: string; title: string; width: number }> = [
   { key: "item", title: "#", width: 5 },
@@ -37,15 +28,16 @@ const HEADERS: Array<{ key: string; title: string; width: number }> = [
   { key: "categoria", title: "Categoría", width: 18 },
   { key: "tipo_bien", title: "Tipo Bien", width: 12 },
   { key: "u_base", title: "U.M. Base", width: 10 },
-  { key: "cant_entregada_base", title: "Cant. Entregada", width: 13 },
-  { key: "cant_consumida_total", title: "Cant. Consumida (total)", width: 14 },
-  { key: "cant_consumida_este", title: "Cant. Consumida (este)", width: 14 },
-  { key: "restante_base", title: "Restante Base", width: 13 },
-  { key: "estado", title: "Estado", width: 14 },
+  { key: "lote_producto", title: "Lote Producto", width: 16 },
+  { key: "cant_entregada_base", title: "Cant. Entregada", width: 14 },
+  { key: "cant_consumida_total", title: "Cant. Consumida", width: 14 },
+  { key: "restante_base", title: "Restante", width: 13 },
   { key: "moneda", title: "Moneda", width: 8 },
-  { key: "costo_unitario", title: "Costo Unit. Base", width: 14 },
-  { key: "origen_costo", title: "Origen Costo", width: 14 },
-  { key: "costo_total_consumo", title: "Costo Total Consumo", width: 16 },
+  { key: "costo_unitario", title: "Costo Unit.", width: 14 },
+  { key: "costo_entregado", title: "Costo Entregado", width: 16 },
+  { key: "costo_total_consumo", title: "Costo Consumo", width: 16 },
+  { key: "costo_restante", title: "Costo Restante", width: 16 },
+  { key: "estado", title: "Estado", width: 14 },
   { key: "lote_mineral", title: "Lote Mineral", width: 14 },
   { key: "mina_lote", title: "Mina Lote", width: 16 },
   { key: "labor_lote", title: "Labor Lote", width: 16 },
@@ -59,7 +51,7 @@ const HEADERS: Array<{ key: string; title: string; width: number }> = [
   { key: "marca_af", title: "Marca AF", width: 16 },
   { key: "modelo_af", title: "Modelo AF", width: 16 },
   { key: "costo_af", title: "Costo AF", width: 14 },
-  { key: "labores_destinos", title: "Labores Destino", width: 28 },
+  { key: "labor_destino", title: "Labor Destino", width: 22 },
   { key: "comentario", title: "Comentario", width: 36 },
 ];
 
@@ -229,12 +221,12 @@ export const buildControlConsumoExcel = async (
     const cantEntregadaBase = Number(detalle.cantidad_entregada_base ?? 0);
     const restanteBase = cantEntregadaBase - cantConsumidaTotalBase;
     const costoUnit = Number(detalle.costo_unitario_base ?? 0);
+    const costoEntregado = cantEntregadaBase * costoUnit;
+    const costoRestante = restanteBase * costoUnit;
     const costoTotalConsumo =
       consumo.id_consumo === 0
         ? 0
         : Number(consumo.costo_total_consumo ?? cantConsumidaBase * costoUnit);
-    const origenCosto: OrigenCostoUnitario =
-      consumo.origen_costo_unitario ?? detalle.origen_costo_unitario ?? "sin_costo";
     const estadoConsumoCalc =
       cantConsumidaTotalBase >= cantEntregadaBase && cantEntregadaBase > 0
         ? "Consumo Total"
@@ -266,15 +258,16 @@ export const buildControlConsumoExcel = async (
       categoria: detalle.categoria ?? "",
       tipo_bien: detalle.tipo_bien ?? "",
       u_base: detalle.unidad_medida_base_abv ?? "",
+      lote_producto: detalle.correlativo_lote_producto ?? "",
       cant_entregada_base: cantEntregadaBase,
       cant_consumida_total: cantConsumidaTotalBase,
-      cant_consumida_este: cantConsumidaBase,
       restante_base: restanteBase,
-      estado: estadoConsumoCalc,
       moneda: detalle.moneda ?? "PEN",
       costo_unitario: costoUnit,
-      origen_costo: ORIGEN_COSTO_LABEL[origenCosto] ?? origenCosto,
+      costo_entregado: costoEntregado,
       costo_total_consumo: costoTotalConsumo,
+      costo_restante: costoRestante,
+      estado: estadoConsumoCalc,
       lote_mineral: consumo.codigo_lote_mineral ?? "",
       mina_lote: consumo.mina_lote_mineral ?? "",
       labor_lote: consumo.labor_lote_mineral ?? "",
@@ -290,7 +283,7 @@ export const buildControlConsumoExcel = async (
       marca_af: consumo.marca_activo_fijo_consumidor ?? "",
       modelo_af: consumo.modelo_activo_fijo_consumidor ?? "",
       costo_af: Number(consumo.costo_compra_activo_fijo_consumidor ?? 0),
-      labores_destinos: consumo.labores_destinos ?? "",
+      labor_destino: consumo.labor ?? "",
       comentario: consumo.comentario_consumo ?? "",
     };
 
@@ -298,11 +291,7 @@ export const buildControlConsumoExcel = async (
       cell.font = { size: 9, name: "Arial" };
       cell.alignment = {
         vertical: "middle",
-        horizontal: colNum === 1 || colNum === 7 || colNum === 11 || colNum === 12 || colNum === 17 || colNum === 19 || colNum === 20 || colNum === 27 || colNum === 29 || colNum === 30
-          ? "center"
-          : colNum === 4 || colNum === 5 || colNum === 8 || colNum === 9 || colNum === 10 || colNum === 13 || colNum === 14 || colNum === 15 || colNum === 16 || colNum === 18 || colNum === 21 || colNum === 25 || colNum === 26 || colNum === 31 || colNum === 32 || colNum === 33 || colNum === 34
-            ? "left"
-            : "left",
+        horizontal: "left",
         wrapText: true,
       };
       cell.border = {
@@ -313,13 +302,22 @@ export const buildControlConsumoExcel = async (
       };
 
       const key = COL_KEYS[colNum - 1];
-      if (key === "cant_entregada_base" || key === "cant_consumida_total" || key === "cant_consumida_este" || key === "restante_base") {
+      if (key === "cant_entregada_base" || key === "cant_consumida_total" || key === "restante_base") {
         cell.numFmt = "0.0000";
         cell.alignment = { vertical: "middle", horizontal: "right" };
       }
-      if (key === "costo_unitario" || key === "costo_total_consumo" || key === "costo_af") {
+      if (
+        key === "costo_unitario" ||
+        key === "costo_entregado" ||
+        key === "costo_total_consumo" ||
+        key === "costo_restante" ||
+        key === "costo_af"
+      ) {
         cell.numFmt = '"S/."#,##0.0000';
         cell.alignment = { vertical: "middle", horizontal: "right" };
+      }
+      if (key === "item" || key === "moneda" || key === "para_mantenimiento" || key === "para_produccion") {
+        cell.alignment = { vertical: "middle", horizontal: "center" };
       }
     });
 
@@ -365,26 +363,50 @@ export const buildControlConsumoExcel = async (
   // Fila Totalizadora
   const totalRow = sheet.getRow(rowIdx);
   totalRow.height = 24;
-  sheet.mergeCells(`A${rowIdx}:O${rowIdx}`);
+  sheet.mergeCells(`A${rowIdx}:N${rowIdx}`);
   const labelTotalCell = totalRow.getCell(1);
   labelTotalCell.value = "TOTAL GENERAL DEL PERÍODO:";
   labelTotalCell.font = { bold: true, size: 10, color: { argb: "FF0F172A" } };
   labelTotalCell.alignment = { vertical: "middle", horizontal: "right" };
 
-  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_total") + 1).value = reporte.reduce(
+  const totalCantEntregada = reporte.reduce(
+    (acc, d) => acc + Number(d.cantidad_entregada_base ?? 0),
+    0,
+  );
+  const totalCantConsumidaDetalle = reporte.reduce(
     (acc, d) => acc + Number(d.cantidad_consumida_base ?? 0),
     0,
   );
-  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_total") + 1).numFmt = "0.0000";
+  const totalCostoEntregado = reporte.reduce(
+    (acc, d) =>
+      acc + Number(d.cantidad_entregada_base ?? 0) * Number(d.costo_unitario_base ?? 0),
+    0,
+  );
+  const totalCostoRestante = reporte.reduce(
+    (acc, d) =>
+      acc +
+      (Number(d.cantidad_entregada_base ?? 0) - Number(d.cantidad_consumida_base ?? 0)) *
+        Number(d.costo_unitario_base ?? 0),
+    0,
+  );
 
-  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_este") + 1).value = totalCantConsumida;
-  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_este") + 1).numFmt = "0.0000";
+  totalRow.getCell(COL_KEYS.indexOf("cant_entregada_base") + 1).value = totalCantEntregada;
+  totalRow.getCell(COL_KEYS.indexOf("cant_entregada_base") + 1).numFmt = "0.0000";
+
+  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_total") + 1).value = totalCantConsumidaDetalle;
+  totalRow.getCell(COL_KEYS.indexOf("cant_consumida_total") + 1).numFmt = "0.0000";
 
   totalRow.getCell(COL_KEYS.indexOf("restante_base") + 1).value = totalRestante;
   totalRow.getCell(COL_KEYS.indexOf("restante_base") + 1).numFmt = "0.0000";
 
+  totalRow.getCell(COL_KEYS.indexOf("costo_entregado") + 1).value = totalCostoEntregado;
+  totalRow.getCell(COL_KEYS.indexOf("costo_entregado") + 1).numFmt = '"S/."#,##0.0000';
+
   totalRow.getCell(COL_KEYS.indexOf("costo_total_consumo") + 1).value = totalCostoConsumo;
   totalRow.getCell(COL_KEYS.indexOf("costo_total_consumo") + 1).numFmt = '"S/."#,##0.0000';
+
+  totalRow.getCell(COL_KEYS.indexOf("costo_restante") + 1).value = totalCostoRestante;
+  totalRow.getCell(COL_KEYS.indexOf("costo_restante") + 1).numFmt = '"S/."#,##0.0000';
 
   totalRow.eachCell({ includeEmpty: true }, (cell) => {
     cell.font = { bold: true, size: 10, name: "Arial" };

@@ -31,7 +31,6 @@ export const ControlConsumoService = {
     comentario_consumo?: string | null;
     id_activo_fijo_consumidor?: number | null;
     id_labor_destino?: number | null;
-    id_labores?: number[] | null;
     id_lote_mineral?: number | null;
     para_mantenimiento?: boolean;
     para_produccion?: boolean;

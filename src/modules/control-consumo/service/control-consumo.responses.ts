@@ -38,6 +38,8 @@ export interface RES_Consumo {
   marca_activo_fijo_consumidor?: string | null;
   /** ID de la labor de destino principal */
   id_labor_destino: number | null;
+  /** Nombre de la labor de destino del consumo */
+  labor?: string | null;
   /** ID del empleado que registró el consumo */
   id_empleado_registro: number;
   /** Nombre completo del empleado que registró el consumo */
@@ -66,10 +68,6 @@ export interface RES_Consumo {
   id_labor_lote_mineral?: number | null;
   /** Nombre de la labor del lote mineral destino */
   labor_lote_mineral?: string | null;
-  /** Nombres de las labores destino del consumo (concatenado con ", ") */
-  labores_destinos?: string | null;
-  /** IDs de las labores destino del consumo (CSV) */
-  id_labores?: string | null;
   /** Costo unitario base resuelto (snapshot del detalle con fallback a lote / OC) */
   costo_unitario_base?: number;
   /** Origen del costo unitario */
