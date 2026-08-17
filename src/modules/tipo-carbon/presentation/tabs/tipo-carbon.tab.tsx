@@ -1,0 +1,417 @@
+import { useState } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  MultiSelect,
+  Stack,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import {
+  IconExclamationCircle,
+  IconSettings,
+  IconTrash,
+} from "@tabler/icons-react";
+
+import { useTipoCarbon } from "../../hooks/useTipoCarbon";
+import { useRegistroTipoCarbon } from "../../hooks/useRegistroTipoCarbon";
+import { useVariantesTipo } from "../../hooks/useVariantesTipo";
+import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
+import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
+import type {
+  ActualizarTipoCarbonRequest,
+  CrearTipoCarbonRequest,
+} from "../../service/tipo-carbon.requests";
+import type { RES_TipoCarbon } from "../../service/tipo-carbon.responses";
+
+type ModalMode = "create" | "edit" | null;
+
+const fieldClasses = {
+  input:
+    "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
+  label: "text-zinc-300 mb-1 font-medium text-xs",
+};
+
+export const TipoCarbonTab = () => {
+  const ctrl = useTipoCarbon();
+  const { payload, handleChange, submit, loading, actualizar, eliminar } =
+    useRegistroTipoCarbon((t) => {
+      ctrl.upsertTipo(t);
+      setModal(null);
+      setEditTipo(null);
+    });
+
+  const [modal, setModal] = useState<ModalMode>(null);
+  const [editTipo, setEditTipo] = useState<RES_TipoCarbon | null>(null);
+  const [editPayload, setEditPayload] = useState<CrearTipoCarbonRequest>({
+    nombre: "",
+    codigo: null,
+  });
+
+  const [confirmDelete, setConfirmDelete] = useState<RES_TipoCarbon | null>(
+    null,
+  );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const [variantesTarget, setVariantesTarget] =
+    useState<RES_TipoCarbon | null>(null);
+  const variantesCtrl = useVariantesTipo(variantesTarget?.id_tipo_carbon ?? null);
+  const [selectedVariantes, setSelectedVariantes] = useState<string[]>([]);
+
+  const openCreate = () => {
+    setEditTipo(null);
+    setEditPayload({ nombre: "", codigo: null });
+    setModal("create");
+  };
+
+  const openEdit = (t: RES_TipoCarbon) => {
+    setEditTipo(t);
+    setEditPayload({ nombre: t.nombre, codigo: t.codigo ?? null });
+    setModal("edit");
+  };
+
+  const closeEdit = () => {
+    setModal(null);
+    setEditTipo(null);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editTipo) return;
+    await actualizar(
+      editTipo.id_tipo_carbon,
+      editPayload as ActualizarTipoCarbonRequest,
+    );
+  };
+
+  const openVariantes = (t: RES_TipoCarbon) => {
+    setVariantesTarget(t);
+    setSelectedVariantes([]);
+  };
+
+  const handleGuardarVariantes = async () => {
+    if (!variantesTarget) return;
+    const ids = selectedVariantes.map((v) => Number(v));
+    const ok = await variantesCtrl.guardar(ids);
+    if (ok) {
+      ctrl.refreshCantidadVariantes(
+        variantesTarget.id_tipo_carbon,
+        ids.length,
+      );
+    }
+  };
+
+  const closeVariantes = () => {
+    setVariantesTarget(null);
+    setSelectedVariantes([]);
+  };
+
+  // Hidratar selectedVariantes solo cuando abrimos el modal con datos ya cargadas
+  if (
+    variantesTarget &&
+    selectedVariantes.length === 0 &&
+    variantesCtrl.variantesActuales.length > 0 &&
+    !variantesCtrl.loading
+  ) {
+    setSelectedVariantes(
+      variantesCtrl.variantesActuales.map((v) =>
+        String(v.id_tipo_variante),
+      ),
+    );
+  }
+
+  const handleEliminar = async () => {
+    if (!confirmDelete) return;
+    setDeleteError(null);
+    const ok = await eliminar(confirmDelete.id_tipo_carbon);
+    if (ok) {
+      ctrl.removeTipo(confirmDelete.id_tipo_carbon);
+      setConfirmDelete(null);
+    } else {
+      setDeleteError(
+        "No se puede eliminar: probablemente es variante de otro tipo. Quite las referencias primero.",
+      );
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header igual a los otros tabs */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold text-white">Tipos de Carbon</h2>
+          <p className="text-xs text-zinc-500">
+            Catalogo de tipos de carbon y sus variantes. Una variante es
+            otro tipo ya registrado que forma parte de este.
+          </p>
+        </div>
+        <Button
+          leftSection={<PlusIcon className="w-4 h-4" />}
+          onClick={openCreate}
+          radius="lg"
+          size="sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white"
+        >
+          Nuevo Tipo
+        </Button>
+      </div>
+
+      <DataTableEstandar
+        records={ctrl.tipos}
+        loading={ctrl.loading}
+        columns={[
+          {
+            accessor: "index",
+            title: "#",
+            textAlign: "center",
+            width: 50,
+            render: (_: RES_TipoCarbon, index: number) => index + 1,
+          },
+          {
+            accessor: "nombre",
+            title: "Nombre",
+            sortable: true,
+            render: (r: RES_TipoCarbon) => (
+              <Text size="sm" fw={500} className="text-zinc-100">
+                {r.nombre}
+              </Text>
+            ),
+          },
+          {
+            accessor: "codigo",
+            title: "Codigo",
+            sortable: true,
+            render: (r: RES_TipoCarbon) => (
+              <Badge variant="light" color="gray" radius="xl" size="sm">
+                {r.codigo || "—"}
+              </Badge>
+            ),
+          },
+          {
+            accessor: "cantidad_variantes",
+            title: "Variantes",
+            width: 110,
+            textAlign: "center",
+            render: (r: RES_TipoCarbon) => (
+              <Badge
+                color={(r.cantidad_variantes ?? 0) > 0 ? "indigo" : "gray"}
+                variant="light"
+                size="sm"
+                radius="xl"
+              >
+                {r.cantidad_variantes ?? 0}
+              </Badge>
+            ),
+          },
+          {
+            accessor: "actions",
+            title: "Acciones",
+            width: 320,
+            render: (r: RES_TipoCarbon) => (
+              <div className="flex gap-2">
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  color="indigo"
+                  leftSection={<IconSettings size={14} />}
+                  onClick={() => openVariantes(r)}
+                >
+                  Variantes
+                </Button>
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => openEdit(r)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  color="red"
+                  leftSection={<IconTrash size={14} />}
+                  onClick={() => {
+                    setConfirmDelete(r);
+                    setDeleteError(null);
+                  }}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            ),
+          },
+        ]}
+      />
+
+      {/* Modal alta y edicion (compartido) */}
+      <ModalEstandar
+        opened={modal !== null}
+        close={closeEdit}
+        title={
+          modal === "edit" && editTipo
+            ? `Editar: ${editTipo.nombre}`
+            : "Nuevo Tipo de Carbon"
+        }
+        size="sm"
+      >
+        <div className="space-y-3">
+          <TextInput
+            label="Nombre"
+            placeholder="Ej: Cisco, Mixto, Tipo A..."
+            value={modal === "edit" ? editPayload.nombre : payload.nombre}
+            onChange={(e) => {
+              if (modal === "edit") {
+                setEditPayload((p) => ({ ...p, nombre: e.currentTarget.value }));
+              } else {
+                handleChange("nombre", e.currentTarget.value);
+              }
+            }}
+            required
+            classNames={fieldClasses}
+            radius="lg"
+          />
+          <TextInput
+            label="Codigo (opcional)"
+            placeholder="Ej: CARB-CIS"
+            value={
+              modal === "edit"
+                ? editPayload.codigo ?? ""
+                : payload.codigo ?? ""
+            }
+            onChange={(e) => {
+              if (modal === "edit") {
+                setEditPayload((p) => ({
+                  ...p,
+                  codigo: e.currentTarget.value || null,
+                }));
+              } else {
+                handleChange("codigo", e.currentTarget.value || null);
+              }
+            }}
+            classNames={fieldClasses}
+            radius="lg"
+          />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="subtle" onClick={closeEdit} disabled={loading}>
+              Cancelar
+            </Button>
+            {modal === "edit" ? (
+              <Button
+                onClick={handleEditSubmit}
+                loading={loading}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                Guardar cambios
+              </Button>
+            ) : (
+              <Button
+                onClick={(e) => {
+                  // Disparar el submit del hook manualmente
+                  submit(e as unknown as React.FormEvent<HTMLFormElement>);
+                }}
+                loading={loading}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                Guardar
+              </Button>
+            )}
+          </div>
+        </div>
+      </ModalEstandar>
+
+      {/* Modal confirmar borrado */}
+      <ModalEstandar
+        opened={!!confirmDelete}
+        close={() => setConfirmDelete(null)}
+        title="Eliminar tipo de carbon"
+        size="sm"
+      >
+        <Stack gap="md">
+          {deleteError && (
+            <Alert
+              icon={<IconExclamationCircle size={16} />}
+              color="red"
+              variant="filled"
+            >
+              {deleteError}
+            </Alert>
+          )}
+          <Text size="sm" className="text-zinc-300">
+            Vas a eliminar el tipo{" "}
+            <span className="font-bold text-zinc-100">
+              {confirmDelete?.nombre}
+            </span>
+            . Esta accion no se puede deshacer.
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            Si el tipo es variante de otro, deberas quitar la asociacion
+            primero. Las variantes propias del tipo se borran con el.
+          </Text>
+          <div className="flex justify-end gap-2">
+            <Button variant="subtle" onClick={() => setConfirmDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              loading={loading}
+              color="red"
+              leftSection={<IconTrash size={14} />}
+              onClick={handleEliminar}
+            >
+              Eliminar
+            </Button>
+          </div>
+        </Stack>
+      </ModalEstandar>
+
+      {/* Modal administrar variantes */}
+      <ModalEstandar
+        opened={!!variantesTarget}
+        close={closeVariantes}
+        title={`Variantes de: ${variantesTarget?.nombre ?? ""}`}
+        size="sm"
+      >
+        <Stack gap="md">
+          <Text size="xs" className="text-zinc-500">
+            Selecciona los tipos (ya existentes) que son variante de{" "}
+            <span className="font-semibold text-zinc-300">
+              {variantesTarget?.nombre}
+            </span>
+            . El backend reemplaza las asociaciones existentes.
+          </Text>
+          <MultiSelect
+            label="Variantes"
+            placeholder="Busca y selecciona tipos..."
+            radius="lg"
+            searchable
+            data={variantesCtrl.opciones}
+            value={selectedVariantes}
+            onChange={setSelectedVariantes}
+            nothingFoundMessage="No hay otros tipos registrados"
+            clearable
+            classNames={fieldClasses}
+          />
+          {variantesTarget && (
+            <Text size="xs" className="text-zinc-500">
+              Actualmente tiene {variantesCtrl.variantesActuales.length}{" "}
+              variante(s).
+            </Text>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="subtle" onClick={closeVariantes}>
+              Cancelar
+            </Button>
+            <Button
+              loading={variantesCtrl.saving}
+              onClick={handleGuardarVariantes}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Guardar variantes
+            </Button>
+          </div>
+        </Stack>
+      </ModalEstandar>
+    </div>
+  );
+};
