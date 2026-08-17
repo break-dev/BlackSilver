@@ -28,6 +28,11 @@ import type { RES_Agencia } from "./responses/agencia";
 import type { RES_Oficina } from "./responses/oficina";
 import type { Moneda } from "../shared/enums/_generic/moneda";
 import type { RES_CuentaEmpresa } from "./responses/cuenta-empresa";
+import type {
+  RES_Departamento,
+  RES_Distrito,
+  RES_Provincia,
+} from "./responses/ubicacion";
 
 const path = "/aux";
 
@@ -70,6 +75,7 @@ export const AuxService = {
 
   crear_personal_externo: async (nuevoPersonal: {
     id_proveedor?: number;
+    es_representante?: boolean;
     nombre: string;
     apellido?: string;
     dni?: string;
@@ -193,6 +199,7 @@ export const AuxService = {
     tipo_entidad?: string;
     para_mantenimiento?: boolean;
     para_transporte?: boolean;
+    para_carbon?: boolean;
   }): Promise<IRespuesta<RES_Proveedor[]>> => {
     const { data } = await api.get<IRespuesta<RES_Proveedor[]>>(
       `${path}/proveedores`,
@@ -226,11 +233,15 @@ export const AuxService = {
     razon_social: string;
     para_mantenimiento: boolean;
     para_transporte?: boolean;
+    para_carbon?: boolean;
     dni?: string;
     ruc?: string;
     direccion?: string;
     telefono?: string;
     correo?: string;
+    id_departamento?: number;
+    id_provincia?: number;
+    id_distrito?: number;
   }): Promise<IRespuesta<RES_Proveedor>> => {
     const { data } = await api.post<IRespuesta<RES_Proveedor>>(
       `${path}/proveedores`,
@@ -239,11 +250,15 @@ export const AuxService = {
         razonSocial: nuevoProveedor.razon_social,
         paraMantenimiento: nuevoProveedor.para_mantenimiento,
         paraTransporte: nuevoProveedor.para_transporte,
+        paraCarbon: nuevoProveedor.para_carbon ?? false,
         dni: nuevoProveedor.dni,
         ruc: nuevoProveedor.ruc,
         direccion: nuevoProveedor.direccion,
         telefono: nuevoProveedor.telefono,
         correo: nuevoProveedor.correo,
+        id_departamento: nuevoProveedor.id_departamento,
+        id_provincia: nuevoProveedor.id_provincia,
+        id_distrito: nuevoProveedor.id_distrito,
       },
     );
     return data;
@@ -536,6 +551,47 @@ export const AuxService = {
         params: filters,
       },
     );
+    return data;
+  },
+
+  /**
+   * Obtener departamentos del Perú
+   */
+  get_departamentos: async (filters?: {
+    id_departamento?: number;
+  }): Promise<IRespuesta<RES_Departamento[] | RES_Departamento>> => {
+    const { data } = await api.get<
+      IRespuesta<RES_Departamento[] | RES_Departamento>
+    >(`${path}/departamentos`, { params: filters });
+    return data;
+  },
+
+  /**
+   * Obtener provincias. Si id_departamento esta presente, devuelve solo
+   * provincias de ese departamento (para selects en cascada).
+   */
+  get_provincias: async (filters?: {
+    id_provincia?: number;
+    id_departamento?: number;
+  }): Promise<IRespuesta<RES_Provincia[] | RES_Provincia>> => {
+    const { data } = await api.get<
+      IRespuesta<RES_Provincia[] | RES_Provincia>
+    >(`${path}/provincias`, { params: filters });
+    return data;
+  },
+
+  /**
+   * Obtener distritos. Si id_provincia esta presente, devuelve solo
+   * distritos de esa provincia (para selects en cascada).
+   */
+  get_distritos: async (filters?: {
+    id_distrito?: number;
+    id_provincia?: number;
+    id_departamento?: number;
+  }): Promise<IRespuesta<RES_Distrito[] | RES_Distrito>> => {
+    const { data } = await api.get<
+      IRespuesta<RES_Distrito[] | RES_Distrito>
+    >(`${path}/distritos`, { params: filters });
     return data;
   },
 };
