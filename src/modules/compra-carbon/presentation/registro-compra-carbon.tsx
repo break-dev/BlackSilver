@@ -386,72 +386,75 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
             />
           </Grid.Col>
 
-          {/* Fila 2: Toggle Natural/Jur + Proveedor + Representante */}
-          <Grid.Col span={{ base: 12, md: 2 }}>
-            <Tooltip
-              label={
-                filtroTipoEntidad === TipoEntidad.Natural
-                  ? "Ver proveedores juridicos"
-                  : "Ver proveedores naturales"
-              }
-              position="top"
-              withArrow
-            >
-              <ActionIcon
-                variant="light"
-                color={
+          {/* Fila 2: Proveedor (con toggle Natural/Juridica a la derecha) + Representante */}
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <div className="flex items-end gap-2">
+              <Select
+                label={`Proveedor (${
                   filtroTipoEntidad === TipoEntidad.Natural
-                    ? "teal"
-                    : "indigo"
-                }
-                onClick={() =>
-                  setFiltroTipoEntidad((prev) =>
-                    prev === TipoEntidad.Natural
-                      ? TipoEntidad.Juridica
-                      : TipoEntidad.Natural,
-                  )
+                    ? "Natural"
+                    : "Juridica"
+                })`}
+                placeholder={
+                  loadingCatalogos
+                    ? "Cargando..."
+                    : opcionesProveedor.length === 0
+                      ? "Sin proveedores para esta opcion"
+                      : "Seleccione"
                 }
                 radius="lg"
-                size="lg"
-                className="shrink-0"
-                style={{ height: 36, width: 36 }}
+                size="sm"
+                searchable
+                withAsterisk
+                disabled={opcionesProveedor.length === 0}
+                data={opcionesProveedor}
+                value={idProveedor}
+                onChange={setIdProveedor}
+                classNames={inputClasses}
+                nothingFoundMessage="Sin coincidencias"
+                leftSection={
+                  <IconBuildingStore size={16} className="text-zinc-400" />
+                }
+                className="flex-1"
+              />
+              <Tooltip
+                label={
+                  filtroTipoEntidad === TipoEntidad.Natural
+                    ? "Ver proveedores juridicos"
+                    : "Ver proveedores naturales"
+                }
+                position="top"
+                withArrow
               >
-                {filtroTipoEntidad === TipoEntidad.Natural ? (
-                  <IconUsersGroup className="w-5 h-5" />
-                ) : (
-                  <IconUsers className="w-5 h-5" />
-                )}
-              </ActionIcon>
-            </Tooltip>
+                <ActionIcon
+                  variant="light"
+                  color={
+                    filtroTipoEntidad === TipoEntidad.Natural
+                      ? "teal"
+                      : "indigo"
+                  }
+                  onClick={() =>
+                    setFiltroTipoEntidad((prev) =>
+                      prev === TipoEntidad.Natural
+                        ? TipoEntidad.Juridica
+                        : TipoEntidad.Natural,
+                    )
+                  }
+                  radius="lg"
+                  size="lg"
+                  className="shrink-0"
+                  style={{ height: 36, width: 36 }}
+                >
+                  {filtroTipoEntidad === TipoEntidad.Natural ? (
+                    <IconUsersGroup className="w-5 h-5" />
+                  ) : (
+                    <IconUsers className="w-5 h-5" />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+            </div>
           </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 5 }}>
-            <Select
-              label={`Proveedor (${
-                filtroTipoEntidad === TipoEntidad.Natural
-                  ? "Natural"
-                  : "Juridica"
-              })`}
-              placeholder={
-                loadingCatalogos
-                  ? "Cargando..."
-                  : opcionesProveedor.length === 0
-                    ? "Sin proveedores para esta opcion"
-                    : "Seleccione"
-              }
-              radius="lg"
-              size="sm"
-              searchable
-              withAsterisk
-              disabled={opcionesProveedor.length === 0}
-              data={opcionesProveedor}
-              value={idProveedor}
-              onChange={setIdProveedor}
-              classNames={inputClasses}
-              nothingFoundMessage="Sin coincidencias"
-              leftSection={<IconBuildingStore size={16} className="text-zinc-400" />}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 5 }}>
+          <Grid.Col span={{ base: 12, md: 6 }}>
             <Select
               label="Representante"
               placeholder={
@@ -590,49 +593,58 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
         ))}
 
         {/* Resumen Tributario al pie */}
-        <Grid mt="xs" align="end">
-          <Grid.Col span={{ base: 6, md: 2 }}>
-            <NumberInput
-              label="IGV (%)"
-              radius="lg"
-              size="sm"
-              value={igvPct}
-              readOnly
-              disabled
-              classNames={inputClasses}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 10 }}>
-            <div className="bg-zinc-900/30 p-4 rounded-2xl border border-zinc-800/50 space-y-2">
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed" className="uppercase tracking-wider">
+        <Grid mt="xs" justify="flex-end">
+          <Grid.Col span={{ base: 12, sm: 8, md: 5, lg: 4 }}>
+            <div className="bg-zinc-900/30 px-4 py-3 rounded-xl border border-zinc-800/50">
+              <div className="flex justify-between items-center mb-1.5">
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fw={700}
+                  className="uppercase tracking-wider"
+                >
                   Subtotal
                 </Text>
-                <Text size="sm" fw={700} className="font-mono text-zinc-300">
+                <Text
+                  size="xs"
+                  fw={700}
+                  className="font-mono text-zinc-300 tabular-nums"
+                >
                   {formatPEN(subtotalBase)}
                 </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed" className="uppercase tracking-wider">
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fw={700}
+                  className="uppercase tracking-wider"
+                >
                   IGV {igvPct.toFixed(0)}%
                 </Text>
-                <Text size="sm" fw={700} className="font-mono text-zinc-300">
+                <Text
+                  size="xs"
+                  fw={700}
+                  className="font-mono text-zinc-300 tabular-nums"
+                >
                   {formatPEN(igvMonto)}
                 </Text>
-              </Group>
-              <div className="h-px bg-zinc-800 my-2" />
-              <Group justify="space-between" align="center">
+              </div>
+              <div className="h-px bg-zinc-800 mb-2" />
+              <div className="flex justify-between items-center">
                 <Text
                   fw={900}
-                  size="sm"
+                  size="xs"
                   className="uppercase tracking-widest text-zinc-200"
                 >
                   Total
                 </Text>
-                <Badge color="indigo" variant="filled" size="lg" radius="xl">
-                  <span className="font-mono">{formatPEN(total)}</span>
+                <Badge color="indigo" variant="filled" size="sm" radius="md">
+                  <span className="font-mono tabular-nums">
+                    {formatPEN(total)}
+                  </span>
                 </Badge>
-              </Group>
+              </div>
             </div>
           </Grid.Col>
         </Grid>

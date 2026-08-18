@@ -3,11 +3,13 @@ import { Stack, Text } from "@mantine/core";
 import { CompraCarbonCard } from "./compra-carbon-card";
 import type { CompraCarbonResumen } from "../../service/compra-carbon.responses";
 import type { RES_Empresa } from "../../../../service/responses/empresa";
+import type { ProveedorResponse } from "../../../../modules/proveedores/service/proveedores.responses";
 
 interface Props {
   compras: CompraCarbonResumen[];
   busqueda: string;
   empresasById: Record<number, RES_Empresa>;
+  proveedoresById: Record<number, ProveedorResponse>;
   onAprobada?: (cabecera: CompraCarbonResumen) => void;
   onEvidenciasActualizadas?: (cabecera: CompraCarbonResumen) => void;
   onAnulada?: (cabecera: CompraCarbonResumen) => void;
@@ -17,6 +19,7 @@ export const CompraCarbonListado = ({
   compras,
   busqueda,
   empresasById,
+  proveedoresById,
   onAprobada,
   onEvidenciasActualizadas,
   onAnulada,
@@ -67,7 +70,7 @@ export const CompraCarbonListado = ({
           isExpanded={expandedIds[c.id_compra_carbon] ?? true}
           onToggle={() => toggle(c.id_compra_carbon)}
           empresa={empresasById[c.id_empresa]}
-          nombreCreador={c.empleado_registro}
+          proveedor={proveedoresById[c.id_proveedor]}
           onAprobada={onAprobada}
           onEvidenciasActualizadas={onEvidenciasActualizadas}
           onAnulada={onAnulada}

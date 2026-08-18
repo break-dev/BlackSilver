@@ -6,6 +6,8 @@ import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useCompraCarbon } from "../hooks/useCompraCarbon";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Empresa } from "../../../service/responses/empresa";
+import type { ProveedorResponse } from "../../proveedores/service/proveedores.responses";
+import { ProveedoresService } from "../../proveedores/service/proveedores.service";
 import { RegistroCompraCarbon } from "./registro-compra-carbon";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
 import { CompraCarbonFilter } from "./components/compra-carbon-filter";
@@ -29,20 +31,31 @@ export const CompraCarbonPage = () => {
   } = useCompraCarbon();
 
   const [empresasById, setEmpresasById] = useState<Record<number, RES_Empresa>>({});
+  const [proveedoresById, setProveedoresById] = useState<
+    Record<number, ProveedorResponse>
+  >({});
   const [openRegistro, setOpenRegistro] = useState(false);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
-      const resp = await AuxService.get_empresas();
+      const [empresasRes, proveedoresArr] = await Promise.all([
+        AuxService.get_empresas(),
+        ProveedoresService.getProveedores({ para_carbon: true }),
+      ]);
       if (cancel) return;
-      if (resp.success) {
+      if (empresasRes.success) {
         const map: Record<number, RES_Empresa> = {};
-        for (const e of resp.data) {
+        for (const e of empresasRes.data) {
           map[e.id_empresa] = e;
         }
         setEmpresasById(map);
       }
+      const provMap: Record<number, ProveedorResponse> = {};
+      for (const p of proveedoresArr ?? []) {
+        provMap[p.id_proveedor] = p;
+      }
+      setProveedoresById(provMap);
     })();
     return () => {
       cancel = true;
@@ -85,6 +98,7 @@ export const CompraCarbonPage = () => {
           compras={compras}
           busqueda={busqueda}
           empresasById={empresasById}
+          proveedoresById={proveedoresById}
           onAprobada={updateCompraLocal}
           onEvidenciasActualizadas={updateCompraLocal}
           onAnulada={updateCompraLocal}

@@ -39,13 +39,14 @@ import type {
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { EstadoCompraCarbon } from "../../../../shared/enums/compra-carbon/estado-compra-carbon";
 import type { RES_Empresa } from "../../../../service/responses/empresa";
+import type { ProveedorResponse } from "../../../../modules/proveedores/service/proveedores.responses";
 
 interface Props {
   compra: CompraCarbonResumen;
   isExpanded: boolean;
   onToggle: () => void;
   empresa?: RES_Empresa;
-  nombreCreador: string;
+  proveedor?: ProveedorResponse | null;
   onAprobada?: (cabecera: CompraCarbonResumen) => void;
   onEvidenciasActualizadas?: (cabecera: CompraCarbonResumen) => void;
   onAnulada?: (cabecera: CompraCarbonResumen) => void;
@@ -82,6 +83,7 @@ export const CompraCarbonCard = ({
   isExpanded,
   onToggle,
   empresa,
+  proveedor,
   onAprobada,
   onEvidenciasActualizadas,
   onAnulada,
@@ -160,8 +162,9 @@ export const CompraCarbonCard = ({
             detalles: data.detalles,
           }}
           empresa={empresa}
-          nombreCreador={compra.empleado_registro}
+          proveedor={proveedor ?? null}
           urlLogoEmpresa={empresa.url_logo ?? null}
+          colorPredominante={empresa.color_predominante ?? null}
         />,
         {
           documentTitle: `Compra de Carbon - ${compra.correlativo}`,
