@@ -13,8 +13,10 @@ import {
 import {
   IconDeviceFloppy,
   IconExclamationCircle,
+  IconFlame,
   IconTrash,
   IconUser,
+  IconX,
 } from "@tabler/icons-react";
 
 import { useRegistroProveedorCarbon } from "../../hooks/useRegistroProveedorCarbon";
@@ -24,6 +26,8 @@ import { ModalPersonalExterno, type PersonalLocal } from "../../../../presentati
 import type { RES_Departamento, RES_Distrito, RES_Provincia } from "../../../../service/responses/ubicacion";
 import type { ProveedorResponse } from "../../service/proveedores.responses";
 import { AuxService } from "../../../../service/auxiliar.service";
+import { TipoCarbonService } from "../../../tipo-carbon/service/tipo-carbon.service";
+import type { RES_TipoCarbon } from "../../../tipo-carbon/service/tipo-carbon.responses";
 
 interface Props {
   onCancel: () => void;
@@ -34,6 +38,7 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
   const {
     payload,
     representantes,
+    tiposCarbon,
     loading,
     error,
     handleChange,
@@ -41,6 +46,8 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
     handleSelectNumber,
     addRepresentante,
     removeRepresentante,
+    addTipoCarbon,
+    removeTipoCarbon,
     submit,
   } = useRegistroProveedorCarbon((p) => onSuccess(p));
 
@@ -56,6 +63,26 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
   const [searchDist, setSearchDist] = useState("");
 
   const [openRepresentante, setOpenRepresentante] = useState(false);
+
+  const [todosTipos, setTodosTipos] = useState<RES_TipoCarbon[]>([]);
+  const [loadingTipos, setLoadingTipos] = useState(false);
+  const [tipoPendiente, setTipoPendiente] = useState<string | null>(null);
+  const [searchTipo, setSearchTipo] = useState("");
+
+  // Cargar catalogo de tipos de carbon una sola vez al montar.
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      setLoadingTipos(true);
+      const res = await TipoCarbonService.getTipos();
+      if (cancel) return;
+      if (res.success) setTodosTipos(res.data);
+      setLoadingTipos(false);
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   // Departamentos: carga unica al montar
   useEffect(() => {
@@ -138,8 +165,28 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
     );
   }, [distritos, searchDist]);
 
+  const tiposDisponibles = useMemo(() => {
+    const q = searchTipo.trim();
+    const libres = todosTipos.filter(
+      (t) => !tiposCarbon.some((x) => x.id_tipo_carbon === t.id_tipo_carbon),
+    );
+    if (!q) return libres;
+    return getCoincidencias(libres, q, { keys: ["nombre", "codigo"] }).map(
+      (r) => r.item,
+    );
+  }, [todosTipos, tiposCarbon, searchTipo]);
+
   const handleRepresentanteCreado = (p: PersonalLocal) => {
     addRepresentante(p);
+  };
+
+  const handleAgregarTipo = (value: string | null) => {
+    if (!value) return;
+    const id = Number(value);
+    const tipo = todosTipos.find((t) => t.id_tipo_carbon === id);
+    if (!tipo) return;
+    addTipoCarbon(tipo);
+    setTipoPendiente(null);
   };
 
   return (
@@ -371,6 +418,95 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
           />
         </Grid.Col>
       </Grid>
+
+      {/* Tipos de Carbon (opcional, antes de Representantes) */}
+      <div className="flex flex-col gap-3">
+        <div>
+          <Text size="sm" fw={600} className="text-zinc-300">
+            Tipos de Carbon que ofrece
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            Selecciona los tipos que este proveedor puede suministrar.
+          </Text>
+        </div>
+
+        <Select
+          label="Agregar tipo de carbon"
+          placeholder={
+            loadingTipos
+              ? "Cargando tipos..."
+              : tiposDisponibles.length === 0
+                ? "Todos los tipos ya estan agregados"
+                : "Selecciona un tipo para agregarlo"
+          }
+          radius="xl"
+          searchable
+          clearable
+          disabled={!loadingTipos && tiposDisponibles.length === 0}
+          data={tiposDisponibles.map((t) => ({
+            value: String(t.id_tipo_carbon),
+            label: t.codigo ? `${t.nombre} (${t.codigo})` : t.nombre,
+          }))}
+          value={tipoPendiente}
+          onChange={handleAgregarTipo}
+          searchValue={searchTipo}
+          onSearchChange={setSearchTipo}
+          nothingFoundMessage="Sin tipos disponibles"
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
+            label: "text-zinc-300 mb-1 font-medium text-xs",
+          }}
+        />
+
+        {tiposCarbon.length === 0 ? (
+          <div className="text-zinc-500 text-xs italic px-3 py-2 border border-dashed border-zinc-800 rounded-lg">
+            Sin tipos seleccionados.
+          </div>
+        ) : (
+          <Stack gap="xs">
+            {tiposCarbon.map((t) => (
+              <div
+                key={t.id_tipo_carbon}
+                className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-zinc-900/60 to-zinc-900/30 border border-zinc-800 rounded-xl hover:border-indigo-700/60 transition-colors"
+              >
+                <Group gap="sm" wrap="nowrap">
+                  <Badge
+                    variant="filled"
+                    color="orange"
+                    radius="xl"
+                    size="lg"
+                    className="shrink-0"
+                  >
+                    <IconFlame size={14} stroke={1.8} />
+                  </Badge>
+                  <div className="flex flex-col min-w-0">
+                    <Text size="sm" fw={500} className="text-zinc-100 truncate">
+                      {t.nombre}
+                    </Text>
+                    {t.codigo && (
+                      <Text size="xs" className="text-zinc-500">
+                        Codigo: {t.codigo}
+                      </Text>
+                    )}
+                  </div>
+                </Group>
+                <Button
+                  variant="subtle"
+                  color="red"
+                  size="xs"
+                  radius="xl"
+                  leftSection={<IconX size={14} />}
+                  onClick={() => removeTipoCarbon(t.id_tipo_carbon)}
+                  className="shrink-0"
+                >
+                  Quitar
+                </Button>
+              </div>
+            ))}
+          </Stack>
+        )}
+      </div>
 
       {/* Representantes (opcional, antes de guardar) */}
       <div className="flex flex-col gap-3">

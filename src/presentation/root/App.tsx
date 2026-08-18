@@ -43,6 +43,7 @@ import MarcarAsistenciaPage from "../../modules/asistencia/presentation/marcar-a
 import AsistenciaPage from "../../modules/asistencia/presentation/asistencia.page.tsx";
 import PlanillaPage from "../../modules/planilla/presentation/planilla.page.tsx";
 import SystemPage from "../../modules/system/presentation/system.page.tsx";
+import { CompraCarbonPage } from "../../modules/compra-carbon/presentation/compra-carbon-page.tsx";
 
 export const App = () => {
   const { setModoAuditoria } = useAuditoriaStore();
@@ -126,6 +127,9 @@ export const App = () => {
         <Route path="/programacion-horarios" element={<ProgramacionHorariosPage />} />
         <Route path="/asistencia" element={<AsistenciaPage />} />
         <Route path="/planilla" element={<PlanillaPage />} />
+
+        {/* Compra de Carbon (menu directo, sin submenus) */}
+        <Route path="/compra-carbon" element={<CompraCarbonPage />} />
 
         {/* System module (oculto, solo URL directa) */}
         <Route path="/system" element={<SystemPage />} />

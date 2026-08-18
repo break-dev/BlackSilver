@@ -92,3 +92,14 @@ export const Schema_CrearRepresentante = z.object({
 export type CrearRepresentanteRequest = z.infer<
   typeof Schema_CrearRepresentante
 >;
+
+/**
+ * Set de tipos de carbon asociados al proveedor (modulo carbon).
+ * Reemplaza TODAS las asociaciones existentes.
+ */
+export const Schema_SetTiposCarbonProveedor = z.object({
+  tipos_carbon: z.array(z.number().int().positive()),
+});
+export type SetTiposCarbonProveedorRequest = z.infer<
+  typeof Schema_SetTiposCarbonProveedor
+>;

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Badge,
   Button,
-  MultiSelect,
+  Group,
+  Select,
   Stack,
   Text,
   TextInput,
@@ -13,18 +14,23 @@ import {
   IconExclamationCircle,
   IconSettings,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 
 import { useTipoCarbon } from "../../hooks/useTipoCarbon";
 import { useRegistroTipoCarbon } from "../../hooks/useRegistroTipoCarbon";
 import { useVariantesTipo } from "../../hooks/useVariantesTipo";
+import { TipoCarbonService } from "../../service/tipo-carbon.service";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import type {
   ActualizarTipoCarbonRequest,
   CrearTipoCarbonRequest,
 } from "../../service/tipo-carbon.requests";
-import type { RES_TipoCarbon } from "../../service/tipo-carbon.responses";
+import type {
+  RES_TipoCarbon,
+  RES_VarianteCarbon,
+} from "../../service/tipo-carbon.responses";
 
 type ModalMode = "create" | "edit" | null;
 
@@ -58,7 +64,27 @@ export const TipoCarbonTab = () => {
   const [variantesTarget, setVariantesTarget] =
     useState<RES_TipoCarbon | null>(null);
   const variantesCtrl = useVariantesTipo(variantesTarget?.id_tipo_carbon ?? null);
-  const [selectedVariantes, setSelectedVariantes] = useState<string[]>([]);
+  const [variantesSeleccionadas, setVariantesSeleccionadas] = useState<
+    RES_VarianteCarbon[]
+  >([]);
+  const [catalogoTipos, setCatalogoTipos] = useState<RES_TipoCarbon[]>([]);
+  const [pendienteVariante, setPendienteVariante] = useState<string | null>(
+    null,
+  );
+  const lastHydratedFor = useRef<number | null>(null);
+
+  // Carga unica del catalogo de tipos al montar (para alimentar el Select).
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const res = await TipoCarbonService.getTipos();
+      if (cancel) return;
+      if (res.success) setCatalogoTipos(res.data);
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   const openCreate = () => {
     setEditTipo(null);
@@ -87,39 +113,88 @@ export const TipoCarbonTab = () => {
 
   const openVariantes = (t: RES_TipoCarbon) => {
     setVariantesTarget(t);
-    setSelectedVariantes([]);
+    setVariantesSeleccionadas([]);
+    lastHydratedFor.current = null;
   };
 
   const handleGuardarVariantes = async () => {
     if (!variantesTarget) return;
-    const ids = selectedVariantes.map((v) => Number(v));
+    const ids = variantesSeleccionadas.map((v) => v.id_tipo_variante);
     const ok = await variantesCtrl.guardar(ids);
     if (ok) {
       ctrl.refreshCantidadVariantes(
         variantesTarget.id_tipo_carbon,
         ids.length,
       );
+      closeVariantes();
     }
   };
 
   const closeVariantes = () => {
     setVariantesTarget(null);
-    setSelectedVariantes([]);
+    setVariantesSeleccionadas([]);
+    lastHydratedFor.current = null;
   };
 
-  // Hidratar selectedVariantes solo cuando abrimos el modal con datos ya cargadas
-  if (
-    variantesTarget &&
-    selectedVariantes.length === 0 &&
-    variantesCtrl.variantesActuales.length > 0 &&
-    !variantesCtrl.loading
-  ) {
-    setSelectedVariantes(
-      variantesCtrl.variantesActuales.map((v) =>
-        String(v.id_tipo_variante),
-      ),
+  // Hidratar variantesSeleccionadas una vez por target cuando los datos
+  // frescos ya terminaron de cargar (esperamos a !loading para no leer stale).
+  useEffect(() => {
+    const targetId = variantesTarget?.id_tipo_carbon ?? null;
+    if (targetId === null) return;
+    if (variantesCtrl.loading) return;
+    if (lastHydratedFor.current === targetId) return;
+    lastHydratedFor.current = targetId;
+    setVariantesSeleccionadas(variantesCtrl.variantesActuales);
+  }, [
+    variantesTarget?.id_tipo_carbon,
+    variantesCtrl.loading,
+    variantesCtrl.variantesActuales,
+  ]);
+
+  // Opciones para el Select: tipos que NO son el actual y NO estan ya
+  // seleccionados. El backend actualmente permite que un tipo sea variante
+  // de si mismo; aqui lo excluimos por UX (el usuario no deberia poder
+  // marcarse a si mismo).
+  const opcionesSelect = useMemo(() => {
+    if (!variantesTarget) return [];
+    const seleccionadasIds = new Set(
+      variantesSeleccionadas.map((v) => v.id_tipo_variante),
     );
-  }
+    return catalogoTipos
+      .filter(
+        (t) =>
+          t.id_tipo_carbon !== variantesTarget.id_tipo_carbon &&
+          !seleccionadasIds.has(t.id_tipo_carbon),
+      )
+      .map((t) => ({
+        value: String(t.id_tipo_carbon),
+        label: t.codigo ? `${t.nombre} (${t.codigo})` : t.nombre,
+      }));
+  }, [catalogoTipos, variantesTarget, variantesSeleccionadas]);
+
+  const handleAgregarVariante = (value: string | null) => {
+    if (!value || !variantesTarget) return;
+    const id = Number(value);
+    if (id === variantesTarget.id_tipo_carbon) return;
+    if (variantesSeleccionadas.some((v) => v.id_tipo_variante === id)) return;
+    const tipo = catalogoTipos.find((t) => t.id_tipo_carbon === id);
+    if (!tipo) return;
+    setVariantesSeleccionadas((prev) => [
+      ...prev,
+      {
+        id_tipo_variante: tipo.id_tipo_carbon,
+        nombre: tipo.nombre,
+        codigo: tipo.codigo,
+      },
+    ]);
+    setPendienteVariante(null);
+  };
+
+  const handleQuitarVariante = (id: number) => {
+    setVariantesSeleccionadas((prev) =>
+      prev.filter((v) => v.id_tipo_variante !== id),
+    );
+  };
 
   const handleEliminar = async () => {
     if (!confirmDelete) return;
@@ -369,35 +444,100 @@ export const TipoCarbonTab = () => {
       <ModalEstandar
         opened={!!variantesTarget}
         close={closeVariantes}
-        title={`Variantes de: ${variantesTarget?.nombre ?? ""}`}
+        title="Variantes"
         size="sm"
       >
         <Stack gap="md">
-          <Text size="xs" className="text-zinc-500">
-            Selecciona los tipos (ya existentes) que son variante de{" "}
-            <span className="font-semibold text-zinc-300">
-              {variantesTarget?.nombre}
-            </span>
-            . El backend reemplaza las asociaciones existentes.
-          </Text>
-          <MultiSelect
-            label="Variantes"
-            placeholder="Busca y selecciona tipos..."
-            radius="lg"
-            searchable
-            data={variantesCtrl.opciones}
-            value={selectedVariantes}
-            onChange={setSelectedVariantes}
-            nothingFoundMessage="No hay otros tipos registrados"
-            clearable
-            classNames={fieldClasses}
-          />
           {variantesTarget && (
-            <Text size="xs" className="text-zinc-500">
-              Actualmente tiene {variantesCtrl.variantesActuales.length}{" "}
-              variante(s).
-            </Text>
+            <div>
+              <Text size="sm" fw={600} className="text-zinc-200">
+                {variantesTarget.nombre}
+              </Text>
+              <Text size="xs" className="text-zinc-500">
+                Selecciona los tipos (ya existentes) que son variante de este
+                tipo.
+              </Text>
+            </div>
           )}
+
+          <Select
+            label="Agregar variante"
+            placeholder={
+              opcionesSelect.length === 0
+                ? "Todos los tipos disponibles ya estan agregados"
+                : "Selecciona un tipo para agregarlo"
+            }
+            radius="xl"
+            searchable
+            clearable
+            disabled={opcionesSelect.length === 0}
+            data={opcionesSelect}
+            value={pendienteVariante}
+            onChange={handleAgregarVariante}
+            nothingFoundMessage="Sin tipos disponibles"
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
+              label: "text-zinc-300 mb-1 font-medium text-xs",
+            }}
+          />
+
+          {variantesSeleccionadas.length === 0 ? (
+            <div className="text-zinc-500 text-xs italic px-3 py-2 border border-dashed border-zinc-800 rounded-lg">
+              Sin variantes seleccionadas.
+            </div>
+          ) : (
+            <Stack gap="xs">
+              {variantesSeleccionadas.map((v) => (
+                <div
+                  key={v.id_tipo_variante}
+                  className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-zinc-900/60 to-zinc-900/30 border border-zinc-800 rounded-xl hover:border-indigo-700/60 transition-colors"
+                >
+                  <Group gap="sm" wrap="nowrap">
+                    <Badge
+                      variant="filled"
+                      color="indigo"
+                      radius="xl"
+                      size="lg"
+                      className="shrink-0"
+                    >
+                      <IconSettings size={14} stroke={1.8} />
+                    </Badge>
+                    <div className="flex flex-col min-w-0">
+                      <Text
+                        size="sm"
+                        fw={500}
+                        className="text-zinc-100 truncate"
+                      >
+                        {v.nombre}
+                      </Text>
+                      {v.codigo && (
+                        <Text size="xs" className="text-zinc-500">
+                          Codigo: {v.codigo}
+                        </Text>
+                      )}
+                    </div>
+                  </Group>
+                  <Button
+                    variant="subtle"
+                    color="red"
+                    size="xs"
+                    radius="xl"
+                    leftSection={<IconX size={14} />}
+                    onClick={() => handleQuitarVariante(v.id_tipo_variante)}
+                  >
+                    Quitar
+                  </Button>
+                </div>
+              ))}
+            </Stack>
+          )}
+
+          <Text size="xs" className="text-zinc-500">
+            Actualmente {variantesSeleccionadas.length} variante(s)
+            seleccionada(s).
+          </Text>
+
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="subtle" onClick={closeVariantes}>
               Cancelar

@@ -13,6 +13,7 @@ import { RegistroProveedor } from "../registro-proveedor/registro-proveedor";
 import { RegistroProveedorCarbon } from "../registro-proveedor-carbon/registro-proveedor-carbon";
 import { CuentasBancarias } from "../cuentas-bancarias/cuentas-bancarias";
 import { PersonalExternoProveedor } from "../personal-externo-proveedor/personal-externo-proveedor";
+import { TiposCarbonProveedor } from "../tipos-carbon-proveedor/tipos-carbon-proveedor";
 import type {
   CuentaBancariaResponse,
   ProveedorResponse,
@@ -41,6 +42,8 @@ export const ProveedoresPage = () => {
     useState<ProveedorResponse | null>(null);
   const [proveedorPersonal, setProveedorPersonal] =
     useState<ProveedorResponse | null>(null);
+  const [proveedorTiposCarbon, setProveedorTiposCarbon] =
+    useState<ProveedorResponse | null>(null);
   const [busqueda, setBusqueda] = useState("");
 
   const proveedorEnGestion =
@@ -54,6 +57,13 @@ export const ProveedoresPage = () => {
       ? (proveedores.find(
           (p) => p.id_proveedor === proveedorPersonal.id_proveedor,
         ) ?? proveedorPersonal)
+      : null;
+
+  const proveedorTiposCarbonEnGestion =
+    proveedorTiposCarbon
+      ? (proveedores.find(
+          (p) => p.id_proveedor === proveedorTiposCarbon.id_proveedor,
+        ) ?? proveedorTiposCarbon)
       : null;
 
   const actualizarCuentas = (
@@ -90,6 +100,16 @@ export const ProveedoresPage = () => {
       selectedProveedor.id_proveedor,
       actualizarCuentas(selectedProveedor, cuentasActualizadas),
     );
+  };
+
+  const handleTiposCarbonGuardados = (
+    proveedor: ProveedorResponse,
+    tipos: { id_tipo_carbon: number; nombre: string; codigo: string | null }[],
+  ) => {
+    updateProveedor(proveedor.id_proveedor, {
+      cantidad_tipos_carbon: tipos.length,
+      tipos_carbon: tipos,
+    });
   };
 
   const iconStyle = { width: rem(18), height: rem(18) };
@@ -172,6 +192,7 @@ export const ProveedoresPage = () => {
             modoCarbon={true}
             onOpenCuentas={(p) => setSelectedProveedor(p)}
             onOpenPersonal={(p) => setProveedorPersonal(p)}
+            onOpenTiposCarbon={(p) => setProveedorTiposCarbon(p)}
           />
         </Tabs.Panel>
       </Tabs>
@@ -236,6 +257,28 @@ export const ProveedoresPage = () => {
         {proveedorPersonalEnGestion && (
           <PersonalExternoProveedor
             proveedor={proveedorPersonalEnGestion}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Tipos de carbon del proveedor (solo tab Carbon) */}
+      <ModalEstandar
+        opened={!!proveedorTiposCarbon}
+        close={() => setProveedorTiposCarbon(null)}
+        title="Tipos de carbon"
+        size="md"
+      >
+        {proveedorTiposCarbonEnGestion && (
+          <TiposCarbonProveedor
+            proveedor={proveedorTiposCarbonEnGestion}
+            key={proveedorTiposCarbonEnGestion.id_proveedor}
+            onGuardados={(tipos) => {
+              handleTiposCarbonGuardados(
+                proveedorTiposCarbonEnGestion,
+                tipos,
+              );
+              setProveedorTiposCarbon(null);
+            }}
           />
         )}
       </ModalEstandar>

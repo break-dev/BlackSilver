@@ -23,6 +23,17 @@ export interface RepresentanteTemporal {
   dni?: string;
 }
 
+/**
+ * Tipo de carbon capturado en el formulario de registro antes de
+ * enviar al backend. Al guardar el proveedor, se persiste la asociacion
+ * mediante setTiposCarbonPorProveedor (PUT que reemplaza el set completo).
+ */
+export interface TipoCarbonTemporal {
+  id_tipo_carbon: number;
+  nombre: string;
+  codigo: string | null;
+}
+
 export const useRegistroProveedorCarbon = (
   onSuccess: (p: ProveedorResponse) => void,
 ) => {
@@ -49,6 +60,8 @@ export const useRegistroProveedorCarbon = (
   const [representantes, setRepresentantes] = useState<RepresentanteTemporal[]>(
     [],
   );
+
+  const [tiposCarbon, setTiposCarbon] = useState<TipoCarbonTemporal[]>([]);
 
   const handleChange = <K extends keyof CrearProveedorRequest>(
     field: K,
@@ -110,6 +123,19 @@ export const useRegistroProveedorCarbon = (
     setRepresentantes((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const addTipoCarbon = (t: TipoCarbonTemporal) => {
+    setTiposCarbon((prev) => {
+      if (prev.some((x) => x.id_tipo_carbon === t.id_tipo_carbon)) return prev;
+      return [...prev, t];
+    });
+  };
+
+  const removeTipoCarbon = (id_tipo_carbon: number) => {
+    setTiposCarbon((prev) =>
+      prev.filter((x) => x.id_tipo_carbon !== id_tipo_carbon),
+    );
+  };
+
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -150,14 +176,38 @@ export const useRegistroProveedorCarbon = (
         }
       }
 
-      if (fallidos.length > 0) {
+      // 3) asociar tipos de carbon. Un fallo aqui no revierte el proveedor
+      //    ni los representantes; avisamos y dejamos pendiente.
+      let tiposFallaron = false;
+      if (tiposCarbon.length > 0) {
+        try {
+          const respTipos =
+            await ProveedoresService.setTiposCarbonPorProveedor(
+              created.id_proveedor,
+              {
+                tipos_carbon: tiposCarbon.map((t) => t.id_tipo_carbon),
+              },
+            );
+          tiposFallaron = !respTipos.success;
+        } catch (err) {
+          console.error(err);
+          tiposFallaron = true;
+        }
+      }
+
+      if (fallidos.length > 0 || tiposFallaron) {
+        const piezas: string[] = [];
+        if (fallidos.length > 0) {
+          piezas.push(`representantes: ${fallidos.join(", ")}`);
+        }
+        if (tiposFallaron) {
+          piezas.push("tipos de carbon (completa desde la lista)");
+        }
         notifyError(
-          `Proveedor guardado, pero no se pudieron registrar: ${fallidos.join(
-            ", ",
-          )}. Agregalos luego desde la lista.`,
+          `Proveedor guardado, pero no se pudieron registrar ${piezas.join("; ")}.`,
         );
       } else {
-        notifySuccess("Proveedor y representantes registrados correctamente");
+        notifySuccess("Proveedor, representantes y tipos de carbon registrados correctamente");
       }
 
       onSuccess(created);
@@ -172,6 +222,7 @@ export const useRegistroProveedorCarbon = (
   return {
     payload,
     representantes,
+    tiposCarbon,
     loading,
     error,
     handleChange,
@@ -179,6 +230,8 @@ export const useRegistroProveedorCarbon = (
     handleSelectNumber,
     addRepresentante,
     removeRepresentante,
+    addTipoCarbon,
+    removeTipoCarbon,
     submit,
   };
 };

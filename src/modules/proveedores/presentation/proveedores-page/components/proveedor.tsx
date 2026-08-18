@@ -10,6 +10,7 @@ import {
 import {
   IconBuildingBank,
   IconBuilding,
+  IconFlame,
   IconMail,
   IconPhone,
   IconUser,
@@ -28,6 +29,7 @@ interface Props {
   modoCarbon: boolean;
   onOpenCuentas: (proveedor: ProveedorResponse) => void;
   onOpenPersonal: (proveedor: ProveedorResponse) => void;
+  onOpenTiposCarbon?: (proveedor: ProveedorResponse) => void;
 }
 
 export const Proveedor = ({
@@ -36,6 +38,7 @@ export const Proveedor = ({
   modoCarbon,
   onOpenCuentas,
   onOpenPersonal,
+  onOpenTiposCarbon,
 }: Props) => {
   const columnas: Col[] = [
     {
@@ -128,6 +131,47 @@ export const Proveedor = ({
         </Tooltip>
       ),
     },
+    ...(modoCarbon
+      ? [
+          {
+            accessor: "cantidad_tipos_carbon" as const,
+            title: "Tipos Carbon",
+            width: 130,
+            textAlign: "center" as const,
+            render: (r: ProveedorResponse) => (
+              <Group gap="xs" justify="center" wrap="nowrap">
+                <Badge
+                  color={r.cantidad_tipos_carbon > 0 ? "orange" : "gray"}
+                  variant="light"
+                  size="sm"
+                  radius="xl"
+                >
+                  {r.cantidad_tipos_carbon === 1
+                    ? "1 tipo"
+                    : `${r.cantidad_tipos_carbon} tipos`}
+                </Badge>
+                {onOpenTiposCarbon && (
+                  <Tooltip
+                    label="Gestionar tipos de carbon"
+                    withArrow
+                    position="left"
+                  >
+                    <ActionIcon
+                      variant="subtle"
+                      color="orange"
+                      radius="xl"
+                      size="sm"
+                      onClick={() => onOpenTiposCarbon(r)}
+                    >
+                      <IconFlame size={16} stroke={1.5} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </Group>
+            ),
+          },
+        ]
+      : []),
     {
       accessor: "contacto",
       title: "Contacto",

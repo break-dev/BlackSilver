@@ -1,4 +1,5 @@
 import { api } from "../../../service/_api";
+import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { RES_Banco } from "../../../service/responses/banco";
 import type {
   CrearBancoRequest,
@@ -6,6 +7,7 @@ import type {
   CrearProveedorRequest,
   CrearRepresentanteRequest,
   EditarCuentaBancariaRequest,
+  SetTiposCarbonProveedorRequest,
 } from "./proveedores.requests";
 
 export type {
@@ -14,10 +16,12 @@ export type {
   CrearProveedorRequest,
   CrearRepresentanteRequest,
   EditarCuentaBancariaRequest,
+  SetTiposCarbonProveedorRequest,
 };
 import type {
   CuentaBancariaResponse,
   ProveedorResponse,
+  TipoCarbonProveedorResponse,
 } from "./proveedores.responses";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
@@ -113,5 +117,31 @@ export const ProveedoresService = {
       params: { id_proveedor: idProveedor },
     });
     return data.data;
+  },
+
+  /**
+   * Tipos de carbon asociados a un proveedor (modulo carbon).
+   */
+  getTiposCarbonPorProveedor: async (
+    idProveedor: number,
+  ): Promise<IRespuesta<TipoCarbonProveedorResponse[]>> => {
+    const { data } = await api.get<IRespuesta<TipoCarbonProveedorResponse[]>>(
+      `/proveedores/${idProveedor}/tipos-carbon`,
+    );
+    return data;
+  },
+
+  /**
+   * Reemplaza los tipos de carbon asociados a un proveedor.
+   */
+  setTiposCarbonPorProveedor: async (
+    idProveedor: number,
+    payload: SetTiposCarbonProveedorRequest,
+  ): Promise<IRespuesta<TipoCarbonProveedorResponse[]>> => {
+    const { data } = await api.put<IRespuesta<TipoCarbonProveedorResponse[]>>(
+      `/proveedores/${idProveedor}/tipos-carbon`,
+      payload,
+    );
+    return data;
   },
 };

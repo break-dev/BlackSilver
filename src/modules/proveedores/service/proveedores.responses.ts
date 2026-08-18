@@ -23,6 +23,8 @@ export interface ProveedorResponse {
   estado: EstadoBase;
   cantidad_cuentas_bancarias: number;
   cuentas_bancarias?: CuentaBancariaResponse[];
+  cantidad_tipos_carbon: number;
+  tipos_carbon?: TipoCarbonProveedorResponse[];
 }
 
 export interface CuentaBancariaResponse {
@@ -35,4 +37,10 @@ export interface CuentaBancariaResponse {
   cci: string | null;
   es_para_detraccion: boolean;
   estado: EstadoBase;
+}
+
+export interface TipoCarbonProveedorResponse {
+  id_tipo_carbon: number;
+  nombre: string;
+  codigo: string | null;
 }
