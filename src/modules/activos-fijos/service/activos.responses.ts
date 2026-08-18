@@ -1,4 +1,10 @@
 import type { EstadoActivoFijo } from "../../../shared/enums/activo-fijo";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
+
+export interface RES_LaborAbastecida {
+  id_labor: number;
+  nombre: string;
+}
 
 export interface RES_ActivoFijoResumen {
   id_activo: number;
@@ -20,6 +26,9 @@ export interface RES_ActivoFijoResumen {
   id_mina: number | null;
   mina: string | null;
   //
+  id_labor: number | null;
+  labor: string | null;
+  //
   id_almacen: number | null;
   almacen: string | null;
   en_almacen_principal: boolean | null;
@@ -33,6 +42,7 @@ export interface RES_ActivoFijoResumen {
   serie_placa: string | null;
   numero_placa: string | null;
   especificaciones: { clave: string; valor: string }[] | null;
+  evidencias: IArchivo[] | null;
   //
   total_horas: number;
   total_kilometros: number;
@@ -59,4 +69,6 @@ export interface RES_ActivoFijoResumen {
   costo_promedio_base: number | null;
   id_orden_compra: number | null;
   id_orden_compra_comprobante: number | null;
+  //
+  labores_abastecidas: RES_LaborAbastecida[] | null;
 }

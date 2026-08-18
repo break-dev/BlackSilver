@@ -92,7 +92,7 @@ export const ActivosFijosPage = () => {
       {/* Header & Filtros */}
       <div className="flex flex-col md:flex-row items-end gap-3 w-full">
         {/* Buscador */}
-        <div className="flex-1 min-w-[300px] w-full">
+        <div className="flex-1 min-w-75 w-full">
           <TextInput
             label="Buscar Activo"
             placeholder="Producto, correlativo, serie, código..."
@@ -234,7 +234,7 @@ export const ActivosFijosPage = () => {
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Registro de Activo Fijo"
+        title="Nuevo Activo"
         size="lg"
       >
         <RegistroActivo

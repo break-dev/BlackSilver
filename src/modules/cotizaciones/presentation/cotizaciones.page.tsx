@@ -1,17 +1,16 @@
-import { Stack, Text, Button, Group, Divider, Select } from "@mantine/core";
+import { Stack, Text, Button, Group, Select, Switch } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   ClipboardDocumentListIcon,
   ArrowPathIcon,
-  CubeIcon,
   PlusIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { ShieldCheckIcon } from "@heroicons/react/24/solid";
 import { useState, useRef } from "react";
 import { useBlackcito } from "../../../hooks/useBlackcito";
-
 import { useCotizaciones } from "../hooks/useCotizaciones";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 import { useTitlePage } from "../../../hooks/useTitlePage";
 import { useAuditoriaStore } from "../../../stores/auditoria.store";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
@@ -42,9 +41,13 @@ export const CotizacionesPage = () => {
   const [openedProductos, setOpenedProductos] = useState(false);
   const [esAuditableGlobal, setEsAuditableGlobal] = useState(false);
   const [openedConfirm, setOpenedConfirm] = useState(false);
-  const [productosEnCotizacion, setProductosEnCotizacion] = useState<{ id_producto: number; nombre: string }[]>([]);
+  const [productosEnCotizacion, setProductosEnCotizacion] = useState<
+    { id_producto: number; nombre: string }[]
+  >([]);
+  const [monedaFiltro, setMonedaFiltro] = useState<Moneda | null>(Moneda.Soles);
+  const [monedaPendiente, setMonedaPendiente] = useState<Moneda | null>(null);
 
-  const { happy, close } = useBlackcito();
+  const { close } = useBlackcito();
   const registroRef = useRef<{
     agregarCotizacion: () => void;
     limpiarComparativo: () => void;
@@ -62,6 +65,24 @@ export const CotizacionesPage = () => {
   const confirmarToggle = () => {
     registroRef.current?.limpiarComparativo();
     setEsAuditableGlobal(!esAuditableGlobal);
+    setOpenedConfirm(false);
+  };
+
+  const handleToggleMoneda = (checked: boolean) => {
+    const nuevaMoneda: Moneda = checked ? Moneda.Dolares : Moneda.Soles;
+    if (nuevaMoneda === monedaFiltro) return;
+    if (registroRef.current?.hasProductos()) {
+      setMonedaPendiente(nuevaMoneda);
+      setOpenedConfirm(true);
+      return;
+    }
+    setMonedaFiltro(nuevaMoneda);
+  };
+
+  const confirmarToggleMoneda = () => {
+    registroRef.current?.limpiarComparativo();
+    setMonedaFiltro(monedaPendiente);
+    setMonedaPendiente(null);
     setOpenedConfirm(false);
   };
 
@@ -118,10 +139,11 @@ export const CotizacionesPage = () => {
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Cotizaciones"
+        title="Nueva Cotización"
         size="100%"
+        stylesBody="bg-zinc-950 p-0 "
         rightSection={
-          <Group gap="sm">
+          <Group gap="md">
             {openedCreate && (
               <>
                 {productosEnCotizacion.length > 0 && (
@@ -136,18 +158,25 @@ export const CotizacionesPage = () => {
                     size="xs"
                     radius="xl"
                     classNames={{
-                      input: "bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 w-52 focus:border-zinc-500",
+                      input:
+                        "bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 w-52 focus:border-zinc-500",
                       dropdown: "bg-zinc-900 border-zinc-800",
-                      option: "text-zinc-300 hover:bg-zinc-800 data-[selected]:bg-indigo-600 data-[selected]:text-white",
+                      option:
+                        "text-zinc-300 hover:bg-zinc-800 data-[selected]:bg-indigo-600 data-[selected]:text-white",
                     }}
                     comboboxProps={{
                       zIndex: 10002,
                     }}
                     onChange={(val) => {
                       if (val) {
-                        const element = document.getElementById(`producto-fila-${val}`);
+                        const element = document.getElementById(
+                          `producto-fila-${val}`,
+                        );
                         if (element) {
-                          element.scrollIntoView({ behavior: "smooth", block: "center" });
+                          element.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                          });
                           element.classList.add("bg-indigo-500/10");
                           setTimeout(() => {
                             element.classList.remove("bg-indigo-500/10");
@@ -157,6 +186,65 @@ export const CotizacionesPage = () => {
                     }}
                   />
                 )}
+                <div
+                  className="group flex items-center gap-2 h-8 px-3 rounded-full bg-zinc-900/60 border border-zinc-800 backdrop-blur-sm transition-all duration-300 hover:border-zinc-700 hover:bg-zinc-900/80 shadow-inner shadow-black/20"
+                  title="Cambiar moneda de la cotización"
+                >
+                  <span
+                    className={`text-[11px] font-extrabold tracking-wider transition-all duration-300 ${
+                      monedaFiltro === Moneda.Soles
+                        ? "text-teal-300 drop-shadow-[0_0_8px_rgba(45,212,191,0.5)]"
+                        : "text-zinc-600 group-hover:text-zinc-500"
+                    }`}
+                  >
+                    S/. PEN
+                  </span>
+                  <Switch
+                    size="xs"
+                    checked={monedaFiltro === Moneda.Dolares}
+                    onChange={(event) =>
+                      handleToggleMoneda(event.currentTarget.checked)
+                    }
+                    styles={{
+                      root: { cursor: "pointer" },
+                      track: {
+                        backgroundColor:
+                          monedaFiltro === Moneda.Dolares
+                            ? "rgba(99, 102, 241, 0.45)"
+                            : "rgba(20, 184, 166, 0.3)",
+                        borderColor:
+                          monedaFiltro === Moneda.Dolares
+                            ? "rgba(99, 102, 241, 0.6)"
+                            : "rgba(20, 184, 166, 0.5)",
+                        borderWidth: "1px",
+                        borderStyle: "solid",
+                        boxShadow:
+                          monedaFiltro === Moneda.Dolares
+                            ? "inset 0 0 8px rgba(99, 102, 241, 0.35)"
+                            : "inset 0 0 8px rgba(20, 184, 166, 0.3)",
+                      },
+                      thumb: {
+                        backgroundColor:
+                          monedaFiltro === Moneda.Dolares
+                            ? "#a5b4fc"
+                            : "#5eead4",
+                        boxShadow:
+                          monedaFiltro === Moneda.Dolares
+                            ? "0 0 10px rgba(165, 180, 252, 0.75)"
+                            : "0 0 10px rgba(94, 234, 212, 0.75)",
+                      },
+                    }}
+                  />
+                  <span
+                    className={`text-[11px] font-extrabold tracking-wider transition-all duration-300 ${
+                      monedaFiltro === Moneda.Dolares
+                        ? "text-indigo-300 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                        : "text-zinc-600 group-hover:text-zinc-500"
+                    }`}
+                  >
+                    $ USD
+                  </span>
+                </div>
                 {!en_modo_auditable && (
                   <Button
                     variant={esAuditableGlobal ? "filled" : "light"}
@@ -166,10 +254,11 @@ export const CotizacionesPage = () => {
                     onClick={handleToggleAuditable}
                     size="xs"
                   >
-                    {esAuditableGlobal ? "Modo Auditable Activo" : "Hacer Auditable"}
+                    {esAuditableGlobal
+                      ? "Modo Auditable Activo"
+                      : "Hacer Auditable"}
                   </Button>
                 )}
-                <Divider orientation="vertical" color="zinc.8" h={20} />
               </>
             )}
 
@@ -177,14 +266,14 @@ export const CotizacionesPage = () => {
               variant="filled"
               color="indigo"
               className="shadow-lg shadow-pink-800/20 transition-all duration-300"
-              leftSection={<CubeIcon className="w-5 h-5" />}
+              leftSection={<PlusIcon className="w-4 h-4" />}
               onClick={() => setOpenedProductos(true)}
-              onMouseEnter={() =>
-                happy(
-                  "¡Añade productos al comparativo! Selecciona los ítems para tu cotización.",
-                  { persistent: true },
-                )
-              }
+              // onMouseEnter={() =>
+              //   happy(
+              //     "¡Añade productos al comparativo! Selecciona los ítems para tu cotización.",
+              //     { persistent: true },
+              //   )
+              // }
               onMouseLeave={close}
               radius="xl"
               size="xs"
@@ -193,20 +282,16 @@ export const CotizacionesPage = () => {
             </Button>
 
             {openedCreate && (
-              <>
-                <Divider orientation="vertical" color="zinc.8" h={20} />
-
-                <Button
-                  variant="light"
-                  color="teal"
-                  radius="xl"
-                  leftSection={<PlusIcon className="w-4 h-4" />}
-                  onClick={() => registroRef.current?.agregarCotizacion()}
-                  size="xs"
-                >
-                  Añadir Cotización
-                </Button>
-              </>
+              <Button
+                variant="light"
+                color="teal"
+                radius="xl"
+                leftSection={<PlusIcon className="w-4 h-4" />}
+                onClick={() => registroRef.current?.agregarCotizacion()}
+                size="xs"
+              >
+                Añadir Cotización
+              </Button>
             )}
           </Group>
         }
@@ -221,6 +306,8 @@ export const CotizacionesPage = () => {
           modalProductosOpened={openedProductos}
           setModalProductosOpened={setOpenedProductos}
           esAuditableGlobal={esAuditableGlobal}
+          monedaFiltro={monedaFiltro}
+          onChangeMoneda={(m) => setMonedaFiltro(m)}
           onProductosChange={setProductosEnCotizacion}
         />
       </ModalEstandar>
@@ -249,7 +336,16 @@ export const CotizacionesPage = () => {
             <Button
               variant="filled"
               color="red"
-              onClick={confirmarToggle}
+              onClick={() => {
+                if (
+                  monedaPendiente !== null ||
+                  monedaFiltro !== monedaPendiente
+                ) {
+                  confirmarToggleMoneda();
+                } else {
+                  confirmarToggle();
+                }
+              }}
               radius="xl"
               className="shadow-lg shadow-red-900/20"
             >

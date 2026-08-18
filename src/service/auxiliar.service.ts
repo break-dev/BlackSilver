@@ -115,14 +115,14 @@ export const AuxService = {
    */
   get_unidades_medida: async (filters?: {
     id_unidad_medida?: number;
-    solo_base?: boolean;
+    incluir_conversiones?: boolean;
   }): Promise<IRespuesta<RES_UnidadMedida[]>> => {
     // Transformamos el booleano a 1 o 0 antes de enviarlo
     const params = filters
       ? {
           ...filters,
-          ...(filters.solo_base !== undefined && {
-            solo_base: filters.solo_base ? 1 : 0,
+          ...(filters.incluir_conversiones !== undefined && {
+            incluir_conversiones: filters.incluir_conversiones ? 1 : 0,
           }),
         }
       : undefined;

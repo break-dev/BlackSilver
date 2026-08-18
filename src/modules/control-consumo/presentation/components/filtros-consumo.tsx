@@ -1,5 +1,6 @@
-import { Select, TextInput, Loader } from "@mantine/core";
+import { Select, TextInput, Loader, Button } from "@mantine/core";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { IconFileSpreadsheet } from "@tabler/icons-react";
 import type { RES_Mina } from "../../../../service/responses/mina";
 import type { RES_Almacen } from "../../../../service/responses/almacen";
 import { MESES } from "../../../../shared/variables/meses";
@@ -22,6 +23,9 @@ interface FiltrosConsumoProps {
   setBusqueda: (val: string) => void;
   onReload?: () => void | Promise<void>;
   loading?: boolean;
+  onExportExcel?: () => void;
+  exportingExcel?: boolean;
+  exportDisabled?: boolean;
 }
 
 export const FiltrosConsumo = ({
@@ -41,6 +45,9 @@ export const FiltrosConsumo = ({
   setBusqueda,
   onReload,
   loading = false,
+  onExportExcel,
+  exportingExcel = false,
+  exportDisabled = false,
 }: FiltrosConsumoProps) => {
   const currentYear = new Date().getFullYear();
   const yearsList = Array.from({ length: 6 }, (_, i) => {
@@ -172,9 +179,25 @@ export const FiltrosConsumo = ({
         />
       </div>
 
-      {onReload && (
-        <BotonRecargar onReload={onReload} loading={loading} />
-      )}
+      {/* Acciones: recargar y exportar */}
+      <div className="flex items-end gap-2">
+        {onReload && <BotonRecargar onReload={onReload} loading={loading} />}
+        {onExportExcel && (
+          <Button
+            color="green.7"
+            onClick={onExportExcel}
+            loading={exportingExcel}
+            disabled={exportDisabled || exportingExcel}
+            radius="lg"
+            className="h-9 transition-all px-4 disabled:opacity-50"
+            leftSection={
+              !exportingExcel && <IconFileSpreadsheet size={18} />
+            }
+          >
+            Exportar Excel
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

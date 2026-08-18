@@ -21,6 +21,7 @@ import {
   PlusIcon,
   PaperClipIcon,
   PrinterIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { type DataTableColumn } from "mantine-datatable";
@@ -44,6 +45,8 @@ import { usePrint } from "../../../hooks/usePrint.ts";
 import { RequerimientoPDF } from "./requerimiento-pdf.tsx";
 import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen.ts";
 import { BotonRecargar } from "../../../presentation/utils/boton-recargar.tsx";
+import { useExcel } from "../../../hooks/useExcel.ts";
+import { useRequerimientosExcel } from "./excel-requerimientos.ts";
 
 export const RequerimientosAlmacenAtencionPage = () => {
   useTitlePage("Atención de Requerimientos");
@@ -84,6 +87,19 @@ export const RequerimientosAlmacenAtencionPage = () => {
 
   const { imprimir, imprimiendo } = useImprimirRequerimiento();
   const { print } = usePrint();
+
+  const { generateExcel: enqueueExcel, isGeneratingExcel } = useExcel();
+  const excelBuilder = useRequerimientosExcel();
+
+  const handleExportExcel = () => {
+    if (filteredRecords.length === 0) return;
+    const config = excelBuilder.generate({
+      requerimientos: filteredRecords,
+      mes,
+      yearcito,
+    });
+    enqueueExcel(config);
+  };
 
   // Ya no manejamos 'page' localmente ni disclosures
 
@@ -159,7 +175,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
               <Group gap={6}>
                 <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
                 <Text size="xs" fw={600} className="text-zinc-200">
-                  Entrega: {fechaReq}
+                  Para: {fechaReq}
                 </Text>
               </Group>
               {fechaSol && (
@@ -380,7 +396,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           </div>
 
           {/* Búsqueda */}
-          <div className="flex-1 min-w-[200px] w-full">
+          <div className="flex-1 min-w-50 w-full">
             <TextInput
               label="Búsqueda"
               placeholder="Buscar por código, solicitante o mina..."
@@ -405,6 +421,26 @@ export const RequerimientosAlmacenAtencionPage = () => {
           {/* Botones */}
           <div className="flex gap-2 items-center shrink-0 w-full lg:w-auto">
             <BotonRecargar onReload={recargar} loading={loading} />
+            <Tooltip
+              label="Exportar a Excel"
+              position="top"
+              withArrow
+              disabled={!idAlmacen || filteredRecords.length === 0}
+            >
+              <Button
+                leftSection={<DocumentArrowDownIcon className="w-5 h-5" />}
+                onClick={handleExportExcel}
+                radius="lg"
+                size="sm"
+                variant="light"
+                color="teal"
+                disabled={!idAlmacen || filteredRecords.length === 0}
+                loading={isGeneratingExcel}
+                className="shadow-md active:scale-95 transition-all w-full lg:w-auto px-6 font-semibold shrink-0"
+              >
+                Excel
+              </Button>
+            </Tooltip>
             <Button
               leftSection={<PlusIcon className="w-5 h-5" />}
               onClick={openReg}
@@ -444,8 +480,9 @@ export const RequerimientosAlmacenAtencionPage = () => {
       <ModalEstandar
         opened={openedRegistro}
         close={closeReg}
+        validateClose
         title={`${almacenes.find((a) => String(a.id_almacen) === idAlmacen)?.nombre} - Nuevo Requerimiento`}
-        size="65%"
+        size="xxl"
       >
         <RegistroRequerimiento
           idAlmacenFijo={idAlmacen ? Number(idAlmacen) : undefined}

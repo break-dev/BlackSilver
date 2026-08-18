@@ -1,10 +1,13 @@
 import type { EstadoActivoFijo, MovimientoActivoFijo } from "../../../shared/enums/activo-fijo";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 //
 export interface REQ_CrearActivo {
   id_producto: number;
   id_almacen?: number | null;
   id_mina?: number | null;
+  id_labor?: number | null;
+  ids_labores_abastecidas?: number[] | null;
   id_marca?: number | null;
   codigo?: string | null;
   numero_serie?: string | null;
@@ -20,6 +23,7 @@ export interface REQ_CrearActivo {
   serie_factura_compra?: string | null;
   numero_factura_compra?: string | null;
   costo_compra?: number | null;
+  evidencias?: IArchivo[] | null;
 }
 
 export interface REQ_ActualizarUbicacion {

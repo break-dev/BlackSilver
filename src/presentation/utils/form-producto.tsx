@@ -52,7 +52,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
 
   const fetchUnidades = async () => {
     try {
-      const resUni = await AuxService.get_unidades_medida({ solo_base: true });
+      const resUni = await AuxService.get_unidades_medida();
       if (resUni.success) {
         setUnidades(resUni.data);
       }
@@ -227,7 +227,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
               radius="xl"
               variant="filled"
               color="indigo"
-              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-9.5 w-9.5"
               onClick={() => setOpenedAddCat(true)}
             >
               <PlusIcon className="w-5 h-5 text-white" />
@@ -259,7 +259,7 @@ export const FormProducto = ({ onSuccess, onCancel }: FormProductoProps) => {
               radius="xl"
               variant="filled"
               color="indigo"
-              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-[38px] w-[38px]"
+              className="shrink-0 bg-indigo-600 hover:bg-indigo-700 transition-colors mb-px h-9.5 w-9.5"
               onClick={() => setOpenedAddUnidad(true)}
             >
               <PlusIcon className="w-5 h-5 text-white" />

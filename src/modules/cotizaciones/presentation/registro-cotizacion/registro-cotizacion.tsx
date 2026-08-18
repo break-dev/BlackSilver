@@ -14,6 +14,7 @@ import type {
   RES_CotizacionDetalle,
 } from "../../../../service/responses/cotizaciones/cotizacion";
 import type { DTO_RegistrarComparativo } from "../../service/cotizaciones.requests";
+import { Moneda } from "../../../../shared/enums/_generic/moneda";
 
 interface RegistroCotizacionProps {
   onSuccess: (data: RES_Comparativo[]) => void;
@@ -21,6 +22,8 @@ interface RegistroCotizacionProps {
   modalProductosOpened: boolean;
   setModalProductosOpened: (opened: boolean) => void;
   esAuditableGlobal: boolean;
+  monedaFiltro?: Moneda | null;
+  onChangeMoneda?: (newMoneda: Moneda) => void;
   onProductosChange?: (
     prods: { id_producto: number; nombre: string }[],
   ) => void;
@@ -41,6 +44,8 @@ export const RegistroCotizacion = forwardRef<
       modalProductosOpened,
       setModalProductosOpened,
       esAuditableGlobal,
+      monedaFiltro = null,
+      onChangeMoneda,
       onProductosChange,
     },
     ref,
@@ -83,7 +88,6 @@ export const RegistroCotizacion = forwardRef<
       loading,
       loadingMaestros,
       toggleProductoEnComparador,
-      productosEnUsoIds,
       agregarCotizacion,
       eliminarCotizacion,
       eliminarFilaProducto,
@@ -108,7 +112,7 @@ export const RegistroCotizacion = forwardRef<
       iniciarCopiaCotizacion,
       pegarCotizacion,
       cancelarCopiaCotizacion,
-    } = useRegistroCotizacion(handleInternalSuccess);
+    } = useRegistroCotizacion(handleInternalSuccess, monedaFiltro);
 
     // Exponemos la función al componente padre (CotizacionesPage)
     useImperativeHandle(ref, () => ({
@@ -180,11 +184,12 @@ export const RegistroCotizacion = forwardRef<
             onIniciarCopiaCotizacion={iniciarCopiaCotizacion}
             onPegarCotizacion={pegarCotizacion}
             onCancelarCopiaCotizacion={cancelarCopiaCotizacion}
+            monedaFiltro={monedaFiltro}
           />
         </div>
 
         {/* Footer Fijo con Acciones */}
-        <div className="pt-2 flex-none bg-zinc-950">
+        <div className="py-3 pr-5 flex-none bg-zinc-950">
           <Group justify="flex-end" gap="md">
             <Button
               variant="subtle"
@@ -201,7 +206,9 @@ export const RegistroCotizacion = forwardRef<
               onClick={handleSave}
               radius="xl"
               size="sm"
-              className="bg-zinc-100 text-zinc-900 font-bold hover:bg-white shadow-lg border-0 px-8"
+              color="teal"
+              variant="filled"
+              className=" font-bold shadow-lg border-0 px-8"
               disabled={productos.length === 0 || cotizaciones.length === 0}
             >
               Registrar Cotización
@@ -214,10 +221,12 @@ export const RegistroCotizacion = forwardRef<
           onClose={() => setModalProductosOpened(false)}
           onToggle={(id) => toggleProductoEnComparador(id)}
           seleccionadosActuales={productos.map((p) => p.id_producto)}
-          productosBloqueados={productosEnUsoIds}
           catalogoProductos={maestros.catalogo}
           loading={loadingMaestros.catalogo}
           soloAuditables={esAuditableGlobal}
+          monedaFiltrar={monedaFiltro}
+          onClearSeleccion={() => limpiarComparativo()}
+          onChangeMoneda={onChangeMoneda}
           onProductoCreado={(nuevoProd) => {
             agregarProductoLocal(nuevoProd);
           }}

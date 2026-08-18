@@ -7,13 +7,9 @@ import {
   Textarea,
   Select,
   Group,
-  ActionIcon,
-  Tooltip,
-  MultiSelect,
   Switch,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
-import { ListBulletIcon } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { ControlConsumoService } from "../../service/control-consumo.service";
 import { AuxService } from "../../../../service/auxiliar.service";
@@ -42,7 +38,7 @@ export const RegistroConsumo = ({
   activos,
 }: RegistroConsumoProps) => {
   const { notifySuccess, notifyError } = useNotify();
-  
+
   const isAF = selectedDetail.tipo_bien === TipoBien.ActivoFijo;
   const isCons =
     selectedDetail.es_consumible === true ||
@@ -60,12 +56,12 @@ export const RegistroConsumo = ({
   const restanteReq = factorConversio > 0 ? restanteBase / factorConversio : 0;
 
   const [formCantidad, setFormCantidad] = useState<number | string>(
-    isOtr ? restanteReq : restanteBase
+    isOtr ? restanteReq : restanteBase,
   );
   const [formFechaHora, setFormFechaHora] = useState<Date | null>(new Date());
   const [formComentario, setFormComentario] = useState("");
   const [formActivoFijo, setFormActivoFijo] = useState<string | null>(null);
-  const [formLabores, setFormLabores] = useState<string[]>([]);
+  const [formLabor, setFormLabor] = useState<string | null>(null);
   const [formLoteMineral, setFormLoteMineral] = useState<string | null>(null);
   const [destinoTipo, setDestinoTipo] = useState<"mantenimiento" | "produccion">("produccion");
 
@@ -74,15 +70,10 @@ export const RegistroConsumo = ({
       Number(selectedDetail.producto_para_mantenimiento) === 1;
   }, [selectedDetail.producto_para_mantenimiento]);
 
-  // Labores list states
-  const [laboresRequerimiento, setLaboresRequerimiento] = useState<RES_Labor[]>(
-    [],
-  );
-  const [todasLabores, setTodasLabores] = useState<RES_Labor[]>([]);
+  const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [lotesMineral, setLotesMineral] = useState<RES_LoteMineral[]>([]);
   const [loadingLabores, setLoadingLabores] = useState(false);
   const [loadingLotes, setLoadingLotes] = useState(false);
-  const [verMasLabores, setVerMasLabores] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -90,31 +81,27 @@ export const RegistroConsumo = ({
     setFormCantidad(defaultQty);
     setFormFechaHora(new Date());
     setFormComentario("");
-    
-    const initialTipo = (selectedDetail.para_mantenimiento === true || Number(selectedDetail.para_mantenimiento) === 1) 
-      ? "mantenimiento" 
+
+    const initialTipo = (selectedDetail.para_mantenimiento === true || Number(selectedDetail.para_mantenimiento) === 1)
+      ? "mantenimiento"
       : "produccion";
     setDestinoTipo(initialTipo);
-    
+
     setFormActivoFijo(selectedDetail.id_activo_fijo_destino ? String(selectedDetail.id_activo_fijo_destino) : null);
     setFormLoteMineral(selectedDetail.id_lote_mineral ? String(selectedDetail.id_lote_mineral) : null);
-    
-    setFormLabores([]);
-    setVerMasLabores(false);
-    setLaboresRequerimiento([]);
-    setTodasLabores([]);
+    setFormLabor(null);
+    setLabores([]);
     setLotesMineral([]);
 
-    // Fetch labors associated with the requirement
     const fetchLabores = async () => {
       setLoadingLabores(true);
       try {
         const resp = await AuxService.get_labores();
         if (resp.success && resp.data) {
-          setLaboresRequerimiento(resp.data);
+          setLabores(resp.data);
         }
       } catch (err) {
-        console.error("Error al cargar labores del requerimiento:", err);
+        console.error("Error al cargar labores:", err);
       } finally {
         setLoadingLabores(false);
       }
@@ -138,55 +125,12 @@ export const RegistroConsumo = ({
     fetchLotesMineral();
   }, [selectedDetail, isOtr, restanteReq, restanteBase]);
 
-  const handleToggleLabores = async () => {
-    if (verMasLabores) {
-      setVerMasLabores(false);
-      if (formLabores.length > 0) {
-        const filtered = formLabores.filter((id) =>
-          laboresRequerimiento.some((l) => String(l.id_labor) === id),
-        );
-        setFormLabores(filtered);
-      }
-    } else {
-      if (todasLabores.length > 0) {
-        setVerMasLabores(true);
-      } else {
-        setLoadingLabores(true);
-        try {
-          const resp = await AuxService.get_labores();
-          if (resp.success && resp.data) {
-            setTodasLabores(resp.data);
-            setVerMasLabores(true);
-            notifySuccess("Se listaron todas las labores.");
-          } else {
-            notifyError(resp.message || "Error al cargar las labores.");
-          }
-        } catch (err) {
-          console.error(err);
-          notifyError("Ocurrió un error al cargar las labores.");
-        } finally {
-          setLoadingLabores(false);
-        }
-      }
-    }
-  };
-
-  const currentLaboresList = verMasLabores
-    ? todasLabores
-    : laboresRequerimiento;
-
-  const laboresSelectData = useMemo(() => {
-    const dataList: Array<{
-      group: string;
-      items: Array<{ value: string; label: string }>;
-    }> = [];
-
-    // Grouping by mina
+  const laborsData = useMemo(() => {
     const groupsMap = new Map<
       string,
       Array<{ value: string; label: string }>
     >();
-    currentLaboresList.forEach((l) => {
+    labores.forEach((l) => {
       let groupItems = groupsMap.get(l.mina);
       if (!groupItems) {
         groupItems = [];
@@ -194,19 +138,16 @@ export const RegistroConsumo = ({
       }
       groupItems.push({
         value: String(l.id_labor),
-        label: `${l.nombre || "S/N"}`,
+        label: l.nombre || "S/N",
       });
     });
 
+    const dataList: Array<{ group: string; items: Array<{ value: string; label: string }> }> = [];
     groupsMap.forEach((items, mina) => {
-      dataList.push({
-        group: mina,
-        items,
-      });
+      dataList.push({ group: mina, items });
     });
-
     return dataList;
-  }, [currentLaboresList]);
+  }, [labores]);
 
   const handleSubmitConsumo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,7 +172,6 @@ export const RegistroConsumo = ({
           return;
         }
       } else {
-        // Non-consumable, non-asset: Quantity is indicated in requested unit
         const qtyReq = Number(formCantidad);
         if (qtyReq > restanteReq) {
           notifyError(
@@ -243,7 +183,6 @@ export const RegistroConsumo = ({
       }
     }
 
-    // Validation for destination tipo
     if (!isAF) {
       if (destinoTipo === "mantenimiento" && !formActivoFijo) {
         notifyError("Debe seleccionar un activo fijo para el mantenimiento.");
@@ -267,7 +206,7 @@ export const RegistroConsumo = ({
           destinoTipo === "mantenimiento" && formActivoFijo
             ? Number(formActivoFijo)
             : null,
-        id_labores: formLabores.length > 0 ? formLabores.map(Number) : null,
+        id_labor_destino: formLabor ? Number(formLabor) : null,
         id_lote_mineral:
           destinoTipo === "produccion" && formLoteMineral
             ? Number(formLoteMineral)
@@ -301,13 +240,7 @@ export const RegistroConsumo = ({
       "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
   };
 
-  // Group assets by product
   const activosData = useMemo(() => {
-    const dataList: Array<
-      | { group: string; items: Array<{ value: string; label: string }> }
-    > = [];
-
-    // Grouping by product
     const groupsMap = new Map<
       string,
       Array<{ value: string; label: string }>
@@ -324,13 +257,10 @@ export const RegistroConsumo = ({
       });
     });
 
+    const dataList: Array<{ group: string; items: Array<{ value: string; label: string }> }> = [];
     groupsMap.forEach((items, product) => {
-      dataList.push({
-        group: product,
-        items,
-      });
+      dataList.push({ group: product, items });
     });
-
     return dataList;
   }, [activos]);
 
@@ -391,7 +321,6 @@ export const RegistroConsumo = ({
           </div>
         </div>
 
-        {/* Condición de Activo Fijo */}
         {isAF && (
           <div className="bg-indigo-950/20 border border-indigo-900/40 rounded-xl p-3">
             <Text size="xs" c="indigo.3" fw={600}>
@@ -404,7 +333,6 @@ export const RegistroConsumo = ({
         {!isAF && (
           <Stack gap="md">
             <Group gap="md" grow align="flex-end">
-              {/* Input de cantidad (solo para consumibles o no-coincidentes) */}
               <NumberInput
                 label={
                   isOtr
@@ -439,12 +367,16 @@ export const RegistroConsumo = ({
                 classNames={modalFieldClasses}
               />
 
-              {/* Switch conmutador para confirmar si es Producción o Mantenimiento */}
               <div className="flex flex-col gap-1.5 h-10 justify-center">
                 <Text size="xs" fw={600} className="text-zinc-300 ml-0.5 mb-1">
                   Destinado a
                 </Text>
-                <Group gap={6} wrap="nowrap" align="center" className="bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-1.5 h-9">
+                <Group
+                  gap={6}
+                  wrap="nowrap"
+                  align="center"
+                  className="bg-zinc-900/50 border border-zinc-800 rounded-lg px-3 py-1.5 h-9"
+                >
                   <Text
                     size="xs"
                     fw={600}
@@ -457,7 +389,6 @@ export const RegistroConsumo = ({
                     onChange={(event) => {
                       const newTipo = event.currentTarget.checked ? "mantenimiento" : "produccion";
                       setDestinoTipo(newTipo);
-                      // Reset the other selection
                       if (newTipo === "mantenimiento") {
                         setFormLoteMineral(null);
                       } else {
@@ -524,57 +455,33 @@ export const RegistroConsumo = ({
             </Group>
           </Stack>
         )}
-        <Group gap="xs" grow>
-          {/* Selector de Labores de Destino (Opcional) con botón Ver Más */}
-          <Group gap="xs" align="flex-end" className="w-full">
-            <div className="flex-1">
-              <MultiSelect
-                label="Labores de Destino (opc.)"
-                placeholder={
-                  loadingLabores
-                    ? "Cargando labores..."
-                    : laboresSelectData.length > 0
-                      ? "Seleccione labores..."
-                      : "Sin labores asociadas"
-                }
-                data={laboresSelectData}
-                value={formLabores}
-                onChange={setFormLabores}
-                searchable
-                disabled={loadingLabores}
-                radius="lg"
-                size="sm"
-                classNames={modalFieldClasses}
-                comboboxProps={{
-                  withinPortal: true,
-                  zIndex: 9999,
-                }}
-              />
-            </div>
-            <Tooltip
-              label={
-                verMasLabores
-                  ? "Ver solo labores del requerimiento"
-                  : "Ver todas las labores"
-              }
-              withArrow
-              radius="md"
-            >
-              <ActionIcon
-                color={verMasLabores ? "teal" : "indigo"}
-                variant={verMasLabores ? "filled" : "light"}
-                size="36px"
-                radius="lg"
-                onClick={handleToggleLabores}
-                disabled={loadingLabores}
-                className="border border-indigo-500/10 shrink-0"
-              >
-                <ListBulletIcon className="w-5 h-5" />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
 
-          {/* DateTimePicker for consumption time */}
+        <Group gap="md" grow>
+          {/* Selector de Labor Destino (Opcional) */}
+          <Select
+            label="Labor Destino (opc.)"
+            placeholder={
+              loadingLabores
+                ? "Cargando labores..."
+                : laborsData.length > 0
+                  ? "Seleccione labor..."
+                  : "Sin labores registradas"
+            }
+            data={laborsData}
+            value={formLabor}
+            onChange={setFormLabor}
+            searchable
+            disabled={loadingLabores}
+            clearable
+            radius="lg"
+            size="sm"
+            classNames={modalFieldClasses}
+            comboboxProps={{
+              withinPortal: true,
+              zIndex: 9999,
+            }}
+          />
+
           <DateTimePicker
             label="Fecha y Hora de Consumo"
             placeholder="Seleccione fecha y hora..."

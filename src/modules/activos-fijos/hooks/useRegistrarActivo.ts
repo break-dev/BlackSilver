@@ -3,6 +3,7 @@ import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_Almacen } from "../../../service/responses/almacen";
 import type { RES_Mina } from "../../../service/responses/mina";
+import type { RES_Labor } from "../../../service/responses/labor";
 import type { RES_Marca } from "../../../service/responses/marca";
 import type { RES_Empleado } from "../../../service/responses/empleado";
 import { ActivosService } from "../service/activos.service";
@@ -23,6 +24,7 @@ export const useRegistrarActivo = () => {
   const [productos, setProductos] = useState<RES_Producto[]>([]);
   const [almacenes, setAlmacenes] = useState<RES_Almacen[]>([]);
   const [minas, setMinas] = useState<RES_Mina[]>([]);
+  const [labores, setLabores] = useState<RES_Labor[]>([]);
   const [marcas, setMarcas] = useState<RES_Marca[]>([]);
   const [empleados, setEmpleados] = useState<RES_Empleado[]>([]);
 
@@ -30,6 +32,7 @@ export const useRegistrarActivo = () => {
   const [loadingProductos, setLoadingProductos] = useState(false);
   const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
   const [loadingMinas, setLoadingMinas] = useState(false);
+  const [loadingLabores, setLoadingLabores] = useState(false);
   const [loadingMarcas, setLoadingMarcas] = useState(false);
   const [loadingEmpleados, setLoadingEmpleados] = useState(false);
 
@@ -82,6 +85,22 @@ export const useRegistrarActivo = () => {
     };
 
     /**
+     * Carga el catálogo completo de labores (sin filtro) para usarlas como ubicación
+     * principal y/o como referencia cuando se selecciona una mina.
+     */
+    const loadLabores = async () => {
+      setLoadingLabores(true);
+      try {
+        const res = await AuxService.get_labores();
+        if (res.success) setLabores(res.data);
+      } catch (error) {
+        console.error("Error al cargar labores auxiliares", error);
+      } finally {
+        setLoadingLabores(false);
+      }
+    };
+
+    /**
      * Carga el catálogo de marcas de forma individual y asíncrona.
      */
     const loadMarcas = async () => {
@@ -115,6 +134,7 @@ export const useRegistrarActivo = () => {
     loadProductos();
     loadAlmacenes();
     loadMinas();
+    loadLabores();
     loadMarcas();
     loadEmpleados();
   }, []);
@@ -130,13 +150,15 @@ export const useRegistrarActivo = () => {
   /**
    * Realiza la llamada al servicio de activos fijos para crear un nuevo registro.
    * @param payload Estructura de datos requerida para crear el activo.
+   * @param evidenciasFiles Archivos de evidencia opcionales a adjuntar al registro.
    * @returns RES_ActivoFijoResumen | null El objeto de activo creado o null.
    */
   const crearActivo = async (
     payload: REQ_CrearActivo,
+    evidenciasFiles?: File[],
   ): Promise<RES_ActivoFijoResumen | null> => {
     try {
-      const res = await ActivosService.crearActivo(payload);
+      const res = await ActivosService.crearActivo(payload, evidenciasFiles);
       if (res.success) {
         notifySuccess("Activo registrado correctamente");
         return res.data;
@@ -149,18 +171,30 @@ export const useRegistrarActivo = () => {
     return null;
   };
 
+  /**
+   * Devuelve las labores de una mina específica. Cachea en memoria
+   * para evitar llamadas repetidas cuando el usuario cambia de selección.
+   */
+  const getLaboresPorMina = (idMina: number | null | undefined): RES_Labor[] => {
+    if (!idMina) return [];
+    return labores.filter((l) => l.id_mina === idMina);
+  };
+
   return {
     productos,
     almacenes,
     minas,
+    labores,
     marcas,
     empleados,
     loadingProductos,
     loadingAlmacenes,
     loadingMinas,
+    loadingLabores,
     loadingMarcas,
     loadingEmpleados,
     addMarca,
     crearActivo,
+    getLaboresPorMina,
   };
 };

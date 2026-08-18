@@ -185,10 +185,12 @@ export const InfoActionModals = ({
       <ModalEstandar
         opened={openedEntregaBatch}
         close={closeEntregaBatch}
+        validateClose
         title="Nueva Entrega"
         size="90%"
       >
         <RegistrarEntrega
+          requerimiento={requerimiento}
           idRequerimiento={requerimiento.id_requerimiento}
           idAlmacen={idAlmacen}
           selectedItemsIds={selectedItemsIds}

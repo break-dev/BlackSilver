@@ -74,4 +74,11 @@ export interface RES_DetalleRequerimiento {
   producto_para_mantenimiento?: boolean | number;
   activo_fijo_destino_correlativo?: string | null;
   activo_fijo_destino_codigo?: string | null;
+  // Campos de magnitud por ítem (smart calc con magnitud). Presentes
+  // cuando el ítem se registró con cálculo inteligente y unidades
+  // universales. `con_magnitud` es 1 en ese caso.
+  con_magnitud?: number | boolean;
+  cantidad_items?: number | null;
+  valor_magnitud?: number | null;
+  valor_magnitud_base?: number | null;
 }

@@ -33,6 +33,7 @@ import type {
   RES_ProductoResumen,
 } from "../service/productos.responses";
 import { formatNumber } from "../../../shared/functions/formatNumber";
+import { Moneda } from "../../../shared/enums/_generic/moneda";
 import { enPlural } from "../../../shared/functions/en-plural";
 import { TipoBien } from "../../../shared/enums/_generic/tipo-bien";
 import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
@@ -199,7 +200,8 @@ export const ProductosPage = () => {
       render: (r) => (
         <Group gap="xs" justify="center">
           <Text size="sm" fw={600} className="text-zinc-200">
-            S/. {formatNumber(r.costo_promedio_base)}
+            {r.moneda === Moneda.Soles ? "S/. " : "$ "}
+            {formatNumber(r.costo_promedio_base)}
           </Text>
           <Tooltip label="Ver historial de costos" position="top" withArrow>
             <ActionIcon

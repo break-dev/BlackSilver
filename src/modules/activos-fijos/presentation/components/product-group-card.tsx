@@ -111,8 +111,9 @@ export const ProductGroupCard = ({
       render: (record) => {
         const isMina = !!record.id_mina;
         const isAlmacen = !!record.id_almacen;
+        const isLabor = !!record.id_labor;
 
-        if (!isMina && !isAlmacen) {
+        if (!isMina && !isAlmacen && !isLabor) {
           return (
             <Text size="xs" c="dimmed" fs="italic">
               Sin ubicación
@@ -120,20 +121,25 @@ export const ProductGroupCard = ({
           );
         }
 
+        const iconBg = isMina
+          ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+          : isLabor
+          ? "bg-violet-500/10 text-violet-400 border border-violet-500/20"
+          : "bg-teal-500/10 text-teal-400 border border-teal-500/20";
+
+        const Icon = isMina
+          ? MapIcon
+          : isLabor
+          ? MapPinIcon
+          : MapPinIcon;
+
+        const tipoLabel = isMina ? "Mina" : isLabor ? "Labor" : "Almacén";
+        const nombre = record.mina || record.labor || record.almacen;
+
         return (
           <Group gap="xs" wrap="nowrap">
-            <div
-              className={`p-1.5 rounded-md ${
-                isMina
-                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                  : "bg-teal-500/10 text-teal-400 border border-teal-500/20"
-              }`}
-            >
-              {isMina ? (
-                <MapIcon className="w-3.5 h-3.5" />
-              ) : (
-                <MapPinIcon className="w-3.5 h-3.5" />
-              )}
+            <div className={`p-1.5 rounded-md ${iconBg}`}>
+              <Icon className="w-3.5 h-3.5" />
             </div>
             <Stack gap={0}>
               <Group gap={4} wrap="nowrap">
@@ -143,7 +149,7 @@ export const ProductGroupCard = ({
                   c="white"
                   className="truncate max-w-[140px]"
                 >
-                  {record.mina || record.almacen}
+                  {nombre}
                 </Text>
                 {record.en_almacen_principal ? (
                   <Tooltip label="Almacén Principal">
@@ -156,7 +162,7 @@ export const ProductGroupCard = ({
                 c="dimmed"
                 className="uppercase font-bold tracking-wider"
               >
-                {isMina ? "Mina" : "Almacén"}
+                {tipoLabel}
               </Text>
             </Stack>
           </Group>

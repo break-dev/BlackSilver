@@ -45,6 +45,7 @@ import { TipoDespachoCompra } from "../../../../../shared/enums/_generic/tipo-de
 import { Periodo } from "../../../../../shared/enums/_generic/periodo";
 import { useNotify } from "../../../../../hooks/useNotify";
 import { MONEDAS } from "../../../../../shared/variables/monedas";
+import { Moneda } from "../../../../../shared/enums/_generic/moneda";
 import { getDuracionPeriodo } from "../../../../../shared/functions/get-duracion-periodo";
 import { enPlural } from "../../../../../shared/functions/en-plural";
 import type { RES_Proveedor } from "../../../../../service/responses/proveedor";
@@ -89,6 +90,7 @@ interface CabeceraCotizacionProps {
       tiempo_entrega_periodo: Periodo;
     },
   ) => void;
+  monedaFiltro?: Moneda | null;
 }
 
 const inputStyles = {
@@ -115,6 +117,7 @@ export const CabeceraCotizacion = ({
   minas = [],
   hasActivosFijos = false,
   onUpdateGlobalLogistica,
+  monedaFiltro = null,
 }: CabeceraCotizacionProps) => {
   const PERIODO_OPTIONS = [
     { value: Periodo.Diario, label: "Día(s)" },
@@ -196,10 +199,7 @@ export const CabeceraCotizacion = ({
 
   if (isSkeleton) {
     return (
-      <Stack gap={4} className="pt-0 pb-3 px-4 relative">
-        <Group justify="space-between" align="center">
-          <Skeleton h={16} w={100} radius="md" animate={false} />
-        </Group>
+      <Stack gap={4} className="p-3 relative">
         <Stack gap="sm">
           <Skeleton h={32} radius="lg" animate={false} />
           <Group grow gap="md">
@@ -220,7 +220,7 @@ export const CabeceraCotizacion = ({
   if (!cot) return null;
 
   return (
-    <Stack gap={4} className="pt-0 pb-3 px-1 relative group-header">
+    <Stack gap={4} className="p-4 relative group-header">
       <Group justify="space-between" align="center" wrap="nowrap">
         <Group gap="xs" align="center" wrap="nowrap">
           <Text
@@ -369,7 +369,7 @@ export const CabeceraCotizacion = ({
             </ActionIcon>
           </Tooltip>
           <div
-            className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-[32px] flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
+            className="bg-zinc-900/40 border border-zinc-800 rounded-xl px-4 h-8 flex items-center justify-center transition-all hover:bg-zinc-900/60 hover:border-green-500/40 group/check cursor-pointer"
             onClick={() =>
               onUpdateHeader(
                 idx,
@@ -766,27 +766,43 @@ export const CabeceraCotizacion = ({
                 </Text>
 
                 <Group grow gap="md">
-                  <Select
-                    label="Moneda"
-                    data={Object.values(MONEDAS).map((m) => m.label)}
-                    value={cot.moneda}
-                    onChange={(val) => {
-                      onUpdateHeader(idx, "moneda", val ?? MONEDAS.PEN.label);
-                      if (val === MONEDAS.PEN.label) {
-                        onUpdateHeader(idx, "tipo_cambio_venta_referencial", 1);
-                      } else {
-                        onUpdateHeader(
-                          idx,
-                          "tipo_cambio_venta_referencial",
-                          undefined,
-                        );
-                      }
-                    }}
-                    classNames={inputStyles}
-                    size="xs"
-                    radius="lg"
-                    comboboxProps={{ withinPortal: false }}
-                  />
+                  <Tooltip
+                    label={
+                      monedaFiltro
+                        ? `Bloqueado: el modo "${monedaFiltro === Moneda.Soles ? "Solo Soles" : "Solo Dólares"}" está activo`
+                        : ""
+                    }
+                    position="top"
+                    withArrow
+                    disabled={!monedaFiltro}
+                  >
+                    <Select
+                      label="Moneda"
+                      data={Object.values(MONEDAS).map((m) => m.label)}
+                      value={cot.moneda}
+                      onChange={(val) => {
+                        onUpdateHeader(idx, "moneda", val ?? MONEDAS.PEN.label);
+                        if (val === MONEDAS.PEN.label) {
+                          onUpdateHeader(
+                            idx,
+                            "tipo_cambio_venta_referencial",
+                            1,
+                          );
+                        } else {
+                          onUpdateHeader(
+                            idx,
+                            "tipo_cambio_venta_referencial",
+                            undefined,
+                          );
+                        }
+                      }}
+                      classNames={inputStyles}
+                      size="xs"
+                      radius="lg"
+                      comboboxProps={{ withinPortal: false }}
+                      disabled={Boolean(monedaFiltro)}
+                    />
+                  </Tooltip>
                   <Select
                     label="Método de Pago"
                     data={[

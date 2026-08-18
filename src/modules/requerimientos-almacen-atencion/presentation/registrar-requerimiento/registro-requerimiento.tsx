@@ -15,7 +15,6 @@ import {
 } from "@mantine/core";
 import {
   WrenchScrewdriverIcon,
-  ClipboardDocumentListIcon,
   ShoppingCartIcon,
   HandThumbUpIcon,
   BoltIcon,
@@ -122,6 +121,9 @@ export const RegistroRequerimiento = ({
     derived: {
       sonUnidadesIdenticas,
       productoSeleccionado,
+      conversionAutomatica,
+      contenidoBloqueado,
+      calculoInteligenteDisponible,
       canAdd,
       productosVisibles,
       unidadesVisibles,
@@ -129,7 +131,11 @@ export const RegistroRequerimiento = ({
     actions: {
       agregarItem,
       eliminarItem,
-      actualizarCantidadItem,
+      actualizarCantidadItems,
+      actualizarValorMagnitud,
+      actualizarCantidadDetalleItem,
+      actualizarFactorItem,
+      actualizarTotalBaseItem,
       handleSubmit,
     },
   } = useRegistroRequerimiento({ onSuccess, idAlmacenFijo });
@@ -149,16 +155,32 @@ export const RegistroRequerimiento = ({
   const unidadNombre = unidadSeleccionada?.nombre || "";
   const unidadAbbr = unidadSeleccionada?.abreviatura || "---";
   const baseAbbr = productoSeleccionado?.unidad_medida_base_abv || "---";
-  const totalBase = cantidad * contenido;
+
+  /**
+   * Modo "magnitud por ítem con unidades diferentes": el usuario ingresa
+   * `cantidad` como N de ítems y `contenido` como la magnitud por ítem en la
+   * unidad del detalle (ej. 1.5 metros por Guía). El total en detalle y
+   * en base hay que calcularlo aplicando el factor de conversión.
+   */
+  const smartCalcMagnitudEnDetalle =
+    calculoInteligente &&
+    !sonUnidadesIdenticas &&
+    conversionAutomatica !== null;
+
+  /** Total en la unidad del detalle (lo que se muestra como "En metros" / "En centímetros"). */
+  const totalDetalle = smartCalcMagnitudEnDetalle
+    ? cantidad * contenido
+    : cantidad;
+
+  /** Total en la unidad base del producto (lo que va a Kardex / stock). */
+  const totalBase = smartCalcMagnitudEnDetalle
+    ? cantidad * contenido * (conversionAutomatica ?? 1)
+    : cantidad * contenido;
 
   return (
-    <Stack gap={32} p="md" className="animate-fade-in">
+    <Stack gap={24} p="xs" className="animate-fade-in">
+      {/* cabecera del requerimiento  */}
       <section>
-        <SectionHeader
-          icon={ClipboardDocumentListIcon}
-          title="Datos de la solicitud"
-        />
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-6">
           <Select
             label="Labor (opc.)"
@@ -277,17 +299,19 @@ export const RegistroRequerimiento = ({
             />
           </div>
 
-          <div className="lg:col-span-3">
-            <MultiFilePicker
-              label="Evidencias"
-              files={evidencias}
-              onFilesChange={setEvidencias}
-            />
-          </div>
+          <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            {/* Bloque de Archivos */}
+            <div className="w-full">
+              <MultiFilePicker
+                label="Evidencias"
+                files={evidencias}
+                onFilesChange={setEvidencias}
+              />
+            </div>
 
-          <div className="lg:col-span-3 bg-zinc-900/30 p-4 rounded-2xl border border-zinc-800/50">
-            <Group justify="space-between" align="center" wrap="nowrap">
-              <Stack gap={0}>
+            {/* Bloque de Prioridad */}
+            <div className="w-full flex flex-col gap-2">
+              <Stack gap={2}>
                 <Text
                   size="xs"
                   fw={700}
@@ -299,7 +323,8 @@ export const RegistroRequerimiento = ({
                   Nivel de Urgencia
                 </Text>
               </Stack>
-              <Group gap="xs">
+
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 items-center">
                 <Button
                   size="xs"
                   variant={premura === Premura.Normal ? "filled" : "light"}
@@ -307,7 +332,7 @@ export const RegistroRequerimiento = ({
                   onClick={() => setPremura(Premura.Normal)}
                   leftSection={<HandThumbUpIcon className="w-3.5 h-3.5" />}
                   radius="md"
-                  className="h-10 px-5 font-bold"
+                  className="h-10 flex-1 font-bold"
                 >
                   NORMAL
                 </Button>
@@ -318,7 +343,7 @@ export const RegistroRequerimiento = ({
                   onClick={() => setPremura(Premura.Urgente)}
                   leftSection={<BoltIcon className="w-3.5 h-3.5" />}
                   radius="md"
-                  className="h-10 px-5 font-bold"
+                  className="h-10 flex-1 font-bold"
                 >
                   URGENTE
                 </Button>
@@ -329,315 +354,320 @@ export const RegistroRequerimiento = ({
                   onClick={() => setPremura(Premura.Emergencia)}
                   leftSection={<FireIcon className="w-3.5 h-3.5" />}
                   radius="md"
-                  className="h-10 px-5 font-bold"
+                  className="h-10 flex-1 font-bold"
                 >
                   EMERGENCIA
                 </Button>
-              </Group>
-            </Group>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <SectionHeader icon={ShoppingCartIcon} title="Items a solicitar" />
-
-        <div className="space-y-6">
-          <div className="bg-zinc-900/40 p-5 rounded-2xl border border-zinc-800 shadow-inner">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
-              <div className="md:col-span-3">
-                <Select
-                  label="Producto"
-                  placeholder="Seleccione producto"
-                  data={productosVisibles.map((p: RES_Producto) => ({
-                    value: String(p.id_producto),
-                    label: p.nombre,
-                  }))}
-                  value={idProducto ? String(idProducto) : null}
-                  onChange={(val) => setIdProducto(Number(val))}
-                  searchable
-                  searchValue={productoBusqueda}
-                  onSearchChange={setProductoBusqueda}
-                  // Desactivar el filtro interno de Mantine (substring case-
-                  // insensitive SIN normalización de tildes). El filtrado real
-                  // lo hace getCoincidencias() y se ve reflejado en `data`.
-                  filter={({ options }) => options}
-                  nothingFoundMessage="Sin coincidencias"
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-3">
-                <NumberInput
-                  label={`Cantidad`}
-                  placeholder="0"
-                  value={cantidad}
-                  onChange={(val) => setCantidad(Number(val))}
-                  min={0}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-3">
-                <Select
-                  label="Unidad de Medida"
-                  placeholder="Seleccione unidad"
-                  data={unidadesVisibles.map((u: RES_UnidadMedida) => ({
-                    value: String(u.id_unidad_medida),
-                    label: `${u.nombre} (${u.abreviatura})`,
-                  }))}
-                  value={idUnidadMedida ? String(idUnidadMedida) : null}
-                  onChange={(val) => setIdUnidadMedida(Number(val))}
-                  disabled={
-                    productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo
-                  }
-                  searchable
-                  searchValue={unidadBusqueda}
-                  onSearchChange={setUnidadBusqueda}
-                  // Ver comentario en el Select de Producto más arriba.
-                  filter={({ options }) => options}
-                  nothingFoundMessage="Sin coincidencias"
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-
-              <div className="md:col-span-3">
-                <div className="flex items-center justify-between mb-1.5 h-5">
-                  <Text
-                    component="label"
-                    fw={600}
-                    fz="sm"
-                    c="zinc.3"
-                    className="tracking-tight"
-                  >
-                    {calculoInteligente
-                      ? `${productoSeleccionado?.unidad_medida_base_abv || unidadAbbr} por ${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "pieza"}`
-                      : `${productoSeleccionado?.unidad_medida_base_abv || "---"} x ${unidadAbbr}`}
-                  </Text>
-                  {sonUnidadesIdenticas && (
-                    <Tooltip
-                      label="Cálculo inteligente: ingresa 'cantidad de ítems' y 'magnitud por ítem' por separado"
-                      position="top"
-                      withArrow
-                      multiline
-                      w={220}
-                    >
-                      <Checkbox
-                        size="xs"
-                        color="indigo"
-                        radius="sm"
-                        checked={calculoInteligente}
-                        onChange={(event) =>
-                          setCalculoInteligente(event.currentTarget.checked)
-                        }
-                        classNames={{
-                          input: "cursor-pointer",
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </div>
-                <NumberInput
-                  placeholder={calculoInteligente ? "Ej: 70" : "Ej: 10"}
-                  value={contenido}
-                  onChange={(val) => setContenido(Number(val))}
-                  min={calculoInteligente ? 0 : 0.01}
-                  disabled={sonUnidadesIdenticas && !calculoInteligente}
-                  classNames={inputClasses}
-                  radius="lg"
-                  size="sm"
-                />
-              </div>
-              <div className="md:col-span-6 self-start flex flex-col gap-1.5">
-                <div className="flex justify-between items-center h-5 mb-0.5">
-                  <span className="text-zinc-300 font-semibold tracking-tight text-[13px] md:text-sm">
-                    {paraMantenimientoItem && productoSeleccionado
-                      ? "Equipo Destino"
-                      : "Comentario del ítem"}
-                  </span>
-                  <Checkbox
-                    label="Mantenimiento"
-                    checked={paraMantenimientoItem}
-                    disabled={
-                      !productoSeleccionado ||
-                      !productoSeleccionado.para_mantenimiento
-                    }
-                    onChange={(event) =>
-                      setParaMantenimientoItem(event.currentTarget.checked)
-                    }
-                    size="xs"
-                    color="indigo"
-                    radius="sm"
-                    classNames={{
-                      input:
-                        productoSeleccionado &&
-                        productoSeleccionado.para_mantenimiento
-                          ? "cursor-pointer"
-                          : "cursor-not-allowed",
-                      label: `font-semibold text-xs ${
-                        productoSeleccionado &&
-                        productoSeleccionado.para_mantenimiento
-                          ? "text-zinc-300 cursor-pointer"
-                          : "text-zinc-600 cursor-not-allowed"
-                      }`,
-                    }}
-                  />
-                </div>
-
-                <div className="animate-fade-in">
-                  {paraMantenimientoItem && productoSeleccionado ? (
-                    <Select
-                      placeholder="Seleccione equipo"
-                      data={activos.map((a) => ({
-                        value: String(a.id_activo),
-                        label: `${a.correlativo} - ${a.producto}`,
-                      }))}
-                      value={
-                        idActivoFijoDestino ? String(idActivoFijoDestino) : null
-                      }
-                      onChange={(val) => setIdActivoFijoDestino(Number(val))}
-                      searchable
-                      classNames={inputClasses}
-                      radius="lg"
-                      size="sm"
-                    />
-                  ) : (
-                    <TextInput
-                      placeholder="Notas adicionales para este producto..."
-                      value={comentarioItem}
-                      onChange={(e) => setComentarioItem(e.target.value)}
-                      classNames={inputClasses}
-                      radius="lg"
-                      size="sm"
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div className="md:col-span-2 self-start mt-6.5">
-                <Button
-                  onClick={agregarItem}
-                  disabled={!canAdd}
-                  variant="filled"
-                  color="indigo"
-                  size="sm"
-                  fullWidth
-                  className="shadow-lg h-10 mb-0.5"
-                  leftSection={<PlusIcon className="w-5 h-5 text-white" />}
-                  radius="lg"
-                >
-                  Agregar
-                </Button>
-              </div>
-
-              <div className="md:col-span-4 self-start">
-                <div className="bg-zinc-950/50 rounded-xl p-4 border border-zinc-800/50 border-dashed">
-                  <Text
-                    component="div"
-                    size="xs"
-                    fw={700}
-                    c="zinc.5"
-                    mb="xs"
-                    className="uppercase tracking-widest flex items-center gap-2"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
-                    Resumen del pedido
-                  </Text>
-
-                  <Group gap="xl" wrap="nowrap">
-                    <Stack gap={2}>
-                      <Text
-                        size="10px"
-                        c="zinc.5"
-                        fw={700}
-                        className="uppercase"
-                      >
-                        {calculoInteligente && sonUnidadesIdenticas
-                          ? `Cantidad (${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "piezas"})`
-                          : `En ${unidadNombre ? enPlural(unidadNombre) : "---"}`}
-                      </Text>
-                      <div className="flex items-baseline gap-1.5">
-                        <Text
-                          fw={800}
-                          size="xl"
-                          className={
-                            idUnidadMedida > 0 ? "text-white" : "text-zinc-700"
-                          }
-                        >
-                          {formatNumber(cantidad)}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={700}
-                          c="zinc.5"
-                          className="uppercase tracking-wider"
-                        >
-                          {calculoInteligente && sonUnidadesIdenticas
-                            ? productoSeleccionado?.nombre
-                              ? enPlural(
-                                  productoSeleccionado.nombre.toLowerCase(),
-                                )
-                              : "pz"
-                            : unidadAbbr}
-                        </Text>
-                      </div>
-                    </Stack>
-
-                    <div className="h-10 w-px bg-zinc-800" />
-
-                    <Stack gap={2}>
-                      <Text
-                        size="10px"
-                        c="zinc.5"
-                        fw={700}
-                        className="uppercase"
-                      >
-                        {calculoInteligente && sonUnidadesIdenticas
-                          ? "Total"
-                          : `En ${
-                              productoSeleccionado?.unidad_medida_base
-                                ? enPlural(
-                                    productoSeleccionado?.unidad_medida_base,
-                                  )
-                                : "---"
-                            }`}
-                      </Text>
-                      <div className="flex items-baseline gap-1.5">
-                        <Text
-                          fw={800}
-                          size="xl"
-                          className={
-                            idProducto > 0
-                              ? "text-emerald-400"
-                              : "text-zinc-700"
-                          }
-                        >
-                          {formatNumber(totalBase)}
-                        </Text>
-                        <Text
-                          size="xs"
-                          fw={700}
-                          c="zinc.5"
-                          className="uppercase tracking-wider"
-                        >
-                          {baseAbbr}
-                        </Text>
-                      </div>
-                    </Stack>
-                  </Group>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* inputs para llenar el detalle del requerimiento  */}
+      <section>
+        <SectionHeader icon={ShoppingCartIcon} title="Items a solicitar" />
+
+        <div className="">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
+            <div className="md:col-span-3">
+              <Select
+                label="Producto"
+                placeholder="Seleccione producto"
+                data={productosVisibles.map((p: RES_Producto) => ({
+                  value: String(p.id_producto),
+                  label: p.nombre,
+                }))}
+                value={idProducto ? String(idProducto) : null}
+                onChange={(val) => setIdProducto(Number(val))}
+                searchable
+                searchValue={productoBusqueda}
+                onSearchChange={setProductoBusqueda}
+                // Desactivar el filtro interno de Mantine (substring case-
+                // insensitive SIN normalización de tildes). El filtrado real
+                // lo hace getCoincidencias() y se ve reflejado en `data`.
+                filter={({ options }) => options}
+                nothingFoundMessage="Sin coincidencias"
+                classNames={inputClasses}
+                radius="lg"
+                size="sm"
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <div className="flex items-center justify-between gap-2 mb-1.5 min-h-5">
+                <Text
+                  component="label"
+                  fw={600}
+                  fz="sm"
+                  c="zinc.3"
+                  className="tracking-tight"
+                >
+                  {calculoInteligente ? "Cantidad (ítems)" : "Cantidad"}
+                </Text>
+                {calculoInteligenteDisponible && (
+                  <Tooltip
+                    label="Cálculo inteligente: ingresa 'cantidad de ítems' y 'magnitud por ítem' por separado"
+                    position="top"
+                    withArrow
+                    multiline
+                    w={220}
+                  >
+                    <Checkbox
+                      size="xs"
+                      color="indigo"
+                      radius="sm"
+                      // label="Cálculo inteligente"
+                      checked={calculoInteligente}
+                      onChange={(event) =>
+                        setCalculoInteligente(event.currentTarget.checked)
+                      }
+                      classNames={{
+                        input: "cursor-pointer",
+                        label:
+                          "text-zinc-300 text-[11px] font-semibold uppercase tracking-wider cursor-pointer",
+                      }}
+                    />
+                  </Tooltip>
+                )}
+              </div>
+              <NumberInput
+                placeholder="0"
+                value={cantidad}
+                onChange={(val) => setCantidad(Number(val))}
+                min={0}
+                classNames={inputClasses}
+                radius="lg"
+                size="sm"
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <Select
+                label="Unidad de Medida"
+                placeholder="Seleccione unidad"
+                data={unidadesVisibles.map((u: RES_UnidadMedida) => ({
+                  value: String(u.id_unidad_medida),
+                  label: `${u.nombre} (${u.abreviatura})`,
+                }))}
+                value={idUnidadMedida ? String(idUnidadMedida) : null}
+                onChange={(val) => setIdUnidadMedida(Number(val))}
+                disabled={
+                  productoSeleccionado?.tipo_bien === TipoBien.ActivoFijo
+                }
+                searchable
+                searchValue={unidadBusqueda}
+                onSearchChange={setUnidadBusqueda}
+                // Ver comentario en el Select de Producto más arriba.
+                filter={({ options }) => options}
+                nothingFoundMessage="Sin coincidencias"
+                classNames={inputClasses}
+                radius="lg"
+                size="sm"
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <Text
+                component="label"
+                fw={600}
+                fz="sm"
+                c="zinc.3"
+                className="tracking-tight mb-1.5 block"
+              >
+                {calculoInteligente
+                  ? // Magnitud por ítem: si las unidades son idénticas, la
+                    // magnitud está en la unidad base; si difieren, está en
+                    // la unidad del detalle seleccionada.
+                    `${sonUnidadesIdenticas ? productoSeleccionado?.unidad_medida_base_abv || unidadAbbr : unidadAbbr} por ${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "pieza"}`
+                  : // Factor de conversión: "base x detalle" (1 detalle = N base).
+                    `${productoSeleccionado?.unidad_medida_base_abv || "---"} x ${unidadAbbr}`}
+              </Text>
+              <NumberInput
+                placeholder={
+                  calculoInteligente
+                    ? sonUnidadesIdenticas
+                      ? "Ej: 70"
+                      : "Ej: 1.2"
+                    : conversionAutomatica !== null
+                      ? "Auto-completado"
+                      : "Ingrese el factor"
+                }
+                value={contenido}
+                onChange={(val) => setContenido(Number(val))}
+                min={calculoInteligente ? 0 : 0.01}
+                disabled={contenidoBloqueado}
+                classNames={inputClasses}
+                radius="lg"
+                size="sm"
+              />
+            </div>
+            <div className="md:col-span-6 self-start flex flex-col gap-1.5">
+              <div className="flex justify-between items-center h-5 mb-0.5">
+                <span className="text-zinc-300 font-semibold tracking-tight text-[13px] md:text-sm">
+                  {paraMantenimientoItem && productoSeleccionado
+                    ? "Equipo Destino"
+                    : "Comentario del ítem"}
+                </span>
+                <Checkbox
+                  label="Mantenimiento"
+                  checked={paraMantenimientoItem}
+                  disabled={
+                    !productoSeleccionado ||
+                    !productoSeleccionado.para_mantenimiento
+                  }
+                  onChange={(event) =>
+                    setParaMantenimientoItem(event.currentTarget.checked)
+                  }
+                  size="xs"
+                  color="indigo"
+                  radius="sm"
+                  classNames={{
+                    input:
+                      productoSeleccionado &&
+                      productoSeleccionado.para_mantenimiento
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed",
+                    label: `font-semibold text-xs ${
+                      productoSeleccionado &&
+                      productoSeleccionado.para_mantenimiento
+                        ? "text-zinc-300 cursor-pointer"
+                        : "text-zinc-600 cursor-not-allowed"
+                    }`,
+                  }}
+                />
+              </div>
+
+              <div className="animate-fade-in">
+                {paraMantenimientoItem && productoSeleccionado ? (
+                  <Select
+                    placeholder="Seleccione equipo"
+                    data={activos.map((a) => ({
+                      value: String(a.id_activo),
+                      label: `${a.correlativo} - ${a.producto}`,
+                    }))}
+                    value={
+                      idActivoFijoDestino ? String(idActivoFijoDestino) : null
+                    }
+                    onChange={(val) => setIdActivoFijoDestino(Number(val))}
+                    searchable
+                    classNames={inputClasses}
+                    radius="lg"
+                    size="sm"
+                  />
+                ) : (
+                  <TextInput
+                    placeholder="Notas adicionales para este producto..."
+                    value={comentarioItem}
+                    onChange={(e) => setComentarioItem(e.target.value)}
+                    classNames={inputClasses}
+                    radius="lg"
+                    size="sm"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="md:col-span-2 self-start mt-6.5">
+              <Button
+                onClick={agregarItem}
+                disabled={!canAdd}
+                variant="filled"
+                color="indigo"
+                size="sm"
+                fullWidth
+                className="shadow-lg h-10 mb-0.5"
+                leftSection={<PlusIcon className="w-5 h-5 text-white" />}
+                radius="lg"
+              >
+                Agregar
+              </Button>
+            </div>
+
+            <div className="md:col-span-4 self-start ml-2">
+              <Text
+                component="div"
+                size="xs"
+                fw={700}
+                c="zinc.5"
+                mb="xs"
+                className="uppercase tracking-widest flex items-center gap-2"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+                Resumen del pedido
+              </Text>
+
+              <Group gap="xl" wrap="nowrap">
+                <Stack gap={2}>
+                  <Text size="10px" c="zinc.5" fw={700} className="uppercase">
+                    {calculoInteligente && sonUnidadesIdenticas
+                      ? `Cantidad (${productoSeleccionado?.nombre ? enPlural(productoSeleccionado.nombre.toLowerCase()) : "piezas"})`
+                      : `En ${unidadNombre ? enPlural(unidadNombre) : "---"}`}
+                  </Text>
+                  <div className="flex items-baseline gap-1.5">
+                    <Text
+                      fw={800}
+                      size="xl"
+                      className={
+                        idUnidadMedida > 0 ? "text-white" : "text-zinc-700"
+                      }
+                    >
+                      {formatNumber(totalDetalle)}
+                    </Text>
+                    <Text
+                      size="xs"
+                      fw={700}
+                      c="zinc.5"
+                      className="uppercase tracking-wider"
+                    >
+                      {calculoInteligente && sonUnidadesIdenticas
+                        ? productoSeleccionado?.nombre
+                          ? enPlural(productoSeleccionado.nombre.toLowerCase())
+                          : "pz"
+                        : unidadAbbr}
+                    </Text>
+                  </div>
+                </Stack>
+
+                <div className="h-10 w-px bg-zinc-800" />
+
+                <Stack gap={2}>
+                  <Text size="10px" c="zinc.5" fw={700} className="uppercase">
+                    {calculoInteligente && sonUnidadesIdenticas
+                      ? "Total"
+                      : `En ${
+                          productoSeleccionado?.unidad_medida_base
+                            ? enPlural(productoSeleccionado?.unidad_medida_base)
+                            : "---"
+                        }`}
+                  </Text>
+                  <div className="flex items-baseline gap-1.5">
+                    <Text
+                      fw={800}
+                      size="xl"
+                      className={
+                        idProducto > 0 ? "text-emerald-400" : "text-zinc-700"
+                      }
+                    >
+                      {formatNumber(totalBase)}
+                    </Text>
+                    <Text
+                      size="xs"
+                      fw={700}
+                      c="zinc.5"
+                      className="uppercase tracking-wider"
+                    >
+                      {baseAbbr}
+                    </Text>
+                  </div>
+                </Stack>
+              </Group>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* detalle del requerimiento */}
       <div className="overflow-x-auto rounded-xl border border-zinc-800 shadow-sm">
         <Table variant="unstyled" className="w-full text-zinc-300">
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
@@ -668,25 +698,33 @@ export const RegistroRequerimiento = ({
                 const prod = productos.find(
                   (p) => p.id_producto === det.id_producto,
                 );
+                const unidadDetalle = unidades.find(
+                  (u) => u.id_unidad_medida === det.id_unidad_medida,
+                );
+                const mismaUnidadQueBase =
+                  prod?.id_unidad_medida_base === det.id_unidad_medida;
+                const usaMagnitudEnDetalle =
+                  det.cantidad_items !== undefined &&
+                  det.valor_magnitud_base !== undefined &&
+                  det.cantidad_items > 0 &&
+                  det.valor_magnitud_base > 0;
                 /**
                  * La tabla siempre refleja el TOTAL REAL en unidad base del
-                 * producto (cantidad_solicitada × contenido_por_presentacion),
-                 * que es lo que el usuario realmente quiere ver y confirmar.
-                 * Esto es crítico cuando se usó "Cálculo inteligente"
-                 * (ej. 11 guías × 70 cm = 770 cm), porque cantidad_solicitada
-                 * por sí sola muestra "11" que confunde.
+                 * producto. Cuando el ítem fue creado con el modelo
+                 * "magnitud por ítem con unidades diferentes" (smart calc
+                 * activo y unidades distintas de la base), `cantidad_solicitada`
+                 * guarda el total en la unidad del detalle y
+                 * `contenido_por_presentacion` queda en 1, por lo que el
+                 * producto daría el resultado equivocado. En ese caso se
+                 * reconstruye el total con `cantidad_items × valor_magnitud_base`.
                  */
-                const totalBase =
-                  (det.cantidad_solicitada || 0) *
-                  (det.contenido_por_presentacion || 0);
-                const contenidoMayorAUno = det.contenido_por_presentacion > 1;
+                const totalBase = usaMagnitudEnDetalle
+                  ? (det.cantidad_items ?? 0) * (det.valor_magnitud_base ?? 0)
+                  : (det.cantidad_solicitada || 0) *
+                    (det.contenido_por_presentacion || 0);
                 const conError = totalBase <= 0;
                 const onChangeTotalBase = (val: number | string) => {
-                  const nuevoBase = Number(val);
-                  const contenido = det.contenido_por_presentacion || 0;
-                  const nuevaCantidad =
-                    contenido > 0 ? nuevoBase / contenido : 0;
-                  actualizarCantidadItem(index, nuevaCantidad);
+                  actualizarTotalBaseItem(index, Number(val));
                 };
 
                 return (
@@ -698,10 +736,12 @@ export const RegistroRequerimiento = ({
                       {index + 1}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-zinc-100">
-                      <div>{prod?.nombre}</div>
+                      <div className="flex items-center gap-2">
+                        <span>{prod?.nombre}</span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <Stack gap={4} align="center">
+                      <Group gap={4} align="center">
                         {/* Bloque único: TOTAL REAL en unidad base del producto */}
                         <div
                           className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
@@ -725,29 +765,118 @@ export const RegistroRequerimiento = ({
                           </Text>
                         </div>
 
-                        {/* Subtítulo con el desglose, sólo cuando hay multiplicación real */}
-                        {contenidoMayorAUno && (
-                          <Text
-                            size="9px"
-                            fw={700}
-                            c="zinc.5"
-                            className="lowercase tracking-wider"
-                          >
-                            {formatNumber(det.cantidad_solicitada)} x{" "}
-                            {formatNumber(det.contenido_por_presentacion)}{" "}
-                            <span className="uppercase">
-                              {enPlural(
-                                unidades.filter(
-                                  (u) =>
-                                    u.id_unidad_medida === det.id_unidad_medida,
-                                )?.[0]?.nombre,
-                                det.contenido_por_presentacion,
-                              )}
-                            </span>{" "}
-                            <span className="uppercase">C/U</span>
-                          </Text>
-                        )}
-                      </Stack>
+                        {/* Subtítulo: muestra los componentes editables
+                            que el usuario ingresó originalmente.
+                            Aplicamos la heurística de Nielsen "user control
+                            and freedom": cualquier valor que el usuario tipeó
+                            debe poder editarse; los demás se recalculan. */}
+                        {(() => {
+                          // Caso 1: ítem con magnitud por unidad (smart calc
+                          // activo) → "N × M {unidad detalle} c/u"
+                          if (usaMagnitudEnDetalle) {
+                            const items = det.cantidad_items ?? 0;
+                            const mag = det.valor_magnitud ?? 0;
+                            return (
+                              <div className="flex items-center gap-1.5 text-zinc-500">
+                                <NumberInput
+                                  value={items}
+                                  onChange={(val) =>
+                                    actualizarCantidadItems(index, Number(val))
+                                  }
+                                  size="xs"
+                                  hideControls
+                                  min={0}
+                                  classNames={{
+                                    input:
+                                      "w-fit min-w-[24px] max-w-[40px] text-center font-bold h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
+                                  }}
+                                />
+                                <Text size="xs" fw={400} c={"gray.2"}>
+                                  {enPlural(prod?.nombre, items)}{" "}x
+                                </Text>
+                                <NumberInput
+                                  value={mag}
+                                  onChange={(val) =>
+                                    actualizarValorMagnitud(index, Number(val))
+                                  }
+                                  size="xs"
+                                  hideControls
+                                  min={0}
+                                  classNames={{
+                                    input:
+                                      "w-fit min-w-[24px] max-w-[40px] text-center font-bold h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
+                                  }}
+                                />
+                                <Text
+                                  size="xs"
+                                  fw={700}
+                                  className="uppercase whitespace-nowrap"
+                                >
+                                  {unidadDetalle?.abreviatura} c/u
+                                </Text>
+                              </div>
+                            );
+                          }
+                          // Caso 2: ítem clásico con unidades distintas a la
+                          // base → editable: cantidad en detalle × factor
+                          if (
+                            !mismaUnidadQueBase &&
+                            (det.cantidad_solicitada ?? 0) > 0
+                          ) {
+                            return (
+                              <div className="flex items-center gap-1.5 text-zinc-500">
+                                <NumberInput
+                                  variant="unstyled"
+                                  value={det.cantidad_solicitada}
+                                  onChange={(val) =>
+                                    actualizarCantidadDetalleItem(
+                                      index,
+                                      Number(val),
+                                    )
+                                  }
+                                  size="xs"
+                                  hideControls
+                                  min={0}
+                                  classNames={{
+                                    input:
+                                      "w-fit min-w-[30px] max-w-[50px] text-center font-bold  h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
+                                  }}
+                                />
+                                <Text
+                                  size="9px"
+                                  fw={700}
+                                  className="uppercase whitespace-nowrap"
+                                >
+                                  ×
+                                </Text>
+                                <NumberInput
+                                  variant="unstyled"
+                                  value={det.contenido_por_presentacion}
+                                  onChange={(val) =>
+                                    actualizarFactorItem(index, Number(val))
+                                  }
+                                  size="xs"
+                                  hideControls
+                                  min={0}
+                                  classNames={{
+                                    input:
+                                      "w-fit min-w-[30px] max-w-[50px] text-center font-bold  h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
+                                  }}
+                                />
+                                <Text
+                                  size="9px"
+                                  fw={700}
+                                  className="uppercase whitespace-nowrap"
+                                >
+                                  {prod?.unidad_medida_base_abv}/
+                                  {unidadDetalle?.abreviatura}
+                                </Text>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </Group>
                     </td>
                     <td className="px-4 py-3 text-xs text-zinc-400">
                       {det.para_mantenimiento ? (
@@ -778,7 +907,8 @@ export const RegistroRequerimiento = ({
         </Table>
       </div>
 
-      <Group justify="flex-end" mt="md">
+      {/* boton de guardar/cerrar */}
+      <Group justify="flex-end">
         {error && (
           <div className="px-4 py-2 bg-red-900/20 border border-red-500/50 rounded-xl animate-pulse">
             <Text

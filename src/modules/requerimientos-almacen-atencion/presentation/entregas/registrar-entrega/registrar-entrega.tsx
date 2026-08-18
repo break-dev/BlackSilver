@@ -4,9 +4,13 @@ import type { DetalleRequerimientoExtendido } from "../../../service/atencion.re
 import { EntregaHeader } from "./header/entrega-header";
 import { GroupByProducto } from "./detalle/group-by-producto";
 import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import type { RES_DetalleRequerimiento } from "../../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistrarEntregaProps {
+  requerimiento: RES_RequerimientoAlmacen;
   idRequerimiento: number;
   idAlmacen: number;
   selectedItemsIds: number[];
@@ -18,6 +22,7 @@ interface RegistrarEntregaProps {
 }
 
 export const RegistrarEntrega = ({
+  requerimiento,
   idRequerimiento,
   idAlmacen,
   selectedItemsIds,
@@ -58,6 +63,7 @@ export const RegistrarEntrega = ({
     handleDestinoChange,
     handleConfirmar,
   } = useRegistrarEntregaBatch({
+    requerimiento,
     idRequerimiento,
     idAlmacen,
     selectedItemsIds,

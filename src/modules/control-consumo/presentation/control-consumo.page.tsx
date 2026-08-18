@@ -12,6 +12,9 @@ import {
 import { useState, useMemo } from "react";
 import type { RES_ResumenEntregasReq } from "../service/control-consumo.responses";
 import type { GroupedRequerimiento } from "./components/card-requerimiento";
+import { useExcel } from "../../../hooks/useExcel";
+import { useNotify } from "../../../hooks/useNotify";
+import { useControlConsumoExcel } from "./excel-control-consumo";
 
 export const ControlConsumoPage = () => {
   useTitlePage("Control de Consumo");
@@ -56,6 +59,7 @@ export const ControlConsumoPage = () => {
           fecha_requerimiento: item.fecha_requerimiento,
           es_auditable: item.es_auditable,
           solicitante: item.solicitante,
+          cargo_solicitante: item.cargo_solicitante,
           mina: item.mina,
           almacen_destino: item.almacen_destino,
           entregas: [],
@@ -94,6 +98,23 @@ export const ControlConsumoPage = () => {
     setSelectedDetail(null);
   };
 
+  // Excel export
+  const { generateExcel, isGeneratingExcel } = useExcel();
+  const { notifyError } = useNotify();
+  const { generate: generateExcelConfig } = useControlConsumoExcel();
+
+  const handleExportExcel = () => {
+    if (reporte.length === 0) {
+      notifyError("No hay datos para exportar con los filtros actuales.");
+      return;
+    }
+    const cfg = generateExcelConfig({ reporte, mes, anio });
+    generateExcel({
+      filename: cfg.filename,
+      builder: cfg.builder,
+    });
+  };
+
   return (
     <Stack gap="lg" className="animate-fade-in text-zinc-100">
       {/* Search and Period Filter Component */}
@@ -114,6 +135,9 @@ export const ControlConsumoPage = () => {
         setBusqueda={setBusqueda}
         onReload={recargar}
         loading={loading}
+        onExportExcel={handleExportExcel}
+        exportingExcel={isGeneratingExcel}
+        exportDisabled={reporte.length === 0}
       />
 
       {/* Grouped Content Body */}
