@@ -97,6 +97,114 @@ export const Schema_CrearEmpleado = z
 
 export type DTO_CrearEmpleado = z.infer<typeof Schema_CrearEmpleado>;
 
+/**
+ * Schema de edición.
+ *
+ * - Campos personales y de contacto: siempre requeridos/permitidos.
+ * - `id_cargo` y `id_empresa`: opcionales a nivel cliente. El backend
+ *   decide: si el empleado TIENE contrato vigente, ignora esos campos;
+ *   si NO tiene, los exige. El frontend solo los manda cuando el
+ *   usuario los modificó en el modal (siempre que el modal los
+ *   muestre — ver `modal-editar-empleado.tsx`).
+ *
+ * NO se editan: `ruc`, `carnet_extranjeria`, `pasaporte` (no se usan).
+ * NO se edita: `con_contrato`, `id_contrato_vigente` (gestionadas por
+ * el módulo ContratosEmpleado).
+ */
+export const Schema_ActualizarEmpleado = z.object({
+  nombre: z.string().min(1, "Los nombres son obligatorios"),
+  apellido: z.string().min(1, "Los apellidos son obligatorios"),
+  genero: z
+    .nativeEnum(Genero, {
+      message: "Seleccione un género válido",
+    })
+    .nullable()
+    .optional(),
+  dni: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(documentoTransform)
+    .refine((val) => !val || /^\d{8}$/.test(val), {
+      message: "El DNI debe tener exactamente 8 dígitos",
+    }),
+  fecha_nacimiento: z.any().optional().nullable().transform(fechaTransform),
+  direccion: z
+    .string()
+    .max(255, "La dirección no debe exceder los 255 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform),
+  telefono: z
+    .string()
+    .max(32, "El teléfono no debe exceder los 32 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform),
+  email: z
+    .string()
+    .max(128, "El email no debe exceder los 128 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform)
+    .refine((val) => !val || emailRegex.test(val), {
+      message: "Ingrese un email válido",
+    }),
+  id_cargo: z.number().nullable().optional(),
+  id_empresa: z.number().nullable().optional(),
+});
+
+export type DTO_ActualizarEmpleado = z.infer<typeof Schema_ActualizarEmpleado>;
+
+/**
+ * Schema de edición para contratista.
+ *
+ * Solo datos personales + contacto. NO se editan: mina, labores,
+ * ruc, carnet_extranjeria, pasaporte, con_contrato, id_contrato_vigente.
+ */
+export const Schema_ActualizarContratista = z.object({
+  nombre: z.string().min(1, "Los nombres son obligatorios"),
+  apellido: z.string().min(1, "Los apellidos son obligatorios"),
+  genero: z
+    .nativeEnum(Genero, {
+      message: "Seleccione un género válido",
+    })
+    .nullable()
+    .optional(),
+  dni: z
+    .string()
+    .optional()
+    .nullable()
+    .transform(documentoTransform)
+    .refine((val) => !val || /^\d{8}$/.test(val), {
+      message: "El DNI debe tener exactamente 8 dígitos",
+    }),
+  fecha_nacimiento: z.any().optional().nullable().transform(fechaTransform),
+  direccion: z
+    .string()
+    .max(255, "La dirección no debe exceder los 255 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform),
+  telefono: z
+    .string()
+    .max(32, "El teléfono no debe exceder los 32 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform),
+  email: z
+    .string()
+    .max(128, "El email no debe exceder los 128 caracteres")
+    .optional()
+    .nullable()
+    .transform(documentoTransform)
+    .refine((val) => !val || emailRegex.test(val), {
+      message: "Ingrese un email válido",
+    }),
+});
+
+export type DTO_ActualizarContratista = z.infer<typeof Schema_ActualizarContratista>;
+
 export const Schema_CrearContratista = z.object({
   nombre: z.string().min(1, "Los nombres son obligatorios"),
   apellido: z.string().min(1, "Los apellidos son obligatorios"),

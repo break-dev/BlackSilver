@@ -21,7 +21,9 @@ import {
   DocumentTextIcon,
   IdentificationIcon,
   CreditCardIcon,
+  EllipsisVerticalIcon,
 } from "@heroicons/react/24/outline";
+import { Menu } from "@mantine/core";
 import { type DataTableColumn } from "mantine-datatable";
 
 import { useEmpleados } from "../hooks/useEmpleados";
@@ -31,6 +33,7 @@ import { useNotify } from "../../../hooks/useNotify";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
 import { ModalContratoEmpleado } from "../../contratos-empleado/presentation/modal-contrato-empleado";
 import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presentation/modal-historial-contratos-empleado";
+import { ModalEditarEmpleado } from "./modal-editar-empleado";
 
 interface TabEmpleadosProps {
   controller: ReturnType<typeof useEmpleados>;
@@ -52,6 +55,11 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
     cerrarModalHistorial,
     modalHistorialContratos,
     onContratoCreado,
+    // Edición
+    empleadoEnEdicion,
+    abrirModalEdicion,
+    cerrarModalEdicion,
+    actualizarEmpleadoEnLista,
     // Selección masiva (usada en la columna de checkbox)
     seleccionados,
     toggleSeleccion,
@@ -181,8 +189,8 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
                       variant="light"
                       className="w-full h-full"
                     >
-                      {r.nombre[0]}
-                      {r.apellido[0]}
+                      {r.nombre?.[0] ?? ""}
+                      {r.apellido?.[0] ?? ""}
                     </Avatar>
                     {!isUpdatingFoto && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -522,6 +530,36 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
         </Badge>
       ),
     },
+    {
+      accessor: "acciones",
+      title: "Acciones",
+      textAlign: "center",
+      width: 80,
+      render: (r) => (
+        <Menu position="bottom-end" withArrow shadow="lg">
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              color="zinc"
+              size="sm"
+              radius="md"
+              aria-label="Acciones"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EllipsisVerticalIcon className="w-4 h-4 text-zinc-400" />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item
+              leftSection={<PencilSquareIcon className="w-4 h-4" />}
+              onClick={() => abrirModalEdicion(r)}
+            >
+              Editar
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      ),
+    },
   ];
 
   return (
@@ -594,6 +632,19 @@ export const TabEmpleados = ({ controller, onOpenCuentas }: TabEmpleadosProps) =
             } else {
               onContratoCreado();
             }
+          }}
+        />
+      )}
+
+      {/* Modal de edición de empleado */}
+      {empleadoEnEdicion && (
+        <ModalEditarEmpleado
+          empleado={empleadoEnEdicion}
+          opened={true}
+          close={cerrarModalEdicion}
+          onSuccess={(editado) => {
+            actualizarEmpleadoEnLista(editado);
+            cerrarModalEdicion();
           }}
         />
       )}

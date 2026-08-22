@@ -195,6 +195,8 @@ export const useContratistas = () => {
     idEmpleado: number | null;
     nombre: string;
   } | null>(null);
+  const [contratistaEnEdicion, setContratistaEnEdicion] =
+    useState<RES_ContratistaResumen | null>(null);
 
   const abrirModalContrato = useCallback((id: number, nombre: string) => {
     setModalContratoEmpleado({ abierto: true, idEmpleado: id, nombre });
@@ -210,6 +212,17 @@ export const useContratistas = () => {
 
   const cerrarModalHistorial = useCallback(() => {
     setModalHistorialContratos(null);
+  }, []);
+
+  const abrirModalEdicion = useCallback(
+    (c: RES_ContratistaResumen) => {
+      setContratistaEnEdicion(c);
+    },
+    [],
+  );
+
+  const cerrarModalEdicion = useCallback(() => {
+    setContratistaEnEdicion(null);
   }, []);
 
   const onContratoCreado = useCallback(
@@ -246,6 +259,11 @@ export const useContratistas = () => {
     modalHistorialContratos,
     abrirModalHistorial,
     cerrarModalHistorial,
+
+    // Modal de Edición
+    contratistaEnEdicion,
+    abrirModalEdicion,
+    cerrarModalEdicion,
 
     // Toggle con_contrato
     toggleConContrato: async (ids: number[], conContrato: boolean) => {

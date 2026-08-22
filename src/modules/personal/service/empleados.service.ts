@@ -5,7 +5,9 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
   DTO_AsignarLaboresContratista,
   DTO_CrearContratista,
+  DTO_ActualizarContratista,
   DTO_CrearEmpleado,
+  DTO_ActualizarEmpleado,
   DTO_CrearCuentaBancariaEmpleado,
   DTO_ActualizarCuentaBancariaEmpleado,
 } from "./empleados.requests";
@@ -91,6 +93,14 @@ export class EmpleadosService {
     return data;
   };
 
+  public static actualizar_empleado = async (
+    idEmpleado: number,
+    dto: DTO_ActualizarEmpleado,
+  ): Promise<IRespuesta<RES_EmpleadoResumen>> => {
+    const { data } = await api.put(`${this.PATH}/${idEmpleado}`, dto);
+    return data;
+  };
+
   public static get_cuentas_bancarias = async (
     idEmpleado: number,
   ): Promise<IRespuesta<RES_CuentaBancariaEmpleado[]>> => {
@@ -172,6 +182,14 @@ export class ContratistasService {
         headers: { "Content-Type": "multipart/form-data" },
       },
     );
+    return data;
+  };
+
+  public static actualizar_contratista = async (
+    idContratista: number,
+    dto: DTO_ActualizarContratista,
+  ): Promise<IRespuesta<RES_ContratistaResumen>> => {
+    const { data } = await api.put(`${this.PATH}/${idContratista}`, dto);
     return data;
   };
   public static get_labores_disponibles = async (

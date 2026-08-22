@@ -21,7 +21,9 @@ import {
   IdentificationIcon,
   DocumentTextIcon,
   CheckBadgeIcon,
+  EllipsisVerticalIcon,
 } from "@heroicons/react/24/outline";
+import { Menu } from "@mantine/core";
 
 import { type DataTableColumn } from "mantine-datatable";
 import { DataTableEstandar } from "../../../presentation/utils/datatable-estandar";
@@ -31,6 +33,7 @@ import type { RES_ContratistaResumen } from "../service/empleados.responses";
 import { useNotify } from "../../../hooks/useNotify";
 import { ModalContratoEmpleado } from "../../contratos-empleado/presentation/modal-contrato-empleado";
 import { ModalHistorialContratosEmpleado } from "../../contratos-empleado/presentation/modal-historial-contratos-empleado";
+import { ModalEditarContratista } from "./modal-editar-contratista";
 import { EstadoBase } from "../../../shared/enums/_generic/estado-base";
 
 interface TabContratistasProps {
@@ -67,6 +70,11 @@ export const TabContratistas = ({
     abrirModalHistorial,
     cerrarModalHistorial,
     toggleConContrato,
+    // Edición
+    contratistaEnEdicion,
+    abrirModalEdicion,
+    cerrarModalEdicion,
+    actualizarContratistaEnLista,
   } = controller;
 
   const handleUpdateFoto = async (id: number, file: File | null) => {
@@ -194,8 +202,8 @@ export const TabContratistas = ({
                       variant="light"
                       className="w-full h-full"
                     >
-                      {r.nombre[0]}
-                      {r.apellido[0]}
+                      {r.nombre?.[0] ?? ""}
+                      {r.apellido?.[0] ?? ""}
                     </Avatar>
                     {!isUpdatingFoto && (
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -534,6 +542,36 @@ export const TabContratistas = ({
         </Badge>
       ),
     },
+    {
+      accessor: "acciones",
+      title: "Acciones",
+      textAlign: "center",
+      width: 80,
+      render: (r) => (
+        <Menu position="bottom-end" withArrow shadow="lg">
+          <Menu.Target>
+            <ActionIcon
+              variant="subtle"
+              color="zinc"
+              size="sm"
+              radius="md"
+              aria-label="Acciones"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EllipsisVerticalIcon className="w-4 h-4 text-zinc-400" />
+            </ActionIcon>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item
+              leftSection={<PencilSquareIcon className="w-4 h-4" />}
+              onClick={() => abrirModalEdicion(r)}
+            >
+              Editar
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      ),
+    },
   ];
 
   return (
@@ -604,6 +642,19 @@ export const TabContratistas = ({
             esContratista={true}
           />
         )}
+
+      {/* Modal de edición de contratista */}
+      {contratistaEnEdicion && (
+        <ModalEditarContratista
+          contratista={contratistaEnEdicion}
+          opened={true}
+          close={cerrarModalEdicion}
+          onSuccess={(editado) => {
+            actualizarContratistaEnLista(editado);
+            cerrarModalEdicion();
+          }}
+        />
+      )}
     </>
   );
 };

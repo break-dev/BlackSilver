@@ -25,6 +25,8 @@ export const useEmpleados = () => {
     idEmpleado: number | null;
     nombre: string;
   } | null>(null);
+  const [empleadoEnEdicion, setEmpleadoEnEdicion] =
+    useState<RES_EmpleadoResumen | null>(null);
 
   // Selección masiva (fotocheck)
   const [seleccionados, setSeleccionados] = useState<Set<number>>(
@@ -144,6 +146,14 @@ export const useEmpleados = () => {
     setModalHistorialContratos(null);
   };
 
+  const abrirModalEdicion = (emp: RES_EmpleadoResumen) => {
+    setEmpleadoEnEdicion(emp);
+  };
+
+  const cerrarModalEdicion = () => {
+    setEmpleadoEnEdicion(null);
+  };
+
   const onContratoCreado = async (
     payload?: { empleado?: import("../service/empleados.responses").RES_EmpleadoResumen },
   ) => {
@@ -252,6 +262,11 @@ export const useEmpleados = () => {
     modalHistorialContratos,
     abrirModalHistorial,
     cerrarModalHistorial,
+
+    // Modal de Edición
+    empleadoEnEdicion,
+    abrirModalEdicion,
+    cerrarModalEdicion,
 
     // Habilitar / Deshabilitar contrato
     toggleConContrato: async (ids: number[], conContrato: boolean) => {
