@@ -1,4 +1,7 @@
-import type { EstadoActivoFijo, MovimientoActivoFijo } from "../../../shared/enums/activo-fijo";
+import type {
+  EstadoActivoFijo,
+  MovimientoActivoFijo,
+} from "../../../shared/enums/activo-fijo";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 
 //
@@ -16,7 +19,9 @@ export interface REQ_CrearActivo {
   descripcion?: string | null;
   serie_placa?: string | null;
   numero_placa?: string | null;
-  especificaciones?: { clave: string; valor: string }[] | null;
+  // Etiquetas / tags libres (estilo hashtags). El usuario las escribe
+  // separadas por coma o Enter. null = sin especificaciones.
+  especificaciones?: string[] | null;
   fecha_hora_ingreso?: string | null;
   estado?: EstadoActivoFijo;
   id_empleado_responsable?: number | null;
@@ -33,4 +38,26 @@ export interface REQ_ActualizarUbicacion {
   id_mina?: number | null;
   descripcion?: string | null;
   fecha_hora_movimiento?: string | null;
+}
+
+export interface REQ_ActualizarActivo {
+  codigo?: string | null;
+  numero_serie?: string | null;
+  modelo?: string | null;
+  yearcito_modelo?: number | null;
+  descripcion?: string | null;
+  serie_placa?: string | null;
+  numero_placa?: string | null;
+  id_labor?: number | null;
+  // Estado editable. Si el usuario lo envía explícitamente, tiene prioridad
+  // sobre el cálculo automático que new_ubicacion haría al mover.
+  estado?: EstadoActivoFijo | null;
+  // Etiquetas / tags libres (estilo hashtags de YouTube / redes sociales).
+  // El usuario las escribe separadas por coma o Enter. null = limpiar todas.
+  especificaciones?: string[] | null;
+  // Cambio opcional de ubicación. Si cambia respecto al estado actual,
+  // el backend registra el movimiento en activo_fijo_ubicacion_log.
+  id_almacen?: number | null;
+  id_mina?: number | null;
+  descripcion_ubicacion?: string | null;
 }

@@ -11,12 +11,6 @@ export interface RES_Proveedor {
   para_mantenimiento: boolean;
   para_transporte: boolean;
   para_carbon: boolean;
-  id_departamento: number | null;
-  id_provincia: number | null;
-  id_distrito: number | null;
-  departamento_nombre: string | null;
-  provincia_nombre: string | null;
-  distrito_nombre: string | null;
   estado: EstadoBase;
   cantidad_cuentas_bancarias?: number;
 }

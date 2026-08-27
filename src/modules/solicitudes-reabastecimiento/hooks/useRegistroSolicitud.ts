@@ -33,6 +33,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   // Estado Formulario Cabecera
   const [idAlmacenSolicitante, setIdAlmacenSolicitante] = useState<number>(0);
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
+  const [fechaSolicitud, setFechaSolicitud] = useState<Date | null>(new Date());
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
     useState<Date | null>(null);
   const [observacion, setObservacion] = useState("");
@@ -162,6 +163,9 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
       premura,
       observacion: observacion || undefined,
       es_auditable: esAuditable,
+      fecha_solicitud: fechaSolicitud
+        ? dayjs(fechaSolicitud).format("YYYY-MM-DD")
+        : null,
       fecha_entrega_requerida: fechaEntregaRequerida
         ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
         : null,
@@ -186,6 +190,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
     idAlmacenSolicitante,
     premura,
     observacion,
+    fechaSolicitud,
     fechaEntregaRequerida,
     detalles,
     onSuccess,
@@ -203,6 +208,8 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
       setIdAlmacenSolicitante,
       premura,
       setPremura,
+      fechaSolicitud,
+      setFechaSolicitud,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       observacion,

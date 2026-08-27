@@ -38,12 +38,16 @@ const path = "/aux";
 
 export const AuxService = {
   /**
-   * Obtener almacenes
+   * Obtener almacenes.
+   *
+   * Por defecto NO devuelve los almacenes de carbon: el modulo que los
+   * necesite explicitamente debe pasar `para_carbon: true`.
    */
   get_almacenes: async (filters?: {
     id_almacen?: number;
     id_empleado_responsable?: number;
     es_principal?: boolean;
+    para_carbon?: boolean;
   }): Promise<IRespuesta<RES_Almacen[]>> => {
     // Transformamos el booleano a 1 o 0 antes de enviarlo
     const params = filters
@@ -51,6 +55,9 @@ export const AuxService = {
           ...filters,
           ...(filters.es_principal !== undefined && {
             es_principal: filters.es_principal ? 1 : 0,
+          }),
+          ...(filters.para_carbon !== undefined && {
+            para_carbon: filters.para_carbon ? 1 : 0,
           }),
         }
       : undefined;
@@ -75,9 +82,8 @@ export const AuxService = {
 
   crear_personal_externo: async (nuevoPersonal: {
     id_proveedor?: number;
-    es_representante?: boolean;
     nombre: string;
-    apellido?: string;
+    apellido?: string | null;
     dni?: string;
   }): Promise<IRespuesta<RES_PersonalExterno>> => {
     const { data } = await api.post(`${path}/personal-externo`, nuevoPersonal);
@@ -574,9 +580,10 @@ export const AuxService = {
     id_provincia?: number;
     id_departamento?: number;
   }): Promise<IRespuesta<RES_Provincia[] | RES_Provincia>> => {
-    const { data } = await api.get<
-      IRespuesta<RES_Provincia[] | RES_Provincia>
-    >(`${path}/provincias`, { params: filters });
+    const { data } = await api.get<IRespuesta<RES_Provincia[] | RES_Provincia>>(
+      `${path}/provincias`,
+      { params: filters },
+    );
     return data;
   },
 
@@ -589,9 +596,10 @@ export const AuxService = {
     id_provincia?: number;
     id_departamento?: number;
   }): Promise<IRespuesta<RES_Distrito[] | RES_Distrito>> => {
-    const { data } = await api.get<
-      IRespuesta<RES_Distrito[] | RES_Distrito>
-    >(`${path}/distritos`, { params: filters });
+    const { data } = await api.get<IRespuesta<RES_Distrito[] | RES_Distrito>>(
+      `${path}/distritos`,
+      { params: filters },
+    );
     return data;
   },
 };

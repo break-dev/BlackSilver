@@ -80,11 +80,12 @@ export const useHistorialEntregas = (idSolicitud: number) => {
             lote_costo_por_unidad: d.lote_costo_por_unidad,
             lote_id_orden_compra_detalle: d.lote_id_orden_compra_detalle,
             lote_id_orden_compra: d.lote_id_orden_compra,
-            lote_id_orden_compra_comprobante: d.lote_id_orden_compra_comprobante,
+            lote_id_orden_compra_comprobante:
+              d.lote_id_orden_compra_comprobante,
           }),
         ),
       }));
- 
+
       const entregasPrestamo = (res.data.prestamo || []).map(
         (ent: RES_PrestamoEntrega) => ({
           ...ent,
@@ -114,7 +115,8 @@ export const useHistorialEntregas = (idSolicitud: number) => {
               lote_costo_por_unidad: d.lote_costo_por_unidad,
               lote_id_orden_compra_detalle: d.lote_id_orden_compra_detalle,
               lote_id_orden_compra: d.lote_id_orden_compra,
-              lote_id_orden_compra_comprobante: d.lote_id_orden_compra_comprobante,
+              lote_id_orden_compra_comprobante:
+                d.lote_id_orden_compra_comprobante,
             }),
           ),
         }),

@@ -23,6 +23,7 @@ import { BotonRecargar } from "../../../presentation/utils/boton-recargar";
 
 // Components
 import { RegistroActivo } from "./registro-activo/registro-activo";
+import { EditarActivo } from "./editar-activo/editar-activo";
 import { HistorialUbicacionActivo } from "./historial-ubicacion/historial-ubicacion";
 import {
   ProductGroupCard,
@@ -48,10 +49,13 @@ export const ActivosFijosPage = () => {
     refresh,
     recargar,
     addActivo,
+    updateActivo,
   } = useActivosMain();
 
   // Modals
   const [openedCreate, { open: openCreate, close: closeCreate }] =
+    useDisclosure(false);
+  const [openedEdit, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
   const [selectedActivo, setSelectedActivo] =
     useState<RES_ActivoFijoResumen | null>(null);
@@ -225,6 +229,10 @@ export const ActivosFijosPage = () => {
                 setTipoMantenimiento(tipo);
                 openMantenimiento();
               }}
+              onEditarActivo={(record) => {
+                setSelectedActivo(record);
+                openEdit();
+              }}
             />
           ))}
         </Stack>
@@ -244,6 +252,31 @@ export const ActivosFijosPage = () => {
           }}
           onCancel={closeCreate}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedEdit}
+        close={() => {
+          closeEdit();
+          setSelectedActivo(null);
+        }}
+        title="Editar Activo"
+        size="lg"
+      >
+        {selectedActivo && (
+          <EditarActivo
+            activo={selectedActivo}
+            onSuccess={(editado) => {
+              updateActivo(editado);
+              closeEdit();
+              setSelectedActivo(null);
+            }}
+            onCancel={() => {
+              closeEdit();
+              setSelectedActivo(null);
+            }}
+          />
+        )}
       </ModalEstandar>
 
       <ModalEstandar

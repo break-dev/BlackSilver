@@ -6,7 +6,17 @@ import type { RES_AlmacenResumen } from "../service/almacenes.responses";
 import { AlmacenesService } from "../service/almacenes.service";
 import { Schema_CrearAlmacen } from "../service/almacenes.requests";
 
-export const useAlmacenes = () => {
+/**
+ * Hook del modulo Almacenes.
+ *
+ * Se parametriza por `paraCarbon`:
+ * - paraCarbon=false (logistica): lista almacenes de logistica, expone los
+ *   modales de Responsables / Vecinos / Minas a abastecer.
+ * - paraCarbon=true (carbon): lista almacenes de carbon. Esos almacenes
+ *   NO requieren responsables, ni almacenes vecinos, ni minas a abastecer,
+ *   asi que esos modales quedan ocultos en la vista.
+ */
+export const useAlmacenes = (paraCarbon: boolean = false) => {
   const { notify } = useNotify();
 
   // Estados de la lista
@@ -33,6 +43,12 @@ export const useAlmacenes = () => {
   const [formNombre, setFormNombre] = useState("");
   const [formDescripcion, setFormDescripcion] = useState("");
   const [formEsPrincipal, setFormEsPrincipal] = useState(false);
+  const [formDireccion, setFormDireccion] = useState("");
+  const [formIdDepartamento, setFormIdDepartamento] = useState<number | null>(
+    null,
+  );
+  const [formIdProvincia, setFormIdProvincia] = useState<number | null>(null);
+  const [formIdDistrito, setFormIdDistrito] = useState<number | null>(null);
   const [formError, setFormError] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -40,6 +56,10 @@ export const useAlmacenes = () => {
     setFormNombre("");
     setFormDescripcion("");
     setFormEsPrincipal(false);
+    setFormDireccion("");
+    setFormIdDepartamento(null);
+    setFormIdProvincia(null);
+    setFormIdDistrito(null);
     setFormError("");
   }, []);
 
@@ -51,7 +71,7 @@ export const useAlmacenes = () => {
   const listar = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await AlmacenesService.get_almacenes();
+      const result = await AlmacenesService.get_almacenes({ para_carbon: paraCarbon });
       if (result.success) {
         setAlmacenes(result.data);
       } else {
@@ -63,7 +83,11 @@ export const useAlmacenes = () => {
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, [notify, paraCarbon]);
+
+  useEffect(() => {
+    listar();
+  }, [listar]);
 
   const handleCrearAlmacen = async () => {
     setFormError("");
@@ -71,6 +95,11 @@ export const useAlmacenes = () => {
       nombre: formNombre,
       descripcion: formDescripcion,
       es_principal: formEsPrincipal,
+      para_carbon: paraCarbon,
+      direccion: formDireccion,
+      id_departamento: formIdDepartamento,
+      id_provincia: formIdProvincia,
+      id_distrito: formIdDistrito,
     };
 
     const validation = Schema_CrearAlmacen.safeParse(data);
@@ -97,10 +126,6 @@ export const useAlmacenes = () => {
       setIsRegistering(false);
     }
   };
-
-  useEffect(() => {
-    listar();
-  }, [listar]);
 
   const almacenesFiltrados = useMemo(() => {
     const q = busqueda.toLowerCase();
@@ -146,9 +171,20 @@ export const useAlmacenes = () => {
     setFormDescripcion,
     formEsPrincipal,
     setFormEsPrincipal,
+    formDireccion,
+    setFormDireccion,
+    formIdDepartamento,
+    setFormIdDepartamento,
+    formIdProvincia,
+    setFormIdProvincia,
+    formIdDistrito,
+    setFormIdDistrito,
     formError,
     isRegistering,
     handleCrearAlmacen,
     resetForm,
+
+    // Modo
+    paraCarbon,
   };
 };

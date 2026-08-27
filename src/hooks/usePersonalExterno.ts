@@ -9,10 +9,6 @@ export interface UsePersonalExternoProps {
   estado?: EstadoBase;
   autoFetch?: boolean;
   onRegisterSuccess?: (nuevo: RES_PersonalExterno) => void;
-  /**
-   * Estado inicial del flag es_representante. Por defecto false.
-   */
-  esRepresentanteInicial?: boolean;
 }
 
 export const usePersonalExterno = ({
@@ -20,16 +16,12 @@ export const usePersonalExterno = ({
   estado,
   autoFetch = true,
   onRegisterSuccess,
-  esRepresentanteInicial = false,
 }: UsePersonalExternoProps = {}) => {
   const [personal, setPersonal] = useState<RES_PersonalExterno[]>([]);
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [dni, setDni] = useState("");
-  const [esRepresentante, setEsRepresentante] = useState<boolean>(
-    esRepresentanteInicial,
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { notifySuccess, notifyError } = useNotify();
 
@@ -71,13 +63,13 @@ export const usePersonalExterno = ({
         const activeProveedorId =
           typeof customProveedorId === "number"
             ? customProveedorId
-            : typeof customProveedorId === "string" && !isNaN(Number(customProveedorId))
+            : typeof customProveedorId === "string" &&
+                !isNaN(Number(customProveedorId))
               ? Number(customProveedorId)
               : idProveedor;
 
         const res = await AuxService.crear_personal_externo({
           id_proveedor: activeProveedorId,
-          es_representante: esRepresentante,
           nombre: trimmedNombre,
           apellido: apellido.trim() || undefined,
           dni: dni.trim() || undefined,
@@ -97,7 +89,6 @@ export const usePersonalExterno = ({
           setNombre("");
           setApellido("");
           setDni("");
-          setEsRepresentante(esRepresentanteInicial);
           return nuevo;
         }
         return false;
@@ -113,8 +104,6 @@ export const usePersonalExterno = ({
       nombre,
       apellido,
       dni,
-      esRepresentante,
-      esRepresentanteInicial,
       idProveedor,
       notifySuccess,
       notifyError,
@@ -138,8 +127,6 @@ export const usePersonalExterno = ({
     setApellido,
     dni,
     setDni,
-    esRepresentante,
-    setEsRepresentante,
     isSubmitting,
     handleCrearPersonal,
     setPersonal,

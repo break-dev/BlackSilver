@@ -3,8 +3,11 @@ import { Moneda } from "../../../shared/enums/_generic/moneda";
 import { z } from "zod";
 
 /**
- * Esquema de registro de proveedor (logistica).
- * El modulo carbon reutiliza este mismo esquema mas los campos de geografia.
+ * Esquema de registro de proveedor.
+ * - RUC obligatorio (11 digitos). El prefijo se valida segun tipo_entidad.
+ * - DNI opcional, pero si llega debe tener 8 digitos.
+ * - La geografia del proveedor se elimino: ahora vive en lugares_extraccion
+ *   (modulo carbon) y se persiste por separado.
  */
 export const Schema_CrearProveedor = z
   .object({
@@ -13,34 +16,41 @@ export const Schema_CrearProveedor = z
     para_transporte: z.boolean(),
     para_carbon: z.boolean().optional().default(false),
     dni: z.string().optional().nullable(),
-    ruc: z.string().optional().nullable(),
+    ruc: z.string().min(1, "El RUC es obligatorio"),
     razon_social: z.string().min(3, "La razón social o nombre es muy corto"),
     direccion: z.string().optional().nullable(),
     telefono: z.string().optional().nullable(),
     correo: z.email("Correo no válido").optional().or(z.literal("")),
-    // Ubicacion geografica (opcional siempre; el front decide si los completa segun el toggle)
-    id_departamento: z.number().int().positive().optional().nullable(),
-    id_provincia: z.number().int().positive().optional().nullable(),
-    id_distrito: z.number().int().positive().optional().nullable(),
   })
   .superRefine((data, ctx) => {
-    if (data.tipo_entidad === TipoEntidad.Natural) {
-      if (!data.dni || !/^\d{8}$/.test(data.dni)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El DNI debe tener exactamente 8 dígitos",
-          path: ["dni"],
-        });
-      }
-    } else {
-      if (!data.ruc || !/^(10|20)\d{9}$/.test(data.ruc)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "El RUC debe tener 11 dígitos y comenzar con 10 o 20",
-          path: ["ruc"],
-        });
-      }
+    // RUC: 11 digitos + prefijo segun tipo de entidad.
+    if (!/^\d{11}$/.test(data.ruc)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El RUC debe tener exactamente 11 dígitos",
+        path: ["ruc"],
+      });
+    } else if (data.tipo_entidad === TipoEntidad.Juridica && !data.ruc.startsWith("20")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El RUC de una persona jurídica debe comenzar con 20",
+        path: ["ruc"],
+      });
+    } else if (data.tipo_entidad === TipoEntidad.Natural && !data.ruc.startsWith("10")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El RUC de una persona natural debe comenzar con 10",
+        path: ["ruc"],
+      });
+    }
+
+    // DNI: si llega, debe tener 8 digitos.
+    if (data.dni && !/^\d{8}$/.test(data.dni)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El DNI debe tener exactamente 8 dígitos",
+        path: ["dni"],
+      });
     }
   });
 
@@ -76,11 +86,11 @@ export type EditarCuentaBancariaRequest = z.infer<
 >;
 
 /**
- * Representante del proveedor (solo modulo carbon).
- * El backend marca es_representante=1 automaticamente cuando se le pasa
+ * Personal del proveedor (solo modulo carbon).
+ * El backend marca es_Personal=1 automaticamente cuando se le pasa
  * un id_proveedor al crear personal_externo desde este flujo.
  */
-export const Schema_CrearRepresentante = z.object({
+export const Schema_CrearPersonal = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido: z.string().optional().nullable(),
   dni: z
@@ -89,9 +99,7 @@ export const Schema_CrearRepresentante = z.object({
     .optional()
     .or(z.literal("")),
 });
-export type CrearRepresentanteRequest = z.infer<
-  typeof Schema_CrearRepresentante
->;
+export type CrearPersonalRequest = z.infer<typeof Schema_CrearPersonal>;
 
 /**
  * Set de tipos de carbon asociados al proveedor (modulo carbon).
@@ -102,4 +110,25 @@ export const Schema_SetTiposCarbonProveedor = z.object({
 });
 export type SetTiposCarbonProveedorRequest = z.infer<
   typeof Schema_SetTiposCarbonProveedor
+>;
+
+/**
+ * Set de lugares de extraccion asociados al proveedor (modulo carbon).
+ * Cada lugar requiere dpto + provincia + distrito + direccion.
+ * Reemplaza TODOS los lugares existentes (los previos quedan Inactivo).
+ */
+export const Schema_SetLugaresExtraccionProveedor = z.object({
+  lugares: z
+    .array(
+      z.object({
+        id_departamento: z.number().int().positive(),
+        id_provincia: z.number().int().positive(),
+        id_distrito: z.number().int().positive(),
+        direccion: z.string().min(1, "La dirección es obligatoria").max(255),
+      }),
+    )
+    .default([]),
+});
+export type SetLugaresExtraccionProveedorRequest = z.infer<
+  typeof Schema_SetLugaresExtraccionProveedor
 >;

@@ -61,7 +61,9 @@ const formatDateTime = (iso: string | null | undefined): string => {
   return dayjs(d).format("DD/MM/YYYY HH:mm");
 };
 
-const estadoBadge = (estado: string | null): {
+const estadoBadge = (
+  estado: string | null,
+): {
   color: string;
   label: string;
 } => {
@@ -101,7 +103,7 @@ export const CompraCarbonCard = ({
   const [motivoAnular, setMotivoAnular] = useState("");
 
   const badge = estadoBadge(compra.estado);
-  const evidencias = compra.evidencias_aprobacion ?? [];
+  const evidencias = compra.evidencias ?? [];
   const puedeAprobar = compra.estado === EstadoCompraCarbon.Pendiente;
   const puedeAnular =
     compra.estado === EstadoCompraCarbon.Pendiente ||
@@ -117,7 +119,7 @@ export const CompraCarbonCard = ({
       id_empleado_aprueba: result.cabecera.id_empleado_aprueba,
       empleado_aprueba: result.cabecera.empleado_aprueba ?? null,
       fecha_hora_aprobacion: result.cabecera.fecha_hora_aprobacion,
-      evidencias_aprobacion: result.cabecera.evidencias_aprobacion ?? [],
+      evidencias: result.cabecera.evidencias ?? [],
     });
   };
 
@@ -128,7 +130,7 @@ export const CompraCarbonCard = ({
     onAnulada?.({
       ...compra,
       estado: EstadoCompraCarbon.Anulado,
-      evidencias_aprobacion: result.cabecera.evidencias_aprobacion ?? [],
+      evidencias: result.cabecera.evidencias ?? [],
     });
   };
 
@@ -245,7 +247,8 @@ export const CompraCarbonCard = ({
                 <Text size="xs" c="dimmed" className="truncate">
                   Proveedor:{" "}
                   <span className="text-zinc-300">{compra.proveedor}</span>
-                  {compra.proveedor_tipo_entidad === "Natural" && compra.proveedor_dni
+                  {compra.proveedor_tipo_entidad === "Natural" &&
+                  compra.proveedor_dni
                     ? ` · DNI: ${compra.proveedor_dni}`
                     : compra.proveedor_ruc
                       ? ` · RUC: ${compra.proveedor_ruc}`
@@ -253,7 +256,12 @@ export const CompraCarbonCard = ({
                 </Text>
                 <Stack gap={1} mt={1}>
                   <Group gap={4} wrap="nowrap">
-                    <Text size="10px" c="dimmed" fw={700} className="uppercase tracking-wider">
+                    <Text
+                      size="10px"
+                      c="dimmed"
+                      fw={700}
+                      className="uppercase tracking-wider"
+                    >
                       Generado por:
                     </Text>
                     <Text size="10px" className="text-zinc-300 truncate">
@@ -307,9 +315,7 @@ export const CompraCarbonCard = ({
                   radius="xl"
                   color="green"
                   variant="filled"
-                  leftSection={
-                    <CheckBadgeIcon className="w-3.5 h-3.5" />
-                  }
+                  leftSection={<CheckBadgeIcon className="w-3.5 h-3.5" />}
                   loading={loadingAprobar}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -358,11 +364,7 @@ export const CompraCarbonCard = ({
                 </Tooltip>
               )}
 
-              <Tooltip
-                label="Descargar PDF"
-                withArrow
-                position="top"
-              >
+              <Tooltip label="Descargar PDF" withArrow position="top">
                 <ActionIcon
                   variant="light"
                   color="indigo"
@@ -477,10 +479,20 @@ export const CompraCarbonCard = ({
                       </Stack>
 
                       <Group gap="xs" wrap="nowrap" className="shrink-0">
-                        <Badge variant="light" color="pink" size="sm" radius="md">
+                        <Badge
+                          variant="light"
+                          color="pink"
+                          size="sm"
+                          radius="md"
+                        >
                           S/. {formatNumber(Number(d.precio_unitario))} / TON
                         </Badge>
-                        <Badge variant="filled" color="pink" size="sm" radius="md">
+                        <Badge
+                          variant="filled"
+                          color="pink"
+                          size="sm"
+                          radius="md"
+                        >
                           Sub: S/. {formatNumber(Number(d.subtotal))}
                         </Badge>
                       </Group>
@@ -559,8 +571,8 @@ export const CompraCarbonCard = ({
             <Text component="span" fw={700} c="teal.4">
               Aprobado
             </Text>
-            , se registrara tu nombre como aprobador y la fecha/hora actual.
-            Las evidencias podran subirse despues.
+            , se registrara tu nombre como aprobador y la fecha/hora actual. Las
+            evidencias podran subirse despues.
           </Text>
           <Group justify="center" gap="sm" mt="sm" w="100%">
             <Button

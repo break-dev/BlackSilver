@@ -42,7 +42,7 @@ export const TiposCarbonProveedor = ({ proveedor, onGuardados }: Props) => {
     setLoading(true);
     try {
       const [listaTiposRes, asociadosRes] = await Promise.all([
-        TipoCarbonService.getTipos(),
+        TipoCarbonService.getTipos({ para_compra: true }),
         ProveedoresService.getTiposCarbonPorProveedor(
           proveedor.id_proveedor,
         ),

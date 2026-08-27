@@ -123,13 +123,21 @@ export const useRegistroLote = ({
         if (sonUnidadesIdenticas) {
           setCostoPorUnidad(baseCost);
         } else {
-          setCostoPorUnidad(Number((baseCost * (contenidoPorPresentacion || 1)).toFixed(2)));
+          setCostoPorUnidad(
+            Number((baseCost * (contenidoPorPresentacion || 1)).toFixed(2)),
+          );
         }
       }
     } else {
       setCostoPorUnidad(null);
     }
-  }, [idProducto, idUnidadMedida, sonUnidadesIdenticas, contenidoPorPresentacion, productos]);
+  }, [
+    idProducto,
+    idUnidadMedida,
+    sonUnidadesIdenticas,
+    contenidoPorPresentacion,
+    productos,
+  ]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {

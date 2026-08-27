@@ -12,6 +12,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowPathIcon,
   DocumentTextIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
 
@@ -37,24 +38,16 @@ interface ProductGroupCardProps {
     record: RES_ActivoFijoResumen,
     tipo: "horometro" | "odometro" | "vueltas",
   ) => void;
+  onEditarActivo: (record: RES_ActivoFijoResumen) => void;
 }
 
-const parseEspecificaciones = (
-  raw: { clave: string; valor: string }[] | null,
-): { clave: string; valor: string }[] => {
+/**
+ * Especificaciones son siempre `string[]` (estilo hashtags).
+ * Solo filtramos strings vacíos por seguridad.
+ */
+const parseEspecificaciones = (raw: string[] | null | undefined): string[] => {
   if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === "string") {
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      return Array.isArray(parsed)
-        ? (parsed as { clave: string; valor: string }[])
-        : [];
-    } catch {
-      return [];
-    }
-  }
-  return [];
+  return raw.filter((s) => typeof s === "string" && s.trim() !== "");
 };
 
 export const ProductGroupCard = ({
@@ -63,6 +56,7 @@ export const ProductGroupCard = ({
   //onMoverActivo,
   onConfigurarAlertas,
   onResolverMantenimiento,
+  onEditarActivo,
 }: ProductGroupCardProps) => {
   const columns: DataTableColumn<RES_ActivoFijoResumen>[] = [
     {
@@ -124,14 +118,10 @@ export const ProductGroupCard = ({
         const iconBg = isMina
           ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
           : isLabor
-          ? "bg-violet-500/10 text-violet-400 border border-violet-500/20"
-          : "bg-teal-500/10 text-teal-400 border border-teal-500/20";
+            ? "bg-violet-500/10 text-violet-400 border border-violet-500/20"
+            : "bg-teal-500/10 text-teal-400 border border-teal-500/20";
 
-        const Icon = isMina
-          ? MapIcon
-          : isLabor
-          ? MapPinIcon
-          : MapPinIcon;
+        const Icon = isMina ? MapIcon : isLabor ? MapPinIcon : MapPinIcon;
 
         const tipoLabel = isMina ? "Mina" : isLabor ? "Labor" : "Almacén";
         const nombre = record.mina || record.labor || record.almacen;
@@ -147,7 +137,7 @@ export const ProductGroupCard = ({
                   size="xs"
                   fw={700}
                   c="white"
-                  className="truncate max-w-[140px]"
+                  className="truncate max-w-35"
                 >
                   {nombre}
                 </Text>
@@ -278,7 +268,7 @@ export const ProductGroupCard = ({
         }
         return (
           <Group gap={4} wrap="wrap">
-            {specs.map((sp, sIdx) => (
+            {specs.map((tag, sIdx) => (
               <Badge
                 key={sIdx}
                 variant="light"
@@ -286,10 +276,10 @@ export const ProductGroupCard = ({
                 size="sm"
                 radius="sm"
                 classNames={{
-                  root: "bg-zinc-800/40 text-zinc-300 border border-zinc-700/30",
+                  root: "",
                 }}
               >
-                {sp.clave}: {sp.valor}
+                {tag}
               </Badge>
             ))}
           </Group>
@@ -336,7 +326,13 @@ export const ProductGroupCard = ({
           onResolve: () => void,
         ) => {
           return (
-            <Group gap={8} wrap="nowrap" align="center" justify="center" className="w-full">
+            <Group
+              gap={8}
+              wrap="nowrap"
+              align="center"
+              justify="center"
+              className="w-full"
+            >
               {/* Icon at left */}
               <div className="p-1.5 bg-zinc-850/60 rounded-xl border border-zinc-800/80 shrink-0 shadow-sm flex items-center justify-center">
                 {icon}
@@ -345,7 +341,7 @@ export const ProductGroupCard = ({
               {/* Content Group (mimics Costo Operativo) */}
               <Group gap="xs" wrap="nowrap" className="shrink-0">
                 {/* Lectura Actual Block */}
-                <div className="flex flex-col items-start gap-0.5 min-w-[95px]">
+                <div className="flex flex-col items-start gap-0.5 min-w-23.75">
                   <Text
                     size="8px"
                     fw={900}
@@ -368,7 +364,7 @@ export const ProductGroupCard = ({
                 <div className="w-px h-8 bg-zinc-800/80 self-center shrink-0" />
 
                 {/* Limit Block */}
-                <div className="flex flex-col items-start gap-0.5 min-w-[120px]">
+                <div className="flex flex-col items-start gap-0.5 min-w-30">
                   <Text
                     size="8px"
                     fw={900}
@@ -476,10 +472,19 @@ export const ProductGroupCard = ({
     {
       accessor: "acciones",
       title: "Acciones",
-      width: 140,
+      width: 220,
       textAlign: "center",
       render: (record) => (
-        <Group justify="center" gap="xs">
+        <Group justify="center" gap="xs" wrap="nowrap">
+          <Button
+            variant="light"
+            size="compact-xs"
+            color="indigo"
+            leftSection={<PencilSquareIcon className="w-3.5 h-3.5" />}
+            onClick={() => onEditarActivo(record)}
+          >
+            Editar
+          </Button>
           <Button
             variant="light"
             size="compact-xs"
@@ -495,7 +500,7 @@ export const ProductGroupCard = ({
   ];
 
   return (
-    <div className="bg-zinc-900/65 border border-zinc-800 rounded-[24px] shadow-2xl overflow-hidden flex flex-col backdrop-blur-md">
+    <div className="bg-zinc-900/65 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-md">
       <ProductGroupHeader product={product} />
 
       <div className="relative shadow-inner">

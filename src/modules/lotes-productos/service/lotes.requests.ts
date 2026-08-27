@@ -37,7 +37,9 @@ export const Schema_AjustarStock = z.object({
   id_lote: z.number().min(1, "Lote requerido"),
   nuevo_stock: z.number().min(0, "El stock no puede ser negativo"),
   nuevo_stock_base: z.number().min(0, "El stock base no puede ser negativo"),
-  motivo: z.string().min(5, "El motivo es obligatorio y debe tener al menos 5 caracteres"),
+  motivo: z
+    .string()
+    .min(5, "El motivo es obligatorio y debe tener al menos 5 caracteres"),
 });
 
 export type DTO_AjustarStock = z.infer<typeof Schema_AjustarStock>;

@@ -19,6 +19,7 @@ export const useRegistroTipoCarbon = (
   const [payload, setPayload] = useState<CrearTipoCarbonRequest>({
     nombre: "",
     codigo: null,
+    para_compra: false,
   });
 
   const handleChange = <K extends keyof CrearTipoCarbonRequest>(
@@ -44,7 +45,7 @@ export const useRegistroTipoCarbon = (
       const res = await TipoCarbonService.crearTipo(validation.data);
       if (res.success && res.data) {
         notifySuccess("Tipo de carbon registrado");
-        setPayload({ nombre: "", codigo: null });
+        setPayload({ nombre: "", codigo: null, para_compra: false });
         onSuccess(res.data);
       }
     } catch (e) {

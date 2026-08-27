@@ -62,7 +62,8 @@ const toBackendDateTime = (d: Date | string | null): string => {
 const inputClasses = {
   input:
     "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
-  dropdown: "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
+  dropdown:
+    "bg-zinc-950 border-zinc-800 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl",
   option:
     "text-zinc-300 hover:bg-zinc-800 hover:text-white data-[selected]:bg-indigo-600 data-[selected]:text-white font-medium transition-colors",
   label: "text-zinc-300 mb-1.5 font-semibold tracking-tight",
@@ -93,8 +94,12 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
   const { notifyError, notifySuccess } = useNotify();
 
   const [empresas, setEmpresas] = useState<RES_Empresa[]>([]);
-  const [proveedoresNatural, setProveedoresNatural] = useState<ProveedorResponse[]>([]);
-  const [proveedoresJuridica, setProveedoresJuridica] = useState<ProveedorResponse[]>([]);
+  const [proveedoresNatural, setProveedoresNatural] = useState<
+    ProveedorResponse[]
+  >([]);
+  const [proveedoresJuridica, setProveedoresJuridica] = useState<
+    ProveedorResponse[]
+  >([]);
   const [tipos, setTipos] = useState<RES_TipoCarbon[]>([]);
   const [loadingCatalogos, setLoadingCatalogos] = useState(false);
 
@@ -105,8 +110,8 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
   const [idEmpresa, setIdEmpresa] = useState<string | null>(null);
   const [idProveedor, setIdProveedor] = useState<string | null>(null);
   const [idRepresentante, setIdRepresentante] = useState<string | null>(null);
-  const [representantes, setRepresentantes] = useState<RES_PersonalExterno[]>([]);
-  const [loadingRepresentantes, setLoadingRepresentantes] = useState(false);
+  const [personal, setpersonal] = useState<RES_PersonalExterno[]>([]);
+  const [loadingpersonal, setLoadingpersonal] = useState(false);
   const [fechaHora, setFechaHora] = useState<Date | null>(new Date());
 
   const [detalles, setDetalles] = useState<LineaTemporal[]>([
@@ -123,20 +128,16 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
       const [empresasRes, proveedoresArr, tiposRes] = await Promise.all([
         AuxService.get_empresas(),
         ProveedoresService.getProveedores({ para_carbon: true }),
-        TipoCarbonService.getTipos(),
+        TipoCarbonService.getTipos({ para_compra: true }),
       ]);
       if (cancel) return;
       if (empresasRes.success) setEmpresas(empresasRes.data);
       if (proveedoresArr) {
         setProveedoresNatural(
-          proveedoresArr.filter(
-            (p) => p.tipo_entidad === TipoEntidad.Natural,
-          ),
+          proveedoresArr.filter((p) => p.tipo_entidad === TipoEntidad.Natural),
         );
         setProveedoresJuridica(
-          proveedoresArr.filter(
-            (p) => p.tipo_entidad === TipoEntidad.Juridica,
-          ),
+          proveedoresArr.filter((p) => p.tipo_entidad === TipoEntidad.Juridica),
         );
       }
       if (tiposRes.success) setTipos(tiposRes.data);
@@ -150,30 +151,29 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
   useEffect(() => {
     setIdProveedor(null);
     setIdRepresentante(null);
-    setRepresentantes([]);
+    setpersonal([]);
   }, [filtroTipoEntidad]);
 
   useEffect(() => {
     if (!idProveedor) {
-      setRepresentantes([]);
+      setpersonal([]);
       setIdRepresentante(null);
       return;
     }
     let cancel = false;
     (async () => {
-      setLoadingRepresentantes(true);
+      setLoadingpersonal(true);
       try {
-        const arr = await ProveedoresService.getRepresentantesPorProveedor(
-          Number(idProveedor),
-        );
+        const arr = await AuxService.get_personal_externo({
+          id_proveedor: Number(idProveedor),
+        });
         if (cancel) return;
-        const reps = arr.filter((r) => r.es_representante);
-        setRepresentantes(reps);
+        setpersonal(arr.data);
         setIdRepresentante(
-          reps.length > 0 ? String(reps[0].id_personal) : null,
+          arr.data.length > 0 ? String(arr.data[0].id_personal) : null,
         );
       } finally {
-        if (!cancel) setLoadingRepresentantes(false);
+        if (!cancel) setLoadingpersonal(false);
       }
     })();
     return () => {
@@ -200,11 +200,11 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
 
   const opcionesRepresentante = useMemo(
     () =>
-      representantes.map((r) => ({
+      personal.map((r) => ({
         value: String(r.id_personal),
-        label: r.nombre_completo,
+        label: r.nombre + " " + r.apellido,
       })),
-    [representantes],
+    [personal],
   );
 
   const opcionesTipos = useMemo(
@@ -276,7 +276,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
       id_empresa: Number(idEmpresa),
       id_proveedor: Number(idProveedor),
       porcentaje_igv: igvPct,
-      fecha_hora_compra: toBackendDateTime(fechaHora),
+      fecha_hora_ingreso: toBackendDateTime(fechaHora),
       detalles: detallesValidos.map((d) => ({
         id_tipo_carbon: d.id_tipo_carbon as number,
         cantidad: d.cantidad,
@@ -306,13 +306,13 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
           porcentaje_igv: cab.porcentaje_igv,
           correlativo: cab.correlativo,
           numero_correlativo: cab.numero_correlativo,
-          fecha_hora_compra: cab.fecha_hora_compra,
+          fecha_hora_ingreso: cab.fecha_hora_ingreso,
           fecha_hora_aprobacion: cab.fecha_hora_aprobacion,
           total: cab.total,
           created_at: cab.created_at,
           estado: cab.estado,
           cantidad_items: resp.data.detalles.length,
-          evidencias_aprobacion: cab.evidencias_aprobacion ?? [],
+          evidencias: cab.evidencias ?? [],
         };
         onCreated(resumen);
       } else {
@@ -460,22 +460,22 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
               placeholder={
                 !idProveedor
                   ? "Seleccione un proveedor"
-                  : loadingRepresentantes
+                  : loadingpersonal
                     ? "Cargando..."
                     : opcionesRepresentante.length === 0
-                      ? "Sin representantes"
+                      ? "Sin personal"
                       : "Seleccione"
               }
               radius="lg"
               size="sm"
               searchable
               clearable
-              disabled={!idProveedor || loadingRepresentantes}
+              disabled={!idProveedor || loadingpersonal}
               data={opcionesRepresentante}
               value={idRepresentante}
               onChange={setIdRepresentante}
               classNames={inputClasses}
-              nothingFoundMessage="Sin representantes"
+              nothingFoundMessage="Sin personal"
               leftSection={<IconUser size={16} className="text-zinc-400" />}
             />
           </Grid.Col>
@@ -500,10 +500,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
         </Group>
 
         {detalles.map((linea, idx) => (
-          <div
-            key={idx}
-            className="mb-3"
-          >
+          <div key={idx} className="mb-3">
             <Grid align="end">
               <Grid.Col span={{ base: 12, md: 6 }}>
                 <Select
@@ -520,9 +517,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                     return !enUso;
                   })}
                   value={
-                    linea.id_tipo_carbon
-                      ? String(linea.id_tipo_carbon)
-                      : null
+                    linea.id_tipo_carbon ? String(linea.id_tipo_carbon) : null
                   }
                   onChange={(v) =>
                     handleLineaChange(

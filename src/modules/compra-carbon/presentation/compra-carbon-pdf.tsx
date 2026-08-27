@@ -101,10 +101,7 @@ export const CompraCarbonPDF = ({
   colorPredominante,
 }: CompraCarbonPDFProps) => {
   const { cabecera, detalles } = compra;
-  const subtotalBase = detalles.reduce(
-    (acc, d) => acc + Number(d.subtotal),
-    0,
-  );
+  const subtotalBase = detalles.reduce((acc, d) => acc + Number(d.subtotal), 0);
   const igvPct = Number(cabecera.porcentaje_igv);
   const igvMonto = subtotalBase * (igvPct / 100);
   const total = Number(cabecera.total);
@@ -114,18 +111,12 @@ export const CompraCarbonPDF = ({
   const proveedorNombre =
     proveedor?.razon_social?.trim() || cabecera.proveedor || "—";
   const proveedorDocumento = proveedor
-    ? (proveedor.tipo_entidad === "Natural" ? proveedor.dni : proveedor.ruc)
+    ? proveedor.tipo_entidad === "Natural"
+      ? proveedor.dni
+      : proveedor.ruc
     : cabecera.proveedor_tipo_entidad === "Natural"
       ? cabecera.proveedor_dni
       : cabecera.proveedor_ruc;
-  const direccionCompleta = [
-    proveedor?.direccion,
-    proveedor?.departamento_nombre,
-    proveedor?.provincia_nombre,
-    proveedor?.distrito_nombre,
-  ]
-    .filter((s): s is string => !!s && s.trim().length > 0)
-    .join(" - ");
 
   const accent = getPdfAccent(colorPredominante);
   const accentDark = darkenHex(accent, 0.3);
@@ -329,20 +320,11 @@ export const CompraCarbonPDF = ({
           <Text style={styles.sectionTitle}>PROVEEDOR</Text>
           <Text style={styles.infoBoxValue}>{proveedorNombre}</Text>
           {proveedorDocumento && (
-            <Text
-              style={{ fontSize: 8, color: accentDark, marginTop: 2 }}
-            >
+            <Text style={{ fontSize: 8, color: accentDark, marginTop: 2 }}>
               {cabecera.proveedor_tipo_entidad === "Natural" ||
               proveedor?.tipo_entidad === "Natural"
                 ? `DNI: ${proveedorDocumento}`
                 : `RUC: ${proveedorDocumento}`}
-            </Text>
-          )}
-          {direccionCompleta && (
-            <Text
-              style={{ fontSize: 8, color: accentDark, marginTop: 2 }}
-            >
-              {direccionCompleta}
             </Text>
           )}
           {/*
@@ -350,9 +332,7 @@ export const CompraCarbonPDF = ({
             dato en cabecera o proveedor, basta con bindearlo aqui (no
             requiere tocar el resto del PDF).
           */}
-          <Text
-            style={{ fontSize: 8, color: accentDark, marginTop: 2 }}
-          >
+          <Text style={{ fontSize: 8, color: accentDark, marginTop: 2 }}>
             {"Atención:"}
           </Text>
         </View>
@@ -372,7 +352,9 @@ export const CompraCarbonPDF = ({
           {detalles.map((d, i) => (
             <View key={d.id_detalle_compra_carbon} style={styles.tableRow}>
               <Text style={styles.col0}>{i + 1}</Text>
-              <Text style={styles.colCant}>{formatNumber(Number(d.cantidad))}</Text>
+              <Text style={styles.colCant}>
+                {formatNumber(Number(d.cantidad))}
+              </Text>
               <Text style={styles.colUm}>TON</Text>
               <View style={styles.colTipo}>
                 <Text style={{ fontWeight: 700, fontSize: 8 }}>
@@ -386,8 +368,12 @@ export const CompraCarbonPDF = ({
               </View>
               {/* Slot Descripcion: vacio a proposito hasta que el dato se defina. */}
               <Text style={styles.colDesc}> </Text>
-              <Text style={styles.colPrecio}>{formatPEN(Number(d.precio_unitario))}</Text>
-              <Text style={styles.colImporte}>{formatPEN(Number(d.subtotal))}</Text>
+              <Text style={styles.colPrecio}>
+                {formatPEN(Number(d.precio_unitario))}
+              </Text>
+              <Text style={styles.colImporte}>
+                {formatPEN(Number(d.subtotal))}
+              </Text>
             </View>
           ))}
         </View>
@@ -439,7 +425,7 @@ export const CompraCarbonPDF = ({
               {`Aprobado por: ${cabecera.empleado_aprueba ?? "—"}`}
             </Text>
             <Text style={{ fontSize: 8, marginTop: 4 }}>
-              {`Fecha de emision: ${dayjs(cabecera.fecha_hora_compra).format(
+              {`Fecha de Ingreso: ${dayjs(cabecera.fecha_hora_ingreso).format(
                 "DD/MM/YYYY HH:mm",
               )}`}
             </Text>
@@ -455,7 +441,9 @@ export const CompraCarbonPDF = ({
           {/* RIGHT: 4 labels sin valor (slots reservados para uso futuro) */}
           <View style={{ flex: 1, paddingLeft: 24 }}>
             <Text style={{ fontSize: 8 }}>{"Proveedor:"}</Text>
-            <Text style={{ fontSize: 8, marginTop: 10 }}>{"Nombre y apellido:"}</Text>
+            <Text style={{ fontSize: 8, marginTop: 10 }}>
+              {"Nombre y apellido:"}
+            </Text>
             <Text style={{ fontSize: 8, marginTop: 10 }}>{"DNI:"}</Text>
             <Text style={{ fontSize: 8, marginTop: 10 }}>{"Fecha:"}</Text>
           </View>

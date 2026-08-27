@@ -49,26 +49,36 @@ export const RegistroProveedor = ({ onCancel, onSuccess }: Props) => {
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             withAsterisk
-            label={payload.tipo_entidad === TipoEntidad.Natural ? "DNI" : "RUC"}
+            label="RUC"
             placeholder={
               payload.tipo_entidad === TipoEntidad.Natural
-                ? "12345678"
-                : "20345678901"
+                ? "10xxxxxxxxx (persona natural)"
+                : "20xxxxxxxxx (persona jurídica)"
             }
             radius="xl"
-            maxLength={payload.tipo_entidad === TipoEntidad.Natural ? 8 : 11}
-            value={
-              payload.tipo_entidad === TipoEntidad.Natural
-                ? payload.dni || ""
-                : payload.ruc || ""
-            }
+            maxLength={11}
+            value={payload.ruc || ""}
             onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, "");
-              if (payload.tipo_entidad === TipoEntidad.Natural) {
-                handleChange("dni", val);
-              } else {
-                handleChange("ruc", val);
-              }
+              const val = e.currentTarget.value.replace(/\D/g, "");
+              handleChange("ruc", val);
+            }}
+            classNames={{
+              input:
+                "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 transition-all",
+              label: "text-zinc-400 font-medium text-xs",
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <TextInput
+            label="DNI (opc)"
+            placeholder="12345678"
+            radius="xl"
+            maxLength={8}
+            value={payload.dni || ""}
+            onChange={(e) => {
+              const val = e.currentTarget.value.replace(/\D/g, "");
+              handleChange("dni", val);
             }}
             classNames={{
               input:

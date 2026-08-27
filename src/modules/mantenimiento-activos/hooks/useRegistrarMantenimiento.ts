@@ -114,17 +114,13 @@ export const useRegistrarMantenimiento = ({
     const loadCatalogs = async () => {
       setLoadingCatalogs(true);
       try {
-        const [
-          resMinas,
-          resAlmacenes,
-          resEmpleados,
-          resProveedores,
-        ] = await Promise.all([
-          AuxService.get_minas(),
-          AuxService.get_almacenes(),
-          AuxService.get_empleados(),
-          AuxService.get_proveedores({ para_mantenimiento: true }),
-        ]);
+        const [resMinas, resAlmacenes, resEmpleados, resProveedores] =
+          await Promise.all([
+            AuxService.get_minas(),
+            AuxService.get_almacenes(),
+            AuxService.get_empleados(),
+            AuxService.get_proveedores({ para_mantenimiento: true }),
+          ]);
 
         if (resMinas.success && resMinas.data) setMinas(resMinas.data);
         if (resAlmacenes.success && resAlmacenes.data)
@@ -230,7 +226,7 @@ export const useRegistrarMantenimiento = ({
     }
     return list.map((pe) => ({
       value: String(pe.id_personal),
-      label: pe.nombre_completo,
+      label: pe.nombre + " " + pe.apellido,
     }));
   }, [personalExterno, verTodoPersonal, idProveedor, idPersonalExterno]);
 
@@ -382,13 +378,10 @@ export const useRegistrarMantenimiento = ({
     [],
   );
 
-  const handleConfirmarProveedor = useCallback(
-    (nuevo: RES_Proveedor) => {
-      setProveedores((prev) => [...prev, nuevo]);
-      setIdProveedor(nuevo.id_proveedor);
-    },
-    [],
-  );
+  const handleConfirmarProveedor = useCallback((nuevo: RES_Proveedor) => {
+    setProveedores((prev) => [...prev, nuevo]);
+    setIdProveedor(nuevo.id_proveedor);
+  }, []);
 
   // Submit form
   const handleSubmit = async (e: React.FormEvent) => {

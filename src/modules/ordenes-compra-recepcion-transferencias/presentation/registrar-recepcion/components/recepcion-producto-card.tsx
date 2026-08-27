@@ -94,10 +94,11 @@ export const RecepcionProductoCard = ({
             lote_numero_factura: group.lote_numero_factura,
             lote_costo_por_unidad: group.lote_costo_por_unidad,
             id_lote_producto: group.id_lote_producto,
-            lote_id_orden_compra_comprobante: group.lote_id_orden_compra_comprobante,
+            lote_id_orden_compra_comprobante:
+              group.lote_id_orden_compra_comprobante,
           },
-          null
-        )
+          null,
+        ),
       );
 
       if (!hasCompatible) {

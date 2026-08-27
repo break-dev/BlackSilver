@@ -64,6 +64,8 @@ export const RegistroSolicitud = ({
       setIdAlmacenSolicitante,
       premura,
       setPremura,
+      fechaSolicitud,
+      setFechaSolicitud,
       fechaEntregaRequerida,
       setFechaEntregaRequerida,
       idProducto,
@@ -137,6 +139,16 @@ export const RegistroSolicitud = ({
               <BuildingStorefrontIcon className="w-4 h-4 text-zinc-400" />
             }
             disabled={loadingCatalogs}
+          />
+
+          <CustomDatePicker
+            label="Fecha de Solicitud"
+            placeholder="Seleccione fecha"
+            description="Retroactiva: puede elegir una fecha pasada"
+            value={fechaSolicitud}
+            onChange={(val) => setFechaSolicitud(val as Date | null)}
+            radius="lg"
+            maxDate={new Date()}
           />
 
           <CustomDatePicker

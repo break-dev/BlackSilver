@@ -5,6 +5,7 @@ import { Schema_EditarCuentaBancaria } from "../service/proveedores.requests";
 import { Moneda } from "../../../shared/enums/_generic/moneda";
 import type { RES_Banco } from "../../../service/responses/banco";
 import type { CuentaBancariaResponse } from "../service/proveedores.responses";
+import { AuxService } from "../../../service/auxiliar.service";
 
 interface UseEdicionCuentaBancariaProps {
   onSuccess?: (cuentaActualizada: CuentaBancariaResponse) => void;
@@ -30,8 +31,8 @@ export const useEdicionCuentaBancaria = ({
 
   const cargarBancos = useCallback(async () => {
     try {
-      const data = await ProveedoresService.getBancos();
-      setBancos(data);
+      const data = await AuxService.get_bancos();
+      setBancos(data.data);
     } catch (err) {
       console.error("Error al cargar bancos", err);
       notifyError("Error al cargar los bancos");
@@ -121,10 +122,11 @@ export const useEdicionCuentaBancaria = ({
 
     setIsSubmitting(true);
     try {
-      const cuentaActualizada = await ProveedoresService.actualizarCuentaBancaria(
-        idCuentaBancaria,
-        result.data,
-      );
+      const cuentaActualizada =
+        await ProveedoresService.actualizarCuentaBancaria(
+          idCuentaBancaria,
+          result.data,
+        );
       notifySuccess("Cuenta bancaria actualizada correctamente");
       onSuccess?.(cuentaActualizada);
       onClose();

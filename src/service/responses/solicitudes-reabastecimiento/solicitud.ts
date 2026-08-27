@@ -20,6 +20,7 @@ export interface RES_Solicitud {
   //
   observacion: string | null;
   premura: Premura;
+  fecha_solicitud: string | null;
   fecha_entrega_requerida: string | null;
   //
   es_auditable: boolean;

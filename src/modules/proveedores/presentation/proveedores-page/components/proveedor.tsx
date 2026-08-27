@@ -12,6 +12,7 @@ import {
   IconBuilding,
   IconFlame,
   IconMail,
+  IconMapPin,
   IconPhone,
   IconUser,
   IconUsers,
@@ -30,6 +31,7 @@ interface Props {
   onOpenCuentas: (proveedor: ProveedorResponse) => void;
   onOpenPersonal: (proveedor: ProveedorResponse) => void;
   onOpenTiposCarbon?: (proveedor: ProveedorResponse) => void;
+  onOpenLugaresExtraccion?: (proveedor: ProveedorResponse) => void;
 }
 
 export const Proveedor = ({
@@ -39,6 +41,7 @@ export const Proveedor = ({
   onOpenCuentas,
   onOpenPersonal,
   onOpenTiposCarbon,
+  onOpenLugaresExtraccion,
 }: Props) => {
   const columnas: Col[] = [
     {
@@ -170,6 +173,43 @@ export const Proveedor = ({
               </Group>
             ),
           },
+          {
+            accessor: "cantidad_lugares_extraccion" as const,
+            title: "Lugares Extraccion",
+            width: 150,
+            textAlign: "center" as const,
+            render: (r: ProveedorResponse) => (
+              <Group gap="xs" justify="center" wrap="nowrap">
+                <Badge
+                  color={r.cantidad_lugares_extraccion > 0 ? "orange" : "gray"}
+                  variant="light"
+                  size="sm"
+                  radius="xl"
+                >
+                  {r.cantidad_lugares_extraccion === 1
+                    ? "1 lugar"
+                    : `${r.cantidad_lugares_extraccion} lugares`}
+                </Badge>
+                {onOpenLugaresExtraccion && (
+                  <Tooltip
+                    label="Gestionar lugares de extraccion"
+                    withArrow
+                    position="left"
+                  >
+                    <ActionIcon
+                      variant="subtle"
+                      color="orange"
+                      radius="xl"
+                      size="sm"
+                      onClick={() => onOpenLugaresExtraccion(r)}
+                    >
+                      <IconMapPin size={16} stroke={1.5} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </Group>
+            ),
+          },
         ]
       : []),
     {
@@ -209,48 +249,6 @@ export const Proveedor = ({
           )}
         </Stack>
       ),
-    },
-    {
-      accessor: "direccion",
-      title: "Ubicación",
-      width: 240,
-      textAlign: "left",
-      render: (r: ProveedorResponse) => {
-        const geo = modoCarbon
-          ? [
-              r.departamento_nombre,
-              r.provincia_nombre,
-              r.distrito_nombre,
-            ]
-              .filter(Boolean)
-              .join(", ")
-          : "";
-        const direccion = r.direccion || "";
-        if (!geo && !direccion) {
-          return (
-            <Text size="xs" c="dimmed" fs="italic">
-              Sin ubicación
-            </Text>
-          );
-        }
-        return (
-          <Stack gap={2}>
-            {direccion && (
-              <Text size="xs" className="text-zinc-300">
-                {direccion}
-              </Text>
-            )}
-            {geo && (
-              <Text
-                size="xs"
-                className="text-zinc-500 uppercase tracking-wide"
-              >
-                {geo}
-              </Text>
-            )}
-          </Stack>
-        );
-      },
     },
     {
       accessor: "indicadores",

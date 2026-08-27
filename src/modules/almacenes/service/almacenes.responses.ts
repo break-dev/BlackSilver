@@ -6,9 +6,18 @@ export interface RES_AlmacenResumen {
   nombre: string;
   descripcion?: string;
   es_principal: boolean;
+  para_carbon: boolean;
   estado: EstadoBase;
   responsables?: string; // nombres completos separados por coma
   minas_count?: number;
+  // Ubicacion geografica (opcional)
+  direccion?: string | null;
+  id_departamento?: number | null;
+  id_provincia?: number | null;
+  id_distrito?: number | null;
+  departamento_nombre?: string | null;
+  provincia_nombre?: string | null;
+  distrito_nombre?: string | null;
 }
 
 // Responsable de un almacen

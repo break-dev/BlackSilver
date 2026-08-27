@@ -1,27 +1,16 @@
 import { useState } from "react";
-import {
-  ProveedoresService,
-} from "../service/proveedores.service";
+import { ProveedoresService } from "../service/proveedores.service";
 import { useNotify } from "../../../hooks/useNotify";
 import {
   Schema_CrearProveedor,
   type CrearProveedorRequest,
-  type CrearRepresentanteRequest,
+  type CrearPersonalRequest,
 } from "../service/proveedores.requests";
 import { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 import type { ProveedorResponse } from "../service/proveedores.responses";
 import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
-
-/**
- * Representante capturado en el formulario de registro antes de
- * enviar al backend. Cuando se guarda el proveedor, el backend los
- * crea secuencialmente con id_proveedor + es_representante=1.
- */
-export interface RepresentanteTemporal {
-  nombre: string;
-  apellido?: string;
-  dni?: string;
-}
+import { AuxService } from "../../../service/auxiliar.service";
+import type { PersonalLocal } from "../../../presentation/utils/modal-personal-externo";
 
 /**
  * Tipo de carbon capturado en el formulario de registro antes de
@@ -32,6 +21,20 @@ export interface TipoCarbonTemporal {
   id_tipo_carbon: number;
   nombre: string;
   codigo: string | null;
+}
+
+/**
+ * Lugar de extraccion capturado en el formulario antes de persistir.
+ * Se guarda con setLugaresExtraccionPorProveedor (PUT que reemplaza todo).
+ */
+export interface LugarExtraccionTemporal {
+  id_departamento: number;
+  departamento_nombre: string;
+  id_provincia: number;
+  provincia_nombre: string;
+  id_distrito: number;
+  distrito_nombre: string;
+  direccion: string;
 }
 
 export const useRegistroProveedorCarbon = (
@@ -52,16 +55,15 @@ export const useRegistroProveedorCarbon = (
     direccion: "",
     telefono: "",
     correo: "",
-    id_departamento: null,
-    id_provincia: null,
-    id_distrito: null,
   });
 
-  const [representantes, setRepresentantes] = useState<RepresentanteTemporal[]>(
-    [],
-  );
+  const [personal, setpersonal] = useState<PersonalLocal[]>([]);
 
   const [tiposCarbon, setTiposCarbon] = useState<TipoCarbonTemporal[]>([]);
+
+  const [lugaresExtraccion, setLugaresExtraccion] = useState<
+    LugarExtraccionTemporal[]
+  >([]);
 
   const handleChange = <K extends keyof CrearProveedorRequest>(
     field: K,
@@ -83,44 +85,12 @@ export const useRegistroProveedorCarbon = (
     }
   };
 
-  /**
-   * Para los selects numericos de geografia (departamento, provincia,
-   * distrito). Si el valor es null o string vacio, vacia el id y limpia
-   * los hijos de la cascada.
-   */
-  const handleSelectNumber = (
-    field: "id_departamento" | "id_provincia" | "id_distrito",
-    value: string | null,
-  ) => {
-    setPayload((prev) => {
-      const num = value ? Number(value) : null;
-      if (field === "id_departamento") {
-        return {
-          ...prev,
-          id_departamento: num,
-          // al cambiar de departamento, provincia y distrito dejan de aplicar
-          id_provincia: null,
-          id_distrito: null,
-        };
-      }
-      if (field === "id_provincia") {
-        return {
-          ...prev,
-          id_provincia: num,
-          id_distrito: null,
-        };
-      }
-      return { ...prev, id_distrito: num };
-    });
-    if (error) setError(null);
+  const addpersonal = (r: PersonalLocal) => {
+    setpersonal((prev) => [...prev, r]);
   };
 
-  const addRepresentante = (r: RepresentanteTemporal) => {
-    setRepresentantes((prev) => [...prev, r]);
-  };
-
-  const removeRepresentante = (idx: number) => {
-    setRepresentantes((prev) => prev.filter((_, i) => i !== idx));
+  const removepersonal = (idx: number) => {
+    setpersonal((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const addTipoCarbon = (t: TipoCarbonTemporal) => {
@@ -134,6 +104,28 @@ export const useRegistroProveedorCarbon = (
     setTiposCarbon((prev) =>
       prev.filter((x) => x.id_tipo_carbon !== id_tipo_carbon),
     );
+  };
+
+  const addLugarExtraccion = (l: LugarExtraccionTemporal) => {
+    setLugaresExtraccion((prev) => {
+      // Evitar duplicados exactos por (dpto+prov+dist+dir normalizada).
+      const key = `${l.id_departamento}-${l.id_provincia}-${l.id_distrito}-${l.direccion.trim().toLowerCase()}`;
+      if (
+        prev.some(
+          (x) =>
+            `${x.id_departamento}-${x.id_provincia}-${x.id_distrito}-${x.direccion
+              .trim()
+              .toLowerCase()}` === key,
+        )
+      ) {
+        return prev;
+      }
+      return [...prev, l];
+    });
+  };
+
+  const removeLugarExtraccion = (idx: number) => {
+    setLugaresExtraccion((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -155,21 +147,23 @@ export const useRegistroProveedorCarbon = (
         para_carbon: true,
       });
 
-      // 2) crear representantes en secuencia. Un fallo aqui no revierte
+      // 2) crear personal en secuencia. Un fallo aqui no revierte
       //    el proveedor (backend no transacciona entre tablas); pero
       //    avisamos al usuario y dejamos la fila pendiente.
       const fallidos: string[] = [];
-      for (const r of representantes) {
+      for (const r of personal) {
         try {
-          const repPayload: CrearRepresentanteRequest = {
+          const repPayload: CrearPersonalRequest = {
             nombre: r.nombre,
             apellido: r.apellido,
             dni: r.dni,
           };
-          await ProveedoresService.crearRepresentante(
-            created.id_proveedor,
-            repPayload,
-          );
+          await AuxService.crear_personal_externo({
+            id_proveedor: created.id_proveedor,
+            nombre: repPayload.nombre,
+            apellido: repPayload.apellido,
+            dni: repPayload.dni,
+          });
         } catch (err) {
           console.error(err);
           fallidos.push(`${r.nombre} ${r.apellido ?? ""}`.trim());
@@ -177,17 +171,16 @@ export const useRegistroProveedorCarbon = (
       }
 
       // 3) asociar tipos de carbon. Un fallo aqui no revierte el proveedor
-      //    ni los representantes; avisamos y dejamos pendiente.
+      //    ni los personal; avisamos y dejamos pendiente.
       let tiposFallaron = false;
       if (tiposCarbon.length > 0) {
         try {
-          const respTipos =
-            await ProveedoresService.setTiposCarbonPorProveedor(
-              created.id_proveedor,
-              {
-                tipos_carbon: tiposCarbon.map((t) => t.id_tipo_carbon),
-              },
-            );
+          const respTipos = await ProveedoresService.setTiposCarbonPorProveedor(
+            created.id_proveedor,
+            {
+              tipos_carbon: tiposCarbon.map((t) => t.id_tipo_carbon),
+            },
+          );
           tiposFallaron = !respTipos.success;
         } catch (err) {
           console.error(err);
@@ -195,19 +188,49 @@ export const useRegistroProveedorCarbon = (
         }
       }
 
-      if (fallidos.length > 0 || tiposFallaron) {
-        const piezas: string[] = [];
-        if (fallidos.length > 0) {
-          piezas.push(`representantes: ${fallidos.join(", ")}`);
+      // 4) asociar lugares de extraccion. Un fallo aqui no revierte nada
+      //    previo; avisamos y dejamos pendiente.
+      let lugaresFallaron = false;
+      if (lugaresExtraccion.length > 0) {
+        try {
+          const respLugares =
+            await ProveedoresService.setLugaresExtraccionPorProveedor(
+              created.id_proveedor,
+              {
+                lugares: lugaresExtraccion.map((l) => ({
+                  id_departamento: l.id_departamento,
+                  id_provincia: l.id_provincia,
+                  id_distrito: l.id_distrito,
+                  direccion: l.direccion.trim(),
+                })),
+              },
+            );
+          lugaresFallaron = !respLugares.success;
+        } catch (err) {
+          console.error(err);
+          lugaresFallaron = true;
         }
-        if (tiposFallaron) {
-          piezas.push("tipos de carbon (completa desde la lista)");
-        }
+      }
+
+      const piezas: string[] = [];
+      if (fallidos.length > 0) {
+        piezas.push(`personal: ${fallidos.join(", ")}`);
+      }
+      if (tiposFallaron) {
+        piezas.push("tipos de carbon (completa desde la lista)");
+      }
+      if (lugaresFallaron) {
+        piezas.push("lugares de extraccion (completa desde la lista)");
+      }
+
+      if (piezas.length > 0) {
         notifyError(
           `Proveedor guardado, pero no se pudieron registrar ${piezas.join("; ")}.`,
         );
       } else {
-        notifySuccess("Proveedor, representantes y tipos de carbon registrados correctamente");
+        notifySuccess(
+          "Proveedor, personal, tipos de carbon y lugares de extraccion registrados correctamente",
+        );
       }
 
       onSuccess(created);
@@ -221,17 +244,19 @@ export const useRegistroProveedorCarbon = (
 
   return {
     payload,
-    representantes,
+    personal,
     tiposCarbon,
+    lugaresExtraccion,
     loading,
     error,
     handleChange,
     handleSelectChange,
-    handleSelectNumber,
-    addRepresentante,
-    removeRepresentante,
+    addpersonal,
+    removepersonal,
     addTipoCarbon,
     removeTipoCarbon,
+    addLugarExtraccion,
+    removeLugarExtraccion,
     submit,
   };
 };

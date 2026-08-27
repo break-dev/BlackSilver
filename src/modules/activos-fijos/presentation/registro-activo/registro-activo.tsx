@@ -5,6 +5,7 @@ import {
   NumberInput,
   Select,
   Stack,
+  TagsInput,
   TextInput,
   Textarea,
   Divider,
@@ -16,7 +17,7 @@ import {
   Switch,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { useState, useMemo } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import dayjs from "dayjs";
@@ -140,9 +141,7 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     evidencias: null,
   });
 
-  const [especificaciones, setEspecificaciones] = useState<
-    { clave: string; valor: string }[]
-  >([]);
+  const [especificaciones, setEspecificaciones] = useState<string[]>([]);
 
   // Labores abastecidas (solo aplica cuando locationType === "mina")
   const [idsLaboresAbastecidas, setIdsLaboresAbastecidas] = useState<number[]>(
@@ -224,23 +223,13 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
     input:
       "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
     label: "text-zinc-300 mb-1 font-medium",
-    description: "text-[11px]"
+    description: "text-[12px] text-zinc-400",
   };
 
   /**
-   * Añade una nueva fila de especificación técnica clave-valor en blanco.
+   * Handlers legacy de clave-valor eliminados: ahora las especificaciones
+   * son tags libres (string[]) gestionados por el TagsInput de Mantine.
    */
-  const handleAddEspecificacion = () => {
-    setEspecificaciones([...especificaciones, { clave: "", valor: "" }]);
-  };
-
-  /**
-   * Elimina una fila de especificación técnica del listado local por su índice.
-   * @param index Índice de la especificación a remover.
-   */
-  const handleRemoveEspecificacion = (index: number) => {
-    setEspecificaciones(especificaciones.filter((_, i) => i !== index));
-  };
 
   /**
    * Maneja el cambio de producto base. Autocompleta el costo de compra con el
@@ -310,7 +299,11 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
         fechaIngreso && !isNaN(fechaIngreso.getTime())
           ? dayjs(fechaIngreso).format("YYYY-MM-DD HH:mm:ss")
           : null,
-      especificaciones: especificaciones.length > 0 ? especificaciones : null,
+      // Limpiar tags vacíos antes de enviar.
+      especificaciones:
+        especificaciones.map((t) => t.trim()).filter((t) => t !== "").length > 0
+          ? especificaciones.map((t) => t.trim()).filter((t) => t !== "")
+          : null,
     };
 
     setSaving(true);
@@ -798,66 +791,27 @@ export const RegistroActivo = ({ onSuccess, onCancel }: Props) => {
         />
 
         <Divider
-          label="Especificaciones Técnicas"
+          label="Especificaciones / Etiquetas"
           labelPosition="center"
           color="zinc.8"
         />
 
-        <Stack gap="xs">
-          {especificaciones.map((esp, index) => {
-            return (
-              <Group key={index} gap="xs" align="flex-end">
-                <TextInput
-                  placeholder="Clave (ej: Motor)"
-                  value={esp.clave}
-                  onChange={(e) => {
-                    const newEsp = [...especificaciones];
-                    newEsp[index].clave = e.target.value;
-                    setEspecificaciones(newEsp);
-                  }}
-                  size="xs"
-                  radius="lg"
-                  className="flex-1"
-                  classNames={fieldClasses}
-                />
-                <TextInput
-                  placeholder="Valor (ej: 2.8L)"
-                  value={esp.valor}
-                  onChange={(e) => {
-                    const newEsp = [...especificaciones];
-                    newEsp[index].valor = e.target.value;
-                    setEspecificaciones(newEsp);
-                  }}
-                  size="xs"
-                  radius="lg"
-                  className="flex-1"
-                  classNames={fieldClasses}
-                />
-                <ActionIcon
-                  color="red.8"
-                  variant="light"
-                  onClick={() => handleRemoveEspecificacion(index)}
-                  size="sm"
-                  radius="md"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </ActionIcon>
-              </Group>
-            );
-          })}
-
-          <Button
-            variant="light"
-            color="zinc.6"
-            size="xs"
-            radius="lg"
-            leftSection={<PlusIcon className="w-4 h-4" />}
-            onClick={handleAddEspecificacion}
-            className="w-fit"
-          >
-            Añadir Especificación
-          </Button>
-        </Stack>
+        <TagsInput
+          label="Especificaciones del Activo"
+          description="Escribe cada etiqueta y sepáralas con coma o Enter."
+          placeholder={
+            especificaciones.length === 0
+              ? "Ej: motor 2.8L, diesel, 4x4"
+              : "Añadir otra etiqueta..."
+          }
+          value={especificaciones}
+          onChange={setEspecificaciones}
+          acceptValueOnBlur
+          clearable
+          size="sm"
+          radius="lg"
+          classNames={fieldClasses}
+        />
 
         <Group justify="flex-end" mt="xl">
           <Button

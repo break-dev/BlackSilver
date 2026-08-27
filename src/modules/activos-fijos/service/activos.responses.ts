@@ -41,7 +41,7 @@ export interface RES_ActivoFijoResumen {
   descripcion: string | null;
   serie_placa: string | null;
   numero_placa: string | null;
-  especificaciones: { clave: string; valor: string }[] | null;
+  especificaciones: string[] | null;
   evidencias: IArchivo[] | null;
   //
   total_horas: number;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { ProveedoresService } from "../service/proveedores.service";
 import type { RES_Banco } from "../../../service/responses/banco";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export const useCuentasBancarias = (idProveedor: number | null) => {
   const [bancos, setBancos] = useState<RES_Banco[]>([]);
@@ -10,8 +10,8 @@ export const useCuentasBancarias = (idProveedor: number | null) => {
     if (loadingBancos || bancos.length > 0) return;
     setLoadingBancos(true);
     try {
-      const data = await ProveedoresService.getBancos();
-      setBancos(data);
+      const data = await AuxService.get_bancos();
+      setBancos(data.data);
     } catch (e) {
       console.error(e);
     } finally {

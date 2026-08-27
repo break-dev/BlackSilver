@@ -6,6 +6,7 @@ import {
   Group,
   Select,
   Stack,
+  Switch,
   Text,
   TextInput,
 } from "@mantine/core";
@@ -54,6 +55,7 @@ export const TipoCarbonTab = () => {
   const [editPayload, setEditPayload] = useState<CrearTipoCarbonRequest>({
     nombre: "",
     codigo: null,
+    para_compra: false,
   });
 
   const [confirmDelete, setConfirmDelete] = useState<RES_TipoCarbon | null>(
@@ -61,9 +63,12 @@ export const TipoCarbonTab = () => {
   );
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const [variantesTarget, setVariantesTarget] =
-    useState<RES_TipoCarbon | null>(null);
-  const variantesCtrl = useVariantesTipo(variantesTarget?.id_tipo_carbon ?? null);
+  const [variantesTarget, setVariantesTarget] = useState<RES_TipoCarbon | null>(
+    null,
+  );
+  const variantesCtrl = useVariantesTipo(
+    variantesTarget?.id_tipo_carbon ?? null,
+  );
   const [variantesSeleccionadas, setVariantesSeleccionadas] = useState<
     RES_VarianteCarbon[]
   >([]);
@@ -88,13 +93,17 @@ export const TipoCarbonTab = () => {
 
   const openCreate = () => {
     setEditTipo(null);
-    setEditPayload({ nombre: "", codigo: null });
+    setEditPayload({ nombre: "", codigo: null, para_compra: false });
     setModal("create");
   };
 
   const openEdit = (t: RES_TipoCarbon) => {
     setEditTipo(t);
-    setEditPayload({ nombre: t.nombre, codigo: t.codigo ?? null });
+    setEditPayload({
+      nombre: t.nombre,
+      codigo: t.codigo ?? null,
+      para_compra: t.para_compra ?? false,
+    });
     setModal("edit");
   };
 
@@ -122,10 +131,7 @@ export const TipoCarbonTab = () => {
     const ids = variantesSeleccionadas.map((v) => v.id_tipo_variante);
     const ok = await variantesCtrl.guardar(ids);
     if (ok) {
-      ctrl.refreshCantidadVariantes(
-        variantesTarget.id_tipo_carbon,
-        ids.length,
-      );
+      ctrl.refreshCantidadVariantes(variantesTarget.id_tipo_carbon, ids.length);
       closeVariantes();
     }
   };
@@ -217,8 +223,8 @@ export const TipoCarbonTab = () => {
         <div>
           <h2 className="text-lg font-bold text-white">Tipos de Carbon</h2>
           <p className="text-xs text-zinc-500">
-            Catalogo de tipos de carbon y sus variantes. Una variante es
-            otro tipo ya registrado que forma parte de este.
+            Catalogo de tipos de carbon y sus variantes. Una variante es otro
+            tipo ya registrado que forma parte de este.
           </p>
         </div>
         <Button
@@ -264,36 +270,53 @@ export const TipoCarbonTab = () => {
             ),
           },
           {
+            accessor: "para_compra",
+            title: "Para compra",
+            width: 130,
+            textAlign: "center",
+            render: (r: RES_TipoCarbon) =>
+              r.para_compra ? (
+                <Badge color="green" variant="light" radius="xl" size="sm">
+                  Si
+                </Badge>
+              ) : (
+                <Badge color="gray" variant="light" radius="xl" size="sm">
+                  No
+                </Badge>
+              ),
+          },
+          {
             accessor: "cantidad_variantes",
             title: "Variantes",
             width: 110,
             textAlign: "center",
             render: (r: RES_TipoCarbon) => (
-              <Badge
-                color={(r.cantidad_variantes ?? 0) > 0 ? "indigo" : "gray"}
-                variant="light"
-                size="sm"
-                radius="xl"
-              >
-                {r.cantidad_variantes ?? 0}
-              </Badge>
-            ),
-          },
-          {
-            accessor: "actions",
-            title: "Acciones",
-            width: 320,
-            render: (r: RES_TipoCarbon) => (
-              <div className="flex gap-2">
+              <div className="flex justify-center items-center">
+                <Badge
+                  color={(r.cantidad_variantes ?? 0) > 0 ? "indigo" : "gray"}
+                  variant="light"
+                  size="sm"
+                  radius="xl"
+                >
+                  {r.cantidad_variantes ?? 0}
+                </Badge>
                 <Button
                   size="xs"
                   variant="subtle"
                   color="indigo"
                   leftSection={<IconSettings size={14} />}
                   onClick={() => openVariantes(r)}
-                >
-                  Variantes
-                </Button>
+                ></Button>
+              </div>
+            ),
+          },
+          {
+            accessor: "actions",
+            title: "Acciones",
+            width: 320,
+            textAlign: "center",
+            render: (r: RES_TipoCarbon) => (
+              <div className="flex gap-2 justify-center">
                 <Button
                   size="xs"
                   variant="subtle"
@@ -338,7 +361,10 @@ export const TipoCarbonTab = () => {
             value={modal === "edit" ? editPayload.nombre : payload.nombre}
             onChange={(e) => {
               if (modal === "edit") {
-                setEditPayload((p) => ({ ...p, nombre: e.currentTarget.value }));
+                setEditPayload((p) => ({
+                  ...p,
+                  nombre: e.currentTarget.value,
+                }));
               } else {
                 handleChange("nombre", e.currentTarget.value);
               }
@@ -352,8 +378,8 @@ export const TipoCarbonTab = () => {
             placeholder="Ej: CARB-CIS"
             value={
               modal === "edit"
-                ? editPayload.codigo ?? ""
-                : payload.codigo ?? ""
+                ? (editPayload.codigo ?? "")
+                : (payload.codigo ?? "")
             }
             onChange={(e) => {
               if (modal === "edit") {
@@ -367,6 +393,22 @@ export const TipoCarbonTab = () => {
             }}
             classNames={fieldClasses}
             radius="lg"
+          />
+          <Switch
+            label="Para compra"
+            description="Habilita este tipo para registrar compras de carbon y asociarlo a proveedores de carbon."
+            color="indigo"
+            checked={
+              modal === "edit" ? editPayload.para_compra : payload.para_compra
+            }
+            onChange={(e) => {
+              const val = e.currentTarget.checked;
+              if (modal === "edit") {
+                setEditPayload((p) => ({ ...p, para_compra: val }));
+              } else {
+                handleChange("para_compra", val);
+              }
+            }}
           />
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="subtle" onClick={closeEdit} disabled={loading}>

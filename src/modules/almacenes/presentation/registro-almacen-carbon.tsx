@@ -19,7 +19,7 @@ import type {
   RES_Provincia,
 } from "../../../service/responses/ubicacion";
 
-interface RegistroAlmacenLogisticaProps {
+interface RegistroAlmacenCarbonProps {
   nombre: string;
   setNombre: (val: string) => void;
   descripcion: string;
@@ -39,7 +39,14 @@ interface RegistroAlmacenLogisticaProps {
   onCancel: () => void;
 }
 
-export const RegistroAlmacen = ({
+/**
+ * Registro de almacen de carbon.
+ *
+ * Para carbon NO hay switch de "es principal" ni modales de responsables /
+ * almacenes vecinos / minas a abastecer. Solo se piden los datos basicos
+ * y, opcionalmente, su ubicacion geografica.
+ */
+export const RegistroAlmacenCarbon = ({
   nombre,
   setNombre,
   descripcion,
@@ -56,7 +63,7 @@ export const RegistroAlmacen = ({
   loading,
   onSubmit,
   onCancel,
-}: RegistroAlmacenLogisticaProps) => {
+}: RegistroAlmacenCarbonProps) => {
   const [departamentos, setDepartamentos] = useState<RES_Departamento[]>([]);
   const [provincias, setProvincias] = useState<RES_Provincia[]>([]);
   const [distritos, setDistritos] = useState<RES_Distrito[]>([]);
@@ -174,8 +181,8 @@ export const RegistroAlmacen = ({
 
       <Stack gap="md">
         <TextInput
-          label="Nombre del Almacén"
-          placeholder="Ej. Almacén Central - Mina A"
+          label="Nombre del Almacén de Carbón"
+          placeholder="Ej. Almacén Carbón - Zona Sur"
           required
           withAsterisk
           disabled={loading}
@@ -228,7 +235,6 @@ export const RegistroAlmacen = ({
                 onChange={(v) => {
                   const num = v ? Number(v) : null;
                   setIdDepartamento(num);
-                  // cascada: limpiar hijos
                   setIdProvincia(null);
                   setIdDistrito(null);
                 }}

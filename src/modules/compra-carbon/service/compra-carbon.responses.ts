@@ -18,13 +18,13 @@ export interface CompraCarbonResumen {
   porcentaje_igv: number;
   correlativo: string;
   numero_correlativo: number;
-  fecha_hora_compra: string;
+  fecha_hora_ingreso: string;
   fecha_hora_aprobacion: string | null;
   total: number;
   created_at: string;
   estado: EstadoBase | string | null;
   cantidad_items: number;
-  evidencias_aprobacion: IArchivo[];
+  evidencias: IArchivo[];
 }
 
 export interface DetalleCompraCarbon {
@@ -62,7 +62,7 @@ export interface CompraCarbonDetalle {
     proveedor_tipo_entidad: TipoEntidad | string;
     proveedor_ruc: string | null;
     proveedor_dni: string | null;
-    evidencias_aprobacion: IArchivo[];
+    evidencias: IArchivo[];
   };
   detalles: DetalleCompraCarbon[];
 }

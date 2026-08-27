@@ -1,21 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  Group,
-  Stack,
-  Text,
-} from "@mantine/core";
-import {
-  IconUser,
-  IconUserPlus,
-} from "@tabler/icons-react";
-import { ProveedoresService } from "../../service/proveedores.service";
+import { Badge, Button, Group, Stack, Text } from "@mantine/core";
+import { IconUser, IconUserPlus } from "@tabler/icons-react";
 import { useNotify } from "../../../../hooks/useNotify";
 import { DataTableEstandar } from "../../../../presentation/utils/datatable-estandar";
 import { ModalPersonalExterno } from "../../../../presentation/utils/modal-personal-externo";
 import type { ProveedorResponse } from "../../service/proveedores.responses";
 import type { RES_PersonalExterno } from "../../../../service/responses/personal-externo";
+import { AuxService } from "../../../../service/auxiliar.service";
 
 interface Props {
   proveedor: ProveedorResponse;
@@ -25,9 +16,6 @@ interface Props {
  * Lista TODO el personal externo del proveedor (incluye o no
  * representantes). El switch "Es representante" se muestra siempre
  * para que el usuario pueda decidir al dar de alta si lo es o no.
- *
- * El backend expone el flag es_representante en cada fila
- * (campo agregado en la query de PersonalExternoData::get_personal).
  */
 export const PersonalExternoProveedor = ({ proveedor }: Props) => {
   const { notifyError } = useNotify();
@@ -38,10 +26,10 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
   const fetch = async () => {
     setLoading(true);
     try {
-      const data = await ProveedoresService.getRepresentantesPorProveedor(
-        proveedor.id_proveedor,
-      );
-      setPersonal(data);
+      const data = await AuxService.get_personal_externo({
+        id_proveedor: proveedor.id_proveedor,
+      });
+      setPersonal(data.data);
     } catch (e) {
       console.error(e);
       notifyError("No se pudo cargar el personal del proveedor");
@@ -98,7 +86,7 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
                   <IconUser size={12} stroke={1.5} />
                 </Badge>
                 <Text size="sm" className="text-zinc-200">
-                  {r.nombre_completo}
+                  {r.nombre} {r.apellido}
                 </Text>
               </Group>
             ),
@@ -113,27 +101,6 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
                 {r.dni || "—"}
               </Text>
             ),
-          },
-          {
-            accessor: "es_representante",
-            title: "Rol",
-            width: 140,
-            textAlign: "center",
-            render: (r: RES_PersonalExterno) =>
-              r.es_representante ? (
-                <Badge
-                  color="indigo"
-                  variant="light"
-                  size="sm"
-                  radius="xl"
-                >
-                  Representante
-                </Badge>
-              ) : (
-                <Text size="sm" className="text-zinc-500">
-                  —
-                </Text>
-              ),
           },
           {
             accessor: "estado",
