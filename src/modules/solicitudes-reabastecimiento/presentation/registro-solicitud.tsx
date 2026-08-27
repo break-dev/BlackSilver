@@ -99,7 +99,7 @@ export const RegistroSolicitud = ({
 
   const inputClasses = {
     input:
-      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all",
+      "bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500 transition-all ",
     dropdown: "bg-zinc-900 border-zinc-800 shadow-2xl ",
     option:
       "hover:bg-zinc-800 text-zinc-300 data-[selected]:bg-zinc-100 data-[selected]:text-zinc-900 rounded-md my-1",
@@ -122,7 +122,7 @@ export const RegistroSolicitud = ({
           title="Datos de la solicitud"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-8">
           <Select
             label="Almacén Solicitante"
             placeholder="Seleccione almacén"
@@ -144,7 +144,6 @@ export const RegistroSolicitud = ({
           <CustomDatePicker
             label="Fecha de Solicitud"
             placeholder="Seleccione fecha"
-            description="Retroactiva: puede elegir una fecha pasada"
             value={fechaSolicitud}
             onChange={(val) => setFechaSolicitud(val as Date | null)}
             radius="lg"
@@ -160,7 +159,7 @@ export const RegistroSolicitud = ({
             minDate={new Date()}
           />
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-6">
             <TextInput
               label="Observación General"
               placeholder="Indique algún detalle sobre este reabastecimiento..."
@@ -169,58 +168,65 @@ export const RegistroSolicitud = ({
               classNames={inputClasses}
               radius="lg"
             />
-          </div>
 
-          <div className="lg:col-span-2 bg-zinc-900/30 p-4 rounded-2xl border border-zinc-800/50">
-            <Group justify="space-between" align="center" wrap="nowrap">
-              <Stack gap={0}>
-                <Text
-                  size="xs"
-                  fw={700}
-                  className="text-zinc-400 uppercase tracking-widest"
-                >
-                  Prioridad
-                </Text>
-                <Text size="sm" fw={600} className="text-white">
-                  Nivel de Urgencia
-                </Text>
-              </Stack>
-              <Group gap="xs">
-                <Button
-                  size="xs"
-                  variant={premura === Premura.Normal ? "filled" : "light"}
-                  color="blue"
-                  onClick={() => setPremura(Premura.Normal)}
-                  leftSection={<HandThumbUpIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  NORMAL
-                </Button>
-                <Button
-                  size="xs"
-                  variant={premura === Premura.Urgente ? "filled" : "light"}
-                  color="orange"
-                  onClick={() => setPremura(Premura.Urgente)}
-                  leftSection={<BoltIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  URGENTE
-                </Button>
-                <Button
-                  size="xs"
-                  variant={premura === Premura.Emergencia ? "filled" : "light"}
-                  color="red"
-                  onClick={() => setPremura(Premura.Emergencia)}
-                  leftSection={<FireIcon className="w-3.5 h-3.5" />}
-                  radius="md"
-                  className="h-10 px-5 font-bold"
-                >
-                  EMERGENCIA
-                </Button>
+            <div className="flex flex-row items-center">
+              <Group
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                className="w-full"
+              >
+                <Stack gap={0}>
+                  <Text
+                    size="xs"
+                    fw={700}
+                    className="text-zinc-400 uppercase tracking-widest"
+                  >
+                    Prioridad
+                  </Text>
+                  <Text size="sm" fw={600} className="text-white">
+                    Nivel de Urgencia
+                  </Text>
+                </Stack>
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    variant={premura === Premura.Normal ? "filled" : "light"}
+                    color="blue"
+                    onClick={() => setPremura(Premura.Normal)}
+                    leftSection={<HandThumbUpIcon className="w-3.5 h-3.5" />}
+                    radius="md"
+                    className="h-10 px-5 font-bold"
+                  >
+                    NORMAL
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant={premura === Premura.Urgente ? "filled" : "light"}
+                    color="orange"
+                    onClick={() => setPremura(Premura.Urgente)}
+                    leftSection={<BoltIcon className="w-3.5 h-3.5" />}
+                    radius="md"
+                    className="h-10 px-5 font-bold"
+                  >
+                    URGENTE
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant={
+                      premura === Premura.Emergencia ? "filled" : "light"
+                    }
+                    color="red"
+                    onClick={() => setPremura(Premura.Emergencia)}
+                    leftSection={<FireIcon className="w-3.5 h-3.5" />}
+                    radius="md"
+                    className="h-10 px-5 font-bold"
+                  >
+                    EMERGENCIA
+                  </Button>
+                </Group>
               </Group>
-            </Group>
+            </div>
           </div>
         </div>
       </section>
@@ -313,7 +319,7 @@ export const RegistroSolicitud = ({
                   color="indigo"
                   size="sm"
                   fullWidth
-                  className="shadow-lg h-10 mb-[2px]"
+                  className="shadow-lg h-10 mb-0.5"
                   leftSection={<PlusIcon className="w-5 h-5 text-white" />}
                   radius="lg"
                 >
@@ -417,7 +423,7 @@ export const RegistroSolicitud = ({
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
             <tr>
               <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[220px]">
+              <th className="px-4 py-3 text-left font-semibold min-w-55">
                 Producto
               </th>
               <th className="px-4 py-3 text-right font-semibold w-32">
@@ -426,7 +432,7 @@ export const RegistroSolicitud = ({
               <th className="px-4 py-3 text-right font-semibold w-32">
                 Equivalencia
               </th>
-              <th className="px-4 py-3 text-left font-semibold min-w-[280px]">
+              <th className="px-4 py-3 text-left font-semibold min-w-70">
                 Comentario
               </th>
               <th className="px-4 py-3 text-center w-16"></th>

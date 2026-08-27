@@ -7,8 +7,10 @@ import {
   TextInput,
   Alert,
   Tooltip,
+  Badge,
 } from "@mantine/core";
 import {
+  IconCash,
   IconDeviceFloppy,
   IconExclamationCircle,
 } from "@tabler/icons-react";
@@ -33,6 +35,7 @@ export const EdicionCuentaBancaria = ({
     setIdBanco,
     moneda,
     setMoneda,
+    monedaFija,
     numeroCuenta,
     setNumeroCuenta,
     cci,
@@ -104,19 +107,37 @@ export const EdicionCuentaBancaria = ({
               comboboxProps={{ withinPortal: true }}
             />
           </div>
-          <Select
-            label="Moneda"
-            withAsterisk
-            required
-            radius="xl"
-            size="xs"
-            disabled={isSubmitting}
-            data={monedasOptions}
-            value={moneda}
-            onChange={(val) => setMoneda(val as Moneda | null)}
-            classNames={inputClasses}
-            comboboxProps={{ withinPortal: true }}
-          />
+          {monedaFija ? (
+            <div className="flex flex-col gap-1">
+              <span className="text-zinc-300 mb-1 font-medium text-xs">
+                Moneda
+              </span>
+              <Badge
+                color="blue"
+                variant="light"
+                radius="xl"
+                size="lg"
+                leftSection={<IconCash size={14} />}
+                className="self-start"
+              >
+                {monedaFija}
+              </Badge>
+            </div>
+          ) : (
+            <Select
+              label="Moneda"
+              withAsterisk
+              required
+              radius="xl"
+              size="xs"
+              disabled={isSubmitting}
+              data={monedasOptions}
+              value={moneda}
+              onChange={(val) => setMoneda(val as Moneda | null)}
+              classNames={inputClasses}
+              comboboxProps={{ withinPortal: true }}
+            />
+          )}
         </div>
 
         <div className="flex items-end gap-4">

@@ -47,11 +47,8 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
     <Stack gap="md">
       <Group justify="space-between">
         <div>
-          <Text size="sm" fw={600} className="text-zinc-200">
-            {proveedor.razon_social}
-          </Text>
-          <Text size="xs" className="text-zinc-500">
-            Personal externo vinculado al proveedor
+          <Text size="sm" className="text-zinc-300">
+            Personas externas vinculadas al proveedor
           </Text>
         </div>
         <Button
@@ -61,7 +58,7 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
           color="indigo"
           onClick={() => setOpenAdd(true)}
         >
-          Agregar personal
+          Agregar contacto
         </Button>
       </Group>
 
@@ -125,7 +122,7 @@ export const PersonalExternoProveedor = ({ proveedor }: Props) => {
       <ModalPersonalExterno
         opened={openAdd}
         close={() => setOpenAdd(false)}
-        title="Agregar personal externo"
+        title="Agregar contacto"
         idProveedor={proveedor.id_proveedor}
         onCreatedBackend={() => {
           setOpenAdd(false);

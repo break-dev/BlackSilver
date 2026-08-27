@@ -93,18 +93,18 @@ export const useRegistroProveedorCarbon = (
     setpersonal((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const addTipoCarbon = (t: TipoCarbonTemporal) => {
-    setTiposCarbon((prev) => {
-      if (prev.some((x) => x.id_tipo_carbon === t.id_tipo_carbon)) return prev;
-      return [...prev, t];
-    });
-  };
-
-  const removeTipoCarbon = (id_tipo_carbon: number) => {
-    setTiposCarbon((prev) =>
-      prev.filter((x) => x.id_tipo_carbon !== id_tipo_carbon),
-    );
-  };
+  const setTiposCarbonSeleccionados = (
+  ids: number[],
+  catalogo: readonly TipoCarbonTemporal[],
+) => {
+  const mapa = new Map(catalogo.map((t) => [t.id_tipo_carbon, t]));
+  const next: TipoCarbonTemporal[] = [];
+  for (const id of ids) {
+    const t = mapa.get(id);
+    if (t) next.push(t);
+  }
+  setTiposCarbon(next);
+};
 
   const addLugarExtraccion = (l: LugarExtraccionTemporal) => {
     setLugaresExtraccion((prev) => {
@@ -253,8 +253,7 @@ export const useRegistroProveedorCarbon = (
     handleSelectChange,
     addpersonal,
     removepersonal,
-    addTipoCarbon,
-    removeTipoCarbon,
+    setTiposCarbonSeleccionados,
     addLugarExtraccion,
     removeLugarExtraccion,
     submit,

@@ -35,7 +35,7 @@ export const useRegistroSolicitud = ({ onSuccess }: Props) => {
   const [premura, setPremura] = useState<Premura>(Premura.Normal);
   const [fechaSolicitud, setFechaSolicitud] = useState<Date | null>(new Date());
   const [fechaEntregaRequerida, setFechaEntregaRequerida] =
-    useState<Date | null>(null);
+    useState<Date | null>(new Date());
   const [observacion, setObservacion] = useState("");
 
   // Estado Formulario Detalle (Item actual)

@@ -12,7 +12,9 @@ export const useRegistroCuentaBancaria = (
   idProveedor: number | null,
   bancos: RES_Banco[],
   onAccountAdded: (account: CuentaBancariaResponse) => void,
+  options?: { monedaFija?: string },
 ) => {
+  const monedaFija = options?.monedaFija;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notifySuccess, notifyError } = useNotify();
@@ -20,7 +22,7 @@ export const useRegistroCuentaBancaria = (
   const [payload, setPayload] = useState<CrearCuentaBancariaRequest>({
     id_proveedor: 0,
     id_banco: 0,
-    moneda: "Soles",
+    moneda: monedaFija ?? "Soles",
     numero_cuenta: "",
     cci: "",
     es_para_detraccion: 0,
@@ -38,6 +40,8 @@ export const useRegistroCuentaBancaria = (
     field: keyof CrearCuentaBancariaRequest,
     value: string,
   ) => {
+    // Si la moneda esta forzada, el campo es de solo lectura.
+    if (field === "moneda" && monedaFija) return;
     setPayload((prev) => {
       const newPayload = { ...prev, [field]: value };
 
@@ -82,6 +86,8 @@ export const useRegistroCuentaBancaria = (
     const validation = Schema_CrearCuentaBancaria.safeParse({
       ...payload,
       id_proveedor: idProveedor,
+      // Defensa final: forzar moneda si aplica.
+      moneda: monedaFija ?? payload.moneda,
     });
 
     if (!validation.success) {
@@ -91,14 +97,15 @@ export const useRegistroCuentaBancaria = (
 
     setIsSubmitting(true);
     try {
-      const created = await ProveedoresService.crearCuentaBancaria(
-        validation.data,
-      );
+      const created = await ProveedoresService.crearCuentaBancaria({
+        ...validation.data,
+        moneda: monedaFija ?? validation.data.moneda,
+      });
       notifySuccess("Cuenta bancaria añadida");
       setPayload({
         id_proveedor: 0,
         id_banco: 0,
-        moneda: "Soles",
+        moneda: monedaFija ?? "Soles",
         numero_cuenta: "",
         cci: "",
         es_para_detraccion: 0,

@@ -90,27 +90,38 @@ export const ProveedoresPage = () => {
   const handleCuentaActualizada = (cuenta: CuentaBancariaResponse) => {
     if (!selectedProveedor) return;
 
-    const cuentasActualizadas = (selectedProveedor.cuentas_bancarias ?? []).map(
-      (c) => (c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c),
+    // selectedProveedor queda stale tras cada cambio; leer el array
+    // actual desde el state global para no perder cuentas previas.
+    const proveedorActual = proveedores.find(
+      (p) => p.id_proveedor === selectedProveedor.id_proveedor,
+    );
+    const cuentasActuales = proveedorActual?.cuentas_bancarias ?? [];
+
+    const cuentasActualizadas = cuentasActuales.map((c) =>
+      c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c,
     );
 
     updateProveedor(
       selectedProveedor.id_proveedor,
-      actualizarCuentas(selectedProveedor, cuentasActualizadas),
+      actualizarCuentas(proveedorActual ?? selectedProveedor, cuentasActualizadas),
     );
   };
 
   const handleCuentaAgregada = (cuenta: CuentaBancariaResponse) => {
     if (!selectedProveedor) return;
 
-    const cuentasActualizadas = [
-      cuenta,
-      ...(selectedProveedor.cuentas_bancarias ?? []),
-    ];
+    // selectedProveedor queda stale tras cada cambio; leer el array
+    // actual desde el state global para no perder cuentas previas.
+    const proveedorActual = proveedores.find(
+      (p) => p.id_proveedor === selectedProveedor.id_proveedor,
+    );
+    const cuentasActuales = proveedorActual?.cuentas_bancarias ?? [];
+
+    const cuentasActualizadas = [cuenta, ...cuentasActuales];
 
     updateProveedor(
       selectedProveedor.id_proveedor,
-      actualizarCuentas(selectedProveedor, cuentasActualizadas),
+      actualizarCuentas(proveedorActual ?? selectedProveedor, cuentasActualizadas),
     );
   };
 
@@ -272,7 +283,7 @@ export const ProveedoresPage = () => {
         close={() => setProveedorPersonal(null)}
         title={
           proveedorPersonalEnGestion
-            ? `Personal externo: ${proveedorPersonalEnGestion.razon_social}`
+            ? `Contactos de ${proveedorPersonalEnGestion.razon_social}`
             : ""
         }
         size="lg"

@@ -69,6 +69,35 @@ export interface DTO_AtencionCambiarEstado {
   comentario_decision?: string;
 }
 
+export interface DTO_DetalleEditado {
+  id_requerimiento_almacen_detalle: number;
+  id_unidad_medida?: number;
+  cantidad_solicitada?: number;
+  contenido_por_presentacion?: number;
+  comentario?: string | null;
+  para_mantenimiento?: boolean;
+  id_activo_fijo_destino?: number | null;
+  con_magnitud?: boolean | number;
+  cantidad_items?: number;
+  valor_magnitud?: number;
+  valor_magnitud_base?: number;
+}
+
+export interface DTO_EditarRequerimiento {
+  id_empleado_solicitante?: number | null;
+  id_contratista_solicitante?: number | null;
+  id_labor?: number | null;
+  premura?: string;
+  fecha_entrega_requerida?: string;
+  fecha_solicitud?: string;
+  observacion?: string;
+  es_auditable?: boolean;
+  evidencias_nuevas?: File[];
+  detalles_editar?: DTO_DetalleEditado[];
+  detalles_eliminar?: number[];
+  detalles_crear?: DTO_CrearRequerimientoDetalle[];
+}
+
 export interface DTO_RegistrarEntrega {
   id_requerimiento: number;
   id_empleado_recibe?: number | null;

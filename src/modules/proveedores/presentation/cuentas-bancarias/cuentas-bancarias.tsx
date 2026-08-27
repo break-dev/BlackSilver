@@ -14,6 +14,7 @@ import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { useEffect, useRef, useState } from "react";
 import { Text } from "@mantine/core";
 import { IconCreditCard } from "@tabler/icons-react";
+import { Moneda } from "../../../../shared/enums/_generic/moneda";
 
 interface Props {
   proveedor: ProveedorResponse;
@@ -37,11 +38,16 @@ export const CuentasBancarias = ({
 
   const cuentas = proveedor.cuentas_bancarias ?? [];
 
+  // Proveedores de carbon: todas sus cuentas bancarias son en Soles,
+  // sin posibilidad de elegir otra moneda.
+  const monedaFija = proveedor.para_carbon ? "Soles" : undefined;
+
   const edicion = useEdicionCuentaBancaria({
     onSuccess: (cuentaActualizada) => {
       onCuentaActualizada?.(cuentaActualizada);
     },
     onClose: () => setOpenEdit(false),
+    monedaFija: proveedor.para_carbon ? Moneda.Soles : undefined,
   });
 
   useEffect(() => {
@@ -76,6 +82,7 @@ export const CuentasBancarias = ({
           setBancos((prev) => [...prev, b]);
           regCuentaRef.current?.autoSelectBanco(b.id_banco);
         }}
+        monedaFija={monedaFija}
       />
 
       {/* Lista de Cuentas usando items individuales en vez de tabla */}

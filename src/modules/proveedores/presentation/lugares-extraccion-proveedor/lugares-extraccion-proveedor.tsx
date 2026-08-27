@@ -66,9 +66,7 @@ export const LugaresExtraccionProveedor = ({
   const [departamentos, setDepartamentos] = useState<RES_Departamento[]>([]);
   const [provincias, setProvincias] = useState<RES_Provincia[]>([]);
   const [distritos, setDistritos] = useState<RES_Distrito[]>([]);
-  const [loadingDptos] = useState(false);
-  const [loadingProv, setLoadingProv] = useState(false);
-  const [loadingDist, setLoadingDist] = useState(false);
+  const [loadingUbigeo, setLoadingUbigeo] = useState(false);
   const [searchDpto, setSearchDpto] = useState("");
   const [searchProv, setSearchProv] = useState("");
   const [searchDist, setSearchDist] = useState("");
@@ -83,14 +81,19 @@ export const LugaresExtraccionProveedor = ({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Carga inicial: departamentos + lugares actuales del proveedor.
+  // Carga inicial: dptos + TODAS las provincias + TODOS los distritos
+  // + lugares actuales del proveedor, en paralelo. Despues el filtrado
+  // se hace en cliente (instantaneo).
   useEffect(() => {
     let cancel = false;
     (async () => {
       setLoading(true);
+      setLoadingUbigeo(true);
       try {
-        const [dptosRes, lugaresRes] = await Promise.all([
+        const [dptosRes, provsRes, distsRes, lugaresRes] = await Promise.all([
           AuxService.get_departamentos(),
+          AuxService.get_provincias(),
+          AuxService.get_distritos(),
           ProveedoresService.getLugaresExtraccionPorProveedor(
             proveedor.id_proveedor,
           ),
@@ -98,6 +101,12 @@ export const LugaresExtraccionProveedor = ({
         if (cancel) return;
         if (dptosRes.success) {
           setDepartamentos((dptosRes.data ?? []) as RES_Departamento[]);
+        }
+        if (provsRes.success) {
+          setProvincias((provsRes.data ?? []) as RES_Provincia[]);
+        }
+        if (distsRes.success) {
+          setDistritos((distsRes.data ?? []) as RES_Distrito[]);
         }
         if (lugaresRes.success && lugaresRes.data) {
           setSeleccionados(
@@ -116,7 +125,10 @@ export const LugaresExtraccionProveedor = ({
         console.error(e);
         notifyError("No se pudieron cargar los lugares de extraccion");
       } finally {
-        if (!cancel) setLoading(false);
+        if (!cancel) {
+          setLoading(false);
+          setLoadingUbigeo(false);
+        }
       }
     })();
     return () => {
@@ -124,52 +136,6 @@ export const LugaresExtraccionProveedor = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proveedor.id_proveedor]);
-
-  // Provincias al cambiar dpto.
-  useEffect(() => {
-    if (!lugarDpto) {
-      setProvincias([]);
-      return;
-    }
-    let cancel = false;
-    (async () => {
-      setLoadingProv(true);
-      const res = await AuxService.get_provincias({
-        id_departamento: Number(lugarDpto),
-      });
-      if (cancel) return;
-      if (res.success) {
-        setProvincias((res.data ?? []) as RES_Provincia[]);
-      }
-      setLoadingProv(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [lugarDpto]);
-
-  // Distritos al cambiar prov.
-  useEffect(() => {
-    if (!lugarProv) {
-      setDistritos([]);
-      return;
-    }
-    let cancel = false;
-    (async () => {
-      setLoadingDist(true);
-      const res = await AuxService.get_distritos({
-        id_provincia: Number(lugarProv),
-      });
-      if (cancel) return;
-      if (res.success) {
-        setDistritos((res.data ?? []) as RES_Distrito[]);
-      }
-      setLoadingDist(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [lugarProv]);
 
   const dptosVisibles = useMemo(() => {
     const q = searchDpto.trim();
@@ -180,20 +146,22 @@ export const LugaresExtraccionProveedor = ({
   }, [departamentos, searchDpto]);
 
   const provVisibles = useMemo(() => {
+    const base = lugarDpto
+      ? provincias.filter((p) => String(p.id_departamento) === lugarDpto)
+      : provincias;
     const q = searchProv.trim();
-    if (!q) return provincias;
-    return getCoincidencias(provincias, q, { keys: ["nombre"] }).map(
-      (r) => r.item,
-    );
-  }, [provincias, searchProv]);
+    if (!q) return base;
+    return getCoincidencias(base, q, { keys: ["nombre"] }).map((r) => r.item);
+  }, [provincias, lugarDpto, searchProv]);
 
   const distVisibles = useMemo(() => {
+    const base = lugarProv
+      ? distritos.filter((d) => String(d.id_provincia) === lugarProv)
+      : distritos;
     const q = searchDist.trim();
-    if (!q) return distritos;
-    return getCoincidencias(distritos, q, { keys: ["nombre"] }).map(
-      (r) => r.item,
-    );
-  }, [distritos, searchDist]);
+    if (!q) return base;
+    return getCoincidencias(base, q, { keys: ["nombre"] }).map((r) => r.item);
+  }, [distritos, lugarProv, searchDist]);
 
   const handleDptoChange = (v: string | null) => {
     setLugarDpto(v);
@@ -306,7 +274,7 @@ export const LugaresExtraccionProveedor = ({
         <Text size="sm" fw={600} className="text-zinc-200">
           {proveedor.razon_social}
         </Text>
-        <Text size="xs" className="text-zinc-500">
+        <Text size="xs" className="text-zinc-400">
           Zonas de extraccion declaradas por este proveedor.
         </Text>
       </div>
@@ -315,22 +283,24 @@ export const LugaresExtraccionProveedor = ({
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Select
             label="Departamento"
-            placeholder={loadingDptos ? "Cargando..." : "Seleccione"}
+            placeholder={
+              loadingUbigeo && departamentos.length === 0
+                ? "Cargando..."
+                : "Seleccione"
+            }
             radius="xl"
             clearable
             searchable
             searchValue={searchDpto}
             onSearchChange={setSearchDpto}
-            nothingFoundMessage={
-              loadingDptos ? "Cargando..." : "Sin coincidencias"
-            }
+            nothingFoundMessage="Sin coincidencias"
             data={dptosVisibles.map((d) => ({
               value: String(d.id),
               label: d.nombre,
             }))}
             value={lugarDpto}
             onChange={handleDptoChange}
-            disabled={loadingDptos && departamentos.length === 0}
+            disabled={loadingUbigeo && departamentos.length === 0}
             classNames={fieldClasses}
           />
         </Grid.Col>
@@ -340,25 +310,21 @@ export const LugaresExtraccionProveedor = ({
             placeholder={
               !lugarDpto
                 ? "Seleccione un departamento"
-                : loadingProv
-                  ? "Cargando..."
-                  : "Seleccione"
+                : "Seleccione"
             }
             radius="xl"
             clearable
             searchable
             searchValue={searchProv}
             onSearchChange={setSearchProv}
-            nothingFoundMessage={
-              loadingProv ? "Cargando..." : "Sin coincidencias"
-            }
+            nothingFoundMessage="Sin coincidencias"
             data={provVisibles.map((p) => ({
               value: String(p.id),
               label: p.nombre,
             }))}
             value={lugarProv}
             onChange={handleProvChange}
-            disabled={!lugarDpto || loadingProv}
+            disabled={!lugarDpto}
             classNames={fieldClasses}
           />
         </Grid.Col>
@@ -368,25 +334,21 @@ export const LugaresExtraccionProveedor = ({
             placeholder={
               !lugarProv
                 ? "Seleccione una provincia"
-                : loadingDist
-                  ? "Cargando..."
-                  : "Seleccione"
+                : "Seleccione"
             }
             radius="xl"
             clearable
             searchable
             searchValue={searchDist}
             onSearchChange={setSearchDist}
-            nothingFoundMessage={
-              loadingDist ? "Cargando..." : "Sin coincidencias"
-            }
+            nothingFoundMessage="Sin coincidencias"
             data={distVisibles.map((d) => ({
               value: String(d.id),
               label: d.nombre,
             }))}
             value={lugarDist}
             onChange={handleDistChange}
-            disabled={!lugarProv || loadingDist}
+            disabled={!lugarProv}
             classNames={fieldClasses}
           />
         </Grid.Col>

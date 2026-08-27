@@ -5,6 +5,7 @@ import {
   Button,
   Grid,
   Group,
+  MultiSelect,
   Select,
   Stack,
   Text,
@@ -13,7 +14,6 @@ import {
 import {
   IconDeviceFloppy,
   IconExclamationCircle,
-  IconFlame,
   IconMapPin,
   IconTrash,
   IconUser,
@@ -67,8 +67,7 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
     handleSelectChange,
     addpersonal,
     removepersonal,
-    addTipoCarbon,
-    removeTipoCarbon,
+    setTiposCarbonSeleccionados,
     addLugarExtraccion,
     removeLugarExtraccion,
     submit,
@@ -78,16 +77,13 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
 
   const [todosTipos, setTodosTipos] = useState<RES_TipoCarbon[]>([]);
   const [loadingTipos, setLoadingTipos] = useState(false);
-  const [tipoPendiente, setTipoPendiente] = useState<string | null>(null);
   const [searchTipo, setSearchTipo] = useState("");
 
-  // Ubicacion geografica para los lugares de extraccion.
+  // Ubigeo: las 3 listas se cargan al montar y se filtran en cliente.
   const [departamentos, setDepartamentos] = useState<RES_Departamento[]>([]);
   const [provincias, setProvincias] = useState<RES_Provincia[]>([]);
   const [distritos, setDistritos] = useState<RES_Distrito[]>([]);
-  const [loadingDptos, setLoadingDptos] = useState(false);
-  const [loadingProv, setLoadingProv] = useState(false);
-  const [loadingDist, setLoadingDist] = useState(false);
+  const [loadingUbigeo, setLoadingUbigeo] = useState(false);
   const [searchDpto, setSearchDpto] = useState("");
   const [searchProv, setSearchProv] = useState("");
   const [searchDist, setSearchDist] = useState("");
@@ -99,83 +95,33 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
   const [lugarDireccion, setLugarDireccion] = useState("");
   const [lugarError, setLugarError] = useState<string | null>(null);
 
-  // Cargar catalogo de tipos de carbon una sola vez al montar.
+  // Carga unica al montar: tipos de carbon + dptos + provs + dists en paralelo.
   useEffect(() => {
     let cancel = false;
     (async () => {
       setLoadingTipos(true);
-      const res = await TipoCarbonService.getTipos({ para_compra: true });
+      setLoadingUbigeo(true);
+      const [tiposRes, dptosRes, provsRes, distsRes] = await Promise.all([
+        TipoCarbonService.getTipos({ para_compra: true }),
+        AuxService.get_departamentos(),
+        AuxService.get_provincias(),
+        AuxService.get_distritos(),
+      ]);
       if (cancel) return;
-      if (res.success) setTodosTipos(res.data);
+      if (tiposRes.success) setTodosTipos(tiposRes.data);
+      if (dptosRes.success)
+        setDepartamentos((dptosRes.data ?? []) as RES_Departamento[]);
+      if (provsRes.success)
+        setProvincias((provsRes.data ?? []) as RES_Provincia[]);
+      if (distsRes.success)
+        setDistritos((distsRes.data ?? []) as RES_Distrito[]);
       setLoadingTipos(false);
+      setLoadingUbigeo(false);
     })();
     return () => {
       cancel = true;
     };
   }, []);
-
-  // Departamentos: carga unica al montar
-  useEffect(() => {
-    let cancel = false;
-    (async () => {
-      setLoadingDptos(true);
-      const res = await AuxService.get_departamentos();
-      if (cancel) return;
-      if (res.success) {
-        setDepartamentos((res.data ?? []) as RES_Departamento[]);
-      }
-      setLoadingDptos(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, []);
-
-  // Provincias: cargar SOLO si hay departamento seleccionado en el form de lugar.
-  useEffect(() => {
-    if (!lugarDpto) {
-      setProvincias([]);
-      return;
-    }
-    let cancel = false;
-    (async () => {
-      setLoadingProv(true);
-      const res = await AuxService.get_provincias({
-        id_departamento: Number(lugarDpto),
-      });
-      if (cancel) return;
-      if (res.success) {
-        setProvincias((res.data ?? []) as RES_Provincia[]);
-      }
-      setLoadingProv(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [lugarDpto]);
-
-  // Distritos: cargar SOLO si hay provincia seleccionada en el form de lugar.
-  useEffect(() => {
-    if (!lugarProv) {
-      setDistritos([]);
-      return;
-    }
-    let cancel = false;
-    (async () => {
-      setLoadingDist(true);
-      const res = await AuxService.get_distritos({
-        id_provincia: Number(lugarProv),
-      });
-      if (cancel) return;
-      if (res.success) {
-        setDistritos((res.data ?? []) as RES_Distrito[]);
-      }
-      setLoadingDist(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [lugarProv]);
 
   const dptosVisibles = useMemo(() => {
     const q = searchDpto.trim();
@@ -186,43 +132,50 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
   }, [departamentos, searchDpto]);
 
   const provVisibles = useMemo(() => {
+    const base = lugarDpto
+      ? provincias.filter((p) => String(p.id_departamento) === lugarDpto)
+      : provincias;
     const q = searchProv.trim();
-    if (!q) return provincias;
-    return getCoincidencias(provincias, q, { keys: ["nombre"] }).map(
-      (r) => r.item,
-    );
-  }, [provincias, searchProv]);
+    if (!q) return base;
+    return getCoincidencias(base, q, { keys: ["nombre"] }).map((r) => r.item);
+  }, [provincias, lugarDpto, searchProv]);
 
   const distVisibles = useMemo(() => {
+    const base = lugarProv
+      ? distritos.filter((d) => String(d.id_provincia) === lugarProv)
+      : distritos;
     const q = searchDist.trim();
-    if (!q) return distritos;
-    return getCoincidencias(distritos, q, { keys: ["nombre"] }).map(
-      (r) => r.item,
-    );
-  }, [distritos, searchDist]);
+    if (!q) return base;
+    return getCoincidencias(base, q, { keys: ["nombre"] }).map((r) => r.item);
+  }, [distritos, lugarProv, searchDist]);
 
-  const tiposDisponibles = useMemo(() => {
+  const tiposData = useMemo(
+    () =>
+      todosTipos.map((t) => ({
+        value: String(t.id_tipo_carbon),
+        label: t.codigo ? `${t.nombre} (${t.codigo})` : t.nombre,
+      })),
+    [todosTipos],
+  );
+
+  const tiposFiltrados = useMemo(() => {
     const q = searchTipo.trim();
-    const libres = todosTipos.filter(
-      (t) => !tiposCarbon.some((x) => x.id_tipo_carbon === t.id_tipo_carbon),
-    );
-    if (!q) return libres;
-    return getCoincidencias(libres, q, { keys: ["nombre", "codigo"] }).map(
-      (r) => r.item,
-    );
-  }, [todosTipos, tiposCarbon, searchTipo]);
+    if (!q) return tiposData;
+    return getCoincidencias(todosTipos, q, {
+      keys: ["nombre", "codigo"],
+    }).map((r) => ({
+      value: String(r.item.id_tipo_carbon),
+      label: r.item.codigo ? `${r.item.nombre} (${r.item.codigo})` : r.item.nombre,
+    }));
+  }, [tiposData, todosTipos, searchTipo]);
 
   const handleRepresentanteCreado = (p: PersonalLocal) => {
     addpersonal(p);
   };
 
-  const handleAgregarTipo = (value: string | null) => {
-    if (!value) return;
-    const id = Number(value);
-    const tipo = todosTipos.find((t) => t.id_tipo_carbon === id);
-    if (!tipo) return;
-    addTipoCarbon(tipo);
-    setTipoPendiente(null);
+  const handleTiposChange = (values: string[]) => {
+    const ids = values.map((v) => Number(v));
+    setTiposCarbonSeleccionados(ids, todosTipos);
   };
 
   const handleDptoChange = (v: string | null) => {
@@ -277,7 +230,6 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
     };
     addLugarExtraccion(nuevo);
 
-    // limpiar
     setLugarDpto(null);
     setLugarProv(null);
     setLugarDist(null);
@@ -402,6 +354,43 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
         </Grid.Col>
       </Grid>
 
+      {/* Tipos de Carbon (opcional) */}
+      <div className="flex flex-col gap-3">
+        <div>
+          <Text size="sm" fw={600} className="text-zinc-300">
+            Tipos de Carbón que ofrece
+          </Text>
+          <Text size="xs" className="text-zinc-500">
+            Selecciona los tipos que este proveedor puede suministrar.
+          </Text>
+        </div>
+
+        <MultiSelect
+          label="Tipos de carbón"
+          placeholder={
+            loadingTipos
+              ? "Cargando tipos..."
+              : "Selecciona uno o varios tipos"
+          }
+          radius="xl"
+          searchable
+          clearable
+          data={tiposFiltrados}
+          value={tiposCarbon.map((t) => String(t.id_tipo_carbon))}
+          onChange={handleTiposChange}
+          searchValue={searchTipo}
+          onSearchChange={setSearchTipo}
+          nothingFoundMessage="Sin tipos disponibles"
+          disabled={loadingTipos && todosTipos.length === 0}
+          classNames={{
+            input:
+              "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
+            label: "text-zinc-300 mb-1 font-medium text-xs",
+            pill: "bg-indigo-500/20 text-indigo-200",
+          }}
+        />
+      </div>
+
       {/* Lugares de Extraccion */}
       <div className="flex flex-col gap-3">
         <div>
@@ -418,22 +407,24 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Select
               label="Departamento"
-              placeholder={loadingDptos ? "Cargando..." : "Seleccione"}
+              placeholder={
+                loadingUbigeo && departamentos.length === 0
+                  ? "Cargando..."
+                  : "Seleccione"
+              }
               radius="xl"
               clearable
               searchable
               searchValue={searchDpto}
               onSearchChange={setSearchDpto}
-              nothingFoundMessage={
-                loadingDptos ? "Cargando..." : "Sin coincidencias"
-              }
+              nothingFoundMessage="Sin coincidencias"
               data={dptosVisibles.map((d) => ({
                 value: String(d.id),
                 label: d.nombre,
               }))}
               value={lugarDpto}
               onChange={handleDptoChange}
-              disabled={loadingDptos && departamentos.length === 0}
+              disabled={loadingUbigeo && departamentos.length === 0}
               classNames={selectClasses}
             />
           </Grid.Col>
@@ -443,25 +434,21 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
               placeholder={
                 !lugarDpto
                   ? "Seleccione un departamento"
-                  : loadingProv
-                    ? "Cargando..."
-                    : "Seleccione"
+                  : "Seleccione"
               }
               radius="xl"
               clearable
               searchable
               searchValue={searchProv}
               onSearchChange={setSearchProv}
-              nothingFoundMessage={
-                loadingProv ? "Cargando..." : "Sin coincidencias"
-              }
+              nothingFoundMessage="Sin coincidencias"
               data={provVisibles.map((p) => ({
                 value: String(p.id),
                 label: p.nombre,
               }))}
               value={lugarProv}
               onChange={handleProvChange}
-              disabled={!lugarDpto || loadingProv}
+              disabled={!lugarDpto}
               classNames={selectClasses}
             />
           </Grid.Col>
@@ -471,25 +458,21 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
               placeholder={
                 !lugarProv
                   ? "Seleccione una provincia"
-                  : loadingDist
-                    ? "Cargando..."
-                    : "Seleccione"
+                  : "Seleccione"
               }
               radius="xl"
               clearable
               searchable
               searchValue={searchDist}
               onSearchChange={setSearchDist}
-              nothingFoundMessage={
-                loadingDist ? "Cargando..." : "Sin coincidencias"
-              }
+              nothingFoundMessage="Sin coincidencias"
               data={distVisibles.map((d) => ({
                 value: String(d.id),
                 label: d.nombre,
               }))}
               value={lugarDist}
               onChange={handleDistChange}
-              disabled={!lugarProv || loadingDist}
+              disabled={!lugarProv}
               classNames={selectClasses}
             />
           </Grid.Col>
@@ -579,100 +562,11 @@ export const RegistroProveedorCarbon = ({ onCancel, onSuccess }: Props) => {
         )}
       </div>
 
-      {/* Tipos de Carbon (opcional) */}
-      <div className="flex flex-col gap-3">
-        <div>
-          <Text size="sm" fw={600} className="text-zinc-300">
-            Tipos de Carbón que ofrece
-          </Text>
-          <Text size="xs" className="text-zinc-500">
-            Selecciona los tipos que este proveedor puede suministrar.
-          </Text>
-        </div>
-
-        <Select
-          label="Agregar tipo de carbón"
-          placeholder={
-            loadingTipos
-              ? "Cargando tipos..."
-              : tiposDisponibles.length === 0
-                ? "Todos los tipos ya estan agregados"
-                : "Selecciona un tipo para agregarlo"
-          }
-          radius="xl"
-          searchable
-          clearable
-          disabled={!loadingTipos && tiposDisponibles.length === 0}
-          data={tiposDisponibles.map((t) => ({
-            value: String(t.id_tipo_carbon),
-            label: t.codigo ? `${t.nombre} (${t.codigo})` : t.nombre,
-          }))}
-          value={tipoPendiente}
-          onChange={handleAgregarTipo}
-          searchValue={searchTipo}
-          onSearchChange={setSearchTipo}
-          nothingFoundMessage="Sin tipos disponibles"
-          classNames={{
-            input:
-              "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
-            label: "text-zinc-300 mb-1 font-medium text-xs",
-          }}
-        />
-
-        {tiposCarbon.length === 0 ? (
-          <div className="text-zinc-500 text-xs italic px-3 py-2 border border-dashed border-zinc-800 rounded-lg">
-            Sin tipos seleccionados.
-          </div>
-        ) : (
-          <Stack gap="xs">
-            {tiposCarbon.map((t) => (
-              <div
-                key={t.id_tipo_carbon}
-                className="flex items-center justify-between gap-3 p-3 bg-linear-to-r from-zinc-900/60 to-zinc-900/30 border border-zinc-800 rounded-xl hover:border-indigo-700/60 transition-colors"
-              >
-                <Group gap="sm" wrap="nowrap">
-                  <Badge
-                    variant="filled"
-                    color="orange"
-                    radius="xl"
-                    size="lg"
-                    className="shrink-0"
-                  >
-                    <IconFlame size={14} stroke={1.8} />
-                  </Badge>
-                  <div className="flex flex-col min-w-0">
-                    <Text size="sm" fw={500} className="text-zinc-100 truncate">
-                      {t.nombre}
-                    </Text>
-                    {t.codigo && (
-                      <Text size="xs" className="text-zinc-500">
-                        Codigo: {t.codigo}
-                      </Text>
-                    )}
-                  </div>
-                </Group>
-                <Button
-                  variant="subtle"
-                  color="red"
-                  size="xs"
-                  radius="xl"
-                  leftSection={<IconX size={14} />}
-                  onClick={() => removeTipoCarbon(t.id_tipo_carbon)}
-                  className="shrink-0"
-                >
-                  Quitar
-                </Button>
-              </div>
-            ))}
-          </Stack>
-        )}
-      </div>
-
       {/* personal (opcional, antes de guardar) */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <Text size="sm" fw={600} className="text-zinc-300">
-            personal
+            Personal/Contactos
           </Text>
           <Button
             leftSection={<IconUser size={14} />}

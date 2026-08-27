@@ -10,7 +10,10 @@ import type {
 import { Premura } from "../../../shared/enums/_generic/premura";
 import type { RES_UnidadMedida } from "../../../service/responses/unidad-medida";
 import { AtencionService } from "../service/atencion.service";
-import type { RES_RequerimientoAlmacen } from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 import { AuxService } from "../../../service/auxiliar.service";
 import type { RES_Producto } from "../../../service/responses/producto";
 import type { RES_ActivoFijoDisponible } from "../../../service/responses/activo-fijo";
@@ -19,18 +22,36 @@ import type { RES_Empleado } from "../../../service/responses/empleado";
 import type { RES_Contratista } from "../../../service/responses/contratista";
 import { getCoincidencias } from "../../../shared/functions/get-coincidencias";
 
+/**
+ * Detalle interno del hook. Para edición, cada item trae `id_detalle`
+ * (id_requerimiento_almacen_detalle) y `bloqueado` (no editable cuando ya
+ * tiene entregas iniciadas).
+ */
+export interface DetalleFormItem extends DTO_CrearRequerimientoDetalle {
+  id_detalle?: number;
+  bloqueado?: boolean;
+}
+
+export type ModoRequerimiento = "crear" | "editar";
+
 interface Props {
+  modo?: ModoRequerimiento;
   onSuccess: (
     item: RES_RequerimientoAlmacen,
     printerTarget: string,
     printerWin: Window | null,
   ) => void;
   idAlmacenFijo?: number;
+  requerimientoInicial?: RES_RequerimientoAlmacen;
+  detallesIniciales?: RES_DetalleRequerimiento[];
 }
 
 export const useRegistroRequerimiento = ({
+  modo = "crear",
   onSuccess,
   idAlmacenFijo,
+  requerimientoInicial,
+  detallesIniciales,
 }: Props) => {
   const { prepare } = usePrint();
   const { notifySuccess, notifyError } = useNotify();
@@ -105,7 +126,60 @@ export const useRegistroRequerimiento = ({
   const [idActivoFijoDestino, setIdActivoFijoDestino] = useState<number>(0);
 
   // Lista de detalles agregados
-  const [detalles, setDetalles] = useState<DTO_CrearRequerimientoDetalle[]>([]);
+  const [detalles, setDetalles] = useState<DetalleFormItem[]>([]);
+
+  /**
+   * Precarga los valores del requerimiento cuando se abre el modal en modo
+   * edicion. Se hace en un useEffect independiente para que dispare tambien
+   * si las props de entrada cambian (re-mount con otro requerimiento).
+   */
+  useEffect(() => {
+    if (modo !== "editar" || !requerimientoInicial) return;
+
+    setIdAlmacenDestino(requerimientoInicial.id_almacen_destino);
+    setIdLabor(requerimientoInicial.id_labor ?? 0);
+    setIdEmpleadoSolicitante(
+      requerimientoInicial.id_contratista_solicitante ??
+        requerimientoInicial.id_empleado_solicitante ??
+        0,
+    );
+    setVerContratistas(
+      Boolean(requerimientoInicial.id_contratista_solicitante),
+    );
+    setPremura((requerimientoInicial.premura as Premura) ?? Premura.Normal);
+    setFechaSolicitud(
+      requerimientoInicial.fecha_solicitud
+        ? dayjs(requerimientoInicial.fecha_solicitud).toDate()
+        : null,
+    );
+    setFechaEntregaRequerida(
+      requerimientoInicial.fecha_entrega_requerida
+        ? dayjs(requerimientoInicial.fecha_entrega_requerida).toDate()
+        : null,
+    );
+    setFechaEntregaManual(true);
+    setObservacion(requerimientoInicial.observacion ?? "");
+
+    if (detallesIniciales && detallesIniciales.length > 0) {
+      setDetalles(
+        detallesIniciales.map<DetalleFormItem>((d) => ({
+          id_producto: d.id_producto,
+          id_unidad_medida: d.id_unidad_medida_req,
+          cantidad_solicitada: Number(d.cantidad_solicitada ?? 0),
+          contenido_por_presentacion: Number(d.contenido_por_presentacion ?? 1),
+          comentario: d.comentario ?? null,
+          para_mantenimiento: Boolean(d.para_mantenimiento),
+          id_activo_fijo_destino: d.id_activo_fijo_destino ?? null,
+          con_magnitud: Number(d.con_magnitud ?? 0) === 1,
+          cantidad_items: d.cantidad_items ?? undefined,
+          valor_magnitud: d.valor_magnitud ?? undefined,
+          valor_magnitud_base: d.valor_magnitud_base ?? undefined,
+          id_detalle: d.id_requerimiento_almacen_detalle,
+          bloqueado: Number(d.cantidad_entregada_base ?? 0) > 0,
+        })),
+      );
+    }
+  }, [modo, requerimientoInicial, detallesIniciales]);
 
   // 1. Cargar Catálogos en paralelo al montar
   useEffect(() => {
@@ -386,7 +460,10 @@ export const useRegistroRequerimiento = ({
     }).map((r) => r.item);
   }, [unidades, unidadBusqueda]);
 
-  // Agregar item a la lista
+  // Agregar item a la lista. Funciona igual tanto en creacion como en
+  // edicion: en edicion el frontend envia los items nuevos al backend
+  // como `detalles_crear`, asi que aqui solo se anexan al state con un
+  // `id_detalle` indefinido (sin PK). El submit los separa.
   const agregarItem = useCallback(() => {
     if (!idProducto || !idUnidadMedida || cantidad <= 0 || contenido <= 0) {
       notifyError("Complete los datos del producto");
@@ -678,6 +755,130 @@ export const useRegistroRequerimiento = ({
       return prod?.es_auditable;
     });
 
+    // ============== MODO EDICIÓN ==============
+    if (modo === "editar") {
+      if (!requerimientoInicial) {
+        setError("No hay requerimiento inicial para editar");
+        setSubmitting(false);
+        return;
+      }
+
+      // Validación: al menos un detalle sin entregar debe quedar en la lista.
+      // Si el usuario eliminó todos los detalles bloqueados pero tambien
+      // todos los no entregados, igualmente puede dejar la lista vacia
+      // (caso valido: se reemplazan items). Pero si la lista quedo vacia y
+      // el requerimiento original tampoco tenia items entregables, eso
+      // no es un error: solo bloqueamos en backend.
+
+      // Construir DTO_EditarRequerimiento.
+      // Los items con `id_detalle` van a `detalles_editar` (siempre que no
+      // esten bloqueados por tener entregas). Los que NO tienen `id_detalle`
+      // son productos NUEVOS que el usuario agrego durante la edicion y van
+      // a `detalles_crear`.
+      const detalles_editar = detalles
+        .filter((d) => !d.bloqueado && Boolean(d.id_detalle))
+        .map((d) => ({
+          id_requerimiento_almacen_detalle: d.id_detalle!,
+          id_unidad_medida: d.id_unidad_medida,
+          cantidad_solicitada: d.cantidad_solicitada,
+          contenido_por_presentacion: d.contenido_por_presentacion,
+          comentario: d.comentario,
+          para_mantenimiento: d.para_mantenimiento,
+          id_activo_fijo_destino:
+            d.id_activo_fijo_destino && d.id_activo_fijo_destino > 0
+              ? d.id_activo_fijo_destino
+              : null,
+          con_magnitud: d.con_magnitud,
+          cantidad_items: d.cantidad_items,
+          valor_magnitud: d.valor_magnitud,
+          valor_magnitud_base: d.valor_magnitud_base,
+        }));
+
+      const detalles_crear = detalles
+        .filter((d) => !d.id_detalle && !d.bloqueado)
+        .map((d) => ({
+          id_producto: d.id_producto,
+          id_unidad_medida: d.id_unidad_medida,
+          cantidad_solicitada: d.cantidad_solicitada,
+          contenido_por_presentacion: d.contenido_por_presentacion,
+          comentario: d.comentario,
+          id_activo_fijo_destino:
+            d.id_activo_fijo_destino && d.id_activo_fijo_destino > 0
+              ? d.id_activo_fijo_destino
+              : null,
+          para_mantenimiento: d.para_mantenimiento,
+          con_magnitud: d.con_magnitud ? 1 : 0,
+          cantidad_items: d.cantidad_items,
+          valor_magnitud: d.valor_magnitud,
+          valor_magnitud_base: d.valor_magnitud_base,
+        }));
+
+      // Para detectar eliminaciones: comparar ids originales vs actuales.
+      const idsOriginales = new Set(
+        (detallesIniciales ?? []).map((d) =>
+          Number(d.id_requerimiento_almacen_detalle),
+        ),
+      );
+      const idsActualesNoBloqueados = new Set(
+        detalles
+          .filter((d) => !d.bloqueado && d.id_detalle)
+          .map((d) => Number(d.id_detalle)),
+      );
+      const detalles_eliminar = Array.from(idsOriginales).filter(
+        (id) => !idsActualesNoBloqueados.has(id),
+      );
+
+      try {
+        const res = await AtencionService.editarRequerimiento(
+          requerimientoInicial.id_requerimiento,
+          {
+            id_empleado_solicitante:
+              !verContratistas && idEmpleadoSolicitante > 0
+                ? idEmpleadoSolicitante
+                : null,
+            id_contratista_solicitante:
+              verContratistas && idEmpleadoSolicitante > 0
+                ? idEmpleadoSolicitante
+                : null,
+            id_labor: idLabor > 0 ? idLabor : null,
+            premura,
+            fecha_solicitud: fechaSolicitud
+              ? dayjs(fechaSolicitud).format("YYYY-MM-DD")
+              : undefined,
+            fecha_entrega_requerida: fechaEntregaRequerida
+              ? dayjs(fechaEntregaRequerida).format("YYYY-MM-DD")
+              : undefined,
+            observacion,
+            es_auditable: esAuditable,
+            evidencias_nuevas:
+              evidencias.length > 0 ? evidencias : undefined,
+            detalles_editar,
+            detalles_crear,
+            detalles_eliminar,
+          },
+        );
+        if (res.success) {
+          notifySuccess("Requerimiento actualizado correctamente");
+          // En edicion no se imprime. Reusamos la firma de onSuccess
+          // pasando strings vacios como printerTarget/printerWin.
+          onSuccess(res.data, "", null);
+        } else {
+          setError(res.message);
+        }
+      } catch (err) {
+        const axiosErr = err as { response?: { data?: { message?: string } } };
+        setError(
+          axiosErr.response?.data?.message ||
+            "Error al actualizar el requerimiento",
+        );
+        console.error(err);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // ============== MODO CREAR ==============
     const dto: DTO_CrearRequerimiento = {
       id_empleado_solicitante:
         !verContratistas && idEmpleadoSolicitante > 0 ? idEmpleadoSolicitante : null,
@@ -737,23 +938,26 @@ export const useRegistroRequerimiento = ({
       setSubmitting(false);
     }
   }, [
-    idEmpleadoSolicitante,
+    modo,
+    requerimientoInicial,
+    detalles,
+    detallesIniciales,
     verContratistas,
+    idEmpleadoSolicitante,
     idLabor,
-    idAlmacenDestino,
     premura,
+    fechaSolicitud,
     fechaEntregaRequerida,
     observacion,
-    detalles,
     evidencias,
     onSuccess,
     notifySuccess,
     prepare,
     productos,
-    fechaSolicitud,
   ]);
 
   return {
+    mode: { modo },
     state: {
       labores,
       productos,

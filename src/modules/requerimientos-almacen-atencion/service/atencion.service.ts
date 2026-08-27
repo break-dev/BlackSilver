@@ -6,6 +6,7 @@ import type {
   DTO_RegistrarEntrega,
   DTO_CrearSolicitudLogistica,
   DTO_CrearRequerimiento,
+  DTO_EditarRequerimiento,
 } from "./atencion.requests";
 import type { RES_Trazabilidad } from "../../../service/responses/_generic/trazabilidad";
 import type {
@@ -227,6 +228,189 @@ export const AtencionService = {
 
     const res = await api.post<IRespuesta<IArchivo[]>>(
       `${path}/evidencias`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return res.data;
+  },
+
+  editarRequerimiento: async (
+    idRequerimiento: number,
+    dto: DTO_EditarRequerimiento,
+  ) => {
+    const formData = new FormData();
+
+    if (dto.id_empleado_solicitante !== undefined) {
+      formData.append(
+        "id_empleado_solicitante",
+        dto.id_empleado_solicitante === null
+          ? ""
+          : String(dto.id_empleado_solicitante),
+      );
+    }
+    if (dto.id_contratista_solicitante !== undefined) {
+      formData.append(
+        "id_contratista_solicitante",
+        dto.id_contratista_solicitante === null
+          ? ""
+          : String(dto.id_contratista_solicitante),
+      );
+    }
+    if (dto.id_labor !== undefined) {
+      formData.append(
+        "id_labor",
+        dto.id_labor === null ? "" : String(dto.id_labor),
+      );
+    }
+    if (dto.premura !== undefined) {
+      formData.append("premura", dto.premura);
+    }
+    if (dto.fecha_entrega_requerida !== undefined) {
+      formData.append("fecha_entrega_requerida", dto.fecha_entrega_requerida);
+    }
+    if (dto.fecha_solicitud !== undefined) {
+      formData.append("fecha_solicitud", dto.fecha_solicitud);
+    }
+    if (dto.observacion !== undefined) {
+      formData.append("observacion", dto.observacion);
+    }
+    if (dto.es_auditable !== undefined) {
+      formData.append("es_auditable", dto.es_auditable ? "1" : "0");
+    }
+
+    (dto.detalles_editar ?? []).forEach((det, index) => {
+      formData.append(
+        `detalles_editar[${index}][id_requerimiento_almacen_detalle]`,
+        String(det.id_requerimiento_almacen_detalle),
+      );
+      if (det.id_unidad_medida !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][id_unidad_medida]`,
+          String(det.id_unidad_medida),
+        );
+      }
+      if (det.cantidad_solicitada !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][cantidad_solicitada]`,
+          String(det.cantidad_solicitada),
+        );
+      }
+      if (det.contenido_por_presentacion !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][contenido_por_presentacion]`,
+          String(det.contenido_por_presentacion),
+        );
+      }
+      if (det.comentario !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][comentario]`,
+          det.comentario ?? "",
+        );
+      }
+      if (det.para_mantenimiento !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][para_mantenimiento]`,
+          det.para_mantenimiento ? "1" : "0",
+        );
+      }
+      if (det.id_activo_fijo_destino !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][id_activo_fijo_destino]`,
+          det.id_activo_fijo_destino === null
+            ? ""
+            : String(det.id_activo_fijo_destino),
+        );
+      }
+      if (det.con_magnitud !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][con_magnitud]`,
+          String(det.con_magnitud ? 1 : 0),
+        );
+      }
+      if (det.cantidad_items !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][cantidad_items]`,
+          String(det.cantidad_items),
+        );
+      }
+      if (det.valor_magnitud !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][valor_magnitud]`,
+          String(det.valor_magnitud),
+        );
+      }
+      if (det.valor_magnitud_base !== undefined) {
+        formData.append(
+          `detalles_editar[${index}][valor_magnitud_base]`,
+          String(det.valor_magnitud_base),
+        );
+      }
+    });
+
+    (dto.detalles_eliminar ?? []).forEach((idDetalle) => {
+      formData.append(`detalles_eliminar[]`, String(idDetalle));
+    });
+
+    (dto.detalles_crear ?? []).forEach((det, index) => {
+      formData.append(
+        `detalles_crear[${index}][id_producto]`,
+        String(det.id_producto),
+      );
+      formData.append(
+        `detalles_crear[${index}][id_unidad_medida]`,
+        String(det.id_unidad_medida),
+      );
+      formData.append(
+        `detalles_crear[${index}][cantidad_solicitada]`,
+        String(det.cantidad_solicitada),
+      );
+      formData.append(
+        `detalles_crear[${index}][contenido_por_presentacion]`,
+        String(det.contenido_por_presentacion),
+      );
+      if (det.comentario) {
+        formData.append(`detalles_crear[${index}][comentario]`, det.comentario);
+      }
+      if (det.id_activo_fijo_destino) {
+        formData.append(
+          `detalles_crear[${index}][id_activo_fijo_destino]`,
+          String(det.id_activo_fijo_destino),
+        );
+      }
+      if (det.con_magnitud !== undefined) {
+        formData.append(
+          `detalles_crear[${index}][con_magnitud]`,
+          String(det.con_magnitud ? 1 : 0),
+        );
+      }
+      if (det.cantidad_items !== undefined) {
+        formData.append(
+          `detalles_crear[${index}][cantidad_items]`,
+          String(det.cantidad_items),
+        );
+      }
+      if (det.valor_magnitud !== undefined) {
+        formData.append(
+          `detalles_crear[${index}][valor_magnitud]`,
+          String(det.valor_magnitud),
+        );
+      }
+      if (det.valor_magnitud_base !== undefined) {
+        formData.append(
+          `detalles_crear[${index}][valor_magnitud_base]`,
+          String(det.valor_magnitud_base),
+        );
+      }
+    });
+
+    (dto.evidencias_nuevas ?? []).forEach((file) =>
+      formData.append("evidencias_nuevas[]", file),
+    );
+
+    const res = await api.put<IRespuesta<RES_RequerimientoAlmacen>>(
+      `${path}/${idRequerimiento}`,
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },

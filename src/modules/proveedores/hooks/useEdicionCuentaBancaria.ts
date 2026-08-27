@@ -10,18 +10,24 @@ import { AuxService } from "../../../service/auxiliar.service";
 interface UseEdicionCuentaBancariaProps {
   onSuccess?: (cuentaActualizada: CuentaBancariaResponse) => void;
   onClose: () => void;
+  /**
+   * Si esta definido, la moneda del formulario se bloquea y se fuerza
+   * al valor dado al guardar. Usado para proveedores de carbon.
+   */
+  monedaFija?: Moneda;
 }
 
 export const useEdicionCuentaBancaria = ({
   onSuccess,
   onClose,
+  monedaFija,
 }: UseEdicionCuentaBancariaProps) => {
   const { notifySuccess, notifyError } = useNotify();
 
   const [idCuentaBancaria, setIdCuentaBancaria] = useState<number | null>(null);
   const [bancos, setBancos] = useState<RES_Banco[]>([]);
   const [idBanco, setIdBanco] = useState<string | null>(null);
-  const [moneda, setMoneda] = useState<Moneda>(Moneda.Soles);
+  const [moneda, setMoneda] = useState<Moneda>(monedaFija ?? Moneda.Soles);
   const [numeroCuenta, setNumeroCuenta] = useState("");
   const [cci, setCci] = useState("");
   const [esParaDetraccion, setEsParaDetraccion] = useState(false);
@@ -78,6 +84,8 @@ export const useEdicionCuentaBancaria = ({
 
   const handleMonedaChange = (val: Moneda | null) => {
     if (!val) return;
+    // Si la moneda esta forzada, ignoramos cambios.
+    if (monedaFija) return;
     setMoneda(val);
     if (error) setError(null);
     if (esParaDetraccion && val !== Moneda.Soles) {
@@ -108,7 +116,8 @@ export const useEdicionCuentaBancaria = ({
 
     const payload = {
       id_banco: idBanco ? Number(idBanco) : 0,
-      moneda,
+      // Defensa final: forzar moneda si aplica.
+      moneda: monedaFija ?? moneda,
       numero_cuenta: numeroCuenta.trim(),
       cci: cci.trim() || null,
       es_para_detraccion: esParaDetraccion,
@@ -147,6 +156,7 @@ export const useEdicionCuentaBancaria = ({
     setIdBanco: handleBancoChange,
     moneda,
     setMoneda: handleMonedaChange,
+    monedaFija,
     numeroCuenta,
     setNumeroCuenta: handleNumeroCuentaChange,
     cci,
