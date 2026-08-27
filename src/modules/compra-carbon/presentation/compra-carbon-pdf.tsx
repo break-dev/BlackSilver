@@ -9,8 +9,8 @@ import {
 import dayjs from "dayjs";
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import type {
-  CompraCarbonDetalle,
-  DetalleCompraCarbon,
+  CompraCarbonCabeceraDetalle,
+  CompraCarbonDetalleItem,
 } from "../service/compra-carbon.responses";
 import type { RES_Empresa } from "../../../service/responses/empresa";
 import type { ProveedorResponse } from "../../proveedores/service/proveedores.responses";
@@ -22,8 +22,8 @@ import {
 
 interface CompraCarbonPDFProps {
   compra: {
-    cabecera: CompraCarbonDetalle["cabecera"];
-    detalles: DetalleCompraCarbon[];
+    cabecera: CompraCarbonCabeceraDetalle;
+    detalles: CompraCarbonDetalleItem[];
   };
   empresa: RES_Empresa;
   proveedor?: ProveedorResponse | null;
@@ -101,10 +101,13 @@ export const CompraCarbonPDF = ({
   colorPredominante,
 }: CompraCarbonPDFProps) => {
   const { cabecera, detalles } = compra;
-  const subtotalBase = detalles.reduce((acc, d) => acc + Number(d.subtotal), 0);
+  const totalAntesDescuento = Number(cabecera.total_antes_descuento);
+  const descuentoFleteTotal = Number(cabecera.descuento_flete);
+  const totalConDescuento = Number(cabecera.total_con_descuento);
+  const aplicaIgv = Boolean(cabecera.aplica_igv);
   const igvPct = Number(cabecera.porcentaje_igv);
-  const igvMonto = subtotalBase * (igvPct / 100);
-  const total = Number(cabecera.total);
+  const igvMonto = Number(cabecera.monto_igv);
+  const totalEgreso = totalConDescuento + descuentoFleteTotal + igvMonto;
 
   // Datos del proveedor: priorizamos el record completo (incluye
   // direccion + ubigeo), fallback a lo que ya viaja en cabecera.
@@ -344,58 +347,118 @@ export const CompraCarbonPDF = ({
             <Text style={styles.col0}>#</Text>
             <Text style={styles.colCant}>Cantidad</Text>
             <Text style={styles.colUm}>UM</Text>
-            <Text style={styles.colTipo}>Tipo de Carbon</Text>
-            <Text style={styles.colDesc}>Descripcion</Text>
+            <Text style={styles.colTipo}>Tipo de Carbon / Placa / Ticket</Text>
+            <Text style={styles.colDesc}>Origen / Transportista</Text>
             <Text style={styles.colPrecio}>Precio Unit.</Text>
             <Text style={styles.colImporte}>Importe</Text>
           </View>
-          {detalles.map((d, i) => (
-            <View key={d.id_detalle_compra_carbon} style={styles.tableRow}>
-              <Text style={styles.col0}>{i + 1}</Text>
-              <Text style={styles.colCant}>
-                {formatNumber(Number(d.cantidad))}
-              </Text>
-              <Text style={styles.colUm}>TON</Text>
-              <View style={styles.colTipo}>
-                <Text style={{ fontWeight: 700, fontSize: 8 }}>
-                  {d.tipo_carbon_nombre}
+          {detalles.map((d, i) => {
+            const origen =
+              [d.lugar_departamento, d.lugar_provincia, d.lugar_distrito]
+                .filter(Boolean)
+                .join(" / ") +
+              (d.lugar_direccion ? ` · ${d.lugar_direccion}` : "");
+            return (
+              <View key={d.id_detalle_compra_carbon} style={styles.tableRow}>
+                <Text style={styles.col0}>{i + 1}</Text>
+                <Text style={styles.colCant}>
+                  {formatNumber(Number(d.cantidad))}
                 </Text>
-                {d.tipo_carbon_codigo && (
-                  <Text style={{ fontSize: 7, color: accentDark }}>
-                    Codigo: {d.tipo_carbon_codigo}
+                <Text style={styles.colUm}>TON</Text>
+                <View style={styles.colTipo}>
+                  <Text style={{ fontWeight: 700, fontSize: 8 }}>
+                    {d.tipo_carbon_nombre}
+                    {d.tipo_carbon_codigo ? ` (${d.tipo_carbon_codigo})` : ""}
                   </Text>
-                )}
+                  {d.placa && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      Placa: {d.placa}
+                    </Text>
+                  )}
+                  {d.codigo_ticket_balanza && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      Ticket: {d.codigo_ticket_balanza}
+                    </Text>
+                  )}
+                  {d.guia_remitente && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      GR: {d.guia_remitente}
+                      {d.guia_transportista ? ` · GT: ${d.guia_transportista}` : ""}
+                    </Text>
+                  )}
+                  {(Number(d.porcentaje_ceniza) > 0 ||
+                    Number(d.porcentaje_humedad) > 0) && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      Ceniza: {formatNumber(Number(d.porcentaje_ceniza))}% ·
+                      Humedad: {formatNumber(Number(d.porcentaje_humedad))}%
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.colDesc}>
+                  {origen ? (
+                    <Text style={{ fontSize: 7 }}>{origen}</Text>
+                  ) : (
+                    <Text style={{ fontSize: 7 }}> </Text>
+                  )}
+                  {d.transportista_razon_social && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      Transp: {d.transportista_razon_social}
+                    </Text>
+                  )}
+                  {Number(d.descuento_flete) > 0 && (
+                    <Text style={{ fontSize: 7, color: accentDark }}>
+                      Flete: -{formatPEN(Number(d.descuento_flete))}
+                    </Text>
+                  )}
+                </View>
+                <Text style={styles.colPrecio}>
+                  {formatPEN(Number(d.precio_unitario))}
+                </Text>
+                <Text style={styles.colImporte}>
+                  {formatPEN(Number(d.subtotal_con_descuento))}
+                </Text>
               </View>
-              {/* Slot Descripcion: vacio a proposito hasta que el dato se defina. */}
-              <Text style={styles.colDesc}> </Text>
-              <Text style={styles.colPrecio}>
-                {formatPEN(Number(d.precio_unitario))}
-              </Text>
-              <Text style={styles.colImporte}>
-                {formatPEN(Number(d.subtotal))}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Totales */}
         <View style={styles.totalsContainer}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Inafecta</Text>
-            {/* Valor vacio a proposito (slot reservado para uso futuro). */}
-            <Text style={styles.totalValue}> </Text>
+            <Text style={styles.totalLabel}>Total antes descuento</Text>
+            <Text style={styles.totalValue}>
+              {formatPEN(totalAntesDescuento)}
+            </Text>
           </View>
+          {descuentoFleteTotal > 0 && (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>(-) Descuento flete</Text>
+              <Text style={styles.totalValue}>
+                - {formatPEN(descuentoFleteTotal)}
+              </Text>
+            </View>
+          )}
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Gravada</Text>
-            <Text style={styles.totalValue}>{formatPEN(subtotalBase)}</Text>
+            <Text style={styles.totalLabel}>Pago al proveedor</Text>
+            <Text style={styles.totalValue}>
+              {formatPEN(totalConDescuento)}
+            </Text>
           </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>IGV {igvPct.toFixed(2)}%</Text>
-            <Text style={styles.totalValue}>{formatPEN(igvMonto)}</Text>
-          </View>
+          {aplicaIgv && (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>IGV {igvPct.toFixed(2)}%</Text>
+              <Text style={styles.totalValue}>{formatPEN(igvMonto)}</Text>
+            </View>
+          )}
+          {!aplicaIgv && (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>IGV</Text>
+              <Text style={styles.totalValue}>No aplica (pago neto)</Text>
+            </View>
+          )}
           <View style={[styles.totalRow, styles.grandTotal]}>
-            <Text style={styles.totalLabel}>TOTAL</Text>
-            <Text style={styles.totalValue}>{formatPEN(total)}</Text>
+            <Text style={styles.totalLabel}>TOTAL EGRESO</Text>
+            <Text style={styles.totalValue}>{formatPEN(totalEgreso)}</Text>
           </View>
         </View>
 

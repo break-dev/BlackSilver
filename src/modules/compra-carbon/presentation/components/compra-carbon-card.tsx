@@ -33,7 +33,7 @@ import { useAnularCompraCarbon } from "../../hooks/useAnularCompraCarbon";
 import { ArchivoCard } from "../../../../presentation/utils/archivo/archivo-card";
 import { EvidenciasCompraModal } from "../evidencias-compra-modal";
 import type {
-  CompraCarbonDetalle,
+  CompraCarbonDetalleResponse,
   CompraCarbonResumen,
 } from "../../service/compra-carbon.responses";
 import { formatNumber } from "../../../../shared/functions/formatNumber";
@@ -94,7 +94,7 @@ export const CompraCarbonCard = ({
   const { print, prepare } = usePrint();
   const { aprobar, loading: loadingAprobar } = useAprobarCompraCarbon();
   const { anular, loading: loadingAnular } = useAnularCompraCarbon();
-  const [detalle, setDetalle] = useState<CompraCarbonDetalle | null>(null);
+  const [detalle, setDetalle] = useState<CompraCarbonDetalleResponse | null>(null);
   const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [printing] = useState(false);
   const [openAprobarModal, setOpenAprobarModal] = useState(false);
@@ -205,10 +205,22 @@ export const CompraCarbonCard = ({
   }, [isExpanded, detalle, compra.id_compra_carbon, notifyError]);
 
   const subtotalBase = detalle
-    ? detalle.detalles.reduce((acc, d) => acc + Number(d.subtotal), 0)
+    ? detalle.detalles.reduce(
+        (acc, d) => acc + Number(d.subtotal_antes_descuento),
+        0,
+      )
+    : null;
+  const descuentoFleteTotal = detalle
+    ? detalle.detalles.reduce(
+        (acc, d) => acc + Number(d.descuento_flete),
+        0,
+      )
     : null;
   const igvPct = detalle ? Number(detalle.cabecera.porcentaje_igv) : 0;
-  const igvMonto = subtotalBase !== null ? subtotalBase * (igvPct / 100) : null;
+  const igvMonto = detalle ? Number(detalle.cabecera.monto_igv) : null;
+  const aplicaIgv = detalle ? Boolean(detalle.cabecera.aplica_igv) : false;
+  const totalConDesc =
+    detalle ? Number(detalle.cabecera.total_con_descuento) : null;
 
   return (
     <Paper
@@ -301,10 +313,10 @@ export const CompraCarbonCard = ({
                   fw={700}
                   className="uppercase tracking-wider"
                 >
-                  Total
+                  A pagar proveedor
                 </Text>
                 <Text size="sm" fw={900} className="text-emerald-400 font-mono">
-                  {formatPEN(Number(compra.total))}
+                  {formatPEN(Number(compra.total_con_descuento))}
                 </Text>
               </Stack>
 
@@ -412,28 +424,47 @@ export const CompraCarbonCard = ({
               <div className="flex flex-wrap gap-x-6 gap-y-2 mb-3 px-1">
                 <Group gap="xs">
                   <Text size="xs" c="dimmed">
-                    Subtotal (sin IGV):{" "}
+                    Total antes descuento:{" "}
                     <span className="text-zinc-300 font-bold">
                       {formatPEN(subtotalBase ?? 0)}
                     </span>
                   </Text>
                 </Group>
+                {(descuentoFleteTotal ?? 0) > 0 && (
+                  <Group gap="xs">
+                    <Text size="xs" c="dimmed">
+                      (-) Descuento flete:{" "}
+                      <span className="text-yellow-400 font-bold">
+                        {formatPEN(descuentoFleteTotal ?? 0)}
+                      </span>
+                    </Text>
+                  </Group>
+                )}
                 <Group gap="xs">
                   <Text size="xs" c="dimmed">
-                    IGV ({igvPct.toFixed(2)}%):{" "}
-                    <span className="text-zinc-300 font-bold">
-                      {formatPEN(igvMonto ?? 0)}
-                    </span>
-                  </Text>
-                </Group>
-                <Group gap="xs">
-                  <Text size="xs" c="dimmed">
-                    Total (con IGV):{" "}
+                    A pagar proveedor:{" "}
                     <span className="text-emerald-400 font-bold">
-                      {formatPEN(Number(detalle.cabecera.total))}
+                      {formatPEN(totalConDesc ?? 0)}
                     </span>
                   </Text>
                 </Group>
+                {aplicaIgv && (
+                  <Group gap="xs">
+                    <Text size="xs" c="dimmed">
+                      IGV ({igvPct.toFixed(2)}%):{" "}
+                      <span className="text-zinc-300 font-bold">
+                        {formatPEN(igvMonto ?? 0)}
+                      </span>
+                    </Text>
+                  </Group>
+                )}
+                {!aplicaIgv && (
+                  <Group gap="xs">
+                    <Badge color="gray" variant="light" size="xs" radius="sm">
+                      Pago neto (sin IGV)
+                    </Badge>
+                  </Group>
+                )}
               </div>
 
               {/* Items */}
@@ -450,55 +481,137 @@ export const CompraCarbonCard = ({
               </Group>
 
               <div className="grid grid-cols-1 gap-2">
-                {detalle.detalles.map((d) => (
-                  <div
-                    key={d.id_detalle_compra_carbon}
-                    className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-4 py-3 hover:border-indigo-500/20 transition-colors"
-                  >
-                    <div className="flex justify-between items-start gap-4">
-                      <Stack gap={3} className="flex-1">
-                        <Group gap="xs" align="center">
-                          <Text size="sm" fw={800} className="text-zinc-100">
-                            {d.tipo_carbon_nombre}
-                          </Text>
-                          {d.tipo_carbon_codigo && (
-                            <Badge
-                              size="md"
-                              color="cyan"
-                              variant="filled"
-                              radius="md"
-                              className="font-mono font-bold text-xs px-2"
-                            >
-                              {d.tipo_carbon_codigo}
+                {detalle.detalles.map((d) => {
+                  const lugarLabel =
+                    [d.lugar_departamento, d.lugar_provincia, d.lugar_distrito]
+                      .filter(Boolean)
+                      .join(" / ") +
+                    (d.lugar_direccion ? ` · ${d.lugar_direccion}` : "");
+                  return (
+                    <div
+                      key={d.id_detalle_compra_carbon}
+                      className="bg-zinc-900/70 rounded-xl border border-zinc-800/40 px-4 py-3 hover:border-indigo-500/20 transition-colors"
+                    >
+                      <div className="flex justify-between items-start gap-4">
+                        <Stack gap={4} className="flex-1 min-w-0">
+                          <Group gap="xs" align="center" wrap="wrap">
+                            <Text size="sm" fw={800} className="text-zinc-100">
+                              {d.tipo_carbon_nombre}
+                            </Text>
+                            {d.tipo_carbon_codigo && (
+                              <Badge
+                                size="md"
+                                color="cyan"
+                                variant="filled"
+                                radius="md"
+                                className="font-mono font-bold text-xs px-2"
+                              >
+                                {d.tipo_carbon_codigo}
+                              </Badge>
+                            )}
+                          </Group>
+                          <Group gap="md" wrap="wrap">
+                            <Text size="11px" fw={700} className="text-white">
+                              {formatNumber(Number(d.cantidad))} TON
+                            </Text>
+                            {d.placa && (
+                              <Text size="11px" c="dimmed">
+                                Placa:{" "}
+                                <span className="text-zinc-200 font-mono">
+                                  {d.placa}
+                                </span>
+                              </Text>
+                            )}
+                            {d.codigo_ticket_balanza && (
+                              <Text size="11px" c="dimmed">
+                                Ticket:{" "}
+                                <span className="text-zinc-200 font-mono">
+                                  {d.codigo_ticket_balanza}
+                                </span>
+                              </Text>
+                            )}
+                          </Group>
+                          {(lugarLabel ||
+                            d.transportista_razon_social ||
+                            d.guia_remitente) && (
+                            <Group gap="md" wrap="wrap" mt={2}>
+                              {lugarLabel && (
+                                <Text size="10px" c="dimmed" className="truncate">
+                                  <span className="text-zinc-500">Origen:</span>{" "}
+                                  <span className="text-zinc-300">{lugarLabel}</span>
+                                </Text>
+                              )}
+                              {d.transportista_razon_social && (
+                                <Text size="10px" c="dimmed" className="truncate">
+                                  <span className="text-zinc-500">Transportista:</span>{" "}
+                                  <span className="text-zinc-300">
+                                    {d.transportista_razon_social}
+                                  </span>
+                                </Text>
+                              )}
+                              {d.guia_remitente && (
+                                <Text size="10px" c="dimmed">
+                                  <span className="text-zinc-500">GR:</span>{" "}
+                                  <span className="text-zinc-300 font-mono">
+                                    {d.guia_remitente}
+                                  </span>
+                                </Text>
+                              )}
+                              {d.guia_transportista && (
+                                <Text size="10px" c="dimmed">
+                                  <span className="text-zinc-500">GT:</span>{" "}
+                                  <span className="text-zinc-300 font-mono">
+                                    {d.guia_transportista}
+                                  </span>
+                                </Text>
+                              )}
+                            </Group>
+                          )}
+                        </Stack>
+
+                        <Group gap="xs" wrap="nowrap" className="shrink-0">
+                          <Badge
+                            variant="light"
+                            color="pink"
+                            size="sm"
+                            radius="md"
+                          >
+                            S/. {formatNumber(Number(d.precio_unitario))} / TON
+                          </Badge>
+                          <Badge
+                            variant="filled"
+                            color="pink"
+                            size="sm"
+                            radius="md"
+                          >
+                            Sub: S/. {formatNumber(Number(d.subtotal_con_descuento))}
+                          </Badge>
+                        </Group>
+                      </div>
+                      {(Number(d.descuento_flete) > 0 ||
+                        Number(d.porcentaje_ceniza) > 0 ||
+                        Number(d.porcentaje_humedad) > 0) && (
+                        <Group gap="md" mt="xs" wrap="wrap">
+                          {Number(d.descuento_flete) > 0 && (
+                            <Badge variant="light" color="yellow" size="xs" radius="md">
+                              Flete: -{formatPEN(Number(d.descuento_flete))}
+                            </Badge>
+                          )}
+                          {Number(d.porcentaje_ceniza) > 0 && (
+                            <Badge variant="light" color="grape" size="xs" radius="md">
+                              Ceniza: {formatNumber(Number(d.porcentaje_ceniza))}%
+                            </Badge>
+                          )}
+                          {Number(d.porcentaje_humedad) > 0 && (
+                            <Badge variant="light" color="blue" size="xs" radius="md">
+                              Humedad: {formatNumber(Number(d.porcentaje_humedad))}%
                             </Badge>
                           )}
                         </Group>
-                        <Text size="11px" fw={700} className="text-white">
-                          {formatNumber(Number(d.cantidad))} TONELADAS
-                        </Text>
-                      </Stack>
-
-                      <Group gap="xs" wrap="nowrap" className="shrink-0">
-                        <Badge
-                          variant="light"
-                          color="pink"
-                          size="sm"
-                          radius="md"
-                        >
-                          S/. {formatNumber(Number(d.precio_unitario))} / TON
-                        </Badge>
-                        <Badge
-                          variant="filled"
-                          color="pink"
-                          size="sm"
-                          radius="md"
-                        >
-                          Sub: S/. {formatNumber(Number(d.subtotal))}
-                        </Badge>
-                      </Group>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CompraCarbonService } from "../service/compra-carbon.service";
 import { useNotify } from "../../../hooks/useNotify";
-import type { CompraCarbonDetalle } from "../service/compra-carbon.responses";
+import type { CompraCarbonDetalleResponse } from "../service/compra-carbon.responses";
 
 /**
  * Maneja la anulacion de una compra de carbon.
@@ -12,7 +12,7 @@ export const useAnularCompraCarbon = () => {
 
   const anular = async (
     idCompraCarbon: number,
-  ): Promise<CompraCarbonDetalle | null> => {
+  ): Promise<CompraCarbonDetalleResponse | null> => {
     setLoading(true);
     try {
       const resp = await CompraCarbonService.anular(idCompraCarbon);

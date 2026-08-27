@@ -3,7 +3,7 @@ import { api } from "../../../service/_api";
 import { useNotify } from "../../../hooks/useNotify";
 import { CompraCarbonService } from "../service/compra-carbon.service";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
-import type { CompraCarbonDetalle } from "../service/compra-carbon.responses";
+import type { CompraCarbonDetalleResponse } from "../service/compra-carbon.responses";
 
 interface IArchivoServer {
   url: string;
@@ -47,9 +47,9 @@ export const useEvidenciasCompraCarbon = (idCompraCarbon: number) => {
     return subidos;
   };
 
-  const guardarEvidencias = async (
+  const   guardarEvidencias = async (
     archivos: IArchivo[],
-  ): Promise<CompraCarbonDetalle | null> => {
+  ): Promise<CompraCarbonDetalleResponse | null> => {
     setLoading(true);
     try {
       const resp = await CompraCarbonService.setEvidenciasAprobacion(
@@ -71,10 +71,10 @@ export const useEvidenciasCompraCarbon = (idCompraCarbon: number) => {
     }
   };
 
-  const subirYGuardar = async (
+  const   subirYGuardar = async (
     existentes: IArchivo[],
     nuevosArchivos: File[],
-  ): Promise<CompraCarbonDetalle | null> => {
+  ): Promise<CompraCarbonDetalleResponse | null> => {
     if (nuevosArchivos.length === 0) {
       notifyError("No hay archivos nuevos para subir");
       return null;

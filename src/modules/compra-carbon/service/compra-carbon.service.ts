@@ -3,7 +3,7 @@ import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type { IArchivo } from "../../../shared/interfaces/archivo";
 import type { CrearCompraCarbonRequest } from "./compra-carbon.requests";
 import type {
-  CompraCarbonDetalle,
+  CompraCarbonDetalleResponse,
   CompraCarbonResumen,
 } from "./compra-carbon.responses";
 
@@ -26,8 +26,8 @@ export const CompraCarbonService = {
 
   getCompraConDetalles: async (
     idCompraCarbon: number,
-  ): Promise<IRespuesta<CompraCarbonDetalle>> => {
-    const { data } = await api.get<IRespuesta<CompraCarbonDetalle>>(
+  ): Promise<IRespuesta<CompraCarbonDetalleResponse>> => {
+    const { data } = await api.get<IRespuesta<CompraCarbonDetalleResponse>>(
       `${path}/${idCompraCarbon}`,
     );
     return data;
@@ -35,8 +35,8 @@ export const CompraCarbonService = {
 
   crearCompra: async (
     payload: CrearCompraCarbonRequest,
-  ): Promise<IRespuesta<CompraCarbonDetalle>> => {
-    const { data } = await api.post<IRespuesta<CompraCarbonDetalle>>(
+  ): Promise<IRespuesta<CompraCarbonDetalleResponse>> => {
+    const { data } = await api.post<IRespuesta<CompraCarbonDetalleResponse>>(
       path,
       payload,
     );
@@ -49,21 +49,21 @@ export const CompraCarbonService = {
    */
   aprobar: async (
     idCompraCarbon: number,
-  ): Promise<IRespuesta<CompraCarbonDetalle>> => {
-    const { data } = await api.post<IRespuesta<CompraCarbonDetalle>>(
+  ): Promise<IRespuesta<CompraCarbonDetalleResponse>> => {
+    const { data } = await api.post<IRespuesta<CompraCarbonDetalleResponse>>(
       `${path}/${idCompraCarbon}/aprobar`,
     );
     return data;
   },
 
   /**
-   * Reemplaza las evidencias de aprobacion (JSON en backend).
+   * Reemplaza las evidencias de la compra (JSON en backend).
    */
   setEvidenciasAprobacion: async (
     idCompraCarbon: number,
     evidencias: IArchivo[],
-  ): Promise<IRespuesta<CompraCarbonDetalle>> => {
-    const { data } = await api.post<IRespuesta<CompraCarbonDetalle>>(
+  ): Promise<IRespuesta<CompraCarbonDetalleResponse>> => {
+    const { data } = await api.post<IRespuesta<CompraCarbonDetalleResponse>>(
       `${path}/${idCompraCarbon}/evidencias`,
       { evidencias },
     );
@@ -75,8 +75,8 @@ export const CompraCarbonService = {
    */
   anular: async (
     idCompraCarbon: number,
-  ): Promise<IRespuesta<CompraCarbonDetalle>> => {
-    const { data } = await api.post<IRespuesta<CompraCarbonDetalle>>(
+  ): Promise<IRespuesta<CompraCarbonDetalleResponse>> => {
+    const { data } = await api.post<IRespuesta<CompraCarbonDetalleResponse>>(
       `${path}/${idCompraCarbon}/anular`,
     );
     return data;
