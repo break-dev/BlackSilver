@@ -40,8 +40,10 @@ export const RegistroLote = ({
   initialAlmacenId,
   almacenes,
 }: RegistroLoteProps) => {
-  const [openedAddProducto, { open: openAddProducto, close: closeAddProducto }] =
-    useDisclosure(false);
+  const [
+    openedAddProducto,
+    { open: openAddProducto, close: closeAddProducto },
+  ] = useDisclosure(false);
 
   const {
     idAlmacen,
@@ -150,8 +152,6 @@ export const RegistroLote = ({
           </div>
         </div>
 
-        <Divider className="md:col-span-2 border-zinc-800/40 my-2" />
-
         <Select
           label="Unidad de Medida"
           placeholder="Ej: Caja, Bolsa, Saco..."
@@ -190,16 +190,24 @@ export const RegistroLote = ({
 
         <NumberInput
           label={`Contenido`}
-          placeholder="1.0"
+          placeholder={
+            derived.sonUnidadesIdenticas
+              ? "1"
+              : derived.conversionAutomatica !== null
+                ? "Auto-completado"
+                : "Ingrese el factor"
+          }
           description={
             derived.sonUnidadesIdenticas
               ? "Misma unidad que la base"
-              : `${enPlural(derived.unidadBase?.nombre) || "unidades"} x ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
+              : derived.conversionAutomatica !== null
+                ? `Conversión registrada: ${enPlural(derived.unidadBase?.nombre) || "unidades"} x ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
+                : `${enPlural(derived.unidadBase?.nombre) || "unidades"} x ${derived.unidadSeleccionada?.nombre || "unidad de lote"}`
           }
           min={0.1}
           fixedDecimalScale
           withAsterisk
-          disabled={derived.sonUnidadesIdenticas}
+          disabled={derived.contenidoBloqueado}
           value={contenidoPorPresentacion}
           onChange={(val) => setContenidoPorPresentacion(Number(val))}
           classNames={inputClasses}
