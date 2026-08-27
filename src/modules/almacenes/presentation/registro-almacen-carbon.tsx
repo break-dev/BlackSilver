@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -12,12 +12,7 @@ import {
 import { IconAlertCircle, IconDeviceFloppy } from "@tabler/icons-react";
 
 import { getCoincidencias } from "../../../shared/functions/get-coincidencias";
-import { AuxService } from "../../../service/auxiliar.service";
-import type {
-  RES_Departamento,
-  RES_Distrito,
-  RES_Provincia,
-} from "../../../service/responses/ubicacion";
+import { useUbicacionCompleta } from "../../../hooks/useUbicacionCompleta";
 
 interface RegistroAlmacenCarbonProps {
   nombre: string;
@@ -45,6 +40,10 @@ interface RegistroAlmacenCarbonProps {
  * Para carbon NO hay switch de "es principal" ni modales de responsables /
  * almacenes vecinos / minas a abastecer. Solo se piden los datos basicos
  * y, opcionalmente, su ubicacion geografica.
+ *
+ * La geografia (departamento / provincia / distrito) se carga completa al
+ * montar y se filtra localmente; el backend no se vuelve a consultar al
+ * cambiar las selecciones del cascada.
  */
 export const RegistroAlmacenCarbon = ({
   nombre,
@@ -64,74 +63,18 @@ export const RegistroAlmacenCarbon = ({
   onSubmit,
   onCancel,
 }: RegistroAlmacenCarbonProps) => {
-  const [departamentos, setDepartamentos] = useState<RES_Departamento[]>([]);
-  const [provincias, setProvincias] = useState<RES_Provincia[]>([]);
-  const [distritos, setDistritos] = useState<RES_Distrito[]>([]);
-  const [loadingDptos, setLoadingDptos] = useState(false);
-  const [loadingProv, setLoadingProv] = useState(false);
-  const [loadingDist, setLoadingDist] = useState(false);
+  const {
+    loading: loadingGeo,
+    departamentos,
+    provincias,
+    distritos,
+  } = useUbicacionCompleta();
 
   const [searchDpto, setSearchDpto] = useState("");
   const [searchProv, setSearchProv] = useState("");
   const [searchDist, setSearchDist] = useState("");
 
-  // Departamentos: carga unica al montar.
-  useEffect(() => {
-    let cancel = false;
-    (async () => {
-      setLoadingDptos(true);
-      const res = await AuxService.get_departamentos();
-      if (cancel) return;
-      if (res.success) {
-        setDepartamentos((res.data ?? []) as RES_Departamento[]);
-      }
-      setLoadingDptos(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, []);
-
-  // Provincias: cargar SOLO si hay departamento.
-  useEffect(() => {
-    if (!id_departamento) return;
-    let cancel = false;
-    (async () => {
-      setLoadingProv(true);
-      const res = await AuxService.get_provincias({
-        id_departamento: id_departamento ?? undefined,
-      });
-      if (cancel) return;
-      if (res.success) {
-        setProvincias((res.data ?? []) as RES_Provincia[]);
-      }
-      setLoadingProv(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [id_departamento]);
-
-  // Distritos: cargar SOLO si hay provincia.
-  useEffect(() => {
-    if (!id_provincia) return;
-    let cancel = false;
-    (async () => {
-      setLoadingDist(true);
-      const res = await AuxService.get_distritos({
-        id_provincia: id_provincia ?? undefined,
-      });
-      if (cancel) return;
-      if (res.success) {
-        setDistritos((res.data ?? []) as RES_Distrito[]);
-      }
-      setLoadingDist(false);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [id_provincia]);
-
+  // Filtrado local: la lista ya esta completa, no se vuelve a pedir al backend.
   const dptosVisibles = useMemo(() => {
     const q = searchDpto.trim();
     if (!q) return departamentos;
@@ -140,21 +83,37 @@ export const RegistroAlmacenCarbon = ({
     );
   }, [departamentos, searchDpto]);
 
+  const provinciasDelDpto = useMemo(
+    () =>
+      id_departamento
+        ? provincias.filter((p) => p.id_departamento === id_departamento)
+        : provincias,
+    [provincias, id_departamento],
+  );
+
   const provVisibles = useMemo(() => {
     const q = searchProv.trim();
-    if (!q) return provincias;
-    return getCoincidencias(provincias, q, { keys: ["nombre"] }).map(
+    if (!q) return provinciasDelDpto;
+    return getCoincidencias(provinciasDelDpto, q, { keys: ["nombre"] }).map(
       (r) => r.item,
     );
-  }, [provincias, searchProv]);
+  }, [provinciasDelDpto, searchProv]);
+
+  const distritosDeLaProv = useMemo(
+    () =>
+      id_provincia
+        ? distritos.filter((d) => d.id_provincia === id_provincia)
+        : distritos,
+    [distritos, id_provincia],
+  );
 
   const distVisibles = useMemo(() => {
     const q = searchDist.trim();
-    if (!q) return distritos;
-    return getCoincidencias(distritos, q, { keys: ["nombre"] }).map(
+    if (!q) return distritosDeLaProv;
+    return getCoincidencias(distritosDeLaProv, q, { keys: ["nombre"] }).map(
       (r) => r.item,
     );
-  }, [distritos, searchDist]);
+  }, [distritosDeLaProv, searchDist]);
 
   const inputClasses = {
     input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300
@@ -204,29 +163,25 @@ export const RegistroAlmacenCarbon = ({
         />
 
         <div className="space-y-3">
-          <div>
-            <span className="text-zinc-300 text-sm font-medium">
-              Ubicación (opcional)
-            </span>
-            <span className="block text-xs text-zinc-500 mt-0.5">
-              Si registras la ubicación, podrás consultarla desde cualquier
-              catálogo o reporte que muestre este almacén.
-            </span>
-          </div>
+          <span className="text-emerald-400 text-sm font-bold tracking-widest">
+            Ubicación (opc)
+          </span>
 
-          <Grid>
+          <Grid mt={5}>
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Select
                 label="Departamento"
-                placeholder={loadingDptos ? "Cargando..." : "Seleccione"}
+                placeholder={
+                  loadingGeo && departamentos.length === 0
+                    ? "Cargando..."
+                    : "Seleccione"
+                }
                 radius="lg"
                 clearable
                 searchable
                 searchValue={searchDpto}
                 onSearchChange={setSearchDpto}
-                nothingFoundMessage={
-                  loadingDptos ? "Cargando..." : "Sin coincidencias"
-                }
+                nothingFoundMessage="Sin coincidencias"
                 data={dptosVisibles.map((d) => ({
                   value: String(d.id),
                   label: d.nombre,
@@ -238,7 +193,7 @@ export const RegistroAlmacenCarbon = ({
                   setIdProvincia(null);
                   setIdDistrito(null);
                 }}
-                disabled={loadingDptos && departamentos.length === 0}
+                disabled={loadingGeo && departamentos.length === 0}
                 classNames={inputClasses}
               />
             </Grid.Col>
@@ -246,20 +201,14 @@ export const RegistroAlmacenCarbon = ({
               <Select
                 label="Provincia"
                 placeholder={
-                  !id_departamento
-                    ? "Seleccione un departamento"
-                    : loadingProv
-                      ? "Cargando..."
-                      : "Seleccione"
+                  !id_departamento ? "Seleccione un departamento" : "Seleccione"
                 }
                 radius="lg"
                 clearable
                 searchable
                 searchValue={searchProv}
                 onSearchChange={setSearchProv}
-                nothingFoundMessage={
-                  loadingProv ? "Cargando..." : "Sin coincidencias"
-                }
+                nothingFoundMessage="Sin coincidencias"
                 data={provVisibles.map((p) => ({
                   value: String(p.id),
                   label: p.nombre,
@@ -270,7 +219,7 @@ export const RegistroAlmacenCarbon = ({
                   setIdProvincia(num);
                   setIdDistrito(null);
                 }}
-                disabled={!id_departamento || loadingProv}
+                disabled={!id_departamento}
                 classNames={inputClasses}
               />
             </Grid.Col>
@@ -278,27 +227,21 @@ export const RegistroAlmacenCarbon = ({
               <Select
                 label="Distrito"
                 placeholder={
-                  !id_provincia
-                    ? "Seleccione una provincia"
-                    : loadingDist
-                      ? "Cargando..."
-                      : "Seleccione"
+                  !id_provincia ? "Seleccione una provincia" : "Seleccione"
                 }
                 radius="lg"
                 clearable
                 searchable
                 searchValue={searchDist}
                 onSearchChange={setSearchDist}
-                nothingFoundMessage={
-                  loadingDist ? "Cargando..." : "Sin coincidencias"
-                }
+                nothingFoundMessage="Sin coincidencias"
                 data={distVisibles.map((d) => ({
                   value: String(d.id),
                   label: d.nombre,
                 }))}
                 value={id_distrito ? String(id_distrito) : null}
                 onChange={(v) => setIdDistrito(v ? Number(v) : null)}
-                disabled={!id_provincia || loadingDist}
+                disabled={!id_provincia}
                 classNames={inputClasses}
               />
             </Grid.Col>

@@ -285,7 +285,7 @@ export const AlmacenesPage = () => {
   const renderGrid = () => {
     if (loading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
@@ -337,7 +337,7 @@ export const AlmacenesPage = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8 ">
         {almacenesFiltrados.map(renderAlmacenCard)}
       </div>
     );
@@ -357,14 +357,14 @@ export const AlmacenesPage = () => {
               <Tabs.Tab
                 value="logistica"
                 leftSection={<BuildingStorefrontIcon className="w-4 h-4" />}
-                className="rounded-none px-6 py-3 data-[active]:bg-indigo-600! data-[active]:text-white text-zinc-400 hover:text-zinc-200 font-bold"
+                className="rounded-none px-6 py-3 data-active:bg-indigo-600! data-active:text-white text-zinc-400 hover:text-zinc-200 font-bold"
               >
                 Logística
               </Tabs.Tab>
               <Tabs.Tab
                 value="carbon"
                 leftSection={<FireIcon className="w-4 h-4" />}
-                className="rounded-none px-6 py-3 data-[active]:bg-orange-600! data-[active]:text-white text-zinc-400 hover:text-zinc-200 font-bold"
+                className="rounded-none px-6 py-3 data-active:bg-orange-600! data-active:text-white text-zinc-400 hover:text-zinc-200 font-bold"
               >
                 Carbón
               </Tabs.Tab>
@@ -512,13 +512,19 @@ export const AlmacenesPage = () => {
                   setAlmacenes((prev) =>
                     prev.map((alm) =>
                       alm.id_almacen === selectedAlmacen.id_almacen
-                        ? { ...alm, minas_count: (alm.minas_count || 0) + delta }
+                        ? {
+                            ...alm,
+                            minas_count: (alm.minas_count || 0) + delta,
+                          }
                         : alm,
                     ),
                   );
                   setSelectedAlmacen((prev: RES_AlmacenResumen | null) =>
                     prev
-                      ? { ...prev, minas_count: (prev.minas_count || 0) + delta }
+                      ? {
+                          ...prev,
+                          minas_count: (prev.minas_count || 0) + delta,
+                        }
                       : null,
                   );
                 }}
@@ -531,9 +537,7 @@ export const AlmacenesPage = () => {
             close={closeVecinos}
             title="Asignación de Almacenes Vecinos"
           >
-            {selectedAlmacen && (
-              <AlmacenesVecinos almacen={selectedAlmacen} />
-            )}
+            {selectedAlmacen && <AlmacenesVecinos almacen={selectedAlmacen} />}
           </ModalEstandar>
         </>
       )}
