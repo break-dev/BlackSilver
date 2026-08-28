@@ -9,6 +9,7 @@ import { InfoItemsTable } from "./components/InfoItemsTable";
 import { InfoActionModals } from "./components/InfoActionModals";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
 import { RegistroRequerimiento } from "../registrar-requerimiento/registro-requerimiento";
+import { RegistrarEntrega } from "../entregas/registrar-entrega/registrar-entrega";
 
 interface InfoRequerimientoProps {
   requerimiento: RES_RequerimientoAlmacen;
@@ -18,6 +19,7 @@ interface InfoRequerimientoProps {
 
 export const InfoRequerimiento = ({
   requerimiento,
+  idAlmacen,
   onSuccess,
 }: InfoRequerimientoProps) => {
   const {
@@ -31,7 +33,9 @@ export const InfoRequerimiento = ({
     openedRechazo,
     openRechazo,
     closeRechazo,
+    openedEntregaBatch,
     openEntregaBatch,
+    closeEntregaBatch,
     openHistorialGlobal,
     selectedItemId,
     setSelectedItemId,
@@ -39,6 +43,7 @@ export const InfoRequerimiento = ({
     setSelectedItemName,
     selectedItemsIds,
     toggleItemSelection,
+    deselectAllItems,
     isAllEligibleSelected,
     hasPartialEligibleSelection,
     toggleSelectAllEligible,
@@ -59,6 +64,7 @@ export const InfoRequerimiento = ({
     getStatusColor,
     logistica,
     loadData,
+    patchDetallesLocales,
   } = useGestionAtencion({
     idRequerimiento: requerimiento.id_requerimiento,
     onSuccess,
@@ -158,6 +164,36 @@ export const InfoRequerimiento = ({
           }}
           onCancel={() => setOpenedEditar(false)}
         />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedEntregaBatch}
+        close={closeEntregaBatch}
+        title={`Registrar Entrega · ${requerimiento.correlativo}`}
+        size="95%"
+        validateClose
+      >
+        {idAlmacen !== undefined && (
+          <RegistrarEntrega
+            requerimiento={requerimiento}
+            idRequerimiento={requerimiento.id_requerimiento}
+            idAlmacen={idAlmacen}
+            selectedItemsIds={selectedItemsIds}
+            detallesRequerimiento={detalles}
+            idContratistaSolicitante={requerimiento.id_contratista_solicitante}
+            idEmpleadoSolicitante={requerimiento.id_empleado_solicitante}
+            onSuccess={(entregados) => {
+              patchDetallesLocales(entregados);
+              deselectAllItems();
+              closeEntregaBatch();
+              onSuccess(Object.keys(entregados).map(Number));
+            }}
+            onCancel={() => {
+              deselectAllItems();
+              closeEntregaBatch();
+            }}
+          />
+        )}
       </ModalEstandar>
     </Stack>
   );
