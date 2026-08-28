@@ -136,24 +136,39 @@ export const SolicitudesReabastecimientoPage = () => {
       },
       {
         accessor: "fecha_entrega_requerida",
-        title: "Programación",
-        width: 180,
-        render: (item) => (
-          <Stack gap={3}>
-            <Group gap={6}>
-              <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
-              <Text size="xs" fw={600} className="text-zinc-200">
-                Fecha Req.:{" "}
-                {item.fecha_entrega_requerida
-                  ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
-                  : "---"}
+        title: "Fechas",
+        width: 200,
+        render: (item) => {
+          const fechaReq =
+            item.fecha_entrega_requerida &&
+            dayjs(item.fecha_entrega_requerida).isValid()
+              ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+              : "No especificada";
+
+          const fechaSol =
+            item.fecha_solicitud && dayjs(item.fecha_solicitud).isValid()
+              ? dayjs(item.fecha_solicitud).format("DD/MM/YYYY")
+              : null;
+
+          return (
+            <Stack gap={2}>
+              <Group gap={6}>
+                <CalendarDaysIcon className="w-4 h-4 text-zinc-500" />
+                <Text size="xs" fw={600} className="text-zinc-200">
+                  Entrega: {fechaReq}
+                </Text>
+              </Group>
+              {fechaSol && (
+                <Text size="xs" c="blue.4" ml={22}>
+                  Solicitada: {fechaSol}
+                </Text>
+              )}
+              <Text size="xs" c="dimmed" ml={22}>
+                Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
               </Text>
-            </Group>
-            <Text size="11px" className="text-zinc-500 ml-[22px]">
-              Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
-            </Text>
-          </Stack>
-        ),
+            </Stack>
+          );
+        },
       },
       {
         accessor: "estado",
@@ -251,7 +266,7 @@ export const SolicitudesReabastecimientoPage = () => {
               }}
             />
           </div>
-          <div className="flex-1 min-w-[200px] w-full">
+          <div className="flex-1 min-w-50 w-full">
             <TextInput
               label="Búsqueda"
               placeholder="Código o solicitante..."
@@ -278,7 +293,7 @@ export const SolicitudesReabastecimientoPage = () => {
             onClick={openReg}
             radius="lg"
             size="sm"
-            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0 h-[38px]"
+            className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-900/20 active:scale-95 transition-all w-full lg:w-auto px-8 font-semibold shrink-0 h-9.5"
           >
             Nueva Solicitud
           </Button>
@@ -316,7 +331,7 @@ export const SolicitudesReabastecimientoPage = () => {
         opened={openedRegistro}
         close={closeReg}
         title="Nueva Solicitud de Reabastecimiento"
-        size="80%"
+        size="65%"
       >
         <RegistroSolicitud
           onSuccess={(item) => {

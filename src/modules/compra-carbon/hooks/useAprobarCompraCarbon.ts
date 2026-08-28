@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { CompraCarbonService } from "../service/compra-carbon.service";
-import type { CompraCarbonDetalle } from "../service/compra-carbon.responses";
+import type { CompraCarbonDetalleResponse } from "../service/compra-carbon.responses";
 
 /**
  * Maneja la aprobacion de una compra de carbon: POST /aprobar,
@@ -13,7 +13,7 @@ export const useAprobarCompraCarbon = () => {
 
   const aprobar = async (
     idCompraCarbon: number,
-  ): Promise<CompraCarbonDetalle | null> => {
+  ): Promise<CompraCarbonDetalleResponse | null> => {
     setLoading(true);
     try {
       const resp = await CompraCarbonService.aprobar(idCompraCarbon);

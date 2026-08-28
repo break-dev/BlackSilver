@@ -14,9 +14,12 @@ import { RegistroProveedorCarbon } from "../registro-proveedor-carbon/registro-p
 import { CuentasBancarias } from "../cuentas-bancarias/cuentas-bancarias";
 import { PersonalExternoProveedor } from "../personal-externo-proveedor/personal-externo-proveedor";
 import { TiposCarbonProveedor } from "../tipos-carbon-proveedor/tipos-carbon-proveedor";
+import { LugaresExtraccionProveedor } from "../lugares-extraccion-proveedor/lugares-extraccion-proveedor";
 import type {
   CuentaBancariaResponse,
+  LugarExtraccionResponse,
   ProveedorResponse,
+  TipoCarbonProveedorResponse,
 } from "../../service/proveedores.responses";
 import { Proveedor } from "./components/proveedor";
 import { ModalEstandar } from "../../../../presentation/utils/modal-estandar";
@@ -44,6 +47,8 @@ export const ProveedoresPage = () => {
     useState<ProveedorResponse | null>(null);
   const [proveedorTiposCarbon, setProveedorTiposCarbon] =
     useState<ProveedorResponse | null>(null);
+  const [proveedorLugares, setProveedorLugares] =
+    useState<ProveedorResponse | null>(null);
   const [busqueda, setBusqueda] = useState("");
 
   const proveedorEnGestion =
@@ -66,6 +71,13 @@ export const ProveedoresPage = () => {
         ) ?? proveedorTiposCarbon)
       : null;
 
+  const proveedorLugaresEnGestion =
+    proveedorLugares
+      ? (proveedores.find(
+          (p) => p.id_proveedor === proveedorLugares.id_proveedor,
+        ) ?? proveedorLugares)
+      : null;
+
   const actualizarCuentas = (
     proveedor: ProveedorResponse,
     cuentas: CuentaBancariaResponse[],
@@ -78,37 +90,58 @@ export const ProveedoresPage = () => {
   const handleCuentaActualizada = (cuenta: CuentaBancariaResponse) => {
     if (!selectedProveedor) return;
 
-    const cuentasActualizadas = (selectedProveedor.cuentas_bancarias ?? []).map(
-      (c) => (c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c),
+    // selectedProveedor queda stale tras cada cambio; leer el array
+    // actual desde el state global para no perder cuentas previas.
+    const proveedorActual = proveedores.find(
+      (p) => p.id_proveedor === selectedProveedor.id_proveedor,
+    );
+    const cuentasActuales = proveedorActual?.cuentas_bancarias ?? [];
+
+    const cuentasActualizadas = cuentasActuales.map((c) =>
+      c.id_cuenta_bancaria === cuenta.id_cuenta_bancaria ? cuenta : c,
     );
 
     updateProveedor(
       selectedProveedor.id_proveedor,
-      actualizarCuentas(selectedProveedor, cuentasActualizadas),
+      actualizarCuentas(proveedorActual ?? selectedProveedor, cuentasActualizadas),
     );
   };
 
   const handleCuentaAgregada = (cuenta: CuentaBancariaResponse) => {
     if (!selectedProveedor) return;
 
-    const cuentasActualizadas = [
-      cuenta,
-      ...(selectedProveedor.cuentas_bancarias ?? []),
-    ];
+    // selectedProveedor queda stale tras cada cambio; leer el array
+    // actual desde el state global para no perder cuentas previas.
+    const proveedorActual = proveedores.find(
+      (p) => p.id_proveedor === selectedProveedor.id_proveedor,
+    );
+    const cuentasActuales = proveedorActual?.cuentas_bancarias ?? [];
+
+    const cuentasActualizadas = [cuenta, ...cuentasActuales];
 
     updateProveedor(
       selectedProveedor.id_proveedor,
-      actualizarCuentas(selectedProveedor, cuentasActualizadas),
+      actualizarCuentas(proveedorActual ?? selectedProveedor, cuentasActualizadas),
     );
   };
 
   const handleTiposCarbonGuardados = (
     proveedor: ProveedorResponse,
-    tipos: { id_tipo_carbon: number; nombre: string; codigo: string | null }[],
+    tipos: TipoCarbonProveedorResponse[],
   ) => {
     updateProveedor(proveedor.id_proveedor, {
       cantidad_tipos_carbon: tipos.length,
       tipos_carbon: tipos,
+    });
+  };
+
+  const handleLugaresGuardados = (
+    proveedor: ProveedorResponse,
+    lugares: LugarExtraccionResponse[],
+  ) => {
+    updateProveedor(proveedor.id_proveedor, {
+      cantidad_lugares_extraccion: lugares.length,
+      lugares_extraccion: lugares,
     });
   };
 
@@ -193,6 +226,7 @@ export const ProveedoresPage = () => {
             onOpenCuentas={(p) => setSelectedProveedor(p)}
             onOpenPersonal={(p) => setProveedorPersonal(p)}
             onOpenTiposCarbon={(p) => setProveedorTiposCarbon(p)}
+            onOpenLugaresExtraccion={(p) => setProveedorLugares(p)}
           />
         </Tabs.Panel>
       </Tabs>
@@ -249,7 +283,7 @@ export const ProveedoresPage = () => {
         close={() => setProveedorPersonal(null)}
         title={
           proveedorPersonalEnGestion
-            ? `Personal externo: ${proveedorPersonalEnGestion.razon_social}`
+            ? `Contactos de ${proveedorPersonalEnGestion.razon_social}`
             : ""
         }
         size="lg"
@@ -278,6 +312,25 @@ export const ProveedoresPage = () => {
                 tipos,
               );
               setProveedorTiposCarbon(null);
+            }}
+          />
+        )}
+      </ModalEstandar>
+
+      {/* Modal: Lugares de extraccion del proveedor (solo tab Carbon) */}
+      <ModalEstandar
+        opened={!!proveedorLugares}
+        close={() => setProveedorLugares(null)}
+        title="Lugares de extraccion"
+        size="lg"
+      >
+        {proveedorLugaresEnGestion && (
+          <LugaresExtraccionProveedor
+            proveedor={proveedorLugaresEnGestion}
+            key={proveedorLugaresEnGestion.id_proveedor}
+            onGuardados={(lugares) => {
+              handleLugaresGuardados(proveedorLugaresEnGestion, lugares);
+              setProveedorLugares(null);
             }}
           />
         )}

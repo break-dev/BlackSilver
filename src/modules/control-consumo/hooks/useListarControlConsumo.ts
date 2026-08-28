@@ -81,6 +81,14 @@ export const useListarControlConsumo = () => {
           id_almacen: item.id_almacen_destino,
           nombre: item.almacen_destino,
           es_principal: 0,
+          para_carbon: 0,
+          direccion: null,
+          id_departamento: null,
+          id_provincia: null,
+          id_distrito: null,
+          departamento_nombre: null,
+          provincia_nombre: null,
+          distrito_nombre: null,
         });
       }
     });

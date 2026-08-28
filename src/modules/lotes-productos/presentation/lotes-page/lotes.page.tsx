@@ -170,7 +170,7 @@ export const LotesPage = () => {
       <ModalEstandar
         opened={openedCreate}
         close={closeCreate}
-        title="Ingreso de Mercadería"
+        title="Ingreso de Stock"
         size="lg"
       >
         <RegistroLote

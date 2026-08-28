@@ -26,9 +26,6 @@ export const useRegistroProveedor = (
     direccion: "",
     telefono: "",
     correo: "",
-    id_departamento: undefined,
-    id_provincia: undefined,
-    id_distrito: undefined,
   });
 
   const handleChange = <K extends keyof CrearProveedorRequest>(
@@ -76,9 +73,6 @@ export const useRegistroProveedor = (
         direccion: "",
         telefono: "",
         correo: "",
-        id_departamento: undefined,
-        id_provincia: undefined,
-        id_distrito: undefined,
       });
       onSuccess(created);
     } catch (e) {

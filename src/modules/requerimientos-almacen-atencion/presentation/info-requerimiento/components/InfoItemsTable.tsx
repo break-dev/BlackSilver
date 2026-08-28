@@ -302,9 +302,6 @@ export const InfoItemsTable = ({
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex flex-row gap-0.5 justify-center items-center flex-wrap">
-                      {/* Si el detalle se creó con cálculo inteligente por
-                          magnitud, mostramos el desglose items × magnitud
-                          como badges independientes. */}
                       {Number(item.con_magnitud) === 1 &&
                         item.cantidad_items !== null &&
                         item.cantidad_items !== undefined &&
@@ -335,7 +332,6 @@ export const InfoItemsTable = ({
                           </div>
                         )}
 
-                      {/* Cantidad total en la unidad del detalle */}
                       <div className="flex flex-col items-center justify-center">
                         <Badge
                           variant="filled"
@@ -363,8 +359,6 @@ export const InfoItemsTable = ({
                           </Badge>
                         )}
                       </div>
-                      {/* Si la unidad del detalle difiere de la base,
-                          añadimos el factor y el total en unidad base. */}
                       {item.id_unidad_medida_base !==
                         item.id_unidad_medida_req && (
                         <Badge
@@ -441,59 +435,59 @@ export const InfoItemsTable = ({
 
                       {item.estado ===
                         Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
-                        <>
-                          <Tooltip label="Aprobar" position="top" withArrow>
-                            <ActionIcon
-                              variant="filled"
-                              color="green"
-                              onClick={() => {
-                                setSelectedItemId(
-                                  item.id_requerimiento_almacen_detalle,
-                                );
-                                openAprobar();
-                              }}
-                              disabled={isProcessing !== null}
-                            >
-                              <CheckCircleIcon className="size-5 text-white" />
-                            </ActionIcon>
-                          </Tooltip>
+                          <>
+                            <Tooltip label="Aprobar" position="top" withArrow>
+                              <ActionIcon
+                                variant="filled"
+                                color="green"
+                                onClick={() => {
+                                  setSelectedItemId(
+                                    item.id_requerimiento_almacen_detalle,
+                                  );
+                                  openAprobar();
+                                }}
+                                disabled={isProcessing !== null}
+                              >
+                                <CheckCircleIcon className="size-5 text-white" />
+                              </ActionIcon>
+                            </Tooltip>
 
-                          <Tooltip label="Rechazar" position="top" withArrow>
-                            <ActionIcon
-                              variant="filled"
-                              color="red"
-                              onClick={() => {
-                                setSelectedItemId(
-                                  item.id_requerimiento_almacen_detalle,
-                                );
-                                openRechazo();
-                              }}
-                              disabled={isProcessing !== null}
-                            >
-                              <XCircleIcon className="size-5 text-white" />
-                            </ActionIcon>
-                          </Tooltip>
-                        </>
-                      )}
+                            <Tooltip label="Rechazar" position="top" withArrow>
+                              <ActionIcon
+                                variant="filled"
+                                color="red"
+                                onClick={() => {
+                                  setSelectedItemId(
+                                    item.id_requerimiento_almacen_detalle,
+                                  );
+                                  openRechazo();
+                                }}
+                                disabled={isProcessing !== null}
+                              >
+                                <XCircleIcon className="size-5 text-white" />
+                              </ActionIcon>
+                            </Tooltip>
+                          </>
+                        )}
 
                       {item.estado ===
                         Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
-                        <Tooltip label="Acción masiva" position="top" withArrow>
-                          <Checkbox
-                            size="xs"
-                            color="indigo"
-                            checked={idsParaAccionMasiva.includes(
-                              item.id_requerimiento_almacen_detalle,
-                            )}
-                            onChange={() =>
-                              toggleSeleccionMasiva(
+                          <Tooltip label="Acción masiva" position="top" withArrow>
+                            <Checkbox
+                              size="xs"
+                              color="indigo"
+                              checked={idsParaAccionMasiva.includes(
                                 item.id_requerimiento_almacen_detalle,
-                              )
-                            }
-                            className="ml-1"
-                          />
-                        </Tooltip>
-                      )}
+                              )}
+                              onChange={() =>
+                                toggleSeleccionMasiva(
+                                  item.id_requerimiento_almacen_detalle,
+                                )
+                              }
+                              className="ml-1"
+                            />
+                          </Tooltip>
+                        )}
                     </Group>
                   </td>
                 </tr>

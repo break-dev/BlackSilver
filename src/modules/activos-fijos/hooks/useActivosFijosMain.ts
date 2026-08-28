@@ -77,6 +77,19 @@ export const useActivosMain = () => {
     setActivos((prev) => [nuevo, ...prev]);
   };
 
+  /**
+   * Reemplaza el activo en la lista local con la versión devuelta por la API.
+   * Garantiza que la fila siempre refleje el shape exacto que entrega el backend
+   * (especialmente tras cambios de ubicación que regeneran el log).
+   */
+  const updateActivo = (editado: RES_ActivoFijoResumen) => {
+    setActivos((prev) =>
+      prev.map((a) =>
+        a.id_activo === editado.id_activo ? editado : a,
+      ),
+    );
+  };
+
   return {
     activos: activosFiltrados,
     almacenesFiltro,
@@ -91,5 +104,6 @@ export const useActivosMain = () => {
     refresh: (showLoading?: boolean) => fetchActivos(showLoading),
     recargar: () => fetchActivos(true),
     addActivo,
+    updateActivo,
   };
 };

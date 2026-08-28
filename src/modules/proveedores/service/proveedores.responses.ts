@@ -8,12 +8,6 @@ export interface ProveedorResponse {
   para_mantenimiento: boolean;
   para_transporte: boolean;
   para_carbon: boolean;
-  id_departamento: number | null;
-  id_provincia: number | null;
-  id_distrito: number | null;
-  departamento_nombre: string | null;
-  provincia_nombre: string | null;
-  distrito_nombre: string | null;
   dni: string | null;
   ruc: string | null;
   razon_social: string;
@@ -25,6 +19,8 @@ export interface ProveedorResponse {
   cuentas_bancarias?: CuentaBancariaResponse[];
   cantidad_tipos_carbon: number;
   tipos_carbon?: TipoCarbonProveedorResponse[];
+  cantidad_lugares_extraccion: number;
+  lugares_extraccion?: LugarExtraccionResponse[];
 }
 
 export interface CuentaBancariaResponse {
@@ -43,4 +39,16 @@ export interface TipoCarbonProveedorResponse {
   id_tipo_carbon: number;
   nombre: string;
   codigo: string | null;
+  para_compra: boolean;
+}
+
+export interface LugarExtraccionResponse {
+  id_proveedor: number;
+  id_departamento: number;
+  departamento_nombre: string;
+  id_provincia: number;
+  provincia_nombre: string;
+  id_distrito: number;
+  distrito_nombre: string;
+  direccion: string;
 }

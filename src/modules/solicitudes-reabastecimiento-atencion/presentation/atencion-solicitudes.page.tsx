@@ -108,11 +108,19 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
       {
         accessor: "fechas",
         title: "Cronograma",
-        width: 180,
+        width: 200,
         render: (item) => {
-          const fechaReq = item.fecha_entrega_requerida
-            ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
-            : "No especificada";
+          const fechaReq =
+            item.fecha_entrega_requerida &&
+            dayjs(item.fecha_entrega_requerida).isValid()
+              ? dayjs(item.fecha_entrega_requerida).format("DD/MM/YYYY")
+              : "No especificada";
+
+          const fechaSol =
+            item.fecha_solicitud && dayjs(item.fecha_solicitud).isValid()
+              ? dayjs(item.fecha_solicitud).format("DD/MM/YYYY")
+              : null;
+
           return (
             <Stack gap={2}>
               <Group gap={6}>
@@ -121,6 +129,11 @@ export const SolicitudesReabastecimientoAtencionPage = () => {
                   Entrega: {fechaReq}
                 </Text>
               </Group>
+              {fechaSol && (
+                <Text size="xs" c="blue.4" ml={22}>
+                  Solicitada: {fechaSol}
+                </Text>
+              )}
               <Text size="xs" c="dimmed" ml={22}>
                 Creado: {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
               </Text>

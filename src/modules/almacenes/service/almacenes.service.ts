@@ -19,8 +19,23 @@ const PATH = "/almacenes";
 
 export const AlmacenesService = {
   // ALMACENES
-  get_almacenes: async (): Promise<IRespuesta<RES_AlmacenResumen[]>> => {
-    const { data } = await api.get(PATH);
+  /**
+   * Listar almacenes del modulo. Acepta `para_carbon` para filtrar.
+   * Si no se envia, el backend NO filtra y devuelve ambos tipos (la
+   * vista pagina con tabs y siempre pasa el flag explicito).
+   */
+  get_almacenes: async (filters?: {
+    para_carbon?: boolean;
+  }): Promise<IRespuesta<RES_AlmacenResumen[]>> => {
+    const params = filters
+      ? {
+          ...filters,
+          ...(filters.para_carbon !== undefined && {
+            para_carbon: filters.para_carbon ? 1 : 0,
+          }),
+        }
+      : undefined;
+    const { data } = await api.get(PATH, { params });
     return data;
   },
 

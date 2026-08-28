@@ -1,7 +1,5 @@
 import { ModalEstandar } from "./modal-estandar";
-import {
-  FormPersonalExterno,
-} from "./form-personal-externo";
+import { FormPersonalExterno } from "./form-personal-externo";
 import { usePersonalExterno } from "../../hooks/usePersonalExterno";
 import { useState } from "react";
 
@@ -13,7 +11,6 @@ export interface PersonalLocal {
   nombre: string;
   apellido?: string;
   dni?: string;
-  es_representante: boolean;
 }
 
 interface Props {
@@ -117,30 +114,23 @@ const ModalPersonalExternoLocal = ({
   opened,
   close,
   title,
-  showRepresentanteSwitch,
-  initialEsRepresentante,
   onCreateLocal,
 }: LocalProps) => {
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [dni, setDni] = useState("");
-  const [esRepresentante, setEsRepresentante] = useState(
-    initialEsRepresentante,
-  );
 
   const handleSubmit = () => {
     if (!nombre.trim()) return;
     onCreateLocal({
       nombre: nombre.trim(),
-      apellido: apellido.trim() || undefined,
-      dni: dni.trim() || undefined,
-      es_representante: esRepresentante,
+      dni: dni.trim(),
+      apellido: apellido.trim(),
     });
     // Limpiar y cerrar lo hace el padre.
     setNombre("");
     setApellido("");
     setDni("");
-    setEsRepresentante(initialEsRepresentante);
   };
 
   return (
@@ -153,10 +143,6 @@ const ModalPersonalExternoLocal = ({
         setApellido={setApellido}
         setDni={setDni}
         onSubmit={handleSubmit}
-        esRepresentante={showRepresentanteSwitch ? esRepresentante : undefined}
-        setEsRepresentante={
-          showRepresentanteSwitch ? setEsRepresentante : undefined
-        }
       />
     </ModalEstandar>
   );
@@ -179,8 +165,6 @@ const ModalPersonalExternoBackend = ({
   close,
   title,
   idProveedor,
-  showRepresentanteSwitch,
-  initialEsRepresentante,
   onCreatedBackend,
 }: BackendProps) => {
   const {
@@ -190,13 +174,10 @@ const ModalPersonalExternoBackend = ({
     setApellido,
     dni,
     setDni,
-    esRepresentante,
-    setEsRepresentante,
     isSubmitting,
     handleCrearPersonal,
   } = usePersonalExterno({
     idProveedor,
-    esRepresentanteInicial: initialEsRepresentante,
   });
 
   return (
@@ -214,10 +195,6 @@ const ModalPersonalExternoBackend = ({
             if (nuevo) onCreatedBackend();
           });
         }}
-        esRepresentante={showRepresentanteSwitch ? esRepresentante : undefined}
-        setEsRepresentante={
-          showRepresentanteSwitch ? setEsRepresentante : undefined
-        }
       />
     </ModalEstandar>
   );

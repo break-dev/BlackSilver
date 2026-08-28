@@ -1,12 +1,12 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
-import type { RES_Banco } from "../../../service/responses/banco";
 import type {
   CrearBancoRequest,
   CrearCuentaBancariaRequest,
   CrearProveedorRequest,
-  CrearRepresentanteRequest,
+  CrearPersonalRequest,
   EditarCuentaBancariaRequest,
+  SetLugaresExtraccionProveedorRequest,
   SetTiposCarbonProveedorRequest,
 } from "./proveedores.requests";
 
@@ -14,16 +14,17 @@ export type {
   CrearBancoRequest,
   CrearCuentaBancariaRequest,
   CrearProveedorRequest,
-  CrearRepresentanteRequest,
+  CrearPersonalRequest,
   EditarCuentaBancariaRequest,
+  SetLugaresExtraccionProveedorRequest,
   SetTiposCarbonProveedorRequest,
 };
 import type {
   CuentaBancariaResponse,
+  LugarExtraccionResponse,
   ProveedorResponse,
   TipoCarbonProveedorResponse,
 } from "./proveedores.responses";
-import type { RES_PersonalExterno } from "../../../service/responses/personal-externo";
 
 export const ProveedoresService = {
   getProveedores: async (filters?: {
@@ -47,19 +48,7 @@ export const ProveedoresService = {
       direccion: payload.direccion,
       telefono: payload.telefono,
       correo: payload.correo,
-      id_departamento: payload.id_departamento,
-      id_provincia: payload.id_provincia,
-      id_distrito: payload.id_distrito,
     });
-    return data.data;
-  },
-
-  getBancos: async (): Promise<RES_Banco[]> => {
-    const { data } = await api.get("/aux/bancos");
-    return data.data;
-  },
-  crearBanco: async (payload: CrearBancoRequest): Promise<RES_Banco> => {
-    const { data } = await api.post("/aux/bancos", payload);
     return data.data;
   },
 
@@ -71,12 +60,14 @@ export const ProveedoresService = {
     );
     return data.data;
   },
+
   crearCuentaBancaria: async (
     payload: CrearCuentaBancariaRequest,
   ): Promise<CuentaBancariaResponse> => {
     const { data } = await api.post("/proveedores/cuentas-bancarias", payload);
     return data.data;
   },
+
   actualizarCuentaBancaria: async (
     id: number,
     payload: EditarCuentaBancariaRequest,
@@ -85,37 +76,6 @@ export const ProveedoresService = {
       `/proveedores/cuentas-bancarias/${id}`,
       payload,
     );
-    return data.data;
-  },
-
-  /**
-   * Crear representante de un proveedor (modulo carbon).
-   * El flag es_representante lo establece el backend automaticamente
-   * al recibir id_proveedor.
-   */
-  crearRepresentante: async (
-    idProveedor: number,
-    payload: CrearRepresentanteRequest,
-  ): Promise<RES_PersonalExterno> => {
-    const { data } = await api.post("/aux/personal-externo", {
-      id_proveedor: idProveedor,
-      es_representante: true,
-      nombre: payload.nombre,
-      apellido: payload.apellido,
-      dni: payload.dni,
-    });
-    return data.data;
-  },
-
-  /**
-   * Listar representantes de un proveedor.
-   */
-  getRepresentantesPorProveedor: async (
-    idProveedor: number,
-  ): Promise<RES_PersonalExterno[]> => {
-    const { data } = await api.get("/aux/personal-externo", {
-      params: { id_proveedor: idProveedor },
-    });
     return data.data;
   },
 
@@ -140,6 +100,32 @@ export const ProveedoresService = {
   ): Promise<IRespuesta<TipoCarbonProveedorResponse[]>> => {
     const { data } = await api.put<IRespuesta<TipoCarbonProveedorResponse[]>>(
       `/proveedores/${idProveedor}/tipos-carbon`,
+      payload,
+    );
+    return data;
+  },
+
+  /**
+   * Lugares de extraccion de un proveedor (modulo carbon).
+   */
+  getLugaresExtraccionPorProveedor: async (
+    idProveedor: number,
+  ): Promise<IRespuesta<LugarExtraccionResponse[]>> => {
+    const { data } = await api.get<IRespuesta<LugarExtraccionResponse[]>>(
+      `/proveedores/${idProveedor}/lugares-extraccion`,
+    );
+    return data;
+  },
+
+  /**
+   * Reemplaza los lugares de extraccion asociados a un proveedor.
+   */
+  setLugaresExtraccionPorProveedor: async (
+    idProveedor: number,
+    payload: SetLugaresExtraccionProveedorRequest,
+  ): Promise<IRespuesta<LugarExtraccionResponse[]>> => {
+    const { data } = await api.put<IRespuesta<LugarExtraccionResponse[]>>(
+      `/proveedores/${idProveedor}/lugares-extraccion`,
       payload,
     );
     return data;

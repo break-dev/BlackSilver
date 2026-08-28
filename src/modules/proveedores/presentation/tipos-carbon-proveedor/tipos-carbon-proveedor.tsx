@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Badge,
   Button,
   Group,
-  Select,
+  MultiSelect,
   Stack,
   Text,
 } from "@mantine/core";
-import { IconCheck, IconFlame, IconX } from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
 
 import { useNotify } from "../../../../hooks/useNotify";
 import { TipoCarbonService } from "../../../tipo-carbon/service/tipo-carbon.service";
@@ -25,73 +24,61 @@ interface Props {
 
 /**
  * Gestion de tipos de carbon asociados a un proveedor.
- *
- * Patron: Select (uno a la vez) -> se agrega a la lista -> X para quitar.
- * Al dar Guardar, persiste con setTiposCarbonPorProveedor (PUT, reemplaza).
+ * MultiSelect unico: los tipos seleccionados aparecen como pills dentro
+ * del componente. Al dar Guardar, persiste con setTiposCarbonPorProveedor
+ * (PUT, reemplaza).
  */
 export const TiposCarbonProveedor = ({ proveedor, onGuardados }: Props) => {
   const { notifyError, notifySuccess } = useNotify();
 
   const [todos, setTodos] = useState<RES_TipoCarbon[]>([]);
   const [seleccionados, setSeleccionados] = useState<RES_TipoCarbon[]>([]);
-  const [pendiente, setPendiente] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const fetch = async () => {
-    setLoading(true);
-    try {
-      const [listaTiposRes, asociadosRes] = await Promise.all([
-        TipoCarbonService.getTipos(),
-        ProveedoresService.getTiposCarbonPorProveedor(
-          proveedor.id_proveedor,
-        ),
-      ]);
-      if (listaTiposRes.success) setTodos(listaTiposRes.data);
-      if (asociadosRes.success) setSeleccionados(asociadosRes.data);
-    } catch (e) {
-      console.error(e);
-      notifyError("No se pudieron cargar los tipos de carbon");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetch();
+    let cancel = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [listaTiposRes, asociadosRes] = await Promise.all([
+          TipoCarbonService.getTipos({ para_compra: true }),
+          ProveedoresService.getTiposCarbonPorProveedor(
+            proveedor.id_proveedor,
+          ),
+        ]);
+        if (cancel) return;
+        if (listaTiposRes.success) setTodos(listaTiposRes.data);
+        if (asociadosRes.success) setSeleccionados(asociadosRes.data);
+      } catch (e) {
+        console.error(e);
+        notifyError("No se pudieron cargar los tipos de carbon");
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proveedor.id_proveedor]);
 
-  const disponibles = useMemo(
+  const tiposData = useMemo(
     () =>
-      todos.filter(
-        (t) => !seleccionados.some((s) => s.id_tipo_carbon === t.id_tipo_carbon),
-      ),
-    [todos, seleccionados],
-  );
-
-  const opcionesSelect = useMemo(
-    () =>
-      disponibles.map((t) => ({
+      todos.map((t) => ({
         value: String(t.id_tipo_carbon),
         label: t.codigo ? `${t.nombre} (${t.codigo})` : t.nombre,
       })),
-    [disponibles],
+    [todos],
   );
 
-  const handleAgregar = (value: string | null) => {
-    if (!value) return;
-    const id = Number(value);
-    const tipo = todos.find((t) => t.id_tipo_carbon === id);
-    if (!tipo) return;
-    if (seleccionados.some((s) => s.id_tipo_carbon === id)) return;
-    setSeleccionados((prev) => [...prev, tipo]);
-    setPendiente(null);
-  };
-
-  const handleQuitar = (id: number) => {
-    setSeleccionados((prev) =>
-      prev.filter((s) => s.id_tipo_carbon !== id),
+  const handleTiposChange = (values: string[]) => {
+    const ids = new Set(values.map(Number));
+    const mapa = new Map(todos.map((t) => [t.id_tipo_carbon, t]));
+    setSeleccionados(
+      todos.filter((t) => ids.has(t.id_tipo_carbon)).map(
+        (t) => mapa.get(t.id_tipo_carbon)!,
+      ),
     );
   };
 
@@ -123,75 +110,33 @@ export const TiposCarbonProveedor = ({ proveedor, onGuardados }: Props) => {
         <Text size="sm" fw={600} className="text-zinc-200">
           {proveedor.razon_social}
         </Text>
-        <Text size="xs" className="text-zinc-500">
+        <Text size="xs" className="text-zinc-400">
           Tipos de carbon que ofrece este proveedor
         </Text>
       </div>
 
-      <Select
-        label="Agregar tipo de carbon"
+      <MultiSelect
+        label="Tipos de carbon"
         placeholder={
           loading
             ? "Cargando tipos..."
-            : disponibles.length === 0
-              ? "Todos los tipos ya estan agregados"
-              : "Selecciona un tipo para agregarlo"
+            : "Selecciona uno o varios tipos"
         }
         radius="xl"
         searchable
         clearable
-        disabled={!loading && disponibles.length === 0}
-        data={opcionesSelect}
-        value={pendiente}
-        onChange={handleAgregar}
+        data={tiposData}
+        value={seleccionados.map((s) => String(s.id_tipo_carbon))}
+        onChange={handleTiposChange}
         nothingFoundMessage="Sin tipos disponibles"
+        disabled={loading && todos.length === 0}
         classNames={{
           input:
             "bg-zinc-900/50 border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 text-white placeholder:text-zinc-500",
           label: "text-zinc-300 mb-1 font-medium text-xs",
+          pill: "bg-indigo-500/20 text-indigo-200",
         }}
       />
-
-      {seleccionados.length === 0 ? (
-        <div className="text-zinc-500 text-xs italic px-3 py-2 border border-dashed border-zinc-800 rounded-lg">
-          Sin tipos seleccionados.
-        </div>
-      ) : (
-        <Stack gap="xs">
-          {seleccionados.map((t) => (
-            <div
-              key={t.id_tipo_carbon}
-              className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-zinc-900/60 to-zinc-900/30 border border-zinc-800 rounded-xl hover:border-indigo-700/60 transition-colors"
-            >
-              <Group gap="sm" wrap="nowrap">
-                <Badge variant="filled" color="orange" radius="xl" size="lg">
-                  <IconFlame size={14} stroke={1.8} />
-                </Badge>
-                <div className="flex flex-col min-w-0">
-                  <Text size="sm" fw={500} className="text-zinc-100 truncate">
-                    {t.nombre}
-                  </Text>
-                  {t.codigo && (
-                    <Text size="xs" className="text-zinc-500">
-                      Codigo: {t.codigo}
-                    </Text>
-                  )}
-                </div>
-              </Group>
-              <Button
-                variant="subtle"
-                color="red"
-                size="xs"
-                radius="xl"
-                leftSection={<IconX size={14} />}
-                onClick={() => handleQuitar(t.id_tipo_carbon)}
-              >
-                Quitar
-              </Button>
-            </div>
-          ))}
-        </Stack>
-      )}
 
       <Text size="xs" className="text-zinc-500">
         Actualmente {seleccionados.length} tipo(s) seleccionado(s).

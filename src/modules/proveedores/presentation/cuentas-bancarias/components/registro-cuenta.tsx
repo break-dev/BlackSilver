@@ -8,8 +8,10 @@ import {
   Tooltip,
   Button,
   TextInput,
+  Badge,
 } from "@mantine/core";
 import {
+  IconCash,
   IconNotes,
   IconPlus,
   IconExclamationCircle,
@@ -28,6 +30,11 @@ interface Props {
   loadingBancos: boolean;
   onCuentaAdded: (account: CuentaBancariaResponse) => void;
   onBancoAdded: (banco: RES_Banco) => void;
+  /**
+   * Si esta definido, el campo Moneda se bloquea y se fuerza al valor dado.
+   * Usado para proveedores de carbon (siempre en Soles).
+   */
+  monedaFija?: string;
 }
 
 export interface RegistroCuentaRef {
@@ -36,7 +43,14 @@ export interface RegistroCuentaRef {
 
 export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
   (
-    { idProveedor, bancos, loadingBancos, onCuentaAdded, onBancoAdded },
+    {
+      idProveedor,
+      bancos,
+      loadingBancos,
+      onCuentaAdded,
+      onBancoAdded,
+      monedaFija,
+    },
     ref,
   ) => {
     const {
@@ -48,7 +62,9 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
       isSubmitting,
       error,
       autoSelectBanco,
-    } = useRegistroCuentaBancaria(idProveedor, bancos, onCuentaAdded);
+    } = useRegistroCuentaBancaria(idProveedor, bancos, onCuentaAdded, {
+      monedaFija,
+    });
 
     const [openBanco, setOpenBanco] = useState(false);
 
@@ -118,7 +134,7 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
                     color="blue"
                     radius="xl"
                     onClick={() => setOpenBanco(true)}
-                    className="mb-[2px] bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
+                    className="mb-0.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
                   >
                     <IconPlus size={18} />
                   </ActionIcon>
@@ -126,18 +142,36 @@ export const RegistroCuenta = forwardRef<RegistroCuentaRef, Props>(
               </div>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Select
-                label="Moneda"
-                data={selectMonedas}
-                radius="xl"
-                value={payload.moneda}
-                onChange={(val) => handleChangeStr("moneda", val || "")}
-                classNames={{
-                  input:
-                    "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 transition-all",
-                  label: "text-zinc-400 font-medium text-xs",
-                }}
-              />
+              {monedaFija ? (
+                <div className="flex flex-col gap-1">
+                  <span className="text-zinc-400 font-medium text-xs">
+                    Moneda
+                  </span>
+                  <Badge
+                    color="blue"
+                    variant="light"
+                    radius="xl"
+                    size="lg"
+                    leftSection={<IconCash size={14} />}
+                    className="self-start mt-2"
+                  >
+                    {monedaFija}
+                  </Badge>
+                </div>
+              ) : (
+                <Select
+                  label="Moneda"
+                  data={selectMonedas}
+                  radius="xl"
+                  value={payload.moneda}
+                  onChange={(val) => handleChangeStr("moneda", val || "")}
+                  classNames={{
+                    input:
+                      "bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-zinc-300 transition-all",
+                    label: "text-zinc-400 font-medium text-xs",
+                  }}
+                />
+              )}
             </Grid.Col>
 
             <Grid.Col span={{ base: 12, md: 4 }}>

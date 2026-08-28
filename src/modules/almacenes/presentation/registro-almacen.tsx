@@ -1,20 +1,33 @@
+import { useMemo, useState } from "react";
 import {
+  Alert,
   Button,
+  Grid,
   Group,
+  Select,
+  Stack,
   TextInput,
   Textarea,
-  Switch,
-  Stack,
-  Text,
 } from "@mantine/core";
+import { IconAlertCircle, IconDeviceFloppy } from "@tabler/icons-react";
 
-interface RegistroAlmacenProps {
+import { getCoincidencias } from "../../../shared/functions/get-coincidencias";
+import { useUbicacionCompleta } from "../../../hooks/useUbicacionCompleta";
+
+interface RegistroAlmacenLogisticaProps {
   nombre: string;
   setNombre: (val: string) => void;
   descripcion: string;
   setDescripcion: (val: string) => void;
-  esPrincipal: boolean;
-  setEsPrincipal: (val: boolean) => void;
+  // Ubicacion (opcional, en cascada)
+  id_departamento: number | null;
+  setIdDepartamento: (val: number | null) => void;
+  id_provincia: number | null;
+  setIdProvincia: (val: number | null) => void;
+  id_distrito: number | null;
+  setIdDistrito: (val: number | null) => void;
+  direccion: string;
+  setDireccion: (val: string) => void;
   formError: string;
   loading: boolean;
   onSubmit: () => void;
@@ -26,15 +39,70 @@ export const RegistroAlmacen = ({
   setNombre,
   descripcion,
   setDescripcion,
-  esPrincipal,
-  setEsPrincipal,
+  id_departamento,
+  setIdDepartamento,
+  id_provincia,
+  setIdProvincia,
+  id_distrito,
+  setIdDistrito,
+  direccion,
+  setDireccion,
   formError,
   loading,
   onSubmit,
   onCancel,
-}: RegistroAlmacenProps) => {
+}: RegistroAlmacenLogisticaProps) => {
+  // Cargamos TODAS las listas de geografia al montar y filtramos localmente.
+  const { loading: loadingGeo, departamentos, provincias, distritos } =
+    useUbicacionCompleta();
+
+  const [searchDpto, setSearchDpto] = useState("");
+  const [searchProv, setSearchProv] = useState("");
+  const [searchDist, setSearchDist] = useState("");
+
+  // Filtrado local: la lista ya esta completa, no se vuelve a pedir al backend.
+  const dptosVisibles = useMemo(() => {
+    const q = searchDpto.trim();
+    if (!q) return departamentos;
+    return getCoincidencias(departamentos, q, { keys: ["nombre"] }).map(
+      (r) => r.item,
+    );
+  }, [departamentos, searchDpto]);
+
+  const provinciasDelDpto = useMemo(
+    () =>
+      id_departamento
+        ? provincias.filter((p) => p.id_departamento === id_departamento)
+        : provincias,
+    [provincias, id_departamento],
+  );
+
+  const provVisibles = useMemo(() => {
+    const q = searchProv.trim();
+    if (!q) return provinciasDelDpto;
+    return getCoincidencias(provinciasDelDpto, q, { keys: ["nombre"] }).map(
+      (r) => r.item,
+    );
+  }, [provinciasDelDpto, searchProv]);
+
+  const distritosDeLaProv = useMemo(
+    () =>
+      id_provincia
+        ? distritos.filter((d) => d.id_provincia === id_provincia)
+        : distritos,
+    [distritos, id_provincia],
+  );
+
+  const distVisibles = useMemo(() => {
+    const q = searchDist.trim();
+    if (!q) return distritosDeLaProv;
+    return getCoincidencias(distritosDeLaProv, q, { keys: ["nombre"] }).map(
+      (r) => r.item,
+    );
+  }, [distritosDeLaProv, searchDist]);
+
   const inputClasses = {
-    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300 
+    input: `bg-zinc-900/50 border-zinc-800 focus:border-zinc-300
     focus:ring-1 focus:ring-zinc-300 text-white placeholder:text-zinc-500`,
     label: "text-zinc-300 mb-1 font-medium",
   };
@@ -46,6 +114,16 @@ export const RegistroAlmacen = ({
 
   return (
     <form onSubmit={handleFormSubmit} className="relative space-y-5">
+      {formError && (
+        <Alert
+          icon={<IconAlertCircle size={16} />}
+          color="red"
+          variant="filled"
+        >
+          {formError}
+        </Alert>
+      )}
+
       <Stack gap="md">
         <TextInput
           label="Nombre del Almacén"
@@ -70,34 +148,110 @@ export const RegistroAlmacen = ({
           onChange={(e) => setDescripcion(e.currentTarget.value)}
         />
 
-        <div
-          style={{ display: "none" }}
-          className="p-3 bg-pink-500/10 border border-pink-500/20 
-          rounded-lg flex items-center justify-between"
-        >
-          <div className="flex flex-col gap-1 pr-4">
-            <Text size="sm" fw={600} className="text-pink-200">
-              ¿Es Almacén Principal?
-            </Text>
-            <Text size="xs" className="text-pink-100/70 leading-snug">
-              Si lo activa, será el punto de recepción principal.
-            </Text>
+        <div className="space-y-3">
+          <div>
+            <span className="text-zinc-300 text-sm font-medium">
+              Ubicación (opcional)
+            </span>
+            <span className="block text-xs text-zinc-500 mt-0.5">
+              Si registras la ubicación, podrás consultarla desde cualquier
+              catálogo o reporte que muestre este almacén.
+            </span>
           </div>
-          <Switch
-            checked={esPrincipal}
+
+          <Grid>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Select
+                label="Departamento"
+                placeholder={
+                  loadingGeo && departamentos.length === 0
+                    ? "Cargando..."
+                    : "Seleccione"
+                }
+                radius="lg"
+                clearable
+                searchable
+                searchValue={searchDpto}
+                onSearchChange={setSearchDpto}
+                nothingFoundMessage="Sin coincidencias"
+                data={dptosVisibles.map((d) => ({
+                  value: String(d.id),
+                  label: d.nombre,
+                }))}
+                value={id_departamento ? String(id_departamento) : null}
+                onChange={(v) => {
+                  const num = v ? Number(v) : null;
+                  setIdDepartamento(num);
+                  // cascada: limpiar hijos al cambiar el padre
+                  setIdProvincia(null);
+                  setIdDistrito(null);
+                }}
+                disabled={loadingGeo && departamentos.length === 0}
+                classNames={inputClasses}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Select
+                label="Provincia"
+                placeholder={
+                  !id_departamento
+                    ? "Seleccione un departamento"
+                    : "Seleccione"
+                }
+                radius="lg"
+                clearable
+                searchable
+                searchValue={searchProv}
+                onSearchChange={setSearchProv}
+                nothingFoundMessage="Sin coincidencias"
+                data={provVisibles.map((p) => ({
+                  value: String(p.id),
+                  label: p.nombre,
+                }))}
+                value={id_provincia ? String(id_provincia) : null}
+                onChange={(v) => {
+                  const num = v ? Number(v) : null;
+                  setIdProvincia(num);
+                  setIdDistrito(null);
+                }}
+                disabled={!id_departamento}
+                classNames={inputClasses}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 4 }}>
+              <Select
+                label="Distrito"
+                placeholder={
+                  !id_provincia ? "Seleccione una provincia" : "Seleccione"
+                }
+                radius="lg"
+                clearable
+                searchable
+                searchValue={searchDist}
+                onSearchChange={setSearchDist}
+                nothingFoundMessage="Sin coincidencias"
+                data={distVisibles.map((d) => ({
+                  value: String(d.id),
+                  label: d.nombre,
+                }))}
+                value={id_distrito ? String(id_distrito) : null}
+                onChange={(v) => setIdDistrito(v ? Number(v) : null)}
+                disabled={!id_provincia}
+                classNames={inputClasses}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <TextInput
+            label="Dirección (opcional)"
+            placeholder="Ej. Av. Principal 123"
+            radius="lg"
             disabled={loading}
-            onChange={(e) => setEsPrincipal(e.currentTarget.checked)}
-            color="pink"
-            size="md"
-            className="cursor-pointer"
+            classNames={inputClasses}
+            value={direccion}
+            onChange={(e) => setDireccion(e.currentTarget.value)}
           />
         </div>
-
-        {formError && (
-          <div className="text-red-500 text-sm font-medium px-1">
-            {formError}
-          </div>
-        )}
 
         <Group justify="flex-end" gap="md" mt="xl">
           <Button
@@ -106,8 +260,7 @@ export const RegistroAlmacen = ({
             disabled={loading}
             radius="lg"
             size="sm"
-            className="text-zinc-400 hover:text-white 
-            hover:bg-zinc-800/50 transition-colors"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
           >
             Cancelar
           </Button>
@@ -116,9 +269,8 @@ export const RegistroAlmacen = ({
             loading={loading}
             radius="lg"
             size="sm"
-            className="bg-linear-to-r from-zinc-100 to-zinc-300 
-            text-zinc-900 font-semibold hover:from-white hover:to-zinc-200 
-            shadow-lg border-0"
+            leftSection={<IconDeviceFloppy size={16} />}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20 font-semibold"
           >
             Guardar
           </Button>

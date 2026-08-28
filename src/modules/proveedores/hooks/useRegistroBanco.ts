@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { ProveedoresService } from "../service/proveedores.service";
 import { useNotify } from "../../../hooks/useNotify";
 import {
   Schema_CrearBanco,
   type CrearBancoRequest,
 } from "../service/proveedores.requests";
 import type { RES_Banco } from "../../../service/responses/banco";
+import { AuxService } from "../../../service/auxiliar.service";
 
 export const useRegistroBanco = (onSuccess: (banco: RES_Banco) => void) => {
   const [loading, setLoading] = useState(false);
@@ -34,10 +34,10 @@ export const useRegistroBanco = (onSuccess: (banco: RES_Banco) => void) => {
 
     setLoading(true);
     try {
-      const response = await ProveedoresService.crearBanco(validation.data);
+      const response = await AuxService.crear_banco(validation.data);
       notifySuccess("Banco registrado exitosamente");
       setPayload({ nombre: "", abreviatura: "" });
-      onSuccess(response);
+      onSuccess(response.data);
     } catch (e) {
       console.error(e);
       notifyError("Error al registrar banco");

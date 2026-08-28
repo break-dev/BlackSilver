@@ -1,9 +1,11 @@
-import { Paper, Stack, Group, Text } from "@mantine/core";
+import { Paper, Stack, Group, Text, Button, Tooltip } from "@mantine/core";
 import {
   UserIcon,
   CheckBadgeIcon,
   MapPinIcon,
   ClockIcon,
+  PencilSquareIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import dayjs from "dayjs";
 import { HeaderCard } from "../../../../prestamos-almacen-atencion/presentation/components/detail-elements";
@@ -11,11 +13,17 @@ import type { RES_RequerimientoAlmacen } from "../../../../../service/responses/
 
 interface InfoHeaderProps {
   requerimiento: RES_RequerimientoAlmacen;
+  puedeEditar: boolean;
+  onEditar: () => void;
 }
 
-export const InfoHeader = ({ requerimiento }: InfoHeaderProps) => {
+export const InfoHeader = ({
+  requerimiento,
+  puedeEditar,
+  onEditar,
+}: InfoHeaderProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 px-2">
       <HeaderCard
         icon={UserIcon}
         label="Solicitante"
@@ -52,7 +60,7 @@ export const InfoHeader = ({ requerimiento }: InfoHeaderProps) => {
               Fecha Requerida
             </Text>
           </Group>
-          <div className="flex-1 flex items-center min-h-[24px]">
+          <div className="flex-1 flex items-center min-h-6">
             <Text
               size="md"
               fw={800}
@@ -64,6 +72,57 @@ export const InfoHeader = ({ requerimiento }: InfoHeaderProps) => {
                   )
                 : "No especificada"}
             </Text>
+          </div>
+        </Stack>
+      </Paper>
+
+      <Paper
+        p="md"
+        radius="lg"
+        className="bg-amber-500/10 border border-amber-500/30 relative overflow-hidden"
+      >
+        <Stack gap={2} className="relative z-10 w-full h-full justify-center">
+          <Group gap={6} className="shrink-0">
+            {puedeEditar ? (
+              <PencilSquareIcon className="size-4 text-amber-400" />
+            ) : (
+              <LockClosedIcon className="size-4 text-zinc-500" />
+            )}
+            <Text
+              size="xs"
+              c={puedeEditar ? "amber.4" : "zinc.5"}
+              fw={800}
+              className="uppercase tracking-widest"
+            >
+              {puedeEditar ? "Editable" : "Bloqueado"}
+            </Text>
+          </Group>
+          <div className="flex-1 flex items-center min-h-6">
+            {puedeEditar ? (
+              <Button
+                leftSection={<PencilSquareIcon className="size-4" />}
+                color="amber"
+                size="xs"
+                radius="lg"
+                onClick={onEditar}
+                fullWidth
+              >
+                Editar Requerimiento
+              </Button>
+            ) : (
+              <Tooltip
+                label="No hay detalles sin entrega iniciada"
+                position="top"
+                withArrow
+                multiline
+                w={220}
+              >
+                <Text size="xs" c="zinc.5" fs="italic">
+                  Todos los items tienen entregas iniciadas; ya no se puede
+                  editar la cabecera ni los detalles.
+                </Text>
+              </Tooltip>
+            )}
           </div>
         </Stack>
       </Paper>

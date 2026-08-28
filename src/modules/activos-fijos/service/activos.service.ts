@@ -1,6 +1,7 @@
 import { api } from "../../../service/_api";
 import type { IRespuesta } from "../../../shared/interfaces/_response";
 import type {
+  REQ_ActualizarActivo,
   REQ_ActualizarUbicacion,
   REQ_CrearActivo,
 } from "./activos.requests";
@@ -31,7 +32,10 @@ export const ActivosService = {
         formData.append("id_mina", String(payload.id_mina));
       if (payload.id_labor != null)
         formData.append("id_labor", String(payload.id_labor));
-      if (payload.ids_labores_abastecidas && payload.ids_labores_abastecidas.length > 0) {
+      if (
+        payload.ids_labores_abastecidas &&
+        payload.ids_labores_abastecidas.length > 0
+      ) {
         formData.append(
           "ids_labores_abastecidas",
           JSON.stringify(payload.ids_labores_abastecidas),
@@ -45,8 +49,10 @@ export const ActivosService = {
       if (payload.modelo) formData.append("modelo", payload.modelo);
       if (payload.yearcito_modelo != null)
         formData.append("yearcito_modelo", String(payload.yearcito_modelo));
-      if (payload.descripcion) formData.append("descripcion", payload.descripcion);
-      if (payload.serie_placa) formData.append("serie_placa", payload.serie_placa);
+      if (payload.descripcion)
+        formData.append("descripcion", payload.descripcion);
+      if (payload.serie_placa)
+        formData.append("serie_placa", payload.serie_placa);
       if (payload.numero_placa)
         formData.append("numero_placa", payload.numero_placa);
       if (payload.especificaciones && payload.especificaciones.length > 0) {
@@ -66,7 +72,10 @@ export const ActivosService = {
       if (payload.serie_factura_compra)
         formData.append("serie_factura_compra", payload.serie_factura_compra);
       if (payload.numero_factura_compra)
-        formData.append("numero_factura_compra", payload.numero_factura_compra);
+        formData.append(
+          "numero_factura_compra",
+          payload.numero_factura_compra,
+        );
       if (payload.costo_compra != null)
         formData.append("costo_compra", String(payload.costo_compra));
 
@@ -97,6 +106,20 @@ export const ActivosService = {
   actualizarUbicacion: async (payload: REQ_ActualizarUbicacion) => {
     const { data } = await api.post<IRespuesta<number>>(
       `${path}/ubicacion`,
+      payload,
+    );
+    return data;
+  },
+
+  /**
+   * Editar un activo fijo existente (metadata + opcional cambio de ubicación).
+   */
+  actualizarActivo: async (
+    id_activo: number,
+    payload: REQ_ActualizarActivo,
+  ) => {
+    const { data } = await api.put<IRespuesta<RES_ActivoFijoResumen>>(
+      `${path}/${id_activo}`,
       payload,
     );
     return data;

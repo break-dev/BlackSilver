@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNotify } from "../../../hooks/useNotify";
 import { LotesService } from "../service/lotes.service";
 import { Schema_CrearLote } from "../service/lotes.requests";
@@ -107,12 +107,75 @@ export const useRegistroLote = ({
     productoSeleccionado.id_unidad_medida_base ===
       unidadSeleccionada.id_unidad_medida;
 
-  // Auto-set content to 1 if units are identical
+  /**
+   * Factor de conversión auto-completado desde la tabla de conversiones.
+   * - Si las unidades son idénticas: retorna 1 (implícito, no requiere lookup).
+   * - Si las unidades son diferentes y existe la conversión: retorna
+   *   "cuántas unidades base hay en 1 unidad de detalle" (p. ej. 1 Metro
+   *   = 100 Centímetros).
+   * - Si no existe conversión: retorna `null` (el usuario debe tipear el
+   *   factor manualmente).
+   *
+   * La API modela la conversión como "1 destino = factor origens". En la
+   * respuesta, la unidad consultada aparece como `id_unidad_origen` y la
+   * relacionada como `id_unidad_destino`. Como el formulario necesita
+   * "1 detalle = X base", hay que invertir el factor cuando la unidad del
+   * detalle es el origen y la base es el destino.
+   */
+  const conversionAutomatica = useMemo<number | null>(() => {
+    if (!productoSeleccionado || !idUnidadMedida) return null;
+    if (sonUnidadesIdenticas) return 1;
+
+    const unidadDetalle = unidades.find(
+      (u) => u.id_unidad_medida === idUnidadMedida,
+    );
+    if (!unidadDetalle?.conversiones) return null;
+
+    const conv = unidadDetalle.conversiones.find(
+      (c) => c.id_unidad_destino === productoSeleccionado.id_unidad_medida_base,
+    );
+    if (!conv) return null;
+
+    const factorOrigenesPorDestino = Number(conv.factor_conversion);
+    if (!factorOrigenesPorDestino || factorOrigenesPorDestino <= 0) return null;
+
+    return 1 / factorOrigenesPorDestino;
+  }, [idUnidadMedida, productoSeleccionado, unidades, sonUnidadesIdenticas]);
+
+  /**
+   * El input de `contenido_por_presentacion` debe estar bloqueado cuando el
+   * sistema ya conoce el factor (unidades idénticas o conversión registrada).
+   * En esos casos no debe permitirse al usuario manipular el factor a mano.
+   * Cuando NO existe conversión, el usuario puede tipearlo manualmente.
+   */
+  const contenidoBloqueado =
+    sonUnidadesIdenticas ||
+    (Boolean(productoSeleccionado) && conversionAutomatica !== null);
+
+  /**
+   * Auto-completar `contenido_por_presentacion` cuando cambia el producto o
+   * la unidad del detalle:
+   * - Unidades idénticas → 1.
+   * - Unidades diferentes con conversión registrada → factor de conversión.
+   * - Unidades diferentes sin conversión → no se toca (el usuario tipea).
+   *
+   * `conversionAutomatica` se lee intencionalmente fuera de las deps: añadirla
+   * provocaría que al auto-setear se sobreescriba el valor que el usuario
+   * tipeó manualmente en el caso sin conversión.
+   */
   useEffect(() => {
+    if (!idProducto || !idUnidadMedida) return;
+
     if (sonUnidadesIdenticas) {
       setContenidoPorPresentacion(1);
+      return;
     }
-  }, [sonUnidadesIdenticas]);
+
+    if (conversionAutomatica !== null) {
+      setContenidoPorPresentacion(conversionAutomatica);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idProducto, idUnidadMedida, sonUnidadesIdenticas]);
 
   // Auto-calculate costoPorUnidad based on selected product and unit/content
   useEffect(() => {
@@ -123,13 +186,21 @@ export const useRegistroLote = ({
         if (sonUnidadesIdenticas) {
           setCostoPorUnidad(baseCost);
         } else {
-          setCostoPorUnidad(Number((baseCost * (contenidoPorPresentacion || 1)).toFixed(2)));
+          setCostoPorUnidad(
+            Number((baseCost * (contenidoPorPresentacion || 1)).toFixed(2)),
+          );
         }
       }
     } else {
       setCostoPorUnidad(null);
     }
-  }, [idProducto, idUnidadMedida, sonUnidadesIdenticas, contenidoPorPresentacion, productos]);
+  }, [
+    idProducto,
+    idUnidadMedida,
+    sonUnidadesIdenticas,
+    contenidoPorPresentacion,
+    productos,
+  ]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -225,6 +296,8 @@ export const useRegistroLote = ({
       unidadBase,
       stockTotalBase,
       sonUnidadesIdenticas,
+      conversionAutomatica,
+      contenidoBloqueado,
     },
 
     handleSubmit,

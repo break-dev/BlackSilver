@@ -109,7 +109,7 @@ export const CompraCarbonPage = () => {
         opened={openRegistro}
         close={() => setOpenRegistro(false)}
         title="Nueva Compra de Carbon"
-        size="xl"
+        size="55%"
       >
         <RegistroCompraCarbon
           onCancel={() => setOpenRegistro(false)}

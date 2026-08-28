@@ -13,8 +13,20 @@ import type {
 const path = "/tipo-carbon";
 
 export const TipoCarbonService = {
-  getTipos: async (): Promise<IRespuesta<RES_TipoCarbon[]>> => {
-    const { data } = await api.get<IRespuesta<RES_TipoCarbon[]>>(`${path}`);
+  getTipos: async (filters?: {
+    para_compra?: boolean;
+  }): Promise<IRespuesta<RES_TipoCarbon[]>> => {
+    const params = filters
+      ? {
+          ...(filters.para_compra !== undefined && {
+            para_compra: filters.para_compra ? 1 : 0,
+          }),
+        }
+      : undefined;
+
+    const { data } = await api.get<IRespuesta<RES_TipoCarbon[]>>(`${path}`, {
+      params,
+    });
     return data;
   },
 

@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Badge,
   Button,
   Group,
   NumberInput,
@@ -27,6 +28,7 @@ import {
   BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useRegistroRequerimiento } from "../../hooks/useRegistroRequerimiento";
+import type { ModoRequerimiento } from "../../hooks/useRegistroRequerimiento";
 import { Premura } from "../../../../shared/enums/_generic/premura";
 import { TipoBien } from "../../../../shared/enums/_generic/tipo-bien";
 import { CustomDatePicker } from "../../../../presentation/utils/date-picker-input";
@@ -35,9 +37,13 @@ import { formatNumber } from "../../../../shared/functions/formatNumber";
 import { MultiFilePicker } from "../../../../presentation/utils/archivo/multifile-picker";
 import type { RES_Producto } from "../../../../service/responses/producto";
 import type { RES_UnidadMedida } from "../../../../service/responses/unidad-medida";
-import type { RES_RequerimientoAlmacen } from "../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type {
+  RES_DetalleRequerimiento,
+  RES_RequerimientoAlmacen,
+} from "../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
 
 interface RegistroRequerimientoProps {
+  modo?: ModoRequerimiento;
   onSuccess: (
     item: RES_RequerimientoAlmacen,
     printerTarget?: string,
@@ -45,6 +51,8 @@ interface RegistroRequerimientoProps {
   ) => void;
   onCancel: () => void;
   idAlmacenFijo?: number;
+  requerimientoInicial?: RES_RequerimientoAlmacen;
+  detallesIniciales?: RES_DetalleRequerimiento[];
 }
 
 const SectionHeader = ({
@@ -66,9 +74,12 @@ const SectionHeader = ({
 );
 
 export const RegistroRequerimiento = ({
+  modo = "crear",
   onSuccess,
   onCancel,
   idAlmacenFijo,
+  requerimientoInicial,
+  detallesIniciales,
 }: RegistroRequerimientoProps) => {
   const {
     state: {
@@ -138,7 +149,15 @@ export const RegistroRequerimiento = ({
       actualizarTotalBaseItem,
       handleSubmit,
     },
-  } = useRegistroRequerimiento({ onSuccess, idAlmacenFijo });
+  } = useRegistroRequerimiento({
+    modo,
+    onSuccess,
+    idAlmacenFijo,
+    requerimientoInicial,
+    detallesIniciales,
+  });
+
+  const esEdicion = modo === "editar";
 
   const inputClasses = {
     input:
@@ -366,7 +385,10 @@ export const RegistroRequerimiento = ({
 
       {/* inputs para llenar el detalle del requerimiento  */}
       <section>
-        <SectionHeader icon={ShoppingCartIcon} title="Items a solicitar" />
+        <SectionHeader
+          icon={ShoppingCartIcon}
+          title={esEdicion ? "Agregar más productos" : "Items a solicitar"}
+        />
 
         <div className="">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-6 items-end">
@@ -673,10 +695,10 @@ export const RegistroRequerimiento = ({
           <thead className="bg-zinc-900 text-zinc-400 text-xs font-medium">
             <tr>
               <th className="px-4 py-3 text-center w-12">#</th>
-              <th className="px-4 py-3 text-left font-semibold min-w-37.5">
+              <th className="px-4 py-3 text-left font-semibold min-w-32">
                 Producto
               </th>
-              <th className="px-4 py-3 text-center min-w-75">Cantidad</th>
+              <th className="px-3 py-2 text-center min-w-65">Cantidad</th>
               <th className="px-4 py-3 text-left font-semibold min-w-55">
                 Comentario
               </th>
@@ -730,7 +752,9 @@ export const RegistroRequerimiento = ({
                 return (
                   <tr
                     key={index}
-                    className="hover:bg-white/5 transition-colors"
+                    className={`hover:bg-white/5 transition-colors ${
+                      det.bloqueado ? "opacity-60" : ""
+                    }`}
                   >
                     <td className="px-4 py-3 text-xs text-center text-zinc-500">
                       {index + 1}
@@ -740,21 +764,31 @@ export const RegistroRequerimiento = ({
                         <span>{prod?.nombre}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <Group gap={4} align="center">
-                        {/* Bloque único: TOTAL REAL en unidad base del producto */}
+                    <td className="px-3 py-2 text-center">
+                      <Group
+                        gap="md"
+                        align="center"
+                        justify="center"
+                        w="100%"
+                        wrap="nowrap"
+                      >
+                        {/* Bloque principal: TOTAL REAL en unidad base del producto */}
                         <div
-                          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all ${conError ? "bg-red-900/10 border-red-500" : "bg-zinc-950/40 border-zinc-800"}`}
+                          className={`flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
+                            conError
+                              ? "bg-red-900/10 border-red-500"
+                              : "bg-zinc-950/40 border-zinc-800"
+                          }`}
                         >
-                          <NumberInput
-                            variant="unstyled"
+                          <input
+                            type="number"
                             value={totalBase}
-                            onChange={onChangeTotalBase}
-                            size="xs"
-                            hideControls
-                            classNames={{
-                              input: `w-fit min-w-[40px] max-w-[70px] text-center font-black text-xs h-5 bg-transparent ${conError ? "text-red-400" : "text-cyan-400"}`,
-                            }}
+                            onChange={(e) => onChangeTotalBase(e.target.value)}
+                            disabled={det.bloqueado}
+                            step="any"
+                            className={`w-12 bg-transparent text-center font-black text-xs h-5 outline-none focus:bg-zinc-900/60 rounded px-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                              conError ? "text-red-400" : "text-cyan-400"
+                            }`}
                           />
                           <Text
                             size="9px"
@@ -765,11 +799,10 @@ export const RegistroRequerimiento = ({
                           </Text>
                         </div>
 
-                        {/* Subtítulo: muestra los componentes editables
-                            que el usuario ingresó originalmente.
+                        {/* Componentes editables: cualquier valor que el usuario
+                            tipeó debe poder editarse; los demás se recalculan.
                             Aplicamos la heurística de Nielsen "user control
-                            and freedom": cualquier valor que el usuario tipeó
-                            debe poder editarse; los demás se recalculan. */}
+                            and freedom". */}
                         {(() => {
                           // Caso 1: ítem con magnitud por unidad (smart calc
                           // activo) → "N × M {unidad detalle} c/u"
@@ -777,35 +810,37 @@ export const RegistroRequerimiento = ({
                             const items = det.cantidad_items ?? 0;
                             const mag = det.valor_magnitud ?? 0;
                             return (
-                              <div className="flex items-center gap-1.5 text-zinc-500">
-                                <NumberInput
+                              <div className="flex items-center justify-center gap-1.5 text-zinc-500">
+                                <input
+                                  type="number"
                                   value={items}
-                                  onChange={(val) =>
-                                    actualizarCantidadItems(index, Number(val))
+                                  onChange={(e) =>
+                                    actualizarCantidadItems(
+                                      index,
+                                      Number(e.target.value),
+                                    )
                                   }
-                                  size="xs"
-                                  hideControls
+                                  disabled={det.bloqueado}
+                                  step="any"
                                   min={0}
-                                  classNames={{
-                                    input:
-                                      "w-fit min-w-[24px] max-w-[40px] text-center font-bold h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
-                                  }}
+                                  className="w-10 bg-transparent text-center font-bold text-xs h-5 outline-none border-b border-transparent hover:border-zinc-700 focus:border-indigo-400 focus:text-cyan-400 px-1 transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 />
-                                <Text size="xs" fw={400} c={"gray.2"}>
-                                  {enPlural(prod?.nombre, items)}{" "}x
+                                <Text size="xs" fw={400} c="gray.2">
+                                  {enPlural(prod?.nombre, items)} x
                                 </Text>
-                                <NumberInput
+                                <input
+                                  type="number"
                                   value={mag}
-                                  onChange={(val) =>
-                                    actualizarValorMagnitud(index, Number(val))
+                                  onChange={(e) =>
+                                    actualizarValorMagnitud(
+                                      index,
+                                      Number(e.target.value),
+                                    )
                                   }
-                                  size="xs"
-                                  hideControls
+                                  disabled={det.bloqueado}
+                                  step="any"
                                   min={0}
-                                  classNames={{
-                                    input:
-                                      "w-fit min-w-[24px] max-w-[40px] text-center font-bold h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
-                                  }}
+                                  className="w-14 bg-transparent text-center font-bold text-xs h-5 outline-none border-b border-transparent hover:border-zinc-700 focus:border-indigo-400 focus:text-cyan-400 px-1 transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 />
                                 <Text
                                   size="xs"
@@ -824,47 +859,44 @@ export const RegistroRequerimiento = ({
                             (det.cantidad_solicitada ?? 0) > 0
                           ) {
                             return (
-                              <div className="flex items-center gap-1.5 text-zinc-500">
-                                <NumberInput
-                                  variant="unstyled"
+                              <div className="flex items-center justify-center gap-1.5 text-zinc-500">
+                                <input
+                                  type="number"
                                   value={det.cantidad_solicitada}
-                                  onChange={(val) =>
+                                  onChange={(e) =>
                                     actualizarCantidadDetalleItem(
                                       index,
-                                      Number(val),
+                                      Number(e.target.value),
                                     )
                                   }
-                                  size="xs"
-                                  hideControls
+                                  disabled={det.bloqueado}
+                                  step="any"
                                   min={0}
-                                  classNames={{
-                                    input:
-                                      "w-fit min-w-[30px] max-w-[50px] text-center font-bold  h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
-                                  }}
+                                  className="w-14 bg-transparent text-center font-bold text-xs h-5 outline-none border-b border-transparent hover:border-zinc-700 focus:border-indigo-400 focus:text-cyan-400 px-1 transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 />
                                 <Text
-                                  size="9px"
+                                  size="xs"
                                   fw={700}
                                   className="uppercase whitespace-nowrap"
                                 >
-                                  ×
+                                  x
                                 </Text>
-                                <NumberInput
-                                  variant="unstyled"
+                                <input
+                                  type="number"
                                   value={det.contenido_por_presentacion}
-                                  onChange={(val) =>
-                                    actualizarFactorItem(index, Number(val))
+                                  onChange={(e) =>
+                                    actualizarFactorItem(
+                                      index,
+                                      Number(e.target.value),
+                                    )
                                   }
-                                  size="xs"
-                                  hideControls
+                                  disabled={det.bloqueado}
+                                  step="any"
                                   min={0}
-                                  classNames={{
-                                    input:
-                                      "w-fit min-w-[30px] max-w-[50px] text-center font-bold  h-4 bg-transparent text-zinc-300 hover:text-white focus:text-cyan-400 px-1 rounded transition-colors",
-                                  }}
+                                  className="w-14 bg-transparent text-center font-bold text-xs h-5 outline-none border-b border-transparent hover:border-zinc-700 focus:border-indigo-400 focus:text-cyan-400 px-1 transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 />
                                 <Text
-                                  size="9px"
+                                  size="xs"
                                   fw={700}
                                   className="uppercase whitespace-nowrap"
                                 >
@@ -889,15 +921,27 @@ export const RegistroRequerimiento = ({
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => eliminarItem(index)}
-                        radius="md"
-                        size="sm"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </ActionIcon>
+                      {det.bloqueado ? (
+                        <Badge
+                          variant="light"
+                          color="orange"
+                          radius="md"
+                          size="sm"
+                          className="font-semibold"
+                        >
+                          Entrega iniciada
+                        </Badge>
+                      ) : (
+                        <ActionIcon
+                          color="red"
+                          variant="subtle"
+                          onClick={() => eliminarItem(index)}
+                          radius="md"
+                          size="sm"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </ActionIcon>
+                      )}
                     </td>
                   </tr>
                 );
@@ -934,7 +978,11 @@ export const RegistroRequerimiento = ({
         <Button
           onClick={handleSubmit}
           loading={submitting}
-          disabled={detalles.length === 0}
+          disabled={
+            esEdicion
+              ? !detalles.some((d) => !d.bloqueado)
+              : detalles.length === 0
+          }
           radius="lg"
           className={`font-semibold shadow-lg border-0 px-8 transition-all ${
             detalles.some(
@@ -942,10 +990,10 @@ export const RegistroRequerimiento = ({
                 d.cantidad_solicitada <= 0 || d.contenido_por_presentacion <= 0,
             )
               ? "bg-red-900/50 text-red-200 cursor-not-allowed border border-red-500/50"
-              : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200"
+              : "bg-linear-to-r from-zinc-100 to-zinc-300 text-zinc-900 hover:from-white hover:to-zinc-200 hover:text-black"
           }`}
         >
-          Guardar Requerimiento
+          {esEdicion ? "Guardar Cambios" : "Guardar Requerimiento"}
         </Button>
       </Group>
     </Stack>

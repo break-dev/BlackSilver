@@ -145,16 +145,6 @@ export const useGestionAtencion = ({
 
   const onSuccessLogistica = (ids?: number[]) => {
     if (!ids) return;
-    setDetalles((prev) =>
-      prev.map((item) =>
-        ids.includes(item.id_requerimiento_almacen_detalle)
-          ? {
-              ...item,
-              estado: Estado_RequerimientoDetalle.ConsultaLogistica,
-            }
-          : item,
-      ),
-    );
     handleCloseLogisticaModal();
     onSuccess(ids);
   };
