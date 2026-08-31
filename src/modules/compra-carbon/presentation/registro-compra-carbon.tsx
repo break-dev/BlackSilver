@@ -724,8 +724,6 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
               size="sm"
               min={0}
               max={100}
-              decimalScale={2}
-              fixedDecimalScale
               disabled={!aplicaIgv}
               value={porcentajeIgv}
               onChange={(v) => setPorcentajeIgv(v)}
@@ -804,7 +802,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Select
-              label="Representante"
+              label="Contacto (opc.)"
               placeholder={
                 !idProveedor
                   ? "Seleccione un proveedor"
@@ -899,7 +897,6 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                     disabled={!linea.id_tipo_carbon}
                     min={0}
                     max={100}
-                    decimalScale={2}
                     fixedDecimalScale
                     value={linea.porcentaje_ceniza}
                     onChange={(v) =>
@@ -914,11 +911,11 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                 </Grid.Col>
                 <Grid.Col span={{ base: 6, md: 3 }}>
                   <NumberInput
-                    label={idx === 0 ? "Cantidad (TN)" : undefined}
+                    label={idx === 0 ? "Toneladas" : undefined}
                     radius="lg"
                     size="sm"
                     min={0}
-                    decimalScale={2}
+                    required
                     value={linea.cantidad}
                     onChange={(v) =>
                       handleLineaChange(
@@ -932,11 +929,11 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                 </Grid.Col>
                 <Grid.Col span={{ base: 6, md: 3 }}>
                   <NumberInput
-                    label={idx === 0 ? "Precio unitario" : undefined}
+                    label={idx === 0 ? "Precio × TN" : undefined}
                     radius="lg"
                     size="sm"
                     min={0}
-                    decimalScale={2}
+                    required
                     fixedDecimalScale
                     value={linea.precio_unitario}
                     onChange={(v) =>
@@ -973,7 +970,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                         >
                           {`Tarifa aplicada: ${tarifa.inicio_porcentaje_ceniza}% - ${tarifa.fin_porcentaje_ceniza}% ceniza · S/ ${formatNumber(
                             Number(tarifa.precio_unitario),
-                          )}/TON`}
+                          )} × TN`}
                         </Badge>
                       );
                     }
@@ -1070,6 +1067,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                         size="sm"
                         searchable
                         clearable
+                        required
                         disabled={!idProveedor}
                         data={opcionesLugares}
                         value={
@@ -1128,6 +1126,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                         placeholder="ABC-123"
                         radius="lg"
                         size="sm"
+                        required
                         value={linea.placa}
                         onChange={(e) =>
                           handleLineaChange(
@@ -1141,8 +1140,9 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 12, md: 3 }}>
                       <TextInput
-                        label="Codigo ticket balanza"
+                        label="Ticket balanza"
                         placeholder="T-0001"
+                        required
                         radius="lg"
                         size="sm"
                         value={linea.codigo_ticket_balanza}
@@ -1150,7 +1150,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                           handleLineaChange(
                             idx,
                             "codigo_ticket_balanza",
-                            e.currentTarget.value,
+                            e.currentTarget.value.toUpperCase(),
                           )
                         }
                         classNames={inputClasses}
@@ -1163,8 +1163,8 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                         radius="lg"
                         size="sm"
                         min={0}
+                        required
                         max={100}
-                        decimalScale={2}
                         fixedDecimalScale
                         value={linea.porcentaje_humedad}
                         onChange={(v) =>
@@ -1182,13 +1182,14 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                         label="Guia remitente"
                         placeholder="GR-0001"
                         radius="lg"
+                        required
                         size="sm"
                         value={linea.guia_remitente}
                         onChange={(e) =>
                           handleLineaChange(
                             idx,
                             "guia_remitente",
-                            e.currentTarget.value,
+                            e.currentTarget.value.toUpperCase(),
                           )
                         }
                         classNames={inputClasses}
@@ -1196,7 +1197,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                     </Grid.Col>
                     <Grid.Col span={{ base: 6, md: 3 }}>
                       <TextInput
-                        label="Guia transportista"
+                        label="Guia transportista (opc.)"
                         placeholder="GT-0001"
                         radius="lg"
                         size="sm"
@@ -1205,7 +1206,7 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                           handleLineaChange(
                             idx,
                             "guia_transportista",
-                            e.currentTarget.value,
+                            e.currentTarget.value.toUpperCase(),
                           )
                         }
                         classNames={inputClasses}
@@ -1302,11 +1303,11 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
                       </Grid.Col>
                       <Grid.Col span={{ base: 6, md: 3 }}>
                         <NumberInput
-                          label="Costo flete x TN"
+                          label="Costo flete × TN"
                           radius="lg"
                           size="sm"
+                          required
                           min={0}
-                          decimalScale={2}
                           fixedDecimalScale
                           value={linea.costo_flete_por_tonelada}
                           onChange={(v) =>

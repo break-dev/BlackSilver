@@ -105,8 +105,7 @@ export const FormTarifaCarbon = ({
       return "Inicio del rango de ceniza invalido";
     if (!Number.isFinite(fin) || fin < 0)
       return "Fin del rango de ceniza invalido";
-    if (inicio >= fin)
-      return "El inicio del rango debe ser menor que el fin";
+    if (inicio >= fin) return "El inicio del rango debe ser menor que el fin";
     if (inicio > 100 || fin > 100)
       return "Los porcentajes de ceniza no pueden superar 100";
     if (!Number.isFinite(precio) || precio <= 0)
@@ -114,12 +113,10 @@ export const FormTarifaCarbon = ({
     return null;
   };
 
-  const submitValido = useMemo(() => validate() === null, [
-    idTipoCarbon,
-    inicioCeniza,
-    finCeniza,
-    precioUnitario,
-  ]);
+  const submitValido = useMemo(
+    () => validate() === null,
+    [idTipoCarbon, inicioCeniza, finCeniza, precioUnitario],
+  );
 
   const onSubmit = async () => {
     setError(null);
@@ -194,7 +191,6 @@ export const FormTarifaCarbon = ({
             radius="xl"
             min={0}
             max={100}
-            decimalScale={2}
             fixedDecimalScale
             value={inicioCeniza}
             onChange={(v) => {
@@ -212,7 +208,6 @@ export const FormTarifaCarbon = ({
             radius="xl"
             min={0}
             max={100}
-            decimalScale={2}
             fixedDecimalScale
             value={finCeniza}
             onChange={(v) => {
