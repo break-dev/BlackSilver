@@ -36,7 +36,11 @@ interface GroupByProductoProps {
     idActivo: number,
     cant: number,
   ) => void;
-  handleDestinoChange: (key: string, field: string, value: string | number | null) => void;
+  handleDestinoChange: (
+    key: string,
+    field: string,
+    value: string | number | null,
+  ) => void;
 }
 
 export const GroupByProducto = ({
@@ -82,12 +86,7 @@ export const GroupByProducto = ({
           </div>
 
           <Group gap="sm">
-            <Badge
-              variant="dot"
-              color="zinc.5"
-              size="sm"
-              className="bg-zinc-800/50 border-zinc-700/50 text-zinc-400 font-bold px-3 py-3 rounded-lg"
-            >
+            <Badge variant="dot" color="grape.5" size="sm">
               Min: {formatNumber(group.stock_minimo_base)}{" "}
               {group.unidad_medida_base_abv}
             </Badge>
@@ -99,7 +98,6 @@ export const GroupByProducto = ({
                   : "teal"
               }
               size="sm"
-              className="bg-zinc-800/50 border-zinc-700/50 text-zinc-300 font-bold px-3 py-3 rounded-lg"
             >
               Disponible: {formatNumber(group.stock_disponible)}{" "}
               {group.unidad_medida_base_abv}

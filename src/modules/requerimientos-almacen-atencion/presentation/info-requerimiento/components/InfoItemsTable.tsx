@@ -75,8 +75,8 @@ export const InfoItemsTable = ({
             <TruckIcon className="size-5 text-indigo-400" />
           </div>
           <Text
-            fw={800}
-            className="text-zinc-100 italic tracking-tight text-lg"
+            fw={700}
+            className="text-zinc-100 italic tracking-tight text-sm"
           >
             Items Solicitados
           </Text>
@@ -160,8 +160,8 @@ export const InfoItemsTable = ({
         <Table verticalSpacing="md" horizontalSpacing="xl">
           <thead className="bg-zinc-900/80 text-zinc-400 text-xs font-bold tracking-wider">
             <tr>
-              <th className="px-6 py-4 text-center w-12">#</th>
-              <th className="px-4 py-4 text-center w-10">
+              <th className="px-6 py-4 text-center flex flex-row gap-3 justify-center items-center">
+                #
                 {detalles.some(
                   (d) =>
                     d.estado ===
@@ -182,7 +182,7 @@ export const InfoItemsTable = ({
                 )}
               </th>
               <th className="px-6 py-4 text-left">Producto</th>
-              <th className="px-6 py-4 text-center min-w-[180px]">
+              <th className="px-6 py-4 text-center min-w-45">
                 Cantidad solicitada
               </th>
               <th className="px-6 py-4 text-center w-44">Progreso</th>
@@ -216,10 +216,8 @@ export const InfoItemsTable = ({
                   key={item.id_requerimiento_almacen_detalle}
                   className="hover:bg-zinc-900/40 transition-colors group"
                 >
-                  <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500">
+                  <td className="px-6 py-4 text-center text-xs font-mono text-zinc-500 flex flex-row items-center justify-center gap-3">
                     {idx + 1}
-                  </td>
-                  <td className="px-4 py-4 text-center">
                     {item.estado ===
                       Estado_RequerimientoDetalle.Aprobado.toString() ||
                     item.estado ===
@@ -248,6 +246,7 @@ export const InfoItemsTable = ({
                       </div>
                     )}
                   </td>
+
                   <td className="px-6 py-4">
                     <Stack gap={4}>
                       <Text
@@ -435,59 +434,59 @@ export const InfoItemsTable = ({
 
                       {item.estado ===
                         Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
-                          <>
-                            <Tooltip label="Aprobar" position="top" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="green"
-                                onClick={() => {
-                                  setSelectedItemId(
-                                    item.id_requerimiento_almacen_detalle,
-                                  );
-                                  openAprobar();
-                                }}
-                                disabled={isProcessing !== null}
-                              >
-                                <CheckCircleIcon className="size-5 text-white" />
-                              </ActionIcon>
-                            </Tooltip>
+                        <>
+                          <Tooltip label="Aprobar" position="top" withArrow>
+                            <ActionIcon
+                              variant="filled"
+                              color="green"
+                              onClick={() => {
+                                setSelectedItemId(
+                                  item.id_requerimiento_almacen_detalle,
+                                );
+                                openAprobar();
+                              }}
+                              disabled={isProcessing !== null}
+                            >
+                              <CheckCircleIcon className="size-5 text-white" />
+                            </ActionIcon>
+                          </Tooltip>
 
-                            <Tooltip label="Rechazar" position="top" withArrow>
-                              <ActionIcon
-                                variant="filled"
-                                color="red"
-                                onClick={() => {
-                                  setSelectedItemId(
-                                    item.id_requerimiento_almacen_detalle,
-                                  );
-                                  openRechazo();
-                                }}
-                                disabled={isProcessing !== null}
-                              >
-                                <XCircleIcon className="size-5 text-white" />
-                              </ActionIcon>
-                            </Tooltip>
-                          </>
-                        )}
+                          <Tooltip label="Rechazar" position="top" withArrow>
+                            <ActionIcon
+                              variant="filled"
+                              color="red"
+                              onClick={() => {
+                                setSelectedItemId(
+                                  item.id_requerimiento_almacen_detalle,
+                                );
+                                openRechazo();
+                              }}
+                              disabled={isProcessing !== null}
+                            >
+                              <XCircleIcon className="size-5 text-white" />
+                            </ActionIcon>
+                          </Tooltip>
+                        </>
+                      )}
 
                       {item.estado ===
                         Estado_RequerimientoDetalle.EsperandoAprobacion.toString() && (
-                          <Tooltip label="Acción masiva" position="top" withArrow>
-                            <Checkbox
-                              size="xs"
-                              color="indigo"
-                              checked={idsParaAccionMasiva.includes(
+                        <Tooltip label="Acción masiva" position="top" withArrow>
+                          <Checkbox
+                            size="xs"
+                            color="indigo"
+                            checked={idsParaAccionMasiva.includes(
+                              item.id_requerimiento_almacen_detalle,
+                            )}
+                            onChange={() =>
+                              toggleSeleccionMasiva(
                                 item.id_requerimiento_almacen_detalle,
-                              )}
-                              onChange={() =>
-                                toggleSeleccionMasiva(
-                                  item.id_requerimiento_almacen_detalle,
-                                )
-                              }
-                              className="ml-1"
-                            />
-                          </Tooltip>
-                        )}
+                              )
+                            }
+                            className="ml-1"
+                          />
+                        </Tooltip>
+                      )}
                     </Group>
                   </td>
                 </tr>

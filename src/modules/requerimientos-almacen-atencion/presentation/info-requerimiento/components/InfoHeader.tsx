@@ -27,7 +27,7 @@ export const InfoHeader = ({
       <HeaderCard
         icon={UserIcon}
         label="Solicitante"
-        value={requerimiento.solicitante}
+        value={requerimiento.solicitante ?? "---"}
         color="indigo"
       />
       <HeaderCard
@@ -39,7 +39,7 @@ export const InfoHeader = ({
       <HeaderCard
         icon={MapPinIcon}
         label="Labor"
-        value={requerimiento.labor}
+        value={requerimiento.labor ?? "---"}
         color="amber"
       />
       <Paper

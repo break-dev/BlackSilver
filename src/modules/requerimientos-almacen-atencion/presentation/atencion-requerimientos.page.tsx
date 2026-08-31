@@ -55,7 +55,8 @@ export const RequerimientosAlmacenAtencionPage = () => {
   const [openedGestion, { open: openGestion, close: closeGestion }] =
     useDisclosure(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [selectedRequerimiento, setSelectedRequerimiento] = useState<RES_RequerimientoAlmacen | null>(null);
+  const [selectedRequerimiento, setSelectedRequerimiento] =
+    useState<RES_RequerimientoAlmacen | null>(null);
 
   const [openedRegistro, { open: openReg, close: closeReg }] =
     useDisclosure(false);
@@ -482,7 +483,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
         close={closeReg}
         validateClose
         title={`${almacenes.find((a) => String(a.id_almacen) === idAlmacen)?.nombre} - Nuevo Requerimiento`}
-        size="xxl"
+        size="75rem"
       >
         <RegistroRequerimiento
           idAlmacenFijo={idAlmacen ? Number(idAlmacen) : undefined}
@@ -537,12 +538,17 @@ export const RequerimientosAlmacenAtencionPage = () => {
                   if (!selectedId || nuevasEvidencias.length === 0) return;
                   setSubiendoEvidencias(true);
                   try {
-                    const res = await AtencionService.subirEvidencias(selectedId, nuevasEvidencias);
+                    const res = await AtencionService.subirEvidencias(
+                      selectedId,
+                      nuevasEvidencias,
+                    );
                     if (res.success && res.data) {
                       notifySuccess("Evidencias agregadas correctamente");
                       setEvidenciasActuales(res.data);
                       setNuevasEvidencias([]);
-                      updateRequirementLocal(selectedId, { evidencias: res.data });
+                      updateRequirementLocal(selectedId, {
+                        evidencias: res.data,
+                      });
                     } else {
                       notifyError(res.message || "Error al subir evidencias");
                     }
@@ -568,7 +574,7 @@ export const RequerimientosAlmacenAtencionPage = () => {
           setSelectedRequerimiento(null);
         }}
         title={`Atender Requerimiento de Almacén`}
-        size="95%"
+        size="80rem"
       >
         {selectedRequerimiento && (
           <InfoRequerimiento

@@ -30,7 +30,11 @@ interface GroupByDetalleRequerimientoProps {
     idActivo: number,
     cant: number,
   ) => void;
-  handleDestinoChange: (key: string, field: string, value: string | number | null) => void;
+  handleDestinoChange: (
+    key: string,
+    field: string,
+    value: string | number | null,
+  ) => void;
 }
 
 export const GroupByDetalleRequerimiento = ({
@@ -82,13 +86,8 @@ export const GroupByDetalleRequerimiento = ({
           </div>
           {detalle_req.id_unidad_medida_base !==
             detalle_req.id_unidad_medida_req && (
-            <Badge
-              size="9px"
-              variant="transparent"
-              c="zinc.5"
-              className="font-bold italic"
-            >
-              Eqv: {formatNumber(detalle_req.cantidad_solicitada_base)}{" "}
+            <Badge size="sm" variant="transparent" c="blue">
+              {formatNumber(detalle_req.cantidad_solicitada_base)}{" "}
               {detalle_req.unidad_medida_base_abv}
             </Badge>
           )}
@@ -96,28 +95,24 @@ export const GroupByDetalleRequerimiento = ({
 
         <div className="flex items-center gap-2.5 w-full lg:w-auto self-end">
           {/* Por Entregar */}
-          <div className="flex-1 lg:flex-none flex items-center gap-3 bg-linear-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-2 px-4 shadow-sm min-w-[110px]">
+          <div className="flex-1 lg:flex-none flex items-center gap-3 bg-linear-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-2 px-4 shadow-sm min-w-27.5">
             <div className="flex flex-row gap-1.5">
               <Text
-                size="9px"
-                c="red.4"
-                fw={900}
+                size="10px"
+                c="pink"
+                fw={700}
                 className="uppercase self-center"
               >
                 Pendiente
               </Text>
               <div className="flex items-baseline gap-1">
-                <Text
-                  size="xs"
-                  fw={900}
-                  className="text-red-500 font-mono tracking-tighter"
-                >
+                <Text size="xs" fw={900} c={"pink"}>
                   {formatNumber(pendienteBase)}
                 </Text>
                 <Text
                   size="10px"
-                  fw={800}
-                  c="zinc.5"
+                  fw={700}
+                  c="pink.1"
                   className="uppercase opacity-60"
                 >
                   {detalle_req.unidad_medida_base_abv}
@@ -128,7 +123,7 @@ export const GroupByDetalleRequerimiento = ({
 
           {/* Despachando */}
           <div
-            className={`flex-1 lg:flex-none flex items-center gap-3 border border-sky-500/20 rounded-xl p-2 px-4 shadow-sm min-w-[130px] transition-all duration-300 ${
+            className={`flex-1 lg:flex-none flex items-center gap-3 border border-sky-500/20 rounded-xl p-2 px-4 shadow-sm min-w-32.5 transition-all duration-300 ${
               tEntregadoDetalleActualBase > 0
                 ? "bg-linear-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/30 shadow-emerald-500/5"
                 : "bg-linear-to-br from-indigo-500/5 to-zinc-800/10 border-zinc-800/80 shadow-inner"
@@ -136,9 +131,9 @@ export const GroupByDetalleRequerimiento = ({
           >
             <div className="flex flex-row gap-1.5">
               <Text
-                size="9px"
-                c={tEntregadoDetalleActualBase > 0 ? "emerald.3" : "indigo.4"}
-                fw={900}
+                size="10px"
+                c={tEntregadoDetalleActualBase > 0 ? "teal.3" : "indigo.4"}
+                fw={700}
                 className="uppercase self-center"
               >
                 Despachando

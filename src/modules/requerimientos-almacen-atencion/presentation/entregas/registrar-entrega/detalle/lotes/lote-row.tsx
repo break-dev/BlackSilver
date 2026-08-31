@@ -101,31 +101,24 @@ export const LoteRow = ({
           </Text>
         )}
       </td>
-      <td className="text-center">
-        <div className="flex flex-col gap-1 items-center justify-center">
-          <Badge
-            variant="light"
-            color="zinc.4"
-            className="bg-zinc-800/30 font-black h-7"
-          >
-            {formatNumber(stockVisible)} {detalle_req.unidad_medida_base_abv}
-          </Badge>
-          {lote.id_unidad_medida_lote !== detalle_req.id_unidad_medida_base && (
-            <Text size="10px" c="teal.4" fw={800} className="font-mono">
-              (
-              {formatNumber(
-                stockVisible / (lote.contenido_por_presentacion || 1),
-              )}{" "}
-              {lote.unidad_medida_lote_abv})
-            </Text>
-          )}
-        </div>
+      <td className="text-center flex flex-col gap-1 items-center justify-center py-3">
+        {lote.id_unidad_medida_lote !== detalle_req.id_unidad_medida_base && (
+          <Text size="xs" c="teal.4" fw={800} className="font-mono">
+            {formatNumber(
+              stockVisible / (lote.contenido_por_presentacion || 1),
+            )}{" "}
+            {lote.unidad_medida_lote_abv}
+          </Text>
+        )}
+        <Badge variant="light" color="blue.4" size="sm">
+          {formatNumber(stockVisible)} {detalle_req.unidad_medida_base_abv}
+        </Badge>
       </td>
       <td className="text-center">
         <div className="flex items-center justify-center gap-3">
           {lote.id_unidad_medida_lote !== detalle_req.id_unidad_medida_base && (
             <NumberInput
-              size="sm"
+              size="xs"
               radius="xl"
               min={0}
               max={maxLote}
@@ -142,24 +135,27 @@ export const LoteRow = ({
                 handleCantLoteChange(idDetalleReq, lote.id_lote, Number(val))
               }
               placeholder="0"
-              decimalScale={4}
               clampBehavior="strict"
               hideControls
               rightSection={
-                <Text size="xs" fw={900} c="zinc.5" style={{ pointerEvents: "none", userSelect: "none" }}>
+                <Text
+                  size="11px"
+                  fw={600}
+                  c="teal"
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
                   {lote.unidad_medida_lote_abv}
                 </Text>
               }
-              rightSectionWidth={52}
-              className="w-36"
+              rightSectionWidth={48}
               classNames={{
-                input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-[52px]`,
+                input: `w-24`,
               }}
             />
           )}
 
           <NumberInput
-            size="sm"
+            size="xs"
             radius="xl"
             min={0}
             max={maxBase}
@@ -168,24 +164,27 @@ export const LoteRow = ({
               handleCantChange(idDetalleReq, lote.id_lote, Number(val))
             }
             placeholder="0"
-            decimalScale={4}
             clampBehavior="strict"
             hideControls
             rightSection={
-              <Text size="xs" fw={900} c="zinc.5" style={{ pointerEvents: "none", userSelect: "none" }}>
+              <Text
+                size="11px"
+                fw={600}
+                c="blue"
+                style={{ pointerEvents: "none", userSelect: "none" }}
+              >
                 {detalle_req.unidad_medida_base_abv}
               </Text>
             }
-            rightSectionWidth={52}
-            className="w-36"
+            rightSectionWidth={48}
             classNames={{
-              input: `bg-zinc-950/50 border-zinc-800 focus:border-indigo-500/50 font-black text-sm h-10 shadow-inner ${cant > 0 ? "text-indigo-400 ring-1 ring-indigo-500/20" : "text-white"} text-right pr-[52px]`,
+              input: `w-24`,
             }}
           />
         </div>
       </td>
       <td className="">
-        <Group gap="xs" wrap="nowrap" className="w-full" justify="left">
+        <Group gap="xs" wrap="nowrap" className="w-full" justify="center">
           <Group gap={6} wrap="nowrap" align="center">
             <Text
               size="xs"

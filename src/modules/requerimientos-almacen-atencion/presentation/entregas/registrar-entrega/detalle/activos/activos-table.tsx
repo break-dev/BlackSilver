@@ -66,21 +66,11 @@ export const ActivosTable = ({
       >
         <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800/60">
           <tr>
-            <th className="py-4 text-center" style={{ width: "15%" }}>
-              Activo Fijo
-            </th>
-            <th className="text-center" style={{ width: "15%" }}>
-              Ubicación
-            </th>
-            <th className="text-center" style={{ width: "15%" }}>
-              Control
-            </th>
-            <th className="text-center" style={{ width: "25%" }}>
-              Despachar
-            </th>
-            <th className="pr-8 text-left" style={{ width: "30%" }}>
-              Activo Destino
-            </th>
+            <th className="py-4 text-center">Activo</th>
+            <th className="text-center">Ubicación</th>
+            <th className="text-center">Control</th>
+            <th className="text-center">Despachar</th>
+            <th className="pr-8 text-center">Destino</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800/40">

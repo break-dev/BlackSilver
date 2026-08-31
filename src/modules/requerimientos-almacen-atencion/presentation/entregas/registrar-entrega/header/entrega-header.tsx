@@ -55,7 +55,9 @@ export const EntregaHeader = ({
               searchable
               required
               withAsterisk
-              value={esContratistaRecibe ? idContratistaRecibe : idEmpleadoRecibe}
+              value={
+                esContratistaRecibe ? idContratistaRecibe : idEmpleadoRecibe
+              }
               onChange={(val) => {
                 if (esContratistaRecibe) {
                   setIdContratistaRecibe(val);

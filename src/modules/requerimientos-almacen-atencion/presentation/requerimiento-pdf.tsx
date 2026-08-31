@@ -65,7 +65,7 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
                 Solicitante
               </Text>
               <Text style={tw("text-[10pt] font-bold text-zinc-900")}>
-                {req.solicitante}
+                {req.solicitante ?? "---"}
               </Text>
             </View>
 
@@ -96,9 +96,10 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
               </Text>
               <Text
                 style={tw(
-                  `text-[10pt] font-bold ${req.fecha_entrega_requerida
-                    ? "text-zinc-900"
-                    : "text-zinc-500"
+                  `text-[10pt] font-bold ${
+                    req.fecha_entrega_requerida
+                      ? "text-zinc-900"
+                      : "text-zinc-500"
                   }`,
                 )}
               >
@@ -198,21 +199,6 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
                     <Text style={tw("font-bold text-[9pt] text-zinc-900")}>
                       {det.producto}
                     </Text>
-                    {Number(det.con_magnitud) === 1 &&
-                      det.cantidad_items !== null &&
-                      det.cantidad_items !== undefined &&
-                      det.valor_magnitud !== null &&
-                      det.valor_magnitud !== undefined && (
-                        <Text
-                          style={tw(
-                            "text-[8pt] text-violet-700 mt-0.5 font-semibold",
-                          )}
-                        >
-                          {formatNumber(det.cantidad_items)} ×{" "}
-                          {formatNumber(det.valor_magnitud)}{" "}
-                          {det.unidad_medida_req_abv} c/u
-                        </Text>
-                      )}
                     {isEquivalent && (
                       <Text style={tw("text-[8pt] text-zinc-500 mt-1")}>
                         {formatNumber(det.contenido_por_presentacion)}{" "}
@@ -226,9 +212,37 @@ export const RequerimientoPDF = ({ requerimiento: req }: Props) => {
                     {det.unidad_medida_req_abv}
                   </Text>
 
-                  <Text style={tw("w-[15%] text-center text-[10pt] font-bold")}>
-                    {formatNumber(det.cantidad_solicitada)}
-                  </Text>
+                  <View
+                    style={tw(
+                      "w-[15%] text-center items-center justify-center",
+                    )}
+                  >
+                    {Number(det.con_magnitud) === 1 &&
+                    det.cantidad_items !== null &&
+                    det.cantidad_items !== undefined &&
+                    det.valor_magnitud !== null &&
+                    det.valor_magnitud !== undefined ? (
+                      <>
+                        <Text style={tw("text-[10pt] font-bold")}>
+                          {formatNumber(det.cantidad_solicitada)}{" "}
+                          {det.unidad_medida_req_abv}
+                        </Text>
+                        <Text
+                          style={tw(
+                            "text-[8pt] text-violet-700 font-semibold mt-0.5",
+                          )}
+                        >
+                          {formatNumber(det.cantidad_items)} ×{" "}
+                          {formatNumber(det.valor_magnitud)}{" "}
+                          {det.unidad_medida_req_abv} c/u
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={tw("text-[10pt] font-bold")}>
+                        {formatNumber(det.cantidad_solicitada)}
+                      </Text>
+                    )}
+                  </View>
 
                   <View style={tw("w-[25%] text-left")}>
                     <Text style={tw("text-[8pt] text-zinc-500")}>

@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { Stack, Paper, Text, Textarea, Group, Button } from "@mantine/core";
 import {
-  Modal,
-  Button,
-  Textarea,
-  Stack,
-  Group,
-  Text,
-  Loader,
-} from "@mantine/core";
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
+import { ModalEstandar } from "../../../../../presentation/utils/modal-estandar";
+import { ReqDetalleTrazabilidad } from "./../detalle/detalle-log";
+import { HistorialEntregasRequerimiento } from "../../entregas/historial-entregas";
+import { RegistrarSolicitudLogistica } from "../../solicitud-reabastecimiento/registrar-solicitud-logistica";
+import { Estado_RequerimientoDetalle } from "../../../../../shared/enums/requerimiento-almacen/requerimiento";
+import type { RES_RequerimientoAlmacen } from "../../../../../service/responses/requerimientos-almacen/requerimiento-almacen";
+import type { DetalleRequerimientoExtendido } from "../../../service/atencion.responses";
 import type { RES_Trazabilidad } from "../../../../../service/responses/_generic/trazabilidad";
-import { DetalleLog } from "../detalle/detalle-log";
 
 interface InfoActionModalsProps {
   openedTrace: boolean;
@@ -21,14 +22,19 @@ interface InfoActionModalsProps {
   openedRechazo: boolean;
   closeRechazo: () => void;
   comentarioAccion: string;
-  setComentarioAccion: (v: string) => void;
+  setComentarioAccion: (val: string) => void;
   idsParaAccionMasiva: number[];
   isProcessing: number | null;
-  handleRechazar: () => Promise<void> | void;
-  handleDecisionMasiva: (estado: import("../../../../../shared/enums/requerimiento-almacen/requerimiento").Estado_RequerimientoDetalle) => Promise<void> | void;
+  handleRechazar: () => void;
+  handleDecisionMasiva: (estado: Estado_RequerimientoDetalle) => void;
   openedAprobar: boolean;
   closeAprobar: () => void;
-  handleAprobar: () => Promise<void> | void;
+  handleAprobar: () => void;
+  requerimiento: RES_RequerimientoAlmacen;
+  detalles: DetalleRequerimientoExtendido[];
+  openedHistorialGlobal: boolean;
+  closeHistorialGlobal: () => void;
+  logistica: { opened: boolean; close: () => void; onSuccess: () => void };
 }
 
 export const InfoActionModals = ({
@@ -49,129 +55,146 @@ export const InfoActionModals = ({
   openedAprobar,
   closeAprobar,
   handleAprobar,
+  requerimiento,
+  detalles,
+  openedHistorialGlobal,
+  closeHistorialGlobal,
+  logistica,
 }: InfoActionModalsProps) => {
-  const [traceLoaded, setTraceLoaded] = useState(false);
-
-  useEffect(() => {
-    if (openedTrace) setTraceLoaded(true);
-    if (!openedTrace) setTraceLoaded(false);
-  }, [openedTrace]);
-
   return (
     <>
-      <Modal
+      <ModalEstandar
         opened={openedTrace}
-        onClose={closeTrace}
-        title={`Trazabilidad${selectedItemName ? ` · ${selectedItemName}` : ""}`}
-        size="lg"
-        centered
+        close={closeTrace}
+        title="Seguimiento del requerimiento"
+        size="md"
       >
-        {selectedItemId !== null ? (
-          traceLoaded ? (
-            <DetalleLog
-              loading={loadingTrazabilidad}
-              eventos={eventos}
-              producto={selectedItemName}
-            />
-          ) : (
-            <Stack align="center" py="xl">
-              <Loader color="indigo" />
-            </Stack>
-          )
-        ) : (
-          <Text c="zinc.5">Selecciona un item para ver su trazabilidad.</Text>
+        {selectedItemId && (
+          <ReqDetalleTrazabilidad
+            eventos={eventos}
+            productoNombre={selectedItemName}
+            loading={loadingTrazabilidad}
+          />
         )}
-      </Modal>
+      </ModalEstandar>
 
-      <Modal
-        opened={openedAprobar}
-        onClose={closeAprobar}
-        title={
-          selectedItemId
-            ? "¿Desea aprobar este producto? Puede ingresar un comentario opcional."
-            : `¿Desea aprobar ${idsParaAccionMasiva.length} productos? Puede ingresar un comentario opcional.`
-        }
-        centered
-      >
-        <Stack>
-          <Textarea
-            placeholder="Comentario (opcional)"
-            autosize
-            minRows={2}
-            value={comentarioAccion}
-            onChange={(e) => setComentarioAccion(e.currentTarget.value)}
-          />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeAprobar}>
-              Cancelar
-            </Button>
-            <Button
-              color="green"
-              loading={
-                selectedItemId
-                  ? isProcessing === selectedItemId
-                  : isProcessing === -1
-              }
-              onClick={() =>
-                selectedItemId
-                  ? handleAprobar()
-                  : (
-                      handleDecisionMasiva as unknown as (
-                        e: "Aprobado" | "Rechazado",
-                      ) => Promise<void>
-                    )("Aprobado")
-              }
-            >
-              Aprobar
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      <Modal
+      <ModalEstandar
         opened={openedRechazo}
-        onClose={closeRechazo}
-        title={
-          selectedItemId
-            ? "¿Desea rechazar este producto? Puede ingresar un comentario opcional."
-            : `¿Desea rechazar ${idsParaAccionMasiva.length} productos? Puede ingresar un comentario opcional.`
-        }
-        centered
+        close={closeRechazo}
+        title="Rechazar ítem"
+        size="md"
       >
-        <Stack>
+        <Stack gap="md">
+          <Paper
+            p="md"
+            className="bg-red-500/10 border border-red-900/50 rounded-xl flex items-start gap-4"
+          >
+            <ExclamationTriangleIcon className="size-8 text-red-400 mt-1" />
+            <Text size="sm" className="text-red-100 italic">
+              {selectedItemId
+                ? "Esta acción marcará el producto como rechazado."
+                : `Esta acción marcará ${idsParaAccionMasiva.length} productos como rechazados.`}
+            </Text>
+          </Paper>
           <Textarea
-            placeholder="Comentario (opcional)"
-            autosize
-            minRows={2}
+            label="Motivo del rechazo"
+            placeholder="Escriba aquí…"
+            minRows={4}
             value={comentarioAccion}
             onChange={(e) => setComentarioAccion(e.currentTarget.value)}
           />
-          <Group justify="flex-end">
-            <Button variant="default" onClick={closeRechazo}>
+          <Group justify="end">
+            <Button variant="subtle" color="zinc" onClick={closeRechazo}>
               Cancelar
             </Button>
             <Button
               color="red"
-              loading={
+              disabled={!comentarioAccion.trim() || isProcessing !== null}
+              loading={isProcessing !== null}
+              onClick={
                 selectedItemId
-                  ? isProcessing === selectedItemId
-                  : isProcessing === -1
-              }
-              onClick={() =>
-                selectedItemId
-                  ? handleRechazar()
-                  : (
-                      handleDecisionMasiva as unknown as (
-                        e: "Aprobado" | "Rechazado",
-                      ) => Promise<void>
-                    )("Rechazado")
+                  ? handleRechazar
+                  : () =>
+                      handleDecisionMasiva(
+                        Estado_RequerimientoDetalle.Rechazado,
+                      )
               }
             >
               Rechazar
             </Button>
           </Group>
         </Stack>
-      </Modal>
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedAprobar}
+        close={closeAprobar}
+        title="Aprobar ítem"
+        size="md"
+      >
+        <Stack gap="md">
+          <Paper
+            p="md"
+            className="bg-green-500/10 border border-green-900/50 rounded-xl flex items-start gap-4"
+          >
+            <CheckCircleIcon className="size-8 text-green-400 mt-1" />
+            <Text size="sm" className="text-green-100 italic">
+              {selectedItemId
+                ? "¿Desea aprobar este producto? Puede entrar un comentario opcional."
+                : `¿Desea aprobar ${idsParaAccionMasiva.length} productos? Puede entrar un comentario opcional.`}
+            </Text>
+          </Paper>
+          <Textarea
+            label="Comentario (Opcional)"
+            placeholder="Escriba aquí…"
+            minRows={4}
+            value={comentarioAccion}
+            onChange={(e) => setComentarioAccion(e.currentTarget.value)}
+          />
+          <Group justify="end">
+            <Button variant="subtle" color="zinc" onClick={closeAprobar}>
+              Cancelar
+            </Button>
+            <Button
+              color="green"
+              loading={isProcessing !== null}
+              onClick={
+                selectedItemId
+                  ? handleAprobar
+                  : () =>
+                      handleDecisionMasiva(Estado_RequerimientoDetalle.Aprobado)
+              }
+            >
+              Aprobar
+            </Button>
+          </Group>
+        </Stack>
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={openedHistorialGlobal}
+        close={closeHistorialGlobal}
+        title={`Historial de Entregas - ${requerimiento.correlativo}`}
+        size="70rem"
+      >
+        <HistorialEntregasRequerimiento
+          idRequerimiento={requerimiento.id_requerimiento}
+        />
+      </ModalEstandar>
+
+      <ModalEstandar
+        opened={logistica.opened}
+        close={logistica.close}
+        title="Consultar con Logística"
+        size="90%"
+      >
+        <RegistrarSolicitudLogistica
+          requerimiento={requerimiento}
+          detalles={detalles}
+          onCancel={logistica.close}
+          onSuccess={logistica.onSuccess}
+        />
+      </ModalEstandar>
     </>
   );
 };

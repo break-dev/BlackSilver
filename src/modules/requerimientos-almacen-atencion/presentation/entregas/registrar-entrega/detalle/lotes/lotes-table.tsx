@@ -69,21 +69,11 @@ export const LotesTable = ({
       >
         <thead className="bg-zinc-900/50 text-zinc-500 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800/60">
           <tr>
-            <th className="py-4 text-center" style={{ width: "15%" }}>
-              Lote
-            </th>
-            <th className="text-center" style={{ width: "10%" }}>
-              Vencimiento
-            </th>
-            <th className="text-center" style={{ width: "10%" }}>
-              Stock Disponible
-            </th>
-            <th className="text-center" style={{ width: "15%" }}>
-              Cant. a Despachar
-            </th>
-            <th className="pr-8 text-left" style={{ width: "35%" }}>
-              Activo Destino
-            </th>
+            <th className="py-4 text-center">Lote</th>
+            <th className="text-center">Vencimiento</th>
+            <th className="text-center">Stock Disponible</th>
+            <th className="text-center">Cant. a Despachar</th>
+            <th className="text-center">Destino</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800/40">
@@ -104,18 +94,15 @@ export const LotesTable = ({
 
               // Stock real disponible considerando lo asignado a otros detalles en este modal
               // Suma total en todos los detalles de este modal
-              const totalItemsTotal = Object.values(entregaCantidades).reduce(
-                (sum, lotesMap) => {
-                  return sum + (lotesMap[lote.id_lote] || 0);
-                },
-                0,
-              );
+              // const totalItemsTotal = Object.values(entregaCantidades).reduce(
+              //   (sum, lotesMap) => {
+              //     return sum + (lotesMap[lote.id_lote] || 0);
+              //   },
+              //   0,
+              // );
 
               // Stock restante global (lo que se muestra al usuario)
-              const stockVisible = Math.max(
-                0,
-                (lote.stock_actual_base || 0) - totalItemsTotal,
-              );
+              const stockVisible = Math.max(0, lote.stock_actual_base || 0);
 
               // Lo máximo extra que puede añadir esta fila actual
               const maxBase = Math.min(

@@ -36,7 +36,9 @@ export const InfoRequerimiento = ({
     openedEntregaBatch,
     openEntregaBatch,
     closeEntregaBatch,
+    openedHistorialGlobal,
     openHistorialGlobal,
+    closeHistorialGlobal,
     selectedItemId,
     setSelectedItemId,
     selectedItemName,
@@ -144,6 +146,15 @@ export const InfoRequerimiento = ({
         openedAprobar={openedAprobar}
         closeAprobar={closeAprobar}
         handleAprobar={handleAprobar}
+        requerimiento={requerimiento}
+        detalles={detalles}
+        openedHistorialGlobal={openedHistorialGlobal}
+        closeHistorialGlobal={closeHistorialGlobal}
+        logistica={{
+          opened: logistica.isOpen,
+          close: logistica.close,
+          onSuccess: logistica.onSuccess,
+        }}
       />
 
       <ModalEstandar
@@ -170,7 +181,7 @@ export const InfoRequerimiento = ({
         opened={openedEntregaBatch}
         close={closeEntregaBatch}
         title={`Registrar Entrega · ${requerimiento.correlativo}`}
-        size="95%"
+        size="75rem"
         validateClose
       >
         {idAlmacen !== undefined && (
