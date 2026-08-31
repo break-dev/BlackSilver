@@ -154,7 +154,7 @@ export const CompraCarbonPDF = ({
       marginTop: 2,
     },
     documentType: {
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: 700,
       color: accent,
       textAlign: "right",
@@ -383,7 +383,9 @@ export const CompraCarbonPDF = ({
                   {d.guia_remitente && (
                     <Text style={{ fontSize: 7, color: accentDark }}>
                       GR: {d.guia_remitente}
-                      {d.guia_transportista ? ` · GT: ${d.guia_transportista}` : ""}
+                      {d.guia_transportista
+                        ? ` · GT: ${d.guia_transportista}`
+                        : ""}
                     </Text>
                   )}
                   {(Number(d.porcentaje_ceniza) > 0 ||
@@ -535,28 +537,6 @@ export const CompraCarbonPDF = ({
                 }}
               >
                 {"Firma y Sello"}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Etiquetas debajo de cada caja */}
-        <View style={{ flexDirection: "row", gap: 16 }}>
-          {[0, 1].map((idx) => (
-            <View
-              key={idx}
-              style={{ flex: 1, alignItems: "center", marginTop: 8 }}
-            >
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: accentVeryDark,
-                  marginTop: 6,
-                  letterSpacing: 1,
-                }}
-              >
-                {idx === 0 ? "APROBADO" : "ACEPTADA"}
               </Text>
             </View>
           ))}

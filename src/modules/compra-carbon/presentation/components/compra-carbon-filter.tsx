@@ -62,8 +62,8 @@ export const CompraCarbonFilter = ({
 
       <div className="w-full sm:w-32">
         <Select
-          label="Anio"
-          placeholder="Anio"
+          label="Año"
+          placeholder="Año"
           data={YEARS}
           value={String(anio)}
           onChange={(val) => val && cambiarPeriodo(mes, Number(val))}
@@ -73,7 +73,7 @@ export const CompraCarbonFilter = ({
         />
       </div>
 
-      <div className="flex-1 min-w-[200px] w-full">
+      <div className="flex-1 min-w-50 w-full">
         <TextInput
           label="Busqueda"
           placeholder="Correlativo, proveedor o empresa..."

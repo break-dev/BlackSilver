@@ -93,5 +93,5 @@ export const useEvidenciasCompraCarbon = (idCompraCarbon: number) => {
     }
   };
 
-  return { subirYGuardar, guardarEvidencias, loading };
+  return { subirYGuardar, guardarEvidencias, subirArchivos, loading };
 };

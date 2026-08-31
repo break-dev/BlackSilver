@@ -33,8 +33,14 @@ export const CompraCarbonPage = () => {
   const [empresasById, setEmpresasById] = useState<Record<number, RES_Empresa>>({});
   const [proveedoresById, setProveedoresById] = useState<
     Record<number, ProveedorResponse>
-  >({});
+  >([]);
   const [openRegistro, setOpenRegistro] = useState(false);
+  /**
+   * Cuando se registra una compra, el listado imprime automaticamente su PDF.
+   * La pagina solo dispara el id; el listado maneja la descarga con todo
+   * el contexto (empresa + proveedor) que ya tiene cargado.
+   */
+  const [autoPrintId, setAutoPrintId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancel = false;
@@ -102,6 +108,8 @@ export const CompraCarbonPage = () => {
           onAprobada={updateCompraLocal}
           onEvidenciasActualizadas={updateCompraLocal}
           onAnulada={updateCompraLocal}
+          autoPrintId={autoPrintId}
+          onAutoPrintConsumido={() => setAutoPrintId(null)}
         />
       )}
 
@@ -116,6 +124,8 @@ export const CompraCarbonPage = () => {
           onCreated={(cabecera) => {
             insertCompra(cabecera);
             setOpenRegistro(false);
+            // Dispara auto-impresion del PDF en el siguiente render del listado.
+            setAutoPrintId(cabecera.id_compra_carbon);
           }}
         />
       </ModalEstandar>

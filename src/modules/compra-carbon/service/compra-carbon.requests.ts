@@ -25,5 +25,7 @@ export interface CrearCompraCarbonRequest {
   aplica_igv: boolean;
   porcentaje_igv: number;
   fecha_hora_ingreso: string;
+  /** Evidencias a nivel de cabecera (subidas al storage por la UI). */
+  evidencias?: IArchivo[] | null;
   detalles: CrearCompraCarbonDetalle[];
 }

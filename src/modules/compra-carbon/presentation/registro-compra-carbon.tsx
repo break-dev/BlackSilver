@@ -53,6 +53,9 @@ import type { RES_PersonalExterno } from "../../../service/responses/personal-ex
 import { formatNumber } from "../../../shared/functions/formatNumber";
 import { TipoEntidad } from "../../../shared/enums/_generic/tipo-entidad";
 import { ModalEstandar } from "../../../presentation/utils/modal-estandar";
+import { MultiFilePicker } from "../../../presentation/utils/archivo/multifile-picker";
+import { useEvidenciasCompraCarbon } from "../hooks/useEvidenciasCompraCarbon";
+import type { IArchivo } from "../../../shared/interfaces/archivo";
 import { FormTransportista } from "../../../presentation/utils/form-transportista";
 import { FormTarifaCarbon } from "../../../presentation/utils/form-tarifa-carbon";
 import { FormLugarExtraccion } from "../../../presentation/utils/form-lugar-extraccion";
@@ -177,6 +180,12 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
   const [aplicaIgv, setAplicaIgv] = useState<boolean>(false);
   const [porcentajeIgv, setPorcentajeIgv] = useState<number | string>(18);
   const [fechaHora, setFechaHora] = useState<Date | null>(new Date());
+
+  // Evidencias: archivos seleccionados por el usuario. Se suben al storage
+  // al momento de guardar la compra y se envian con el payload.
+  const [evidenciasFiles, setEvidenciasFiles] = useState<File[]>([]);
+  const { subirArchivos: subirArchivosEvidencia } =
+    useEvidenciasCompraCarbon(0);
 
   const [detalles, setDetalles] = useState<LineaTemporal[]>([lineaVacia()]);
   const [detallesExpandidos, setDetallesExpandidos] = useState<
@@ -542,35 +551,51 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
       }
     }
 
-    const payload: Parameters<typeof CompraCarbonService.crearCompra>[0] = {
-      id_empresa: Number(idEmpresa),
-      id_proveedor: Number(idProveedor),
-      id_almacen: Number(idAlmacen),
-      aplica_igv: aplicaIgv,
-      porcentaje_igv: aplicaIgv ? Number(porcentajeIgv) || 0 : 0,
-      fecha_hora_ingreso: toBackendDateTime(fechaHora),
-      detalles: detallesValidos.map((d) => ({
-        id_tipo_carbon: d.id_tipo_carbon as number,
-        id_tarifa_carbon: d.id_tarifa_carbon,
-        id_lugar_extraccion: d.id_lugar_extraccion,
-        placa: d.placa || null,
-        guia_remitente: d.guia_remitente || null,
-        guia_transportista: d.guia_transportista || null,
-        codigo_ticket_balanza: d.codigo_ticket_balanza || null,
-        cantidad: d.cantidad,
-        porcentaje_ceniza: d.porcentaje_ceniza,
-        porcentaje_humedad: d.porcentaje_humedad,
-        precio_unitario: d.precio_unitario,
-        pagar_flete: d.pagar_flete,
-        id_transportista: d.pagar_flete ? d.id_transportista : null,
-        costo_flete_por_tonelada: d.pagar_flete
-          ? Number(d.costo_flete_por_tonelada) || 0
-          : 0,
-      })),
-    };
-
     setSaving(true);
     try {
+      // 1) Subir los archivos de evidencia al storage (si hay).
+      let evidenciasSubidas: IArchivo[] = [];
+      if (evidenciasFiles.length > 0) {
+        try {
+          evidenciasSubidas = await subirArchivosEvidencia(evidenciasFiles);
+        } catch (e) {
+          console.error(e);
+          setError("No se pudieron subir los archivos de evidencia");
+          setSaving(false);
+          return;
+        }
+      }
+
+      // 2) Construir el payload con las evidencias ya subidas.
+      const payload: Parameters<typeof CompraCarbonService.crearCompra>[0] = {
+        id_empresa: Number(idEmpresa),
+        id_proveedor: Number(idProveedor),
+        id_almacen: Number(idAlmacen),
+        aplica_igv: aplicaIgv,
+        porcentaje_igv: aplicaIgv ? Number(porcentajeIgv) || 0 : 0,
+        fecha_hora_ingreso: toBackendDateTime(fechaHora),
+        evidencias: evidenciasSubidas.length > 0 ? evidenciasSubidas : null,
+        detalles: detallesValidos.map((d) => ({
+          id_tipo_carbon: d.id_tipo_carbon as number,
+          id_tarifa_carbon: d.id_tarifa_carbon,
+          id_lugar_extraccion: d.id_lugar_extraccion,
+          placa: d.placa || null,
+          guia_remitente: d.guia_remitente || null,
+          guia_transportista: d.guia_transportista || null,
+          codigo_ticket_balanza: d.codigo_ticket_balanza || null,
+          cantidad: d.cantidad,
+          porcentaje_ceniza: d.porcentaje_ceniza,
+          porcentaje_humedad: d.porcentaje_humedad,
+          precio_unitario: d.precio_unitario,
+          pagar_flete: d.pagar_flete,
+          id_transportista: d.pagar_flete ? d.id_transportista : null,
+          costo_flete_por_tonelada: d.pagar_flete
+            ? Number(d.costo_flete_por_tonelada) || 0
+            : 0,
+        })),
+      };
+
+      // 3) Crear la compra.
       const resp = await CompraCarbonService.crearCompra(payload);
       if (resp.success) {
         notifySuccess(resp.message || "Compra registrada correctamente");
@@ -827,6 +852,14 @@ export const RegistroCompraCarbon = ({ onCancel, onCreated }: Props) => {
           </Grid.Col>
         </Grid>
       </section>
+
+      {/* SECCION: Evidencias (opcional) */}
+      <MultiFilePicker
+        files={evidenciasFiles}
+        onFilesChange={setEvidenciasFiles}
+        label="Archivos de evidencia"
+        description="Imagenes o documentos (PDF, JPG, PNG, etc.)"
+      />
 
       {/* SECCION: Items */}
       <section>
