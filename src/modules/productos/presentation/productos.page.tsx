@@ -548,7 +548,7 @@ export const ProductosPage = () => {
         opened={openedCambios}
         close={closeCambios}
         title="Historial de Cambios de Productos"
-        size="xl"
+        size="min(1250px, 95vw)"
       >
         {cambiosGlobal.length === 0 ? (
           <Stack align="center" gap="md" py={60}>
