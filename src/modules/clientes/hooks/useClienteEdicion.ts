@@ -51,9 +51,6 @@ export const useClienteEdicion = ({
   const handleTipoEntidadChange = (value: string | null) => {
     if (!value) return;
     setTipoEntidad(value as TipoEntidad);
-    // Limpiar DNI/RUC al cambiar de tipo para evitar basura entre tipos
-    setDni("");
-    setRuc("");
     setError(null);
   };
 
@@ -66,8 +63,8 @@ export const useClienteEdicion = ({
 
     const values: DTO_ActualizarCliente = {
       tipo_entidad: tipoEntidad,
-      dni: tipoEntidad === TipoEntidad.Natural ? dni : null,
-      ruc: tipoEntidad === TipoEntidad.Juridica ? ruc : null,
+      dni: dni.trim() ? dni.trim() : null,
+      ruc: ruc.trim(),
       razon_social: razonSocial,
       direccion: direccion || null,
       telefono: telefono || null,

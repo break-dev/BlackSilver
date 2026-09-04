@@ -114,27 +114,27 @@ export const EditarClienteModal = ({
         <Grid.Col span={{ base: 12, md: 6 }}>
           <TextInput
             withAsterisk
-            label={tipoEntidad === TipoEntidad.Natural ? "DNI" : "RUC"}
+            label="RUC"
             placeholder={
               tipoEntidad === TipoEntidad.Natural
-                ? "12345678"
-                : "20345678901"
+                ? "10xxxxxxxxx (persona natural)"
+                : "20xxxxxxxxx (persona jurídica)"
             }
             radius="xl"
-            maxLength={tipoEntidad === TipoEntidad.Natural ? 8 : 11}
-            value={
-              tipoEntidad === TipoEntidad.Natural
-                ? dni
-                : ruc
-            }
-            onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, "");
-              if (tipoEntidad === TipoEntidad.Natural) {
-                setDni(val);
-              } else {
-                setRuc(val);
-              }
-            }}
+            maxLength={11}
+            value={ruc}
+            onChange={(e) => setRuc(e.target.value.replace(/\D/g, ""))}
+            classNames={inputClasses}
+          />
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, md: 6 }}>
+          <TextInput
+            label="DNI (opcional)"
+            placeholder="12345678"
+            radius="xl"
+            maxLength={8}
+            value={dni}
+            onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
             classNames={inputClasses}
           />
         </Grid.Col>
