@@ -28,6 +28,42 @@ export const Schema_CrearCliente = z.object({
 
 export type CrearClienteRequest = z.infer<typeof Schema_CrearCliente>;
 
+/**
+ * Edicion administrativa de cliente.
+ * Solo se exponen los campos modificables: tipo_entidad, dni, ruc,
+ * razon_social, direccion, telefono, correo.
+ *
+ * NO incluye:
+ *  - estado: lo gestiona eliminar_cliente (soft-delete).
+ */
+export const Schema_ActualizarCliente = z.object({
+  tipo_entidad: z.string().max(64).nullable(),
+  dni: z
+    .string()
+    .nullable()
+    .refine((val) => !val || /^\d{8}$/.test(val), {
+      message: "El DNI debe tener exactamente 8 dígitos",
+    }),
+  ruc: z
+    .string()
+    .nullable()
+    .refine((val) => !val || /^\d{11}$/.test(val), {
+      message: "El RUC debe tener exactamente 11 dígitos",
+    }),
+  razon_social: z.string().min(2, "La razón social es obligatoria"),
+  direccion: z.string().max(255).nullable(),
+  telefono: z.string().max(20).nullable(),
+  correo: z
+    .string()
+    .max(100)
+    .nullable()
+    .refine((val) => !val || z.string().email().safeParse(val).success, {
+      message: "Debe ser un correo electrónico válido",
+    }),
+});
+
+export type DTO_ActualizarCliente = z.infer<typeof Schema_ActualizarCliente>;
+
 export const Schema_CrearCuentaBancaria = z.object({
   id_cliente: z.number().min(1, "Seleccione un cliente"),
   id_banco: z.number().min(1, "Seleccione un banco válido"),
